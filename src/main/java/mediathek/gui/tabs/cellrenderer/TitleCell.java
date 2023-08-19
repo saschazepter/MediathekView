@@ -138,8 +138,8 @@ public class TitleCell extends JPanel {
         iconList.clear();
     }
 
-    public void applyColorSettings(@NotNull DatenFilm datenFilm, @NotNull JTable table, boolean isSelected, boolean isBookMarked) {
-        if (table.isFocusOwner()) {
+    public void applyColorSettings(@NotNull DatenFilm datenFilm, boolean hasFocus, boolean isSelected, boolean isBookMarked) {
+        if (hasFocus) {
             if (isSelected) {
                 title.setForeground(UIManager.getColor("Table.selectionForeground"));
             } else {

@@ -123,7 +123,7 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
 
                     cell.title.setText(datenFilm.getTitle());
                     cell.setIndicatorIcons(datenFilm, table, isSelected);
-                    cell.applyColorSettings(datenFilm, table, isSelected, isBookMarked);
+                    cell.applyColorSettings(datenFilm, hasFocus, isSelected, isBookMarked);
                     return cell;
                 }
                 case DatenFilm.FILM_GEO -> drawGeolocationIcons(datenFilm, isSelected);
