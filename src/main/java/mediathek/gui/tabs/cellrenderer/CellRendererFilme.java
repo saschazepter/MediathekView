@@ -28,6 +28,7 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
     private final FlatSVGIcon selectedBookmarkIcon;
     private final FlatSVGIcon normalBookmarkIcon;
     private final FlatSVGIcon selectedBookmarkIconHighlighted;
+    private final TitleCell cell = new TitleCell();
 
     public CellRendererFilme() {
         selectedDownloadIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/download.svg");
@@ -116,10 +117,11 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
                     }
                 }
                 case DatenFilm.FILM_TITEL -> {
+                    cell.setBackground(this.getBackground());
+                    cell.setForeground(this.getForeground());
                     cell.title.setText(datenFilm.getTitle());
                     cell.setIndicatorIcons(datenFilm, table, isSelected);
-                    //setText(datenFilm.getTitle());
-                    //setIndicatorIcons(table, datenFilm, isSelected);
+                    applyColorSettings(cell, datenFilm, datenDownload, isSelected, isBookMarked);
                     return cell;
                 }
                 case DatenFilm.FILM_GEO -> drawGeolocationIcons(datenFilm, isSelected);
@@ -132,8 +134,6 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
 
         return this;
     }
-
-    private final TitleCell cell = new TitleCell();
 
     /**
      * Apply the specific horizontal alignment to the cell based on column
