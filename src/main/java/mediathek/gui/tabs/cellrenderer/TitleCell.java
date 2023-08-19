@@ -26,6 +26,19 @@ import java.util.List;
  * @author christianfranzke
  */
 public class TitleCell extends JPanel {
+    private static final EnumSet<Country> euCountryList = EnumSet.of(Country.DE, Country.AT, Country.FR);
+    protected final FlatSVGIcon lockedIcon;
+    protected final FlatSVGIcon lockedIconSelected;
+    private final FlatSVGIcon highQualityIcon;
+    private final FlatSVGIcon highQualityIconSelected;
+    private final FlatSVGIcon audioDescription;
+    private final FlatSVGIcon audioDescriptionSelected;
+    private final FlatSVGIcon subtitleIcon;
+    private final FlatSVGIcon subtitleIconSelected;
+    private final FlatSVGIcon liveStreamIcon;
+    private final FlatSVGIcon liveStreamIconSelected;
+    protected FlatSVGIcon.ColorFilter whiteColorFilter = new FlatSVGIcon.ColorFilter(color -> Color.WHITE);
+
     public TitleCell() {
         initComponents();
 
@@ -53,20 +66,6 @@ public class TitleCell extends JPanel {
         liveStreamIconSelected.setColorFilter(whiteColorFilter);
 
     }
-    protected FlatSVGIcon.ColorFilter whiteColorFilter = new FlatSVGIcon.ColorFilter(color -> Color.WHITE);
-    protected final FlatSVGIcon lockedIcon;
-    protected final FlatSVGIcon lockedIconSelected;
-    private final FlatSVGIcon highQualityIcon;
-    private final FlatSVGIcon highQualityIconSelected;
-    private final FlatSVGIcon audioDescription;
-    private final FlatSVGIcon audioDescriptionSelected;
-    private final FlatSVGIcon subtitleIcon;
-    private final FlatSVGIcon subtitleIconSelected;
-    private final FlatSVGIcon liveStreamIcon;
-    private final FlatSVGIcon liveStreamIconSelected;
-    public static final String ICON_POSITION_RIGHT = "ui.list.iconposition_right";
-
-    private static final EnumSet<Country> euCountryList = EnumSet.of(Country.DE, Country.AT, Country.FR);
 
     private boolean filmIsCountryUnlocked(@NotNull DatenFilm film) {
         var curLocation = ApplicationConfiguration.getInstance().getGeographicLocation();
