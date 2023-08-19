@@ -148,8 +148,8 @@ public class TitleCell extends JPanel {
             new LC().fillX().insets("0").hideMode(3), //NON-NLS
             // columns
             new AC()
-                .grow().fill().gap()
-                .align("right"), //NON-NLS
+                .grow().align("left").gap() //NON-NLS
+                .shrink(0).align("right"), //NON-NLS
             // rows
             new AC()
                 .grow().align("center"))); //NON-NLS
