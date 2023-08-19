@@ -1,6 +1,8 @@
 package mediathek.gui.tabs.cellrenderer;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
+import mediathek.config.MVColor;
+import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.Country;
 import mediathek.daten.DatenFilm;
 import mediathek.tool.ApplicationConfiguration;
@@ -33,9 +35,11 @@ public class TitleCell extends JPanel {
     private final FlatSVGIcon subtitleIconSelected;
     private final FlatSVGIcon liveStreamIcon;
     private final FlatSVGIcon liveStreamIconSelected;
+    private final SeenHistoryController history = new SeenHistoryController();
     protected FlatSVGIcon.ColorFilter whiteColorFilter = new FlatSVGIcon.ColorFilter(color -> Color.WHITE);
     JLabel title;
     JLabel icons;
+
     public TitleCell() {
         initComponents();
 
@@ -69,8 +73,7 @@ public class TitleCell extends JPanel {
         //EU consists of many states therefore we have to extend the country test...
         if (film.countrySet.contains(Country.EU)) {
             return film.countrySet.contains(curLocation) || euCountryList.contains(curLocation);
-        }
-        else {
+        } else {
             return film.countrySet.contains(curLocation);
         }
     }
@@ -135,19 +138,45 @@ public class TitleCell extends JPanel {
         iconList.clear();
     }
 
+    public void applyColorSettings(@NotNull DatenFilm datenFilm, @NotNull JTable table, boolean isSelected, boolean isBookMarked) {
+        if (table.isFocusOwner()) {
+            if (isSelected) {
+                title.setForeground(UIManager.getColor("Table.selectionForeground"));
+            } else {
+                title.setForeground(UIManager.getColor("Table.foreground"));
+            }
+        }
+        else
+            title.setForeground(UIManager.getColor("Table.foreground"));
+
+        if (history.hasBeenSeen(datenFilm)) {
+            if (!isSelected) {
+                setBackground(MVColor.FILM_HISTORY.color);
+            }
+        }
+
+        if (datenFilm.isNew() && !isSelected) {
+                title.setForeground(MVColor.getNewColor());
+        }
+
+        if (isBookMarked && !isSelected) {
+            setBackground(MVColor.FILM_BOOKMARKED.color);
+        }
+    }
+
     private void initComponents() {
         title = new JLabel();
         icons = new JLabel();
 
         setLayout(new MigLayout(
-            new LC().fillX().insets("0").hideMode(3), //NON-NLS
-            // columns
-            new AC()
-                .grow().align("left").gap() //NON-NLS
-                .shrink(0).align("right"), //NON-NLS
-            // rows
-            new AC()
-                .grow().align("center"))); //NON-NLS
+                new LC().fillX().insets("0").hideMode(3), //NON-NLS
+                // columns
+                new AC()
+                        .grow().align("left").gap() //NON-NLS
+                        .shrink(0).align("right"), //NON-NLS
+                // rows
+                new AC()
+                        .grow().align("center"))); //NON-NLS
 
         title.setText("text"); //NON-NLS
         add(title, new CC().cell(0, 0).growX().width("0:0:65536"));

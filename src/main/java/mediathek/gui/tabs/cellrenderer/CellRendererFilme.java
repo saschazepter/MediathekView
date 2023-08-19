@@ -117,11 +117,13 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
                     }
                 }
                 case DatenFilm.FILM_TITEL -> {
+                    // to set row coloring...
                     cell.setBackground(this.getBackground());
                     cell.setForeground(this.getForeground());
+
                     cell.title.setText(datenFilm.getTitle());
                     cell.setIndicatorIcons(datenFilm, table, isSelected);
-                    applyColorSettings(cell, datenFilm, datenDownload, isSelected, isBookMarked);
+                    cell.applyColorSettings(datenFilm, table, isSelected, isBookMarked);
                     return cell;
                 }
                 case DatenFilm.FILM_GEO -> drawGeolocationIcons(datenFilm, isSelected);
