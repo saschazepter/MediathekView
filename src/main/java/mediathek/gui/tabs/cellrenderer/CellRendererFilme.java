@@ -116,8 +116,13 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
                     }
                 }
                 case DatenFilm.FILM_TITEL -> {
-                    setText(datenFilm.getTitle());
-                    setIndicatorIcons(table, datenFilm, isSelected);
+                    cell.title.setText(datenFilm.getTitle());
+                    cell.icons.setText("icn");
+                    //setText(datenFilm.getTitle());
+                    //setIndicatorIcons(table, datenFilm, isSelected);
+                    //JLabel lbl = new JLabel(datenFilm.getTitle());
+                    //return lbl;
+                    return cell;
                 }
                 case DatenFilm.FILM_GEO -> drawGeolocationIcons(datenFilm, isSelected);
             }
@@ -129,6 +134,8 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
 
         return this;
     }
+
+    private final TitleCell cell = new TitleCell();
 
     /**
      * Apply the specific horizontal alignment to the cell based on column
