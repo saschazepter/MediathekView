@@ -117,11 +117,9 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
                 }
                 case DatenFilm.FILM_TITEL -> {
                     cell.title.setText(datenFilm.getTitle());
-                    cell.icons.setText("icn");
+                    cell.setIndicatorIcons(datenFilm, table, isSelected);
                     //setText(datenFilm.getTitle());
                     //setIndicatorIcons(table, datenFilm, isSelected);
-                    //JLabel lbl = new JLabel(datenFilm.getTitle());
-                    //return lbl;
                     return cell;
                 }
                 case DatenFilm.FILM_GEO -> drawGeolocationIcons(datenFilm, isSelected);
