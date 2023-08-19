@@ -1,4 +1,4 @@
-package mediathek.tool.cellrenderer;
+package mediathek.gui.tabs.cellrenderer;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import mediathek.config.MVColor;

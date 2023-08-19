@@ -1,4 +1,4 @@
-package mediathek.tool.cellrenderer;
+package mediathek.gui.tabs.cellrenderer;
 
 import mediathek.daten.DatenPset;
 import mediathek.tool.SVGIconUtilities;

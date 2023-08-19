@@ -1,4 +1,4 @@
-package mediathek.tool.cellrenderer;
+package mediathek.gui.tabs.cellrenderer;
 
 import mediathek.daten.abo.AboTags;
 import mediathek.daten.abo.DatenAbo;
@@ -25,14 +25,14 @@ public class CellRendererAbo extends CellRendererBase {
         setForeground(null);
         setFont(null);
         setIcon(null);
-        setHorizontalAlignment(SwingConstants.LEADING);
+        setHorizontalAlignment(LEADING);
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
         try {
             var abo = (DatenAbo) table.getModel().getValueAt(table.convertRowIndexToModel(row), DatenAbo.ABO_REF);
             AboTags.fromIndex(table.convertColumnIndexToModel(column)).ifPresent(col -> {
                 switch (col) {
                     case NR:
-                        setHorizontalAlignment(SwingConstants.CENTER);
+                        setHorizontalAlignment(CENTER);
                         setText(Integer.toString(abo.getNr()));
                         break;
                     case NAME:
@@ -45,18 +45,18 @@ public class CellRendererAbo extends CellRendererBase {
                         setText(abo.getTitle());
                         break;
                     case MINDESTDAUER:
-                        setHorizontalAlignment(SwingConstants.CENTER);
+                        setHorizontalAlignment(CENTER);
                         setText(Integer.toString(abo.getMindestDauerMinuten()));
                         break;
                     case MIN:
-                        setHorizontalAlignment(SwingConstants.CENTER);
+                        setHorizontalAlignment(CENTER);
                         if (abo.getFilmLengthState() == FilmLengthState.MINIMUM)
                             setText("min");
                         else
                             setText("max");
                         break;
                     case DOWN_DATUM:
-                        setHorizontalAlignment(SwingConstants.CENTER);
+                        setHorizontalAlignment(CENTER);
                         setText(abo.getDownDatum());
                         break;
 

@@ -1,11 +1,11 @@
 package mediathek.gui.dialogEinstellungen.allgemein;
 
 import mediathek.gui.messages.*;
+import mediathek.gui.tabs.cellrenderer.CellRendererBaseWithStart;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.GuiFunktionen;
 import mediathek.tool.MessageBus;
-import mediathek.tool.cellrenderer.CellRendererBaseWithStart;
 import mediathek.tool.sender_icon_cache.MVSenderIconCache;
 import net.engio.mbassy.listener.Handler;
 import net.miginfocom.layout.AC;
