@@ -200,16 +200,25 @@ new FormModel {
 				"toolTipText": "<html>Die Einstellungen beziehen sich auf den nächsten <b>vollständigen</b> Ladevorgang einer Fillmliste.<br>Es kann somit vorkommen dass die Aktualisierung erst nach Neustart des Programms <br><b>und dem Laden einer kompletten Liste vom Server</b> (keine DIFF-Liste!) sichtbar wird.<br><br>Hier geänderte Einstellungen werden in der Senderliste des Filterdialogs <b>erst nach Neustart</b> sichtbar!</html>"
 				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 					name: "scrollPane1"
+					auxiliary() {
+						"JavaCodeGenerator.variableLocal": true
+					}
 					add( new FormComponent( "org.jdesktop.swingx.JXHeader" ) {
 						name: "xHeader1"
 						"title": "Neustart erforderlich"
 						"description": "Alle Änderungen hier erfordern den Neustart der Applikation und ein erneutes Laden der Filmliste."
+						auxiliary() {
+							"JavaCodeGenerator.variableLocal": true
+						}
 					} )
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 0 0 7 1,aligny center,grow 100 0"
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 					name: "panel3"
+					auxiliary() {
+						"JavaCodeGenerator.variableLocal": true
+					}
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 0 0 7 1"
 				} )

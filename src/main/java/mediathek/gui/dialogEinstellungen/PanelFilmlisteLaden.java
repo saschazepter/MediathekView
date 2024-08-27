@@ -294,9 +294,9 @@ public class PanelFilmlisteLaden extends JPanel {
         cbAudio = new JCheckBox();
         cbLivestreams = new JCheckBox();
         panel1 = new JPanel();
-        scrollPane1 = new JScrollPane();
-        xHeader1 = new JXHeader();
-        panel3 = new JPanel();
+        var scrollPane1 = new JScrollPane();
+        var xHeader1 = new JXHeader();
+        var panel3 = new JPanel();
         checkBox1 = new JCheckBox();
         checkBox24 = new JCheckBox();
         checkBox2 = new JCheckBox();
@@ -635,9 +635,6 @@ public class PanelFilmlisteLaden extends JPanel {
     private JCheckBox cbAudio;
     private JCheckBox cbLivestreams;
     private JPanel panel1;
-    private JScrollPane scrollPane1;
-    private JXHeader xHeader1;
-    private JPanel panel3;
     private JCheckBox checkBox1;
     private JCheckBox checkBox24;
     private JCheckBox checkBox2;
