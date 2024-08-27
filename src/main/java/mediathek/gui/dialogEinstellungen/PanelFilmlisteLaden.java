@@ -250,12 +250,12 @@ public class PanelFilmlisteLaden extends JPanel {
         jRadioButtonAuto = new JRadioButton();
         jRadioButtonManuell = new JRadioButton();
         var separator1 = new JSeparator();
-        var panel3 = new JPanel();
         var panel2 = new JPanel();
         var label1 = new JLabel();
         var jSpinnerDays = new DaysSpinner();
         var label2 = new JLabel();
         btnReloadFilmlist = new JButton();
+        var panel3 = new JPanel();
         var jPanel1 = new JPanel();
         cbSign = new JCheckBox();
         cbTrailer = new JCheckBox();
@@ -299,6 +299,7 @@ public class PanelFilmlisteLaden extends JPanel {
                 .size("640").grow().fill(), //NON-NLS
             // rows
             new AC()
+                .gap()
                 .gap()
                 .gap()
                 .gap()
@@ -365,39 +366,40 @@ public class PanelFilmlisteLaden extends JPanel {
         add(jRadioButtonManuell, new CC().cell(0, 1).alignY("top").growY(0)); //NON-NLS
         add(separator1, new CC().cell(0, 2, 2, 1).growX());
 
+        //======== panel2 ========
+        {
+            panel2.setBorder(new TitledBorder("Filmdauer")); //NON-NLS
+            panel2.setLayout(new MigLayout(
+                new LC().insets("5").hideMode(3), //NON-NLS
+                // columns
+                new AC()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .align("left"), //NON-NLS
+                // rows
+                new AC()
+                    .fill()));
+
+            //---- label1 ----
+            label1.setText("Nur Filme der letzten"); //NON-NLS
+            panel2.add(label1, new CC().cell(0, 0).alignX("center").growX(0)); //NON-NLS
+            panel2.add(jSpinnerDays, new CC().cell(1, 0));
+
+            //---- label2 ----
+            label2.setText("Tage laden."); //NON-NLS
+            panel2.add(label2, new CC().cell(2, 0).alignX("center").growX(0)); //NON-NLS
+
+            //---- btnReloadFilmlist ----
+            btnReloadFilmlist.setToolTipText("Filmliste jetzt aktualisieren"); //NON-NLS
+            panel2.add(btnReloadFilmlist, new CC().cell(3, 0));
+        }
+        add(panel2, new CC().cell(0, 3, 2, 1).growX());
+
         //======== panel3 ========
         {
             panel3.setBorder(new TitledBorder("Einschr\u00e4nkungen f\u00fcr das Laden der Filmliste")); //NON-NLS
             panel3.setLayout(new VerticalLayout());
-
-            //======== panel2 ========
-            {
-                panel2.setLayout(new MigLayout(
-                    new LC().insets("5").hideMode(3), //NON-NLS
-                    // columns
-                    new AC()
-                        .fill().gap()
-                        .fill().gap()
-                        .fill().gap()
-                        .align("left"), //NON-NLS
-                    // rows
-                    new AC()
-                        .fill()));
-
-                //---- label1 ----
-                label1.setText("Nur Filme der letzten"); //NON-NLS
-                panel2.add(label1, new CC().cell(0, 0).alignX("center").growX(0)); //NON-NLS
-                panel2.add(jSpinnerDays, new CC().cell(1, 0));
-
-                //---- label2 ----
-                label2.setText("Tage laden."); //NON-NLS
-                panel2.add(label2, new CC().cell(2, 0).alignX("center").growX(0)); //NON-NLS
-
-                //---- btnReloadFilmlist ----
-                btnReloadFilmlist.setToolTipText("Filmliste jetzt aktualisieren"); //NON-NLS
-                panel2.add(btnReloadFilmlist, new CC().cell(3, 0));
-            }
-            panel3.add(panel2);
 
             //======== jPanel1 ========
             {
@@ -561,7 +563,7 @@ public class PanelFilmlisteLaden extends JPanel {
             }
             panel3.add(panel1);
         }
-        add(panel3, new CC().cell(0, 3, 2, 1).growX());
+        add(panel3, new CC().cell(0, 4, 2, 1).growX());
 
         //---- buttonGroup1 ----
         var buttonGroup1 = new ButtonGroup();

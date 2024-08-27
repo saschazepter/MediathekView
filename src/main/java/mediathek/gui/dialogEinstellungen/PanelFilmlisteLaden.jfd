@@ -1,4 +1,4 @@
-JFDML JFormDesigner: "7.0.7.0.1134" Java: "11.0.15" encoding: "UTF-8"
+JFDML JFormDesigner: "8.2.4.0.393" Java: "21.0.3" encoding: "UTF-8"
 
 new FormModel {
 	contentType: "form/swing"
@@ -6,7 +6,7 @@ new FormModel {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 			"$layoutConstraints": "fillx,insets 5,hidemode 3,gap 5 5"
 			"$columnConstraints": "[label][640,grow,fill]"
-			"$rowConstraints": "[][][][]"
+			"$rowConstraints": "[][][][][]"
 		} ) {
 			name: "this"
 			"preferredSize": new java.awt.Dimension( 740, 506 )
@@ -109,54 +109,57 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 2 2 1,growx"
 			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "insets 5,hidemode 3"
+				"$columnConstraints": "[fill][fill][fill][left]"
+				"$rowConstraints": "[fill]"
+			} ) {
+				name: "panel2"
+				"border": new javax.swing.border.TitledBorder( "Filmdauer" )
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label1"
+					"text": "Nur Filme der letzten"
+					auxiliary() {
+						"JavaCodeGenerator.variableLocal": true
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0,alignx center,growx 0"
+				} )
+				add( new FormComponent( "mediathek.gui.dialogEinstellungen.DaysSpinner" ) {
+					name: "jSpinnerDays"
+					auxiliary() {
+						"JavaCodeGenerator.variableLocal": true
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 0"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label2"
+					"text": "Tage laden."
+					auxiliary() {
+						"JavaCodeGenerator.variableLocal": true
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 2 0,alignx center,growx 0"
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnReloadFilmlist"
+					"toolTipText": "Filmliste jetzt aktualisieren"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 3 0"
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 3 2 1,growx"
+			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.swingx.VerticalLayout ) ) {
 				name: "panel3"
 				"border": new javax.swing.border.TitledBorder( "Einschränkungen für das Laden der Filmliste" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-					"$layoutConstraints": "insets 5,hidemode 3"
-					"$columnConstraints": "[fill][fill][fill][left]"
-					"$rowConstraints": "[fill]"
-				} ) {
-					name: "panel2"
-					auxiliary() {
-						"JavaCodeGenerator.variableLocal": true
-					}
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label1"
-						"text": "Nur Filme der letzten"
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 0 0,alignx center,growx 0"
-					} )
-					add( new FormComponent( "mediathek.gui.dialogEinstellungen.DaysSpinner" ) {
-						name: "jSpinnerDays"
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 1 0"
-					} )
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "label2"
-						"text": "Tage laden."
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 2 0,alignx center,growx 0"
-					} )
-					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "btnReloadFilmlist"
-						"toolTipText": "Filmliste jetzt aktualisieren"
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 3 0"
-					} )
-				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 					"$layoutConstraints": "insets 5,hidemode 3,gap 5 5"
 					"$columnConstraints": "[fill][fill][fill][fill]"
@@ -359,7 +362,7 @@ new FormModel {
 					} )
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 3 2 1,growx"
+				"value": "cell 0 4 2 1,growx"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"size": new java.awt.Dimension( 740, 515 )
