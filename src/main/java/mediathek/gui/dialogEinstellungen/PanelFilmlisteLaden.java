@@ -288,12 +288,12 @@ public class PanelFilmlisteLaden extends JPanel {
         jSpinnerDays = new JSpinner();
         var label2 = new JLabel();
         btnReloadFilmlist = new JButton();
-        var panel3 = new JPanel();
         var jPanel1 = new JPanel();
         cbSign = new JCheckBox();
         cbTrailer = new JCheckBox();
         cbAudio = new JCheckBox();
         cbLivestreams = new JCheckBox();
+        var panel3 = new JPanel();
         panel1 = new JPanel();
         checkBox1 = new JCheckBox();
         checkBox24 = new JCheckBox();
@@ -332,6 +332,7 @@ public class PanelFilmlisteLaden extends JPanel {
                 .size("640").grow().fill(), //NON-NLS
             // rows
             new AC()
+                .gap()
                 .gap()
                 .gap()
                 .gap()
@@ -432,44 +433,44 @@ public class PanelFilmlisteLaden extends JPanel {
         }
         add(panel2, new CC().cell(0, 3, 2, 1).growX());
 
+        //======== jPanel1 ========
+        {
+            jPanel1.setBorder(new TitledBorder("Zus\u00e4tzliche Filmdaten laden")); //NON-NLS
+            jPanel1.setToolTipText("<html>Alle nicht angew\u00e4hlten Eintr\u00e4ge werden beim Laden der Filmliste aus dem Endergebnis herausgefiltert.<br/><b>Die Eintr\u00e4ge werden dauerhaft aus der lokalen Filmliste entfernt.</b><br/>Sie werden erst wieder beim Laden einer neuen Liste vom Server hinzugef\u00fcgt wenn die Einstellungen entsprechend angepasst wurden.</html>"); //NON-NLS
+            jPanel1.setLayout(new MigLayout(
+                new LC().insets("5").hideMode(3).gridGap("5", "5"), //NON-NLS
+                // columns
+                new AC()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill(),
+                // rows
+                new AC()
+                    .fill()));
+
+            //---- cbSign ----
+            cbSign.setText("Geb\u00e4rdensprache"); //NON-NLS
+            jPanel1.add(cbSign, new CC().cell(2, 0));
+
+            //---- cbTrailer ----
+            cbTrailer.setText("Trailer/Teaser/Vorschau"); //NON-NLS
+            jPanel1.add(cbTrailer, new CC().cell(0, 0));
+
+            //---- cbAudio ----
+            cbAudio.setText("H\u00f6rfassungen"); //NON-NLS
+            jPanel1.add(cbAudio, new CC().cell(1, 0));
+
+            //---- cbLivestreams ----
+            cbLivestreams.setText("Livestreams"); //NON-NLS
+            jPanel1.add(cbLivestreams, new CC().cell(3, 0));
+        }
+        add(jPanel1, new CC().cell(0, 4, 2, 1).growX());
+
         //======== panel3 ========
         {
             panel3.setBorder(new TitledBorder("Einschr\u00e4nkungen f\u00fcr das Laden der Filmliste")); //NON-NLS
             panel3.setLayout(new VerticalLayout());
-
-            //======== jPanel1 ========
-            {
-                jPanel1.setBorder(new TitledBorder("Zus\u00e4tzliche Filmdaten laden")); //NON-NLS
-                jPanel1.setToolTipText("<html>Alle nicht angew\u00e4hlten Eintr\u00e4ge werden beim Laden der Filmliste aus dem Endergebnis herausgefiltert.<br/><b>Die Eintr\u00e4ge werden dauerhaft aus der lokalen Filmliste entfernt.</b><br/>Sie werden erst wieder beim Laden einer neuen Liste vom Server hinzugef\u00fcgt wenn die Einstellungen entsprechend angepasst wurden.</html>"); //NON-NLS
-                jPanel1.setLayout(new MigLayout(
-                    new LC().insets("5").hideMode(3).gridGap("5", "5"), //NON-NLS
-                    // columns
-                    new AC()
-                        .fill().gap()
-                        .fill().gap()
-                        .fill().gap()
-                        .fill(),
-                    // rows
-                    new AC()
-                        .fill()));
-
-                //---- cbSign ----
-                cbSign.setText("Geb\u00e4rdensprache"); //NON-NLS
-                jPanel1.add(cbSign, new CC().cell(2, 0));
-
-                //---- cbTrailer ----
-                cbTrailer.setText("Trailer/Teaser/Vorschau"); //NON-NLS
-                jPanel1.add(cbTrailer, new CC().cell(0, 0));
-
-                //---- cbAudio ----
-                cbAudio.setText("H\u00f6rfassungen"); //NON-NLS
-                jPanel1.add(cbAudio, new CC().cell(1, 0));
-
-                //---- cbLivestreams ----
-                cbLivestreams.setText("Livestreams"); //NON-NLS
-                jPanel1.add(cbLivestreams, new CC().cell(3, 0));
-            }
-            panel3.add(jPanel1);
 
             //======== panel1 ========
             {
@@ -599,7 +600,7 @@ public class PanelFilmlisteLaden extends JPanel {
             }
             panel3.add(panel1);
         }
-        add(panel3, new CC().cell(0, 4, 2, 1).growX());
+        add(panel3, new CC().cell(0, 5, 2, 1).growX());
 
         //---- buttonGroup1 ----
         var buttonGroup1 = new ButtonGroup();
