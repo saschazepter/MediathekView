@@ -13,6 +13,7 @@ import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
+import org.jdesktop.swingx.JXHeader;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -293,6 +294,9 @@ public class PanelFilmlisteLaden extends JPanel {
         cbAudio = new JCheckBox();
         cbLivestreams = new JCheckBox();
         panel1 = new JPanel();
+        scrollPane1 = new JScrollPane();
+        xHeader1 = new JXHeader();
+        panel3 = new JPanel();
         checkBox1 = new JCheckBox();
         checkBox24 = new JCheckBox();
         checkBox2 = new JCheckBox();
@@ -467,10 +471,10 @@ public class PanelFilmlisteLaden extends JPanel {
 
         //======== panel1 ========
         {
-            panel1.setBorder(new TitledBorder("Nur diese Sender laden (\u00c4nderungen erfordern Programmneustart und eine vollst\u00e4ndig neue Filmliste)")); //NON-NLS
+            panel1.setBorder(new TitledBorder("Nur diese Sender laden")); //NON-NLS
             panel1.setToolTipText("<html>Die Einstellungen beziehen sich auf den n\u00e4chsten <b>vollst\u00e4ndigen</b> Ladevorgang einer Fillmliste.<br>Es kann somit vorkommen dass die Aktualisierung erst nach Neustart des Programms <br><b>und dem Laden einer kompletten Liste vom Server</b> (keine DIFF-Liste!) sichtbar wird.<br><br>Hier ge\u00e4nderte Einstellungen werden in der Senderliste des Filterdialogs <b>erst nach Neustart</b> sichtbar!</html>"); //NON-NLS
             panel1.setLayout(new MigLayout(
-                new LC().insets("5").hideMode(3).alignX("left").gridGapX("10"), //NON-NLS
+                new LC().fillX().insets("5").hideMode(3).alignX("left").gridGapX("10"), //NON-NLS
                 // columns
                 new AC()
                     .fill().gap()
@@ -485,111 +489,128 @@ public class PanelFilmlisteLaden extends JPanel {
                     .gap()
                     .gap()
                     .gap()
+                    .gap()
                     ));
+
+            //======== scrollPane1 ========
+            {
+
+                //---- xHeader1 ----
+                xHeader1.setTitle("Neustart erforderlich"); //NON-NLS
+                xHeader1.setDescription("Alle \u00c4nderungen hier erfordern den Neustart der Applikation und ein erneutes Laden der Filmliste."); //NON-NLS
+                scrollPane1.setViewportView(xHeader1);
+            }
+            panel1.add(scrollPane1, new CC().cell(0, 0, 7, 1).alignY("center").grow(100, 0)); //NON-NLS
+
+            //======== panel3 ========
+            {
+                panel3.setLayout(new BorderLayout());
+            }
+            panel1.add(panel3, new CC().cell(0, 0, 7, 1));
 
             //---- checkBox1 ----
             checkBox1.setText("3Sat"); //NON-NLS
-            panel1.add(checkBox1, new CC().cell(0, 0));
+            panel1.add(checkBox1, new CC().cell(0, 1));
 
             //---- checkBox24 ----
             checkBox24.setText("ARTE.ES"); //NON-NLS
-            panel1.add(checkBox24, new CC().cell(1, 0));
+            panel1.add(checkBox24, new CC().cell(1, 1));
 
             //---- checkBox2 ----
             checkBox2.setText("BR"); //NON-NLS
-            panel1.add(checkBox2, new CC().cell(2, 0));
+            panel1.add(checkBox2, new CC().cell(2, 1));
 
             //---- checkBox13 ----
             checkBox13.setText("KiKA"); //NON-NLS
-            panel1.add(checkBox13, new CC().cell(3, 0));
+            panel1.add(checkBox13, new CC().cell(3, 1));
 
             //---- checkBox16 ----
             checkBox16.setText("PHOENIX"); //NON-NLS
-            panel1.add(checkBox16, new CC().cell(4, 0));
+            panel1.add(checkBox16, new CC().cell(4, 1));
 
             //---- checkBox19 ----
             checkBox19.setText("SRF"); //NON-NLS
-            panel1.add(checkBox19, new CC().cell(5, 0));
+            panel1.add(checkBox19, new CC().cell(5, 1));
 
             //---- checkBox22 ----
             checkBox22.setText("ZDF"); //NON-NLS
-            panel1.add(checkBox22, new CC().cell(6, 0));
+            panel1.add(checkBox22, new CC().cell(6, 1));
 
             //---- checkBox8 ----
             checkBox8.setText("ARD"); //NON-NLS
-            panel1.add(checkBox8, new CC().cell(0, 1));
+            panel1.add(checkBox8, new CC().cell(0, 2));
 
             //---- checkBox10 ----
             checkBox10.setText("ARTE.FR"); //NON-NLS
-            panel1.add(checkBox10, new CC().cell(1, 1));
+            panel1.add(checkBox10, new CC().cell(1, 2));
 
             //---- checkBox11 ----
             checkBox11.setText("DW"); //NON-NLS
-            panel1.add(checkBox11, new CC().cell(2, 1));
+            panel1.add(checkBox11, new CC().cell(2, 2));
 
             //---- checkBox3 ----
             checkBox3.setText("MDR"); //NON-NLS
-            panel1.add(checkBox3, new CC().cell(3, 1));
+            panel1.add(checkBox3, new CC().cell(3, 2));
 
             //---- checkBox4 ----
             checkBox4.setText("Radio Bremen TV"); //NON-NLS
-            panel1.add(checkBox4, new CC().cell(4, 1));
+            panel1.add(checkBox4, new CC().cell(4, 2));
 
             //---- checkBox5 ----
             checkBox5.setText("SRF.Podcast"); //NON-NLS
-            panel1.add(checkBox5, new CC().cell(5, 1));
+            panel1.add(checkBox5, new CC().cell(5, 2));
 
             //---- checkBox6 ----
             checkBox6.setText("ZDF-tivi"); //NON-NLS
-            panel1.add(checkBox6, new CC().cell(6, 1));
+            panel1.add(checkBox6, new CC().cell(6, 2));
 
             //---- checkBox9 ----
             checkBox9.setText("ARTE.DE"); //NON-NLS
-            panel1.add(checkBox9, new CC().cell(0, 2));
+            panel1.add(checkBox9, new CC().cell(0, 3));
 
             //---- checkBox25 ----
             checkBox25.setText("ARTE.IT"); //NON-NLS
-            panel1.add(checkBox25, new CC().cell(1, 2));
+            panel1.add(checkBox25, new CC().cell(1, 3));
 
             //---- checkBox7 ----
             checkBox7.setText("Funk.net"); //NON-NLS
-            panel1.add(checkBox7, new CC().cell(2, 2));
+            panel1.add(checkBox7, new CC().cell(2, 3));
 
             //---- checkBox14 ----
             checkBox14.setText("NDR"); //NON-NLS
-            panel1.add(checkBox14, new CC().cell(3, 2));
+            panel1.add(checkBox14, new CC().cell(3, 3));
 
             //---- checkBox17 ----
             checkBox17.setText("RBB"); //NON-NLS
-            panel1.add(checkBox17, new CC().cell(4, 2));
+            panel1.add(checkBox17, new CC().cell(4, 3));
 
             //---- checkBox20 ----
             checkBox20.setText("SWR"); //NON-NLS
-            panel1.add(checkBox20, new CC().cell(5, 2));
+            panel1.add(checkBox20, new CC().cell(5, 3));
 
             //---- checkBox23 ----
             checkBox23.setText("ARTE.EN"); //NON-NLS
-            panel1.add(checkBox23, new CC().cell(0, 3));
+            panel1.add(checkBox23, new CC().cell(0, 4));
 
             //---- checkBox26 ----
             checkBox26.setText("ARTE.PL"); //NON-NLS
-            panel1.add(checkBox26, new CC().cell(1, 3));
+            panel1.add(checkBox26, new CC().cell(1, 4));
 
             //---- checkBox12 ----
             checkBox12.setText("HR"); //NON-NLS
-            panel1.add(checkBox12, new CC().cell(2, 3));
+            panel1.add(checkBox12, new CC().cell(2, 4));
 
             //---- checkBox15 ----
             checkBox15.setText("ORF"); //NON-NLS
-            panel1.add(checkBox15, new CC().cell(3, 3));
+            panel1.add(checkBox15, new CC().cell(3, 4));
 
             //---- checkBox18 ----
             checkBox18.setText("SR"); //NON-NLS
-            panel1.add(checkBox18, new CC().cell(4, 3));
+            panel1.add(checkBox18, new CC().cell(4, 4));
 
             //---- checkBox21 ----
             checkBox21.setText("WDR"); //NON-NLS
-            panel1.add(checkBox21, new CC().cell(5, 3));
+            panel1.add(checkBox21, new CC().cell(5, 4));
         }
         add(panel1, new CC().cell(0, 5, 2, 1).growX());
 
@@ -614,6 +635,9 @@ public class PanelFilmlisteLaden extends JPanel {
     private JCheckBox cbAudio;
     private JCheckBox cbLivestreams;
     private JPanel panel1;
+    private JScrollPane scrollPane1;
+    private JXHeader xHeader1;
+    private JPanel panel3;
     private JCheckBox checkBox1;
     private JCheckBox checkBox24;
     private JCheckBox checkBox2;
