@@ -13,7 +13,6 @@ import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
-import org.jdesktop.swingx.VerticalLayout;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
@@ -293,7 +292,6 @@ public class PanelFilmlisteLaden extends JPanel {
         cbTrailer = new JCheckBox();
         cbAudio = new JCheckBox();
         cbLivestreams = new JCheckBox();
-        var panel3 = new JPanel();
         panel1 = new JPanel();
         checkBox1 = new JCheckBox();
         checkBox24 = new JCheckBox();
@@ -467,140 +465,133 @@ public class PanelFilmlisteLaden extends JPanel {
         }
         add(jPanel1, new CC().cell(0, 4, 2, 1).growX());
 
-        //======== panel3 ========
+        //======== panel1 ========
         {
-            panel3.setBorder(new TitledBorder("Einschr\u00e4nkungen f\u00fcr das Laden der Filmliste")); //NON-NLS
-            panel3.setLayout(new VerticalLayout());
+            panel1.setBorder(new TitledBorder("Nur diese Sender laden (\u00c4nderungen erfordern Programmneustart und eine vollst\u00e4ndig neue Filmliste)")); //NON-NLS
+            panel1.setToolTipText("<html>Die Einstellungen beziehen sich auf den n\u00e4chsten <b>vollst\u00e4ndigen</b> Ladevorgang einer Fillmliste.<br>Es kann somit vorkommen dass die Aktualisierung erst nach Neustart des Programms <br><b>und dem Laden einer kompletten Liste vom Server</b> (keine DIFF-Liste!) sichtbar wird.<br><br>Hier ge\u00e4nderte Einstellungen werden in der Senderliste des Filterdialogs <b>erst nach Neustart</b> sichtbar!</html>"); //NON-NLS
+            panel1.setLayout(new MigLayout(
+                new LC().insets("5").hideMode(3).alignX("left").gridGapX("10"), //NON-NLS
+                // columns
+                new AC()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill(),
+                // rows
+                new AC()
+                    .gap()
+                    .gap()
+                    .gap()
+                    ));
 
-            //======== panel1 ========
-            {
-                panel1.setBorder(new TitledBorder("Diese Sender laden (\u00c4nderungen erfordern Programmneustart und eine vollst\u00e4ndig neue Filmliste)")); //NON-NLS
-                panel1.setToolTipText("<html>Die Einstellungen beziehen sich auf den n\u00e4chsten <b>vollst\u00e4ndigen</b> Ladevorgang einer Fillmliste.<br>Es kann somit vorkommen dass die Aktualisierung erst nach Neustart des Programms <br><b>und dem Laden einer kompletten Liste vom Server</b> (keine DIFF-Liste!) sichtbar wird.<br><br>Hier ge\u00e4nderte Einstellungen werden in der Senderliste des Filterdialogs <b>erst nach Neustart</b> sichtbar!</html>"); //NON-NLS
-                panel1.setLayout(new MigLayout(
-                    new LC().insets("5").hideMode(3).alignX("left").gridGapX("10"), //NON-NLS
-                    // columns
-                    new AC()
-                        .fill().gap()
-                        .fill().gap()
-                        .fill().gap()
-                        .fill().gap()
-                        .fill().gap()
-                        .fill().gap()
-                        .fill(),
-                    // rows
-                    new AC()
-                        .gap()
-                        .gap()
-                        .gap()
-                        ));
+            //---- checkBox1 ----
+            checkBox1.setText("3Sat"); //NON-NLS
+            panel1.add(checkBox1, new CC().cell(0, 0));
 
-                //---- checkBox1 ----
-                checkBox1.setText("3Sat"); //NON-NLS
-                panel1.add(checkBox1, new CC().cell(0, 0));
+            //---- checkBox24 ----
+            checkBox24.setText("ARTE.ES"); //NON-NLS
+            panel1.add(checkBox24, new CC().cell(1, 0));
 
-                //---- checkBox24 ----
-                checkBox24.setText("ARTE.ES"); //NON-NLS
-                panel1.add(checkBox24, new CC().cell(1, 0));
+            //---- checkBox2 ----
+            checkBox2.setText("BR"); //NON-NLS
+            panel1.add(checkBox2, new CC().cell(2, 0));
 
-                //---- checkBox2 ----
-                checkBox2.setText("BR"); //NON-NLS
-                panel1.add(checkBox2, new CC().cell(2, 0));
+            //---- checkBox13 ----
+            checkBox13.setText("KiKA"); //NON-NLS
+            panel1.add(checkBox13, new CC().cell(3, 0));
 
-                //---- checkBox13 ----
-                checkBox13.setText("KiKA"); //NON-NLS
-                panel1.add(checkBox13, new CC().cell(3, 0));
+            //---- checkBox16 ----
+            checkBox16.setText("PHOENIX"); //NON-NLS
+            panel1.add(checkBox16, new CC().cell(4, 0));
 
-                //---- checkBox16 ----
-                checkBox16.setText("PHOENIX"); //NON-NLS
-                panel1.add(checkBox16, new CC().cell(4, 0));
+            //---- checkBox19 ----
+            checkBox19.setText("SRF"); //NON-NLS
+            panel1.add(checkBox19, new CC().cell(5, 0));
 
-                //---- checkBox19 ----
-                checkBox19.setText("SRF"); //NON-NLS
-                panel1.add(checkBox19, new CC().cell(5, 0));
+            //---- checkBox22 ----
+            checkBox22.setText("ZDF"); //NON-NLS
+            panel1.add(checkBox22, new CC().cell(6, 0));
 
-                //---- checkBox22 ----
-                checkBox22.setText("ZDF"); //NON-NLS
-                panel1.add(checkBox22, new CC().cell(6, 0));
+            //---- checkBox8 ----
+            checkBox8.setText("ARD"); //NON-NLS
+            panel1.add(checkBox8, new CC().cell(0, 1));
 
-                //---- checkBox8 ----
-                checkBox8.setText("ARD"); //NON-NLS
-                panel1.add(checkBox8, new CC().cell(0, 1));
+            //---- checkBox10 ----
+            checkBox10.setText("ARTE.FR"); //NON-NLS
+            panel1.add(checkBox10, new CC().cell(1, 1));
 
-                //---- checkBox10 ----
-                checkBox10.setText("ARTE.FR"); //NON-NLS
-                panel1.add(checkBox10, new CC().cell(1, 1));
+            //---- checkBox11 ----
+            checkBox11.setText("DW"); //NON-NLS
+            panel1.add(checkBox11, new CC().cell(2, 1));
 
-                //---- checkBox11 ----
-                checkBox11.setText("DW"); //NON-NLS
-                panel1.add(checkBox11, new CC().cell(2, 1));
+            //---- checkBox3 ----
+            checkBox3.setText("MDR"); //NON-NLS
+            panel1.add(checkBox3, new CC().cell(3, 1));
 
-                //---- checkBox3 ----
-                checkBox3.setText("MDR"); //NON-NLS
-                panel1.add(checkBox3, new CC().cell(3, 1));
+            //---- checkBox4 ----
+            checkBox4.setText("Radio Bremen TV"); //NON-NLS
+            panel1.add(checkBox4, new CC().cell(4, 1));
 
-                //---- checkBox4 ----
-                checkBox4.setText("Radio Bremen TV"); //NON-NLS
-                panel1.add(checkBox4, new CC().cell(4, 1));
+            //---- checkBox5 ----
+            checkBox5.setText("SRF.Podcast"); //NON-NLS
+            panel1.add(checkBox5, new CC().cell(5, 1));
 
-                //---- checkBox5 ----
-                checkBox5.setText("SRF.Podcast"); //NON-NLS
-                panel1.add(checkBox5, new CC().cell(5, 1));
+            //---- checkBox6 ----
+            checkBox6.setText("ZDF-tivi"); //NON-NLS
+            panel1.add(checkBox6, new CC().cell(6, 1));
 
-                //---- checkBox6 ----
-                checkBox6.setText("ZDF-tivi"); //NON-NLS
-                panel1.add(checkBox6, new CC().cell(6, 1));
+            //---- checkBox9 ----
+            checkBox9.setText("ARTE.DE"); //NON-NLS
+            panel1.add(checkBox9, new CC().cell(0, 2));
 
-                //---- checkBox9 ----
-                checkBox9.setText("ARTE.DE"); //NON-NLS
-                panel1.add(checkBox9, new CC().cell(0, 2));
+            //---- checkBox25 ----
+            checkBox25.setText("ARTE.IT"); //NON-NLS
+            panel1.add(checkBox25, new CC().cell(1, 2));
 
-                //---- checkBox25 ----
-                checkBox25.setText("ARTE.IT"); //NON-NLS
-                panel1.add(checkBox25, new CC().cell(1, 2));
+            //---- checkBox7 ----
+            checkBox7.setText("Funk.net"); //NON-NLS
+            panel1.add(checkBox7, new CC().cell(2, 2));
 
-                //---- checkBox7 ----
-                checkBox7.setText("Funk.net"); //NON-NLS
-                panel1.add(checkBox7, new CC().cell(2, 2));
+            //---- checkBox14 ----
+            checkBox14.setText("NDR"); //NON-NLS
+            panel1.add(checkBox14, new CC().cell(3, 2));
 
-                //---- checkBox14 ----
-                checkBox14.setText("NDR"); //NON-NLS
-                panel1.add(checkBox14, new CC().cell(3, 2));
+            //---- checkBox17 ----
+            checkBox17.setText("RBB"); //NON-NLS
+            panel1.add(checkBox17, new CC().cell(4, 2));
 
-                //---- checkBox17 ----
-                checkBox17.setText("RBB"); //NON-NLS
-                panel1.add(checkBox17, new CC().cell(4, 2));
+            //---- checkBox20 ----
+            checkBox20.setText("SWR"); //NON-NLS
+            panel1.add(checkBox20, new CC().cell(5, 2));
 
-                //---- checkBox20 ----
-                checkBox20.setText("SWR"); //NON-NLS
-                panel1.add(checkBox20, new CC().cell(5, 2));
+            //---- checkBox23 ----
+            checkBox23.setText("ARTE.EN"); //NON-NLS
+            panel1.add(checkBox23, new CC().cell(0, 3));
 
-                //---- checkBox23 ----
-                checkBox23.setText("ARTE.EN"); //NON-NLS
-                panel1.add(checkBox23, new CC().cell(0, 3));
+            //---- checkBox26 ----
+            checkBox26.setText("ARTE.PL"); //NON-NLS
+            panel1.add(checkBox26, new CC().cell(1, 3));
 
-                //---- checkBox26 ----
-                checkBox26.setText("ARTE.PL"); //NON-NLS
-                panel1.add(checkBox26, new CC().cell(1, 3));
+            //---- checkBox12 ----
+            checkBox12.setText("HR"); //NON-NLS
+            panel1.add(checkBox12, new CC().cell(2, 3));
 
-                //---- checkBox12 ----
-                checkBox12.setText("HR"); //NON-NLS
-                panel1.add(checkBox12, new CC().cell(2, 3));
+            //---- checkBox15 ----
+            checkBox15.setText("ORF"); //NON-NLS
+            panel1.add(checkBox15, new CC().cell(3, 3));
 
-                //---- checkBox15 ----
-                checkBox15.setText("ORF"); //NON-NLS
-                panel1.add(checkBox15, new CC().cell(3, 3));
+            //---- checkBox18 ----
+            checkBox18.setText("SR"); //NON-NLS
+            panel1.add(checkBox18, new CC().cell(4, 3));
 
-                //---- checkBox18 ----
-                checkBox18.setText("SR"); //NON-NLS
-                panel1.add(checkBox18, new CC().cell(4, 3));
-
-                //---- checkBox21 ----
-                checkBox21.setText("WDR"); //NON-NLS
-                panel1.add(checkBox21, new CC().cell(5, 3));
-            }
-            panel3.add(panel1);
+            //---- checkBox21 ----
+            checkBox21.setText("WDR"); //NON-NLS
+            panel1.add(checkBox21, new CC().cell(5, 3));
         }
-        add(panel3, new CC().cell(0, 5, 2, 1).growX());
+        add(panel1, new CC().cell(0, 5, 2, 1).growX());
 
         //---- buttonGroup1 ----
         var buttonGroup1 = new ButtonGroup();
