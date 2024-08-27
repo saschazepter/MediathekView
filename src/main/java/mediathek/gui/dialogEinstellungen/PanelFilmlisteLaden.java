@@ -38,12 +38,45 @@ public class PanelFilmlisteLaden extends JPanel {
         });
     }
 
+    private void loadSpinnerConfigValues() {
+        String s;
+        final int num_days = ApplicationConfiguration.getConfiguration().getInt(ApplicationConfiguration.FilmList.LOAD_NUM_DAYS, 0);
+        if (num_days == 0)
+            s = "Alle";
+        else
+            s = Integer.toString(num_days);
+
+        jSpinnerDays.setValue(s);
+    }
+
+    private void setupDaysSpinner() {
+        jSpinnerDays.setModel(new DaysSpinnerModel());
+        jSpinnerDays.addChangeListener(l -> {
+            String s = jSpinnerDays.getModel().getValue().toString();
+            if (s.equals("Alle")) {
+                s = "0";
+            }
+
+            int num_days;
+            try {
+                num_days = Integer.parseInt(s);
+            } catch (NumberFormatException e) {
+                num_days = 0;
+            }
+            ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.FilmList.LOAD_NUM_DAYS, num_days);
+        });
+        loadSpinnerConfigValues();
+    }
+
     public PanelFilmlisteLaden(boolean inSettingsDialog) {
         super();
 
         MessageBus.getMessageBus().subscribe(this);
 
         initComponents();
+
+        setupDaysSpinner();
+
         jButtonDateiAuswaehlen.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/folder-open.svg"));
         init();
         initReloadButton();
@@ -252,7 +285,7 @@ public class PanelFilmlisteLaden extends JPanel {
         var separator1 = new JSeparator();
         var panel2 = new JPanel();
         var label1 = new JLabel();
-        var jSpinnerDays = new DaysSpinner();
+        jSpinnerDays = new JSpinner();
         var label2 = new JLabel();
         btnReloadFilmlist = new JButton();
         var panel3 = new JPanel();
@@ -384,6 +417,9 @@ public class PanelFilmlisteLaden extends JPanel {
             //---- label1 ----
             label1.setText("Nur Filme der letzten"); //NON-NLS
             panel2.add(label1, new CC().cell(0, 0).alignX("center").growX(0)); //NON-NLS
+
+            //---- jSpinnerDays ----
+            jSpinnerDays.setModel(new SpinnerListModel());
             panel2.add(jSpinnerDays, new CC().cell(1, 0));
 
             //---- label2 ----
@@ -579,6 +615,7 @@ public class PanelFilmlisteLaden extends JPanel {
     private JCheckBox jCheckBoxUpdate;
     private JRadioButton jRadioButtonAuto;
     private JRadioButton jRadioButtonManuell;
+    private JSpinner jSpinnerDays;
     private JButton btnReloadFilmlist;
     private JCheckBox cbSign;
     private JCheckBox cbTrailer;

@@ -128,11 +128,9 @@ new FormModel {
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 0 0,alignx center,growx 0"
 				} )
-				add( new FormComponent( "mediathek.gui.dialogEinstellungen.DaysSpinner" ) {
+				add( new FormComponent( "javax.swing.JSpinner" ) {
 					name: "jSpinnerDays"
-					auxiliary() {
-						"JavaCodeGenerator.variableLocal": true
-					}
+					"model": new javax.swing.SpinnerListModel
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 1 0"
 				} )
