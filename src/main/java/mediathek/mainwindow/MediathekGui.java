@@ -27,6 +27,7 @@ import mediathek.gui.dialog.LoadFilmListDialog;
 import mediathek.gui.dialogEinstellungen.DialogEinstellungen;
 import mediathek.gui.duplicates.CommonStatsEvaluationTask;
 import mediathek.gui.duplicates.FilmDuplicateEvaluationTask;
+import mediathek.gui.duplicates.ZdfDuplicateEvictionTask;
 import mediathek.gui.duplicates.overview.FilmDuplicateOverviewDialog;
 import mediathek.gui.filmInformation.FilmInfoDialog;
 import mediathek.gui.history.ResetAboHistoryAction;
@@ -614,6 +615,7 @@ public class MediathekGui extends JFrame {
         if (evaluateDuplicates) {
             worker = worker.thenRun(new FilmDuplicateEvaluationTask());
         }
+        worker = worker.thenRun(new ZdfDuplicateEvictionTask());
 
         worker.thenRun(new CommonStatsEvaluationTask())
                 .thenRun(new RefreshAboWorker(progressLabel, progressBar))
