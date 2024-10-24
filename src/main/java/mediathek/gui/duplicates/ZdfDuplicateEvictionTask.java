@@ -6,7 +6,6 @@ import mediathek.daten.DatenFilm;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class ZdfDuplicateEvictionTask implements Runnable {
@@ -23,28 +22,34 @@ public class ZdfDuplicateEvictionTask implements Runnable {
                 .filter(DatenFilm::isDuplicate)
                 .filter(f -> f.getSender().equalsIgnoreCase("zdf"))
                 .toList();
-        var dreisat_list = listeFilme
+        var other_list = listeFilme
                 .parallelStream()
-                .filter(item -> item.getSender().equalsIgnoreCase("3sat"))
                 .toList();
-        ArrayList<DatenFilm> tbd_list = new ArrayList<>();
 
         zdf_list.forEach(zdf_film -> {
-            var list = dreisat_list
+            var list = other_list
                     .parallelStream()
-                    .filter(dreisat_film -> dreisat_film.getUrlNormalQuality().equals(zdf_film.getUrlNormalQuality())
-                            && dreisat_film.getHighQualityUrl().equals(zdf_film.getHighQualityUrl()))
+                    .filter(other_film -> other_film.getUrlNormalQuality().equals(zdf_film.getUrlNormalQuality())
+                            && other_film.getHighQualityUrl().equals(zdf_film.getHighQualityUrl())
+                            && other_film.getTitle().equalsIgnoreCase(zdf_film.getTitle())
+                    )
+                    .sorted(new BigSenderPenaltyComparator())
                     .toList();
 
-            if (list.size() == 1) {
-                tbd_list.add(zdf_film); // remove the zdf_film
-                evicted_films.getAndIncrement();
+            if (list.size() == 2) {
+                var tbd_film = list.getLast();
+                if (tbd_film.getSender().equalsIgnoreCase("zdf")) {
+                    listeFilme.remove(tbd_film);
+                    evicted_films.getAndIncrement();
+                }
+                else {
+                    logger.error("TBD film was NOT ZDF!");
+                }
             }
         });
-        listeFilme.removeAll(tbd_list);
+
         watch.stop();
         logger.trace("Evicted films: {}", evicted_films);
         logger.trace("ZDF eviction took: {}", watch);
-        tbd_list.clear();
     }
 }
