@@ -1,5 +1,7 @@
 package mediathek.daten;
 
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import mediathek.daten.abo.DatenAbo;
 import mediathek.javafx.bookmark.BookmarkData;
 import mediathek.tool.FileSize;
@@ -13,6 +15,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Optional;
@@ -97,6 +100,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     /**
      * URLs are considered compressed if they contain a '|'-symbol in the text.
      * They need to be decompressed before use.
+     *
      * @param requestedUrl the string to be checked.
      * @return true if url is compressed, false otherwise.
      */
@@ -123,8 +127,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
         //bail out early if there is nothing to split...
         if (dauer == null || dauer.isEmpty()) {
             filmLength = 0;
-        }
-        else {
+        } else {
             final String[] split = StringUtils.split(dauer, ':');
 
             try {
@@ -158,7 +161,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     public String getLowQualityUrl() {
-        return (String)dataMap.getOrDefault(MapKeys.LOW_QUALITY_URL, "");
+        return (String) dataMap.getOrDefault(MapKeys.LOW_QUALITY_URL, "");
     }
 
     public void setLowQualityUrl(@NotNull String url_low_quality) {
@@ -169,7 +172,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     public String getHighQualityUrl() {
-        return (String)dataMap.getOrDefault(MapKeys.HIGH_QUALITY_URL, "");
+        return (String) dataMap.getOrDefault(MapKeys.HIGH_QUALITY_URL, "");
     }
 
     public void setHighQualityUrl(@NotNull String urlHd) {
@@ -187,8 +190,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
         long datum_long;
         try {
             datum_long = Long.parseLong(datumLong);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.warn("Failed to parse datum long string: {}", datumLong);
             datum_long = 0;
         }
@@ -199,8 +201,17 @@ public class DatenFilm implements Comparable<DatenFilm> {
         return flags.contains(DatenFilmFlags.TRAILER_TEASER);
     }
 
+    public void setTrailerTeaser(boolean val) {
+        if (val) {
+            flags.add(DatenFilmFlags.TRAILER_TEASER);
+        } else {
+            flags.remove(DatenFilmFlags.TRAILER_TEASER);
+        }
+    }
+
     /**
      * Returns whether this film entry was already seen before and is hence a duplicate entry.
+     *
      * @return true if it was seen before, false otherwise.
      */
     public boolean isDuplicate() {
@@ -209,22 +220,14 @@ public class DatenFilm implements Comparable<DatenFilm> {
 
     /**
      * Set if this film entry has a URL that was seen before.
+     *
      * @param duplicate are we a duplicate?
      */
     public void setDuplicate(boolean duplicate) {
         if (duplicate) {
             flags.add(DatenFilmFlags.DUPLICATE);
-        }
-        else {
-            flags.remove(DatenFilmFlags.DUPLICATE);
-        }
-    }
-
-    public void setTrailerTeaser(boolean val) {
-        if (val) {
-            flags.add(DatenFilmFlags.TRAILER_TEASER);
         } else {
-            flags.remove(DatenFilmFlags.TRAILER_TEASER);
+            flags.remove(DatenFilmFlags.DUPLICATE);
         }
     }
 
@@ -274,7 +277,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
      * @return the original internal film number
      */
     public int getFilmNr() {
-        return (int)dataMap.get(MapKeys.FILM_NR);
+        return (int) dataMap.get(MapKeys.FILM_NR);
     }
 
     /**
@@ -307,14 +310,13 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     public String getWebsiteUrl() {
-        return (String)dataMap.getOrDefault(MapKeys.WEBSITE_URL, "");
+        return (String) dataMap.getOrDefault(MapKeys.WEBSITE_URL, "");
     }
 
     public void setWebsiteUrl(String link) {
         if (link == null || link.isEmpty()) {
             dataMap.remove(MapKeys.WEBSITE_URL);
-        }
-        else {
+        } else {
             dataMap.put(MapKeys.WEBSITE_URL, link);
         }
     }
@@ -367,6 +369,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
 
     /**
      * Return if the film has a subtitle (URL).
+     *
      * @return true if a downloadable subtitle is available.
      */
     public boolean hasSubtitle() {
@@ -420,10 +423,9 @@ public class DatenFilm implements Comparable<DatenFilm> {
     private void setupDatumFilm() {
         if (!getSendeDatum().isEmpty()) {
             // nur dann gibts ein Datum
-            long datum_long = (long)dataMap.getOrDefault(MapKeys.TEMP_DATUM_LONG, 0L);
+            long datum_long = (long) dataMap.getOrDefault(MapKeys.TEMP_DATUM_LONG, 0L);
             datumFilm = new DatumFilm(TimeUnit.MILLISECONDS.convert(datum_long, TimeUnit.SECONDS));
-            if (datum_long == 0)
-            {
+            if (datum_long == 0) {
                 setSendeDatum("");
                 setSendeZeit("");
             }
@@ -487,7 +489,13 @@ public class DatenFilm implements Comparable<DatenFilm> {
         return sender;
     }
 
+    private static final HashFunction hf = Hashing.murmur3_128();
     public void setSender(String sender) {
+        final var hc = hf.newHasher()
+                .putString(sender.toLowerCase(), StandardCharsets.UTF_8)
+                .hash();
+        setSenderHash(hc.padToLong());
+
         this.sender = sender;
     }
 
@@ -534,12 +542,12 @@ public class DatenFilm implements Comparable<DatenFilm> {
             return "";
         else {
             var duration = TimeUnit.MILLISECONDS.convert(filmLength, TimeUnit.SECONDS);
-            return DurationFormatUtils.formatDuration(duration,"HH:mm:ss", true);
+            return DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
         }
     }
 
     public String getUrlNormalQuality() {
-        return (String)dataMap.getOrDefault(MapKeys.NORMAL_QUALITY_URL, "");
+        return (String) dataMap.getOrDefault(MapKeys.NORMAL_QUALITY_URL, "");
     }
 
     public void setNormalQualityUrl(@NotNull String url_normal_quality) {
@@ -550,7 +558,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     public String getSubtitleUrl() {
-        return (String)dataMap.getOrDefault(MapKeys.SUBTITLE_URL,"");
+        return (String) dataMap.getOrDefault(MapKeys.SUBTITLE_URL, "");
     }
 
     public void setSubtitleUrl(@NotNull String urlSubtitle) {
@@ -591,9 +599,28 @@ public class DatenFilm implements Comparable<DatenFilm> {
         return dataMap.containsKey(MapKeys.BOOKMARK_DATA);
     }
 
-    enum MapKeys {FILM_NR, SUBTITLE_URL, WEBSITE_URL, LOW_QUALITY_URL, NORMAL_QUALITY_URL, HIGH_QUALITY_URL,
+    public long getSenderHash() {
+        return (long) dataMap.getOrDefault(MapKeys.HASH_SENDER, 0L);
+    }
+
+    public void setSenderHash(long hash) {
+        dataMap.put(MapKeys.HASH_SENDER, hash);
+    }
+
+    public void setUrlNormalHash(long hash) {
+        dataMap.put(MapKeys.HASH_URL_NORMAL, hash);
+    }
+    public long getUrlNormalHash() {
+        return (long)dataMap.getOrDefault(MapKeys.HASH_URL_NORMAL, 0L);
+    }
+
+    enum MapKeys {
+        FILM_NR, SUBTITLE_URL, WEBSITE_URL, LOW_QUALITY_URL, NORMAL_QUALITY_URL, HIGH_QUALITY_URL,
         BOOKMARK_DATA,
         ABO_DATA,
-        TEMP_DATUM_LONG
+        TEMP_DATUM_LONG,
+        HASH_SENDER,
+        HASH_URL_NORMAL,
+        HASH_URL_HQ
     }
 }

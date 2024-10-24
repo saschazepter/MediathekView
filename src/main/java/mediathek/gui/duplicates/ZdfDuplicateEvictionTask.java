@@ -1,11 +1,14 @@
 package mediathek.gui.duplicates;
 
 import com.google.common.base.Stopwatch;
+import com.google.common.hash.HashFunction;
+import com.google.common.hash.Hashing;
 import mediathek.config.Daten;
 import mediathek.daten.DatenFilm;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -18,15 +21,24 @@ public class ZdfDuplicateEvictionTask implements Runnable {
         AtomicLong evicted_films = new AtomicLong();
 
         Stopwatch watch = Stopwatch.createStarted();
+        HashFunction hf = Hashing.murmur3_128();
+        final var zdf_hash = hf.newHasher()
+                .putString("zdf", StandardCharsets.UTF_8)
+                .hash().padToLong();
+        final var dreisat_hash = hf.newHasher()
+                .putString("3sat", StandardCharsets.UTF_8)
+                .hash().padToLong();
+
+
         var listeFilme = Daten.getInstance().getListeFilme();
         var zdf_list = listeFilme.parallelStream()
                 .filter(DatenFilm::isDuplicate)
-                .filter(f -> f.getSender().equalsIgnoreCase("zdf"))
+                .filter(f -> f.getSenderHash() == zdf_hash)
                 .toList();
         var dreisat_list = Daten.getInstance().getListeFilme()
                 .parallelStream()
                 .filter(item -> !item.isLivestream())
-                .filter(item -> item.getSender().equalsIgnoreCase("3sat"))
+                .filter(item -> item.getSenderHash() == dreisat_hash)
                 .toList();
         ArrayList<DatenFilm> tbd_list = new ArrayList<>();
 
