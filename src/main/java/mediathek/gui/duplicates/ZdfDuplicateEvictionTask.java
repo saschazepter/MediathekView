@@ -43,8 +43,6 @@ public class ZdfDuplicateEvictionTask implements Runnable {
                 tbd_list.add(zdf_film); // remove the zdf_film
                 evicted_films.getAndIncrement();
             }
-            else
-                logger.warn("List size is {}", list.size());
         });
         listeFilme.removeAll(tbd_list);
         watch.stop();
