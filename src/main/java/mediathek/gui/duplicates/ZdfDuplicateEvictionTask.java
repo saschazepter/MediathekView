@@ -1,14 +1,11 @@
 package mediathek.gui.duplicates;
 
 import com.google.common.base.Stopwatch;
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
 import mediathek.config.Daten;
 import mediathek.daten.DatenFilm;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -21,27 +18,16 @@ public class ZdfDuplicateEvictionTask implements Runnable {
         AtomicLong evicted_films = new AtomicLong();
 
         Stopwatch watch = Stopwatch.createStarted();
-        HashFunction hf = Hashing.murmur3_128();
-        final var zdf_hash = hf.newHasher()
-                .putString("zdf", StandardCharsets.UTF_8)
-                .hash().padToLong();
-        final var dreisat_hash = hf.newHasher()
-                .putString("3sat", StandardCharsets.UTF_8)
-                .hash().padToLong();
-
-
         var listeFilme = Daten.getInstance().getListeFilme();
         var zdf_list = listeFilme.parallelStream()
                 .filter(DatenFilm::isDuplicate)
-                .filter(f -> f.getSenderHash() == zdf_hash)
+                .filter(f -> f.getSender().equalsIgnoreCase("zdf"))
                 .toList();
-        var dreisat_list = Daten.getInstance().getListeFilme()
+        var dreisat_list = listeFilme
                 .parallelStream()
-                .filter(item -> !item.isLivestream())
-                .filter(item -> item.getSenderHash() == dreisat_hash)
+                .filter(item -> item.getSender().equalsIgnoreCase("3sat"))
                 .toList();
         ArrayList<DatenFilm> tbd_list = new ArrayList<>();
-
 
         zdf_list.forEach(zdf_film -> {
             var list = dreisat_list
@@ -51,7 +37,6 @@ public class ZdfDuplicateEvictionTask implements Runnable {
                     .toList();
 
             if (list.size() == 1) {
-                //otherwise it will become too difficult to figure out what to remove
                 tbd_list.add(zdf_film); // remove the zdf_film
                 evicted_films.getAndIncrement();
             }

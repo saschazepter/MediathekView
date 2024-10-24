@@ -1,7 +1,5 @@
 package mediathek.daten;
 
-import com.google.common.hash.HashFunction;
-import com.google.common.hash.Hashing;
 import mediathek.daten.abo.DatenAbo;
 import mediathek.javafx.bookmark.BookmarkData;
 import mediathek.tool.FileSize;
@@ -15,7 +13,6 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.charset.StandardCharsets;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.Optional;
@@ -489,13 +486,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
         return sender;
     }
 
-    private static final HashFunction hf = Hashing.murmur3_128();
     public void setSender(String sender) {
-        final var hc = hf.newHasher()
-                .putString(sender.toLowerCase(), StandardCharsets.UTF_8)
-                .hash();
-        setSenderHash(hc.padToLong());
-
         this.sender = sender;
     }
 
@@ -599,28 +590,11 @@ public class DatenFilm implements Comparable<DatenFilm> {
         return dataMap.containsKey(MapKeys.BOOKMARK_DATA);
     }
 
-    public long getSenderHash() {
-        return (long) dataMap.getOrDefault(MapKeys.HASH_SENDER, 0L);
-    }
-
-    public void setSenderHash(long hash) {
-        dataMap.put(MapKeys.HASH_SENDER, hash);
-    }
-
-    public void setUrlNormalHash(long hash) {
-        dataMap.put(MapKeys.HASH_URL_NORMAL, hash);
-    }
-    public long getUrlNormalHash() {
-        return (long)dataMap.getOrDefault(MapKeys.HASH_URL_NORMAL, 0L);
-    }
-
     enum MapKeys {
         FILM_NR, SUBTITLE_URL, WEBSITE_URL, LOW_QUALITY_URL, NORMAL_QUALITY_URL, HIGH_QUALITY_URL,
         BOOKMARK_DATA,
         ABO_DATA,
         TEMP_DATUM_LONG,
-        HASH_SENDER,
-        HASH_URL_NORMAL,
-        HASH_URL_HQ
+        HASH_SENDER
     }
 }
