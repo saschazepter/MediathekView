@@ -110,11 +110,14 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
 
             final Predicate<DatenFilm> pred = createPredicate();
 
-            boolean filterDuplicates = ApplicationConfiguration.getConfiguration()
+            //TODO add config dialog setting
+            boolean filterBlacklistDuplicates = ApplicationConfiguration.getConfiguration()
                     .getBoolean(ApplicationConfiguration.BLACKLIST_FILTER_DUPLICATES, false);
+            //if we don't evaluate there will be no chance to filter here...
+            var evaluateDuplicates = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.FILM_EVALUATE_DUPLICATES, true);
 
             var stream = completeFilmList.parallelStream();
-            if (filterDuplicates) {
+            if (evaluateDuplicates && filterBlacklistDuplicates) {
                 stream = stream.filter(film -> !film.isDuplicate());
             }
             stream.filter(pred).forEachOrdered(filteredList::add);
