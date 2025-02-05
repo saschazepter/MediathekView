@@ -51,10 +51,6 @@ import mediathek.tool.listener.BeobTableHeader;
 import mediathek.tool.models.TModelFilm;
 import mediathek.tool.table.MVFilmTable;
 import net.engio.mbassy.listener.Handler;
-import net.miginfocom.layout.AC;
-import net.miginfocom.layout.CC;
-import net.miginfocom.layout.LC;
-import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -175,15 +171,7 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     private void createToolBars() {
-        JPanel toolBarPanel = new JPanel();
-        toolBarPanel.setLayout(new MigLayout(
-                new LC().insets("0").hideMode(3),
-                new AC()
-                        .fill().gap()
-                        .fill(),
-                new AC()
-        ));
-
+        JPanel toolBarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         add(toolBarPanel, BorderLayout.NORTH);
 
         var filmeToolBar = new JToolBar();
@@ -207,9 +195,8 @@ public class GuiFilme extends AGuiTabPanel {
 
         filmeToolBar.add(btnToggleFilterDialogVisibility);
 
-        toolBarPanel.add(filmeToolBar, new CC().cell(0, 0));
-        toolBarPanel.add(createBookmarksToolBar(), new CC().cell(1, 0));
-
+        toolBarPanel.add(filmeToolBar);
+        toolBarPanel.add(createBookmarksToolBar());
     }
 
     private @NotNull JToolBar createBookmarksToolBar() {
