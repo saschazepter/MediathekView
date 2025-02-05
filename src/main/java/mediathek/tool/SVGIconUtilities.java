@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class SVGIconUtilities {
     public static FlatSVGIcon createSVGIcon(@NotNull String resource) {
-        return createSVGIcon(resource, 15f);
+        return createSVGIcon(resource, 16f);
     }
 
     public static FlatSVGIcon createSVGIcon(@NotNull String resource, float height) {
