@@ -209,9 +209,21 @@ public class GuiFilme extends AGuiTabPanel {
         btn = new JButton("del");
         btn.setToolTipText("Ausgewählte Filme aus der Merkliste löschen");
         bookmarkToolBar.add(btn);
+
         btn = new JButton("del");
+        btn.addActionListener(l -> {
+            var list = Daten.getInstance().getListeFilmeNachBlackList().parallelStream()
+                            .filter(DatenFilm::isBookmarked).toList();
+            if (!list.isEmpty()) {
+                var bookmarkList = Daten.getInstance().getListeBookmarkList();
+                bookmarkList.checkAndBookmarkMovies(list);
+                bookmarkList.saveToFile();
+                repaint();
+            }
+        });
         btn.setToolTipText("Merkliste vollständig löschen");
         bookmarkToolBar.add(btn);
+
         ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(mediathekGui);
         bookmarkToolBar.add(manageBookmarkAction);
 
