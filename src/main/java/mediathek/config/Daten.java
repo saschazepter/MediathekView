@@ -134,14 +134,6 @@ public class Daten {
     }
 
     /**
-     * Load the stored bookmarkdata form JSON file
-     * into memory
-     */
-    public void loadBookMarkData() {
-        listeBookmarkList.loadFromFile(StandardLocations.getBookmarkFilePath());
-    }
-
-    /**
      * Return the number of milliseconds from today´s midnight.
      *
      * @return Number of milliseconds from today´s midnight.

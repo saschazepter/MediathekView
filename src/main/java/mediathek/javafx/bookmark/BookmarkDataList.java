@@ -9,6 +9,7 @@ import javafx.beans.Observable;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mediathek.config.Daten;
+import mediathek.config.StandardLocations;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.DatenFilm;
 import mediathek.daten.ListeFilme;
@@ -18,7 +19,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -42,8 +42,8 @@ public class BookmarkDataList
       daten.getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
         @Override
         public void fertig(ListenerFilmeLadenEvent event) {
-          Runnable r = () -> updateBookMarksFromFilmList();
-          new Thread(r).start();
+          //Thread.ofVirtual().start(() -> updateBookMarksFromFilmList());
+          updateBookMarksFromFilmList();
         }
       });
     }
@@ -159,11 +159,9 @@ public class BookmarkDataList
   
   /**
    * Load Bookmarklist from backup medium
-   * @param filePath: File to read from
-   * 
-   * TODO: Add File checks 
    */
-  public void loadFromFile(Path filePath) {
+  public void loadFromFile() {
+    var filePath = StandardLocations.getBookmarkFilePath();
     try (JsonParser parser = new MappingJsonFactory().createParser(filePath.toFile()))
     {
       JsonToken jToken;      
@@ -188,27 +186,24 @@ public class BookmarkDataList
 
   private static final Logger logger = LogManager.getLogger();
 
-  /**
-   * Save Bookmarklist to backup medium
-   * @param filePath: File to save to
-   */
-  public void saveToFile(Path filePath) {
+  public void saveToFile() {
+    var filePath = StandardLocations.getBookmarkFilePath();
+
     try (JsonGenerator jGenerator = new MappingJsonFactory().createGenerator(filePath.toFile(), JsonEncoding.UTF8).useDefaultPrettyPrinter())
     {
       jGenerator.writeStartObject();
-      jGenerator.writeFieldName("bookmarks"); 
+      jGenerator.writeFieldName("bookmarks");
       jGenerator.writeStartArray();
       for (BookmarkData bookmarkData : olist) {
         jGenerator.writeObject(bookmarkData);
-      } 
+      }
       jGenerator.writeEndArray();
-      jGenerator.writeEndObject(); 
+      jGenerator.writeEndObject();
     }
     catch (IOException e)
     {
       logger.warn("Could not save bookmarks to file {}, error {}", filePath.toString(), e.toString());
-    }
-  }
+    }}
   
   /**
    * Updates the seen state 
@@ -243,22 +238,23 @@ public class BookmarkDataList
    * and links the entries
    * Executed in background
    */
-  public void updateBookMarksFromFilmList() {
+  private void updateBookMarksFromFilmList() {
+    logger.trace("BEGIN updateBookMarksFromFilmList");
     Iterator<BookmarkData> iterator = olist.iterator();
     ListeFilme listefilme = Daten.getInstance().getListeFilme();
-    DatenFilm filmdata;
+
     while (iterator.hasNext()) {
       BookmarkData data = iterator.next();
-      filmdata = listefilme.getFilmByUrlAndSender(data.getUrl(), data.getSender());
+      var filmdata = listefilme.getFilmByUrlAndSender(data.getUrl(), data.getSender());
       if (filmdata != null) {
         data.setDatenFilm(filmdata);
         filmdata.setBookmark(data);   // Link backwards
       }
       else {
-        //data.setExpired();
         data.setDatenFilm(null);
       }
-    }      
+    }
+    logger.trace("END updateBookMarksFromFilmList");
   }
 
 }

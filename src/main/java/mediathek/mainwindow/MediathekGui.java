@@ -1174,7 +1174,7 @@ public class MediathekGui extends JFrame {
         }
 
         logger.trace("Save bookmark list.");
-        daten.getListeBookmarkList().saveToFile(StandardLocations.getBookmarkFilePath());
+        daten.getListeBookmarkList().saveToFile();
 
         // stop the download thread
         logger.trace("Stop Starter Thread.");
