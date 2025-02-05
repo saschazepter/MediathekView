@@ -54,6 +54,7 @@ import net.engio.mbassy.listener.Handler;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdesktop.swingx.HorizontalLayout;
 import org.jdesktop.swingx.VerticalLayout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -171,7 +172,7 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     private void createToolBars() {
-        JPanel toolBarPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        JPanel toolBarPanel = new JPanel(new HorizontalLayout());
         add(toolBarPanel, BorderLayout.NORTH);
 
         var filmeToolBar = new JToolBar();
