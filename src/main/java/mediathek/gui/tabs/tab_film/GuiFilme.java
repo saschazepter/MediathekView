@@ -226,10 +226,7 @@ public class GuiFilme extends AGuiTabPanel {
         btn.setToolTipText("Merkliste vollständig löschen");
         bookmarkToolBar.add(btn);
         ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(mediathekGui);
-        btn = new JButton();
-        btn.setAction(manageBookmarkAction);
-        btn.setText("");
-        bookmarkToolBar.add(btn);
+        bookmarkToolBar.add(manageBookmarkAction);
 
         return bookmarkToolBar;
     }
