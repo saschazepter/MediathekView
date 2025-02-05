@@ -42,8 +42,7 @@ public class BookmarkDataList
       daten.getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
         @Override
         public void fertig(ListenerFilmeLadenEvent event) {
-          //Thread.ofVirtual().start(() -> updateBookMarksFromFilmList());
-          updateBookMarksFromFilmList();
+          Thread.ofVirtual().start(() -> updateBookMarksFromFilmList());
         }
       });
     }
