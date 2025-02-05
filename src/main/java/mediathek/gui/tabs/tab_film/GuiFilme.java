@@ -203,6 +203,7 @@ public class GuiFilme extends AGuiTabPanel {
         var bookmarkToolBar = new JToolBar();
         bookmarkToolBar.setFloatable(true);
         bookmarkToolBar.setName("Merkliste");
+
         var btn = new JButton("add");
         btn.setToolTipText("Ausgewählte Filme in der Merkliste speichern");
         btn.addActionListener(l -> {
@@ -212,36 +213,54 @@ public class GuiFilme extends AGuiTabPanel {
                         .filter(f -> !f.isBookmarked())
                         .toList();
                 if (!tbdFilms.isEmpty()) {
-                    var bookmarkList = Daten.getInstance().getListeBookmarkList();
-                    bookmarkList.checkAndBookmarkMovies(tbdFilms);
-                    bookmarkList.saveToFile();
-                    repaint();
+                    updateBookmarkListAndRefresh(tbdFilms);
                 }
             }
         });
         bookmarkToolBar.add(btn);
         btn = new JButton("del");
         btn.setToolTipText("Ausgewählte Filme aus der Merkliste löschen");
+        btn.addActionListener(l -> {
+            var selectedFilms = getSelFilme();
+            if (!selectedFilms.isEmpty()) {
+                var tbdFilms = selectedFilms.parallelStream()
+                        .filter(DatenFilm::isBookmarked)
+                        .toList();
+                if (!tbdFilms.isEmpty()) {
+                    updateBookmarkListAndRefresh(tbdFilms);
+                }
+            }
+        });
         bookmarkToolBar.add(btn);
 
-        btn = new JButton("del");
+        btn = new JButton("rem");
+        btn.setToolTipText("Merkliste vollständig löschen");
         btn.addActionListener(l -> {
             var list = Daten.getInstance().getListeFilmeNachBlackList().parallelStream()
                             .filter(DatenFilm::isBookmarked).toList();
             if (!list.isEmpty()) {
-                var bookmarkList = Daten.getInstance().getListeBookmarkList();
-                bookmarkList.checkAndBookmarkMovies(list);
-                bookmarkList.saveToFile();
-                repaint();
+                updateBookmarkListAndRefresh(list);
             }
         });
-        btn.setToolTipText("Merkliste vollständig löschen");
         bookmarkToolBar.add(btn);
+        bookmarkToolBar.addSeparator();
 
         ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(mediathekGui);
         bookmarkToolBar.add(manageBookmarkAction);
 
         return bookmarkToolBar;
+    }
+
+    /**
+     * Convenience function to update bookmark list and refresh UI.
+     * @param filmList the data list
+     */
+    private void updateBookmarkListAndRefresh(List<DatenFilm> filmList)
+    {
+        var bookmarkList = Daten.getInstance().getListeBookmarkList();
+        bookmarkList.checkAndBookmarkMovies(filmList);
+        bookmarkList.saveToFile();
+        repaint();
     }
 
     @Handler
