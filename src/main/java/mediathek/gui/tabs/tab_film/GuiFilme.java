@@ -27,6 +27,7 @@ import mediathek.daten.blacklist.BlacklistRule;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
 import mediathek.gui.FilterSelectionComboBoxModel;
+import mediathek.gui.actions.ManageBookmarkAction;
 import mediathek.gui.actions.PlayFilmAction;
 import mediathek.gui.actions.UrlHyperlinkAction;
 import mediathek.gui.dialog.DialogAboNoSet;
@@ -50,6 +51,10 @@ import mediathek.tool.listener.BeobTableHeader;
 import mediathek.tool.models.TModelFilm;
 import mediathek.tool.table.MVFilmTable;
 import net.engio.mbassy.listener.Handler;
+import net.miginfocom.layout.AC;
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
+import net.miginfocom.swing.MigLayout;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -110,7 +115,6 @@ public class GuiFilme extends AGuiTabPanel {
     private final JCheckBoxMenuItem cbkShowDescription =
             new JCheckBoxMenuItem("Beschreibung anzeigen");
     private final SeenHistoryController historyController = new SeenHistoryController();
-    private final JToolBar toolBar = new JToolBar();
     private final JCheckBoxMenuItem cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
     private final PauseTransition zeitraumTransition = new PauseTransition(Duration.millis(250));
 
@@ -150,7 +154,7 @@ public class GuiFilme extends AGuiTabPanel {
 
         add(filmListScrollPane, BorderLayout.CENTER);
         createExtensionArea();
-        createToolBar();
+        createToolBars();
 
         // add film description panel
         extensionArea.add(descriptionTab);
@@ -170,28 +174,64 @@ public class GuiFilme extends AGuiTabPanel {
         setupActionListeners();
     }
 
-    private void createToolBar() {
-        add(toolBar, BorderLayout.NORTH);
+    private void createToolBars() {
+        JPanel toolBarPanel = new JPanel();
+        toolBarPanel.setLayout(new MigLayout(
+                new LC().insets("0").hideMode(3),
+                new AC()
+                        .fill().gap()
+                        .fill(),
+                new AC()
+        ));
 
-        toolBar.setFloatable(true);
-        toolBar.setName("Filme");
+        add(toolBarPanel, BorderLayout.NORTH);
 
-        toolBar.add(playFilmAction);
-        toolBar.add(saveFilmAction);
-        toolBar.add(bookmarkFilmAction);
-        toolBar.addSeparator();
+        var filmeToolBar = new JToolBar();
+        filmeToolBar.setFloatable(true);
+        filmeToolBar.setName("Filme");
+
+        filmeToolBar.add(playFilmAction);
+        filmeToolBar.add(saveFilmAction);
+        filmeToolBar.add(bookmarkFilmAction);
+        filmeToolBar.addSeparator();
 
         filterSelectionComboBox.setMaximumSize(new Dimension(150, 100));
         filterSelectionComboBox.setEditable(false);
         filterSelectionComboBox.setToolTipText("Aktiver Filter");
-        toolBar.add(filterSelectionComboBox);
-        toolBar.addSeparator();
+        filmeToolBar.add(filterSelectionComboBox);
+        filmeToolBar.addSeparator();
 
-        toolBar.add(new JLabel("Suche:"));
-        toolBar.add(searchField);
-        toolBar.addSeparator();
+        filmeToolBar.add(new JLabel("Suche:"));
+        filmeToolBar.add(searchField);
+        filmeToolBar.addSeparator();
 
-        toolBar.add(btnToggleFilterDialogVisibility);
+        filmeToolBar.add(btnToggleFilterDialogVisibility);
+
+        toolBarPanel.add(filmeToolBar, new CC().cell(0, 0));
+        toolBarPanel.add(createBookmarksToolBar(), new CC().cell(1, 0));
+
+    }
+
+    private @NotNull JToolBar createBookmarksToolBar() {
+        var bookmarkToolBar = new JToolBar();
+        bookmarkToolBar.setFloatable(true);
+        bookmarkToolBar.setName("Merkliste");
+        var btn = new JButton("add");
+        btn.setToolTipText("Ausgewählte Filme in der Merkliste speichern");
+        bookmarkToolBar.add(btn);
+        btn = new JButton("del");
+        btn.setToolTipText("Ausgewählte Filme aus der Merkliste löschen");
+        bookmarkToolBar.add(btn);
+        btn = new JButton("del");
+        btn.setToolTipText("Merkliste vollständig löschen");
+        bookmarkToolBar.add(btn);
+        ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(mediathekGui);
+        btn = new JButton();
+        btn.setAction(manageBookmarkAction);
+        btn.setText("");
+        bookmarkToolBar.add(btn);
+
+        return bookmarkToolBar;
     }
 
     @Handler
@@ -815,7 +855,7 @@ public class GuiFilme extends AGuiTabPanel {
         protected SearchControlFieldMode searchMode;
 
         public SearchField() {
-            super("", 20);
+            super("", 40);
             setMaximumSize(DEFAULT_DIMENSION);
 
             //show clear icon when text is entered
