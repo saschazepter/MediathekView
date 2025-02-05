@@ -205,6 +205,20 @@ public class GuiFilme extends AGuiTabPanel {
         bookmarkToolBar.setName("Merkliste");
         var btn = new JButton("add");
         btn.setToolTipText("Ausgewählte Filme in der Merkliste speichern");
+        btn.addActionListener(l -> {
+            var selectedFilms = getSelFilme();
+            if (!selectedFilms.isEmpty()) {
+                var tbdFilms = selectedFilms.parallelStream()
+                        .filter(f -> !f.isBookmarked())
+                        .toList();
+                if (!tbdFilms.isEmpty()) {
+                    var bookmarkList = Daten.getInstance().getListeBookmarkList();
+                    bookmarkList.checkAndBookmarkMovies(tbdFilms);
+                    bookmarkList.saveToFile();
+                    repaint();
+                }
+            }
+        });
         bookmarkToolBar.add(btn);
         btn = new JButton("del");
         btn.setToolTipText("Ausgewählte Filme aus der Merkliste löschen");
