@@ -100,28 +100,22 @@ public class GuiFilme extends AGuiTabPanel {
     public static boolean[] VISIBLE_COLUMNS = new boolean[DatenFilm.MAX_ELEM];
     public final PlayFilmAction playFilmAction = new PlayFilmAction(this);
     public final SaveFilmAction saveFilmAction = new SaveFilmAction();
+    public final CopyUrlToClipboardAction copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.HIGH_QUALITY);
+    public final CopyUrlToClipboardAction copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.NORMAL);
+    protected final JTabbedPane psetButtonsTab = new JTabbedPane();
     private final BookmarkAddFilmAction bookmarkAddFilmAction = new BookmarkAddFilmAction();
     private final BookmarkRemoveFilmAction bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction();
     private final BookmarkClearListAction bookmarkClearListAction = new BookmarkClearListAction();
     private final ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(mediathekGui);
-    public final CopyUrlToClipboardAction copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.HIGH_QUALITY);
-    public final CopyUrlToClipboardAction copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.NORMAL);
-    protected final JTabbedPane psetButtonsTab = new JTabbedPane();
     private final PauseTransition reloadTableDataTransition = new PauseTransition(Duration.millis(250d));
     private final MarkFilmAsSeenAction markFilmAsSeenAction = new MarkFilmAsSeenAction();
     private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
     private final JScrollPane filmListScrollPane = new JScrollPane();
     private final JPanel extensionArea = new JPanel();
-    private final JCheckBoxMenuItem cbkShowDescription =
-            new JCheckBoxMenuItem("Beschreibung anzeigen");
+    private final JCheckBoxMenuItem cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
     private final SeenHistoryController historyController = new SeenHistoryController();
     private final JCheckBoxMenuItem cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
     private final PauseTransition zeitraumTransition = new PauseTransition(Duration.millis(250));
-
-    public FilterActionPanel getFilterActionPanel() {
-        return filterActionPanel;
-    }
-
     /**
      * The JavaFx Film action popup panel.
      */
@@ -138,7 +132,6 @@ public class GuiFilme extends AGuiTabPanel {
      * We perform model filtering in the background the keep UI thread alive.
      */
     private ListenableFuture<TableModel> modelFuture;
-
     public GuiFilme(Daten aDaten, MediathekGui mediathekGui) {
         super();
         daten = aDaten;
@@ -174,6 +167,10 @@ public class GuiFilme extends AGuiTabPanel {
         setupActionListeners();
     }
 
+    public FilterActionPanel getFilterActionPanel() {
+        return filterActionPanel;
+    }
+
     private void createToolBars() {
         JPanel toolBarPanel = new JPanel(new HorizontalLayout());
         add(toolBarPanel, BorderLayout.NORTH);
@@ -200,30 +197,6 @@ public class GuiFilme extends AGuiTabPanel {
 
         toolBarPanel.add(filmeToolBar);
         toolBarPanel.add(createBookmarksToolBar());
-    }
-
-    private class BookmarkClearListAction extends AbstractAction {
-        public BookmarkClearListAction() {
-            putValue(Action.SHORT_DESCRIPTION, "Merkliste vollständig löschen");
-            putValue(Action.NAME, "Merkliste vollständig löschen");
-            putValue(Action.SMALL_ICON, SVGIconUtilities.createToolBarIcon("icons/fontawesome/file-circle-xmark.svg"));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            var res = JOptionPane.showConfirmDialog(mediathekGui,
-                    "Möchten Sie wirklich die Merkliste vollständig löschen?", Konstanten.PROGRAMMNAME, JOptionPane.YES_NO_OPTION);
-            if (res == JOptionPane.YES_OPTION) {
-                var daten = Daten.getInstance();
-                var list = daten.getListeFilmeNachBlackList().parallelStream()
-                        .filter(DatenFilm::isBookmarked).toList();
-                if (!list.isEmpty()) {
-                    updateBookmarkListAndRefresh(list);
-                }
-                //delete leftover items which have no corresponding DatenFilm objects anymore -> outdated
-                daten.getListeBookmarkList().clear();
-                JOptionPane.showMessageDialog(mediathekGui, "Merkliste wurde gelöscht.", Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
-            }        }
     }
 
     private @NotNull JToolBar createBookmarksToolBar() {
@@ -575,6 +548,7 @@ public class GuiFilme extends AGuiTabPanel {
             datenDownload.startDownload();
         }
     }
+
     /**
      * Download a single film via add download dialog.
      * @param datenFilm film of interest
@@ -832,6 +806,30 @@ public class GuiFilme extends AGuiTabPanel {
             final boolean visible = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.FilterDialog.VISIBLE, false);
             setSelected(visible);
         }
+    }
+
+    private class BookmarkClearListAction extends AbstractAction {
+        public BookmarkClearListAction() {
+            putValue(Action.SHORT_DESCRIPTION, "Merkliste vollständig löschen");
+            putValue(Action.NAME, "Merkliste vollständig löschen");
+            putValue(Action.SMALL_ICON, SVGIconUtilities.createToolBarIcon("icons/fontawesome/file-circle-xmark.svg"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            var res = JOptionPane.showConfirmDialog(mediathekGui,
+                    "Möchten Sie wirklich die Merkliste vollständig löschen?", Konstanten.PROGRAMMNAME, JOptionPane.YES_NO_OPTION);
+            if (res == JOptionPane.YES_OPTION) {
+                var daten = Daten.getInstance();
+                var list = daten.getListeFilmeNachBlackList().parallelStream()
+                        .filter(DatenFilm::isBookmarked).toList();
+                if (!list.isEmpty()) {
+                    updateBookmarkListAndRefresh(list);
+                }
+                //delete leftover items which have no corresponding DatenFilm objects anymore -> outdated
+                daten.getListeBookmarkList().clear();
+                JOptionPane.showMessageDialog(mediathekGui, "Merkliste wurde gelöscht.", Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
+            }        }
     }
 
     public class ToggleFilterDialogVisibilityAction extends AbstractAction {
