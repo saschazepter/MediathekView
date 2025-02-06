@@ -102,6 +102,8 @@ public class GuiFilme extends AGuiTabPanel {
     public final SaveFilmAction saveFilmAction = new SaveFilmAction();
     private final BookmarkAddFilmAction bookmarkAddFilmAction = new BookmarkAddFilmAction();
     private final BookmarkRemoveFilmAction bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction();
+    private final BookmarkClearListAction bookmarkClearListAction = new BookmarkClearListAction();
+    private final ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(mediathekGui);
     public final CopyUrlToClipboardAction copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.HIGH_QUALITY);
     public final CopyUrlToClipboardAction copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.NORMAL);
     protected final JTabbedPane psetButtonsTab = new JTabbedPane();
@@ -200,18 +202,15 @@ public class GuiFilme extends AGuiTabPanel {
         toolBarPanel.add(createBookmarksToolBar());
     }
 
-    private @NotNull JToolBar createBookmarksToolBar() {
-        var bookmarkToolBar = new JToolBar();
-        bookmarkToolBar.setFloatable(true);
-        bookmarkToolBar.setName("Merkliste");
+    private class BookmarkClearListAction extends AbstractAction {
+        public BookmarkClearListAction() {
+            putValue(Action.SHORT_DESCRIPTION, "Merkliste vollständig löschen");
+            putValue(Action.NAME, "Merkliste vollständig löschen");
+            putValue(Action.SMALL_ICON, SVGIconUtilities.createToolBarIcon("icons/fontawesome/file-circle-xmark.svg"));
+        }
 
-        bookmarkToolBar.add(bookmarkAddFilmAction);
-        bookmarkToolBar.add(bookmarkRemoveFilmAction);
-
-        var btn = new JButton();
-        btn.setToolTipText("Merkliste vollständig löschen");
-        btn.setIcon(SVGIconUtilities.createToolBarIcon("icons/fontawesome/file-circle-xmark.svg"));
-        btn.addActionListener(l -> {
+        @Override
+        public void actionPerformed(ActionEvent e) {
             var res = JOptionPane.showConfirmDialog(mediathekGui,
                     "Möchten Sie wirklich die Merkliste vollständig löschen?", Konstanten.PROGRAMMNAME, JOptionPane.YES_NO_OPTION);
             if (res == JOptionPane.YES_OPTION) {
@@ -224,12 +223,18 @@ public class GuiFilme extends AGuiTabPanel {
                 //delete leftover items which have no corresponding DatenFilm objects anymore -> outdated
                 daten.getListeBookmarkList().clear();
                 JOptionPane.showMessageDialog(mediathekGui, "Merkliste wurde gelöscht.", Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
-            }
-        });
-        bookmarkToolBar.add(btn);
-        bookmarkToolBar.addSeparator();
+            }        }
+    }
 
-        ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(mediathekGui);
+    private @NotNull JToolBar createBookmarksToolBar() {
+        var bookmarkToolBar = new JToolBar();
+        bookmarkToolBar.setFloatable(true);
+        bookmarkToolBar.setName("Merkliste");
+
+        bookmarkToolBar.add(bookmarkAddFilmAction);
+        bookmarkToolBar.add(bookmarkRemoveFilmAction);
+        bookmarkToolBar.add(bookmarkClearListAction);
+        bookmarkToolBar.addSeparator();
         bookmarkToolBar.add(manageBookmarkAction);
 
         return bookmarkToolBar;
@@ -255,6 +260,8 @@ public class GuiFilme extends AGuiTabPanel {
                 saveFilmAction.setEnabled(false);
                 bookmarkAddFilmAction.setEnabled(false);
                 bookmarkRemoveFilmAction.setEnabled(false);
+                bookmarkClearListAction.setEnabled(false);
+                manageBookmarkAction.setEnabled(false);
                 toggleFilterDialogVisibilityAction.setEnabled(false);
                 searchField.setEnabled(false);
                 filterSelectionComboBox.setEnabled(false);
@@ -265,6 +272,8 @@ public class GuiFilme extends AGuiTabPanel {
                 saveFilmAction.setEnabled(true);
                 bookmarkAddFilmAction.setEnabled(true);
                 bookmarkRemoveFilmAction.setEnabled(true);
+                bookmarkClearListAction.setEnabled(true);
+                manageBookmarkAction.setEnabled(true);
                 toggleFilterDialogVisibilityAction.setEnabled(true);
                 searchField.setEnabled(true);
                 if (e.fromSearchField)
