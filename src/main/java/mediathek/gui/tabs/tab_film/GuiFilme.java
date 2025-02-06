@@ -54,7 +54,6 @@ import net.engio.mbassy.listener.Handler;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdesktop.swingx.HorizontalLayout;
 import org.jdesktop.swingx.VerticalLayout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -111,7 +110,6 @@ public class GuiFilme extends AGuiTabPanel {
     private final MarkFilmAsSeenAction markFilmAsSeenAction = new MarkFilmAsSeenAction();
     private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
     private final JScrollPane filmListScrollPane = new JScrollPane();
-    private final JPanel toolBarPanel = new JPanel(new HorizontalLayout());
     private final JCheckBoxMenuItem cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
     private final SeenHistoryController historyController = new SeenHistoryController();
     private final JCheckBoxMenuItem cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
@@ -138,7 +136,6 @@ public class GuiFilme extends AGuiTabPanel {
         descriptionPanel = new FilmDescriptionPanel(this);
 
         setLayout(new BorderLayout());
-        add(toolBarPanel, BorderLayout.NORTH);
         add(filmListScrollPane, BorderLayout.CENTER);
         var extensionArea = new JPanel(new VerticalLayout());
         add(extensionArea, BorderLayout.SOUTH);
@@ -147,8 +144,6 @@ public class GuiFilme extends AGuiTabPanel {
             searchField = new LuceneSearchField();
         else
             searchField = new RegularSearchField();
-
-        createToolBars();
 
         // add film description panel
         extensionArea.add(descriptionTab);
@@ -160,6 +155,7 @@ public class GuiFilme extends AGuiTabPanel {
         setupPsetButtonsTab();
 
         filterActionPanel = new FilterActionPanel(btnToggleFilterDialogVisibility);
+        add(new FilmToolBar(), BorderLayout.NORTH);
 
         start_init();
         // register message bus handler
@@ -170,11 +166,6 @@ public class GuiFilme extends AGuiTabPanel {
 
     public FilterActionPanel getFilterActionPanel() {
         return filterActionPanel;
-    }
-
-    private void createToolBars() {
-        toolBarPanel.add(new FilmlistToolBar());
-        toolBarPanel.add(new BookmarkToolBar());
     }
 
     /**
@@ -767,11 +758,8 @@ public class GuiFilme extends AGuiTabPanel {
         }
     }
 
-    private class FilmlistToolBar extends JToolBar {
-        public FilmlistToolBar() {
-            setFloatable(true);
-            setName("Filme");
-
+    private class FilmToolBar extends JToolBar {
+        public FilmToolBar() {
             add(playFilmAction);
             add(saveFilmAction);
             addSeparator();
@@ -787,14 +775,8 @@ public class GuiFilme extends AGuiTabPanel {
             addSeparator();
 
             add(btnToggleFilterDialogVisibility);
-        }
-    }
 
-    private class BookmarkToolBar extends JToolBar {
-        public BookmarkToolBar() {
-            setFloatable(true);
-            setName("Merkliste");
-
+            addSeparator();
             add(bookmarkAddFilmAction);
             add(bookmarkRemoveFilmAction);
             addSeparator();
