@@ -100,7 +100,8 @@ public class GuiFilme extends AGuiTabPanel {
     public static boolean[] VISIBLE_COLUMNS = new boolean[DatenFilm.MAX_ELEM];
     public final PlayFilmAction playFilmAction = new PlayFilmAction(this);
     public final SaveFilmAction saveFilmAction = new SaveFilmAction();
-    public final BookmarkFilmAction bookmarkFilmAction = new BookmarkFilmAction();
+    private final BookmarkAddFilmAction bookmarkAddFilmAction = new BookmarkAddFilmAction();
+    private final BookmarkRemoveFilmAction bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction();
     public final CopyUrlToClipboardAction copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.HIGH_QUALITY);
     public final CopyUrlToClipboardAction copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.NORMAL);
     protected final JTabbedPane psetButtonsTab = new JTabbedPane();
@@ -181,7 +182,6 @@ public class GuiFilme extends AGuiTabPanel {
 
         filmeToolBar.add(playFilmAction);
         filmeToolBar.add(saveFilmAction);
-        filmeToolBar.add(bookmarkFilmAction);
         filmeToolBar.addSeparator();
 
         filterSelectionComboBox.setMaximumSize(new Dimension(150, 100));
@@ -205,45 +205,25 @@ public class GuiFilme extends AGuiTabPanel {
         bookmarkToolBar.setFloatable(true);
         bookmarkToolBar.setName("Merkliste");
 
-        var btn = new JButton();
-        btn.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/file-circle-plus.svg"));
-        btn.setToolTipText("Ausgewählte Filme in der Merkliste speichern");
-        btn.addActionListener(l -> {
-            var selectedFilms = getSelFilme();
-            if (!selectedFilms.isEmpty()) {
-                var tbdFilms = selectedFilms.parallelStream()
-                        .filter(f -> !f.isBookmarked())
-                        .toList();
-                if (!tbdFilms.isEmpty()) {
-                    updateBookmarkListAndRefresh(tbdFilms);
-                }
-            }
-        });
-        bookmarkToolBar.add(btn);
-        btn = new JButton();
-        btn.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/file-circle-minus.svg"));
-        btn.setToolTipText("Ausgewählte Filme aus der Merkliste löschen");
-        btn.addActionListener(l -> {
-            var selectedFilms = getSelFilme();
-            if (!selectedFilms.isEmpty()) {
-                var tbdFilms = selectedFilms.parallelStream()
-                        .filter(DatenFilm::isBookmarked)
-                        .toList();
-                if (!tbdFilms.isEmpty()) {
-                    updateBookmarkListAndRefresh(tbdFilms);
-                }
-            }
-        });
-        bookmarkToolBar.add(btn);
+        bookmarkToolBar.add(bookmarkAddFilmAction);
+        bookmarkToolBar.add(bookmarkRemoveFilmAction);
 
-        btn = new JButton();
+        var btn = new JButton();
         btn.setToolTipText("Merkliste vollständig löschen");
-        btn.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/file-circle-xmark.svg"));
+        btn.setIcon(SVGIconUtilities.createToolBarIcon("icons/fontawesome/file-circle-xmark.svg"));
         btn.addActionListener(l -> {
-            var list = Daten.getInstance().getListeFilmeNachBlackList().parallelStream()
-                            .filter(DatenFilm::isBookmarked).toList();
-            if (!list.isEmpty()) {
-                updateBookmarkListAndRefresh(list);
+            var res = JOptionPane.showConfirmDialog(mediathekGui,
+                    "Möchten Sie wirklich die Merkliste vollständig löschen?", Konstanten.PROGRAMMNAME, JOptionPane.YES_NO_OPTION);
+            if (res == JOptionPane.YES_OPTION) {
+                var daten = Daten.getInstance();
+                var list = daten.getListeFilmeNachBlackList().parallelStream()
+                        .filter(DatenFilm::isBookmarked).toList();
+                if (!list.isEmpty()) {
+                    updateBookmarkListAndRefresh(list);
+                }
+                //delete leftover items which have no corresponding DatenFilm objects anymore -> outdated
+                daten.getListeBookmarkList().clear();
+                JOptionPane.showMessageDialog(mediathekGui, "Merkliste wurde gelöscht.", Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
             }
         });
         bookmarkToolBar.add(btn);
@@ -273,7 +253,8 @@ public class GuiFilme extends AGuiTabPanel {
             SwingUtilities.invokeLater(() -> {
                 playFilmAction.setEnabled(false);
                 saveFilmAction.setEnabled(false);
-                bookmarkFilmAction.setEnabled(false);
+                bookmarkAddFilmAction.setEnabled(false);
+                bookmarkRemoveFilmAction.setEnabled(false);
                 toggleFilterDialogVisibilityAction.setEnabled(false);
                 searchField.setEnabled(false);
                 filterSelectionComboBox.setEnabled(false);
@@ -282,7 +263,8 @@ public class GuiFilme extends AGuiTabPanel {
             SwingUtilities.invokeLater(() -> {
                 playFilmAction.setEnabled(true);
                 saveFilmAction.setEnabled(true);
-                bookmarkFilmAction.setEnabled(true);
+                bookmarkAddFilmAction.setEnabled(true);
+                bookmarkRemoveFilmAction.setEnabled(true);
                 toggleFilterDialogVisibilityAction.setEnabled(true);
                 searchField.setEnabled(true);
                 if (e.fromSearchField)
@@ -361,7 +343,7 @@ public class GuiFilme extends AGuiTabPanel {
 
         menu.add(playFilmAction);
         menu.add(saveFilmAction);
-        menu.add(bookmarkFilmAction);
+        menu.add(bookmarkAddFilmAction);
         menu.addSeparator();
         menu.add(miMarkFilmAsSeen);
         menu.add(miMarkFilmAsUnseen);
@@ -426,7 +408,7 @@ public class GuiFilme extends AGuiTabPanel {
         final ActionMap actionMap = tabelle.getActionMap();
         actionMap.put(ACTION_MAP_KEY_PLAY_FILM, playFilmAction);
         actionMap.put(ACTION_MAP_KEY_SAVE_FILM, saveFilmAction);
-        actionMap.put(ACTION_MAP_KEY_BOOKMARK_FILM, bookmarkFilmAction);
+        actionMap.put(ACTION_MAP_KEY_BOOKMARK_FILM, bookmarkAddFilmAction);
         actionMap.put(ACTION_MAP_KEY_COPY_NORMAL_URL, copyNormalUrlToClipboardAction);
         actionMap.put(ACTION_MAP_KEY_COPY_HD_URL, copyHqUrlToClipboardAction);
         actionMap.put(ACTION_MAP_KEY_COPY_KLEIN_URL, new CopyUrlToClipboardAction(FilmResolution.Enum.LOW));
@@ -601,24 +583,6 @@ public class GuiFilme extends AGuiTabPanel {
                     filterActionPanel.isShowOnlyHighQuality() ? Optional.of(FilmResolution.Enum.HIGH_QUALITY) : Optional.empty();
             DialogAddDownload dialog = new DialogAddDownload(mediathekGui, datenFilm, pSet, res);
             dialog.setVisible(true);
-        }
-    }
-
-    private void bookmarkFilm() {
-        var movies = getSelFilme();
-        final long size = movies.size();
-        if (size > 250) {
-            var reply = JOptionPane.showConfirmDialog(this,
-                    String.format("Möchten Sie wirklich %d Einträge der Merkliste bearbeiten?%nDas Programm könnte während der Operation nicht reagieren.", size),
-                    Konstanten.PROGRAMMNAME,
-                    JOptionPane.YES_NO_OPTION);
-            if (reply == JOptionPane.YES_OPTION) {
-                daten.getListeBookmarkList().checkAndBookmarkMovies(movies);
-                repaint();
-            }
-        } else {
-            daten.getListeBookmarkList().checkAndBookmarkMovies(movies);
-            repaint();
         }
     }
 
@@ -1265,8 +1229,8 @@ public class GuiFilme extends AGuiTabPanel {
         }
     }
 
-    public class BookmarkFilmAction extends AbstractAction {
-        public BookmarkFilmAction() {
+    private class BookmarkAddFilmAction extends AbstractAction {
+        public BookmarkAddFilmAction() {
             KeyStroke keyStroke;
             if (SystemUtils.IS_OS_MAC_OSX) {
                 keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F8, GuiFunktionen.getPlatformControlKey());
@@ -1274,14 +1238,54 @@ public class GuiFilme extends AGuiTabPanel {
                 keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_B, GuiFunktionen.getPlatformControlKey());
             }
             putValue(Action.ACCELERATOR_KEY, keyStroke);
-            putValue(Action.SHORT_DESCRIPTION, "Film merken");
+            putValue(Action.SHORT_DESCRIPTION, "Ausgewählte Filme in der Merkliste speichern");
             putValue(Action.NAME, "Film merken");
-            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/bookmark.svg"));
+            putValue(Action.SMALL_ICON, SVGIconUtilities.createToolBarIcon("icons/fontawesome/file-circle-plus.svg"));
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            bookmarkFilm();
+            var selectedFilms = getSelFilme();
+            if (!selectedFilms.isEmpty()) {
+                var tbdFilms = selectedFilms.parallelStream()
+                        .filter(f -> !f.isBookmarked())
+                        .filter(f -> !f.isLivestream())
+                        .toList();
+                if (!tbdFilms.isEmpty()) {
+                    int res = JOptionPane.YES_OPTION;
+                    var listSize = tbdFilms.size();
+                    if (listSize > 250) {
+                        res = JOptionPane.showConfirmDialog(mediathekGui,
+                                String.format("Möchten Sie wirklich %d Einträge der Merkliste bearbeiten?%nDas Programm könnte während der Operation nicht reagieren.", listSize),
+                                Konstanten.PROGRAMMNAME,
+                                JOptionPane.YES_NO_OPTION);
+                    }
+                    if (res == JOptionPane.YES_OPTION) {
+                        updateBookmarkListAndRefresh(tbdFilms);
+                    }
+                }
+            }
+        }
+    }
+
+    private class BookmarkRemoveFilmAction extends AbstractAction {
+        public BookmarkRemoveFilmAction() {
+            putValue(Action.SHORT_DESCRIPTION, "Ausgewählte Filme aus der Merkliste löschen");
+            putValue(Action.NAME, "Ausgewählte Filme aus der Merkliste löschen");
+            putValue(Action.SMALL_ICON, SVGIconUtilities.createToolBarIcon("icons/fontawesome/file-circle-minus.svg"));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            var selectedFilms = getSelFilme();
+            if (!selectedFilms.isEmpty()) {
+                var tbdFilms = selectedFilms.parallelStream()
+                        .filter(DatenFilm::isBookmarked)
+                        .toList();
+                if (!tbdFilms.isEmpty()) {
+                    updateBookmarkListAndRefresh(tbdFilms);
+                }
+            }
         }
     }
 
@@ -1379,8 +1383,9 @@ public class GuiFilme extends AGuiTabPanel {
                     }
                     case DatenFilm.FILM_AUFZEICHNEN -> saveFilm(null);
                     case DatenFilm.FILM_MERKEN -> getCurrentlySelectedFilm().ifPresent(film -> {
-                        if (!film.isLivestream())
-                            bookmarkFilm();
+                        if (!film.isLivestream()) {
+                            bookmarkAddFilmAction.actionPerformed(null);
+                        }
                     });
                 }
             }
@@ -1398,7 +1403,7 @@ public class GuiFilme extends AGuiTabPanel {
             jPopupMenu.add(playFilmAction);
             jPopupMenu.add(saveFilmAction);
 
-            JMenuItem miBookmark = new JMenuItem(bookmarkFilmAction);
+            JMenuItem miBookmark = new JMenuItem(bookmarkAddFilmAction);
             jPopupMenu.add(miBookmark);
             jPopupMenu.addSeparator();
 
