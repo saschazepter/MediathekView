@@ -76,14 +76,8 @@ public class BookmarkDataList {
      *
      * @return number
      */
-    public int getSeenNbOfEntries() {
-        int count = 0;
-        for (BookmarkData d : olist) {
-            if (d.getSeen()) {
-                count++;
-            }
-        }
-        return count;
+    public long getSeenNbOfEntries() {
+        return olist.stream().filter(BookmarkData::getSeen).count();
     }
 
     /**

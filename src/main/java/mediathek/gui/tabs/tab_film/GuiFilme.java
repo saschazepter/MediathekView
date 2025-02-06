@@ -1255,17 +1255,7 @@ public class GuiFilme extends AGuiTabPanel {
                         .filter(f -> !f.isLivestream())
                         .toList();
                 if (!tbdFilms.isEmpty()) {
-                    int res = JOptionPane.YES_OPTION;
-                    var listSize = tbdFilms.size();
-                    if (listSize > 250) {
-                        res = JOptionPane.showConfirmDialog(mediathekGui,
-                                String.format("Möchten Sie wirklich %d Einträge der Merkliste bearbeiten?%nDas Programm könnte während der Operation nicht reagieren.", listSize),
-                                Konstanten.PROGRAMMNAME,
-                                JOptionPane.YES_NO_OPTION);
-                    }
-                    if (res == JOptionPane.YES_OPTION) {
-                        updateBookmarkListAndRefresh(tbdFilms);
-                    }
+                    updateBookmarkListAndRefresh(tbdFilms);
                 }
             }
         }
