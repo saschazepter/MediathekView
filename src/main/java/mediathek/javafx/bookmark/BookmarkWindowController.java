@@ -316,8 +316,8 @@ public class BookmarkWindowController implements Initializable {
 
     // create filtered and sortable list
     filteredBookmarkList = new FilteredList<>(listeBookmarkList.getObervableList(), p -> true);
-    SortedList<BookmarkData> slisteBookmarkList = new SortedList<>(filteredBookmarkList);
-    slisteBookmarkList.comparatorProperty().bind(tbBookmarks.comparatorProperty());
+    SortedList<BookmarkData> sortedBookmarkList = new SortedList<>(filteredBookmarkList);
+    sortedBookmarkList.comparatorProperty().bind(tbBookmarks.comparatorProperty());
 
     listeBookmarkList.getObervableList().addListener((ListChangeListener.Change<? extends BookmarkData> c) -> {
       while (c.next()) {
@@ -330,7 +330,7 @@ public class BookmarkWindowController implements Initializable {
       JavaFxUtils.invokeInFxThreadAndWait(this::updateDisplay);
     });
 
-    tbBookmarks.setItems(slisteBookmarkList);
+    tbBookmarks.setItems(sortedBookmarkList);
     tbBookmarks.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
     // Add listener to set button and context item state depending on selection
