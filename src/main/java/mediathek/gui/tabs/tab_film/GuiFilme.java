@@ -106,12 +106,11 @@ public class GuiFilme extends AGuiTabPanel {
     private final BookmarkAddFilmAction bookmarkAddFilmAction = new BookmarkAddFilmAction();
     private final BookmarkRemoveFilmAction bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction();
     private final BookmarkClearListAction bookmarkClearListAction = new BookmarkClearListAction();
-    private final ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(mediathekGui);
+    private final ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(MediathekGui.ui());
     private final PauseTransition reloadTableDataTransition = new PauseTransition(Duration.millis(250d));
     private final MarkFilmAsSeenAction markFilmAsSeenAction = new MarkFilmAsSeenAction();
     private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
     private final JScrollPane filmListScrollPane = new JScrollPane();
-    private final JPanel extensionArea = new JPanel();
     private final JPanel toolBarPanel = new JPanel(new HorizontalLayout());
     private final JCheckBoxMenuItem cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
     private final SeenHistoryController historyController = new SeenHistoryController();
@@ -141,13 +140,14 @@ public class GuiFilme extends AGuiTabPanel {
         setLayout(new BorderLayout());
         add(toolBarPanel, BorderLayout.NORTH);
         add(filmListScrollPane, BorderLayout.CENTER);
+        var extensionArea = new JPanel(new VerticalLayout());
+        add(extensionArea, BorderLayout.SOUTH);
 
         if (daten.getListeFilmeNachBlackList() instanceof IndexedFilmList)
             searchField = new LuceneSearchField();
         else
             searchField = new RegularSearchField();
 
-        createExtensionArea();
         createToolBars();
 
         // add film description panel
@@ -249,11 +249,6 @@ public class GuiFilme extends AGuiTabPanel {
                 onComponentShown();
             }
         });
-    }
-
-    private void createExtensionArea() {
-        extensionArea.setLayout(new VerticalLayout());
-        add(extensionArea, BorderLayout.SOUTH);
     }
 
     public void installViewMenuEntry(JMenu jMenuAnsicht) {
@@ -536,7 +531,7 @@ public class GuiFilme extends AGuiTabPanel {
     /**
      * If necessary instantiate and show the bookmark window
      */
-    public void showBookmarkWindow() {
+    public void showManageBookmarkWindow() {
         Platform.runLater(() -> {
             if (bookmarkWindowController.isEmpty()) {
                 bookmarkWindowController = Optional.of(new BookmarkWindowController());
