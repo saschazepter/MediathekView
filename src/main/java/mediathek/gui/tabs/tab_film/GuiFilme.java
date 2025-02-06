@@ -112,6 +112,7 @@ public class GuiFilme extends AGuiTabPanel {
     private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
     private final JScrollPane filmListScrollPane = new JScrollPane();
     private final JPanel extensionArea = new JPanel();
+    private final JPanel toolBarPanel = new JPanel(new HorizontalLayout());
     private final JCheckBoxMenuItem cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
     private final SeenHistoryController historyController = new SeenHistoryController();
     private final JCheckBoxMenuItem cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
@@ -133,19 +134,19 @@ public class GuiFilme extends AGuiTabPanel {
      */
     private ListenableFuture<TableModel> modelFuture;
     public GuiFilme(Daten aDaten, MediathekGui mediathekGui) {
-        super();
         daten = aDaten;
         this.mediathekGui = mediathekGui;
         descriptionPanel = new FilmDescriptionPanel(this);
+
+        setLayout(new BorderLayout());
+        add(toolBarPanel, BorderLayout.NORTH);
+        add(filmListScrollPane, BorderLayout.CENTER);
 
         if (daten.getListeFilmeNachBlackList() instanceof IndexedFilmList)
             searchField = new LuceneSearchField();
         else
             searchField = new RegularSearchField();
 
-        setLayout(new BorderLayout());
-
-        add(filmListScrollPane, BorderLayout.CENTER);
         createExtensionArea();
         createToolBars();
 
@@ -172,45 +173,8 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     private void createToolBars() {
-        JPanel toolBarPanel = new JPanel(new HorizontalLayout());
-        add(toolBarPanel, BorderLayout.NORTH);
-
-        var filmeToolBar = new JToolBar();
-        filmeToolBar.setFloatable(true);
-        filmeToolBar.setName("Filme");
-
-        filmeToolBar.add(playFilmAction);
-        filmeToolBar.add(saveFilmAction);
-        filmeToolBar.addSeparator();
-
-        filterSelectionComboBox.setMaximumSize(new Dimension(150, 100));
-        filterSelectionComboBox.setEditable(false);
-        filterSelectionComboBox.setToolTipText("Aktiver Filter");
-        filmeToolBar.add(filterSelectionComboBox);
-        filmeToolBar.addSeparator();
-
-        filmeToolBar.add(new JLabel("Suche:"));
-        filmeToolBar.add(searchField);
-        filmeToolBar.addSeparator();
-
-        filmeToolBar.add(btnToggleFilterDialogVisibility);
-
-        toolBarPanel.add(filmeToolBar);
-        toolBarPanel.add(createBookmarksToolBar());
-    }
-
-    private @NotNull JToolBar createBookmarksToolBar() {
-        var bookmarkToolBar = new JToolBar();
-        bookmarkToolBar.setFloatable(true);
-        bookmarkToolBar.setName("Merkliste");
-
-        bookmarkToolBar.add(bookmarkAddFilmAction);
-        bookmarkToolBar.add(bookmarkRemoveFilmAction);
-        bookmarkToolBar.add(bookmarkClearListAction);
-        bookmarkToolBar.addSeparator();
-        bookmarkToolBar.add(manageBookmarkAction);
-
-        return bookmarkToolBar;
+        toolBarPanel.add(new FilmlistToolBar());
+        toolBarPanel.add(new BookmarkToolBar());
     }
 
     /**
@@ -805,6 +769,43 @@ public class GuiFilme extends AGuiTabPanel {
             setText("");
             final boolean visible = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.FilterDialog.VISIBLE, false);
             setSelected(visible);
+        }
+    }
+
+    private class FilmlistToolBar extends JToolBar {
+        public FilmlistToolBar() {
+            setFloatable(true);
+            setName("Filme");
+
+            add(playFilmAction);
+            add(saveFilmAction);
+            addSeparator();
+
+            filterSelectionComboBox.setMaximumSize(new Dimension(150, 100));
+            filterSelectionComboBox.setEditable(false);
+            filterSelectionComboBox.setToolTipText("Aktiver Filter");
+            add(filterSelectionComboBox);
+            addSeparator();
+
+            add(new JLabel("Suche:"));
+            add(searchField);
+            addSeparator();
+
+            add(btnToggleFilterDialogVisibility);
+        }
+    }
+
+    private class BookmarkToolBar extends JToolBar {
+        public BookmarkToolBar() {
+            setFloatable(true);
+            setName("Merkliste");
+
+            add(bookmarkAddFilmAction);
+            add(bookmarkRemoveFilmAction);
+            addSeparator();
+            add(bookmarkClearListAction);
+            addSeparator();
+            add(manageBookmarkAction);
         }
     }
 
