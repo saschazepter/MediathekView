@@ -21,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -217,7 +216,7 @@ public class BookmarkDataList {
      */
     private BookmarkData findMovieInList(DatenFilm movie) {
         BookmarkData result = null;
-        for (BookmarkData data : olist) {
+        for (var data : olist) {
             if (data.getDatenFilm() != null && data.getDatenFilm().equals(movie)) {
                 result = data;
                 break;
@@ -233,11 +232,9 @@ public class BookmarkDataList {
      */
     private void updateBookMarksFromFilmList() {
         logger.trace("BEGIN updateBookMarksFromFilmList");
-        Iterator<BookmarkData> iterator = olist.iterator();
         ListeFilme listefilme = Daten.getInstance().getListeFilme();
 
-        while (iterator.hasNext()) {
-            BookmarkData data = iterator.next();
+        for (var data : olist) {
             var filmdata = listefilme.getFilmByUrlAndSender(data.getUrl(), data.getSender());
             if (filmdata != null) {
                 data.setDatenFilm(filmdata);
