@@ -141,6 +141,8 @@ public class PanelFilmlisteLaden extends JPanel {
         senderCbList.add(checkBox24);
         senderCbList.add(checkBox25);
         senderCbList.add(checkBox26);
+        senderCbList.add(checkBox27);
+        senderCbList.add(checkBox28);
     }
 
     private boolean warningDialogShown;
@@ -292,12 +294,14 @@ public class PanelFilmlisteLaden extends JPanel {
         checkBox14 = new JCheckBox();
         checkBox17 = new JCheckBox();
         checkBox20 = new JCheckBox();
+        checkBox27 = new JCheckBox();
         checkBox23 = new JCheckBox();
         checkBox26 = new JCheckBox();
         checkBox12 = new JCheckBox();
         checkBox15 = new JCheckBox();
         checkBox18 = new JCheckBox();
         checkBox21 = new JCheckBox();
+        checkBox28 = new JCheckBox();
 
         //======== this ========
         setPreferredSize(new Dimension(740, 506));
@@ -557,6 +561,10 @@ public class PanelFilmlisteLaden extends JPanel {
                 checkBox20.setText("SWR"); //NON-NLS
                 panel1.add(checkBox20, new CC().cell(5, 2));
 
+                //---- checkBox27 ----
+                checkBox27.setText("ARD-alpha"); //NON-NLS
+                panel1.add(checkBox27, new CC().cell(6, 2));
+
                 //---- checkBox23 ----
                 checkBox23.setText("ARTE.EN"); //NON-NLS
                 panel1.add(checkBox23, new CC().cell(0, 3));
@@ -580,6 +588,10 @@ public class PanelFilmlisteLaden extends JPanel {
                 //---- checkBox21 ----
                 checkBox21.setText("WDR"); //NON-NLS
                 panel1.add(checkBox21, new CC().cell(5, 3));
+
+                //---- checkBox28 ----
+                checkBox28.setText("ONE"); //NON-NLS
+                panel1.add(checkBox28, new CC().cell(6, 3));
             }
             panel3.add(panel1);
         }
@@ -626,11 +638,13 @@ public class PanelFilmlisteLaden extends JPanel {
     private JCheckBox checkBox14;
     private JCheckBox checkBox17;
     private JCheckBox checkBox20;
+    private JCheckBox checkBox27;
     private JCheckBox checkBox23;
     private JCheckBox checkBox26;
     private JCheckBox checkBox12;
     private JCheckBox checkBox15;
     private JCheckBox checkBox18;
     private JCheckBox checkBox21;
+    private JCheckBox checkBox28;
     // End of variables declaration//GEN-END:variables
 }
