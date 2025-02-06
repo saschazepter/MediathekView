@@ -1387,7 +1387,10 @@ public class GuiFilme extends AGuiTabPanel {
                     case DatenFilm.FILM_AUFZEICHNEN -> saveFilm(null);
                     case DatenFilm.FILM_MERKEN -> getCurrentlySelectedFilm().ifPresent(film -> {
                         if (!film.isLivestream()) {
-                            bookmarkAddFilmAction.actionPerformed(null);
+                            if (film.isBookmarked())
+                                bookmarkRemoveFilmAction.actionPerformed(null);
+                            else
+                                bookmarkAddFilmAction.actionPerformed(null);
                         }
                     });
                 }
