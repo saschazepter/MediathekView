@@ -161,7 +161,7 @@ public class BookmarkDataList {
                 }
             }
         } catch (Exception e) {
-            logger.warn("Could not read bookmarks from file {}, error {} => file ignored", filePath.toString(), e.getMessage());
+            logger.error("Could not read bookmarks from file {}, error {} => file ignored", filePath.toString(), e.getMessage());
         }
 
         //sanity check if someone added way too many bookmarks
@@ -182,7 +182,7 @@ public class BookmarkDataList {
             jGenerator.writeEndArray();
             jGenerator.writeEndObject();
         } catch (IOException e) {
-            logger.warn("Could not save bookmarks to file {}, error {}", filePath.toString(), e.toString());
+            logger.error("Could not save bookmarks to file {}, error {}", filePath.toString(), e.toString());
         }
     }
 
@@ -231,7 +231,6 @@ public class BookmarkDataList {
      * Executed in background
      */
     private void updateBookMarksFromFilmList() {
-        logger.trace("BEGIN updateBookMarksFromFilmList");
         ListeFilme listefilme = Daten.getInstance().getListeFilme();
 
         for (var data : olist) {
@@ -243,7 +242,6 @@ public class BookmarkDataList {
                 data.setDatenFilm(null);
             }
         }
-        logger.trace("END updateBookMarksFromFilmList");
     }
 
 }
