@@ -78,7 +78,7 @@ public class Daten {
     private Daten() {
         filmeLaden = new FilmeLaden(this);
 
-        listeBookmarkList = BookmarkDataList.getInstance(this);
+        listeBookmarkList = new BookmarkDataList(this);
 
         listePset = new ListePset();
 
