@@ -1246,7 +1246,7 @@ public class GuiFilme extends AGuiTabPanel {
             }
             putValue(Action.ACCELERATOR_KEY, keyStroke);
             putValue(Action.SHORT_DESCRIPTION, "Ausgewählte Filme in der Merkliste speichern");
-            putValue(Action.NAME, "Film merken");
+            putValue(Action.NAME, "Ausgewählte Filme merken");
             putValue(Action.SMALL_ICON, SVGIconUtilities.createToolBarIcon("icons/fontawesome/file-circle-plus.svg"));
         }
 
