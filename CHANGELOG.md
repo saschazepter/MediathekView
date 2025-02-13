@@ -19,6 +19,7 @@
 - **BUGFIX:** Moderne Suche unterstützt nun die Suche mit *special characters*.
 - **BUGFIX(macOS):** Darstellungsfehler beim Wechsel Dark-/Lightmode wurde behoben.
 - **BUGFIX:** *Filme/Film merken* wurde in *Filme/Ausgewählte Filme merken* umbenannt.
+- **BUGFIX:** *Film abspielen* Toolbar Button ist nur noch aktiv wenn keine Mehrfachauswahl in der Filmliste aktiv ist.
 - **FEATURE(Linux/Windows):** Das Aussehen von FlatLaf kann in `.mediathek3/flatlaf` angepasst werden.
 - **FEATURE:** Selektierte Einträge in `Suchhistorie bearbeiten`-Dialog können nun mittels Entfernen-Taste gelöscht werden.
 - **FEATURE:** Das Blacklist Filter-Icon in der Toolbar kann mittels *Einstellungen/Allgemein* mit einem aussagefähigen Zusatztext dargestellt werden.
