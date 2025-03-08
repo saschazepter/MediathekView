@@ -634,12 +634,23 @@ public class GuiFilme extends AGuiTabPanel {
         zeitraumTransition.setOnFinished(e -> {
             // reset sender filter first
             filterActionPanel.getViewSettingsPane().senderCheckList.getCheckModel().clearChecks();
-            try {
-                SwingUtilities.invokeAndWait(() -> daten.getListeBlacklist().filterListe());
-            } catch (InterruptedException | InvocationTargetException ex) {
-                logger.error("Failed to filter list", ex);
-            }
-            reloadTableDataTransition.playFromStart();
+            MessageBus.getMessageBus().publishAsync(new FilterZeitraumEvent());
+        });
+    }
+
+    private static class FilterZeitraumEvent extends BaseEvent {}
+
+    private static class ReloadTableEvent extends BaseEvent {}
+    @Handler
+    private void handleReloadTableEvent(ReloadTableEvent e) {
+        Platform.runLater(reloadTableDataTransition::playFromStart);
+    }
+
+    @Handler
+    private void handleFilterZeitraumEvent(FilterZeitraumEvent e) {
+        SwingUtilities.invokeLater(() -> {
+            daten.getListeBlacklist().filterListe();
+            MessageBus.getMessageBus().publish(new ReloadTableEvent());
         });
     }
 
