@@ -667,7 +667,8 @@ public class GuiFilme extends AGuiTabPanel {
                 }
             });
 
-            filterActionPanel.zeitraumProperty().addListener((ov, oV, nV) -> zeitraumTransition.playFromStart());
+            filterActionPanel.zeitraumProperty()
+                    .addListener((ov, oV, nV) -> zeitraumTransition.playFromStart());
 
             filterActionPanel.getViewSettingsPane().themaComboBox.setOnAction(e -> {
                 if (!filterActionPanel.getViewSettingsPane().themaComboBox.getItems().isEmpty()) {
