@@ -421,16 +421,6 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     @Handler
-    private void handleAboListChanged(AboListChangedEvent e) {
-        Platform.runLater(reloadTableDataTransition::playFromStart);
-    }
-
-    @Handler
-    private void handleBlacklistChangedEvent(BlacklistChangedEvent e) {
-        Platform.runLater(reloadTableDataTransition::playFromStart);
-    }
-
-    @Handler
     private void handleStartEvent(StartEvent msg) {
         SwingUtilities.invokeLater(this::updateStartInfoProperty);
     }
@@ -640,7 +630,10 @@ public class GuiFilme extends AGuiTabPanel {
 
     private static class FilterZeitraumEvent extends BaseEvent {}
 
-    private static class ReloadTableDataEvent extends BaseEvent {}
+    /**
+     * Update table data when receiving ReloadTableDataEvent or subclasses of it.
+     * @param e event
+     */
     @Handler
     private void handleReloadTableDataEvent(ReloadTableDataEvent e) {
         Platform.runLater(reloadTableDataTransition::playFromStart);
