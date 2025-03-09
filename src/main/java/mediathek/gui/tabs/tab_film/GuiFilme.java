@@ -405,7 +405,7 @@ public class GuiFilme extends AGuiTabPanel {
     private void handleDownloadHistoryChangedEvent(DownloadHistoryChangedEvent e) {
         SwingUtilities.invokeLater(() -> {
             if (filterActionPanel.isShowUnseenOnly()) {
-                Platform.runLater(reloadTableDataTransition::playFromStart);
+                MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
             } else {
                 tabelle.fireTableDataChanged(true);
             }
@@ -634,15 +634,15 @@ public class GuiFilme extends AGuiTabPanel {
         zeitraumTransition.setOnFinished(e -> {
             // reset sender filter first
             filterActionPanel.getViewSettingsPane().senderCheckList.getCheckModel().clearChecks();
-            MessageBus.getMessageBus().publishAsync(new FilterZeitraumEvent());
+            MessageBus.getMessageBus().publish(new FilterZeitraumEvent());
         });
     }
 
     private static class FilterZeitraumEvent extends BaseEvent {}
 
-    private static class ReloadTableEvent extends BaseEvent {}
+    private static class ReloadTableDataEvent extends BaseEvent {}
     @Handler
-    private void handleReloadTableEvent(ReloadTableEvent e) {
+    private void handleReloadTableDataEvent(ReloadTableDataEvent e) {
         Platform.runLater(reloadTableDataTransition::playFromStart);
     }
 
@@ -650,7 +650,7 @@ public class GuiFilme extends AGuiTabPanel {
     private void handleFilterZeitraumEvent(FilterZeitraumEvent e) {
         SwingUtilities.invokeLater(() -> {
             daten.getListeBlacklist().filterListe();
-            MessageBus.getMessageBus().publish(new ReloadTableEvent());
+            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
     }
 
