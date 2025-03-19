@@ -20,7 +20,6 @@ public class FilterConfiguration {
     private static final Logger LOG = LoggerFactory.getLogger(FilterConfiguration.class);
     private static final CopyOnWriteArraySet<Runnable> availableFiltersChangedCallbacks = new CopyOnWriteArraySet<>();
     private static final CopyOnWriteArraySet<Consumer<FilterDTO>> currentFilterChangedCallbacks = new CopyOnWriteArraySet<>();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
     private final Configuration configuration;
 
 
@@ -238,6 +237,7 @@ public class FilterConfiguration {
 
     public FilterConfiguration setCheckedChannels(Set<String> newList) {
         try {
+            var objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(newList);
             configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_CHECKED_CHANNELS.getKey()), json);
 
@@ -267,6 +267,7 @@ public class FilterConfiguration {
 
     private Set<String> parseJsonToSet(String json) {
         try {
+            var objectMapper = new ObjectMapper();
             return objectMapper.readValue(json, new TypeReference<Set<String>>() {
             });
         } catch (Exception e) {
