@@ -236,21 +236,7 @@ public class FilterActionPanel {
             }
         });
 
-        viewSettingsPane.setFilterSelectionStringConverter(new StringConverter<>() {
-
-            @Override
-            public String toString(FilterDTO filter) {
-                if (filter == null) {
-                    return null;
-                }
-                return filter.name();
-            }
-
-            @Override
-            public FilterDTO fromString(String name) {
-                return filterConfig.findFilterForName(name).orElseGet(() -> renameCurrentFilter(name));
-            }
-        });
+        viewSettingsPane.setFilterSelectionStringConverter(new FilterStringConverter());
     }
 
     private FilterDTO renameCurrentFilter(String newValue) {
@@ -465,5 +451,18 @@ public class FilterActionPanel {
             sourceThemaList.add(aktuellesThema);
         }
         viewSettingsPane.themaComboBox.setValue(aktuellesThema);
+    }
+
+    private class FilterStringConverter extends StringConverter<FilterDTO> {
+
+        @Override
+        public String toString(FilterDTO filter) {
+            return filter == null ? null : filter.name();
+        }
+
+        @Override
+        public FilterDTO fromString(String name) {
+            return filterConfig.findFilterForName(name).orElseGet(() -> renameCurrentFilter(name));
+        }
     }
 }
