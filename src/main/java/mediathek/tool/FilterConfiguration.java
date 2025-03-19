@@ -22,6 +22,7 @@ public class FilterConfiguration {
     private static final CopyOnWriteArraySet<Consumer<FilterDTO>> currentFilterChangedCallbacks = new CopyOnWriteArraySet<>();
     private final Configuration configuration;
 
+
     public FilterConfiguration() {
         this(ApplicationConfiguration.getConfiguration());
     }
