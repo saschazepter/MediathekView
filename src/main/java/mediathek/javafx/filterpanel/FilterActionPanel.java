@@ -100,7 +100,7 @@ public class FilterActionPanel {
     }
 
     public FilmLengthSliderValues getFilmLengthSliderValues() {
-        return new FilmLengthSliderValues((long)filmLengthSlider.getLowValue(), (long)filmLengthSlider.getHighValue());
+        return new FilmLengthSliderValues((long) filmLengthSlider.getLowValue(), (long) filmLengthSlider.getHighValue());
     }
 
     public ReadOnlyObjectProperty<String> zeitraumProperty() {
@@ -287,14 +287,11 @@ public class FilterActionPanel {
                             filterConfig.setThema(thema);
                             config.unlock(LockMode.WRITE);
                             logger.trace("Renamed filter \"{}\" to \"{}\"", fltName, fName);
-                        }
-                        else
+                        } else
                             logger.warn("New and old filter name are identical...doing nothing");
-                    }
-                    else
+                    } else
                         logger.warn("Rename filter text was empty...doing nothing");
-                }
-                else
+                } else
                     logger.trace("User cancelled rename");
             });
         });
