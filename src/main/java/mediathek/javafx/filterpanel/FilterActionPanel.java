@@ -368,14 +368,20 @@ public class FilterActionPanel {
             logger.debug("Beim wiederherstellen der Filter Einstellungen für den Zeitraum ist ein Fehler aufgetreten!", exception);
         }
 
+        restoreSenderList();
+    }
+
+    private void restoreSenderList() {
         try {
             Set<String> checkedChannels = filterConfig.getCheckedChannels();
             Object[] channelArray = checkedChannels.toArray();
-            viewSettingsPane.senderCheckList.getCheckModel().clearChecks();
+            final var checkModel = viewSettingsPane.senderCheckList.getCheckModel();
+            checkModel.clearChecks();
+            final var senderItems = viewSettingsPane.senderCheckList.getItems();
             for (var item : channelArray) {
-                String sender = item.toString();
-                if (viewSettingsPane.senderCheckList.getItems().contains(sender)) {
-                    viewSettingsPane.senderCheckList.getCheckModel().check(sender);
+                final String sender = item.toString();
+                if (senderItems.contains(sender)) {
+                    checkModel.check(sender);
                 }
             }
         } catch (Exception exception) {
