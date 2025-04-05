@@ -22,7 +22,7 @@ import javax.swing.*;
 
 public class SwingZeitraumSpinner extends JSpinner {
     public SwingZeitraumSpinner() {
-        super(new SpinnerNumberModel(0, -1, 365, 1));
+        super(new SpinnerNumberModel(0, 0, 365, 1));
         ((DefaultEditor) getEditor()).getTextField().setFormatterFactory(new ZeitraumSpinnerFormatterFactory());
     }
 }
