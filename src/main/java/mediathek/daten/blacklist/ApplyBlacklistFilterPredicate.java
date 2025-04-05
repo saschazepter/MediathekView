@@ -3,7 +3,6 @@ package mediathek.daten.blacklist;
 import mediathek.config.MVConfig;
 import mediathek.daten.DatenFilm;
 import mediathek.tool.Filter;
-import org.apache.commons.lang3.StringUtils;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,7 +52,7 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
     }
 
     protected String[] mySplit(final String inputString) {
-        final String[] pTitle = StringUtils.split(inputString, ',');
+        final String[] pTitle = inputString.split(",");
         if (pTitle.length == 0)
             return EMPTY_STRING;
         else
