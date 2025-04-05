@@ -2,7 +2,6 @@ package mediathek.javafx.filterpanel;
 
 import com.formdev.flatlaf.FlatLaf;
 import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
 import javafx.scene.Scene;
 import mediathek.config.Daten;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
@@ -23,8 +22,8 @@ import java.awt.event.KeyEvent;
 import java.util.NoSuchElementException;
 
 public class OldSwingJavaFxFilterDialog extends JDialog {
-    private final JFXPanel fxPanel = new JFXPanel();
     private final JToggleButton filterToggleButton;
+    public final SwingFilterContentPane swingFilterContentPane = new SwingFilterContentPane();
     private Scene scene;
 
     public OldSwingJavaFxFilterDialog(Frame owner, CommonViewSettingsPane content, @NotNull JToggleButton filterToggleButton) {
@@ -37,11 +36,11 @@ public class OldSwingJavaFxFilterDialog extends JDialog {
         setDefaultCloseOperation(HIDE_ON_CLOSE);
         setTitle("Filter");
         setType(Type.UTILITY);
-        setContentPane(fxPanel);
+        setContentPane(swingFilterContentPane);
         Platform.runLater(() -> {
             scene = new Scene(content);
             setupJavaFxDarkMode();
-            fxPanel.setScene(scene);
+            swingFilterContentPane.fxPanel.setScene(scene);
             SwingUtilities.invokeLater(() -> {
                 pack();
                 restoreWindowSizeFromConfig();
@@ -57,14 +56,14 @@ public class OldSwingJavaFxFilterDialog extends JDialog {
             public void start(ListenerFilmeLadenEvent event) {
                 final boolean enabled = false;
                 setEnabled(enabled);
-                fxPanel.setEnabled(enabled);
+                swingFilterContentPane.fxPanel.setEnabled(enabled);
             }
 
             @Override
             public void fertig(ListenerFilmeLadenEvent event) {
                 final boolean enabled = true;
                 setEnabled(enabled);
-                fxPanel.setEnabled(enabled);
+                swingFilterContentPane.fxPanel.setEnabled(enabled);
             }
         });
     }
