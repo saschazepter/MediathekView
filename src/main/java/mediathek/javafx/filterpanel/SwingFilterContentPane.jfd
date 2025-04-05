@@ -4,9 +4,9 @@ new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-			"$layoutConstraints": "insets 5,hidemode 3"
+			"$layoutConstraints": "fillx,insets 5,hidemode 3"
 			"$columnConstraints": "[grow,left]"
-			"$rowConstraints": "[grow][shrink 0]"
+			"$rowConstraints": "[grow][][fill]0[]"
 		} ) {
 			name: "this"
 			add( new FormComponent( "javafx.embed.swing.JFXPanel" ) {
@@ -18,6 +18,11 @@ new FormModel {
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 0,grow"
+			} )
+			add( new FormComponent( "javax.swing.JSeparator" ) {
+				name: "separator1"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 1,growx"
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$columnConstraints": "[fill][fill][grow,left]"
@@ -34,6 +39,10 @@ new FormModel {
 				add( new FormComponent( "mediathek.javafx.filterpanel.zeitraum.SwingZeitraumSpinner" ) {
 					name: "spinner1"
 					"preferredSize": new java.awt.Dimension( 150, 30 )
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 1
+						"JavaCodeGenerator.variableName": "zeitraumSpinner"
+					}
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 1 0,growx"
 				} )
@@ -44,7 +53,7 @@ new FormModel {
 					"value": "cell 2 0"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 1,growx"
+				"value": "cell 0 3,growx"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )

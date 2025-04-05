@@ -26,7 +26,7 @@ public class OldSwingJavaFxFilterDialog extends JDialog {
     public final SwingFilterContentPane swingFilterContentPane = new SwingFilterContentPane();
     private Scene scene;
 
-    public OldSwingJavaFxFilterDialog(Frame owner, CommonViewSettingsPane content, @NotNull JToggleButton filterToggleButton) {
+    public OldSwingJavaFxFilterDialog(Frame owner, CommonViewSettingsPane commonViewSettingsPane, @NotNull JToggleButton filterToggleButton) {
         super(owner);
         this.filterToggleButton = filterToggleButton;
 
@@ -38,7 +38,7 @@ public class OldSwingJavaFxFilterDialog extends JDialog {
         setType(Type.UTILITY);
         setContentPane(swingFilterContentPane);
         Platform.runLater(() -> {
-            scene = new Scene(content);
+            scene = new Scene(commonViewSettingsPane);
             setupJavaFxDarkMode();
             swingFilterContentPane.fxPanel.setScene(scene);
             SwingUtilities.invokeLater(() -> {

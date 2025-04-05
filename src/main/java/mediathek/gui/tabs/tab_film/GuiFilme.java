@@ -658,20 +658,20 @@ public class GuiFilme extends AGuiTabPanel {
                 }
             });
 
-            filterActionPanel.getViewSettingsPane().zeitraumSpinner.valueProperty()
-                    .addListener((ov, oV, nV) -> SwingUtilities.invokeLater(() -> {
-                        if (!zeitraumTimer.isRunning())
-                            zeitraumTimer.start();
-                        else
-                            zeitraumTimer.restart();
-                    }));
-
             filterActionPanel.getViewSettingsPane().themaComboBox.setOnAction(e -> {
                 if (!filterActionPanel.getViewSettingsPane().themaComboBox.getItems().isEmpty()) {
                     MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
                 }
             });
         });
+
+        filterActionPanel.getFilterDialog().swingFilterContentPane.zeitraumSpinner.addChangeListener(l -> {
+            if (!zeitraumTimer.isRunning())
+                zeitraumTimer.start();
+            else
+                zeitraumTimer.restart();
+        });
+
     }
 
     @Override

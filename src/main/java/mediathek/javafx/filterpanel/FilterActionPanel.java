@@ -16,6 +16,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.util.StringConverter;
 import mediathek.config.Daten;
+import mediathek.javafx.filterpanel.zeitraum.ZeitraumSpinnerFormatter;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import org.apache.commons.configuration2.Configuration;
@@ -48,7 +49,7 @@ public class FilterActionPanel {
      * The JavaFX list based on {@link #sourceThemaList}.
      */
     private final EventObservableList<String> observableThemaList = new EventObservableList<>(new EventListWithEmptyFirstEntry(sourceThemaList));
-    private OldSwingJavaFxFilterDialog filterDialog;
+    private final OldSwingJavaFxFilterDialog filterDialog;
     private RangeSlider filmLengthSlider;
     private BooleanProperty dontShowAudioVersions;
     private BooleanProperty dontShowSignLanguage;
@@ -80,7 +81,8 @@ public class FilterActionPanel {
         setupDeleteFilterButton();
         setupRenameFilterButton();
 
-        SwingUtilities.invokeLater(() -> filterDialog = new OldSwingJavaFxFilterDialog(MediathekGui.ui(), viewSettingsPane, filterToggleBtn));
+        //SwingUtilities.invokeLater(() -> filterDialog = new OldSwingJavaFxFilterDialog(MediathekGui.ui(), viewSettingsPane, filterToggleBtn));
+        filterDialog = new OldSwingJavaFxFilterDialog(MediathekGui.ui(), viewSettingsPane, filterToggleBtn);
 
         restoreConfigSettings();
         ObservableList<String> senderList = FXCollections.observableArrayList(filterConfig.getCheckedChannels());
@@ -289,7 +291,13 @@ public class FilterActionPanel {
         restoreFilmLengthSlider();
 
         try {
-            viewSettingsPane.zeitraumSpinner.getValueFactory().setValue(filterConfig.getZeitraum());
+            var zeitraumVal = filterConfig.getZeitraum();
+            int zeitraumValInt;
+            if (zeitraumVal.equals(ZeitraumSpinnerFormatter.INFINITE_TEXT))
+                zeitraumValInt = (int)ZeitraumSpinnerFormatter.INFINITE_VALUE;
+            else
+                zeitraumValInt = Integer.parseInt(zeitraumVal);
+            filterDialog.swingFilterContentPane.zeitraumSpinner.setValue(zeitraumValInt);
         } catch (Exception exception) {
             logger.debug("Beim wiederherstellen der Filter Einstellungen für den Zeitraum ist ein Fehler aufgetreten!", exception);
         }
@@ -344,7 +352,16 @@ public class FilterActionPanel {
         filmLengthSlider.lowValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMin(newValue.doubleValue())));
         filmLengthSlider.highValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMax(newValue.doubleValue())));
 
-        viewSettingsPane.zeitraumSpinner.valueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setZeitraum(newValue)));
+        filterDialog.swingFilterContentPane.zeitraumSpinner.addChangeListener(l -> {
+            var val = (int)filterDialog.swingFilterContentPane.zeitraumSpinner.getValue();
+            String strVal;
+            if (val == (int)ZeitraumSpinnerFormatter.INFINITE_VALUE)
+                strVal = ZeitraumSpinner.UNLIMITED_VALUE;
+            else
+                strVal = String.valueOf(val);
+
+            filterConfig.setZeitraum(strVal);
+        });
 
         checkedChannels.addListener((obs, oldList, newList) -> filterConfig.setCheckedChannels(new HashSet<>(newList)));
         themaProperty.addListener(((ov, oldVal, newValue) -> filterConfig.setThema(newValue)));

@@ -20,7 +20,6 @@ import org.controlsfx.glyphfont.Glyph;
 public class CommonViewSettingsPane extends VBox {
     public final ThemaComboBox themaComboBox = new ThemaComboBox();
     public final FilmLenghtSliderNode filmLengthSliderNode = new FilmLenghtSliderNode();
-    public final ZeitraumSpinner zeitraumSpinner = new ZeitraumSpinner();
     public final SenderBoxNode senderCheckList = new SenderBoxNode();
     public final CheckBox cbDontShowAudioVersions = new CheckBox("Hörfassungen ausblenden");
     public final CheckBox cbDontShowGebaerdensprache = new CheckBox("Gebärdensprache nicht anzeigen");
@@ -127,21 +126,10 @@ public class CommonViewSettingsPane extends VBox {
                 new Separator(),
                 createThemaBox(),
                 new Separator(),
-                filmLengthSliderNode,
-                new Separator(),
-                createZeitraumSpinner());
+                filmLengthSliderNode);
 
 
         MessageBus.getMessageBus().subscribe(this);
-    }
-
-    private Pane createZeitraumSpinner() {
-        var flowPane = new FlowPane(4d,0d);
-        flowPane.getChildren().add(new Label("Zeitraum:"));
-        flowPane.getChildren().add(zeitraumSpinner);
-        flowPane.getChildren().add(new Label("Tage"));
-
-        return flowPane;
     }
 
     /**
@@ -169,7 +157,7 @@ public class CommonViewSettingsPane extends VBox {
                     senderCheckList.setDisable(disable);
                     themaComboBox.setDisable(disable);
                     filmLengthSliderNode.setDisable(disable);
-                    zeitraumSpinner.setDisable(disable);
+                    //zeitraumSpinner.setDisable(disable);
                     filterSelect.setDisable(disable);
                     btnDeleteCurrentFilter.setDisable(disable || deleteCurrentFilterButtonDisabled);
                     btnAddNewFilter.setDisable(disable);

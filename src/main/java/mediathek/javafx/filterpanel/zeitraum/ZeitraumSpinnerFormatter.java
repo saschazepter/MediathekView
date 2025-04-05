@@ -25,8 +25,8 @@ import java.text.ParseException;
 import java.util.Objects;
 
 public class ZeitraumSpinnerFormatter extends JFormattedTextField.AbstractFormatter {
-    private static final String INFINITE_TEXT = ZeitraumSpinner.UNLIMITED_VALUE;
-    private static final Object INFINITE_VALUE = 0;
+    public static final String INFINITE_TEXT = ZeitraumSpinner.UNLIMITED_VALUE;
+    public static final Object INFINITE_VALUE = 0;
 
     @Override
     public Object stringToValue(final String text) throws ParseException {
