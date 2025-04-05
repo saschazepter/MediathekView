@@ -52,7 +52,7 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
         return !isWhitelist;
     }
 
-    private String[] mySplit(final String inputString) {
+    protected String[] mySplit(final String inputString) {
         final String[] pTitle = StringUtils.split(inputString, ',');
         if (pTitle.length == 0)
             return EMPTY_STRING;
