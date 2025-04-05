@@ -23,6 +23,7 @@
 package mediathek.javafx.filterpanel;
 
 import javafx.embed.swing.JFXPanel;
+import mediathek.javafx.filterpanel.zeitraum.SwingZeitraumSpinner;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
@@ -43,8 +44,10 @@ public class SwingFilterContentPane extends JPanel {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
         // Generated using JFormDesigner non-commercial license
         fxPanel = new JFXPanel();
-        label3 = new JLabel();
-        label2 = new JLabel();
+        panel1 = new JPanel();
+        label5 = new JLabel();
+        spinner1 = new SwingZeitraumSpinner();
+        label4 = new JLabel();
 
         //======== this ========
         setLayout(new MigLayout(
@@ -55,28 +58,47 @@ public class SwingFilterContentPane extends JPanel {
             // rows
             new AC()
                 .grow().gap()
-                .gap()
-                .gap()
                 .shrink(0)));
 
         //---- fxPanel ----
         fxPanel.setPreferredSize(new Dimension(500, 500));
         add(fxPanel, new CC().cell(0, 0).grow());
 
-        //---- label3 ----
-        label3.setText("row2"); //NON-NLS
-        add(label3, new CC().cell(0, 2));
+        //======== panel1 ========
+        {
+            panel1.setLayout(new MigLayout(
+                new LC().insets("5").hideMode(3), //NON-NLS
+                // columns
+                new AC()
+                    .fill().gap()
+                    .fill().gap()
+                    .grow().align("left"), //NON-NLS
+                // rows
+                new AC()
+                    .shrink(0)));
 
-        //---- label2 ----
-        label2.setText("row3"); //NON-NLS
-        add(label2, new CC().cell(0, 3));
+            //---- label5 ----
+            label5.setText("Zeitraum:"); //NON-NLS
+            panel1.add(label5, new CC().cell(0, 0));
+
+            //---- spinner1 ----
+            spinner1.setPreferredSize(new Dimension(150, 30));
+            panel1.add(spinner1, new CC().cell(1, 0).growX());
+
+            //---- label4 ----
+            label4.setText("Tage"); //NON-NLS
+            panel1.add(label4, new CC().cell(2, 0));
+        }
+        add(panel1, new CC().cell(0, 1).growX());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents  @formatter:on
     }
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off
     // Generated using JFormDesigner non-commercial license
     public JFXPanel fxPanel;
-    private JLabel label3;
-    private JLabel label2;
+    private JPanel panel1;
+    private JLabel label5;
+    private SwingZeitraumSpinner spinner1;
+    private JLabel label4;
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
 }
