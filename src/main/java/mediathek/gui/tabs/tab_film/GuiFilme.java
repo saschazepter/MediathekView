@@ -656,7 +656,6 @@ public class GuiFilme extends AGuiTabPanel {
 
             filterActionPanel.showOnlyHighQualityProperty().addListener(reloadTableListener);
             filterActionPanel.showSubtitlesOnlyProperty().addListener(reloadTableListener);
-            filterActionPanel.showNewOnlyProperty().addListener(reloadTableListener);
             filterActionPanel.showBookMarkedOnlyProperty().addListener(reloadTableListener);
             filterActionPanel.showUnseenOnlyProperty().addListener(reloadTableListener);
             filterActionPanel.dontShowAbosProperty().addListener(reloadTableListener);

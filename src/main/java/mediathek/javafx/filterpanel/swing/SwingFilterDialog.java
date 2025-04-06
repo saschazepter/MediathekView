@@ -27,6 +27,7 @@ import com.jidesoft.swing.ComboBoxSearchable;
 import mediathek.config.Daten;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
+import mediathek.gui.messages.ReloadTableDataEvent;
 import mediathek.gui.messages.TableModelChangeEvent;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
@@ -45,6 +46,8 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
@@ -92,11 +95,32 @@ public class SwingFilterDialog extends JDialog {
         setupResetCurrentFilterButton();
         setupAddNewFilterButton();
 
+        cbShowNewOnly.addActionListener(l -> {
+            filterConfig.setShowNewOnly(cbShowNewOnly.isSelected());
+            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+        });
         setupZeitraumSpinner();
 
         searchable = new ComboBoxSearchable(jcbThema);
 
         restoreConfigSettings();
+        filterSelectionComboBoxModel.addListDataListener(new ListDataListener() {
+
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                restoreConfigSettings();
+            }
+
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+                restoreConfigSettings();
+            }
+
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                restoreConfigSettings();
+            }
+        });
 
         cboxFilterSelection.setMaximumSize(new Dimension(500, 100));
 
@@ -138,9 +162,9 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private void restoreConfigSettings() {
+        cbShowNewOnly.setSelected(filterConfig.isShowNewOnly());
         /*showOnlyHighQuality.set(filterConfig.isShowHighQualityOnly());
         showSubtitlesOnly.set(filterConfig.isShowSubtitlesOnly());
-        showNewOnly.set(filterConfig.isShowNewOnly());
         showBookMarkedOnly.set(filterConfig.isShowBookMarkedOnly());
         showUnseenOnly.set(filterConfig.isShowUnseenOnly());
         showLivestreamsOnly.set(filterConfig.isShowLivestreamsOnly());
