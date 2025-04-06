@@ -30,7 +30,6 @@ import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
 import mediathek.gui.messages.TableModelChangeEvent;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
-import mediathek.javafx.filterpanel.OldSwingJavaFxFilterDialog;
 import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
@@ -49,6 +48,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -62,6 +62,20 @@ public class SwingFilterDialog extends JDialog {
     private final Configuration config = ApplicationConfiguration.getConfiguration();
     private final JToggleButton filterToggleButton;
     private final FilterConfiguration filterConfig;
+
+    public static class ToggleVisibilityKeyHandler {
+        private static final String TOGGLE_FILTER_VISIBILITY = "toggle_dialog_visibility";
+        private final JRootPane rootPane;
+        public ToggleVisibilityKeyHandler(JDialog dlg) {
+            this.rootPane = dlg.getRootPane();
+        }
+
+        public void installHandler(Action action) {
+            final var inputMap = rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0), TOGGLE_FILTER_VISIBILITY);
+            rootPane.getActionMap().put(TOGGLE_FILTER_VISIBILITY, action);
+        }
+    }
 
     public SwingFilterDialog(Window owner, @NotNull FilterSelectionComboBoxModel model,
                              @NotNull JToggleButton filterToggleButton,
@@ -86,7 +100,7 @@ public class SwingFilterDialog extends JDialog {
 
         cboxFilterSelection.setMaximumSize(new Dimension(500, 100));
 
-        OldSwingJavaFxFilterDialog.ToggleVisibilityKeyHandler handler = new OldSwingJavaFxFilterDialog.ToggleVisibilityKeyHandler(this);
+        ToggleVisibilityKeyHandler handler = new ToggleVisibilityKeyHandler(this);
         handler.installHandler(filterToggleButton.getAction());
 
         restoreWindowSizeFromConfig();
@@ -217,6 +231,8 @@ public class SwingFilterDialog extends JDialog {
                 btnDeleteCurrentFilter.setEnabled(filterConfig.getAvailableFilterCount() > 1);
             }
 
+            cbShowNewOnly.setEnabled(enable);
+
             cboxFilterSelection.setEnabled(enable);
             spZeitraum.setEnabled(enable);
             label1.setEnabled(enable);
@@ -310,7 +326,7 @@ public class SwingFilterDialog extends JDialog {
         separator1 = new JSeparator();
         btnResetCurrentFilter = new JButton();
         separator2 = new JSeparator();
-        checkBox2 = new JCheckBox();
+        cbShowNewOnly = new JCheckBox();
         checkBox1 = new JCheckBox();
         checkBox3 = new JCheckBox();
         checkBox4 = new JCheckBox();
@@ -419,9 +435,9 @@ public class SwingFilterDialog extends JDialog {
         contentPane.add(panel1, new CC().cell(0, 0, 3, 1).growX());
         contentPane.add(separator2, new CC().cell(0, 1, 3, 1).growX());
 
-        //---- checkBox2 ----
-        checkBox2.setText("Nur neue Filme anzeigen"); //NON-NLS
-        contentPane.add(checkBox2, new CC().cell(0, 2, 3, 1));
+        //---- cbShowNewOnly ----
+        cbShowNewOnly.setText("Nur neue Filme anzeigen"); //NON-NLS
+        contentPane.add(cbShowNewOnly, new CC().cell(0, 2, 3, 1));
 
         //---- checkBox1 ----
         checkBox1.setText("Nur gemerkte Filme anzeigen"); //NON-NLS
@@ -588,7 +604,7 @@ public class SwingFilterDialog extends JDialog {
     private JSeparator separator1;
     private JButton btnResetCurrentFilter;
     private JSeparator separator2;
-    private JCheckBox checkBox2;
+    private JCheckBox cbShowNewOnly;
     private JCheckBox checkBox1;
     private JCheckBox checkBox3;
     private JCheckBox checkBox4;

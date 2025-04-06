@@ -78,7 +78,7 @@ public class FilterActionPanel {
         setupViewSettingsPane();
 
         //SwingUtilities.invokeLater(() -> filterDialog = new OldSwingJavaFxFilterDialog(MediathekGui.ui(), viewSettingsPane, filterToggleBtn));
-        filterDialog = new OldSwingJavaFxFilterDialog(MediathekGui.ui(), viewSettingsPane, filterToggleBtn);
+        filterDialog = new OldSwingJavaFxFilterDialog(MediathekGui.ui(), viewSettingsPane);
 
         restoreConfigSettings();
         ObservableList<String> senderList = FXCollections.observableArrayList(filterConfig.getCheckedChannels());
