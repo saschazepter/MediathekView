@@ -29,9 +29,7 @@ public class CommonViewSettingsPane extends VBox {
     public final CheckBox cbShowBookMarkedOnly = new CheckBox("Nur gemerkte Filme anzeigen");
     public final CheckBox cbShowOnlyLivestreams = new CheckBox("Nur Livestream anzeigen");
     public final Button btnDeleteFilterSettings = new Button();
-    public final Button btnDeleteCurrentFilter = new Button();
     private final Button btnAddNewFilter = new Button();
-    private boolean deleteCurrentFilterButtonDisabled;
 
     static class FontAwesomeGlyph extends Glyph {
         public FontAwesomeGlyph(String icon) {
@@ -44,8 +42,9 @@ public class CommonViewSettingsPane extends VBox {
     private HBox createTopButtonRow() {
         HBox btnBox = new HBox();
         btnBox.setSpacing(4d);
-        btnBox.getChildren().addAll(btnAddNewFilter, btnDeleteCurrentFilter,
-                new Separator(Orientation.VERTICAL), btnDeleteFilterSettings);
+        btnBox.getChildren().addAll(btnAddNewFilter,
+                new Separator(Orientation.VERTICAL),
+                btnDeleteFilterSettings);
         return btnBox;
     }
 
@@ -82,9 +81,6 @@ public class CommonViewSettingsPane extends VBox {
     private void setupButtons() {
         btnAddNewFilter.setTooltip(new Tooltip("Neuen Filter anlegen"));
         btnAddNewFilter.setGraphic(new FontAwesomeGlyph("PLUS"));
-
-        btnDeleteCurrentFilter.setTooltip(new Tooltip("Aktuellen Filter löschen"));
-        btnDeleteCurrentFilter.setGraphic(new FontAwesomeGlyph("TRASH_ALT"));
 
         btnDeleteFilterSettings.setTooltip(new Tooltip("Aktuellen Filter zurücksetzen"));
         btnDeleteFilterSettings.setGraphic(new FontAwesomeGlyph("RECYCLE"));
@@ -146,14 +142,8 @@ public class CommonViewSettingsPane extends VBox {
                     senderCheckList.setDisable(disable);
                     themaComboBox.setDisable(disable);
                     filmLengthSliderNode.setDisable(disable);
-                    btnDeleteCurrentFilter.setDisable(disable || deleteCurrentFilterButtonDisabled);
                     btnAddNewFilter.setDisable(disable);
                 });
-    }
-
-    public void disableDeleteCurrentFilterButton(boolean disable) {
-        deleteCurrentFilterButtonDisabled = disable;
-        btnDeleteCurrentFilter.setDisable(disable);
     }
 
     public void setAddNewFilterButtonEventHandler(EventHandler<ActionEvent> eventHandler) {

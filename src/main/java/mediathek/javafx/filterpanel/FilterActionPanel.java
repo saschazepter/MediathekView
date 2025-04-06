@@ -88,7 +88,7 @@ public class FilterActionPanel {
         setupConfigListeners();
         availableFilters = FXCollections.observableArrayList(filterConfig.getAvailableFilters());
         setupFilterSelection();
-        setupDeleteCurrentFilterButton();
+
         setupAddNewFilterButton();
     }
 
@@ -149,23 +149,8 @@ public class FilterActionPanel {
         viewSettingsPane.setAddNewFilterButtonEventHandler(e -> {
             FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), String.format("Filter %d", filterConfig.getAvailableFilters().size() + 1));
             filterConfig.addNewFilter(newFilter);
-            viewSettingsPane.disableDeleteCurrentFilterButton(false);
+            //viewSettingsPane.disableDeleteCurrentFilterButton(false);
 //            viewSettingsPane.selectFilter(newFilter);
-        });
-    }
-
-    private void setupDeleteCurrentFilterButton() {
-        if (availableFilters.size() <= 1) {
-            viewSettingsPane.disableDeleteCurrentFilterButton(true);
-        }
-
-        viewSettingsPane.btnDeleteCurrentFilter.setOnAction(e -> {
-            FilterDTO filterToDelete = filterConfig.getCurrentFilter();
-            filterConfig.deleteFilter(filterToDelete);
-
-            if (availableFilters.size() <= 1) {
-                viewSettingsPane.disableDeleteCurrentFilterButton(true);
-            }
         });
     }
 
