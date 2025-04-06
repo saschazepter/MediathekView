@@ -39,6 +39,7 @@ import mediathek.gui.tabs.tab_film.helpers.LuceneGuiFilmeModelHelper;
 import mediathek.javafx.bookmark.BookmarkWindowController;
 import mediathek.javafx.filterpanel.FilterActionPanel;
 import mediathek.javafx.filterpanel.SearchControlFieldMode;
+import mediathek.javafx.filterpanel.swing.SwingFilterDialog;
 import mediathek.javafx.tool.JavaFxUtils;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
@@ -828,6 +829,7 @@ public class GuiFilme extends AGuiTabPanel {
             }        }
     }
 
+    private SwingFilterDialog swingFilterDialog;
     public class ToggleFilterDialogVisibilityAction extends AbstractAction {
         public ToggleFilterDialogVisibilityAction() {
             putValue(Action.NAME, "Filterdialog anzeigen");
@@ -845,6 +847,13 @@ public class GuiFilme extends AGuiTabPanel {
 
                 dlg.setVisible(visible);
             }
+
+            if (swingFilterDialog == null) {
+                swingFilterDialog = new SwingFilterDialog(mediathekGui);
+            }
+            var visible = swingFilterDialog.isVisible();
+            visible = !visible;
+            swingFilterDialog.setVisible(visible);
         }
     }
 

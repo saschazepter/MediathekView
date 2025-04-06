@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.javafx.filterpanel.zeitraum;
+package mediathek.javafx.filterpanel.swing.zeitraum;
 
 import mediathek.javafx.filterpanel.ZeitraumSpinner;
 import mediathek.tool.FilterConfiguration;

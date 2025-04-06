@@ -24,7 +24,7 @@ package mediathek.javafx.filterpanel;
 
 import javafx.embed.swing.JFXPanel;
 import mediathek.gui.messages.TableModelChangeEvent;
-import mediathek.javafx.filterpanel.zeitraum.SwingZeitraumSpinner;
+import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
 import mediathek.tool.MessageBus;
 import net.engio.mbassy.listener.Handler;
 import net.miginfocom.layout.AC;
