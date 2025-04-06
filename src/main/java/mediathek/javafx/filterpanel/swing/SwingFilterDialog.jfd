@@ -200,8 +200,7 @@ new FormModel {
 				"value": "cell 0 18"
 			} )
 			add( new FormComponent( "javax.swing.JComboBox" ) {
-				name: "comboBox2"
-				"editable": true
+				name: "jcbThema"
 				"model": new javax.swing.DefaultComboBoxModel {
 					selectedItem: "Mein Titel"
 					addElement( "Mein Titel" )

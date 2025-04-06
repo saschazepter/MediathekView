@@ -23,6 +23,7 @@
 package mediathek.javafx.filterpanel.swing;
 
 import com.jidesoft.swing.CheckBoxList;
+import com.jidesoft.swing.ComboBoxSearchable;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
 import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
@@ -40,6 +41,7 @@ import java.awt.*;
  */
 public class SwingFilterDialog extends JDialog {
     private final FilterSelectionComboBoxModel filterSelectionComboBoxModel;
+    private ComboBoxSearchable searchable;
 
     public SwingFilterDialog(Window owner, @NotNull FilterSelectionComboBoxModel model) {
         super(owner);
@@ -47,6 +49,9 @@ public class SwingFilterDialog extends JDialog {
 
         initComponents();
         comboBox1.setMaximumSize(new Dimension(500, 100));
+
+        searchable = new ComboBoxSearchable(jcbThema);
+
         var size = getSize();
         setMinimumSize(size);
     }
@@ -86,7 +91,7 @@ public class SwingFilterDialog extends JDialog {
         list1 = new CheckBoxList();
         separator5 = new JSeparator();
         label4 = new JLabel();
-        comboBox2 = new JComboBox<>();
+        jcbThema = new JComboBox<>();
         separator6 = new JSeparator();
         panel2 = new JPanel();
         label5 = new JLabel();
@@ -281,14 +286,13 @@ public class SwingFilterDialog extends JDialog {
         label4.setText("Thema:"); //NON-NLS
         contentPane.add(label4, new CC().cell(0, 18));
 
-        //---- comboBox2 ----
-        comboBox2.setEditable(true);
-        comboBox2.setModel(new DefaultComboBoxModel<>(new String[] {
+        //---- jcbThema ----
+        jcbThema.setModel(new DefaultComboBoxModel<>(new String[] {
             "Mein Titel", //NON-NLS
             "Mein Test", //NON-NLS
             "Sendung mit der Maus" //NON-NLS
         }));
-        contentPane.add(comboBox2, new CC().cell(1, 18, 2, 1).growX());
+        contentPane.add(jcbThema, new CC().cell(1, 18, 2, 1).growX());
         contentPane.add(separator6, new CC().cell(0, 19, 3, 1).growX());
 
         //======== panel2 ========
@@ -369,7 +373,7 @@ public class SwingFilterDialog extends JDialog {
     private CheckBoxList list1;
     private JSeparator separator5;
     private JLabel label4;
-    private JComboBox<String> comboBox2;
+    private JComboBox<String> jcbThema;
     private JSeparator separator6;
     private JPanel panel2;
     private JLabel label5;
