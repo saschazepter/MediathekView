@@ -112,27 +112,22 @@ public class SwingFilterDialog extends JDialog {
         spZeitraum.installFilterConfigurationChangeListener(filterConfig);
     }
 
-    private void setupDeleteCurrentFilterButton() {
+    private void checkDeleteCurrentFilterButtonState() {
         if (filterConfig.getAvailableFilterCount() <= 1) {
-            disableDeleteCurrentFilterButton(true);
+            btnDeleteCurrentFilter.setEnabled(false);
         }
+    }
+
+    private void setupDeleteCurrentFilterButton() {
+        checkDeleteCurrentFilterButtonState();
 
         btnDeleteCurrentFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
         btnDeleteCurrentFilter.addActionListener(e -> {
             FilterDTO filterToDelete = filterConfig.getCurrentFilter();
             filterConfig.deleteFilter(filterToDelete);
 
-            if (filterConfig.getAvailableFilterCount() <= 1) {
-                disableDeleteCurrentFilterButton(true);
-            }
+            checkDeleteCurrentFilterButtonState();
         });
-    }
-
-    private boolean deleteCurrentFilterButtonEnabled;
-
-    private void disableDeleteCurrentFilterButton(boolean disable) {
-        deleteCurrentFilterButtonEnabled = !disable;
-        btnDeleteCurrentFilter.setEnabled(deleteCurrentFilterButtonEnabled);
     }
 
     private void setupRenameFilterButton() {
@@ -171,11 +166,12 @@ public class SwingFilterDialog extends JDialog {
             btnRenameFilter.setEnabled(enable);
 
             //This looks strange but works...check later
-            if (enable) {
-                btnDeleteCurrentFilter.setEnabled(deleteCurrentFilterButtonEnabled);
-            }
-            else
+            if (e.active) {
                 btnDeleteCurrentFilter.setEnabled(false);
+            }
+            else {
+                btnDeleteCurrentFilter.setEnabled(filterConfig.getAvailableFilterCount() > 1);
+            }
 
             cboxFilterSelection.setEnabled(enable);
             spZeitraum.setEnabled(enable);
