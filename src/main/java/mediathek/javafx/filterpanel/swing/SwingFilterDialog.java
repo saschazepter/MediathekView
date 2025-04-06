@@ -46,6 +46,8 @@ public class SwingFilterDialog extends JDialog {
 
         initComponents();
         comboBox1.setMaximumSize(new Dimension(500, 100));
+        var size = getSize();
+        setMinimumSize(size);
     }
 
     private void createUIComponents() {
