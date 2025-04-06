@@ -32,7 +32,6 @@ import mediathek.gui.duplicates.details.DuplicateFilmDetailsDialog;
 import mediathek.gui.messages.*;
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent;
 import mediathek.gui.tabs.AGuiTabPanel;
-import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
 import mediathek.gui.tabs.tab_film.helpers.GuiFilmeModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelper;
@@ -155,7 +154,17 @@ public class GuiFilme extends AGuiTabPanel {
         setupPsetButtonsTab();
 
         filterActionPanel = new FilterActionPanel(btnToggleFilterDialogVisibility, filterConfiguration);
-        filmToolBar = new FilmToolBar(filterSelectionComboBoxModel);
+
+        filmToolBar = new FilmToolBar(filterSelectionComboBoxModel,
+                bookmarkAddFilmAction,
+                bookmarkRemoveFilmAction,
+                bookmarkClearListAction,
+                manageBookmarkAction,
+                playFilmAction,
+                saveFilmAction,
+                searchField,
+                btnToggleFilterDialogVisibility,
+                toggleFilterDialogVisibilityAction);
         add(filmToolBar, BorderLayout.NORTH);
 
         start_init();
@@ -778,45 +787,7 @@ public class GuiFilme extends AGuiTabPanel {
         }
     }
 
-    public class FilmToolBar extends JToolBar {
-        private final JLabel lblSearch = new JLabel("Suche:");
-        private final FilterSelectionComboBox filterSelectionComboBox;
-
-        public FilmToolBar(@NotNull FilterSelectionComboBoxModel filterModel) {
-            add(playFilmAction);
-            add(saveFilmAction);
-            addSeparator();
-
-            filterSelectionComboBox = new FilterSelectionComboBox(filterModel);
-            add(filterSelectionComboBox);
-            addSeparator();
-
-            add(lblSearch);
-            add(searchField);
-            addSeparator();
-
-            add(btnToggleFilterDialogVisibility);
-
-            addSeparator();
-            add(bookmarkAddFilmAction);
-            add(bookmarkRemoveFilmAction);
-            addSeparator();
-            add(bookmarkClearListAction);
-            addSeparator();
-            add(manageBookmarkAction);
-        }
-
-        @Override
-        public void setEnabled(boolean enabled) {
-            super.setEnabled(enabled);
-            lblSearch.setEnabled(enabled);
-            searchField.setEnabled(enabled);
-            filterSelectionComboBox.setEnabled(enabled);
-            toggleFilterDialogVisibilityAction.setEnabled(enabled);
-        }
-    }
-
-    private class BookmarkClearListAction extends AbstractAction {
+    public class BookmarkClearListAction extends AbstractAction {
         public BookmarkClearListAction() {
             putValue(Action.SHORT_DESCRIPTION, "Merkliste vollständig löschen");
             putValue(Action.NAME, "Merkliste vollständig löschen");
@@ -1244,7 +1215,7 @@ public class GuiFilme extends AGuiTabPanel {
         }
     }
 
-    private class BookmarkAddFilmAction extends AbstractAction {
+    public class BookmarkAddFilmAction extends AbstractAction {
         public BookmarkAddFilmAction() {
             KeyStroke keyStroke;
             if (SystemUtils.IS_OS_MAC_OSX) {
@@ -1273,7 +1244,7 @@ public class GuiFilme extends AGuiTabPanel {
         }
     }
 
-    private class BookmarkRemoveFilmAction extends AbstractAction {
+    public class BookmarkRemoveFilmAction extends AbstractAction {
         public BookmarkRemoveFilmAction() {
             putValue(Action.SHORT_DESCRIPTION, "Ausgewählte Filme aus der Merkliste löschen");
             putValue(Action.NAME, "Ausgewählte Filme aus der Merkliste löschen");
