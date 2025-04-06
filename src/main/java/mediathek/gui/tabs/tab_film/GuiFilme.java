@@ -167,7 +167,8 @@ public class GuiFilme extends AGuiTabPanel {
 
         filterActionPanel = new FilterActionPanel(filmToolBar.getToggleFilterDialogVisibilityButton(), filterConfiguration);
         swingFilterDialog = new SwingFilterDialog(mediathekGui, filterSelectionComboBoxModel,
-                filmToolBar.getToggleFilterDialogVisibilityButton());
+                filmToolBar.getToggleFilterDialogVisibilityButton(),
+                filterConfiguration);
 
         start_init();
 
@@ -679,6 +680,14 @@ public class GuiFilme extends AGuiTabPanel {
         });
 
         filterActionPanel.getFilterDialog().swingFilterContentPane.zeitraumSpinner.addChangeListener(l -> {
+            if (!zeitraumTimer.isRunning())
+                zeitraumTimer.start();
+            else
+                zeitraumTimer.restart();
+        });
+
+        //this will reload the table
+        swingFilterDialog.spZeitraum.addChangeListener(l -> {
             if (!zeitraumTimer.isRunning())
                 zeitraumTimer.start();
             else

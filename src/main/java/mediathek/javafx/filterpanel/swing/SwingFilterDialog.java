@@ -33,6 +33,7 @@ import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.javafx.filterpanel.OldSwingJavaFxFilterDialog;
 import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
 import mediathek.tool.ApplicationConfiguration;
+import mediathek.tool.FilterConfiguration;
 import mediathek.tool.MessageBus;
 import net.engio.mbassy.listener.Handler;
 import net.miginfocom.layout.AC;
@@ -59,12 +60,17 @@ public class SwingFilterDialog extends JDialog {
     private final JToggleButton filterToggleButton;
 
     public SwingFilterDialog(Window owner, @NotNull FilterSelectionComboBoxModel model,
-                             @NotNull JToggleButton filterToggleButton) {
+                             @NotNull JToggleButton filterToggleButton,
+                             @NotNull FilterConfiguration filterConfig) {
         super(owner);
         this.filterSelectionComboBoxModel = model;
         this.filterToggleButton = filterToggleButton;
 
         initComponents();
+
+        spZeitraum.restoreFilterConfig(filterConfig);
+        spZeitraum.installFilterConfigurationChangeListener(filterConfig);
+
         searchable = new ComboBoxSearchable(jcbThema);
 
         comboBox1.setMaximumSize(new Dimension(500, 100));
@@ -216,7 +222,7 @@ public class SwingFilterDialog extends JDialog {
         slider1 = new JSlider();
         separator7 = new JSeparator();
         label1 = new JLabel();
-        spinner1 = new SwingZeitraumSpinner();
+        spZeitraum = new SwingZeitraumSpinner();
         label2 = new JLabel();
 
         //======== this ========
@@ -449,7 +455,7 @@ public class SwingFilterDialog extends JDialog {
         //---- label1 ----
         label1.setText("Zeitraum:"); //NON-NLS
         contentPane.add(label1, new CC().cell(0, 22));
-        contentPane.add(spinner1, new CC().cell(1, 22));
+        contentPane.add(spZeitraum, new CC().cell(1, 22));
 
         //---- label2 ----
         label2.setText("Tage"); //NON-NLS
@@ -498,7 +504,7 @@ public class SwingFilterDialog extends JDialog {
     private JSlider slider1;
     private JSeparator separator7;
     private JLabel label1;
-    private SwingZeitraumSpinner spinner1;
+    public SwingZeitraumSpinner spZeitraum;
     private JLabel label2;
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
 }
