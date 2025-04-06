@@ -32,7 +32,7 @@ import mediathek.gui.duplicates.details.DuplicateFilmDetailsDialog;
 import mediathek.gui.messages.*;
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent;
 import mediathek.gui.tabs.AGuiTabPanel;
-import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
+import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
 import mediathek.gui.tabs.tab_film.helpers.GuiFilmeModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.LuceneGuiFilmeModelHelper;
@@ -99,6 +99,7 @@ public class GuiFilme extends AGuiTabPanel {
     public final CopyUrlToClipboardAction copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.HIGH_QUALITY);
     public final CopyUrlToClipboardAction copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.NORMAL);
     protected final JTabbedPane psetButtonsTab = new JTabbedPane();
+    protected final FilterSelectionComboBoxModel filterSelectionComboBoxModel = new FilterSelectionComboBoxModel();
     private final BookmarkAddFilmAction bookmarkAddFilmAction = new BookmarkAddFilmAction();
     private final BookmarkRemoveFilmAction bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction();
     private final BookmarkClearListAction bookmarkClearListAction = new BookmarkClearListAction();
@@ -116,10 +117,9 @@ public class GuiFilme extends AGuiTabPanel {
      */
     private final FilterActionPanel filterActionPanel;
     private final FilterConfiguration filterConfiguration = new FilterConfiguration();
+    private final FilmToolBar filmToolBar;
     public ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction();
     protected SearchField searchField;
-    protected FilterSelectionComboBox filterSelectionComboBox = new FilterSelectionComboBox();
-    protected FilterVisibilityToggleButton btnToggleFilterDialogVisibility = new FilterVisibilityToggleButton(toggleFilterDialogVisibilityAction);
     protected PsetButtonsPanel psetButtonsPanel;
     private Optional<BookmarkWindowController> bookmarkWindowController = Optional.empty();
     private boolean stopBeob;
@@ -153,8 +153,18 @@ public class GuiFilme extends AGuiTabPanel {
         setupDescriptionTab(tabelle, cbkShowDescription, ApplicationConfiguration.FILM_SHOW_DESCRIPTION);
         setupPsetButtonsTab();
 
-        filterActionPanel = new FilterActionPanel(btnToggleFilterDialogVisibility, filterConfiguration);
-        add(new FilmToolBar(), BorderLayout.NORTH);
+        filmToolBar = new FilmToolBar(filterSelectionComboBoxModel,
+                bookmarkAddFilmAction,
+                bookmarkRemoveFilmAction,
+                bookmarkClearListAction,
+                manageBookmarkAction,
+                playFilmAction,
+                saveFilmAction,
+                searchField,
+                toggleFilterDialogVisibilityAction);
+        add(filmToolBar, BorderLayout.NORTH);
+
+        filterActionPanel = new FilterActionPanel(filmToolBar.getToggleFilterDialogVisibilityButton(), filterConfiguration);
 
         start_init();
 
@@ -201,9 +211,7 @@ public class GuiFilme extends AGuiTabPanel {
             bookmarkRemoveFilmAction.setEnabled(flag);
             bookmarkClearListAction.setEnabled(flag);
             manageBookmarkAction.setEnabled(flag);
-            toggleFilterDialogVisibilityAction.setEnabled(flag);
-            searchField.setEnabled(flag);
-            filterSelectionComboBox.setEnabled(flag);
+            filmToolBar.setEnabled(flag);
         };
         if (e.active) {
             SwingUtilities.invokeLater(() -> function.accept(false));
@@ -769,41 +777,7 @@ public class GuiFilme extends AGuiTabPanel {
 
     private static class FilterZeitraumEvent extends BaseEvent {}
 
-    static public class FilterVisibilityToggleButton extends JToggleButton {
-        public FilterVisibilityToggleButton(Action a) {
-            super(a);
-            setText("");
-            final boolean visible = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.FilterDialog.VISIBLE, false);
-            setSelected(visible);
-        }
-    }
-
-    private class FilmToolBar extends JToolBar {
-        public FilmToolBar() {
-            add(playFilmAction);
-            add(saveFilmAction);
-            addSeparator();
-
-            add(filterSelectionComboBox);
-            addSeparator();
-
-            add(new JLabel("Suche:"));
-            add(searchField);
-            addSeparator();
-
-            add(btnToggleFilterDialogVisibility);
-
-            addSeparator();
-            add(bookmarkAddFilmAction);
-            add(bookmarkRemoveFilmAction);
-            addSeparator();
-            add(bookmarkClearListAction);
-            addSeparator();
-            add(manageBookmarkAction);
-        }
-    }
-
-    private class BookmarkClearListAction extends AbstractAction {
+    public class BookmarkClearListAction extends AbstractAction {
         public BookmarkClearListAction() {
             putValue(Action.SHORT_DESCRIPTION, "Merkliste vollständig löschen");
             putValue(Action.NAME, "Merkliste vollständig löschen");
@@ -1239,7 +1213,7 @@ public class GuiFilme extends AGuiTabPanel {
         }
     }
 
-    private class BookmarkAddFilmAction extends AbstractAction {
+    public class BookmarkAddFilmAction extends AbstractAction {
         public BookmarkAddFilmAction() {
             KeyStroke keyStroke;
             if (SystemUtils.IS_OS_MAC_OSX) {
@@ -1268,7 +1242,7 @@ public class GuiFilme extends AGuiTabPanel {
         }
     }
 
-    private class BookmarkRemoveFilmAction extends AbstractAction {
+    public class BookmarkRemoveFilmAction extends AbstractAction {
         public BookmarkRemoveFilmAction() {
             putValue(Action.SHORT_DESCRIPTION, "Ausgewählte Filme aus der Merkliste löschen");
             putValue(Action.NAME, "Ausgewählte Filme aus der Merkliste löschen");
