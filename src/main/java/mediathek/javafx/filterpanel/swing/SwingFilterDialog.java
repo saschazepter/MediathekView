@@ -96,6 +96,13 @@ public class SwingFilterDialog extends JDialog {
             // rows
             new AC()
                 .gap()
+                .align("top").gap("0") //NON-NLS
+                .gap("0") //NON-NLS
+                .gap("0") //NON-NLS
+                .gap("0") //NON-NLS
+                .gap("0") //NON-NLS
+                .gap("0") //NON-NLS
+                .gap("0") //NON-NLS
                 .gap("0") //NON-NLS
                 .gap("0") //NON-NLS
                 .gap("0") //NON-NLS
@@ -103,13 +110,6 @@ public class SwingFilterDialog extends JDialog {
                 .gap("0") //NON-NLS
                 .gap("0") //NON-NLS
                 .gap()
-                .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
                 ));
 
         //======== panel1 ========
@@ -154,7 +154,7 @@ public class SwingFilterDialog extends JDialog {
             panel1.add(button4, new CC().cell(5, 0).alignX("center").growX(0)); //NON-NLS
         }
         contentPane.add(panel1, new CC().cell(0, 0, 3, 1).growX());
-        contentPane.add(separator2, new CC().cell(0, 1, 3, 1));
+        contentPane.add(separator2, new CC().cell(0, 1, 3, 1).growX());
 
         //---- checkBox2 ----
         checkBox2.setText("Nur neue Filme anzeigen"); //NON-NLS
@@ -175,7 +175,7 @@ public class SwingFilterDialog extends JDialog {
         //---- checkBox5 ----
         checkBox5.setText("Nur Livestreams anzeigen"); //NON-NLS
         contentPane.add(checkBox5, new CC().cell(0, 6, 3, 1));
-        contentPane.add(separator3, new CC().cell(0, 7, 3, 1));
+        contentPane.add(separator3, new CC().cell(0, 7, 3, 1).growX());
 
         //---- checkBox6 ----
         checkBox6.setText("Gesehene Filme nicht anzeigen"); //NON-NLS
@@ -200,7 +200,7 @@ public class SwingFilterDialog extends JDialog {
         //---- checkBox11 ----
         checkBox11.setText("Duplikate nicht anzeigen"); //NON-NLS
         contentPane.add(checkBox11, new CC().cell(0, 13, 3, 1));
-        contentPane.add(separator4, new CC().cell(0, 14, 3, 1));
+        contentPane.add(separator4, new CC().cell(0, 14, 3, 1).growX());
 
         //---- label1 ----
         label1.setText("Zeitraum:"); //NON-NLS
