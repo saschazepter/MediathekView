@@ -86,9 +86,15 @@ public class SwingFilterDialog extends JDialog {
         list1 = new CheckBoxList();
         separator5 = new JSeparator();
         label4 = new JLabel();
-        comboBox2 = new JComboBox();
+        comboBox2 = new JComboBox<>();
         separator6 = new JSeparator();
+        panel2 = new JPanel();
         label5 = new JLabel();
+        label6 = new JLabel();
+        hSpacer1 = new JPanel(null);
+        label7 = new JLabel();
+        label8 = new JLabel();
+        slider1 = new JSlider();
         separator7 = new JSeparator();
         label1 = new JLabel();
         spinner1 = new SwingZeitraumSpinner();
@@ -277,12 +283,49 @@ public class SwingFilterDialog extends JDialog {
 
         //---- comboBox2 ----
         comboBox2.setEditable(true);
+        comboBox2.setModel(new DefaultComboBoxModel<>(new String[] {
+            "Mein Titel", //NON-NLS
+            "Mein Test", //NON-NLS
+            "Sendung mit der Maus" //NON-NLS
+        }));
         contentPane.add(comboBox2, new CC().cell(1, 18, 2, 1).growX());
         contentPane.add(separator6, new CC().cell(0, 19, 3, 1).growX());
 
-        //---- label5 ----
-        label5.setText("RangeSlider"); //NON-NLS
-        contentPane.add(label5, new CC().cell(0, 20, 3, 1));
+        //======== panel2 ========
+        {
+            panel2.setLayout(new MigLayout(
+                new LC().fill().insets("0").hideMode(3), //NON-NLS
+                // columns
+                new AC()
+                    .fill().gap("0") //NON-NLS
+                    .fill().gap()
+                    .grow().fill().gap()
+                    .fill().gap("0") //NON-NLS
+                    .fill(),
+                // rows
+                new AC()
+                    .gap("0") //NON-NLS
+                    ));
+
+            //---- label5 ----
+            label5.setText("Mindestl\u00e4nge:"); //NON-NLS
+            panel2.add(label5, new CC().cell(0, 0));
+
+            //---- label6 ----
+            label6.setText("0"); //NON-NLS
+            panel2.add(label6, new CC().cell(1, 0));
+            panel2.add(hSpacer1, new CC().cell(2, 0).growX());
+
+            //---- label7 ----
+            label7.setText("Maximall\u00e4nge:"); //NON-NLS
+            panel2.add(label7, new CC().cell(3, 0));
+
+            //---- label8 ----
+            label8.setText("100"); //NON-NLS
+            panel2.add(label8, new CC().cell(4, 0));
+            panel2.add(slider1, new CC().cell(0, 1, 5, 1).growX());
+        }
+        contentPane.add(panel2, new CC().cell(0, 20, 3, 1).growX());
         contentPane.add(separator7, new CC().cell(0, 21, 3, 1).growX());
 
         //---- label1 ----
@@ -326,9 +369,15 @@ public class SwingFilterDialog extends JDialog {
     private CheckBoxList list1;
     private JSeparator separator5;
     private JLabel label4;
-    private JComboBox comboBox2;
+    private JComboBox<String> comboBox2;
     private JSeparator separator6;
+    private JPanel panel2;
     private JLabel label5;
+    private JLabel label6;
+    private JPanel hSpacer1;
+    private JLabel label7;
+    private JLabel label8;
+    private JSlider slider1;
     private JSeparator separator7;
     private JLabel label1;
     private SwingZeitraumSpinner spinner1;

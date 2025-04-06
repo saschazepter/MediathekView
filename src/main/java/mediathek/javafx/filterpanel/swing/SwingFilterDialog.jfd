@@ -202,6 +202,12 @@ new FormModel {
 			add( new FormComponent( "javax.swing.JComboBox" ) {
 				name: "comboBox2"
 				"editable": true
+				"model": new javax.swing.DefaultComboBoxModel {
+					selectedItem: "Mein Titel"
+					addElement( "Mein Titel" )
+					addElement( "Mein Test" )
+					addElement( "Sendung mit der Maus" )
+				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 18 2 1,growx"
 			} )
@@ -210,11 +216,48 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 19 3 1,growx"
 			} )
-			add( new FormComponent( "javax.swing.JLabel" ) {
-				name: "label5"
-				"text": "RangeSlider"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "fill,insets 0,hidemode 3"
+				"$columnConstraints": "0[fill]0[fill][grow,fill][fill]0[fill]0"
+				"$rowConstraints": "0[]0[]0"
+			} ) {
+				name: "panel2"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label5"
+					"text": "Mindestlänge:"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label6"
+					"text": "0"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 0"
+				} )
+				add( new FormComponent( "com.jformdesigner.designer.wrapper.HSpacer" ) {
+					name: "hSpacer1"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 2 0,growx"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label7"
+					"text": "Maximallänge:"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 3 0"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label8"
+					"text": "100"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 4 0"
+				} )
+				add( new FormComponent( "javax.swing.JSlider" ) {
+					name: "slider1"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 1 5 1,growx"
+				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 20 3 1"
+				"value": "cell 0 20 3 1,growx"
 			} )
 			add( new FormComponent( "javax.swing.JSeparator" ) {
 				name: "separator7"
