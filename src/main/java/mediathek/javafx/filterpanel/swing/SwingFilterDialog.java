@@ -50,6 +50,7 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 /**
  * @author christianfranzke
@@ -75,10 +76,13 @@ public class SwingFilterDialog extends JDialog {
         setupRenameFilterButton();
         setupDeleteCurrentFilterButton();
         setupResetCurrentFilterButton();
+        setupAddNewFilterButton();
 
         setupZeitraumSpinner();
 
         searchable = new ComboBoxSearchable(jcbThema);
+
+        restoreConfigSettings();
 
         cboxFilterSelection.setMaximumSize(new Dimension(500, 100));
 
@@ -145,6 +149,15 @@ public class SwingFilterDialog extends JDialog {
             //TODO clear sender check list?
             filterConfig.clearCurrentFilter();
             restoreConfigSettings();
+        });
+    }
+
+    private void setupAddNewFilterButton() {
+        btnAddNewFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/plus.svg"));btnAddNewFilter.addActionListener(e -> {
+            FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), String.format("Filter %d", filterConfig.getAvailableFilters().size() + 1));
+            filterConfig.addNewFilter(newFilter);
+            checkDeleteCurrentFilterButtonState();
+            filterSelectionComboBoxModel.setSelectedItem(newFilter);
         });
     }
 
@@ -291,7 +304,7 @@ public class SwingFilterDialog extends JDialog {
 
         panel1 = new JPanel();
         btnRenameFilter = new JButton();
-        button2 = new JButton();
+        btnAddNewFilter = new JButton();
         btnDeleteCurrentFilter = new JButton();
         separator1 = new JSeparator();
         btnResetCurrentFilter = new JButton();
@@ -386,10 +399,9 @@ public class SwingFilterDialog extends JDialog {
             btnRenameFilter.setToolTipText("Filter umbenennen"); //NON-NLS
             panel1.add(btnRenameFilter, new CC().cell(1, 0).alignX("center").growX(0)); //NON-NLS
 
-            //---- button2 ----
-            button2.setText("2"); //NON-NLS
-            button2.setToolTipText("Neuen Filter anlegen"); //NON-NLS
-            panel1.add(button2, new CC().cell(2, 0).alignX("center").growX(0)); //NON-NLS
+            //---- btnAddNewFilter ----
+            btnAddNewFilter.setToolTipText("Neuen Filter anlegen"); //NON-NLS
+            panel1.add(btnAddNewFilter, new CC().cell(2, 0).alignX("center").growX(0)); //NON-NLS
 
             //---- btnDeleteCurrentFilter ----
             btnDeleteCurrentFilter.setToolTipText("Aktuellen Filter l\u00f6schen"); //NON-NLS
@@ -570,7 +582,7 @@ public class SwingFilterDialog extends JDialog {
     private JPanel panel1;
     private FilterSelectionComboBox cboxFilterSelection;
     private JButton btnRenameFilter;
-    private JButton button2;
+    private JButton btnAddNewFilter;
     private JButton btnDeleteCurrentFilter;
     private JSeparator separator1;
     private JButton btnResetCurrentFilter;

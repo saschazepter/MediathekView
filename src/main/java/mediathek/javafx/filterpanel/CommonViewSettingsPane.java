@@ -1,10 +1,10 @@
 package mediathek.javafx.filterpanel;
 
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.scene.control.*;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Separator;
 import javafx.scene.layout.*;
 import mediathek.gui.messages.TableModelChangeEvent;
 import mediathek.tool.MessageBus;
@@ -27,7 +27,6 @@ public class CommonViewSettingsPane extends VBox {
     public final CheckBox cbShowNewOnly = new CheckBox("Nur neue Filme anzeigen");
     public final CheckBox cbShowBookMarkedOnly = new CheckBox("Nur gemerkte Filme anzeigen");
     public final CheckBox cbShowOnlyLivestreams = new CheckBox("Nur Livestream anzeigen");
-    private final Button btnAddNewFilter = new Button();
 
     static class FontAwesomeGlyph extends Glyph {
         public FontAwesomeGlyph(String icon) {
@@ -35,13 +34,6 @@ public class CommonViewSettingsPane extends VBox {
             setFontSize(16d);
             setIcon(icon);
         }
-    }
-
-    private HBox createTopButtonRow() {
-        HBox btnBox = new HBox();
-        btnBox.setSpacing(4d);
-        btnBox.getChildren().add(btnAddNewFilter);
-        return btnBox;
     }
 
     private Pane createSenderList() {
@@ -74,20 +66,11 @@ public class CommonViewSettingsPane extends VBox {
         return hbox;
     }
 
-    private void setupButtons() {
-        btnAddNewFilter.setTooltip(new Tooltip("Neuen Filter anlegen"));
-        btnAddNewFilter.setGraphic(new FontAwesomeGlyph("PLUS"));
-    }
-
     public CommonViewSettingsPane() {
         setPadding(new Insets(5, 5, 5, 5));
         setSpacing(4d);
 
-        setupButtons();
-
-        getChildren().addAll(createTopButtonRow(),
-                new Separator(),
-                cbShowNewOnly,
+        getChildren().addAll(cbShowNewOnly,
                 cbShowBookMarkedOnly,
                 cbShowOnlyHd,
                 cbShowSubtitlesOnly,
@@ -134,11 +117,6 @@ public class CommonViewSettingsPane extends VBox {
                     senderCheckList.setDisable(disable);
                     themaComboBox.setDisable(disable);
                     filmLengthSliderNode.setDisable(disable);
-                    btnAddNewFilter.setDisable(disable);
                 });
-    }
-
-    public void setAddNewFilterButtonEventHandler(EventHandler<ActionEvent> eventHandler) {
-        btnAddNewFilter.setOnAction(eventHandler);
     }
 }

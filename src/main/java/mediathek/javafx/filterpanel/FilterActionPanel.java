@@ -30,7 +30,6 @@ import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * This class sets up the GuiFilme filter dialog.
@@ -87,8 +86,6 @@ public class FilterActionPanel {
         setupConfigListeners();
         availableFilters = FXCollections.observableArrayList(filterConfig.getAvailableFilters());
         setupFilterSelection();
-
-        setupAddNewFilterButton();
     }
 
     public OldSwingJavaFxFilterDialog getFilterDialog() {
@@ -142,15 +139,6 @@ public class FilterActionPanel {
 
     public BooleanProperty showNewOnlyProperty() {
         return showNewOnly;
-    }
-
-    private void setupAddNewFilterButton() {
-        viewSettingsPane.setAddNewFilterButtonEventHandler(e -> {
-            FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), String.format("Filter %d", filterConfig.getAvailableFilters().size() + 1));
-            filterConfig.addNewFilter(newFilter);
-            //viewSettingsPane.disableDeleteCurrentFilterButton(false);
-//            viewSettingsPane.selectFilter(newFilter);
-        });
     }
 
     private void setupFilterSelection() {
