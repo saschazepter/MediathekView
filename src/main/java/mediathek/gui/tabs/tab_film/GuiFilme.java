@@ -116,10 +116,9 @@ public class GuiFilme extends AGuiTabPanel {
      */
     private final FilterActionPanel filterActionPanel;
     private final FilterConfiguration filterConfiguration = new FilterConfiguration();
-    private final JToolBar filmToolBar;
+    private final FilmToolBar filmToolBar;
     public ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction();
     protected SearchField searchField;
-    protected FilterVisibilityToggleButton btnToggleFilterDialogVisibility = new FilterVisibilityToggleButton(toggleFilterDialogVisibilityAction);
     protected PsetButtonsPanel psetButtonsPanel;
     private Optional<BookmarkWindowController> bookmarkWindowController = Optional.empty();
     private boolean stopBeob;
@@ -153,8 +152,6 @@ public class GuiFilme extends AGuiTabPanel {
         setupDescriptionTab(tabelle, cbkShowDescription, ApplicationConfiguration.FILM_SHOW_DESCRIPTION);
         setupPsetButtonsTab();
 
-        filterActionPanel = new FilterActionPanel(btnToggleFilterDialogVisibility, filterConfiguration);
-
         filmToolBar = new FilmToolBar(filterSelectionComboBoxModel,
                 bookmarkAddFilmAction,
                 bookmarkRemoveFilmAction,
@@ -163,9 +160,10 @@ public class GuiFilme extends AGuiTabPanel {
                 playFilmAction,
                 saveFilmAction,
                 searchField,
-                btnToggleFilterDialogVisibility,
                 toggleFilterDialogVisibilityAction);
         add(filmToolBar, BorderLayout.NORTH);
+
+        filterActionPanel = new FilterActionPanel(filmToolBar.getToggleFilterDialogVisibilityButton(), filterConfiguration);
 
         start_init();
 
@@ -777,15 +775,6 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     private static class FilterZeitraumEvent extends BaseEvent {}
-
-    static public class FilterVisibilityToggleButton extends JToggleButton {
-        public FilterVisibilityToggleButton(Action a) {
-            super(a);
-            setText("");
-            final boolean visible = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.FilterDialog.VISIBLE, false);
-            setSelected(visible);
-        }
-    }
 
     public class BookmarkClearListAction extends AbstractAction {
         public BookmarkClearListAction() {

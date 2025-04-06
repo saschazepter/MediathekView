@@ -22,6 +22,7 @@ import mediathek.gui.actions.ManageBookmarkAction;
 import mediathek.gui.actions.PlayFilmAction;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
+import mediathek.tool.ApplicationConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -31,6 +32,7 @@ public class FilmToolBar extends JToolBar {
     private final FilterSelectionComboBox filterSelectionComboBox;
     private final GuiFilme.SearchField searchField;
     private final GuiFilme.ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction;
+    private final FilterVisibilityToggleButton btnToggleFilterDialogVisibility;
 
     public FilmToolBar(@NotNull FilterSelectionComboBoxModel filterModel,
                        @NotNull GuiFilme.BookmarkAddFilmAction bookmarkAddFilmAction,
@@ -40,10 +42,10 @@ public class FilmToolBar extends JToolBar {
                        @NotNull PlayFilmAction playFilmAction,
                        @NotNull GuiFilme.SaveFilmAction saveFilmAction,
                        @NotNull GuiFilme.SearchField searchField,
-                       @NotNull GuiFilme.FilterVisibilityToggleButton btnToggleFilterDialogVisibility,
                        @NotNull GuiFilme.ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction) {
         this.searchField = searchField;
         this.toggleFilterDialogVisibilityAction = toggleFilterDialogVisibilityAction;
+        this.btnToggleFilterDialogVisibility = new FilterVisibilityToggleButton(toggleFilterDialogVisibilityAction);
 
         add(playFilmAction);
         add(saveFilmAction);
@@ -68,6 +70,10 @@ public class FilmToolBar extends JToolBar {
         add(manageBookmarkAction);
     }
 
+    public FilterVisibilityToggleButton getToggleFilterDialogVisibilityButton() {
+        return btnToggleFilterDialogVisibility;
+    }
+
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
@@ -75,5 +81,14 @@ public class FilmToolBar extends JToolBar {
         searchField.setEnabled(enabled);
         filterSelectionComboBox.setEnabled(enabled);
         toggleFilterDialogVisibilityAction.setEnabled(enabled);
+    }
+
+    static class FilterVisibilityToggleButton extends JToggleButton {
+        public FilterVisibilityToggleButton(Action a) {
+            super(a);
+            setText("");
+            final boolean visible = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.FilterDialog.VISIBLE, false);
+            setSelected(visible);
+        }
     }
 }
