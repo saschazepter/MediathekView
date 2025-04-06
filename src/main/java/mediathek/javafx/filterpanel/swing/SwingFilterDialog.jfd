@@ -151,20 +151,38 @@ new FormModel {
 			} )
 			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 				name: "scrollPane1"
-				add( new FormComponent( "javax.swing.JList" ) {
+				add( new FormComponent( "com.jidesoft.swing.CheckBoxList" ) {
 					name: "list1"
 					"model": new javax.swing.DefaultListModel {
-						addElement( "1" )
-						addElement( "2" )
-						addElement( "3" )
-						addElement( "4" )
-						addElement( "5" )
-						addElement( "6" )
-						addElement( "7" )
-						addElement( "8" )
-						addElement( "9" )
-						addElement( "0" )
-						addElement( "bla" )
+						addElement( "3Sat" )
+						addElement( "ARD" )
+						addElement( "ARD-alpha" )
+						addElement( "ARTE.DE" )
+						addElement( "ARTE.EN" )
+						addElement( "ARTE.ES" )
+						addElement( "ARTE.FR" )
+						addElement( "ARTE.IT" )
+						addElement( "ARTE.PL" )
+						addElement( "BR" )
+						addElement( "DW" )
+						addElement( "Funk.net" )
+						addElement( "HR" )
+						addElement( "KiKA" )
+						addElement( "MDR" )
+						addElement( "NDR" )
+						addElement( "ONE" )
+						addElement( "ORF" )
+						addElement( "PHOENIX" )
+						addElement( "Radio Bremen TV" )
+						addElement( "RBB" )
+						addElement( "SR" )
+						addElement( "SRF" )
+						addElement( "SRF.Podcast" )
+						addElement( "SWR" )
+						addElement( "tagesschau24" )
+						addElement( "WDR" )
+						addElement( "ZDF" )
+						addElement( "ZDF-tivi" )
 					}
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
@@ -222,7 +240,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 790, 755 )
+			"size": new java.awt.Dimension( 780, 755 )
 		} )
 	}
 }

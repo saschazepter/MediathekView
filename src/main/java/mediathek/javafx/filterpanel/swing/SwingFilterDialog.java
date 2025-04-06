@@ -22,6 +22,7 @@
 
 package mediathek.javafx.filterpanel.swing;
 
+import com.jidesoft.swing.CheckBoxList;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
 import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
@@ -82,7 +83,7 @@ public class SwingFilterDialog extends JDialog {
         separator4 = new JSeparator();
         label3 = new JLabel();
         scrollPane1 = new JScrollPane();
-        list1 = new JList<>();
+        list1 = new CheckBoxList();
         separator5 = new JSeparator();
         label4 = new JLabel();
         comboBox2 = new JComboBox();
@@ -230,17 +231,35 @@ public class SwingFilterDialog extends JDialog {
             //---- list1 ----
             list1.setModel(new AbstractListModel<String>() {
                 String[] values = {
-                    "1", //NON-NLS
-                    "2", //NON-NLS
-                    "3", //NON-NLS
-                    "4", //NON-NLS
-                    "5", //NON-NLS
-                    "6", //NON-NLS
-                    "7", //NON-NLS
-                    "8", //NON-NLS
-                    "9", //NON-NLS
-                    "0", //NON-NLS
-                    "bla" //NON-NLS
+                    "3Sat", //NON-NLS
+                    "ARD", //NON-NLS
+                    "ARD-alpha", //NON-NLS
+                    "ARTE.DE", //NON-NLS
+                    "ARTE.EN", //NON-NLS
+                    "ARTE.ES", //NON-NLS
+                    "ARTE.FR", //NON-NLS
+                    "ARTE.IT", //NON-NLS
+                    "ARTE.PL", //NON-NLS
+                    "BR", //NON-NLS
+                    "DW", //NON-NLS
+                    "Funk.net", //NON-NLS
+                    "HR", //NON-NLS
+                    "KiKA", //NON-NLS
+                    "MDR", //NON-NLS
+                    "NDR", //NON-NLS
+                    "ONE", //NON-NLS
+                    "ORF", //NON-NLS
+                    "PHOENIX", //NON-NLS
+                    "Radio Bremen TV", //NON-NLS
+                    "RBB", //NON-NLS
+                    "SR", //NON-NLS
+                    "SRF", //NON-NLS
+                    "SRF.Podcast", //NON-NLS
+                    "SWR", //NON-NLS
+                    "tagesschau24", //NON-NLS
+                    "WDR", //NON-NLS
+                    "ZDF", //NON-NLS
+                    "ZDF-tivi" //NON-NLS
                 };
                 @Override
                 public int getSize() { return values.length; }
@@ -304,7 +323,7 @@ public class SwingFilterDialog extends JDialog {
     private JSeparator separator4;
     private JLabel label3;
     private JScrollPane scrollPane1;
-    private JList<String> list1;
+    private CheckBoxList list1;
     private JSeparator separator5;
     private JLabel label4;
     private JComboBox comboBox2;
