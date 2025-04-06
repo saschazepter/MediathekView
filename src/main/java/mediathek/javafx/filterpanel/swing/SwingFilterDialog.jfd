@@ -39,8 +39,7 @@ new FormModel {
 					"value": "cell 2 0,alignx center,growx 0"
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "button3"
-					"text": "3"
+					name: "btnDeleteCurrentFilter"
 					"toolTipText": "Aktuellen Filter löschen"
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 3 0,alignx center,growx 0"

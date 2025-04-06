@@ -33,10 +33,7 @@ import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.javafx.filterpanel.OldSwingJavaFxFilterDialog;
 import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
 import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.ApplicationConfiguration;
-import mediathek.tool.FilterConfiguration;
-import mediathek.tool.MessageBus;
-import mediathek.tool.SVGIconUtilities;
+import mediathek.tool.*;
 import net.engio.mbassy.listener.Handler;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
@@ -63,6 +60,7 @@ public class SwingFilterDialog extends JDialog {
     private final Configuration config = ApplicationConfiguration.getConfiguration();
     private final JToggleButton filterToggleButton;
     private static final Logger logger = LogManager.getLogger();
+    private final FilterConfiguration filterConfig;
 
     public SwingFilterDialog(Window owner, @NotNull FilterSelectionComboBoxModel model,
                              @NotNull JToggleButton filterToggleButton,
@@ -70,9 +68,74 @@ public class SwingFilterDialog extends JDialog {
         super(owner);
         this.filterSelectionComboBoxModel = model;
         this.filterToggleButton = filterToggleButton;
+        this.filterConfig = filterConfig;
 
         initComponents();
 
+        setupRenameFilterButton();
+        setupDeleteCurrentFilterButton();
+
+        setupZeitraumSpinner();
+
+        searchable = new ComboBoxSearchable(jcbThema);
+
+        cboxFilterSelection.setMaximumSize(new Dimension(500, 100));
+
+        OldSwingJavaFxFilterDialog.ToggleVisibilityKeyHandler handler = new OldSwingJavaFxFilterDialog.ToggleVisibilityKeyHandler(this);
+        handler.installHandler(filterToggleButton.getAction());
+
+        restoreWindowSizeFromConfig();
+        restoreDialogVisibility();
+        addComponentListener(new FilterDialogComponentListener());
+
+        var size = getSize();
+        setMinimumSize(size);
+
+        MessageBus.getMessageBus().subscribe(this);
+
+        Daten.getInstance().getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
+            @Override
+            public void start(ListenerFilmeLadenEvent event) {
+                //FIXME here we must manually enable/disable our controls
+                setEnabled(false);
+            }
+
+            @Override
+            public void fertig(ListenerFilmeLadenEvent event) {
+                setEnabled(true);
+            }
+        });
+    }
+
+    private void setupZeitraumSpinner() {
+        spZeitraum.restoreFilterConfig(filterConfig);
+        spZeitraum.installFilterConfigurationChangeListener(filterConfig);
+    }
+
+    private void setupDeleteCurrentFilterButton() {
+        if (filterConfig.getAvailableFilterCount() <= 1) {
+            disableDeleteCurrentFilterButton(true);
+        }
+
+        btnDeleteCurrentFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
+        btnDeleteCurrentFilter.addActionListener(e -> {
+            FilterDTO filterToDelete = filterConfig.getCurrentFilter();
+            filterConfig.deleteFilter(filterToDelete);
+
+            if (filterConfig.getAvailableFilterCount() <= 1) {
+                disableDeleteCurrentFilterButton(true);
+            }
+        });
+    }
+
+    private boolean deleteCurrentFilterButtonEnabled;
+
+    private void disableDeleteCurrentFilterButton(boolean disable) {
+        deleteCurrentFilterButtonEnabled = !disable;
+        btnDeleteCurrentFilter.setEnabled(deleteCurrentFilterButtonEnabled);
+    }
+
+    private void setupRenameFilterButton() {
         btnRenameFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/pen-to-square.svg"));
         btnRenameFilter.addActionListener(l -> {
             final var fltName = filterConfig.getCurrentFilter().name();
@@ -97,39 +160,6 @@ public class SwingFilterDialog extends JDialog {
             } else
                 logger.trace("User cancelled rename");
         });
-
-        spZeitraum.restoreFilterConfig(filterConfig);
-        spZeitraum.installFilterConfigurationChangeListener(filterConfig);
-
-        searchable = new ComboBoxSearchable(jcbThema);
-
-        cboxFilterSelection.setMaximumSize(new Dimension(500, 100));
-
-        OldSwingJavaFxFilterDialog.ToggleVisibilityKeyHandler handler = new OldSwingJavaFxFilterDialog.ToggleVisibilityKeyHandler(this);
-        handler.installHandler(filterToggleButton.getAction());
-
-        restoreWindowSizeFromConfig();
-        restoreDialogVisibility();
-        addComponentListener(new FilterDialogComponentListener());
-
-        var size = getSize();
-        setMinimumSize(size);
-
-        MessageBus.getMessageBus().subscribe(this);
-
-        Daten.getInstance().getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
-            @Override
-            public void start(ListenerFilmeLadenEvent event) {
-                final boolean enabled = false;
-                setEnabled(enabled);
-            }
-
-            @Override
-            public void fertig(ListenerFilmeLadenEvent event) {
-                final boolean enabled = true;
-                setEnabled(enabled);
-            }
-        });
     }
 
     @Handler
@@ -139,6 +169,13 @@ public class SwingFilterDialog extends JDialog {
             setEnabled(enable);
             //FIXME disable all items in dialog
             btnRenameFilter.setEnabled(enable);
+
+            //This looks strange but works...check later
+            if (enable) {
+                btnDeleteCurrentFilter.setEnabled(deleteCurrentFilterButtonEnabled);
+            }
+            else
+                btnDeleteCurrentFilter.setEnabled(false);
 
             cboxFilterSelection.setEnabled(enable);
             spZeitraum.setEnabled(enable);
@@ -229,7 +266,7 @@ public class SwingFilterDialog extends JDialog {
         panel1 = new JPanel();
         btnRenameFilter = new JButton();
         button2 = new JButton();
-        button3 = new JButton();
+        btnDeleteCurrentFilter = new JButton();
         separator1 = new JSeparator();
         button4 = new JButton();
         separator2 = new JSeparator();
@@ -328,10 +365,9 @@ public class SwingFilterDialog extends JDialog {
             button2.setToolTipText("Neuen Filter anlegen"); //NON-NLS
             panel1.add(button2, new CC().cell(2, 0).alignX("center").growX(0)); //NON-NLS
 
-            //---- button3 ----
-            button3.setText("3"); //NON-NLS
-            button3.setToolTipText("Aktuellen Filter l\u00f6schen"); //NON-NLS
-            panel1.add(button3, new CC().cell(3, 0).alignX("center").growX(0)); //NON-NLS
+            //---- btnDeleteCurrentFilter ----
+            btnDeleteCurrentFilter.setToolTipText("Aktuellen Filter l\u00f6schen"); //NON-NLS
+            panel1.add(btnDeleteCurrentFilter, new CC().cell(3, 0).alignX("center").growX(0)); //NON-NLS
 
             //---- separator1 ----
             separator1.setOrientation(SwingConstants.VERTICAL);
@@ -510,7 +546,7 @@ public class SwingFilterDialog extends JDialog {
     private FilterSelectionComboBox cboxFilterSelection;
     private JButton btnRenameFilter;
     private JButton button2;
-    private JButton button3;
+    private JButton btnDeleteCurrentFilter;
     private JSeparator separator1;
     private JButton button4;
     private JSeparator separator2;

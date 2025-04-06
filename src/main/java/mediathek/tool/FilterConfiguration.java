@@ -13,7 +13,6 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 public class FilterConfiguration {
     protected static final String FILTER_PANEL_CURRENT_FILTER = "filter.current.filter";
@@ -345,6 +344,19 @@ public class FilterConfiguration {
         return getAvailableFilters().stream().map(FilterDTO::name).toList();
     }
 
+    public int getAvailableFilterCount() {
+        int count = 0;
+        var keys = configuration.getKeys();
+
+        while (keys.hasNext()) {
+            String key = keys.next();
+            if (key.startsWith(FILTER_PANEL_AVAILABLE_FILTERS)) {
+                count++;
+            }
+        }
+        return count;
+    }
+
     public List<FilterDTO> getAvailableFilters() {
         List<String> availableFilterKeys = new ArrayList<>();
         configuration.getKeys().forEachRemaining(key -> {
@@ -352,7 +364,7 @@ public class FilterConfiguration {
                 availableFilterKeys.add(key);
             }
         });
-        return availableFilterKeys.stream().map(key -> new FilterDTO(UUID.fromString(key.split(KEY_UUID_SPLITERATOR)[1]), configuration.getProperty(key).toString())).collect(Collectors.toUnmodifiableList());
+        return availableFilterKeys.stream().map(key -> new FilterDTO(UUID.fromString(key.split(KEY_UUID_SPLITERATOR)[1]), configuration.getProperty(key).toString())).toList();
     }
 
     public String getFilterName(UUID id) {
