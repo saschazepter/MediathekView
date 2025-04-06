@@ -34,7 +34,7 @@ public class OldSwingJavaFxFilterDialog extends JDialog {
         handler.installHandler(filterToggleButton.getAction());
 
         setDefaultCloseOperation(HIDE_ON_CLOSE);
-        setTitle("Filter");
+        setTitle("JavaFX/Swing Filter");
         setType(Type.UTILITY);
         setContentPane(swingFilterContentPane);
         Platform.runLater(() -> {
