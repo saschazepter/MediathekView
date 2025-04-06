@@ -14,12 +14,12 @@ import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
-import javafx.util.StringConverter;
 import mediathek.config.Daten;
 import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.*;
-import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.configuration2.sync.LockMode;
+import mediathek.tool.EventListWithEmptyFirstEntry;
+import mediathek.tool.FilterConfiguration;
+import mediathek.tool.FilterDTO;
+import mediathek.tool.GermanStringSorter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.controlsfx.control.RangeSlider;
@@ -78,7 +78,6 @@ public class FilterActionPanel {
 
         setupViewSettingsPane();
         setupDeleteFilterButton();
-        setupRenameFilterButton();
 
         //SwingUtilities.invokeLater(() -> filterDialog = new OldSwingJavaFxFilterDialog(MediathekGui.ui(), viewSettingsPane, filterToggleBtn));
         filterDialog = new OldSwingJavaFxFilterDialog(MediathekGui.ui(), viewSettingsPane, filterToggleBtn);
@@ -148,10 +147,10 @@ public class FilterActionPanel {
 
     private void setupAddNewFilterButton() {
         viewSettingsPane.setAddNewFilterButtonEventHandler(e -> {
-            FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), String.format("Filter %d", availableFilters.size() + 1));
+            FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), String.format("Filter %d", filterConfig.getAvailableFilters().size() + 1));
             filterConfig.addNewFilter(newFilter);
             viewSettingsPane.disableDeleteCurrentFilterButton(false);
-            viewSettingsPane.selectFilter(newFilter);
+//            viewSettingsPane.selectFilter(newFilter);
         });
     }
 
@@ -171,30 +170,14 @@ public class FilterActionPanel {
     }
 
     private void setupFilterSelection() {
-        viewSettingsPane.setAvailableFilters(availableFilters);
         FilterConfiguration.addAvailableFiltersObserver(() -> Platform.runLater(() -> {
             availableFilters.clear();
             availableFilters.addAll(filterConfig.getAvailableFilters());
         }));
         FilterConfiguration.addCurrentFiltersObserver(filter -> {
-            viewSettingsPane.selectFilter(filter);
+            //viewSettingsPane.selectFilter(filter);
             restoreConfigSettings();
         });
-
-        viewSettingsPane.setFilterSelectionChangeListener((ov, oldValue, newValue) -> {
-            if (newValue != null && !newValue.equals(oldValue)) {
-                filterConfig.setCurrentFilter(newValue);
-            }
-        });
-
-        viewSettingsPane.setFilterSelectionStringConverter(new FilterStringConverter());
-    }
-
-    private FilterDTO renameCurrentFilter(String newValue) {
-        FilterDTO currentFilter = filterConfig.getCurrentFilter();
-        logger.debug("Can't find a filter with name \"{}\". Renaming the current filter \"{}\" to it.", newValue, currentFilter.name());
-        filterConfig.renameCurrentFilter(newValue);
-        return filterConfig.getCurrentFilter();
     }
 
     private void setupDeleteFilterButton() {
@@ -203,34 +186,6 @@ public class FilterActionPanel {
 
             filterConfig.clearCurrentFilter();
             restoreConfigSettings();
-        });
-    }
-
-    private void setupRenameFilterButton() {
-        viewSettingsPane.btnRenameFilter.setOnAction(e -> {
-            final var fltName = filterConfig.getCurrentFilter().name();
-            SwingUtilities.invokeLater(() -> {
-                String thema;
-                String s = (String) JOptionPane.showInputDialog(MediathekGui.ui(), "Neuer Name des Filters:", "Filter umbenennen", JOptionPane.PLAIN_MESSAGE, null, null, fltName);
-                if (s != null) {
-                    if (!s.isEmpty()) {
-                        final var fName = s.trim();
-                        if (!fName.equals(fltName)) {
-                            Configuration config = ApplicationConfiguration.getConfiguration();
-                            config.lock(LockMode.WRITE);
-                            thema = filterConfig.getThema();
-                            filterConfig.setThema("");
-                            renameCurrentFilter(fName);
-                            filterConfig.setThema(thema);
-                            config.unlock(LockMode.WRITE);
-                            logger.trace("Renamed filter \"{}\" to \"{}\"", fltName, fName);
-                        } else
-                            logger.warn("New and old filter name are identical...doing nothing");
-                    } else
-                        logger.warn("Rename filter text was empty...doing nothing");
-                } else
-                    logger.trace("User cancelled rename");
-            });
         });
     }
 
@@ -272,7 +227,6 @@ public class FilterActionPanel {
     }
 
     private void restoreConfigSettings() {
-        viewSettingsPane.selectFilter(filterConfig.getCurrentFilter());
         showOnlyHighQuality.set(filterConfig.isShowHighQualityOnly());
         showSubtitlesOnly.set(filterConfig.isShowSubtitlesOnly());
         showNewOnly.set(filterConfig.isShowNewOnly());
@@ -388,18 +342,5 @@ public class FilterActionPanel {
             sourceThemaList.add(aktuellesThema);
         }
         viewSettingsPane.themaComboBox.setValue(aktuellesThema);
-    }
-
-    private class FilterStringConverter extends StringConverter<FilterDTO> {
-
-        @Override
-        public String toString(FilterDTO filter) {
-            return filter == null ? null : filter.name();
-        }
-
-        @Override
-        public FilterDTO fromString(String name) {
-            return filterConfig.findFilterForName(name).orElseGet(() -> renameCurrentFilter(name));
-        }
     }
 }

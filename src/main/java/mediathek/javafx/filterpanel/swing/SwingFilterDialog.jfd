@@ -18,7 +18,7 @@ new FormModel {
 			} ) {
 				name: "panel1"
 				add( new FormComponent( "mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox" ) {
-					name: "comboBox1"
+					name: "cboxFilterSelection"
 					auxiliary() {
 						"JavaCodeGenerator.customCreate": true
 					}
@@ -26,8 +26,7 @@ new FormModel {
 					"value": "cell 0 0"
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "button1"
-					"text": "1"
+					name: "btnRenameFilter"
 					"toolTipText": "Filter umbenennen"
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 1 0,alignx center,growx 0"

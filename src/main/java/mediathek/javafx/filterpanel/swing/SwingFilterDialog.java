@@ -32,9 +32,11 @@ import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
 import mediathek.javafx.filterpanel.OldSwingJavaFxFilterDialog;
 import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
+import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.FilterConfiguration;
 import mediathek.tool.MessageBus;
+import mediathek.tool.SVGIconUtilities;
 import net.engio.mbassy.listener.Handler;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
@@ -42,6 +44,8 @@ import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.sync.LockMode;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -58,6 +62,7 @@ public class SwingFilterDialog extends JDialog {
     private final ComboBoxSearchable searchable;
     private final Configuration config = ApplicationConfiguration.getConfiguration();
     private final JToggleButton filterToggleButton;
+    private static final Logger logger = LogManager.getLogger();
 
     public SwingFilterDialog(Window owner, @NotNull FilterSelectionComboBoxModel model,
                              @NotNull JToggleButton filterToggleButton,
@@ -68,12 +73,37 @@ public class SwingFilterDialog extends JDialog {
 
         initComponents();
 
+        btnRenameFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/pen-to-square.svg"));
+        btnRenameFilter.addActionListener(l -> {
+            final var fltName = filterConfig.getCurrentFilter().name();
+            String thema;
+            String s = (String) JOptionPane.showInputDialog(MediathekGui.ui(), "Neuer Name des Filters:", "Filter umbenennen", JOptionPane.PLAIN_MESSAGE, null, null, fltName);
+            if (s != null) {
+                if (!s.isEmpty()) {
+                    final var fName = s.trim();
+                    if (!fName.equals(fltName)) {
+                        Configuration config = ApplicationConfiguration.getConfiguration();
+                        config.lock(LockMode.WRITE);
+                        thema = filterConfig.getThema();
+                        filterConfig.setThema("");
+                        filterConfig.renameCurrentFilter(fName);
+                        filterConfig.setThema(thema);
+                        config.unlock(LockMode.WRITE);
+                        logger.trace("Renamed filter \"{}\" to \"{}\"", fltName, fName);
+                    } else
+                        logger.warn("New and old filter name are identical...doing nothing");
+                } else
+                    logger.warn("Rename filter text was empty...doing nothing");
+            } else
+                logger.trace("User cancelled rename");
+        });
+
         spZeitraum.restoreFilterConfig(filterConfig);
         spZeitraum.installFilterConfigurationChangeListener(filterConfig);
 
         searchable = new ComboBoxSearchable(jcbThema);
 
-        comboBox1.setMaximumSize(new Dimension(500, 100));
+        cboxFilterSelection.setMaximumSize(new Dimension(500, 100));
 
         OldSwingJavaFxFilterDialog.ToggleVisibilityKeyHandler handler = new OldSwingJavaFxFilterDialog.ToggleVisibilityKeyHandler(this);
         handler.installHandler(filterToggleButton.getAction());
@@ -106,8 +136,11 @@ public class SwingFilterDialog extends JDialog {
     private void handleTableModelChangeEvent(TableModelChangeEvent e) {
         SwingUtilities.invokeLater(() -> {
             var enable = !e.active;
-
             setEnabled(enable);
+            //FIXME disable all items in dialog
+            btnRenameFilter.setEnabled(enable);
+
+            cboxFilterSelection.setEnabled(enable);
             spZeitraum.setEnabled(enable);
             label1.setEnabled(enable);
             label2.setEnabled(enable);
@@ -185,7 +218,7 @@ public class SwingFilterDialog extends JDialog {
 
     private void createUIComponents() {
         // TODO: add custom component creation code here
-        comboBox1 = new FilterSelectionComboBox(filterSelectionComboBoxModel);
+        cboxFilterSelection = new FilterSelectionComboBox(filterSelectionComboBoxModel);
     }
 
     private void initComponents() {
@@ -194,7 +227,7 @@ public class SwingFilterDialog extends JDialog {
         createUIComponents();
 
         panel1 = new JPanel();
-        button1 = new JButton();
+        btnRenameFilter = new JButton();
         button2 = new JButton();
         button3 = new JButton();
         separator1 = new JSeparator();
@@ -284,12 +317,11 @@ public class SwingFilterDialog extends JDialog {
                 // rows
                 new AC()
                     .grow().fill()));
-            panel1.add(comboBox1, new CC().cell(0, 0));
+            panel1.add(cboxFilterSelection, new CC().cell(0, 0));
 
-            //---- button1 ----
-            button1.setText("1"); //NON-NLS
-            button1.setToolTipText("Filter umbenennen"); //NON-NLS
-            panel1.add(button1, new CC().cell(1, 0).alignX("center").growX(0)); //NON-NLS
+            //---- btnRenameFilter ----
+            btnRenameFilter.setToolTipText("Filter umbenennen"); //NON-NLS
+            panel1.add(btnRenameFilter, new CC().cell(1, 0).alignX("center").growX(0)); //NON-NLS
 
             //---- button2 ----
             button2.setText("2"); //NON-NLS
@@ -475,8 +507,8 @@ public class SwingFilterDialog extends JDialog {
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off
     // Generated using JFormDesigner non-commercial license
     private JPanel panel1;
-    private FilterSelectionComboBox comboBox1;
-    private JButton button1;
+    private FilterSelectionComboBox cboxFilterSelection;
+    private JButton btnRenameFilter;
     private JButton button2;
     private JButton button3;
     private JSeparator separator1;

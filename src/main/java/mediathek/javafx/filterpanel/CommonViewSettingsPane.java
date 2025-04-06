@@ -1,17 +1,13 @@
 package mediathek.javafx.filterpanel;
 
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
-import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.util.StringConverter;
 import mediathek.gui.messages.TableModelChangeEvent;
-import mediathek.tool.FilterDTO;
 import mediathek.tool.MessageBus;
 import net.engio.mbassy.listener.Handler;
 import org.apache.commons.lang3.SystemUtils;
@@ -34,8 +30,6 @@ public class CommonViewSettingsPane extends VBox {
     public final CheckBox cbShowOnlyLivestreams = new CheckBox("Nur Livestream anzeigen");
     public final Button btnDeleteFilterSettings = new Button();
     public final Button btnDeleteCurrentFilter = new Button();
-    public final Button btnRenameFilter = new Button();
-    private final ComboBox<FilterDTO> filterSelect = new ComboBox<>();
     private final Button btnAddNewFilter = new Button();
     private boolean deleteCurrentFilterButtonDisabled;
 
@@ -50,7 +44,7 @@ public class CommonViewSettingsPane extends VBox {
     private HBox createTopButtonRow() {
         HBox btnBox = new HBox();
         btnBox.setSpacing(4d);
-        btnBox.getChildren().addAll(filterSelect, btnRenameFilter, btnAddNewFilter, btnDeleteCurrentFilter,
+        btnBox.getChildren().addAll(btnAddNewFilter, btnDeleteCurrentFilter,
                 new Separator(Orientation.VERTICAL), btnDeleteFilterSettings);
         return btnBox;
     }
@@ -86,9 +80,6 @@ public class CommonViewSettingsPane extends VBox {
     }
 
     private void setupButtons() {
-        btnRenameFilter.setTooltip(new Tooltip("Filter umbenennen"));
-        btnRenameFilter.setGraphic(new FontAwesomeGlyph("EDIT"));
-
         btnAddNewFilter.setTooltip(new Tooltip("Neuen Filter anlegen"));
         btnAddNewFilter.setGraphic(new FontAwesomeGlyph("PLUS"));
 
@@ -102,8 +93,6 @@ public class CommonViewSettingsPane extends VBox {
     public CommonViewSettingsPane() {
         setPadding(new Insets(5, 5, 5, 5));
         setSpacing(4d);
-
-        filterSelect.setPromptText("Filter Auswahl");
 
         setupButtons();
 
@@ -157,10 +146,8 @@ public class CommonViewSettingsPane extends VBox {
                     senderCheckList.setDisable(disable);
                     themaComboBox.setDisable(disable);
                     filmLengthSliderNode.setDisable(disable);
-                    filterSelect.setDisable(disable);
                     btnDeleteCurrentFilter.setDisable(disable || deleteCurrentFilterButtonDisabled);
                     btnAddNewFilter.setDisable(disable);
-                    btnRenameFilter.setDisable(disable);
                 });
     }
 
@@ -169,26 +156,7 @@ public class CommonViewSettingsPane extends VBox {
         btnDeleteCurrentFilter.setDisable(disable);
     }
 
-    public void setFilterSelectionChangeListener(ChangeListener<FilterDTO> changeListener) {
-        filterSelect.getSelectionModel().selectedItemProperty().addListener(changeListener);
-    }
-
-    public void setAvailableFilters(ObservableList<FilterDTO> filters) {
-        filterSelect.setItems(filters);
-    }
-
-    public void selectFilter(FilterDTO filter) {
-        SingleSelectionModel<FilterDTO> selectionModel = filterSelect.getSelectionModel();
-        if (!filter.equals(selectionModel.getSelectedItem())) {
-            Platform.runLater(() -> selectionModel.select(filter));
-        }
-    }
-
     public void setAddNewFilterButtonEventHandler(EventHandler<ActionEvent> eventHandler) {
         btnAddNewFilter.setOnAction(eventHandler);
-    }
-
-    public void setFilterSelectionStringConverter(StringConverter<FilterDTO> filterStringConverter) {
-        filterSelect.setConverter(filterStringConverter);
     }
 }
