@@ -33,6 +33,7 @@ import mediathek.gui.messages.*;
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent;
 import mediathek.gui.tabs.AGuiTabPanel;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
+import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
 import mediathek.gui.tabs.tab_film.helpers.GuiFilmeModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.LuceneGuiFilmeModelHelper;
@@ -98,6 +99,7 @@ public class GuiFilme extends AGuiTabPanel {
     public final CopyUrlToClipboardAction copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.HIGH_QUALITY);
     public final CopyUrlToClipboardAction copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.NORMAL);
     protected final JTabbedPane psetButtonsTab = new JTabbedPane();
+    protected final FilterSelectionComboBoxModel filterSelectionComboBoxModel = new FilterSelectionComboBoxModel();
     private final BookmarkAddFilmAction bookmarkAddFilmAction = new BookmarkAddFilmAction();
     private final BookmarkRemoveFilmAction bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction();
     private final BookmarkClearListAction bookmarkClearListAction = new BookmarkClearListAction();
@@ -115,9 +117,9 @@ public class GuiFilme extends AGuiTabPanel {
      */
     private final FilterActionPanel filterActionPanel;
     private final FilterConfiguration filterConfiguration = new FilterConfiguration();
+    private final JToolBar filmToolBar;
     public ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction();
     protected SearchField searchField;
-    protected FilterSelectionComboBox filterSelectionComboBox = new FilterSelectionComboBox();
     protected FilterVisibilityToggleButton btnToggleFilterDialogVisibility = new FilterVisibilityToggleButton(toggleFilterDialogVisibilityAction);
     protected PsetButtonsPanel psetButtonsPanel;
     private Optional<BookmarkWindowController> bookmarkWindowController = Optional.empty();
@@ -153,7 +155,8 @@ public class GuiFilme extends AGuiTabPanel {
         setupPsetButtonsTab();
 
         filterActionPanel = new FilterActionPanel(btnToggleFilterDialogVisibility, filterConfiguration);
-        add(new FilmToolBar(), BorderLayout.NORTH);
+        filmToolBar = new FilmToolBar(filterSelectionComboBoxModel);
+        add(filmToolBar, BorderLayout.NORTH);
 
         start_init();
 
@@ -200,9 +203,7 @@ public class GuiFilme extends AGuiTabPanel {
             bookmarkRemoveFilmAction.setEnabled(flag);
             bookmarkClearListAction.setEnabled(flag);
             manageBookmarkAction.setEnabled(flag);
-            toggleFilterDialogVisibilityAction.setEnabled(flag);
-            searchField.setEnabled(flag);
-            filterSelectionComboBox.setEnabled(flag);
+            filmToolBar.setEnabled(flag);
         };
         if (e.active) {
             SwingUtilities.invokeLater(() -> function.accept(false));
@@ -777,16 +778,20 @@ public class GuiFilme extends AGuiTabPanel {
         }
     }
 
-    private class FilmToolBar extends JToolBar {
-        public FilmToolBar() {
+    public class FilmToolBar extends JToolBar {
+        private final JLabel lblSearch = new JLabel("Suche:");
+        private final FilterSelectionComboBox filterSelectionComboBox;
+
+        public FilmToolBar(@NotNull FilterSelectionComboBoxModel filterModel) {
             add(playFilmAction);
             add(saveFilmAction);
             addSeparator();
 
+            filterSelectionComboBox = new FilterSelectionComboBox(filterModel);
             add(filterSelectionComboBox);
             addSeparator();
 
-            add(new JLabel("Suche:"));
+            add(lblSearch);
             add(searchField);
             addSeparator();
 
@@ -799,6 +804,15 @@ public class GuiFilme extends AGuiTabPanel {
             add(bookmarkClearListAction);
             addSeparator();
             add(manageBookmarkAction);
+        }
+
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+            lblSearch.setEnabled(enabled);
+            searchField.setEnabled(enabled);
+            filterSelectionComboBox.setEnabled(enabled);
+            toggleFilterDialogVisibilityAction.setEnabled(enabled);
         }
     }
 
