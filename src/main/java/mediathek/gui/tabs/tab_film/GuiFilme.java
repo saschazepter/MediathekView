@@ -118,6 +118,7 @@ public class GuiFilme extends AGuiTabPanel {
     private final FilterActionPanel filterActionPanel;
     private final FilterConfiguration filterConfiguration = new FilterConfiguration();
     private final FilmToolBar filmToolBar;
+    private final SwingFilterDialog swingFilterDialog;
     public ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction();
     protected SearchField searchField;
     protected PsetButtonsPanel psetButtonsPanel;
@@ -165,6 +166,8 @@ public class GuiFilme extends AGuiTabPanel {
         add(filmToolBar, BorderLayout.NORTH);
 
         filterActionPanel = new FilterActionPanel(filmToolBar.getToggleFilterDialogVisibilityButton(), filterConfiguration);
+        swingFilterDialog = new SwingFilterDialog(mediathekGui, filterSelectionComboBoxModel,
+                filmToolBar.getToggleFilterDialogVisibilityButton());
 
         start_init();
 
@@ -801,7 +804,6 @@ public class GuiFilme extends AGuiTabPanel {
             }        }
     }
 
-    private SwingFilterDialog swingFilterDialog;
     public class ToggleFilterDialogVisibilityAction extends AbstractAction {
         public ToggleFilterDialogVisibilityAction() {
             putValue(Action.NAME, "Filterdialog anzeigen");
@@ -820,9 +822,6 @@ public class GuiFilme extends AGuiTabPanel {
                 dlg.setVisible(visible);
             }
 
-            if (swingFilterDialog == null) {
-                swingFilterDialog = new SwingFilterDialog(mediathekGui, filterSelectionComboBoxModel);
-            }
             var visible = swingFilterDialog.isVisible();
             visible = !visible;
             swingFilterDialog.setVisible(visible);

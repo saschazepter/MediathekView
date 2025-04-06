@@ -24,17 +24,30 @@ package mediathek.javafx.filterpanel.swing;
 
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.ComboBoxSearchable;
+import mediathek.config.Daten;
+import mediathek.filmeSuchen.ListenerFilmeLaden;
+import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
+import mediathek.gui.messages.TableModelChangeEvent;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
+import mediathek.javafx.filterpanel.OldSwingJavaFxFilterDialog;
 import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
+import mediathek.tool.ApplicationConfiguration;
+import mediathek.tool.MessageBus;
+import net.engio.mbassy.listener.Handler;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.configuration2.Configuration;
+import org.apache.commons.configuration2.sync.LockMode;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.util.NoSuchElementException;
 
 /**
  * @author christianfranzke
@@ -42,18 +55,119 @@ import java.awt.*;
 public class SwingFilterDialog extends JDialog {
     private final FilterSelectionComboBoxModel filterSelectionComboBoxModel;
     private final ComboBoxSearchable searchable;
+    private final Configuration config = ApplicationConfiguration.getConfiguration();
+    private final JToggleButton filterToggleButton;
 
-    public SwingFilterDialog(Window owner, @NotNull FilterSelectionComboBoxModel model) {
+    public SwingFilterDialog(Window owner, @NotNull FilterSelectionComboBoxModel model,
+                             @NotNull JToggleButton filterToggleButton) {
         super(owner);
         this.filterSelectionComboBoxModel = model;
+        this.filterToggleButton = filterToggleButton;
 
         initComponents();
+        searchable = new ComboBoxSearchable(jcbThema);
+
         comboBox1.setMaximumSize(new Dimension(500, 100));
 
-        searchable = new ComboBoxSearchable(jcbThema);
+        OldSwingJavaFxFilterDialog.ToggleVisibilityKeyHandler handler = new OldSwingJavaFxFilterDialog.ToggleVisibilityKeyHandler(this);
+        handler.installHandler(filterToggleButton.getAction());
+
+        restoreWindowSizeFromConfig();
+        restoreDialogVisibility();
+        addComponentListener(new FilterDialogComponentListener());
 
         var size = getSize();
         setMinimumSize(size);
+
+        MessageBus.getMessageBus().subscribe(this);
+
+        Daten.getInstance().getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
+            @Override
+            public void start(ListenerFilmeLadenEvent event) {
+                final boolean enabled = false;
+                setEnabled(enabled);
+            }
+
+            @Override
+            public void fertig(ListenerFilmeLadenEvent event) {
+                final boolean enabled = true;
+                setEnabled(enabled);
+            }
+        });
+    }
+
+    @Handler
+    private void handleTableModelChangeEvent(TableModelChangeEvent e) {
+        SwingUtilities.invokeLater(() -> setEnabled(!e.active));
+    }
+
+    private void restoreDialogVisibility() {
+        final boolean visible = config.getBoolean(ApplicationConfiguration.FilterDialog.VISIBLE, false);
+        setVisible(visible);
+    }
+
+    private void storeDialogVisibility() {
+        var config = ApplicationConfiguration.getConfiguration();
+        config.setProperty(ApplicationConfiguration.FilterDialog.VISIBLE, isVisible());
+    }
+
+    private void restoreWindowSizeFromConfig() {
+        try {
+            config.lock(LockMode.READ);
+            final int width = config.getInt(ApplicationConfiguration.FilterDialog.WIDTH);
+            final int height = config.getInt(ApplicationConfiguration.FilterDialog.HEIGHT);
+            final int x = config.getInt(ApplicationConfiguration.FilterDialog.X);
+            final int y = config.getInt(ApplicationConfiguration.FilterDialog.Y);
+
+            setBounds(x, y, width, height);
+        } catch (NoSuchElementException ignored) {
+            //do not restore anything
+        } finally {
+            config.unlock(LockMode.READ);
+        }
+
+    }
+
+    public class FilterDialogComponentListener extends ComponentAdapter {
+        @Override
+        public void componentResized(ComponentEvent e) {
+            storeWindowPosition(e);
+        }
+
+        @Override
+        public void componentMoved(ComponentEvent e) {
+            storeWindowPosition(e);
+        }
+
+        @Override
+        public void componentShown(ComponentEvent e) {
+            storeDialogVisibility();
+            filterToggleButton.setSelected(true);
+        }
+
+        @Override
+        public void componentHidden(ComponentEvent e) {
+            storeWindowPosition(e);
+            storeDialogVisibility();
+
+            filterToggleButton.setSelected(false);
+        }
+
+        private void storeWindowPosition(ComponentEvent e) {
+            var component = e.getComponent();
+
+            var dims = component.getSize();
+            var loc = component.getLocation();
+            try {
+                config.lock(LockMode.WRITE);
+                config.setProperty(ApplicationConfiguration.FilterDialog.WIDTH, dims.width);
+                config.setProperty(ApplicationConfiguration.FilterDialog.HEIGHT, dims.height);
+                config.setProperty(ApplicationConfiguration.FilterDialog.X, loc.x);
+                config.setProperty(ApplicationConfiguration.FilterDialog.Y, loc.y);
+            } finally {
+                config.unlock(LockMode.WRITE);
+            }
+        }
     }
 
     private void createUIComponents() {
