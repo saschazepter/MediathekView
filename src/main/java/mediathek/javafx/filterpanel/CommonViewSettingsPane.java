@@ -157,7 +157,6 @@ public class CommonViewSettingsPane extends VBox {
                     senderCheckList.setDisable(disable);
                     themaComboBox.setDisable(disable);
                     filmLengthSliderNode.setDisable(disable);
-                    //zeitraumSpinner.setDisable(disable);
                     filterSelect.setDisable(disable);
                     btnDeleteCurrentFilter.setDisable(disable || deleteCurrentFilterButtonDisabled);
                     btnAddNewFilter.setDisable(disable);

@@ -289,8 +289,6 @@ public class FilterActionPanel {
 
         restoreFilmLengthSlider();
 
-        filterDialog.swingFilterContentPane.zeitraumSpinner.restoreFilterConfig(filterConfig);
-
         restoreSenderList();
     }
 
@@ -340,8 +338,6 @@ public class FilterActionPanel {
 
         filmLengthSlider.lowValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMin(newValue.doubleValue())));
         filmLengthSlider.highValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMax(newValue.doubleValue())));
-
-        filterDialog.swingFilterContentPane.zeitraumSpinner.installFilterConfigurationChangeListener(filterConfig);
 
         checkedChannels.addListener((obs, oldList, newList) -> filterConfig.setCheckedChannels(new HashSet<>(newList)));
         themaProperty.addListener(((ov, oldVal, newValue) -> filterConfig.setThema(newValue)));
