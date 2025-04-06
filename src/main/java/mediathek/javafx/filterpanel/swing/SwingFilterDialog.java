@@ -174,6 +174,7 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private void setupRenameFilterButton() {
+        //FIXME check if filter already exists -> do nothing then!!
         btnRenameFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/pen-to-square.svg"));
         btnRenameFilter.addActionListener(l -> {
             final var fltName = filterConfig.getCurrentFilter().name();
