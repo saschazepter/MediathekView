@@ -51,8 +51,7 @@ new FormModel {
 					"value": "cell 4 0"
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "button4"
-					"text": "4"
+					name: "btnResetCurrentFilter"
 					"toolTipText": "Aktuellen Filter zurücksetzen"
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 5 0,alignx center,growx 0"

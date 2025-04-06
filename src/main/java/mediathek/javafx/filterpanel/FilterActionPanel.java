@@ -77,7 +77,6 @@ public class FilterActionPanel {
         this.filterConfig = filterConfig;
 
         setupViewSettingsPane();
-        setupDeleteFilterButton();
 
         //SwingUtilities.invokeLater(() -> filterDialog = new OldSwingJavaFxFilterDialog(MediathekGui.ui(), viewSettingsPane, filterToggleBtn));
         filterDialog = new OldSwingJavaFxFilterDialog(MediathekGui.ui(), viewSettingsPane, filterToggleBtn);
@@ -161,15 +160,6 @@ public class FilterActionPanel {
         }));
         FilterConfiguration.addCurrentFiltersObserver(filter -> {
             //viewSettingsPane.selectFilter(filter);
-            restoreConfigSettings();
-        });
-    }
-
-    private void setupDeleteFilterButton() {
-        viewSettingsPane.btnDeleteFilterSettings.setOnAction(e -> {
-            viewSettingsPane.senderCheckList.getCheckModel().clearChecks();
-
-            filterConfig.clearCurrentFilter();
             restoreConfigSettings();
         });
     }

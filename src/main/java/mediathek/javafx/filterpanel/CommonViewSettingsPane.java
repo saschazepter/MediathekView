@@ -4,7 +4,6 @@ import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import mediathek.gui.messages.TableModelChangeEvent;
@@ -28,7 +27,6 @@ public class CommonViewSettingsPane extends VBox {
     public final CheckBox cbShowNewOnly = new CheckBox("Nur neue Filme anzeigen");
     public final CheckBox cbShowBookMarkedOnly = new CheckBox("Nur gemerkte Filme anzeigen");
     public final CheckBox cbShowOnlyLivestreams = new CheckBox("Nur Livestream anzeigen");
-    public final Button btnDeleteFilterSettings = new Button();
     private final Button btnAddNewFilter = new Button();
 
     static class FontAwesomeGlyph extends Glyph {
@@ -42,9 +40,7 @@ public class CommonViewSettingsPane extends VBox {
     private HBox createTopButtonRow() {
         HBox btnBox = new HBox();
         btnBox.setSpacing(4d);
-        btnBox.getChildren().addAll(btnAddNewFilter,
-                new Separator(Orientation.VERTICAL),
-                btnDeleteFilterSettings);
+        btnBox.getChildren().add(btnAddNewFilter);
         return btnBox;
     }
 
@@ -81,9 +77,6 @@ public class CommonViewSettingsPane extends VBox {
     private void setupButtons() {
         btnAddNewFilter.setTooltip(new Tooltip("Neuen Filter anlegen"));
         btnAddNewFilter.setGraphic(new FontAwesomeGlyph("PLUS"));
-
-        btnDeleteFilterSettings.setTooltip(new Tooltip("Aktuellen Filter zurücksetzen"));
-        btnDeleteFilterSettings.setGraphic(new FontAwesomeGlyph("RECYCLE"));
     }
 
     public CommonViewSettingsPane() {
@@ -127,7 +120,6 @@ public class CommonViewSettingsPane extends VBox {
         Platform.runLater(
                 () -> {
                     final boolean disable = evt.active;
-                    btnDeleteFilterSettings.setDisable(disable);
                     cbShowOnlyHd.setDisable(disable);
                     cbShowSubtitlesOnly.setDisable(disable);
                     cbShowNewOnly.setDisable(disable);

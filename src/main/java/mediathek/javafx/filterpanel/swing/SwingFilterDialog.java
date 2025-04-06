@@ -74,6 +74,7 @@ public class SwingFilterDialog extends JDialog {
 
         setupRenameFilterButton();
         setupDeleteCurrentFilterButton();
+        setupResetCurrentFilterButton();
 
         setupZeitraumSpinner();
 
@@ -116,6 +117,35 @@ public class SwingFilterDialog extends JDialog {
         if (filterConfig.getAvailableFilterCount() <= 1) {
             btnDeleteCurrentFilter.setEnabled(false);
         }
+    }
+
+    private void restoreConfigSettings() {
+        /*showOnlyHighQuality.set(filterConfig.isShowHighQualityOnly());
+        showSubtitlesOnly.set(filterConfig.isShowSubtitlesOnly());
+        showNewOnly.set(filterConfig.isShowNewOnly());
+        showBookMarkedOnly.set(filterConfig.isShowBookMarkedOnly());
+        showUnseenOnly.set(filterConfig.isShowUnseenOnly());
+        showLivestreamsOnly.set(filterConfig.isShowLivestreamsOnly());
+
+        dontShowAbos.set(filterConfig.isDontShowAbos());
+        dontShowTrailers.set(filterConfig.isDontShowTrailers());
+        dontShowSignLanguage.set(filterConfig.isDontShowSignLanguage());
+        dontShowAudioVersions.set(filterConfig.isDontShowAudioVersions());
+        dontShowDuplicates.set(filterConfig.isDontShowDuplicates());
+        viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
+
+        restoreFilmLengthSlider();
+
+        restoreSenderList();*/
+    }
+
+    private void setupResetCurrentFilterButton() {
+        btnResetCurrentFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/recycle.svg"));
+        btnResetCurrentFilter.addActionListener(e -> {
+            //TODO clear sender check list?
+            filterConfig.clearCurrentFilter();
+            restoreConfigSettings();
+        });
     }
 
     private void setupDeleteCurrentFilterButton() {
@@ -264,7 +294,7 @@ public class SwingFilterDialog extends JDialog {
         button2 = new JButton();
         btnDeleteCurrentFilter = new JButton();
         separator1 = new JSeparator();
-        button4 = new JButton();
+        btnResetCurrentFilter = new JButton();
         separator2 = new JSeparator();
         checkBox2 = new JCheckBox();
         checkBox1 = new JCheckBox();
@@ -369,10 +399,9 @@ public class SwingFilterDialog extends JDialog {
             separator1.setOrientation(SwingConstants.VERTICAL);
             panel1.add(separator1, new CC().cell(4, 0));
 
-            //---- button4 ----
-            button4.setText("4"); //NON-NLS
-            button4.setToolTipText("Aktuellen Filter zur\u00fccksetzen"); //NON-NLS
-            panel1.add(button4, new CC().cell(5, 0).alignX("center").growX(0)); //NON-NLS
+            //---- btnResetCurrentFilter ----
+            btnResetCurrentFilter.setToolTipText("Aktuellen Filter zur\u00fccksetzen"); //NON-NLS
+            panel1.add(btnResetCurrentFilter, new CC().cell(5, 0).alignX("center").growX(0)); //NON-NLS
         }
         contentPane.add(panel1, new CC().cell(0, 0, 3, 1).growX());
         contentPane.add(separator2, new CC().cell(0, 1, 3, 1).growX());
@@ -544,7 +573,7 @@ public class SwingFilterDialog extends JDialog {
     private JButton button2;
     private JButton btnDeleteCurrentFilter;
     private JSeparator separator1;
-    private JButton button4;
+    private JButton btnResetCurrentFilter;
     private JSeparator separator2;
     private JCheckBox checkBox2;
     private JCheckBox checkBox1;
