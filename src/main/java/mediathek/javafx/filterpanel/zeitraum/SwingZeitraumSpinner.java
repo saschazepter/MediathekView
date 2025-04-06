@@ -18,11 +18,50 @@
 
 package mediathek.javafx.filterpanel.zeitraum;
 
+import mediathek.javafx.filterpanel.ZeitraumSpinner;
+import mediathek.tool.FilterConfiguration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
+
 import javax.swing.*;
 
 public class SwingZeitraumSpinner extends JSpinner {
+    private static final Logger logger = LogManager.getLogger();
+
     public SwingZeitraumSpinner() {
         super(new SpinnerNumberModel(0, 0, 365, 1));
         ((DefaultEditor) getEditor()).getTextField().setFormatterFactory(new ZeitraumSpinnerFormatterFactory());
+    }
+
+    public void restoreFilterConfig(@NotNull FilterConfiguration filterConfiguration) {
+        try {
+            var zeitraumVal = filterConfiguration.getZeitraum();
+            int zeitraumValInt;
+            if (zeitraumVal.equals(ZeitraumSpinnerFormatter.INFINITE_TEXT))
+                zeitraumValInt = (int) ZeitraumSpinnerFormatter.INFINITE_VALUE;
+            else
+                zeitraumValInt = Integer.parseInt(zeitraumVal);
+            setValue(zeitraumValInt);
+        } catch (Exception exception) {
+            logger.error("Failed to restore filter config!", exception);
+        }
+    }
+
+    public void installFilterConfigurationChangeListener(@NotNull FilterConfiguration filterConfiguration) {
+        addChangeListener(l -> {
+            try {
+                var val = (int) getValue();
+                String strVal;
+                if (val == (int) ZeitraumSpinnerFormatter.INFINITE_VALUE)
+                    strVal = ZeitraumSpinner.UNLIMITED_VALUE;
+                else
+                    strVal = String.valueOf(val);
+
+                filterConfiguration.setZeitraum(strVal);
+            } catch (Exception exception) {
+                logger.error("Failed to save filter config!", exception);
+            }
+        });
     }
 }

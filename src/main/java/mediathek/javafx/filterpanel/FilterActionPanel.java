@@ -16,7 +16,6 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.util.StringConverter;
 import mediathek.config.Daten;
-import mediathek.javafx.filterpanel.zeitraum.ZeitraumSpinnerFormatter;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import org.apache.commons.configuration2.Configuration;
@@ -290,17 +289,7 @@ public class FilterActionPanel {
 
         restoreFilmLengthSlider();
 
-        try {
-            var zeitraumVal = filterConfig.getZeitraum();
-            int zeitraumValInt;
-            if (zeitraumVal.equals(ZeitraumSpinnerFormatter.INFINITE_TEXT))
-                zeitraumValInt = (int)ZeitraumSpinnerFormatter.INFINITE_VALUE;
-            else
-                zeitraumValInt = Integer.parseInt(zeitraumVal);
-            filterDialog.swingFilterContentPane.zeitraumSpinner.setValue(zeitraumValInt);
-        } catch (Exception exception) {
-            logger.debug("Beim wiederherstellen der Filter Einstellungen für den Zeitraum ist ein Fehler aufgetreten!", exception);
-        }
+        filterDialog.swingFilterContentPane.zeitraumSpinner.restoreFilterConfig(filterConfig);
 
         restoreSenderList();
     }
@@ -352,16 +341,7 @@ public class FilterActionPanel {
         filmLengthSlider.lowValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMin(newValue.doubleValue())));
         filmLengthSlider.highValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMax(newValue.doubleValue())));
 
-        filterDialog.swingFilterContentPane.zeitraumSpinner.addChangeListener(l -> {
-            var val = (int)filterDialog.swingFilterContentPane.zeitraumSpinner.getValue();
-            String strVal;
-            if (val == (int)ZeitraumSpinnerFormatter.INFINITE_VALUE)
-                strVal = ZeitraumSpinner.UNLIMITED_VALUE;
-            else
-                strVal = String.valueOf(val);
-
-            filterConfig.setZeitraum(strVal);
-        });
+        filterDialog.swingFilterContentPane.zeitraumSpinner.installFilterConfigurationChangeListener(filterConfig);
 
         checkedChannels.addListener((obs, oldList, newList) -> filterConfig.setCheckedChannels(new HashSet<>(newList)));
         themaProperty.addListener(((ov, oldVal, newValue) -> filterConfig.setThema(newValue)));
