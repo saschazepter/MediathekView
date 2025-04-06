@@ -41,7 +41,7 @@ import java.awt.*;
  */
 public class SwingFilterDialog extends JDialog {
     private final FilterSelectionComboBoxModel filterSelectionComboBoxModel;
-    private ComboBoxSearchable searchable;
+    private final ComboBoxSearchable searchable;
 
     public SwingFilterDialog(Window owner, @NotNull FilterSelectionComboBoxModel model) {
         super(owner);
