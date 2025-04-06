@@ -821,7 +821,7 @@ public class GuiFilme extends AGuiTabPanel {
             }
 
             if (swingFilterDialog == null) {
-                swingFilterDialog = new SwingFilterDialog(mediathekGui);
+                swingFilterDialog = new SwingFilterDialog(mediathekGui, filterSelectionComboBoxModel);
             }
             var visible = swingFilterDialog.isVisible();
             visible = !visible;
