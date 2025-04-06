@@ -117,7 +117,7 @@ public class OldSwingJavaFxFilterDialog extends JDialog {
 
     }
 
-    static class ToggleVisibilityKeyHandler {
+    public static class ToggleVisibilityKeyHandler {
         private static final String TOGGLE_FILTER_VISIBILITY = "toggle_dialog_visibility";
         private final JRootPane rootPane;
         public ToggleVisibilityKeyHandler(JDialog dlg) {
