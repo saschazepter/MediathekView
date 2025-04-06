@@ -56,11 +56,11 @@ import java.util.UUID;
  * @author christianfranzke
  */
 public class SwingFilterDialog extends JDialog {
+    private static final Logger logger = LogManager.getLogger();
     private final FilterSelectionComboBoxModel filterSelectionComboBoxModel;
     private final ComboBoxSearchable searchable;
     private final Configuration config = ApplicationConfiguration.getConfiguration();
     private final JToggleButton filterToggleButton;
-    private static final Logger logger = LogManager.getLogger();
     private final FilterConfiguration filterConfig;
 
     public SwingFilterDialog(Window owner, @NotNull FilterSelectionComboBoxModel model,
@@ -153,7 +153,8 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private void setupAddNewFilterButton() {
-        btnAddNewFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/plus.svg"));btnAddNewFilter.addActionListener(e -> {
+        btnAddNewFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/plus.svg"));
+        btnAddNewFilter.addActionListener(e -> {
             FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), String.format("Filter %d", filterConfig.getAvailableFilters().size() + 1));
             filterConfig.addNewFilter(newFilter);
             checkDeleteCurrentFilterButtonState();
@@ -212,8 +213,7 @@ public class SwingFilterDialog extends JDialog {
             //This looks strange but works...check later
             if (e.active) {
                 btnDeleteCurrentFilter.setEnabled(false);
-            }
-            else {
+            } else {
                 btnDeleteCurrentFilter.setEnabled(filterConfig.getAvailableFilterCount() > 1);
             }
 
