@@ -6,7 +6,7 @@ new FormModel {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 			"$layoutConstraints": "fillx,insets 5,hidemode 3"
 			"$columnConstraints": "[left][grow,fill][fill]"
-			"$rowConstraints": "[][top]0[]0[]0[]0[]0[]0[]0[]0[]0[]0[]0[]0[]0[][]"
+			"$rowConstraints": "[][shrink 0,top]0[]0[]0[]0[]0[]0[shrink 0]0[]0[]0[]0[]0[]0[]0[shrink 0][][grow][shrink 0][][shrink 0][][shrink 0][]"
 		} ) {
 			name: "this"
 			"type": enum java.awt.Window$Type UTILITY
@@ -144,25 +144,85 @@ new FormModel {
 				"value": "cell 0 14 3 1,growx"
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label3"
+				"text": "Sender:"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 15 3 1"
+			} )
+			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+				name: "scrollPane1"
+				add( new FormComponent( "javax.swing.JList" ) {
+					name: "list1"
+					"model": new javax.swing.DefaultListModel {
+						addElement( "1" )
+						addElement( "2" )
+						addElement( "3" )
+						addElement( "4" )
+						addElement( "5" )
+						addElement( "6" )
+						addElement( "7" )
+						addElement( "8" )
+						addElement( "9" )
+						addElement( "0" )
+						addElement( "bla" )
+					}
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 16 3 1,grow,hmin 50"
+			} )
+			add( new FormComponent( "javax.swing.JSeparator" ) {
+				name: "separator5"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 17 3 1,growx"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label4"
+				"text": "Thema:"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 18"
+			} )
+			add( new FormComponent( "javax.swing.JComboBox" ) {
+				name: "comboBox2"
+				"editable": true
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 1 18 2 1,growx"
+			} )
+			add( new FormComponent( "javax.swing.JSeparator" ) {
+				name: "separator6"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 19 3 1,growx"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
+				name: "label5"
+				"text": "RangeSlider"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 20 3 1"
+			} )
+			add( new FormComponent( "javax.swing.JSeparator" ) {
+				name: "separator7"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 21 3 1,growx"
+			} )
+			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label1"
 				"text": "Zeitraum:"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 15"
+				"value": "cell 0 22"
 			} )
 			add( new FormComponent( "mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner" ) {
 				name: "spinner1"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 1 15"
+				"value": "cell 1 22"
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label2"
 				"text": "Tage"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 2 15"
+				"value": "cell 2 22"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 790, 370 )
+			"size": new java.awt.Dimension( 790, 755 )
 		} )
 	}
 }

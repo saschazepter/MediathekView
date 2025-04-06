@@ -78,6 +78,15 @@ public class SwingFilterDialog extends JDialog {
         checkBox10 = new JCheckBox();
         checkBox11 = new JCheckBox();
         separator4 = new JSeparator();
+        label3 = new JLabel();
+        scrollPane1 = new JScrollPane();
+        list1 = new JList<>();
+        separator5 = new JSeparator();
+        label4 = new JLabel();
+        comboBox2 = new JComboBox();
+        separator6 = new JSeparator();
+        label5 = new JLabel();
+        separator7 = new JSeparator();
         label1 = new JLabel();
         spinner1 = new SwingZeitraumSpinner();
         label2 = new JLabel();
@@ -96,20 +105,27 @@ public class SwingFilterDialog extends JDialog {
             // rows
             new AC()
                 .gap()
-                .align("top").gap("0") //NON-NLS
+                .shrink(0).align("top").gap("0") //NON-NLS
+                .gap("0") //NON-NLS
+                .gap("0") //NON-NLS
+                .gap("0") //NON-NLS
+                .gap("0") //NON-NLS
+                .gap("0") //NON-NLS
+                .shrink(0).gap("0") //NON-NLS
                 .gap("0") //NON-NLS
                 .gap("0") //NON-NLS
                 .gap("0") //NON-NLS
                 .gap("0") //NON-NLS
                 .gap("0") //NON-NLS
                 .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
-                .gap("0") //NON-NLS
+                .shrink(0).gap()
                 .gap()
+                .grow().gap()
+                .shrink(0).gap()
+                .gap()
+                .shrink(0).gap()
+                .gap()
+                .shrink(0).gap()
                 ));
 
         //======== panel1 ========
@@ -202,14 +218,60 @@ public class SwingFilterDialog extends JDialog {
         contentPane.add(checkBox11, new CC().cell(0, 13, 3, 1));
         contentPane.add(separator4, new CC().cell(0, 14, 3, 1).growX());
 
+        //---- label3 ----
+        label3.setText("Sender:"); //NON-NLS
+        contentPane.add(label3, new CC().cell(0, 15, 3, 1));
+
+        //======== scrollPane1 ========
+        {
+
+            //---- list1 ----
+            list1.setModel(new AbstractListModel<String>() {
+                String[] values = {
+                    "1", //NON-NLS
+                    "2", //NON-NLS
+                    "3", //NON-NLS
+                    "4", //NON-NLS
+                    "5", //NON-NLS
+                    "6", //NON-NLS
+                    "7", //NON-NLS
+                    "8", //NON-NLS
+                    "9", //NON-NLS
+                    "0", //NON-NLS
+                    "bla" //NON-NLS
+                };
+                @Override
+                public int getSize() { return values.length; }
+                @Override
+                public String getElementAt(int i) { return values[i]; }
+            });
+            scrollPane1.setViewportView(list1);
+        }
+        contentPane.add(scrollPane1, new CC().cell(0, 16, 3, 1).grow().minHeight("50")); //NON-NLS
+        contentPane.add(separator5, new CC().cell(0, 17, 3, 1).growX());
+
+        //---- label4 ----
+        label4.setText("Thema:"); //NON-NLS
+        contentPane.add(label4, new CC().cell(0, 18));
+
+        //---- comboBox2 ----
+        comboBox2.setEditable(true);
+        contentPane.add(comboBox2, new CC().cell(1, 18, 2, 1).growX());
+        contentPane.add(separator6, new CC().cell(0, 19, 3, 1).growX());
+
+        //---- label5 ----
+        label5.setText("RangeSlider"); //NON-NLS
+        contentPane.add(label5, new CC().cell(0, 20, 3, 1));
+        contentPane.add(separator7, new CC().cell(0, 21, 3, 1).growX());
+
         //---- label1 ----
         label1.setText("Zeitraum:"); //NON-NLS
-        contentPane.add(label1, new CC().cell(0, 15));
-        contentPane.add(spinner1, new CC().cell(1, 15));
+        contentPane.add(label1, new CC().cell(0, 22));
+        contentPane.add(spinner1, new CC().cell(1, 22));
 
         //---- label2 ----
         label2.setText("Tage"); //NON-NLS
-        contentPane.add(label2, new CC().cell(2, 15));
+        contentPane.add(label2, new CC().cell(2, 22));
         pack();
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents  @formatter:on
@@ -238,6 +300,15 @@ public class SwingFilterDialog extends JDialog {
     private JCheckBox checkBox10;
     private JCheckBox checkBox11;
     private JSeparator separator4;
+    private JLabel label3;
+    private JScrollPane scrollPane1;
+    private JList<String> list1;
+    private JSeparator separator5;
+    private JLabel label4;
+    private JComboBox comboBox2;
+    private JSeparator separator6;
+    private JLabel label5;
+    private JSeparator separator7;
     private JLabel label1;
     private SwingZeitraumSpinner spinner1;
     private JLabel label2;
