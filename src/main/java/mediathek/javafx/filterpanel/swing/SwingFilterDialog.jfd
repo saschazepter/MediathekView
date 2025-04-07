@@ -117,7 +117,7 @@ new FormModel {
 				"value": "cell 0 10 3 1"
 			} )
 			add( new FormComponent( "javax.swing.JCheckBox" ) {
-				name: "checkBox9"
+				name: "cbDontShowTrailers"
 				"text": "Trailer/Teaser/Vorschau nicht anzeigen"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 11 3 1"

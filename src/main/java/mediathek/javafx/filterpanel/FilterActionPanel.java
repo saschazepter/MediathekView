@@ -49,7 +49,6 @@ public class FilterActionPanel {
     private final OldSwingJavaFxFilterDialog filterDialog;
     private RangeSlider filmLengthSlider;
     private BooleanProperty dontShowAudioVersions;
-    private BooleanProperty dontShowTrailers;
     private BooleanProperty dontShowDuplicates;
 
     private ListProperty<String> checkedChannels = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -92,10 +91,6 @@ public class FilterActionPanel {
         return dontShowAudioVersions;
     }
 
-    public BooleanProperty dontShowTrailersProperty() {
-        return dontShowTrailers;
-    }
-
     public BooleanProperty dontShowDuplicatesProperty() {
         return dontShowDuplicates;
     }
@@ -114,7 +109,6 @@ public class FilterActionPanel {
     private void setupViewSettingsPane() {
         viewSettingsPane = new CommonViewSettingsPane();
 
-        dontShowTrailers = viewSettingsPane.cbDontShowTrailers.selectedProperty();
         dontShowAudioVersions = viewSettingsPane.cbDontShowAudioVersions.selectedProperty();
         dontShowDuplicates = viewSettingsPane.cbDontShowDuplicates.selectedProperty();
         themaProperty = viewSettingsPane.themaComboBox.valueProperty();
@@ -140,7 +134,6 @@ public class FilterActionPanel {
     }
 
     private void restoreConfigSettings() {
-        dontShowTrailers.set(filterConfig.isDontShowTrailers());
         dontShowAudioVersions.set(filterConfig.isDontShowAudioVersions());
         dontShowDuplicates.set(filterConfig.isDontShowDuplicates());
         viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
@@ -181,7 +174,6 @@ public class FilterActionPanel {
     }
 
     private void setupConfigListeners() {
-        dontShowTrailers.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowTrailers(newValue)));
         dontShowAudioVersions.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowAudioVersions(newValue)));
         dontShowDuplicates.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowDuplicates(newValue)));
 

@@ -127,6 +127,10 @@ public class SwingFilterDialog extends JDialog {
             filterConfig.setDontShowSignLanguage(cbDontShowSignLanguage.isSelected());
             MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
+        cbDontShowTrailers.addActionListener(l -> {
+            filterConfig.setDontShowTrailers(cbDontShowTrailers.isSelected());
+            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+        });
 
 
         setupZeitraumSpinner();
@@ -200,8 +204,8 @@ public class SwingFilterDialog extends JDialog {
         cbShowUnseenOnly.setSelected(filterConfig.isShowUnseenOnly());
         cbDontShowAbos.setSelected(filterConfig.isDontShowAbos());
         cbDontShowSignLanguage.setSelected(filterConfig.isDontShowSignLanguage());
+        cbDontShowTrailers.setSelected(filterConfig.isDontShowTrailers());
         /*
-        dontShowTrailers.set(filterConfig.isDontShowTrailers());
         dontShowAudioVersions.set(filterConfig.isDontShowAudioVersions());
         dontShowDuplicates.set(filterConfig.isDontShowDuplicates());
         viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
@@ -294,6 +298,7 @@ public class SwingFilterDialog extends JDialog {
             cbShowUnseenOnly.setEnabled(enable);
             cbDontShowAbos.setEnabled(enable);
             cbDontShowSignLanguage.setEnabled(enable);
+            cbDontShowTrailers.setEnabled(enable);
 
             cboxFilterSelection.setEnabled(enable);
             spZeitraum.setEnabled(enable);
@@ -397,7 +402,7 @@ public class SwingFilterDialog extends JDialog {
         cbShowUnseenOnly = new JCheckBox();
         cbDontShowAbos = new JCheckBox();
         cbDontShowSignLanguage = new JCheckBox();
-        checkBox9 = new JCheckBox();
+        cbDontShowTrailers = new JCheckBox();
         checkBox10 = new JCheckBox();
         checkBox11 = new JCheckBox();
         separator4 = new JSeparator();
@@ -530,9 +535,9 @@ public class SwingFilterDialog extends JDialog {
         cbDontShowSignLanguage.setText("Geb\u00e4rdensprache nicht anzeigen"); //NON-NLS
         contentPane.add(cbDontShowSignLanguage, new CC().cell(0, 10, 3, 1));
 
-        //---- checkBox9 ----
-        checkBox9.setText("Trailer/Teaser/Vorschau nicht anzeigen"); //NON-NLS
-        contentPane.add(checkBox9, new CC().cell(0, 11, 3, 1));
+        //---- cbDontShowTrailers ----
+        cbDontShowTrailers.setText("Trailer/Teaser/Vorschau nicht anzeigen"); //NON-NLS
+        contentPane.add(cbDontShowTrailers, new CC().cell(0, 11, 3, 1));
 
         //---- checkBox10 ----
         checkBox10.setText("H\u00f6rfassungen ausblenden"); //NON-NLS
@@ -675,7 +680,7 @@ public class SwingFilterDialog extends JDialog {
     private JCheckBox cbShowUnseenOnly;
     private JCheckBox cbDontShowAbos;
     private JCheckBox cbDontShowSignLanguage;
-    private JCheckBox checkBox9;
+    private JCheckBox cbDontShowTrailers;
     private JCheckBox checkBox10;
     private JCheckBox checkBox11;
     private JSeparator separator4;

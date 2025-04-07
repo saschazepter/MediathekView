@@ -17,7 +17,6 @@ public class CommonViewSettingsPane extends VBox {
     public final SenderBoxNode senderCheckList = new SenderBoxNode();
     public final CheckBox cbDontShowAudioVersions = new CheckBox("Hörfassungen ausblenden");
     public final CheckBox cbDontShowDuplicates = new CheckBox("Duplikate nicht anzeigen");
-    public final CheckBox cbDontShowTrailers = new CheckBox("Trailer/Teaser/Vorschau nicht anzeigen");
 
     private Pane createSenderList() {
         senderCheckList.setPrefHeight(150d);
@@ -54,7 +53,6 @@ public class CommonViewSettingsPane extends VBox {
         setSpacing(4d);
 
         getChildren().addAll(
-                cbDontShowTrailers,
                 cbDontShowAudioVersions,
                 cbDontShowDuplicates,
                 new Separator(),
@@ -78,7 +76,6 @@ public class CommonViewSettingsPane extends VBox {
         Platform.runLater(
                 () -> {
                     final boolean disable = evt.active;
-                    cbDontShowTrailers.setDisable(disable);
                     cbDontShowAudioVersions.setDisable(disable);
                     cbDontShowDuplicates.setDisable(disable);
                     senderCheckList.setDisable(disable);
