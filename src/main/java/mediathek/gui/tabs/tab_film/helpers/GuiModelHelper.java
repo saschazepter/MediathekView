@@ -21,7 +21,7 @@ package mediathek.gui.tabs.tab_film.helpers;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.tabs.tab_film.SearchFieldData;
-import mediathek.javafx.filterpanel.FilmLengthSlider;
+import mediathek.javafx.filterpanel.swing.SwingFilmLengthSlider;
 import mediathek.tool.FilterConfiguration;
 import org.jetbrains.annotations.NotNull;
 
@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 public abstract class GuiModelHelper {
-    private final static long UNLIMITED_LENGTH_IN_SECONDS = TimeUnit.SECONDS.convert(FilmLengthSlider.UNLIMITED_VALUE, TimeUnit.MINUTES);
+    private final static long UNLIMITED_LENGTH_IN_SECONDS = TimeUnit.SECONDS.convert(SwingFilmLengthSlider.UNLIMITED_VALUE, TimeUnit.MINUTES);
     protected SeenHistoryController historyController;
     protected SearchFieldData searchFieldData;
     protected FilterConfiguration filterConfiguration;

@@ -2,8 +2,8 @@ package mediathek.tool;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import mediathek.javafx.filterpanel.FilmLengthSlider;
 import mediathek.javafx.filterpanel.ZeitraumSpinner;
+import mediathek.javafx.filterpanel.swing.SwingFilmLengthSlider;
 import org.apache.commons.configuration2.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +106,7 @@ public class FilterConfiguration {
         final BooleanSupplier filmLengthFilterIsNotSet = () -> {
             var filmLengthMin = (long)getFilmLengthMin();
             var filmLengthMax = (long)getFilmLengthMax();
-            return filmLengthMin == 0 && filmLengthMax == FilmLengthSlider.UNLIMITED_VALUE;
+            return filmLengthMin == 0 && filmLengthMax == SwingFilmLengthSlider.UNLIMITED_VALUE;
         };
 
         return getCheckedChannels().isEmpty()

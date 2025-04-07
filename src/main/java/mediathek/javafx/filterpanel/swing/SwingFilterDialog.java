@@ -59,7 +59,10 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
 /**
  * @author christianfranzke
@@ -199,14 +202,7 @@ public class SwingFilterDialog extends JDialog {
 
     private void setupFilmLengthSlider() {
         //JFormDesigner dies when we morph bean from JSlider to RangeSlider
-        var slider = (RangeSlider)filmLengthSlider;
-        slider.setHighValue(80);
-        slider.setLowValue(25);
-        slider.setPaintLabels(true);
-        slider.setPaintTicks(true);
-        slider.setPaintTrack(true);
-        slider.setMajorTickSpacing(10);
-        slider.setLabelTable(new TestTable());
+        var slider = (SwingFilmLengthSlider)filmLengthSlider;
 
         lblMinFilmLengthValue.setText("" + slider.getLowValue());
         lblMaxFilmLengthValue.setText("" + slider.getHighValue());
@@ -502,22 +498,6 @@ public class SwingFilterDialog extends JDialog {
         cboxFilterSelection = new FilterSelectionComboBox(filterSelectionComboBoxModel);
     }
 
-    class TestTable extends Hashtable<Integer, JComponent> {
-        public TestTable() {
-            put(0, new JLabel("0"));
-            put(10, new JLabel("10"));
-            put(20, new JLabel("20"));
-            put(30, new JLabel("30"));
-            put(40, new JLabel("40"));
-            put(50, new JLabel("50"));
-            put(60, new JLabel("60"));
-            put(70, new JLabel("70"));
-            put(80, new JLabel("80"));
-            put(90, new JLabel("90"));
-            put(100, new JLabel("100"));
-            put(110, new JLabel("∞"));
-        }
-    }
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
         // Generated using JFormDesigner non-commercial license
@@ -556,7 +536,7 @@ public class SwingFilterDialog extends JDialog {
         hSpacer1 = new JPanel(null);
         label7 = new JLabel();
         lblMaxFilmLengthValue = new JLabel();
-        filmLengthSlider = new RangeSlider(0,110);
+        filmLengthSlider = new SwingFilmLengthSlider();
         separator7 = new JSeparator();
         label1 = new JLabel();
         spZeitraum = new SwingZeitraumSpinner();
