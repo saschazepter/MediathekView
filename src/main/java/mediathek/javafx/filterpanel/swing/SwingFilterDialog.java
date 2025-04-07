@@ -28,6 +28,7 @@ import ca.odell.glazedlists.UniqueList;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.ComboBoxSearchable;
+import com.jidesoft.swing.RangeSlider;
 import mediathek.config.Daten;
 import mediathek.controller.SenderFilmlistLoadApprover;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
@@ -58,10 +59,7 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * @author christianfranzke
@@ -149,6 +147,8 @@ public class SwingFilterDialog extends JDialog {
         });
 
         setupSenderList();
+
+        setupFilmLengthSlider();
         setupZeitraumSpinner();
 
         searchable = new ComboBoxSearchable(jcbThema);
@@ -195,6 +195,17 @@ public class SwingFilterDialog extends JDialog {
                 setEnabled(true);
             }
         });
+    }
+
+    private void setupFilmLengthSlider() {
+        var slider = (RangeSlider)filmLengthSlider;
+        slider.setHighValue(80);
+        slider.setLowValue(25);
+        slider.setPaintLabels(true);
+        slider.setPaintTicks(true);
+        slider.setPaintTrack(true);
+        slider.setMajorTickSpacing(10);
+        slider.setLabelTable(new TestTable());
     }
 
     private void updateThemaComboBox() {
@@ -455,6 +466,22 @@ public class SwingFilterDialog extends JDialog {
         cboxFilterSelection = new FilterSelectionComboBox(filterSelectionComboBoxModel);
     }
 
+    class TestTable extends Hashtable<Integer, JComponent> {
+        public TestTable() {
+            put(0, new JLabel("0"));
+            put(10, new JLabel("10"));
+            put(20, new JLabel("20"));
+            put(30, new JLabel("30"));
+            put(40, new JLabel("40"));
+            put(50, new JLabel("50"));
+            put(60, new JLabel("60"));
+            put(70, new JLabel("70"));
+            put(80, new JLabel("80"));
+            put(90, new JLabel("90"));
+            put(100, new JLabel("100"));
+            put(110, new JLabel("∞"));
+        }
+    }
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
         // Generated using JFormDesigner non-commercial license
@@ -493,7 +520,7 @@ public class SwingFilterDialog extends JDialog {
         hSpacer1 = new JPanel(null);
         label7 = new JLabel();
         label8 = new JLabel();
-        slider1 = new JSlider();
+        filmLengthSlider = new RangeSlider(0,110);
         separator7 = new JSeparator();
         label1 = new JLabel();
         spZeitraum = new SwingZeitraumSpinner();
@@ -681,7 +708,7 @@ public class SwingFilterDialog extends JDialog {
             //---- label8 ----
             label8.setText("100"); //NON-NLS
             panel2.add(label8, new CC().cell(4, 0));
-            panel2.add(slider1, new CC().cell(0, 1, 5, 1).growX());
+            panel2.add(filmLengthSlider, new CC().cell(0, 1, 5, 1).growX());
         }
         contentPane.add(panel2, new CC().cell(0, 20, 3, 1).growX());
         contentPane.add(separator7, new CC().cell(0, 21, 3, 1).growX());
@@ -735,7 +762,7 @@ public class SwingFilterDialog extends JDialog {
     private JPanel hSpacer1;
     private JLabel label7;
     private JLabel label8;
-    private JSlider slider1;
+    private JSlider filmLengthSlider;
     private JSeparator separator7;
     private JLabel label1;
     public SwingZeitraumSpinner spZeitraum;

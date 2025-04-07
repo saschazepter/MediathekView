@@ -220,7 +220,10 @@ new FormModel {
 					"value": "cell 4 0"
 				} )
 				add( new FormComponent( "javax.swing.JSlider" ) {
-					name: "slider1"
+					name: "filmLengthSlider"
+					auxiliary() {
+						"JavaCodeGenerator.customCreateCode": "new RangeSlider(0,110);"
+					}
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 0 1 5 1,growx"
 				} )
