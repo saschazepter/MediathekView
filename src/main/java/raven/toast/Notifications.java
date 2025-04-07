@@ -210,8 +210,7 @@ public class Notifications {
         notificationHolder.clearHold(location);
         List<NotificationAnimation> list = lists.get(location);
         if (list != null) {
-            for (int i = 0; i < list.size(); i++) {
-                NotificationAnimation an = list.get(i);
+            for (NotificationAnimation an : list) {
                 if (an != null) {
                     an.close();
                 }
@@ -262,14 +261,14 @@ public class Notifications {
 
     public class NotificationAnimation {
 
-        private JWindow window;
+        private final JWindow window;
         private Animator animator;
         private boolean show = true;
         private float animate;
         private int x;
         private int y;
-        private Location location;
-        private long duration;
+        private final Location location;
+        private final long duration;
         private Insets frameInsets;
         private int horizontalSpace;
         private int animationMove;
@@ -326,16 +325,14 @@ public class Notifications {
 
                 @Override
                 public void end() {
-                    if (show && close == false) {
-                        SwingUtilities.invokeLater(() -> {
-                            new Thread(() -> {
-                                sleep(duration);
-                                if (close == false) {
-                                    show = false;
-                                    animator.start();
-                                }
-                            }).start();
-                        });
+                    if (show && !close) {
+                        SwingUtilities.invokeLater(() -> new Thread(() -> {
+                            sleep(duration);
+                            if (!close) {
+                                show = false;
+                                animator.start();
+                            }
+                        }).start());
                     } else {
                         updateList(location, NotificationAnimation.this, false);
                         window.dispose();
@@ -411,12 +408,11 @@ public class Notifications {
         private int getLocation(NotificationAnimation notification) {
             int height = 0;
             List<NotificationAnimation> list = lists.get(location);
-            for (int i = 0; i < list.size(); i++) {
-                NotificationAnimation n = list.get(i);
+            for (NotificationAnimation n : list) {
                 if (notification == n) {
                     return height;
                 }
-                double v = n.animate * (list.get(i).window.getHeight() + UIScale.scale(horizontalSpace));
+                double v = n.animate * (n.window.getHeight() + UIScale.scale(horizontalSpace));
                 height += top ? v : -v;
             }
             return height;
@@ -424,8 +420,7 @@ public class Notifications {
 
         private void update(NotificationAnimation except) {
             List<NotificationAnimation> list = lists.get(location);
-            for (int i = 0; i < list.size(); i++) {
-                NotificationAnimation n = list.get(i);
+            for (NotificationAnimation n : list) {
                 if (n != except) {
                     n.updateLocation(false);
                 }

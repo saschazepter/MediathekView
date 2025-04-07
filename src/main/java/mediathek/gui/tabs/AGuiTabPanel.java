@@ -19,7 +19,7 @@ import java.util.function.IntConsumer;
 public abstract class AGuiTabPanel extends JPanel {
     protected Daten daten;
     protected MediathekGui mediathekGui;
-    protected JTabbedPane descriptionTab = new JTabbedPane();
+    protected final JTabbedPane descriptionTab = new JTabbedPane();
     protected FilmDescriptionPanel descriptionPanel;
 
     /**

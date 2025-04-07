@@ -296,7 +296,7 @@ public class FilterConfiguration {
     private Set<String> parseJsonToSet(String json) {
         try {
             var objectMapper = new ObjectMapper();
-            return objectMapper.readValue(json, new TypeReference<Set<String>>() {
+            return objectMapper.readValue(json, new TypeReference<>() {
             });
         } catch (Exception e) {
             LOG.error("Fehler beim Konvertieren der alten Senderliste aus JSON", e);

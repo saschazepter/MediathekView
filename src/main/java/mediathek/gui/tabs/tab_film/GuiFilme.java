@@ -88,7 +88,7 @@ public class GuiFilme extends AGuiTabPanel {
     private static final Logger logger = LogManager.getLogger();
     private static final int[] BUTTON_COLUMNS = {DatenFilm.FILM_ABSPIELEN, DatenFilm.FILM_AUFZEICHNEN,
             DatenFilm.FILM_MERKEN};
-    public static boolean[] VISIBLE_COLUMNS = new boolean[DatenFilm.MAX_ELEM];
+    public static final boolean[] VISIBLE_COLUMNS = new boolean[DatenFilm.MAX_ELEM];
     public final PlayFilmAction playFilmAction = new PlayFilmAction(this);
     public final SaveFilmAction saveFilmAction = new SaveFilmAction();
     public final CopyUrlToClipboardAction copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.HIGH_QUALITY);
@@ -110,8 +110,8 @@ public class GuiFilme extends AGuiTabPanel {
     private final FilterConfiguration filterConfiguration = new FilterConfiguration();
     private final FilmToolBar filmToolBar;
     public final SwingFilterDialog swingFilterDialog;
-    public ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction();
-    protected SearchField searchField;
+    public final ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction();
+    protected final SearchField searchField;
     protected PsetButtonsPanel psetButtonsPanel;
     private Optional<BookmarkWindowController> bookmarkWindowController = Optional.empty();
     private boolean stopBeob;

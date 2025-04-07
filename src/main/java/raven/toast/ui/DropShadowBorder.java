@@ -24,7 +24,7 @@ public class DropShadowBorder extends EmptyBorder {
     protected float shadowOpacity;
 
     private Image shadowImage;
-    private int shadowSize;
+    private final int shadowSize;
     private Color lastShadowColor;
     private float lastShadowOpacity;
     private int lastShadowSize;

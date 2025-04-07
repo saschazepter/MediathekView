@@ -112,29 +112,29 @@ public class MediathekGui extends JFrame {
     public FixedRedrawStatusBar swingStatusBar;
     public GuiFilme tabFilme;
     public GuiDownloads tabDownloads;
-    public EditBlacklistAction editBlacklistAction = new EditBlacklistAction(this);
-    public ToggleBlacklistAction toggleBlacklistAction = new ToggleBlacklistAction();
-    public ShowFilmInformationAction showFilmInformationAction = new ShowFilmInformationAction();
+    public final EditBlacklistAction editBlacklistAction = new EditBlacklistAction(this);
+    public final ToggleBlacklistAction toggleBlacklistAction = new ToggleBlacklistAction();
+    public final ShowFilmInformationAction showFilmInformationAction = new ShowFilmInformationAction();
     /**
      * this property keeps track how many items are currently selected in the active table view
      */
-    public ListSelectedItemsProperty selectedListItemsProperty = new ListSelectedItemsProperty(0);
+    public final ListSelectedItemsProperty selectedListItemsProperty = new ListSelectedItemsProperty(0);
     /**
      * Used for status bar progress.
      */
-    public JLabel progressLabel = new JLabel();
+    public final JLabel progressLabel = new JLabel();
     /**
      * Used for status bar progress.
      */
-    public JProgressBar progressBar = new JProgressBar();
+    public final JProgressBar progressBar = new JProgressBar();
     /**
      * the global configuration for this app.
      */
-    protected Configuration config = ApplicationConfiguration.getConfiguration();
-    protected JToolBar commonToolBar = new JToolBar();
-    protected ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(this);
+    protected final Configuration config = ApplicationConfiguration.getConfiguration();
+    protected final JToolBar commonToolBar = new JToolBar();
+    protected final ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(this);
     protected FontManager fontManager;
-    protected ToggleDarkModeAction toggleDarkModeAction = new ToggleDarkModeAction();
+    protected final ToggleDarkModeAction toggleDarkModeAction = new ToggleDarkModeAction();
     private MVTray tray;
     private DialogEinstellungen dialogEinstellungen;
     private ProgramUpdateCheck programUpdateChecker;
