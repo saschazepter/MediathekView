@@ -6,12 +6,9 @@ import ca.odell.glazedlists.TransactionList;
 import ca.odell.glazedlists.javafx.EventObservableList;
 import impl.org.controlsfx.autocompletion.SuggestionProvider;
 import javafx.application.Platform;
-import javafx.beans.property.ListProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.property.SimpleListProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
-import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import mediathek.config.Daten;
 import mediathek.mainwindow.MediathekGui;
@@ -26,7 +23,6 @@ import org.controlsfx.control.textfield.TextFields;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 
 /**
@@ -48,7 +44,6 @@ public class FilterActionPanel {
     private final OldSwingJavaFxFilterDialog filterDialog;
     private RangeSlider filmLengthSlider;
 
-    private ListProperty<String> checkedChannels = new SimpleListProperty<>(FXCollections.observableArrayList());
     private ReadOnlyObjectProperty<String> themaProperty;
 
 
@@ -68,8 +63,7 @@ public class FilterActionPanel {
         filterDialog = new OldSwingJavaFxFilterDialog(MediathekGui.ui(), viewSettingsPane);
 
         restoreConfigSettings();
-        ObservableList<String> senderList = FXCollections.observableArrayList(filterConfig.getCheckedChannels());
-        checkedChannels = new SimpleListProperty<>(senderList);
+
         setupConfigListeners();
         availableFilters = FXCollections.observableArrayList(filterConfig.getAvailableFilters());
         setupFilterSelection();
@@ -100,12 +94,12 @@ public class FilterActionPanel {
 
         themaProperty = viewSettingsPane.themaComboBox.valueProperty();
         setupThemaComboBox();
-        viewSettingsPane.senderCheckList.getCheckModel().getCheckedItems().addListener((ListChangeListener<String>) c -> {
+        /*viewSettingsPane.senderCheckList.getCheckModel().getCheckedItems().addListener((ListChangeListener<String>) c -> {
             if (!checkedChannels.isNull().get()) {
                 checkedChannels.setAll(viewSettingsPane.senderCheckList.getCheckModel().getCheckedItems());
             }
             updateThemaComboBox();
-        });
+        });*/
 
         filmLengthSlider = viewSettingsPane.filmLengthSliderNode._filmLengthSlider;
     }
@@ -124,8 +118,6 @@ public class FilterActionPanel {
         viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
 
         restoreFilmLengthSlider();
-
-        restoreSenderList();
     }
 
     private void restoreFilmLengthSlider() {
@@ -143,26 +135,10 @@ public class FilterActionPanel {
         }
     }
 
-    private void restoreSenderList() {
-        try {
-            final var checkModel = viewSettingsPane.senderCheckList.getCheckModel();
-            checkModel.clearChecks();
-            final var senderItems = viewSettingsPane.senderCheckList.getItems();
-            for (var sender : filterConfig.getCheckedChannels()) {
-                if (senderItems.contains(sender)) {
-                    checkModel.check(sender);
-                }
-            }
-        } catch (Exception exception) {
-            logger.debug("Beim Wiederherstellen der Filter Einstellungen für die ausgewählten Sender ist ein Fehler aufgetreten!", exception);
-        }
-    }
-
     private void setupConfigListeners() {
         filmLengthSlider.lowValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMin(newValue.doubleValue())));
         filmLengthSlider.highValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMax(newValue.doubleValue())));
 
-        checkedChannels.addListener((obs, oldList, newList) -> filterConfig.setCheckedChannels(new HashSet<>(newList)));
         themaProperty.addListener(((ov, oldVal, newValue) -> filterConfig.setThema(newValue)));
     }
 
@@ -198,7 +174,9 @@ public class FilterActionPanel {
         transactionThemaList.beginEvent(true);
         transactionThemaList.clear();
 
-        var selectedSenders = viewSettingsPane.senderCheckList.getCheckModel().getCheckedItems();
+        //var selectedSenders = viewSettingsPane.senderCheckList.getCheckModel().getCheckedItems();
+        var selectedSenders = new ArrayList<String>();
+        selectedSenders.add("ZDF");
         var tempThemaList = getThemaList(selectedSenders).stream().distinct().sorted(GermanStringSorter.getInstance()).toList();
         transactionThemaList.addAll(tempThemaList);
         transactionThemaList.commitEvent();

@@ -148,37 +148,10 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 				name: "scrollPane1"
 				add( new FormComponent( "com.jidesoft.swing.CheckBoxList" ) {
-					name: "list1"
-					"model": new javax.swing.DefaultListModel {
-						addElement( "3Sat" )
-						addElement( "ARD" )
-						addElement( "ARD-alpha" )
-						addElement( "ARTE.DE" )
-						addElement( "ARTE.EN" )
-						addElement( "ARTE.ES" )
-						addElement( "ARTE.FR" )
-						addElement( "ARTE.IT" )
-						addElement( "ARTE.PL" )
-						addElement( "BR" )
-						addElement( "DW" )
-						addElement( "Funk.net" )
-						addElement( "HR" )
-						addElement( "KiKA" )
-						addElement( "MDR" )
-						addElement( "NDR" )
-						addElement( "ONE" )
-						addElement( "ORF" )
-						addElement( "PHOENIX" )
-						addElement( "Radio Bremen TV" )
-						addElement( "RBB" )
-						addElement( "SR" )
-						addElement( "SRF" )
-						addElement( "SRF.Podcast" )
-						addElement( "SWR" )
-						addElement( "tagesschau24" )
-						addElement( "WDR" )
-						addElement( "ZDF" )
-						addElement( "ZDF-tivi" )
+					name: "senderList"
+					"selectionMode": 0
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 1
 					}
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {

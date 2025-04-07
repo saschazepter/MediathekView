@@ -22,15 +22,21 @@
 
 package mediathek.javafx.filterpanel.swing;
 
+import ca.odell.glazedlists.FilterList;
+import ca.odell.glazedlists.SortedList;
+import ca.odell.glazedlists.UniqueList;
+import ca.odell.glazedlists.swing.GlazedListsSwing;
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.ComboBoxSearchable;
 import mediathek.config.Daten;
+import mediathek.controller.SenderFilmlistLoadApprover;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
 import mediathek.gui.messages.ReloadTableDataEvent;
 import mediathek.gui.messages.TableModelChangeEvent;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
+import mediathek.javafx.filterpanel.SenderListBoxModel;
 import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
@@ -52,6 +58,8 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -140,7 +148,7 @@ public class SwingFilterDialog extends JDialog {
             MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
 
-
+        setupSenderList();
         setupZeitraumSpinner();
 
         searchable = new ComboBoxSearchable(jcbThema);
@@ -192,6 +200,46 @@ public class SwingFilterDialog extends JDialog {
         });
     }
 
+    private void updateThemaComboBox() {
+
+    }
+
+    private void setupSenderList() {
+        //do not display unchecked(unloaded) senders from config...
+        var filteredSenderList = new FilterList<>(SenderListBoxModel.getProvidedSenderList());
+        filteredSenderList.setMatcher(SenderFilmlistLoadApprover::isApproved);
+
+        var sortedSenderList = new SortedList<>(new UniqueList<>(filteredSenderList));
+        sortedSenderList.setComparator(GermanStringSorter.getInstance());
+
+        var senderModel = GlazedListsSwing.eventListModel(sortedSenderList);
+        senderList.setModel(senderModel);
+        senderList.getCheckBoxListSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                var newSelectedSenderList = new ArrayList<String>();
+                final var senderListModel = senderList.getModel();
+                for (int i = 0; i < senderListModel.getSize(); i++) {
+                    var item = senderListModel.getElementAt(i);
+                    if (senderList.getCheckBoxListSelectionModel().isSelectedIndex(i))
+                        newSelectedSenderList.add(item.toString());
+                }
+
+                filterConfig.setCheckedChannels(new HashSet<>(newSelectedSenderList));
+                System.out.println("SENDER VALUED CHANGED: " + e);
+
+                updateThemaComboBox();
+                MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+            }
+        });
+
+        var contextMenu = new JPopupMenu();
+        var menuItem = new JMenuItem("Alle Senderfilter zurücksetzen");
+        menuItem.addActionListener(l -> senderList.selectNone());
+        contextMenu.add(menuItem);
+        senderList.setComponentPopupMenu(contextMenu);
+
+    }
+
     private void setupZeitraumSpinner() {
         spZeitraum.restoreFilterConfig(filterConfig);
         spZeitraum.installFilterConfigurationChangeListener(filterConfig);
@@ -218,10 +266,25 @@ public class SwingFilterDialog extends JDialog {
         /*
         viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
 
-        restoreFilmLengthSlider();
+        restoreFilmLengthSlider();*/
 
-        restoreSenderList();*/
+        restoreSenderList();
         spZeitraum.restoreFilterConfig(filterConfig);
+    }
+
+    private void restoreSenderList() {
+        var checkedSenders = filterConfig.getCheckedChannels();
+        //System.out.println("SENDER LIST: " + checkedSenders);
+        senderList.selectNone();
+        senderList.getCheckBoxListSelectionModel().setValueIsAdjusting(true);
+        final var senderListModel = senderList.getModel();
+        for (int i = 0; i < senderListModel.getSize(); i++) {
+            var item = senderListModel.getElementAt(i);
+            if (checkedSenders.contains(item)) {
+                senderList.getCheckBoxListSelectionModel().addSelectionInterval(i,i);
+            }
+        }
+        senderList.getCheckBoxListSelectionModel().setValueIsAdjusting(false);
     }
 
     private void setupResetCurrentFilterButton() {
@@ -309,6 +372,10 @@ public class SwingFilterDialog extends JDialog {
             cbDontShowTrailers.setEnabled(enable);
             cbDontShowAudioVersions.setEnabled(enable);
             cbDontShowDuplicates.setEnabled(enable);
+
+            label3.setEnabled(enable);
+            senderList.setEnabled(enable);
+
 
             cboxFilterSelection.setEnabled(enable);
             spZeitraum.setEnabled(enable);
@@ -418,7 +485,7 @@ public class SwingFilterDialog extends JDialog {
         separator4 = new JSeparator();
         label3 = new JLabel();
         scrollPane1 = new JScrollPane();
-        list1 = new CheckBoxList();
+        senderList = new CheckBoxList();
         separator5 = new JSeparator();
         label4 = new JLabel();
         jcbThema = new JComboBox<>();
@@ -565,45 +632,9 @@ public class SwingFilterDialog extends JDialog {
         //======== scrollPane1 ========
         {
 
-            //---- list1 ----
-            list1.setModel(new AbstractListModel<String>() {
-                String[] values = {
-                    "3Sat", //NON-NLS
-                    "ARD", //NON-NLS
-                    "ARD-alpha", //NON-NLS
-                    "ARTE.DE", //NON-NLS
-                    "ARTE.EN", //NON-NLS
-                    "ARTE.ES", //NON-NLS
-                    "ARTE.FR", //NON-NLS
-                    "ARTE.IT", //NON-NLS
-                    "ARTE.PL", //NON-NLS
-                    "BR", //NON-NLS
-                    "DW", //NON-NLS
-                    "Funk.net", //NON-NLS
-                    "HR", //NON-NLS
-                    "KiKA", //NON-NLS
-                    "MDR", //NON-NLS
-                    "NDR", //NON-NLS
-                    "ONE", //NON-NLS
-                    "ORF", //NON-NLS
-                    "PHOENIX", //NON-NLS
-                    "Radio Bremen TV", //NON-NLS
-                    "RBB", //NON-NLS
-                    "SR", //NON-NLS
-                    "SRF", //NON-NLS
-                    "SRF.Podcast", //NON-NLS
-                    "SWR", //NON-NLS
-                    "tagesschau24", //NON-NLS
-                    "WDR", //NON-NLS
-                    "ZDF", //NON-NLS
-                    "ZDF-tivi" //NON-NLS
-                };
-                @Override
-                public int getSize() { return values.length; }
-                @Override
-                public String getElementAt(int i) { return values[i]; }
-            });
-            scrollPane1.setViewportView(list1);
+            //---- senderList ----
+            senderList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            scrollPane1.setViewportView(senderList);
         }
         contentPane.add(scrollPane1, new CC().cell(0, 16, 3, 1).grow().minHeight("50")); //NON-NLS
         contentPane.add(separator5, new CC().cell(0, 17, 3, 1).growX());
@@ -696,7 +727,7 @@ public class SwingFilterDialog extends JDialog {
     private JSeparator separator4;
     private JLabel label3;
     private JScrollPane scrollPane1;
-    private CheckBoxList list1;
+    public CheckBoxList senderList;
     private JSeparator separator5;
     private JLabel label4;
     private JComboBox<String> jcbThema;

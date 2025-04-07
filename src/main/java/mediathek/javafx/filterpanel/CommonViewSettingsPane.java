@@ -3,7 +3,6 @@ package mediathek.javafx.filterpanel;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
-import javafx.scene.control.Separator;
 import javafx.scene.layout.*;
 import mediathek.gui.messages.TableModelChangeEvent;
 import mediathek.tool.MessageBus;
@@ -13,19 +12,6 @@ import org.apache.commons.lang3.SystemUtils;
 public class CommonViewSettingsPane extends VBox {
     public final ThemaComboBox themaComboBox = new ThemaComboBox();
     public final FilmLenghtSliderNode filmLengthSliderNode = new FilmLenghtSliderNode();
-    public final SenderBoxNode senderCheckList = new SenderBoxNode();
-
-    private Pane createSenderList() {
-        senderCheckList.setPrefHeight(150d);
-        senderCheckList.setMinHeight(100d);
-        VBox.setVgrow(senderCheckList, Priority.ALWAYS);
-        var titledPane = new VBox();
-        titledPane.getChildren().addAll(new Label("Sender:"),
-                senderCheckList);
-        VBox.setVgrow(titledPane, Priority.ALWAYS);
-
-        return titledPane;
-    }
 
     private Pane createThemaBox() {
         var hbox = new HBox();
@@ -50,10 +36,7 @@ public class CommonViewSettingsPane extends VBox {
         setSpacing(4d);
 
         getChildren().addAll(
-                createSenderList(),
-                new Separator(),
                 createThemaBox(),
-                new Separator(),
                 filmLengthSliderNode);
 
 
@@ -70,7 +53,6 @@ public class CommonViewSettingsPane extends VBox {
         Platform.runLater(
                 () -> {
                     final boolean disable = evt.active;
-                    senderCheckList.setDisable(disable);
                     themaComboBox.setDisable(disable);
                     filmLengthSliderNode.setDisable(disable);
                 });

@@ -39,7 +39,6 @@ import mediathek.javafx.bookmark.BookmarkWindowController;
 import mediathek.javafx.filterpanel.FilterActionPanel;
 import mediathek.javafx.filterpanel.SearchControlFieldMode;
 import mediathek.javafx.filterpanel.swing.SwingFilterDialog;
-import mediathek.javafx.tool.JavaFxUtils;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import mediathek.tool.cellrenderer.CellRendererFilme;
@@ -173,7 +172,7 @@ public class GuiFilme extends AGuiTabPanel {
 
         zeitraumTimer = new NonRepeatingTimer(e -> {
             // reset sender filter first
-            JavaFxUtils.invokeInFxThreadAndWait(() -> filterActionPanel.getViewSettingsPane().senderCheckList.getCheckModel().clearChecks());
+            swingFilterDialog.senderList.selectNone();
             MessageBus.getMessageBus().publish(new FilterZeitraumEvent());
         });
 
