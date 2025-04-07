@@ -250,7 +250,7 @@ new FormModel {
 				add( new FormComponent( "javax.swing.JSlider" ) {
 					name: "filmLengthSlider"
 					auxiliary() {
-						"JavaCodeGenerator.customCreateCode": "new SwingFilmLengthSlider();"
+						"JavaCodeGenerator.customCreateCode": "new FilmLengthSlider();"
 					}
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 0 1 5 1,growx"
@@ -272,7 +272,7 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 22"
 			} )
-			add( new FormComponent( "mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner" ) {
+			add( new FormComponent( "mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner" ) {
 				name: "spZeitraum"
 				auxiliary() {
 					"JavaCodeGenerator.variableModifiers": 1
