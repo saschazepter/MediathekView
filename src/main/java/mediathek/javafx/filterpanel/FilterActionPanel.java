@@ -56,7 +56,6 @@ public class FilterActionPanel {
     private BooleanProperty dontShowDuplicates;
     private BooleanProperty showLivestreamsOnly;
     private BooleanProperty showUnseenOnly;
-    private BooleanProperty showBookMarkedOnly;
     private BooleanProperty showSubtitlesOnly;
     private BooleanProperty showOnlyHighQuality;
 
@@ -124,10 +123,6 @@ public class FilterActionPanel {
         return showUnseenOnly;
     }
 
-    public BooleanProperty showBookMarkedOnlyProperty() {
-        return showBookMarkedOnly;
-    }
-
     public BooleanProperty showSubtitlesOnlyProperty() {
         return showSubtitlesOnly;
     }
@@ -152,7 +147,6 @@ public class FilterActionPanel {
 
         showOnlyHighQuality = viewSettingsPane.cbShowOnlyHd.selectedProperty();
         showSubtitlesOnly = viewSettingsPane.cbShowSubtitlesOnly.selectedProperty();
-        showBookMarkedOnly = viewSettingsPane.cbShowBookMarkedOnly.selectedProperty();
         showLivestreamsOnly = viewSettingsPane.cbShowOnlyLivestreams.selectedProperty();
 
         showUnseenOnly = viewSettingsPane.cbShowUnseenOnly.selectedProperty();
@@ -186,7 +180,6 @@ public class FilterActionPanel {
     private void restoreConfigSettings() {
         showOnlyHighQuality.set(filterConfig.isShowHighQualityOnly());
         showSubtitlesOnly.set(filterConfig.isShowSubtitlesOnly());
-        showBookMarkedOnly.set(filterConfig.isShowBookMarkedOnly());
         showUnseenOnly.set(filterConfig.isShowUnseenOnly());
         showLivestreamsOnly.set(filterConfig.isShowLivestreamsOnly());
 
@@ -235,7 +228,6 @@ public class FilterActionPanel {
     private void setupConfigListeners() {
         showOnlyHighQuality.addListener((ov, oldVal, newValue) -> filterConfig.setShowHighQualityOnly(newValue));
         showSubtitlesOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowSubtitlesOnly(newValue)));
-        showBookMarkedOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowBookMarkedOnly(newValue)));
         showUnseenOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowUnseenOnly(newValue)));
         showLivestreamsOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowLivestreamsOnly(newValue)));
 

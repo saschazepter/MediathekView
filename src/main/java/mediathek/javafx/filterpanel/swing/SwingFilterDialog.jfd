@@ -70,7 +70,7 @@ new FormModel {
 				"value": "cell 0 2 3 1"
 			} )
 			add( new FormComponent( "javax.swing.JCheckBox" ) {
-				name: "checkBox1"
+				name: "cbShowBookMarkedOnly"
 				"text": "Nur gemerkte Filme anzeigen"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 3 3 1"

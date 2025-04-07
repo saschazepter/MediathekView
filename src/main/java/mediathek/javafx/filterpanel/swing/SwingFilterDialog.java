@@ -99,6 +99,10 @@ public class SwingFilterDialog extends JDialog {
             filterConfig.setShowNewOnly(cbShowNewOnly.isSelected());
             MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
+        cbShowBookMarkedOnly.addActionListener(l -> {
+            filterConfig.setShowBookMarkedOnly(cbShowBookMarkedOnly.isSelected());
+            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+        });
         setupZeitraumSpinner();
 
         searchable = new ComboBoxSearchable(jcbThema);
@@ -163,6 +167,7 @@ public class SwingFilterDialog extends JDialog {
 
     private void restoreConfigSettings() {
         cbShowNewOnly.setSelected(filterConfig.isShowNewOnly());
+        cbShowBookMarkedOnly.setSelected(filterConfig.isShowBookMarkedOnly());
         /*showOnlyHighQuality.set(filterConfig.isShowHighQualityOnly());
         showSubtitlesOnly.set(filterConfig.isShowSubtitlesOnly());
         showBookMarkedOnly.set(filterConfig.isShowBookMarkedOnly());
@@ -256,6 +261,7 @@ public class SwingFilterDialog extends JDialog {
             }
 
             cbShowNewOnly.setEnabled(enable);
+            cbShowBookMarkedOnly.setEnabled(enable);
 
             cboxFilterSelection.setEnabled(enable);
             spZeitraum.setEnabled(enable);
@@ -351,7 +357,7 @@ public class SwingFilterDialog extends JDialog {
         btnResetCurrentFilter = new JButton();
         separator2 = new JSeparator();
         cbShowNewOnly = new JCheckBox();
-        checkBox1 = new JCheckBox();
+        cbShowBookMarkedOnly = new JCheckBox();
         checkBox3 = new JCheckBox();
         checkBox4 = new JCheckBox();
         checkBox5 = new JCheckBox();
@@ -463,9 +469,9 @@ public class SwingFilterDialog extends JDialog {
         cbShowNewOnly.setText("Nur neue Filme anzeigen"); //NON-NLS
         contentPane.add(cbShowNewOnly, new CC().cell(0, 2, 3, 1));
 
-        //---- checkBox1 ----
-        checkBox1.setText("Nur gemerkte Filme anzeigen"); //NON-NLS
-        contentPane.add(checkBox1, new CC().cell(0, 3, 3, 1));
+        //---- cbShowBookMarkedOnly ----
+        cbShowBookMarkedOnly.setText("Nur gemerkte Filme anzeigen"); //NON-NLS
+        contentPane.add(cbShowBookMarkedOnly, new CC().cell(0, 3, 3, 1));
 
         //---- checkBox3 ----
         checkBox3.setText("Nur High Quality(HQ) Filme anzeigen"); //NON-NLS
@@ -629,7 +635,7 @@ public class SwingFilterDialog extends JDialog {
     private JButton btnResetCurrentFilter;
     private JSeparator separator2;
     private JCheckBox cbShowNewOnly;
-    private JCheckBox checkBox1;
+    private JCheckBox cbShowBookMarkedOnly;
     private JCheckBox checkBox3;
     private JCheckBox checkBox4;
     private JCheckBox checkBox5;
