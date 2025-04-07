@@ -198,6 +198,7 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private void setupFilmLengthSlider() {
+        //JFormDesigner dies when we morph bean from JSlider to RangeSlider
         var slider = (RangeSlider)filmLengthSlider;
         slider.setHighValue(80);
         slider.setLowValue(25);
@@ -206,6 +207,22 @@ public class SwingFilterDialog extends JDialog {
         slider.setPaintTrack(true);
         slider.setMajorTickSpacing(10);
         slider.setLabelTable(new TestTable());
+
+        lblMinFilmLengthValue.setText("" + slider.getLowValue());
+        lblMaxFilmLengthValue.setText("" + slider.getHighValue());
+
+        slider.addChangeListener(l -> {
+            lblMinFilmLengthValue.setText("" + slider.getLowValue());
+            lblMaxFilmLengthValue.setText("" + slider.getHighValue());
+
+            if (!slider.getValueIsAdjusting()) {
+                System.out.println("slider LOW: " + slider.getLowValue());
+                System.out.println("slider HIGH: " + slider.getHighValue());
+                filterConfig.setFilmLengthMin(slider.getLowValue());
+                filterConfig.setFilmLengthMax(slider.getHighValue());
+                MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+            }
+        });
     }
 
     private void updateThemaComboBox() {
@@ -259,6 +276,18 @@ public class SwingFilterDialog extends JDialog {
         }
     }
 
+    private void restoreFilmLengthSlider() {
+        try {
+            var slider = (RangeSlider)filmLengthSlider;
+            slider.setValueIsAdjusting(true);
+            slider.setHighValue((int)filterConfig.getFilmLengthMax());
+            slider.setLowValue((int)filterConfig.getFilmLengthMin());
+            slider.setValueIsAdjusting(false);
+        } catch (Exception exception) {
+            logger.debug("Beim wiederherstellen der Filter Einstellungen für die Filmlänge ist ein Fehler aufgetreten!", exception);
+        }
+    }
+
     private void restoreConfigSettings() {
         cbShowNewOnly.setSelected(filterConfig.isShowNewOnly());
         cbShowBookMarkedOnly.setSelected(filterConfig.isShowBookMarkedOnly());
@@ -273,10 +302,10 @@ public class SwingFilterDialog extends JDialog {
         cbDontShowDuplicates.setSelected(filterConfig.isDontShowDuplicates());
         /*
         viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
-
-        restoreFilmLengthSlider();*/
+        */
 
         restoreSenderList();
+        restoreFilmLengthSlider();
         spZeitraum.restoreFilterConfig(filterConfig);
     }
 
@@ -516,10 +545,10 @@ public class SwingFilterDialog extends JDialog {
         separator6 = new JSeparator();
         panel2 = new JPanel();
         label5 = new JLabel();
-        label6 = new JLabel();
+        lblMinFilmLengthValue = new JLabel();
         hSpacer1 = new JPanel(null);
         label7 = new JLabel();
-        label8 = new JLabel();
+        lblMaxFilmLengthValue = new JLabel();
         filmLengthSlider = new RangeSlider(0,110);
         separator7 = new JSeparator();
         label1 = new JLabel();
@@ -696,18 +725,18 @@ public class SwingFilterDialog extends JDialog {
             label5.setText("Mindestl\u00e4nge:"); //NON-NLS
             panel2.add(label5, new CC().cell(0, 0));
 
-            //---- label6 ----
-            label6.setText("0"); //NON-NLS
-            panel2.add(label6, new CC().cell(1, 0));
+            //---- lblMinFilmLengthValue ----
+            lblMinFilmLengthValue.setText("0"); //NON-NLS
+            panel2.add(lblMinFilmLengthValue, new CC().cell(1, 0));
             panel2.add(hSpacer1, new CC().cell(2, 0).growX());
 
             //---- label7 ----
             label7.setText("Maximall\u00e4nge:"); //NON-NLS
             panel2.add(label7, new CC().cell(3, 0));
 
-            //---- label8 ----
-            label8.setText("100"); //NON-NLS
-            panel2.add(label8, new CC().cell(4, 0));
+            //---- lblMaxFilmLengthValue ----
+            lblMaxFilmLengthValue.setText("100"); //NON-NLS
+            panel2.add(lblMaxFilmLengthValue, new CC().cell(4, 0));
             panel2.add(filmLengthSlider, new CC().cell(0, 1, 5, 1).growX());
         }
         contentPane.add(panel2, new CC().cell(0, 20, 3, 1).growX());
@@ -758,10 +787,10 @@ public class SwingFilterDialog extends JDialog {
     private JSeparator separator6;
     private JPanel panel2;
     private JLabel label5;
-    private JLabel label6;
+    private JLabel lblMinFilmLengthValue;
     private JPanel hSpacer1;
     private JLabel label7;
-    private JLabel label8;
+    private JLabel lblMaxFilmLengthValue;
     private JSlider filmLengthSlider;
     private JSeparator separator7;
     private JLabel label1;

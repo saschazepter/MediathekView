@@ -197,7 +197,7 @@ new FormModel {
 					"value": "cell 0 0"
 				} )
 				add( new FormComponent( "javax.swing.JLabel" ) {
-					name: "label6"
+					name: "lblMinFilmLengthValue"
 					"text": "0"
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 1 0"
@@ -214,7 +214,7 @@ new FormModel {
 					"value": "cell 3 0"
 				} )
 				add( new FormComponent( "javax.swing.JLabel" ) {
-					name: "label8"
+					name: "lblMaxFilmLengthValue"
 					"text": "100"
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 4 0"
