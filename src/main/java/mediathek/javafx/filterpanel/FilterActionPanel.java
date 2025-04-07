@@ -54,7 +54,6 @@ public class FilterActionPanel {
     private BooleanProperty dontShowTrailers;
     private BooleanProperty dontShowAbos;
     private BooleanProperty dontShowDuplicates;
-    private BooleanProperty showLivestreamsOnly;
     private BooleanProperty showUnseenOnly;
 
     private ListProperty<String> checkedChannels = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -113,10 +112,6 @@ public class FilterActionPanel {
         return dontShowDuplicates;
     }
 
-    public BooleanProperty showLivestreamsOnlyProperty() {
-        return showLivestreamsOnly;
-    }
-
     public BooleanProperty showUnseenOnlyProperty() {
         return showUnseenOnly;
     }
@@ -134,8 +129,6 @@ public class FilterActionPanel {
 
     private void setupViewSettingsPane() {
         viewSettingsPane = new CommonViewSettingsPane();
-
-        showLivestreamsOnly = viewSettingsPane.cbShowOnlyLivestreams.selectedProperty();
 
         showUnseenOnly = viewSettingsPane.cbShowUnseenOnly.selectedProperty();
         dontShowAbos = viewSettingsPane.cbDontShowAbos.selectedProperty();
@@ -167,7 +160,6 @@ public class FilterActionPanel {
 
     private void restoreConfigSettings() {
         showUnseenOnly.set(filterConfig.isShowUnseenOnly());
-        showLivestreamsOnly.set(filterConfig.isShowLivestreamsOnly());
 
         dontShowAbos.set(filterConfig.isDontShowAbos());
         dontShowTrailers.set(filterConfig.isDontShowTrailers());
@@ -213,7 +205,6 @@ public class FilterActionPanel {
 
     private void setupConfigListeners() {
         showUnseenOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowUnseenOnly(newValue)));
-        showLivestreamsOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowLivestreamsOnly(newValue)));
 
         dontShowAbos.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowAbos(newValue)));
         dontShowTrailers.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowTrailers(newValue)));

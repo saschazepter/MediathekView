@@ -88,7 +88,7 @@ new FormModel {
 				"value": "cell 0 5 3 1"
 			} )
 			add( new FormComponent( "javax.swing.JCheckBox" ) {
-				name: "checkBox5"
+				name: "cbShowOnlyLivestreams"
 				"text": "Nur Livestreams anzeigen"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 6 3 1"
