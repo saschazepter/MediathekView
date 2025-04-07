@@ -10,7 +10,6 @@ import mediathek.gui.messages.TableModelChangeEvent;
 import mediathek.tool.MessageBus;
 import net.engio.mbassy.listener.Handler;
 import org.apache.commons.lang3.SystemUtils;
-import org.controlsfx.glyphfont.Glyph;
 
 public class CommonViewSettingsPane extends VBox {
     public final ThemaComboBox themaComboBox = new ThemaComboBox();
@@ -26,14 +25,6 @@ public class CommonViewSettingsPane extends VBox {
     public final CheckBox cbShowSubtitlesOnly = new CheckBox("Nur Filme mit Untertitel anzeigen");
     public final CheckBox cbShowBookMarkedOnly = new CheckBox("Nur gemerkte Filme anzeigen");
     public final CheckBox cbShowOnlyLivestreams = new CheckBox("Nur Livestream anzeigen");
-
-    static class FontAwesomeGlyph extends Glyph {
-        public FontAwesomeGlyph(String icon) {
-            setFontFamily("FontAwesome");
-            setFontSize(16d);
-            setIcon(icon);
-        }
-    }
 
     private Pane createSenderList() {
         senderCheckList.setPrefHeight(150d);
