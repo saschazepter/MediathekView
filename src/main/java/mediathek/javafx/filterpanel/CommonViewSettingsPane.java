@@ -16,7 +16,6 @@ public class CommonViewSettingsPane extends VBox {
     public final FilmLenghtSliderNode filmLengthSliderNode = new FilmLenghtSliderNode();
     public final SenderBoxNode senderCheckList = new SenderBoxNode();
     public final CheckBox cbDontShowAudioVersions = new CheckBox("Hörfassungen ausblenden");
-    public final CheckBox cbDontShowGebaerdensprache = new CheckBox("Gebärdensprache nicht anzeigen");
     public final CheckBox cbDontShowDuplicates = new CheckBox("Duplikate nicht anzeigen");
     public final CheckBox cbDontShowTrailers = new CheckBox("Trailer/Teaser/Vorschau nicht anzeigen");
 
@@ -55,7 +54,6 @@ public class CommonViewSettingsPane extends VBox {
         setSpacing(4d);
 
         getChildren().addAll(
-                cbDontShowGebaerdensprache,
                 cbDontShowTrailers,
                 cbDontShowAudioVersions,
                 cbDontShowDuplicates,
@@ -80,7 +78,6 @@ public class CommonViewSettingsPane extends VBox {
         Platform.runLater(
                 () -> {
                     final boolean disable = evt.active;
-                    cbDontShowGebaerdensprache.setDisable(disable);
                     cbDontShowTrailers.setDisable(disable);
                     cbDontShowAudioVersions.setDisable(disable);
                     cbDontShowDuplicates.setDisable(disable);

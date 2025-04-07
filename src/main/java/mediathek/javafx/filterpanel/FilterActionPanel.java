@@ -49,7 +49,6 @@ public class FilterActionPanel {
     private final OldSwingJavaFxFilterDialog filterDialog;
     private RangeSlider filmLengthSlider;
     private BooleanProperty dontShowAudioVersions;
-    private BooleanProperty dontShowSignLanguage;
     private BooleanProperty dontShowTrailers;
     private BooleanProperty dontShowDuplicates;
 
@@ -93,10 +92,6 @@ public class FilterActionPanel {
         return dontShowAudioVersions;
     }
 
-    public BooleanProperty dontShowSignLanguageProperty() {
-        return dontShowSignLanguage;
-    }
-
     public BooleanProperty dontShowTrailersProperty() {
         return dontShowTrailers;
     }
@@ -119,7 +114,6 @@ public class FilterActionPanel {
     private void setupViewSettingsPane() {
         viewSettingsPane = new CommonViewSettingsPane();
 
-        dontShowSignLanguage = viewSettingsPane.cbDontShowGebaerdensprache.selectedProperty();
         dontShowTrailers = viewSettingsPane.cbDontShowTrailers.selectedProperty();
         dontShowAudioVersions = viewSettingsPane.cbDontShowAudioVersions.selectedProperty();
         dontShowDuplicates = viewSettingsPane.cbDontShowDuplicates.selectedProperty();
@@ -147,7 +141,6 @@ public class FilterActionPanel {
 
     private void restoreConfigSettings() {
         dontShowTrailers.set(filterConfig.isDontShowTrailers());
-        dontShowSignLanguage.set(filterConfig.isDontShowSignLanguage());
         dontShowAudioVersions.set(filterConfig.isDontShowAudioVersions());
         dontShowDuplicates.set(filterConfig.isDontShowDuplicates());
         viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
@@ -189,7 +182,6 @@ public class FilterActionPanel {
 
     private void setupConfigListeners() {
         dontShowTrailers.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowTrailers(newValue)));
-        dontShowSignLanguage.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowSignLanguage(newValue)));
         dontShowAudioVersions.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowAudioVersions(newValue)));
         dontShowDuplicates.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowDuplicates(newValue)));
 

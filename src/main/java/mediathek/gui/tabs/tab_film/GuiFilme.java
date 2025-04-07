@@ -655,7 +655,6 @@ public class GuiFilme extends AGuiTabPanel {
             final ChangeListener<Boolean> reloadTableListener = (ov, oV, nV) -> MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
 
             filterActionPanel.dontShowTrailersProperty().addListener(reloadTableListener);
-            filterActionPanel.dontShowSignLanguageProperty().addListener(reloadTableListener);
             filterActionPanel.dontShowAudioVersionsProperty().addListener(reloadTableListener);
             filterActionPanel.dontShowDuplicatesProperty().addListener(reloadTableListener);
 
