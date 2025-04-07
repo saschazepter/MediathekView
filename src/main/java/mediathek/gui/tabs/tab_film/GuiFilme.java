@@ -650,12 +650,6 @@ public class GuiFilme extends AGuiTabPanel {
 
     private void setupActionListeners() {
         Platform.runLater(() -> {
-            filterActionPanel.addFilmLengthSliderListeners((v1, v2, newValue) -> {
-                if (!newValue) {
-                    MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
-                }
-            });
-
             filterActionPanel.getViewSettingsPane().themaComboBox.setOnAction(e -> {
                 if (!filterActionPanel.getViewSettingsPane().themaComboBox.getItems().isEmpty()) {
                     MessageBus.getMessageBus().publish(new ReloadTableDataEvent());

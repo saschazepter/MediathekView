@@ -7,7 +7,6 @@ import ca.odell.glazedlists.javafx.EventObservableList;
 import impl.org.controlsfx.autocompletion.SuggestionProvider;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyObjectProperty;
-import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import mediathek.config.Daten;
@@ -18,7 +17,6 @@ import mediathek.tool.FilterDTO;
 import mediathek.tool.GermanStringSorter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.controlsfx.control.RangeSlider;
 import org.controlsfx.control.textfield.TextFields;
 import org.jetbrains.annotations.NotNull;
 
@@ -42,7 +40,6 @@ public class FilterActionPanel {
      */
     private final EventObservableList<String> observableThemaList = new EventObservableList<>(new EventListWithEmptyFirstEntry(sourceThemaList));
     private final OldSwingJavaFxFilterDialog filterDialog;
-    private RangeSlider filmLengthSlider;
 
     private ReadOnlyObjectProperty<String> themaProperty;
 
@@ -73,11 +70,6 @@ public class FilterActionPanel {
         return filterDialog;
     }
 
-    public void addFilmLengthSliderListeners(@NotNull ChangeListener<Boolean> listener) {
-        filmLengthSlider.lowValueChangingProperty().addListener(listener);
-        filmLengthSlider.highValueChangingProperty().addListener(listener);
-    }
-
     private void setupFilterSelection() {
         FilterConfiguration.addAvailableFiltersObserver(() -> Platform.runLater(() -> {
             availableFilters.clear();
@@ -100,8 +92,6 @@ public class FilterActionPanel {
             }
             updateThemaComboBox();
         });*/
-
-        filmLengthSlider = viewSettingsPane.filmLengthSliderNode._filmLengthSlider;
     }
 
     private void setupThemaComboBox() {
@@ -116,29 +106,9 @@ public class FilterActionPanel {
 
     private void restoreConfigSettings() {
         viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
-
-        restoreFilmLengthSlider();
-    }
-
-    private void restoreFilmLengthSlider() {
-        try {
-            double loadedMin = filterConfig.getFilmLengthMin();
-            filmLengthSlider.setHighValueChanging(true);
-            filmLengthSlider.setHighValue(filterConfig.getFilmLengthMax());
-            filmLengthSlider.setHighValueChanging(false);
-
-            filmLengthSlider.setLowValueChanging(true);
-            filmLengthSlider.setLowValue(loadedMin);
-            filmLengthSlider.setLowValueChanging(false);
-        } catch (Exception exception) {
-            logger.debug("Beim wiederherstellen der Filter Einstellungen für die Filmlänge ist ein Fehler aufgetreten!", exception);
-        }
     }
 
     private void setupConfigListeners() {
-        filmLengthSlider.lowValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMin(newValue.doubleValue())));
-        filmLengthSlider.highValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMax(newValue.doubleValue())));
-
         themaProperty.addListener(((ov, oldVal, newValue) -> filterConfig.setThema(newValue)));
     }
 

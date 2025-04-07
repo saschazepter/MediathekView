@@ -11,7 +11,6 @@ import org.apache.commons.lang3.SystemUtils;
 
 public class CommonViewSettingsPane extends VBox {
     public final ThemaComboBox themaComboBox = new ThemaComboBox();
-    public final FilmLenghtSliderNode filmLengthSliderNode = new FilmLenghtSliderNode();
 
     private Pane createThemaBox() {
         var hbox = new HBox();
@@ -35,9 +34,7 @@ public class CommonViewSettingsPane extends VBox {
         setPadding(new Insets(5, 5, 5, 5));
         setSpacing(4d);
 
-        getChildren().addAll(
-                createThemaBox(),
-                filmLengthSliderNode);
+        getChildren().add(createThemaBox());
 
 
         MessageBus.getMessageBus().subscribe(this);
@@ -54,7 +51,6 @@ public class CommonViewSettingsPane extends VBox {
                 () -> {
                     final boolean disable = evt.active;
                     themaComboBox.setDisable(disable);
-                    filmLengthSliderNode.setDisable(disable);
                 });
     }
 }

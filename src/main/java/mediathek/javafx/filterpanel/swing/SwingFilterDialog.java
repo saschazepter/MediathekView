@@ -216,8 +216,8 @@ public class SwingFilterDialog extends JDialog {
             lblMaxFilmLengthValue.setText("" + slider.getHighValue());
 
             if (!slider.getValueIsAdjusting()) {
-                System.out.println("slider LOW: " + slider.getLowValue());
-                System.out.println("slider HIGH: " + slider.getHighValue());
+                //System.out.println("slider LOW: " + slider.getLowValue());
+                //System.out.println("slider HIGH: " + slider.getHighValue());
                 filterConfig.setFilmLengthMin(slider.getLowValue());
                 filterConfig.setFilmLengthMax(slider.getHighValue());
                 MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
@@ -415,6 +415,13 @@ public class SwingFilterDialog extends JDialog {
 
 
             cboxFilterSelection.setEnabled(enable);
+
+            label5.setEnabled(enable);
+            label7.setEnabled(enable);
+            lblMinFilmLengthValue.setEnabled(enable);
+            lblMaxFilmLengthValue.setEnabled(enable);
+            filmLengthSlider.setEnabled(enable);
+
             spZeitraum.setEnabled(enable);
             label1.setEnabled(enable);
             label2.setEnabled(enable);
