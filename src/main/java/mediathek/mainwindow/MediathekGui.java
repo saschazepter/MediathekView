@@ -51,6 +51,7 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import raven.toast.Notifications;
 
 import javax.swing.*;
 import java.awt.*;
@@ -278,6 +279,9 @@ public class MediathekGui extends JFrame {
             // we need to re-setup tab-placement if the tabs are not in top position as toolbar is installed after tab creation
             MessageBus.getMessageBus().publishAsync(new TabVisualSettingsChangedEvent());
         }
+
+        //setup Raven Notification library
+        Notifications.getInstance().setJFrame(this);
 
         performAustrianVlcCheck();
     }

@@ -1,7 +1,7 @@
 package mediathek.tool.notification
 
 import javafx.application.Platform
-import org.controlsfx.control.Notifications
+import raven.toast.Notifications
 
 /**
  * Implements notification based on controlsfx JavaFX implemention.
@@ -10,14 +10,15 @@ class GenericNotificationCenter : INotificationCenter {
     override fun displayNotification(msg: NotificationMessage) {
         Platform.runLater {
             try {
-                val genMsg = Notifications.create()
-                genMsg.text(msg.message)
-                genMsg.title(msg.title)
-                when (msg.type) {
-                    MessageType.INFO -> genMsg.showInformation()
-                    MessageType.ERROR -> genMsg.showError()
+                val ravenNotificationType: Notifications.Type = when (msg.type) {
+                    MessageType.INFO -> Notifications.Type.INFO
+                    MessageType.ERROR -> Notifications.Type.ERROR
                 }
-            } catch (ignored: NullPointerException) {
+
+                val message = msg.title + "\n\n" + msg.message
+                Notifications.getInstance()
+                    .show(ravenNotificationType, Notifications.Location.TOP_RIGHT, message)
+            } catch (_: NullPointerException) {
                 //the generic version might fail to display a notification with NPE
             }
         }
