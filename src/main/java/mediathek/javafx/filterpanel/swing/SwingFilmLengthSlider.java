@@ -28,13 +28,23 @@ public class SwingFilmLengthSlider extends RangeSlider {
 
     public SwingFilmLengthSlider() {
         super(0, 110);
-        setHighValue(80);
-        setLowValue(25);
         setPaintLabels(true);
         setPaintTicks(true);
         setPaintTrack(true);
         setMajorTickSpacing(10);
         setLabelTable(new TestTable());
+    }
+
+    public String getHighValueText() {
+        String res;
+        var highValue = getHighValue();
+        if (highValue == UNLIMITED_VALUE) {
+            res = "∞";
+        }
+        else {
+            res = String.valueOf(highValue);
+        }
+        return res;
     }
 
     private static class TestTable extends Hashtable<Integer, JComponent> {

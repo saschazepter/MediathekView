@@ -204,16 +204,14 @@ public class SwingFilterDialog extends JDialog {
         //JFormDesigner dies when we morph bean from JSlider to RangeSlider
         var slider = (SwingFilmLengthSlider)filmLengthSlider;
 
-        lblMinFilmLengthValue.setText("" + slider.getLowValue());
-        lblMaxFilmLengthValue.setText("" + slider.getHighValue());
+        lblMinFilmLengthValue.setText(String.valueOf(slider.getLowValue()));
+        lblMaxFilmLengthValue.setText(slider.getHighValueText());
 
         slider.addChangeListener(l -> {
-            lblMinFilmLengthValue.setText("" + slider.getLowValue());
-            lblMaxFilmLengthValue.setText("" + slider.getHighValue());
+            lblMinFilmLengthValue.setText(String.valueOf(slider.getLowValue()));
+            lblMaxFilmLengthValue.setText(slider.getHighValueText());
 
             if (!slider.getValueIsAdjusting()) {
-                //System.out.println("slider LOW: " + slider.getLowValue());
-                //System.out.println("slider HIGH: " + slider.getHighValue());
                 filterConfig.setFilmLengthMin(slider.getLowValue());
                 filterConfig.setFilmLengthMax(slider.getHighValue());
                 MessageBus.getMessageBus().publish(new ReloadTableDataEvent());

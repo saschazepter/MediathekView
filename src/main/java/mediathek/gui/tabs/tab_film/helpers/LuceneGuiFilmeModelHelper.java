@@ -25,7 +25,7 @@ import mediathek.daten.DatenFilm;
 import mediathek.daten.IndexedFilmList;
 import mediathek.gui.tabs.tab_film.SearchFieldData;
 import mediathek.gui.tasks.LuceneIndexKeys;
-import mediathek.javafx.filterpanel.ZeitraumSpinner;
+import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.FilterConfiguration;
 import mediathek.tool.LuceneDefaultAnalyzer;
@@ -93,7 +93,7 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                 qb.add(initialQuery, BooleanClause.Occur.MUST);
 
                 //Zeitraum filter on demand...
-                if (!filterConfiguration.getZeitraum().equals(ZeitraumSpinner.UNLIMITED_VALUE)) {
+                if (!filterConfiguration.getZeitraum().equals(SwingZeitraumSpinner.UNLIMITED_VALUE)) {
                     try {
                         qb.add(createZeitraumQuery(), BooleanClause.Occur.FILTER);
                     } catch (Exception ex) {

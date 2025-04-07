@@ -18,7 +18,6 @@
 
 package mediathek.javafx.filterpanel.swing.zeitraum;
 
-import mediathek.javafx.filterpanel.ZeitraumSpinner;
 import mediathek.tool.FilterConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -27,6 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 
 public class SwingZeitraumSpinner extends JSpinner {
+    public static final String UNLIMITED_VALUE = "∞";
     private static final Logger logger = LogManager.getLogger();
 
     public SwingZeitraumSpinner() {
@@ -53,8 +53,8 @@ public class SwingZeitraumSpinner extends JSpinner {
             try {
                 var val = (int) getValue();
                 String strVal;
-                if (val == (int) ZeitraumSpinnerFormatter.INFINITE_VALUE)
-                    strVal = ZeitraumSpinner.UNLIMITED_VALUE;
+                if (val == ZeitraumSpinnerFormatter.INFINITE_VALUE)
+                    strVal = UNLIMITED_VALUE;
                 else
                     strVal = String.valueOf(val);
 

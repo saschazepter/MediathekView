@@ -18,15 +18,13 @@
 
 package mediathek.javafx.filterpanel.swing.zeitraum;
 
-import mediathek.javafx.filterpanel.ZeitraumSpinner;
-
 import javax.swing.*;
 import java.text.ParseException;
 import java.util.Objects;
 
 public class ZeitraumSpinnerFormatter extends JFormattedTextField.AbstractFormatter {
-    public static final String INFINITE_TEXT = ZeitraumSpinner.UNLIMITED_VALUE;
-    public static final Object INFINITE_VALUE = 0;
+    public static final String INFINITE_TEXT = SwingZeitraumSpinner.UNLIMITED_VALUE;
+    public static final int INFINITE_VALUE = 0;
 
     @Override
     public Object stringToValue(final String text) throws ParseException {
