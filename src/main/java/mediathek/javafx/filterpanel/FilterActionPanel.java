@@ -6,7 +6,6 @@ import ca.odell.glazedlists.TransactionList;
 import ca.odell.glazedlists.javafx.EventObservableList;
 import impl.org.controlsfx.autocompletion.SuggestionProvider;
 import javafx.application.Platform;
-import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.ListProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleListProperty;
@@ -48,7 +47,6 @@ public class FilterActionPanel {
     private final EventObservableList<String> observableThemaList = new EventObservableList<>(new EventListWithEmptyFirstEntry(sourceThemaList));
     private final OldSwingJavaFxFilterDialog filterDialog;
     private RangeSlider filmLengthSlider;
-    private BooleanProperty dontShowDuplicates;
 
     private ListProperty<String> checkedChannels = new SimpleListProperty<>(FXCollections.observableArrayList());
     private ReadOnlyObjectProperty<String> themaProperty;
@@ -86,10 +84,6 @@ public class FilterActionPanel {
         filmLengthSlider.highValueChangingProperty().addListener(listener);
     }
 
-    public BooleanProperty dontShowDuplicatesProperty() {
-        return dontShowDuplicates;
-    }
-
     private void setupFilterSelection() {
         FilterConfiguration.addAvailableFiltersObserver(() -> Platform.runLater(() -> {
             availableFilters.clear();
@@ -104,7 +98,6 @@ public class FilterActionPanel {
     private void setupViewSettingsPane() {
         viewSettingsPane = new CommonViewSettingsPane();
 
-        dontShowDuplicates = viewSettingsPane.cbDontShowDuplicates.selectedProperty();
         themaProperty = viewSettingsPane.themaComboBox.valueProperty();
         setupThemaComboBox();
         viewSettingsPane.senderCheckList.getCheckModel().getCheckedItems().addListener((ListChangeListener<String>) c -> {
@@ -128,7 +121,6 @@ public class FilterActionPanel {
     }
 
     private void restoreConfigSettings() {
-        dontShowDuplicates.set(filterConfig.isDontShowDuplicates());
         viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
 
         restoreFilmLengthSlider();
@@ -167,8 +159,6 @@ public class FilterActionPanel {
     }
 
     private void setupConfigListeners() {
-        dontShowDuplicates.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowDuplicates(newValue)));
-
         filmLengthSlider.lowValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMin(newValue.doubleValue())));
         filmLengthSlider.highValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMax(newValue.doubleValue())));
 

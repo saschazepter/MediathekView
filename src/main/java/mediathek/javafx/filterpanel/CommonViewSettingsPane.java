@@ -2,7 +2,6 @@ package mediathek.javafx.filterpanel;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.Separator;
 import javafx.scene.layout.*;
@@ -15,7 +14,6 @@ public class CommonViewSettingsPane extends VBox {
     public final ThemaComboBox themaComboBox = new ThemaComboBox();
     public final FilmLenghtSliderNode filmLengthSliderNode = new FilmLenghtSliderNode();
     public final SenderBoxNode senderCheckList = new SenderBoxNode();
-    public final CheckBox cbDontShowDuplicates = new CheckBox("Duplikate nicht anzeigen");
 
     private Pane createSenderList() {
         senderCheckList.setPrefHeight(150d);
@@ -52,8 +50,6 @@ public class CommonViewSettingsPane extends VBox {
         setSpacing(4d);
 
         getChildren().addAll(
-                cbDontShowDuplicates,
-                new Separator(),
                 createSenderList(),
                 new Separator(),
                 createThemaBox(),
@@ -74,7 +70,6 @@ public class CommonViewSettingsPane extends VBox {
         Platform.runLater(
                 () -> {
                     final boolean disable = evt.active;
-                    cbDontShowDuplicates.setDisable(disable);
                     senderCheckList.setDisable(disable);
                     themaComboBox.setDisable(disable);
                     filmLengthSliderNode.setDisable(disable);

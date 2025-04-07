@@ -12,7 +12,6 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import javafx.application.Platform;
-import javafx.beans.value.ChangeListener;
 import mediathek.config.*;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.controller.starter.Start;
@@ -652,10 +651,6 @@ public class GuiFilme extends AGuiTabPanel {
 
     private void setupActionListeners() {
         Platform.runLater(() -> {
-            final ChangeListener<Boolean> reloadTableListener = (ov, oV, nV) -> MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
-
-            filterActionPanel.dontShowDuplicatesProperty().addListener(reloadTableListener);
-
             filterActionPanel.addFilmLengthSliderListeners((v1, v2, newValue) -> {
                 if (!newValue) {
                     MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
