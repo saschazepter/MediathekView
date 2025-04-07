@@ -192,6 +192,9 @@ new FormModel {
 			add( new FormComponent( "javax.swing.JComboBox" ) {
 				name: "jcbThema"
 				"maximumRowCount": 6
+				auxiliary() {
+					"JavaCodeGenerator.typeParameters": "String"
+				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 18,growx,wmax 300"
 			} )

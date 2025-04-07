@@ -593,7 +593,7 @@ public class SwingFilterDialog extends JDialog {
         senderList = new CheckBoxList();
         var separator5 = new JSeparator();
         label4 = new JLabel();
-        jcbThema = new JComboBox();
+        jcbThema = new JComboBox<>();
         var separator6 = new JSeparator();
         var panel2 = new JPanel();
         label5 = new JLabel();
@@ -824,7 +824,7 @@ public class SwingFilterDialog extends JDialog {
     private JLabel label3;
     public CheckBoxList senderList;
     private JLabel label4;
-    private JComboBox jcbThema;
+    private JComboBox<String> jcbThema;
     private JLabel label5;
     private JLabel lblMinFilmLengthValue;
     private JLabel label7;
