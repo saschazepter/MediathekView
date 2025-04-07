@@ -30,7 +30,6 @@ new FormModel {
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnRenameFilter"
-					"toolTipText": "Filter umbenennen"
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 1 0,alignx center,growx 0"
 				} )
@@ -42,7 +41,6 @@ new FormModel {
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "btnDeleteCurrentFilter"
-					"toolTipText": "Aktuellen Filter löschen"
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 3 0,alignx center,growx 0"
 				} )

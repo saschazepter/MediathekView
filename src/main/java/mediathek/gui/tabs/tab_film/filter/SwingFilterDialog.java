@@ -27,6 +27,7 @@ import ca.odell.glazedlists.swing.GlazedListsSwing;
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.RangeSlider;
 import mediathek.config.Daten;
+import mediathek.config.Konstanten;
 import mediathek.controller.SenderFilmlistLoadApprover;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
@@ -52,6 +53,7 @@ import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
@@ -84,7 +86,7 @@ public class SwingFilterDialog extends JDialog {
 
         initComponents();
 
-        setupRenameFilterButton();
+        btnRenameFilter.setAction(new RenameFilterAction());
         setupDeleteCurrentFilterButton();
         setupResetCurrentFilterButton();
         setupAddNewFilterButton();
@@ -384,42 +386,64 @@ public class SwingFilterDialog extends JDialog {
 
     private void setupDeleteCurrentFilterButton() {
         checkDeleteCurrentFilterButtonState();
+        btnDeleteCurrentFilter.setAction(new DeleteCurrentFilterAction());
+    }
 
-        btnDeleteCurrentFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
-        btnDeleteCurrentFilter.addActionListener(e -> {
+    private class DeleteCurrentFilterAction extends AbstractAction {
+        public DeleteCurrentFilterAction() {
+            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
+            putValue(Action.SHORT_DESCRIPTION, "Aktuellen Filter löschen");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
             FilterDTO filterToDelete = filterConfig.getCurrentFilter();
             filterConfig.deleteFilter(filterToDelete);
 
             checkDeleteCurrentFilterButtonState();
-        });
+        }
     }
 
-    private void setupRenameFilterButton() {
-        //FIXME check if filter already exists -> do nothing then!!
-        btnRenameFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/pen-to-square.svg"));
-        btnRenameFilter.addActionListener(l -> {
+    private class RenameFilterAction extends AbstractAction {
+        public RenameFilterAction() {
+            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/pen-to-square.svg"));
+            putValue(Action.SHORT_DESCRIPTION, "Filter umbenennen");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
             final var fltName = filterConfig.getCurrentFilter().name();
-            String thema;
             String s = (String) JOptionPane.showInputDialog(MediathekGui.ui(), "Neuer Name des Filters:", "Filter umbenennen", JOptionPane.PLAIN_MESSAGE, null, null, fltName);
             if (s != null) {
                 if (!s.isEmpty()) {
                     final var fName = s.trim();
                     if (!fName.equals(fltName)) {
-                        Configuration config = ApplicationConfiguration.getConfiguration();
-                        config.lock(LockMode.WRITE);
-                        thema = filterConfig.getThema();
-                        filterConfig.setThema("");
-                        filterConfig.renameCurrentFilter(fName);
-                        filterConfig.setThema(thema);
-                        config.unlock(LockMode.WRITE);
-                        logger.trace("Renamed filter \"{}\" to \"{}\"", fltName, fName);
+                        var existingFilter = filterConfig.findFilterForName(fName);
+                        existingFilter.ifPresentOrElse(f -> {
+                            //if a filter already exists we cannot rename...
+                            JOptionPane.showMessageDialog(MediathekGui.ui(),
+                                    String.format("Filter %s existiert bereits.\nAktion wird abgebrochen", fName),
+                                    Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE);
+                        }, () -> {
+                            // no existing name...
+                            Configuration config = ApplicationConfiguration.getConfiguration();
+                            config.lock(LockMode.WRITE);
+                            var thema = filterConfig.getThema();
+                            filterConfig.setThema("");
+                            filterConfig.renameCurrentFilter(fName);
+                            filterConfig.setThema(thema);
+                            config.unlock(LockMode.WRITE);
+                            logger.trace("Renamed filter \"{}\" to \"{}\"", fltName, fName);
+                        });
                     } else
                         logger.warn("New and old filter name are identical...doing nothing");
-                } else
+                } else {
+                    JOptionPane.showMessageDialog(MediathekGui.ui(), "Filtername darf nicht leer sein!",
+                            Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE);
                     logger.warn("Rename filter text was empty...doing nothing");
-            } else
-                logger.trace("User cancelled rename");
-        });
+                }
+            }
+        }
     }
 
     private void enableControls(boolean enable) {
@@ -663,17 +687,11 @@ public class SwingFilterDialog extends JDialog {
                 new AC()
                     .grow().fill()));
             panel1.add(cboxFilterSelection, new CC().cell(0, 0));
-
-            //---- btnRenameFilter ----
-            btnRenameFilter.setToolTipText("Filter umbenennen"); //NON-NLS
             panel1.add(btnRenameFilter, new CC().cell(1, 0).alignX("center").growX(0)); //NON-NLS
 
             //---- btnAddNewFilter ----
             btnAddNewFilter.setToolTipText("Neuen Filter anlegen"); //NON-NLS
             panel1.add(btnAddNewFilter, new CC().cell(2, 0).alignX("center").growX(0)); //NON-NLS
-
-            //---- btnDeleteCurrentFilter ----
-            btnDeleteCurrentFilter.setToolTipText("Aktuellen Filter l\u00f6schen"); //NON-NLS
             panel1.add(btnDeleteCurrentFilter, new CC().cell(3, 0).alignX("center").growX(0)); //NON-NLS
 
             //---- separator1 ----
