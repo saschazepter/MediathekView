@@ -32,7 +32,6 @@ import mediathek.daten.DatenFilm;
 import mediathek.gui.actions.UrlHyperlinkAction;
 import mediathek.gui.dialog.DialogAddDownload;
 import mediathek.gui.tabs.tab_film.GuiFilme;
-import mediathek.javafx.tool.TableViewColumnContextMenuHelper;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.TimerPool;
