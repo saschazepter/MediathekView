@@ -224,7 +224,6 @@ public class SwingFilterDialog extends JDialog {
      * @return list of all applicable themas.
      */
     private java.util.List<String> getThemaList(@NotNull java.util.List<String> selectedSenders) {
-        System.out.println("GET THEMA LIST START");
         List<String> finalList = new ArrayList<>();
 
         final var blackList = Daten.getInstance().getListeFilmeNachBlackList();
@@ -235,32 +234,27 @@ public class SwingFilterDialog extends JDialog {
                 finalList.addAll(blackList.getThemen(sender));
             }
         }
-        System.out.println("GET THEMA LIST END");
 
         return finalList;
     }
 
     private void updateThemaComboBox() {
-        System.out.println("UPDATE THEMA COMBOBOX START");
         //update the thema list -> updates the combobox automagically
         //use transaction list to minimize updates...
         String aktuellesThema = (String)jcbThema.getSelectedItem();
-        System.out.println("aktuellesThema: " + aktuellesThema);
 
         var selectedSenders = filterConfig.getCheckedChannels().stream().toList();
         var tempThemaList = getThemaList(selectedSenders).parallelStream().distinct().sorted(GermanStringSorter.getInstance()).toList();
-        System.out.println("START TRANS LIST");
+
         sourceThemaList.getReadWriteLock().writeLock().lock();
         sourceThemaList.clear();
         sourceThemaList.addAll(tempThemaList);
         sourceThemaList.getReadWriteLock().writeLock().unlock();
-        System.out.println("END TRANS LIST");
 
         if (!sourceThemaList.contains(aktuellesThema) && aktuellesThema != null && !aktuellesThema.isEmpty()) {
             sourceThemaList.add(aktuellesThema);
         }
         jcbThema.setSelectedItem(aktuellesThema);
-        System.out.println("UPDATE THEMA COMBOBOX END");
     }
 
     private void setupThemaComboBox() {
@@ -274,7 +268,6 @@ public class SwingFilterDialog extends JDialog {
         jcbThema.setSelectedItem(thema);
         jcbThema.addActionListener(l -> {
             var sel = (String)jcbThema.getSelectedItem();
-            System.out.println("THEMA COMBOBOX ACTION REQUESTED: " + sel);
             if (sel != null) {
                 filterConfig.setThema(sel);
             }
@@ -303,7 +296,6 @@ public class SwingFilterDialog extends JDialog {
                 }
 
                 filterConfig.setCheckedChannels(new HashSet<>(newSelectedSenderList));
-                //System.out.println("SENDER VALUED CHANGED: " + e);
 
                 updateThemaComboBox();
                 MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
@@ -363,7 +355,6 @@ public class SwingFilterDialog extends JDialog {
 
     private void restoreSenderList() {
         var checkedSenders = filterConfig.getCheckedChannels();
-        //System.out.println("SENDER LIST: " + checkedSenders);
         senderList.selectNone();
         senderList.getCheckBoxListSelectionModel().setValueIsAdjusting(true);
         final var senderListModel = senderList.getModel();
