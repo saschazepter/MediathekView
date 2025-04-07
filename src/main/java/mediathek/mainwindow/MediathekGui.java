@@ -3,7 +3,6 @@ package mediathek.mainwindow;
 import com.formdev.flatlaf.extras.components.FlatButton;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import javafx.embed.swing.JFXPanel;
 import mediathek.Main;
 import mediathek.config.*;
 import mediathek.controller.history.SeenHistoryController;
@@ -203,9 +202,6 @@ public class MediathekGui extends JFrame {
         installToolBar();
 
         Main.splashScreen.ifPresent(s -> s.update(UIProgressState.FINISHED));
-
-        //FIXME keep until we get grid of controlsfx in GenericNotificationCenter
-        var fxPanel = new JFXPanel();
 
         subscribeTableModelChangeEvent();
 

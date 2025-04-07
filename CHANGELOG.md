@@ -1,5 +1,7 @@
 # **14.3.0**
 - interne Geschwindigkeitsverbesserungen.
+- Filter-Dialog vollständig nach Swing portiert -> u.a. verbesserte Darstellung im Dunkelmodus
+- großflächiger Rückbau von JavaFX-Komponenten, dies sollte älteren Computern zugute kommen.
 - **BUGFIX:** Duplikatsuche berücksicht nur HQ-URL wenn Film auch HQ ist.
 - **BUGFIX:** Alte tagesschau24 Filme in der Liste werden nur konvertiert wenn der Sender auch angezeigt werden soll.
 - **BUGFIX:** Darkmode Anzeigefehler im Kontextmenü des Tab Filme behoben.
