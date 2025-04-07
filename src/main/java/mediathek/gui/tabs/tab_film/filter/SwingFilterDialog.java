@@ -89,7 +89,7 @@ public class SwingFilterDialog extends JDialog {
         btnRenameFilter.setAction(new RenameFilterAction());
         setupDeleteCurrentFilterButton();
         setupResetCurrentFilterButton();
-        setupAddNewFilterButton();
+        btnAddNewFilter.setAction(new AddNewFilterAction());
 
         cbShowNewOnly.addActionListener(l -> {
             filterConfig.setShowNewOnly(cbShowNewOnly.isSelected());
@@ -358,7 +358,7 @@ public class SwingFilterDialog extends JDialog {
         senderList.selectNone();
         cblsm.setValueIsAdjusting(true);
         for (int i = 0; i < senderListModel.getSize(); i++) {
-            var item = (String)senderListModel.getElementAt(i);
+            var item = (String) senderListModel.getElementAt(i);
             if (checkedSenders.contains(item)) {
                 senderList.getCheckBoxListSelectionModel().addSelectionInterval(i, i);
             }
@@ -374,76 +374,9 @@ public class SwingFilterDialog extends JDialog {
         });
     }
 
-    private void setupAddNewFilterButton() {
-        btnAddNewFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/plus.svg"));
-        btnAddNewFilter.addActionListener(e -> {
-            FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), String.format("Filter %d", filterConfig.getAvailableFilters().size() + 1));
-            filterConfig.addNewFilter(newFilter);
-            checkDeleteCurrentFilterButtonState();
-            filterSelectionComboBoxModel.setSelectedItem(newFilter);
-        });
-    }
-
     private void setupDeleteCurrentFilterButton() {
         checkDeleteCurrentFilterButtonState();
         btnDeleteCurrentFilter.setAction(new DeleteCurrentFilterAction());
-    }
-
-    private class DeleteCurrentFilterAction extends AbstractAction {
-        public DeleteCurrentFilterAction() {
-            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
-            putValue(Action.SHORT_DESCRIPTION, "Aktuellen Filter löschen");
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            FilterDTO filterToDelete = filterConfig.getCurrentFilter();
-            filterConfig.deleteFilter(filterToDelete);
-
-            checkDeleteCurrentFilterButtonState();
-        }
-    }
-
-    private class RenameFilterAction extends AbstractAction {
-        public RenameFilterAction() {
-            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/pen-to-square.svg"));
-            putValue(Action.SHORT_DESCRIPTION, "Filter umbenennen");
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            final var fltName = filterConfig.getCurrentFilter().name();
-            String s = (String) JOptionPane.showInputDialog(MediathekGui.ui(), "Neuer Name des Filters:", "Filter umbenennen", JOptionPane.PLAIN_MESSAGE, null, null, fltName);
-            if (s != null) {
-                if (!s.isEmpty()) {
-                    final var fName = s.trim();
-                    if (!fName.equals(fltName)) {
-                        var existingFilter = filterConfig.findFilterForName(fName);
-                        existingFilter.ifPresentOrElse(f -> {
-                            //if a filter already exists we cannot rename...
-                            JOptionPane.showMessageDialog(MediathekGui.ui(),
-                                    String.format("Filter %s existiert bereits.\nAktion wird abgebrochen", fName),
-                                    Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE);
-                        }, () -> {
-                            // no existing name...
-                            Configuration config = ApplicationConfiguration.getConfiguration();
-                            config.lock(LockMode.WRITE);
-                            var thema = filterConfig.getThema();
-                            filterConfig.setThema("");
-                            filterConfig.renameCurrentFilter(fName);
-                            filterConfig.setThema(thema);
-                            config.unlock(LockMode.WRITE);
-                            logger.trace("Renamed filter \"{}\" to \"{}\"", fltName, fName);
-                        });
-                    } else
-                        logger.warn("New and old filter name are identical...doing nothing");
-                } else {
-                    JOptionPane.showMessageDialog(MediathekGui.ui(), "Filtername darf nicht leer sein!",
-                            Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE);
-                    logger.warn("Rename filter text was empty...doing nothing");
-                }
-            }
-        }
     }
 
     private void enableControls(boolean enable) {
@@ -537,6 +470,82 @@ public class SwingFilterDialog extends JDialog {
             final var inputMap = rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
             inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0), TOGGLE_FILTER_VISIBILITY);
             rootPane.getActionMap().put(TOGGLE_FILTER_VISIBILITY, action);
+        }
+    }
+
+    private class AddNewFilterAction extends AbstractAction {
+        public AddNewFilterAction() {
+            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/plus.svg"));
+            putValue(Action.SHORT_DESCRIPTION, "Neuen Filter anlegen");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), String.format("Filter %d", filterConfig.getAvailableFilters().size() + 1));
+            filterConfig.addNewFilter(newFilter);
+            checkDeleteCurrentFilterButtonState();
+            filterSelectionComboBoxModel.setSelectedItem(newFilter);
+        }
+    }
+
+    private class DeleteCurrentFilterAction extends AbstractAction {
+        public DeleteCurrentFilterAction() {
+            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
+            putValue(Action.SHORT_DESCRIPTION, "Aktuellen Filter löschen");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            var res = JOptionPane.showConfirmDialog(MediathekGui.ui(),"Möchten Sie wirklich den aktuellen Filter löschen?",
+                    Konstanten.PROGRAMMNAME, JOptionPane.YES_NO_OPTION);
+            if (res == JOptionPane.YES_OPTION) {
+                FilterDTO filterToDelete = filterConfig.getCurrentFilter();
+                filterConfig.deleteFilter(filterToDelete);
+
+                checkDeleteCurrentFilterButtonState();
+            }
+        }
+    }
+
+    private class RenameFilterAction extends AbstractAction {
+        public RenameFilterAction() {
+            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/pen-to-square.svg"));
+            putValue(Action.SHORT_DESCRIPTION, "Filter umbenennen");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            final var fltName = filterConfig.getCurrentFilter().name();
+            String s = (String) JOptionPane.showInputDialog(MediathekGui.ui(), "Neuer Name des Filters:", "Filter umbenennen", JOptionPane.PLAIN_MESSAGE, null, null, fltName);
+            if (s != null) {
+                if (!s.isEmpty()) {
+                    final var fName = s.trim();
+                    if (!fName.equals(fltName)) {
+                        var existingFilter = filterConfig.findFilterForName(fName);
+                        existingFilter.ifPresentOrElse(f -> {
+                            //if a filter already exists we cannot rename...
+                            JOptionPane.showMessageDialog(MediathekGui.ui(),
+                                    String.format("Filter %s existiert bereits.\nAktion wird abgebrochen", fName),
+                                    Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE);
+                        }, () -> {
+                            // no existing name...
+                            Configuration config = ApplicationConfiguration.getConfiguration();
+                            config.lock(LockMode.WRITE);
+                            var thema = filterConfig.getThema();
+                            filterConfig.setThema("");
+                            filterConfig.renameCurrentFilter(fName);
+                            filterConfig.setThema(thema);
+                            config.unlock(LockMode.WRITE);
+                            logger.trace("Renamed filter \"{}\" to \"{}\"", fltName, fName);
+                        });
+                    } else
+                        logger.warn("New and old filter name are identical...doing nothing");
+                } else {
+                    JOptionPane.showMessageDialog(MediathekGui.ui(), "Filtername darf nicht leer sein!",
+                            Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE);
+                    logger.warn("Rename filter text was empty...doing nothing");
+                }
+            }
         }
     }
 
@@ -688,9 +697,6 @@ public class SwingFilterDialog extends JDialog {
                     .grow().fill()));
             panel1.add(cboxFilterSelection, new CC().cell(0, 0));
             panel1.add(btnRenameFilter, new CC().cell(1, 0).alignX("center").growX(0)); //NON-NLS
-
-            //---- btnAddNewFilter ----
-            btnAddNewFilter.setToolTipText("Neuen Filter anlegen"); //NON-NLS
             panel1.add(btnAddNewFilter, new CC().cell(2, 0).alignX("center").growX(0)); //NON-NLS
             panel1.add(btnDeleteCurrentFilter, new CC().cell(3, 0).alignX("center").growX(0)); //NON-NLS
 
