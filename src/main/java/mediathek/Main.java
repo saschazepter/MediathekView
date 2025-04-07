@@ -3,6 +3,7 @@ package mediathek;
 import com.formdev.flatlaf.FlatLaf;
 import com.jidesoft.utils.ThreadCheckingRepaintManager;
 import com.sun.jna.platform.win32.VersionHelpers;
+import javafx.application.Platform;
 import mediathek.config.*;
 import mediathek.controller.history.SeenHistoryMigrator;
 import mediathek.daten.IndexedFilmList;
@@ -466,6 +467,9 @@ public class Main {
 
             printDirectoryPaths();
 
+            //prevent JavaFX from exiting after the last window closed
+            Platform.setImplicitExit(false);
+
             if (!isDebuggerAttached()) {
                 if (!Config.isSplashScreenDisabled()) {
                     splashScreen = Optional.of(new SplashScreen());
@@ -611,8 +615,8 @@ public class Main {
     }
 
     private static void printDirectoryPaths() {
-        logger.trace("Programmpfad: " + GuiFunktionenProgramme.getPathToApplicationJar());
-        logger.info("Verzeichnis Einstellungen: " + StandardLocations.getSettingsDirectory());
+        logger.trace("Programmpfad: {}", GuiFunktionenProgramme.getPathToApplicationJar());
+        logger.info("Verzeichnis Einstellungen: {}", StandardLocations.getSettingsDirectory());
     }
 
     /**
