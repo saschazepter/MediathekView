@@ -10,7 +10,7 @@ new FormModel {
 		} ) {
 			name: "this"
 			"type": enum java.awt.Window$Type UTILITY
-			"title": "Swing Filter"
+			"title": "Filter"
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$layoutConstraints": "fillx,insets 0,hidemode 3"
 				"$columnConstraints": "[grow,fill][fill][fill][left][fill][fill]"

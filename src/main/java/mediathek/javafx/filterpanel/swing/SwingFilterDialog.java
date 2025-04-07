@@ -414,6 +414,8 @@ public class SwingFilterDialog extends JDialog {
         cboxFilterSelection.setEnabled(enable);
 
         btnRenameFilter.setEnabled(enable);
+        btnAddNewFilter.setEnabled(enable);
+        btnResetCurrentFilter.setEnabled(enable);
 
         cbShowNewOnly.setEnabled(enable);
         cbShowBookMarkedOnly.setEnabled(enable);
@@ -600,7 +602,7 @@ public class SwingFilterDialog extends JDialog {
 
         //======== this ========
         setType(Window.Type.UTILITY);
-        setTitle("Swing Filter"); //NON-NLS
+        setTitle("Filter"); //NON-NLS
         var contentPane = getContentPane();
         contentPane.setLayout(new MigLayout(
             new LC().fillX().insets("5").hideMode(3), //NON-NLS
