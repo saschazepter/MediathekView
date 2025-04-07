@@ -3,8 +3,7 @@ package mediathek.mainwindow;
 import com.formdev.flatlaf.extras.components.FlatButton;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import javafx.application.Platform;
-import javafx.stage.Stage;
+import javafx.embed.swing.JFXPanel;
 import mediathek.Main;
 import mediathek.config.*;
 import mediathek.controller.history.SeenHistoryController;
@@ -37,8 +36,6 @@ import mediathek.gui.tabs.tab_film.GuiFilme;
 import mediathek.gui.tasks.BlacklistFilterWorker;
 import mediathek.gui.tasks.LuceneIndexWorker;
 import mediathek.gui.tasks.RefreshAboWorker;
-import mediathek.javafx.tool.JFXHiddenApplication;
-import mediathek.javafx.tool.JavaFxUtils;
 import mediathek.res.GetIcon;
 import mediathek.tool.*;
 import mediathek.tool.notification.GenericNotificationCenter;
@@ -206,7 +203,8 @@ public class MediathekGui extends JFrame {
 
         Main.splashScreen.ifPresent(s -> s.update(UIProgressState.FINISHED));
 
-        workaroundJavaFxInitializationBug();
+        //FIXME keep until we get grid of controlsfx in GenericNotificationCenter
+        var fxPanel = new JFXPanel();
 
         subscribeTableModelChangeEvent();
 
@@ -549,27 +547,6 @@ public class MediathekGui extends JFrame {
 
     protected void addFontMenu() {
         jMenuBar.add(fontMenu);
-    }
-
-    /**
-     * JavaFX seems to need at least one window shown in order to function without further problems.
-     * This is imminent on macOS, but seems to affect windows as well.
-     */
-    protected void workaroundJavaFxInitializationBug() {
-        JavaFxUtils.invokeInFxThreadAndWait(() -> {
-            /*
-            For some unknown reason JavaFX seems to get confused on macOS when no stage was at least once
-            really visible. This will cause swing/javafx mixed windows to have focus trouble and/or use 100%
-            cpu when started in background.
-            Workaround for now is to open a native javafx stage, display it for the shortest time possible and
-            then close it as we don´t need it. On my machine this fixes the focus and cpu problems.
-             */
-            var window = new Stage();
-            window.setWidth(10d);
-            window.setHeight(10d);
-            window.show();
-            window.hide();
-        });
     }
 
     private void createMemoryMonitor() {
@@ -1202,10 +1179,6 @@ public class MediathekGui extends JFrame {
         shutdownTimerPool();
         waitForCommonPoolToComplete();
 
-        //shutdown JavaFX
-        logger.trace("Shutdown JavaFX.");
-        shutdownJavaFx();
-
         //close main window
         logger.trace("Close main window.");
         dispose();
@@ -1229,18 +1202,6 @@ public class MediathekGui extends JFrame {
         System.exit(0);
 
         return true;
-    }
-
-    /**
-     * Gracefully shutdown the JavaFX environment.
-     */
-    private void shutdownJavaFx() {
-        //causes system hang on Sonoma 14.1
-        if (!SystemUtils.IS_OS_MAC_OSX) {
-            JavaFxUtils.invokeInFxThreadAndWait(() -> JFXHiddenApplication.getPrimaryStage().close());
-        }
-
-        Platform.exit();
     }
 
     private void shutdownTimerPool() {

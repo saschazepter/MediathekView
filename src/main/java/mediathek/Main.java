@@ -3,12 +3,10 @@ package mediathek;
 import com.formdev.flatlaf.FlatLaf;
 import com.jidesoft.utils.ThreadCheckingRepaintManager;
 import com.sun.jna.platform.win32.VersionHelpers;
-import javafx.application.Platform;
 import mediathek.config.*;
 import mediathek.controller.history.SeenHistoryMigrator;
 import mediathek.daten.IndexedFilmList;
 import mediathek.gui.dialog.DialogStarteinstellungen;
-import mediathek.javafx.tool.JFXHiddenApplication;
 import mediathek.mac.MediathekGuiMac;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
@@ -436,13 +434,10 @@ public class Main {
 
                 setupCpuAffinity();
 
-                Platform.setImplicitExit(false);
-
                 removeMediaDb();
                 deleteOldFilmDatabaseFiles();
                 deleteOldUserAgentsDatabase();
 
-                JFXHiddenApplication.launchApplication();
                 checkMemoryRequirements();
 
                 installSingleInstanceHandler();

@@ -12,6 +12,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import javafx.application.Platform;
+import javafx.embed.swing.JFXPanel;
 import mediathek.config.*;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.controller.starter.Start;
@@ -511,6 +512,8 @@ public class GuiFilme extends AGuiTabPanel {
      * If necessary instantiate and show the bookmark window
      */
     public void showManageBookmarkWindow() {
+        //init JavaFX when needed...
+        var fxPanel = new JFXPanel();
         Platform.runLater(() -> {
             if (bookmarkWindowController.isEmpty()) {
                 bookmarkWindowController = Optional.of(new BookmarkWindowController());
