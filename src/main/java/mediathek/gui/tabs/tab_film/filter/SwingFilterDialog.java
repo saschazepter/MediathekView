@@ -324,7 +324,7 @@ public class SwingFilterDialog extends JDialog {
             slider.setLowValue((int) filterConfig.getFilmLengthMin());
             slider.setValueIsAdjusting(false);
         } catch (Exception exception) {
-            logger.debug("Beim wiederherstellen der Filter Einstellungen für die Filmlänge ist ein Fehler aufgetreten!", exception);
+            logger.error("Failed to restore filmlength config", exception);
         }
     }
 
@@ -484,11 +484,6 @@ public class SwingFilterDialog extends JDialog {
         setVisible(visible);
     }
 
-    private void storeDialogVisibility() {
-        var config = ApplicationConfiguration.getConfiguration();
-        config.setProperty(ApplicationConfiguration.FilterDialog.VISIBLE, isVisible());
-    }
-
     private void restoreWindowSizeFromConfig() {
         try {
             config.lock(LockMode.READ);
@@ -544,6 +539,10 @@ public class SwingFilterDialog extends JDialog {
             storeDialogVisibility();
 
             filterToggleButton.setSelected(false);
+        }
+
+        private void storeDialogVisibility() {
+            config.setProperty(ApplicationConfiguration.FilterDialog.VISIBLE, isVisible());
         }
 
         private void storeWindowPosition(ComponentEvent e) {
