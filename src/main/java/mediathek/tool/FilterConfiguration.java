@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider;
 import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner;
 import org.apache.commons.configuration2.Configuration;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -264,7 +265,7 @@ public class FilterConfiguration {
         return parseJsonToSet(json);
     }
 
-    public FilterConfiguration setCheckedChannels(Set<String> newList) {
+    public FilterConfiguration setCheckedChannels(@NotNull Collection<String> newList) {
         try {
             var objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(newList);

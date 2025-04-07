@@ -55,8 +55,10 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.UUID;
 
 /**
  * @author christianfranzke
@@ -170,7 +172,6 @@ public class SwingFilterDialog extends JDialog {
         Daten.getInstance().getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
             @Override
             public void start(ListenerFilmeLadenEvent event) {
-                //FIXME here we must manually enable/disable our controls
                 setEnabled(false);
             }
 
@@ -212,10 +213,10 @@ public class SwingFilterDialog extends JDialog {
 
         final var blackList = Daten.getInstance().getListeFilmeNachBlackList();
         if (selectedSenders.isEmpty()) {
-            finalList.addAll(blackList.getThemen(""));
+            finalList.addAll(blackList.getThemenUnprocessed(""));
         } else {
             for (String sender : selectedSenders) {
-                finalList.addAll(blackList.getThemen(sender));
+                finalList.addAll(blackList.getThemenUnprocessed(sender));
             }
         }
 
@@ -272,15 +273,11 @@ public class SwingFilterDialog extends JDialog {
         senderList.setModel(senderModel);
         senderList.getCheckBoxListSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                var newSelectedSenderList = new ArrayList<String>();
-                final var senderListModel = senderList.getModel();
-                for (int i = 0; i < senderListModel.getSize(); i++) {
-                    var item = senderListModel.getElementAt(i);
-                    if (senderList.getCheckBoxListSelectionModel().isSelectedIndex(i))
-                        newSelectedSenderList.add(item.toString());
-                }
-
-                filterConfig.setCheckedChannels(new HashSet<>(newSelectedSenderList));
+                var newSelectedSenderList = getSelectedSenders();
+                filterConfig.setCheckedChannels(newSelectedSenderList);
+                // reset thema on sender selection
+                filterConfig.setThema("");
+                jcbThema.setSelectedIndex(0);
 
                 updateThemaComboBox();
                 MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
@@ -293,6 +290,19 @@ public class SwingFilterDialog extends JDialog {
         contextMenu.add(menuItem);
         senderList.setComponentPopupMenu(contextMenu);
 
+    }
+
+    private List<String> getSelectedSenders() {
+        var newSelectedSenderList = new ArrayList<String>();
+        final var senderListModel = senderList.getModel();
+        final var cblsm = senderList.getCheckBoxListSelectionModel();
+        for (int i = 0; i < senderListModel.getSize(); i++) {
+            if (cblsm.isSelectedIndex(i)) {
+                var item = senderListModel.getElementAt(i);
+                newSelectedSenderList.add(item.toString());
+            }
+        }
+        return newSelectedSenderList;
     }
 
     private void setupZeitraumSpinner() {
@@ -339,17 +349,19 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private void restoreSenderList() {
-        var checkedSenders = filterConfig.getCheckedChannels();
-        senderList.selectNone();
-        senderList.getCheckBoxListSelectionModel().setValueIsAdjusting(true);
+        final var checkedSenders = filterConfig.getCheckedChannels();
+        final var cblsm = senderList.getCheckBoxListSelectionModel();
         final var senderListModel = senderList.getModel();
+
+        senderList.selectNone();
+        cblsm.setValueIsAdjusting(true);
         for (int i = 0; i < senderListModel.getSize(); i++) {
             var item = (String)senderListModel.getElementAt(i);
             if (checkedSenders.contains(item)) {
                 senderList.getCheckBoxListSelectionModel().addSelectionInterval(i, i);
             }
         }
-        senderList.getCheckBoxListSelectionModel().setValueIsAdjusting(false);
+        cblsm.setValueIsAdjusting(false);
     }
 
     private void setupResetCurrentFilterButton() {
@@ -552,7 +564,6 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private void createUIComponents() {
-        // TODO: add custom component creation code here
         cboxFilterSelection = new FilterSelectionComboBox(filterSelectionComboBoxModel);
     }
 
