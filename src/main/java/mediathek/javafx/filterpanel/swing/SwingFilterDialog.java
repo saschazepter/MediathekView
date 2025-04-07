@@ -105,6 +105,11 @@ public class SwingFilterDialog extends JDialog {
         });
         cbShowOnlyHq.addActionListener(l -> {
             filterConfig.setShowHighQualityOnly(cbShowOnlyHq.isSelected());
+            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+        });
+        cbShowSubtitlesOnly.addActionListener(l -> {
+            filterConfig.setShowSubtitlesOnly(cbShowSubtitlesOnly.isSelected());
+            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
 
 
@@ -174,8 +179,8 @@ public class SwingFilterDialog extends JDialog {
         cbShowNewOnly.setSelected(filterConfig.isShowNewOnly());
         cbShowBookMarkedOnly.setSelected(filterConfig.isShowBookMarkedOnly());
         cbShowOnlyHq.setSelected(filterConfig.isShowHighQualityOnly());
+        cbShowSubtitlesOnly.setSelected(filterConfig.isShowSubtitlesOnly());
         /*
-        showSubtitlesOnly.set(filterConfig.isShowSubtitlesOnly());
         showUnseenOnly.set(filterConfig.isShowUnseenOnly());
         showLivestreamsOnly.set(filterConfig.isShowLivestreamsOnly());
 
@@ -268,6 +273,7 @@ public class SwingFilterDialog extends JDialog {
             cbShowNewOnly.setEnabled(enable);
             cbShowBookMarkedOnly.setEnabled(enable);
             cbShowOnlyHq.setEnabled(enable);
+            cbShowSubtitlesOnly.setEnabled(enable);
 
             cboxFilterSelection.setEnabled(enable);
             spZeitraum.setEnabled(enable);
@@ -365,7 +371,7 @@ public class SwingFilterDialog extends JDialog {
         cbShowNewOnly = new JCheckBox();
         cbShowBookMarkedOnly = new JCheckBox();
         cbShowOnlyHq = new JCheckBox();
-        checkBox4 = new JCheckBox();
+        cbShowSubtitlesOnly = new JCheckBox();
         checkBox5 = new JCheckBox();
         separator3 = new JSeparator();
         checkBox6 = new JCheckBox();
@@ -483,9 +489,9 @@ public class SwingFilterDialog extends JDialog {
         cbShowOnlyHq.setText("Nur High Quality(HQ) Filme anzeigen"); //NON-NLS
         contentPane.add(cbShowOnlyHq, new CC().cell(0, 4, 3, 1));
 
-        //---- checkBox4 ----
-        checkBox4.setText("Nur Filme mit Untertitel anzeigen"); //NON-NLS
-        contentPane.add(checkBox4, new CC().cell(0, 5, 3, 1));
+        //---- cbShowSubtitlesOnly ----
+        cbShowSubtitlesOnly.setText("Nur Filme mit Untertitel anzeigen"); //NON-NLS
+        contentPane.add(cbShowSubtitlesOnly, new CC().cell(0, 5, 3, 1));
 
         //---- checkBox5 ----
         checkBox5.setText("Nur Livestreams anzeigen"); //NON-NLS
@@ -643,7 +649,7 @@ public class SwingFilterDialog extends JDialog {
     private JCheckBox cbShowNewOnly;
     private JCheckBox cbShowBookMarkedOnly;
     private JCheckBox cbShowOnlyHq;
-    private JCheckBox checkBox4;
+    private JCheckBox cbShowSubtitlesOnly;
     private JCheckBox checkBox5;
     private JSeparator separator3;
     private JCheckBox checkBox6;

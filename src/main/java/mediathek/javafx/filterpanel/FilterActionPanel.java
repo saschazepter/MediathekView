@@ -56,7 +56,6 @@ public class FilterActionPanel {
     private BooleanProperty dontShowDuplicates;
     private BooleanProperty showLivestreamsOnly;
     private BooleanProperty showUnseenOnly;
-    private BooleanProperty showSubtitlesOnly;
 
     private ListProperty<String> checkedChannels = new SimpleListProperty<>(FXCollections.observableArrayList());
     private ReadOnlyObjectProperty<String> themaProperty;
@@ -122,10 +121,6 @@ public class FilterActionPanel {
         return showUnseenOnly;
     }
 
-    public BooleanProperty showSubtitlesOnlyProperty() {
-        return showSubtitlesOnly;
-    }
-
     private void setupFilterSelection() {
         FilterConfiguration.addAvailableFiltersObserver(() -> Platform.runLater(() -> {
             availableFilters.clear();
@@ -140,7 +135,6 @@ public class FilterActionPanel {
     private void setupViewSettingsPane() {
         viewSettingsPane = new CommonViewSettingsPane();
 
-        showSubtitlesOnly = viewSettingsPane.cbShowSubtitlesOnly.selectedProperty();
         showLivestreamsOnly = viewSettingsPane.cbShowOnlyLivestreams.selectedProperty();
 
         showUnseenOnly = viewSettingsPane.cbShowUnseenOnly.selectedProperty();
@@ -172,7 +166,6 @@ public class FilterActionPanel {
     }
 
     private void restoreConfigSettings() {
-        showSubtitlesOnly.set(filterConfig.isShowSubtitlesOnly());
         showUnseenOnly.set(filterConfig.isShowUnseenOnly());
         showLivestreamsOnly.set(filterConfig.isShowLivestreamsOnly());
 
@@ -219,7 +212,6 @@ public class FilterActionPanel {
     }
 
     private void setupConfigListeners() {
-        showSubtitlesOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowSubtitlesOnly(newValue)));
         showUnseenOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowUnseenOnly(newValue)));
         showLivestreamsOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowLivestreamsOnly(newValue)));
 
