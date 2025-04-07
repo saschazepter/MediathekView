@@ -1187,7 +1187,7 @@ public class MediathekGui extends JFrame {
         logger.trace("Save Tab Filme data.");
         tabFilme.tabelleSpeichern();
         tabFilme.saveSettings();  // needs thread pools active!
-        tabFilme.getFilterActionPanel().getFilterDialog().dispose();
+        tabFilme.swingFilterDialog.dispose();
 
         logger.trace("Save Tab Download data.");
         tabDownloads.tabelleSpeichern();

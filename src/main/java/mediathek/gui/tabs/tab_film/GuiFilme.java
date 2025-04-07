@@ -34,7 +34,6 @@ import mediathek.gui.tabs.tab_film.helpers.GuiFilmeModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.LuceneGuiFilmeModelHelper;
 import mediathek.javafx.bookmark.BookmarkWindowController;
-import mediathek.javafx.filterpanel.FilterActionPanel;
 import mediathek.javafx.filterpanel.SearchControlFieldMode;
 import mediathek.javafx.filterpanel.swing.SwingFilterDialog;
 import mediathek.mainwindow.MediathekGui;
@@ -108,13 +107,9 @@ public class GuiFilme extends AGuiTabPanel {
     private final JCheckBoxMenuItem cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
     private final NonRepeatingTimer zeitraumTimer;
     private final NonRepeatingTimer reloadTableDataTimer;
-    /**
-     * The JavaFx Film action popup panel.
-     */
-    private final FilterActionPanel filterActionPanel;
     private final FilterConfiguration filterConfiguration = new FilterConfiguration();
     private final FilmToolBar filmToolBar;
-    private final SwingFilterDialog swingFilterDialog;
+    public final SwingFilterDialog swingFilterDialog;
     public ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction();
     protected SearchField searchField;
     protected PsetButtonsPanel psetButtonsPanel;
@@ -161,7 +156,6 @@ public class GuiFilme extends AGuiTabPanel {
                 toggleFilterDialogVisibilityAction);
         add(filmToolBar, BorderLayout.NORTH);
 
-        filterActionPanel = new FilterActionPanel(filterConfiguration);
         swingFilterDialog = new SwingFilterDialog(mediathekGui, filterSelectionComboBoxModel,
                 filmToolBar.getToggleFilterDialogVisibilityButton(),
                 filterConfiguration);
@@ -184,10 +178,6 @@ public class GuiFilme extends AGuiTabPanel {
 
     public FilterConfiguration getFilterConfiguration() {
         return filterConfiguration;
-    }
-
-    public FilterActionPanel getFilterActionPanel() {
-        return filterActionPanel;
     }
 
     /**
@@ -777,14 +767,6 @@ public class GuiFilme extends AGuiTabPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            var dlg = filterActionPanel.getFilterDialog();
-            if (dlg != null) {
-                var visible = dlg.isVisible();
-                visible = !visible;
-
-                dlg.setVisible(visible);
-            }
-
             var visible = swingFilterDialog.isVisible();
             visible = !visible;
             swingFilterDialog.setVisible(visible);
