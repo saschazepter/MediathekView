@@ -105,7 +105,7 @@ new FormModel {
 				"value": "cell 0 8 3 1"
 			} )
 			add( new FormComponent( "javax.swing.JCheckBox" ) {
-				name: "checkBox7"
+				name: "cbDontShowAbos"
 				"text": "Abos nicht anzeigen"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 9 3 1"

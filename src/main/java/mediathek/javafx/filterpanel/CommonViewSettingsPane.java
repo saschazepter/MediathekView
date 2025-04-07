@@ -19,7 +19,6 @@ public class CommonViewSettingsPane extends VBox {
     public final CheckBox cbDontShowGebaerdensprache = new CheckBox("Gebärdensprache nicht anzeigen");
     public final CheckBox cbDontShowDuplicates = new CheckBox("Duplikate nicht anzeigen");
     public final CheckBox cbDontShowTrailers = new CheckBox("Trailer/Teaser/Vorschau nicht anzeigen");
-    public final CheckBox cbDontShowAbos = new CheckBox("Abos nicht anzeigen");
 
     private Pane createSenderList() {
         senderCheckList.setPrefHeight(150d);
@@ -56,7 +55,6 @@ public class CommonViewSettingsPane extends VBox {
         setSpacing(4d);
 
         getChildren().addAll(
-                cbDontShowAbos,
                 cbDontShowGebaerdensprache,
                 cbDontShowTrailers,
                 cbDontShowAudioVersions,
@@ -82,7 +80,6 @@ public class CommonViewSettingsPane extends VBox {
         Platform.runLater(
                 () -> {
                     final boolean disable = evt.active;
-                    cbDontShowAbos.setDisable(disable);
                     cbDontShowGebaerdensprache.setDisable(disable);
                     cbDontShowTrailers.setDisable(disable);
                     cbDontShowAudioVersions.setDisable(disable);

@@ -51,7 +51,6 @@ public class FilterActionPanel {
     private BooleanProperty dontShowAudioVersions;
     private BooleanProperty dontShowSignLanguage;
     private BooleanProperty dontShowTrailers;
-    private BooleanProperty dontShowAbos;
     private BooleanProperty dontShowDuplicates;
 
     private ListProperty<String> checkedChannels = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -102,10 +101,6 @@ public class FilterActionPanel {
         return dontShowTrailers;
     }
 
-    public BooleanProperty dontShowAbosProperty() {
-        return dontShowAbos;
-    }
-
     public BooleanProperty dontShowDuplicatesProperty() {
         return dontShowDuplicates;
     }
@@ -124,7 +119,6 @@ public class FilterActionPanel {
     private void setupViewSettingsPane() {
         viewSettingsPane = new CommonViewSettingsPane();
 
-        dontShowAbos = viewSettingsPane.cbDontShowAbos.selectedProperty();
         dontShowSignLanguage = viewSettingsPane.cbDontShowGebaerdensprache.selectedProperty();
         dontShowTrailers = viewSettingsPane.cbDontShowTrailers.selectedProperty();
         dontShowAudioVersions = viewSettingsPane.cbDontShowAudioVersions.selectedProperty();
@@ -152,7 +146,6 @@ public class FilterActionPanel {
     }
 
     private void restoreConfigSettings() {
-        dontShowAbos.set(filterConfig.isDontShowAbos());
         dontShowTrailers.set(filterConfig.isDontShowTrailers());
         dontShowSignLanguage.set(filterConfig.isDontShowSignLanguage());
         dontShowAudioVersions.set(filterConfig.isDontShowAudioVersions());
@@ -195,7 +188,6 @@ public class FilterActionPanel {
     }
 
     private void setupConfigListeners() {
-        dontShowAbos.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowAbos(newValue)));
         dontShowTrailers.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowTrailers(newValue)));
         dontShowSignLanguage.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowSignLanguage(newValue)));
         dontShowAudioVersions.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowAudioVersions(newValue)));
