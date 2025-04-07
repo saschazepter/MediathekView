@@ -54,7 +54,6 @@ public class FilterActionPanel {
     private BooleanProperty dontShowTrailers;
     private BooleanProperty dontShowAbos;
     private BooleanProperty dontShowDuplicates;
-    private BooleanProperty showUnseenOnly;
 
     private ListProperty<String> checkedChannels = new SimpleListProperty<>(FXCollections.observableArrayList());
     private ReadOnlyObjectProperty<String> themaProperty;
@@ -112,10 +111,6 @@ public class FilterActionPanel {
         return dontShowDuplicates;
     }
 
-    public BooleanProperty showUnseenOnlyProperty() {
-        return showUnseenOnly;
-    }
-
     private void setupFilterSelection() {
         FilterConfiguration.addAvailableFiltersObserver(() -> Platform.runLater(() -> {
             availableFilters.clear();
@@ -130,7 +125,6 @@ public class FilterActionPanel {
     private void setupViewSettingsPane() {
         viewSettingsPane = new CommonViewSettingsPane();
 
-        showUnseenOnly = viewSettingsPane.cbShowUnseenOnly.selectedProperty();
         dontShowAbos = viewSettingsPane.cbDontShowAbos.selectedProperty();
         dontShowSignLanguage = viewSettingsPane.cbDontShowGebaerdensprache.selectedProperty();
         dontShowTrailers = viewSettingsPane.cbDontShowTrailers.selectedProperty();
@@ -159,8 +153,6 @@ public class FilterActionPanel {
     }
 
     private void restoreConfigSettings() {
-        showUnseenOnly.set(filterConfig.isShowUnseenOnly());
-
         dontShowAbos.set(filterConfig.isDontShowAbos());
         dontShowTrailers.set(filterConfig.isDontShowTrailers());
         dontShowSignLanguage.set(filterConfig.isDontShowSignLanguage());
@@ -204,8 +196,6 @@ public class FilterActionPanel {
     }
 
     private void setupConfigListeners() {
-        showUnseenOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowUnseenOnly(newValue)));
-
         dontShowAbos.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowAbos(newValue)));
         dontShowTrailers.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowTrailers(newValue)));
         dontShowSignLanguage.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowSignLanguage(newValue)));

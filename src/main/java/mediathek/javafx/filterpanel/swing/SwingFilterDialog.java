@@ -115,6 +115,10 @@ public class SwingFilterDialog extends JDialog {
            filterConfig.setShowLivestreamsOnly(cbShowOnlyLivestreams.isSelected());
            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
+        cbShowUnseenOnly.addActionListener(l -> {
+            filterConfig.setShowUnseenOnly(cbShowUnseenOnly.isSelected());
+            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+        });
 
 
         setupZeitraumSpinner();
@@ -185,8 +189,8 @@ public class SwingFilterDialog extends JDialog {
         cbShowOnlyHq.setSelected(filterConfig.isShowHighQualityOnly());
         cbShowSubtitlesOnly.setSelected(filterConfig.isShowSubtitlesOnly());
         cbShowOnlyLivestreams.setSelected(filterConfig.isShowLivestreamsOnly());
+        cbShowUnseenOnly.setSelected(filterConfig.isShowUnseenOnly());
         /*
-        showUnseenOnly.set(filterConfig.isShowUnseenOnly());
         dontShowAbos.set(filterConfig.isDontShowAbos());
         dontShowTrailers.set(filterConfig.isDontShowTrailers());
         dontShowSignLanguage.set(filterConfig.isDontShowSignLanguage());
@@ -279,6 +283,7 @@ public class SwingFilterDialog extends JDialog {
             cbShowOnlyHq.setEnabled(enable);
             cbShowSubtitlesOnly.setEnabled(enable);
             cbShowOnlyLivestreams.setEnabled(enable);
+            cbShowUnseenOnly.setEnabled(enable);
 
             cboxFilterSelection.setEnabled(enable);
             spZeitraum.setEnabled(enable);
@@ -379,7 +384,7 @@ public class SwingFilterDialog extends JDialog {
         cbShowSubtitlesOnly = new JCheckBox();
         cbShowOnlyLivestreams = new JCheckBox();
         separator3 = new JSeparator();
-        checkBox6 = new JCheckBox();
+        cbShowUnseenOnly = new JCheckBox();
         checkBox7 = new JCheckBox();
         checkBox8 = new JCheckBox();
         checkBox9 = new JCheckBox();
@@ -503,9 +508,9 @@ public class SwingFilterDialog extends JDialog {
         contentPane.add(cbShowOnlyLivestreams, new CC().cell(0, 6, 3, 1));
         contentPane.add(separator3, new CC().cell(0, 7, 3, 1).growX());
 
-        //---- checkBox6 ----
-        checkBox6.setText("Gesehene Filme nicht anzeigen"); //NON-NLS
-        contentPane.add(checkBox6, new CC().cell(0, 8, 3, 1));
+        //---- cbShowUnseenOnly ----
+        cbShowUnseenOnly.setText("Gesehene Filme nicht anzeigen"); //NON-NLS
+        contentPane.add(cbShowUnseenOnly, new CC().cell(0, 8, 3, 1));
 
         //---- checkBox7 ----
         checkBox7.setText("Abos nicht anzeigen"); //NON-NLS
@@ -657,7 +662,7 @@ public class SwingFilterDialog extends JDialog {
     private JCheckBox cbShowSubtitlesOnly;
     private JCheckBox cbShowOnlyLivestreams;
     private JSeparator separator3;
-    private JCheckBox checkBox6;
+    private JCheckBox cbShowUnseenOnly;
     private JCheckBox checkBox7;
     private JCheckBox checkBox8;
     private JCheckBox checkBox9;
