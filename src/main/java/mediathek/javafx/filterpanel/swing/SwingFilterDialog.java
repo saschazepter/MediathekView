@@ -68,20 +68,10 @@ public class SwingFilterDialog extends JDialog {
     private final Configuration config = ApplicationConfiguration.getConfiguration();
     private final JToggleButton filterToggleButton;
     private final FilterConfiguration filterConfig;
-
-    public static class ToggleVisibilityKeyHandler {
-        private static final String TOGGLE_FILTER_VISIBILITY = "toggle_dialog_visibility";
-        private final JRootPane rootPane;
-        public ToggleVisibilityKeyHandler(JDialog dlg) {
-            this.rootPane = dlg.getRootPane();
-        }
-
-        public void installHandler(Action action) {
-            final var inputMap = rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0), TOGGLE_FILTER_VISIBILITY);
-            rootPane.getActionMap().put(TOGGLE_FILTER_VISIBILITY, action);
-        }
-    }
+    /**
+     * The "base" thema list
+     */
+    private final EventList<String> sourceThemaList = new BasicEventList<>();
 
     public SwingFilterDialog(Window owner, @NotNull FilterSelectionComboBoxModel model,
                              @NotNull JToggleButton filterToggleButton,
@@ -115,8 +105,8 @@ public class SwingFilterDialog extends JDialog {
             MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
         cbShowOnlyLivestreams.addActionListener(l -> {
-           filterConfig.setShowLivestreamsOnly(cbShowOnlyLivestreams.isSelected());
-           MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+            filterConfig.setShowLivestreamsOnly(cbShowOnlyLivestreams.isSelected());
+            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
         cbShowUnseenOnly.addActionListener(l -> {
             filterConfig.setShowUnseenOnly(cbShowUnseenOnly.isSelected());
@@ -195,7 +185,7 @@ public class SwingFilterDialog extends JDialog {
 
     private void setupFilmLengthSlider() {
         //JFormDesigner dies when we morph bean from JSlider to RangeSlider
-        var slider = (SwingFilmLengthSlider)filmLengthSlider;
+        var slider = (SwingFilmLengthSlider) filmLengthSlider;
 
         lblMinFilmLengthValue.setText(String.valueOf(slider.getLowValue()));
         lblMaxFilmLengthValue.setText(slider.getHighValueText());
@@ -211,11 +201,6 @@ public class SwingFilterDialog extends JDialog {
             }
         });
     }
-
-    /**
-     * The "base" thema list
-     */
-    private final EventList<String> sourceThemaList = new BasicEventList<>();
 
     /**
      * Retrieve the list of all thema based on sender select checkbox list.
@@ -241,7 +226,7 @@ public class SwingFilterDialog extends JDialog {
     private void updateThemaComboBox() {
         //update the thema list -> updates the combobox automagically
         //use transaction list to minimize updates...
-        String aktuellesThema = (String)jcbThema.getSelectedItem();
+        String aktuellesThema = (String) jcbThema.getSelectedItem();
 
         var selectedSenders = filterConfig.getCheckedChannels().stream().toList();
         var tempThemaList = getThemaList(selectedSenders).parallelStream().distinct().sorted(GermanStringSorter.getInstance()).toList();
@@ -267,7 +252,7 @@ public class SwingFilterDialog extends JDialog {
         }
         jcbThema.setSelectedItem(thema);
         jcbThema.addActionListener(l -> {
-            var sel = (String)jcbThema.getSelectedItem();
+            var sel = (String) jcbThema.getSelectedItem();
             if (sel != null) {
                 filterConfig.setThema(sel);
             }
@@ -323,10 +308,10 @@ public class SwingFilterDialog extends JDialog {
 
     private void restoreFilmLengthSlider() {
         try {
-            var slider = (RangeSlider)filmLengthSlider;
+            var slider = (RangeSlider) filmLengthSlider;
             slider.setValueIsAdjusting(true);
-            slider.setHighValue((int)filterConfig.getFilmLengthMax());
-            slider.setLowValue((int)filterConfig.getFilmLengthMin());
+            slider.setHighValue((int) filterConfig.getFilmLengthMax());
+            slider.setLowValue((int) filterConfig.getFilmLengthMin());
             slider.setValueIsAdjusting(false);
         } catch (Exception exception) {
             logger.debug("Beim wiederherstellen der Filter Einstellungen für die Filmlänge ist ein Fehler aufgetreten!", exception);
@@ -359,9 +344,9 @@ public class SwingFilterDialog extends JDialog {
         senderList.getCheckBoxListSelectionModel().setValueIsAdjusting(true);
         final var senderListModel = senderList.getModel();
         for (int i = 0; i < senderListModel.getSize(); i++) {
-            var item = senderListModel.getElementAt(i);
+            var item = (String)senderListModel.getElementAt(i);
             if (checkedSenders.contains(item)) {
-                senderList.getCheckBoxListSelectionModel().addSelectionInterval(i,i);
+                senderList.getCheckBoxListSelectionModel().addSelectionInterval(i, i);
             }
         }
         senderList.getCheckBoxListSelectionModel().setValueIsAdjusting(false);
@@ -505,6 +490,21 @@ public class SwingFilterDialog extends JDialog {
             config.unlock(LockMode.READ);
         }
 
+    }
+
+    public static class ToggleVisibilityKeyHandler {
+        private static final String TOGGLE_FILTER_VISIBILITY = "toggle_dialog_visibility";
+        private final JRootPane rootPane;
+
+        public ToggleVisibilityKeyHandler(JDialog dlg) {
+            this.rootPane = dlg.getRootPane();
+        }
+
+        public void installHandler(Action action) {
+            final var inputMap = rootPane.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);
+            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0), TOGGLE_FILTER_VISIBILITY);
+            rootPane.getActionMap().put(TOGGLE_FILTER_VISIBILITY, action);
+        }
     }
 
     public class FilterDialogComponentListener extends ComponentAdapter {
