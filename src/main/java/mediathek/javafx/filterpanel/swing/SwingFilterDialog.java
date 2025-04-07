@@ -197,7 +197,7 @@ public class SwingFilterDialog extends JDialog {
         restoreFilmLengthSlider();
 
         restoreSenderList();*/
-        //TODO restore Zeitraum?
+        spZeitraum.restoreFilterConfig(filterConfig);
     }
 
     private void setupResetCurrentFilterButton() {
