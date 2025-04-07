@@ -470,7 +470,7 @@ public class SwingFilterDialog extends JDialog {
             var enable = !e.active;
             setEnabled(enable);
             enableControls(enable);
-            //This looks strange but works...check later
+
             if (e.active) {
                 btnDeleteCurrentFilter.setEnabled(false);
             } else {
