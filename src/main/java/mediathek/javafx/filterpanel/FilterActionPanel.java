@@ -57,7 +57,6 @@ public class FilterActionPanel {
     private BooleanProperty showLivestreamsOnly;
     private BooleanProperty showUnseenOnly;
     private BooleanProperty showSubtitlesOnly;
-    private BooleanProperty showOnlyHighQuality;
 
     private ListProperty<String> checkedChannels = new SimpleListProperty<>(FXCollections.observableArrayList());
     private ReadOnlyObjectProperty<String> themaProperty;
@@ -127,10 +126,6 @@ public class FilterActionPanel {
         return showSubtitlesOnly;
     }
 
-    public BooleanProperty showOnlyHighQualityProperty() {
-        return showOnlyHighQuality;
-    }
-
     private void setupFilterSelection() {
         FilterConfiguration.addAvailableFiltersObserver(() -> Platform.runLater(() -> {
             availableFilters.clear();
@@ -145,7 +140,6 @@ public class FilterActionPanel {
     private void setupViewSettingsPane() {
         viewSettingsPane = new CommonViewSettingsPane();
 
-        showOnlyHighQuality = viewSettingsPane.cbShowOnlyHd.selectedProperty();
         showSubtitlesOnly = viewSettingsPane.cbShowSubtitlesOnly.selectedProperty();
         showLivestreamsOnly = viewSettingsPane.cbShowOnlyLivestreams.selectedProperty();
 
@@ -178,7 +172,6 @@ public class FilterActionPanel {
     }
 
     private void restoreConfigSettings() {
-        showOnlyHighQuality.set(filterConfig.isShowHighQualityOnly());
         showSubtitlesOnly.set(filterConfig.isShowSubtitlesOnly());
         showUnseenOnly.set(filterConfig.isShowUnseenOnly());
         showLivestreamsOnly.set(filterConfig.isShowLivestreamsOnly());
@@ -226,7 +219,6 @@ public class FilterActionPanel {
     }
 
     private void setupConfigListeners() {
-        showOnlyHighQuality.addListener((ov, oldVal, newValue) -> filterConfig.setShowHighQualityOnly(newValue));
         showSubtitlesOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowSubtitlesOnly(newValue)));
         showUnseenOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowUnseenOnly(newValue)));
         showLivestreamsOnly.addListener(((ov, oldVal, newValue) -> filterConfig.setShowLivestreamsOnly(newValue)));

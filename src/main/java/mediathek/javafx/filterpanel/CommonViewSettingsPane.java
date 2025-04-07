@@ -21,7 +21,6 @@ public class CommonViewSettingsPane extends VBox {
     public final CheckBox cbDontShowTrailers = new CheckBox("Trailer/Teaser/Vorschau nicht anzeigen");
     public final CheckBox cbShowUnseenOnly = new CheckBox("Gesehene Filme nicht anzeigen");
     public final CheckBox cbDontShowAbos = new CheckBox("Abos nicht anzeigen");
-    public final CheckBox cbShowOnlyHd = new CheckBox("Nur High Quality(HQ) Filme anzeigen");
     public final CheckBox cbShowSubtitlesOnly = new CheckBox("Nur Filme mit Untertitel anzeigen");
     public final CheckBox cbShowOnlyLivestreams = new CheckBox("Nur Livestream anzeigen");
 
@@ -59,8 +58,7 @@ public class CommonViewSettingsPane extends VBox {
         setPadding(new Insets(5, 5, 5, 5));
         setSpacing(4d);
 
-        getChildren().addAll(cbShowOnlyHd,
-                cbShowSubtitlesOnly,
+        getChildren().addAll(cbShowSubtitlesOnly,
                 cbShowOnlyLivestreams,
                 new Separator(),
                 cbShowUnseenOnly,
@@ -90,7 +88,6 @@ public class CommonViewSettingsPane extends VBox {
         Platform.runLater(
                 () -> {
                     final boolean disable = evt.active;
-                    cbShowOnlyHd.setDisable(disable);
                     cbShowSubtitlesOnly.setDisable(disable);
                     cbShowOnlyLivestreams.setDisable(disable);
                     cbShowUnseenOnly.setDisable(disable);

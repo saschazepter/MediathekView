@@ -76,7 +76,7 @@ new FormModel {
 				"value": "cell 0 3 3 1"
 			} )
 			add( new FormComponent( "javax.swing.JCheckBox" ) {
-				name: "checkBox3"
+				name: "cbShowOnlyHq"
 				"text": "Nur High Quality(HQ) Filme anzeigen"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 4 3 1"
