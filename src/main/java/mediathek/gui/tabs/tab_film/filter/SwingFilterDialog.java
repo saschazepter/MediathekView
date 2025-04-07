@@ -207,7 +207,7 @@ public class SwingFilterDialog extends JDialog {
      * @param selectedSenders the list of selected senders
      * @return list of all applicable themas.
      */
-    private java.util.List<String> getThemaList(@NotNull java.util.List<String> selectedSenders) {
+    private List<String> getThemaList(@NotNull java.util.List<String> selectedSenders) {
         List<String> finalList = new ArrayList<>();
 
         final var blackList = Daten.getInstance().getListeFilmeNachBlackList();
@@ -219,7 +219,8 @@ public class SwingFilterDialog extends JDialog {
             }
         }
 
-        return finalList;
+        return finalList.parallelStream().distinct()
+                .sorted(GermanStringSorter.getInstance()).toList();
     }
 
     private void updateThemaComboBox() {
@@ -228,7 +229,7 @@ public class SwingFilterDialog extends JDialog {
         String aktuellesThema = (String) jcbThema.getSelectedItem();
 
         var selectedSenders = filterConfig.getCheckedChannels().stream().toList();
-        var tempThemaList = getThemaList(selectedSenders).parallelStream().distinct().sorted(GermanStringSorter.getInstance()).toList();
+        var tempThemaList = getThemaList(selectedSenders);
 
         sourceThemaList.getReadWriteLock().writeLock().lock();
         sourceThemaList.clear();
