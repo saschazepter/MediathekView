@@ -181,9 +181,6 @@ public class SwingFilterDialog extends JDialog {
         restoreDialogVisibility();
         addComponentListener(new FilterDialogComponentListener());
 
-        var size = getSize();
-        setMinimumSize(size);
-
         MessageBus.getMessageBus().subscribe(this);
 
         Daten.getInstance().getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
