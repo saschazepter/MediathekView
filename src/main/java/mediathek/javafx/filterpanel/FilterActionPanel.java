@@ -26,7 +26,6 @@ import org.controlsfx.control.RangeSlider;
 import org.controlsfx.control.textfield.TextFields;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -66,7 +65,7 @@ public class FilterActionPanel {
 
     private CommonViewSettingsPane viewSettingsPane;
 
-    public FilterActionPanel(@NotNull JToggleButton filterToggleBtn, @NotNull FilterConfiguration filterConfig) {
+    public FilterActionPanel(@NotNull FilterConfiguration filterConfig) {
         this.filterConfig = filterConfig;
 
         setupViewSettingsPane();

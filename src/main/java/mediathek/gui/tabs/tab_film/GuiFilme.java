@@ -165,7 +165,7 @@ public class GuiFilme extends AGuiTabPanel {
                 toggleFilterDialogVisibilityAction);
         add(filmToolBar, BorderLayout.NORTH);
 
-        filterActionPanel = new FilterActionPanel(filmToolBar.getToggleFilterDialogVisibilityButton(), filterConfiguration);
+        filterActionPanel = new FilterActionPanel(filterConfiguration);
         swingFilterDialog = new SwingFilterDialog(mediathekGui, filterSelectionComboBoxModel,
                 filmToolBar.getToggleFilterDialogVisibilityButton(),
                 filterConfiguration);
@@ -654,7 +654,6 @@ public class GuiFilme extends AGuiTabPanel {
         Platform.runLater(() -> {
             final ChangeListener<Boolean> reloadTableListener = (ov, oV, nV) -> MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
 
-            filterActionPanel.showUnseenOnlyProperty().addListener(reloadTableListener);
             filterActionPanel.dontShowAbosProperty().addListener(reloadTableListener);
             filterActionPanel.dontShowTrailersProperty().addListener(reloadTableListener);
             filterActionPanel.dontShowSignLanguageProperty().addListener(reloadTableListener);
