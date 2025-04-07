@@ -170,14 +170,9 @@ new FormModel {
 			} )
 			add( new FormComponent( "javax.swing.JComboBox" ) {
 				name: "jcbThema"
-				"model": new javax.swing.DefaultComboBoxModel {
-					selectedItem: "Mein Titel"
-					addElement( "Mein Titel" )
-					addElement( "Mein Test" )
-					addElement( "Sendung mit der Maus" )
-				}
+				"maximumRowCount": 6
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 1 18 2 1,growx"
+				"value": "cell 1 18,growx,wmax 300"
 			} )
 			add( new FormComponent( "javax.swing.JSeparator" ) {
 				name: "separator6"

@@ -18,8 +18,6 @@ import mediathek.controller.starter.Start;
 import mediathek.daten.*;
 import mediathek.daten.abo.DatenAbo;
 import mediathek.daten.blacklist.BlacklistRule;
-import mediathek.filmeSuchen.ListenerFilmeLaden;
-import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
 import mediathek.filmlisten.writer.FilmListWriter;
 import mediathek.gui.actions.ManageBookmarkAction;
 import mediathek.gui.actions.PlayFilmAction;
@@ -373,13 +371,6 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     private void start_init() {
-        daten.getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
-            @Override
-            public void fertig(ListenerFilmeLadenEvent event) {
-                Platform.runLater(filterActionPanel::updateThemaComboBox);
-            }
-        });
-
         setupKeyMapping();
 
         tabelle.setModel(new TModelFilm());
@@ -649,14 +640,6 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     private void setupActionListeners() {
-        Platform.runLater(() -> {
-            filterActionPanel.getViewSettingsPane().themaComboBox.setOnAction(e -> {
-                if (!filterActionPanel.getViewSettingsPane().themaComboBox.getItems().isEmpty()) {
-                    MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
-                }
-            });
-        });
-
         //this will reload the table
         swingFilterDialog.spZeitraum.addChangeListener(l -> {
             if (!zeitraumTimer.isRunning())

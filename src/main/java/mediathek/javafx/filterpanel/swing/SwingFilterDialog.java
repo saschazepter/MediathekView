@@ -22,12 +22,9 @@
 
 package mediathek.javafx.filterpanel.swing;
 
-import ca.odell.glazedlists.FilterList;
-import ca.odell.glazedlists.SortedList;
-import ca.odell.glazedlists.UniqueList;
+import ca.odell.glazedlists.*;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
 import com.jidesoft.swing.CheckBoxList;
-import com.jidesoft.swing.ComboBoxSearchable;
 import com.jidesoft.swing.RangeSlider;
 import mediathek.config.Daten;
 import mediathek.controller.SenderFilmlistLoadApprover;
@@ -59,10 +56,8 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.NoSuchElementException;
-import java.util.UUID;
+import java.util.*;
+import java.util.List;
 
 /**
  * @author christianfranzke
@@ -70,7 +65,6 @@ import java.util.UUID;
 public class SwingFilterDialog extends JDialog {
     private static final Logger logger = LogManager.getLogger();
     private final FilterSelectionComboBoxModel filterSelectionComboBoxModel;
-    private final ComboBoxSearchable searchable;
     private final Configuration config = ApplicationConfiguration.getConfiguration();
     private final JToggleButton filterToggleButton;
     private final FilterConfiguration filterConfig;
@@ -150,11 +144,9 @@ public class SwingFilterDialog extends JDialog {
         });
 
         setupSenderList();
-
+        setupThemaComboBox();
         setupFilmLengthSlider();
         setupZeitraumSpinner();
-
-        searchable = new ComboBoxSearchable(jcbThema);
 
         restoreConfigSettings();
         filterSelectionComboBoxModel.addListDataListener(new ListDataListener() {
@@ -195,6 +187,7 @@ public class SwingFilterDialog extends JDialog {
 
             @Override
             public void fertig(ListenerFilmeLadenEvent event) {
+                updateThemaComboBox();
                 setEnabled(true);
             }
         });
@@ -219,8 +212,74 @@ public class SwingFilterDialog extends JDialog {
         });
     }
 
-    private void updateThemaComboBox() {
+    /**
+     * The "base" thema list
+     */
+    private final EventList<String> sourceThemaList = new BasicEventList<>();
 
+    /**
+     * Retrieve the list of all thema based on sender select checkbox list.
+     *
+     * @param selectedSenders the list of selected senders
+     * @return list of all applicable themas.
+     */
+    private java.util.List<String> getThemaList(@NotNull java.util.List<String> selectedSenders) {
+        System.out.println("GET THEMA LIST START");
+        List<String> finalList = new ArrayList<>();
+
+        final var blackList = Daten.getInstance().getListeFilmeNachBlackList();
+        if (selectedSenders.isEmpty()) {
+            finalList.addAll(blackList.getThemen(""));
+        } else {
+            for (String sender : selectedSenders) {
+                finalList.addAll(blackList.getThemen(sender));
+            }
+        }
+        System.out.println("GET THEMA LIST END");
+
+        return finalList;
+    }
+
+    private void updateThemaComboBox() {
+        System.out.println("UPDATE THEMA COMBOBOX START");
+        //update the thema list -> updates the combobox automagically
+        //use transaction list to minimize updates...
+        String aktuellesThema = (String)jcbThema.getSelectedItem();
+        System.out.println("aktuellesThema: " + aktuellesThema);
+
+        var selectedSenders = filterConfig.getCheckedChannels().stream().toList();
+        var tempThemaList = getThemaList(selectedSenders).parallelStream().distinct().sorted(GermanStringSorter.getInstance()).toList();
+        System.out.println("START TRANS LIST");
+        sourceThemaList.getReadWriteLock().writeLock().lock();
+        sourceThemaList.clear();
+        sourceThemaList.addAll(tempThemaList);
+        sourceThemaList.getReadWriteLock().writeLock().unlock();
+        System.out.println("END TRANS LIST");
+
+        if (!sourceThemaList.contains(aktuellesThema) && aktuellesThema != null && !aktuellesThema.isEmpty()) {
+            sourceThemaList.add(aktuellesThema);
+        }
+        jcbThema.setSelectedItem(aktuellesThema);
+        System.out.println("UPDATE THEMA COMBOBOX END");
+    }
+
+    private void setupThemaComboBox() {
+        var model = GlazedListsSwing.eventComboBoxModel(new EventListWithEmptyFirstEntry(sourceThemaList));
+        jcbThema.setModel(model);
+        //otherwise stored filter will not be accepted as entry may not be in list
+        var thema = filterConfig.getThema();
+        if (!sourceThemaList.contains(thema)) {
+            sourceThemaList.add(thema);
+        }
+        jcbThema.setSelectedItem(thema);
+        jcbThema.addActionListener(l -> {
+            var sel = (String)jcbThema.getSelectedItem();
+            System.out.println("THEMA COMBOBOX ACTION REQUESTED: " + sel);
+            if (sel != null) {
+                filterConfig.setThema(sel);
+            }
+            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+        });
     }
 
     private void setupSenderList() {
@@ -244,7 +303,7 @@ public class SwingFilterDialog extends JDialog {
                 }
 
                 filterConfig.setCheckedChannels(new HashSet<>(newSelectedSenderList));
-                System.out.println("SENDER VALUED CHANGED: " + e);
+                //System.out.println("SENDER VALUED CHANGED: " + e);
 
                 updateThemaComboBox();
                 MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
@@ -294,9 +353,8 @@ public class SwingFilterDialog extends JDialog {
         cbDontShowTrailers.setSelected(filterConfig.isDontShowTrailers());
         cbDontShowAudioVersions.setSelected(filterConfig.isDontShowAudioVersions());
         cbDontShowDuplicates.setSelected(filterConfig.isDontShowDuplicates());
-        /*
-        viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
-        */
+
+        jcbThema.setSelectedItem(filterConfig.getThema());
 
         restoreSenderList();
         restoreFilmLengthSlider();
@@ -321,7 +379,6 @@ public class SwingFilterDialog extends JDialog {
     private void setupResetCurrentFilterButton() {
         btnResetCurrentFilter.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/recycle.svg"));
         btnResetCurrentFilter.addActionListener(e -> {
-            //TODO clear sender check list?
             filterConfig.clearCurrentFilter();
             restoreConfigSettings();
         });
@@ -377,48 +434,58 @@ public class SwingFilterDialog extends JDialog {
         });
     }
 
+    private void enableControls(boolean enable) {
+        cboxFilterSelection.setEnabled(enable);
+
+        btnRenameFilter.setEnabled(enable);
+
+        cbShowNewOnly.setEnabled(enable);
+        cbShowBookMarkedOnly.setEnabled(enable);
+        cbShowOnlyHq.setEnabled(enable);
+        cbShowSubtitlesOnly.setEnabled(enable);
+        cbShowOnlyLivestreams.setEnabled(enable);
+        cbShowUnseenOnly.setEnabled(enable);
+        cbDontShowAbos.setEnabled(enable);
+        cbDontShowSignLanguage.setEnabled(enable);
+        cbDontShowTrailers.setEnabled(enable);
+        cbDontShowAudioVersions.setEnabled(enable);
+        cbDontShowDuplicates.setEnabled(enable);
+
+        label3.setEnabled(enable);
+        senderList.setEnabled(enable);
+
+        label4.setEnabled(enable);
+        jcbThema.setEnabled(enable);
+
+        label5.setEnabled(enable);
+        label7.setEnabled(enable);
+        lblMinFilmLengthValue.setEnabled(enable);
+        lblMaxFilmLengthValue.setEnabled(enable);
+        filmLengthSlider.setEnabled(enable);
+
+        spZeitraum.setEnabled(enable);
+        label1.setEnabled(enable);
+        label2.setEnabled(enable);
+    }
+
+    @Override
+    public void setEnabled(boolean enabled) {
+        super.setEnabled(enabled);
+        enableControls(enabled);
+    }
+
     @Handler
     private void handleTableModelChangeEvent(TableModelChangeEvent e) {
         SwingUtilities.invokeLater(() -> {
             var enable = !e.active;
             setEnabled(enable);
-            //FIXME disable all items in dialog
-            btnRenameFilter.setEnabled(enable);
-
+            enableControls(enable);
             //This looks strange but works...check later
             if (e.active) {
                 btnDeleteCurrentFilter.setEnabled(false);
             } else {
                 btnDeleteCurrentFilter.setEnabled(filterConfig.getAvailableFilterCount() > 1);
             }
-
-            cbShowNewOnly.setEnabled(enable);
-            cbShowBookMarkedOnly.setEnabled(enable);
-            cbShowOnlyHq.setEnabled(enable);
-            cbShowSubtitlesOnly.setEnabled(enable);
-            cbShowOnlyLivestreams.setEnabled(enable);
-            cbShowUnseenOnly.setEnabled(enable);
-            cbDontShowAbos.setEnabled(enable);
-            cbDontShowSignLanguage.setEnabled(enable);
-            cbDontShowTrailers.setEnabled(enable);
-            cbDontShowAudioVersions.setEnabled(enable);
-            cbDontShowDuplicates.setEnabled(enable);
-
-            label3.setEnabled(enable);
-            senderList.setEnabled(enable);
-
-
-            cboxFilterSelection.setEnabled(enable);
-
-            label5.setEnabled(enable);
-            label7.setEnabled(enable);
-            lblMinFilmLengthValue.setEnabled(enable);
-            lblMaxFilmLengthValue.setEnabled(enable);
-            filmLengthSlider.setEnabled(enable);
-
-            spZeitraum.setEnabled(enable);
-            label1.setEnabled(enable);
-            label2.setEnabled(enable);
         });
     }
 
@@ -526,7 +593,7 @@ public class SwingFilterDialog extends JDialog {
         senderList = new CheckBoxList();
         separator5 = new JSeparator();
         label4 = new JLabel();
-        jcbThema = new JComboBox<>();
+        jcbThema = new JComboBox();
         separator6 = new JSeparator();
         panel2 = new JPanel();
         label5 = new JLabel();
@@ -682,12 +749,8 @@ public class SwingFilterDialog extends JDialog {
         contentPane.add(label4, new CC().cell(0, 18));
 
         //---- jcbThema ----
-        jcbThema.setModel(new DefaultComboBoxModel<>(new String[] {
-            "Mein Titel", //NON-NLS
-            "Mein Test", //NON-NLS
-            "Sendung mit der Maus" //NON-NLS
-        }));
-        contentPane.add(jcbThema, new CC().cell(1, 18, 2, 1).growX());
+        jcbThema.setMaximumRowCount(6);
+        contentPane.add(jcbThema, new CC().cell(1, 18).growX().maxWidth("300")); //NON-NLS
         contentPane.add(separator6, new CC().cell(0, 19, 3, 1).growX());
 
         //======== panel2 ========
@@ -768,7 +831,7 @@ public class SwingFilterDialog extends JDialog {
     public CheckBoxList senderList;
     private JSeparator separator5;
     private JLabel label4;
-    private JComboBox<String> jcbThema;
+    private JComboBox jcbThema;
     private JSeparator separator6;
     private JPanel panel2;
     private JLabel label5;
