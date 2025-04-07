@@ -131,6 +131,10 @@ public class SwingFilterDialog extends JDialog {
             filterConfig.setDontShowTrailers(cbDontShowTrailers.isSelected());
             MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
+        cbDontShowAudioVersions.addActionListener(l -> {
+            filterConfig.setDontShowAudioVersions(cbDontShowAudioVersions.isSelected());
+            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+        });
 
 
         setupZeitraumSpinner();
@@ -205,8 +209,8 @@ public class SwingFilterDialog extends JDialog {
         cbDontShowAbos.setSelected(filterConfig.isDontShowAbos());
         cbDontShowSignLanguage.setSelected(filterConfig.isDontShowSignLanguage());
         cbDontShowTrailers.setSelected(filterConfig.isDontShowTrailers());
+        cbDontShowAudioVersions.setSelected(filterConfig.isDontShowAudioVersions());
         /*
-        dontShowAudioVersions.set(filterConfig.isDontShowAudioVersions());
         dontShowDuplicates.set(filterConfig.isDontShowDuplicates());
         viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
 
@@ -299,6 +303,7 @@ public class SwingFilterDialog extends JDialog {
             cbDontShowAbos.setEnabled(enable);
             cbDontShowSignLanguage.setEnabled(enable);
             cbDontShowTrailers.setEnabled(enable);
+            cbDontShowAudioVersions.setEnabled(enable);
 
             cboxFilterSelection.setEnabled(enable);
             spZeitraum.setEnabled(enable);
@@ -403,7 +408,7 @@ public class SwingFilterDialog extends JDialog {
         cbDontShowAbos = new JCheckBox();
         cbDontShowSignLanguage = new JCheckBox();
         cbDontShowTrailers = new JCheckBox();
-        checkBox10 = new JCheckBox();
+        cbDontShowAudioVersions = new JCheckBox();
         checkBox11 = new JCheckBox();
         separator4 = new JSeparator();
         label3 = new JLabel();
@@ -539,9 +544,9 @@ public class SwingFilterDialog extends JDialog {
         cbDontShowTrailers.setText("Trailer/Teaser/Vorschau nicht anzeigen"); //NON-NLS
         contentPane.add(cbDontShowTrailers, new CC().cell(0, 11, 3, 1));
 
-        //---- checkBox10 ----
-        checkBox10.setText("H\u00f6rfassungen ausblenden"); //NON-NLS
-        contentPane.add(checkBox10, new CC().cell(0, 12, 3, 1));
+        //---- cbDontShowAudioVersions ----
+        cbDontShowAudioVersions.setText("H\u00f6rfassungen ausblenden"); //NON-NLS
+        contentPane.add(cbDontShowAudioVersions, new CC().cell(0, 12, 3, 1));
 
         //---- checkBox11 ----
         checkBox11.setText("Duplikate nicht anzeigen"); //NON-NLS
@@ -681,7 +686,7 @@ public class SwingFilterDialog extends JDialog {
     private JCheckBox cbDontShowAbos;
     private JCheckBox cbDontShowSignLanguage;
     private JCheckBox cbDontShowTrailers;
-    private JCheckBox checkBox10;
+    private JCheckBox cbDontShowAudioVersions;
     private JCheckBox checkBox11;
     private JSeparator separator4;
     private JLabel label3;

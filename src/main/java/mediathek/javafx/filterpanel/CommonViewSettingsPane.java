@@ -15,7 +15,6 @@ public class CommonViewSettingsPane extends VBox {
     public final ThemaComboBox themaComboBox = new ThemaComboBox();
     public final FilmLenghtSliderNode filmLengthSliderNode = new FilmLenghtSliderNode();
     public final SenderBoxNode senderCheckList = new SenderBoxNode();
-    public final CheckBox cbDontShowAudioVersions = new CheckBox("Hörfassungen ausblenden");
     public final CheckBox cbDontShowDuplicates = new CheckBox("Duplikate nicht anzeigen");
 
     private Pane createSenderList() {
@@ -53,7 +52,6 @@ public class CommonViewSettingsPane extends VBox {
         setSpacing(4d);
 
         getChildren().addAll(
-                cbDontShowAudioVersions,
                 cbDontShowDuplicates,
                 new Separator(),
                 createSenderList(),
@@ -76,7 +74,6 @@ public class CommonViewSettingsPane extends VBox {
         Platform.runLater(
                 () -> {
                     final boolean disable = evt.active;
-                    cbDontShowAudioVersions.setDisable(disable);
                     cbDontShowDuplicates.setDisable(disable);
                     senderCheckList.setDisable(disable);
                     themaComboBox.setDisable(disable);

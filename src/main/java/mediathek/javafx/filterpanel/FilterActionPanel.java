@@ -48,7 +48,6 @@ public class FilterActionPanel {
     private final EventObservableList<String> observableThemaList = new EventObservableList<>(new EventListWithEmptyFirstEntry(sourceThemaList));
     private final OldSwingJavaFxFilterDialog filterDialog;
     private RangeSlider filmLengthSlider;
-    private BooleanProperty dontShowAudioVersions;
     private BooleanProperty dontShowDuplicates;
 
     private ListProperty<String> checkedChannels = new SimpleListProperty<>(FXCollections.observableArrayList());
@@ -87,10 +86,6 @@ public class FilterActionPanel {
         filmLengthSlider.highValueChangingProperty().addListener(listener);
     }
 
-    public BooleanProperty dontShowAudioVersionsProperty() {
-        return dontShowAudioVersions;
-    }
-
     public BooleanProperty dontShowDuplicatesProperty() {
         return dontShowDuplicates;
     }
@@ -109,7 +104,6 @@ public class FilterActionPanel {
     private void setupViewSettingsPane() {
         viewSettingsPane = new CommonViewSettingsPane();
 
-        dontShowAudioVersions = viewSettingsPane.cbDontShowAudioVersions.selectedProperty();
         dontShowDuplicates = viewSettingsPane.cbDontShowDuplicates.selectedProperty();
         themaProperty = viewSettingsPane.themaComboBox.valueProperty();
         setupThemaComboBox();
@@ -134,7 +128,6 @@ public class FilterActionPanel {
     }
 
     private void restoreConfigSettings() {
-        dontShowAudioVersions.set(filterConfig.isDontShowAudioVersions());
         dontShowDuplicates.set(filterConfig.isDontShowDuplicates());
         viewSettingsPane.themaComboBox.setValue(filterConfig.getThema());
 
@@ -174,7 +167,6 @@ public class FilterActionPanel {
     }
 
     private void setupConfigListeners() {
-        dontShowAudioVersions.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowAudioVersions(newValue)));
         dontShowDuplicates.addListener(((ov, oldVal, newValue) -> filterConfig.setDontShowDuplicates(newValue)));
 
         filmLengthSlider.lowValueProperty().addListener(((ov, oldVal, newValue) -> filterConfig.setFilmLengthMin(newValue.doubleValue())));
