@@ -1,14 +1,14 @@
 package mediathek.tool.notification
 
-import javafx.application.Platform
 import raven.toast.Notifications
+import javax.swing.SwingUtilities
 
 /**
  * Implements notification based on controlsfx JavaFX implemention.
  */
 class GenericNotificationCenter : INotificationCenter {
     override fun displayNotification(msg: NotificationMessage) {
-        Platform.runLater {
+        SwingUtilities.invokeLater {
             try {
                 val ravenNotificationType: Notifications.Type = when (msg.type) {
                     MessageType.INFO -> Notifications.Type.INFO
