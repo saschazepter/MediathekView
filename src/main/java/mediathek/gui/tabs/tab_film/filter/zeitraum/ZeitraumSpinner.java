@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.javafx.filterpanel.swing.zeitraum;
+package mediathek.gui.tabs.tab_film.filter.zeitraum;
 
 import mediathek.tool.FilterConfiguration;
 import org.apache.logging.log4j.LogManager;
@@ -25,11 +25,11 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
-public class SwingZeitraumSpinner extends JSpinner {
+public class ZeitraumSpinner extends JSpinner {
     public static final String UNLIMITED_VALUE = "∞";
     private static final Logger logger = LogManager.getLogger();
 
-    public SwingZeitraumSpinner() {
+    public ZeitraumSpinner() {
         super(new SpinnerNumberModel(0, 0, 365, 1));
         ((DefaultEditor) getEditor()).getTextField().setFormatterFactory(new ZeitraumSpinnerFormatterFactory());
     }
@@ -39,7 +39,7 @@ public class SwingZeitraumSpinner extends JSpinner {
             var zeitraumVal = filterConfiguration.getZeitraum();
             int zeitraumValInt;
             if (zeitraumVal.equals(ZeitraumSpinnerFormatter.INFINITE_TEXT))
-                zeitraumValInt = (int) ZeitraumSpinnerFormatter.INFINITE_VALUE;
+                zeitraumValInt = ZeitraumSpinnerFormatter.INFINITE_VALUE;
             else
                 zeitraumValInt = Integer.parseInt(zeitraumVal);
             setValue(zeitraumValInt);

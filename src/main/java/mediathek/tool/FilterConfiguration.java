@@ -2,8 +2,8 @@ package mediathek.tool;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import mediathek.javafx.filterpanel.swing.SwingFilmLengthSlider;
-import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
+import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider;
+import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner;
 import org.apache.commons.configuration2.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +106,7 @@ public class FilterConfiguration {
         final BooleanSupplier filmLengthFilterIsNotSet = () -> {
             var filmLengthMin = (long)getFilmLengthMin();
             var filmLengthMax = (long)getFilmLengthMax();
-            return filmLengthMin == 0 && filmLengthMax == SwingFilmLengthSlider.UNLIMITED_VALUE;
+            return filmLengthMin == 0 && filmLengthMax == FilmLengthSlider.UNLIMITED_VALUE;
         };
 
         return getCheckedChannels().isEmpty()
@@ -123,7 +123,7 @@ public class FilterConfiguration {
                 && !isDontShowSignLanguage()
                 && !isDontShowAudioVersions()
                 && !isDontShowDuplicates()
-                && getZeitraum().equalsIgnoreCase(SwingZeitraumSpinner.UNLIMITED_VALUE);
+                && getZeitraum().equalsIgnoreCase(ZeitraumSpinner.UNLIMITED_VALUE);
     }
 
     public boolean isShowHighQualityOnly() {
@@ -251,7 +251,7 @@ public class FilterConfiguration {
 
     public String getZeitraum() {
         return configuration.getString(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_ZEITRAUM.getKey()),
-                SwingZeitraumSpinner.UNLIMITED_VALUE);
+                ZeitraumSpinner.UNLIMITED_VALUE);
     }
 
     public FilterConfiguration setZeitraum(String zeitraum) {
@@ -269,8 +269,6 @@ public class FilterConfiguration {
             var objectMapper = new ObjectMapper();
             String json = objectMapper.writeValueAsString(newList);
             configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_CHECKED_CHANNELS.getKey()), json);
-
-            LOG.trace("Checked Channels gespeichert: {}", newList);
         } catch (Exception e) {
             LOG.error("Fehler beim Speichern der Checked Channels", e);
         }

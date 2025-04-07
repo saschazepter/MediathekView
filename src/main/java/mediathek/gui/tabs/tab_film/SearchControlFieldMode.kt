@@ -16,15 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.javafx.filterpanel.swing.zeitraum;
+package mediathek.gui.tabs.tab_film
 
-import javax.swing.*;
-
-public class ZeitraumSpinnerFormatterFactory extends JFormattedTextField.AbstractFormatterFactory {
-    @Override
-    public JFormattedTextField.AbstractFormatter getFormatter(final JFormattedTextField tf) {
-        if (!(tf.getFormatter() instanceof ZeitraumSpinnerFormatter))
-            return new ZeitraumSpinnerFormatter();
-        return tf.getFormatter();
-    }
+enum class SearchControlFieldMode {
+    THEMA_TITEL, IRGENDWO, LUCENE
 }

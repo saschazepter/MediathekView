@@ -20,7 +20,7 @@
  * Created by JFormDesigner on Sun Apr 06 12:46:21 CEST 2025
  */
 
-package mediathek.javafx.filterpanel.swing;
+package mediathek.gui.tabs.tab_film.filter;
 
 import ca.odell.glazedlists.*;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
@@ -32,10 +32,9 @@ import mediathek.filmeSuchen.ListenerFilmeLaden;
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
 import mediathek.gui.messages.ReloadTableDataEvent;
 import mediathek.gui.messages.TableModelChangeEvent;
+import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
-import mediathek.javafx.filterpanel.SenderListBoxModel;
-import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import net.engio.mbassy.listener.Handler;
@@ -185,7 +184,7 @@ public class SwingFilterDialog extends JDialog {
 
     private void setupFilmLengthSlider() {
         //JFormDesigner dies when we morph bean from JSlider to RangeSlider
-        var slider = (SwingFilmLengthSlider) filmLengthSlider;
+        var slider = (FilmLengthSlider) filmLengthSlider;
 
         lblMinFilmLengthValue.setText(String.valueOf(slider.getLowValue()));
         lblMaxFilmLengthValue.setText(slider.getHighValueText());
@@ -594,10 +593,10 @@ public class SwingFilterDialog extends JDialog {
         var hSpacer1 = new JPanel(null);
         label7 = new JLabel();
         lblMaxFilmLengthValue = new JLabel();
-        filmLengthSlider = new SwingFilmLengthSlider();
+        filmLengthSlider = new FilmLengthSlider();
         var separator7 = new JSeparator();
         label1 = new JLabel();
-        spZeitraum = new SwingZeitraumSpinner();
+        spZeitraum = new ZeitraumSpinner();
         label2 = new JLabel();
 
         //======== this ========
@@ -824,7 +823,7 @@ public class SwingFilterDialog extends JDialog {
     private JLabel lblMaxFilmLengthValue;
     private JSlider filmLengthSlider;
     private JLabel label1;
-    public SwingZeitraumSpinner spZeitraum;
+    public ZeitraumSpinner spZeitraum;
     private JLabel label2;
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
 }

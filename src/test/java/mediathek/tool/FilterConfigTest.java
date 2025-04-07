@@ -1,6 +1,6 @@
 package mediathek.tool;
 
-import mediathek.javafx.filterpanel.swing.zeitraum.SwingZeitraumSpinner;
+import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -51,7 +51,7 @@ class FilterConfigTest {
         arguments(
             "getZeitraum",
             (Supplier<String>) filterConfig::getZeitraum,
-            SwingZeitraumSpinner.UNLIMITED_VALUE));
+            ZeitraumSpinner.UNLIMITED_VALUE));
   }
 
   @DisplayName(
@@ -106,7 +106,7 @@ class FilterConfigTest {
     assertThat(config.isShowNewOnly()).isTrue();
     assertThat(config.getFilmLengthMax()).isEqualTo(42d);
     assertThat(config.isShowLivestreamsOnly()).isFalse();
-    assertThat(config.getZeitraum()).isEqualTo(SwingZeitraumSpinner.UNLIMITED_VALUE);
+    assertThat(config.getZeitraum()).isEqualTo(ZeitraumSpinner.UNLIMITED_VALUE);
 
     config.setCurrentFilter(secondFilterID);
     assertThat(config.getCurrentFilterID()).isEqualTo(secondFilterID);
@@ -149,7 +149,7 @@ class FilterConfigTest {
     assertThat(config.isShowNewOnly()).isTrue();
     assertThat(config.getFilmLengthMax()).isEqualTo(42d);
     assertThat(config.isShowLivestreamsOnly()).isFalse();
-    assertThat(config.getZeitraum()).isEqualTo(SwingZeitraumSpinner.UNLIMITED_VALUE);
+    assertThat(config.getZeitraum()).isEqualTo(ZeitraumSpinner.UNLIMITED_VALUE);
 
     config.setCurrentFilter(secondFilterID);
     assertThat(config.getCurrentFilterID()).isEqualTo(secondFilterID);

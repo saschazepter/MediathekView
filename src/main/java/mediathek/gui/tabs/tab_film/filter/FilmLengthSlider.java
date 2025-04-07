@@ -16,17 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.javafx.filterpanel.swing;
+package mediathek.gui.tabs.tab_film.filter;
 
 import com.jidesoft.swing.RangeSlider;
 
 import javax.swing.*;
 import java.util.Hashtable;
 
-public class SwingFilmLengthSlider extends RangeSlider {
+public class FilmLengthSlider extends RangeSlider {
     public final static int UNLIMITED_VALUE = 110;
 
-    public SwingFilmLengthSlider() {
+    public FilmLengthSlider() {
         super(0, 110);
         setPaintLabels(true);
         setPaintTicks(true);

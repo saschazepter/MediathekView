@@ -7,7 +7,6 @@ import mediathek.daten.abo.DatenAbo;
 import mediathek.gui.actions.CreateNewAboAction;
 import mediathek.gui.dialog.DialogEditAbo;
 import mediathek.gui.messages.AboListChangedEvent;
-import mediathek.javafx.filterpanel.SenderListBoxModel;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import mediathek.tool.cellrenderer.CellRendererAbo;

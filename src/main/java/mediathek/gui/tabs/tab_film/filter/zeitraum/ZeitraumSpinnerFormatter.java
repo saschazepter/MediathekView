@@ -16,14 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.javafx.filterpanel.swing.zeitraum;
+package mediathek.gui.tabs.tab_film.filter.zeitraum;
 
 import javax.swing.*;
 import java.text.ParseException;
 import java.util.Objects;
 
 public class ZeitraumSpinnerFormatter extends JFormattedTextField.AbstractFormatter {
-    public static final String INFINITE_TEXT = SwingZeitraumSpinner.UNLIMITED_VALUE;
+    public static final String INFINITE_TEXT = ZeitraumSpinner.UNLIMITED_VALUE;
     public static final int INFINITE_VALUE = 0;
 
     @Override
