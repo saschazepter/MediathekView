@@ -195,6 +195,11 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 18,growx,wmax 300"
 			} )
+			add( new FormComponent( "javax.swing.JButton" ) {
+				name: "btnResetThema"
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 2 18"
+			} )
 			add( new FormComponent( "javax.swing.JSeparator" ) {
 				name: "separator6"
 				auxiliary() {
@@ -205,7 +210,7 @@ new FormModel {
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$layoutConstraints": "fill,insets 0,hidemode 3"
-				"$columnConstraints": "0[fill]0[fill][grow,fill][fill]0[fill]0"
+				"$columnConstraints": "0[fill][fill][grow,fill][fill][fill]0"
 				"$rowConstraints": "0[]0[]0"
 			} ) {
 				name: "panel2"

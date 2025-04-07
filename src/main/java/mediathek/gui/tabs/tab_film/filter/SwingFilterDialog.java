@@ -137,6 +137,8 @@ public class SwingFilterDialog extends JDialog {
         });
 
         setupSenderList();
+
+        btnResetThema.setAction(new ResetThemaAction());
         setupThemaComboBox();
         setupFilmLengthSlider();
         setupZeitraumSpinner();
@@ -507,6 +509,19 @@ public class SwingFilterDialog extends JDialog {
         }
     }
 
+    private class ResetThemaAction extends AbstractAction {
+        public ResetThemaAction() {
+            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
+            putValue(Action.SHORT_DESCRIPTION, "Thema zurücksetzen");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            filterConfig.setThema("");
+            jcbThema.setSelectedIndex(0);
+        }
+    }
+
     private class RenameFilterAction extends AbstractAction {
         public RenameFilterAction() {
             putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/pen-to-square.svg"));
@@ -630,6 +645,7 @@ public class SwingFilterDialog extends JDialog {
         var separator5 = new JSeparator();
         label4 = new JLabel();
         jcbThema = new JComboBox<>();
+        btnResetThema = new JButton();
         var separator6 = new JSeparator();
         var panel2 = new JPanel();
         label5 = new JLabel();
@@ -778,6 +794,7 @@ public class SwingFilterDialog extends JDialog {
         //---- jcbThema ----
         jcbThema.setMaximumRowCount(6);
         contentPane.add(jcbThema, new CC().cell(1, 18).growX().maxWidth("300")); //NON-NLS
+        contentPane.add(btnResetThema, new CC().cell(2, 18));
         contentPane.add(separator6, new CC().cell(0, 19, 3, 1).growX());
 
         //======== panel2 ========
@@ -786,10 +803,10 @@ public class SwingFilterDialog extends JDialog {
                 new LC().fill().insets("0").hideMode(3), //NON-NLS
                 // columns
                 new AC()
-                    .fill().gap("0") //NON-NLS
+                    .fill().gap()
                     .fill().gap()
                     .grow().fill().gap()
-                    .fill().gap("0") //NON-NLS
+                    .fill().gap()
                     .fill(),
                 // rows
                 new AC()
@@ -852,6 +869,7 @@ public class SwingFilterDialog extends JDialog {
     public CheckBoxList senderList;
     private JLabel label4;
     private JComboBox<String> jcbThema;
+    private JButton btnResetThema;
     private JLabel label5;
     private JLabel lblMinFilmLengthValue;
     private JLabel label7;
