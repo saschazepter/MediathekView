@@ -212,6 +212,12 @@
 
         <dependency>
             <groupId>com.formdev</groupId>
+            <artifactId>jformdesigner-annotations</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.formdev</groupId>
             <artifactId>flatlaf</artifactId>
             <version>${flatlaf.version}</version>
         </dependency>
