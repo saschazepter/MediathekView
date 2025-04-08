@@ -20,8 +20,6 @@ package mediathek.tool
 
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.TransformedList
-import ca.odell.glazedlists.event.ListEvent
 
 /**
  * The base model object for all available senders that the client can process.
@@ -29,23 +27,6 @@ import ca.odell.glazedlists.event.ListEvent
 object SenderListBoxModel {
     @JvmStatic
     val providedSenderList: EventList<String> = BasicEventList()
-
-    @JvmStatic
-    val readOnlySenderList = ReadOnlySenderListBoxModel()
-
-    class ReadOnlySenderListBoxModel : TransformedList<String, String>(providedSenderList) {
-        /*init {
-            source.addListEventListener(this)
-        }*/
-
-        override fun isWritable(): Boolean {
-            return false
-        }
-
-        override fun listChanged(listChanges: ListEvent<String>?) {
-            //updates.forwardEvent(listChanges)
-        }
-    }
 
     init {
         providedSenderList.add("3Sat")

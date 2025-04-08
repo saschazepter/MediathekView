@@ -147,7 +147,8 @@ public class ManageAboPanel extends JPanel {
 
         swingToolBar.add(new JLabel("Abos für Sender:"));
         senderCombo.setMaximumSize(new Dimension(150, Integer.MAX_VALUE));
-        senderCombo.setModel(GlazedListsSwing.eventComboBoxModel(new EventListWithEmptyFirstEntry(SenderListBoxModel.getReadOnlySenderList())));
+        final var model = GlazedListsSwing.eventComboBoxModel(new EventListWithEmptyFirstEntry(Daten.getInstance().getAllSendersList()));
+        senderCombo.setModel(model);
         senderCombo.setSelectedIndex(0);
         senderCombo.addActionListener(l -> tabelleLaden());
         swingToolBar.add(senderCombo);

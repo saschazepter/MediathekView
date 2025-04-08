@@ -24,13 +24,10 @@ package mediathek.gui.tabs.tab_film.filter;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FilterList;
-import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
 import com.jidesoft.swing.CheckBoxList;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
-import mediathek.controller.SenderFilmlistLoadApprover;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
 import mediathek.gui.messages.ReloadTableDataEvent;
@@ -246,15 +243,8 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private void setupSenderList() {
-        //do not display unchecked(unloaded) senders from config...
-        var filteredSenderList = new FilterList<>(SenderListBoxModel.getProvidedSenderList());
-        filteredSenderList.setMatcher(SenderFilmlistLoadApprover::isApproved);
-
-        var sortedSenderList = new SortedList<>(filteredSenderList);
-        sortedSenderList.setComparator(GermanStringSorter.getInstance());
-
-        var senderModel = GlazedListsSwing.eventListModel(sortedSenderList);
-        senderList.setModel(senderModel);
+        //here we show all senders as a filter might be set up for them...
+        senderList.setModel(GlazedListsSwing.eventListModel(Daten.getInstance().getAllSendersList()));
         senderList.getCheckBoxListSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 var newSelectedSenderList = ((SenderCheckBoxList) senderList).getSelectedSenders();
