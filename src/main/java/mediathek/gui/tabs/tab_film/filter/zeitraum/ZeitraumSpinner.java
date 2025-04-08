@@ -32,34 +32,26 @@ public class ZeitraumSpinner extends JSpinner {
         ((DefaultEditor) getEditor()).getTextField().setFormatterFactory(new ZeitraumSpinnerFormatterFactory());
     }
 
-    public void restoreFilterConfig(@NotNull FilterConfiguration filterConfiguration) {
-        try {
-            var zeitraumVal = filterConfiguration.getZeitraum();
-            int zeitraumValInt;
-            if (zeitraumVal.equals(ZeitraumSpinnerFormatter.INFINITE_TEXT))
-                zeitraumValInt = ZeitraumSpinnerFormatter.INFINITE_VALUE;
-            else
-                zeitraumValInt = Integer.parseInt(zeitraumVal);
-            setValue(zeitraumValInt);
-        } catch (Exception exception) {
-            //logger.error("Failed to restore filter config!", exception);
-        }
+    public void restoreFilterConfig(@NotNull FilterConfiguration filterConfiguration) throws NumberFormatException {
+        var zeitraumVal = filterConfiguration.getZeitraum();
+        int zeitraumValInt;
+        if (zeitraumVal.equals(ZeitraumSpinnerFormatter.INFINITE_TEXT))
+            zeitraumValInt = ZeitraumSpinnerFormatter.INFINITE_VALUE;
+        else
+            zeitraumValInt = Integer.parseInt(zeitraumVal);
+        setValue(zeitraumValInt);
     }
 
     public void installFilterConfigurationChangeListener(@NotNull FilterConfiguration filterConfiguration) {
         addChangeListener(l -> {
-            try {
-                var val = (int) getValue();
-                String strVal;
-                if (val == ZeitraumSpinnerFormatter.INFINITE_VALUE)
-                    strVal = UNLIMITED_VALUE;
-                else
-                    strVal = String.valueOf(val);
+            var val = (int) getValue();
+            String strVal;
+            if (val == ZeitraumSpinnerFormatter.INFINITE_VALUE)
+                strVal = UNLIMITED_VALUE;
+            else
+                strVal = String.valueOf(val);
 
-                filterConfiguration.setZeitraum(strVal);
-            } catch (Exception exception) {
-                //logger.error("Failed to save filter config!", exception);
-            }
+            filterConfiguration.setZeitraum(strVal);
         });
     }
 }

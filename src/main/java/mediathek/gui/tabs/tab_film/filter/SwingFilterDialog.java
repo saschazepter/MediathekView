@@ -267,8 +267,13 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private void setupZeitraumSpinner() {
-        spZeitraum.restoreFilterConfig(filterConfig);
-        spZeitraum.installFilterConfigurationChangeListener(filterConfig);
+        try {
+            spZeitraum.restoreFilterConfig(filterConfig);
+            spZeitraum.installFilterConfigurationChangeListener(filterConfig);
+        }
+        catch (Exception e) {
+            logger.error("Failed to setup zeitraum spinner", e);
+        }
     }
 
     private void checkDeleteCurrentFilterButtonState() {
