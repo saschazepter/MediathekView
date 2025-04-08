@@ -19,15 +19,13 @@
 package mediathek.gui.tabs.tab_film.filter.zeitraum;
 
 import mediathek.tool.FilterConfiguration;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 
 public class ZeitraumSpinner extends JSpinner {
     public static final String UNLIMITED_VALUE = "∞";
-    private static final Logger logger = LogManager.getLogger();
+    //private static final Logger logger = LogManager.getLogger();
 
     public ZeitraumSpinner() {
         super(new SpinnerNumberModel(0, 0, 365, 1));
@@ -44,7 +42,7 @@ public class ZeitraumSpinner extends JSpinner {
                 zeitraumValInt = Integer.parseInt(zeitraumVal);
             setValue(zeitraumValInt);
         } catch (Exception exception) {
-            logger.error("Failed to restore filter config!", exception);
+            //logger.error("Failed to restore filter config!", exception);
         }
     }
 
@@ -60,7 +58,7 @@ public class ZeitraumSpinner extends JSpinner {
 
                 filterConfiguration.setZeitraum(strVal);
             } catch (Exception exception) {
-                logger.error("Failed to save filter config!", exception);
+                //logger.error("Failed to save filter config!", exception);
             }
         });
     }
