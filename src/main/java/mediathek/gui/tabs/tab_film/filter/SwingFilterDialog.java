@@ -257,7 +257,7 @@ public class SwingFilterDialog extends JDialog {
         senderList.setModel(senderModel);
         senderList.getCheckBoxListSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
-                var newSelectedSenderList = getSelectedSenders();
+                var newSelectedSenderList = ((SenderCheckBoxList) senderList).getSelectedSenders();
                 filterConfig.setCheckedChannels(newSelectedSenderList);
                 // reset thema on sender selection
                 filterConfig.setThema("");
@@ -276,28 +276,13 @@ public class SwingFilterDialog extends JDialog {
 
     }
 
-    private List<String> getSelectedSenders() {
-        var newSelectedSenderList = new ArrayList<String>();
-        final var senderListModel = senderList.getModel();
-        final var cblsm = senderList.getCheckBoxListSelectionModel();
-        for (int i = 0; i < senderListModel.getSize(); i++) {
-            if (cblsm.isSelectedIndex(i)) {
-                var item = senderListModel.getElementAt(i);
-                newSelectedSenderList.add(item.toString());
-            }
-        }
-        return newSelectedSenderList;
-    }
-
     private void setupZeitraumSpinner() {
         spZeitraum.restoreFilterConfig(filterConfig);
         spZeitraum.installFilterConfigurationChangeListener(filterConfig);
     }
 
     private void checkDeleteCurrentFilterButtonState() {
-        if (filterConfig.getAvailableFilterCount() <= 1) {
-            btnDeleteCurrentFilter.setEnabled(false);
-        }
+        btnDeleteCurrentFilter.setEnabled(filterConfig.getAvailableFilterCount() > 1);
     }
 
     private void restoreConfigSettings() {
@@ -315,25 +300,9 @@ public class SwingFilterDialog extends JDialog {
 
         jcbThema.setSelectedItem(filterConfig.getThema());
 
-        restoreSenderList();
-        ((FilmLengthSlider)filmLengthSlider).restoreFilterConfig(filterConfig);
+        ((SenderCheckBoxList) senderList).restoreFilterConfig(filterConfig);
+        ((FilmLengthSlider) filmLengthSlider).restoreFilterConfig(filterConfig);
         spZeitraum.restoreFilterConfig(filterConfig);
-    }
-
-    private void restoreSenderList() {
-        final var checkedSenders = filterConfig.getCheckedChannels();
-        final var cblsm = senderList.getCheckBoxListSelectionModel();
-        final var senderListModel = senderList.getModel();
-
-        senderList.selectNone();
-        cblsm.setValueIsAdjusting(true);
-        for (int i = 0; i < senderListModel.getSize(); i++) {
-            var item = (String) senderListModel.getElementAt(i);
-            if (checkedSenders.contains(item)) {
-                senderList.getCheckBoxListSelectionModel().addSelectionInterval(i, i);
-            }
-        }
-        cblsm.setValueIsAdjusting(false);
     }
 
     private void setupResetCurrentFilterButton() {
@@ -401,7 +370,7 @@ public class SwingFilterDialog extends JDialog {
             if (e.active) {
                 btnDeleteCurrentFilter.setEnabled(false);
             } else {
-                btnDeleteCurrentFilter.setEnabled(filterConfig.getAvailableFilterCount() > 1);
+                checkDeleteCurrentFilterButtonState();
             }
         });
     }
@@ -443,6 +412,37 @@ public class SwingFilterDialog extends JDialog {
         }
     }
 
+    private class SenderCheckBoxList extends CheckBoxList {
+        public List<String> getSelectedSenders() {
+            var newSelectedSenderList = new ArrayList<String>();
+            final var senderListModel = getModel();
+            final var cblsm = getCheckBoxListSelectionModel();
+            for (int i = 0; i < senderListModel.getSize(); i++) {
+                if (cblsm.isSelectedIndex(i)) {
+                    var item = senderListModel.getElementAt(i);
+                    newSelectedSenderList.add(item.toString());
+                }
+            }
+            return newSelectedSenderList;
+        }
+
+        public void restoreFilterConfig(@NotNull FilterConfiguration filterConfig) {
+            final var checkedSenders = filterConfig.getCheckedChannels();
+            final var cblsm = getCheckBoxListSelectionModel();
+            final var senderListModel = senderList.getModel();
+
+            selectNone();
+            cblsm.setValueIsAdjusting(true);
+            for (int i = 0; i < senderListModel.getSize(); i++) {
+                var item = (String) senderListModel.getElementAt(i);
+                if (checkedSenders.contains(item)) {
+                    getCheckBoxListSelectionModel().addSelectionInterval(i, i);
+                }
+            }
+            cblsm.setValueIsAdjusting(false);
+        }
+    }
+
     private class AddNewFilterAction extends AbstractAction {
         public AddNewFilterAction() {
             putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/plus.svg"));
@@ -466,7 +466,7 @@ public class SwingFilterDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            var res = JOptionPane.showConfirmDialog(MediathekGui.ui(),"Möchten Sie wirklich den aktuellen Filter löschen?",
+            var res = JOptionPane.showConfirmDialog(MediathekGui.ui(), "Möchten Sie wirklich den aktuellen Filter löschen?",
                     Konstanten.PROGRAMMNAME, JOptionPane.YES_NO_OPTION);
             if (res == JOptionPane.YES_OPTION) {
                 FilterDTO filterToDelete = filterConfig.getCurrentFilter();
@@ -640,7 +640,7 @@ public class SwingFilterDialog extends JDialog {
         var separator4 = new JSeparator();
         label3 = new JLabel();
         var scrollPane1 = new JScrollPane();
-        senderList = new CheckBoxList();
+        senderList = new SenderCheckBoxList();
         var separator5 = new JSeparator();
         label4 = new JLabel();
         jcbThema = new JComboBox<>();
