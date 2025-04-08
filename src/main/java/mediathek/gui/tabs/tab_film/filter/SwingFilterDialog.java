@@ -22,10 +22,12 @@
 
 package mediathek.gui.tabs.tab_film.filter;
 
-import ca.odell.glazedlists.*;
+import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.FilterList;
+import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
 import com.jidesoft.swing.CheckBoxList;
-import com.jidesoft.swing.RangeSlider;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.controller.SenderFilmlistLoadApprover;
@@ -76,7 +78,7 @@ public class SwingFilterDialog extends JDialog {
      */
     private final EventList<String> sourceThemaList = new BasicEventList<>();
 
-    public SwingFilterDialog(Window owner, @NotNull FilterSelectionComboBoxModel model,
+    public SwingFilterDialog(@NotNull Window owner, @NotNull FilterSelectionComboBoxModel model,
                              @NotNull JToggleButton filterToggleButton,
                              @NotNull FilterConfiguration filterConfig) {
         super(owner);
@@ -86,11 +88,37 @@ public class SwingFilterDialog extends JDialog {
 
         initComponents();
 
+        ToggleVisibilityKeyHandler handler = new ToggleVisibilityKeyHandler(this);
+        handler.installHandler(filterToggleButton.getAction());
+
+        setupButtons();
+        setupCheckBoxes();
+        setupSenderList();
+        setupThemaComboBox();
+        setupFilmLengthSlider();
+        setupZeitraumSpinner();
+
+        restoreConfigSettings();
+        filterSelectionComboBoxModel.addListDataListener(new FilterSelectionDataListener());
+
+        restoreWindowSizeFromConfig();
+        restoreDialogVisibility();
+        addComponentListener(new FilterDialogComponentListener());
+
+        MessageBus.getMessageBus().subscribe(this);
+
+        Daten.getInstance().getFilmeLaden().addAdListener(new FilmeLadenListener());
+    }
+
+    private void setupButtons() {
         btnRenameFilter.setAction(new RenameFilterAction());
         setupDeleteCurrentFilterButton();
         setupResetCurrentFilterButton();
         btnAddNewFilter.setAction(new AddNewFilterAction());
+        btnResetThema.setAction(new ResetThemaAction());
+    }
 
+    private void setupCheckBoxes() {
         cbShowNewOnly.addActionListener(l -> {
             filterConfig.setShowNewOnly(cbShowNewOnly.isSelected());
             MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
@@ -136,55 +164,7 @@ public class SwingFilterDialog extends JDialog {
             MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
 
-        setupSenderList();
-
-        btnResetThema.setAction(new ResetThemaAction());
-        setupThemaComboBox();
-        setupFilmLengthSlider();
-        setupZeitraumSpinner();
-
-        restoreConfigSettings();
-        filterSelectionComboBoxModel.addListDataListener(new ListDataListener() {
-
-            @Override
-            public void intervalAdded(ListDataEvent e) {
-                restoreConfigSettings();
-            }
-
-            @Override
-            public void intervalRemoved(ListDataEvent e) {
-                restoreConfigSettings();
-            }
-
-            @Override
-            public void contentsChanged(ListDataEvent e) {
-                restoreConfigSettings();
-            }
-        });
-
         cboxFilterSelection.setMaximumSize(new Dimension(500, 100));
-
-        ToggleVisibilityKeyHandler handler = new ToggleVisibilityKeyHandler(this);
-        handler.installHandler(filterToggleButton.getAction());
-
-        restoreWindowSizeFromConfig();
-        restoreDialogVisibility();
-        addComponentListener(new FilterDialogComponentListener());
-
-        MessageBus.getMessageBus().subscribe(this);
-
-        Daten.getInstance().getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
-            @Override
-            public void start(ListenerFilmeLadenEvent event) {
-                setEnabled(false);
-            }
-
-            @Override
-            public void fertig(ListenerFilmeLadenEvent event) {
-                updateThemaComboBox();
-                setEnabled(true);
-            }
-        });
     }
 
     private void setupFilmLengthSlider() {
@@ -270,7 +250,7 @@ public class SwingFilterDialog extends JDialog {
         var filteredSenderList = new FilterList<>(SenderListBoxModel.getProvidedSenderList());
         filteredSenderList.setMatcher(SenderFilmlistLoadApprover::isApproved);
 
-        var sortedSenderList = new SortedList<>(new UniqueList<>(filteredSenderList));
+        var sortedSenderList = new SortedList<>(filteredSenderList);
         sortedSenderList.setComparator(GermanStringSorter.getInstance());
 
         var senderModel = GlazedListsSwing.eventListModel(sortedSenderList);
@@ -320,18 +300,6 @@ public class SwingFilterDialog extends JDialog {
         }
     }
 
-    private void restoreFilmLengthSlider() {
-        try {
-            var slider = (RangeSlider) filmLengthSlider;
-            slider.setValueIsAdjusting(true);
-            slider.setHighValue((int) filterConfig.getFilmLengthMax());
-            slider.setLowValue((int) filterConfig.getFilmLengthMin());
-            slider.setValueIsAdjusting(false);
-        } catch (Exception exception) {
-            logger.error("Failed to restore filmlength config", exception);
-        }
-    }
-
     private void restoreConfigSettings() {
         cbShowNewOnly.setSelected(filterConfig.isShowNewOnly());
         cbShowBookMarkedOnly.setSelected(filterConfig.isShowBookMarkedOnly());
@@ -348,7 +316,7 @@ public class SwingFilterDialog extends JDialog {
         jcbThema.setSelectedItem(filterConfig.getThema());
 
         restoreSenderList();
-        restoreFilmLengthSlider();
+        ((FilmLengthSlider)filmLengthSlider).restoreFilterConfig(filterConfig);
         spZeitraum.restoreFilterConfig(filterConfig);
     }
 
@@ -607,6 +575,37 @@ public class SwingFilterDialog extends JDialog {
             } finally {
                 config.unlock(LockMode.WRITE);
             }
+        }
+    }
+
+    private class FilmeLadenListener extends ListenerFilmeLaden {
+        @Override
+        public void start(ListenerFilmeLadenEvent event) {
+            setEnabled(false);
+        }
+
+        @Override
+        public void fertig(ListenerFilmeLadenEvent event) {
+            updateThemaComboBox();
+            setEnabled(true);
+        }
+    }
+
+    private class FilterSelectionDataListener implements ListDataListener {
+
+        @Override
+        public void intervalAdded(ListDataEvent e) {
+            restoreConfigSettings();
+        }
+
+        @Override
+        public void intervalRemoved(ListDataEvent e) {
+            restoreConfigSettings();
+        }
+
+        @Override
+        public void contentsChanged(ListDataEvent e) {
+            restoreConfigSettings();
         }
     }
 

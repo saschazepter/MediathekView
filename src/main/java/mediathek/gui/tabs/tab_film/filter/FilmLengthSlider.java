@@ -19,12 +19,17 @@
 package mediathek.gui.tabs.tab_film.filter;
 
 import com.jidesoft.swing.RangeSlider;
+import mediathek.tool.FilterConfiguration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.Hashtable;
 
 public class FilmLengthSlider extends RangeSlider {
     public final static int UNLIMITED_VALUE = 110;
+    private static final Logger logger = LogManager.getLogger();
 
     public FilmLengthSlider() {
         super(0, 110);
@@ -35,13 +40,23 @@ public class FilmLengthSlider extends RangeSlider {
         setLabelTable(new TestTable());
     }
 
+    public void restoreFilterConfig(@NotNull FilterConfiguration filterConfig) {
+        try {
+            setValueIsAdjusting(true);
+            setHighValue((int) filterConfig.getFilmLengthMax());
+            setLowValue((int) filterConfig.getFilmLengthMin());
+            setValueIsAdjusting(false);
+        } catch (Exception exception) {
+            logger.error("Failed to restore filmlength config", exception);
+        }
+    }
+
     public String getHighValueText() {
         String res;
         var highValue = getHighValue();
         if (highValue == UNLIMITED_VALUE) {
             res = "∞";
-        }
-        else {
+        } else {
             res = String.valueOf(highValue);
         }
         return res;
