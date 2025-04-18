@@ -18,11 +18,12 @@
 
 package mediathek.tool;
 
-import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.WinNT;
+import com.sun.jna.platform.win32.Wtsapi32;
 import com.sun.jna.ptr.IntByReference;
+import com.sun.jna.ptr.PointerByReference;
 import com.sun.jna.win32.StdCallLibrary;
 
 public class RDPDetector {
@@ -33,41 +34,21 @@ public class RDPDetector {
         WinNT.HANDLE serverHandle = new WinNT.HANDLE(Pointer.createConstant(WTS_CURRENT_SERVER_HANDLE));
         final var sessionId = Kernel32.INSTANCE.WTSGetActiveConsoleSessionId();
 
-        Pointer ppBuffer = new Memory(Native.POINTER_SIZE);
+        PointerByReference ppRef = new PointerByReference();
         IntByReference bytesReturned = new IntByReference();
 
         try {
-            boolean success = Wtsapi32.INSTANCE.WTSQuerySessionInformation(
-                    serverHandle,
-                    sessionId,
-                    WTSIsRemoteSession,
-                    ppBuffer,
-                    bytesReturned
-            );
-
+            var success = Wtsapi32.INSTANCE.WTSQuerySessionInformation(serverHandle, sessionId,
+            WTSIsRemoteSession, ppRef, bytesReturned);
             if (success) {
-                int isRemote = ppBuffer.getInt(0);
+                final int isRemote = ppRef.getPointer().getInt(0);
                 return isRemote != 0;
             }
             return false;
         } finally {
-            if (ppBuffer != null) {
-                Wtsapi32.INSTANCE.WTSFreeMemory(ppBuffer);
-            }
+            if (ppRef != null)
+                Wtsapi32.INSTANCE.WTSFreeMemory(ppRef.getValue());
         }
-    }
-    public interface Wtsapi32 extends StdCallLibrary {
-        Wtsapi32 INSTANCE = Native.load("Wtsapi32", Wtsapi32.class);
-
-        boolean WTSQuerySessionInformation(
-                WinNT.HANDLE hServer,
-                int sessionId,
-                int infoClass,
-                Pointer ppBuffer,
-                IntByReference pBytesReturned
-        );
-
-        void WTSFreeMemory(Pointer pointer);
     }
 
     public interface Kernel32 extends StdCallLibrary {
