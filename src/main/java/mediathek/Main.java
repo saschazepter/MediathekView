@@ -386,6 +386,18 @@ public class Main {
             System.exit(1);
         }
 
+        if (SystemUtils.IS_OS_WINDOWS) {
+            if (VersionHelpers.IsWindows8OrGreater()) {
+                if (RDPDetector.isRemoteSession())
+                    System.out.println("IS REMOTE SESSION");
+                else
+                    System.out.println("NO REMOTE SESSION");
+            }
+        }
+        else {
+            System.out.println("NOT WINDOWS");
+        }
+
         setupEnvironmentProperties();
 
         EventQueue.invokeLater(() -> {
