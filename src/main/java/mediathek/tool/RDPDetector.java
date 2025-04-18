@@ -31,23 +31,23 @@ public class RDPDetector {
     public static final int WTSIsRemoteSession = 29;
 
     public static boolean isRemoteSession() {
-        WinNT.HANDLE serverHandle = new WinNT.HANDLE(Pointer.createConstant(WTS_CURRENT_SERVER_HANDLE));
+        var serverHandle = new WinNT.HANDLE(Pointer.createConstant(WTS_CURRENT_SERVER_HANDLE));
         final var sessionId = Kernel32.INSTANCE.WTSGetActiveConsoleSessionId();
 
-        PointerByReference ppRef = new PointerByReference();
-        IntByReference bytesReturned = new IntByReference();
+        var buffer = new PointerByReference();
+        var bytesReturned = new IntByReference();
 
         try {
             var success = Wtsapi32.INSTANCE.WTSQuerySessionInformation(serverHandle, sessionId,
-            WTSIsRemoteSession, ppRef, bytesReturned);
+            WTSIsRemoteSession, buffer, bytesReturned);
             if (success) {
-                final int isRemote = ppRef.getPointer().getInt(0);
+                final int isRemote = buffer.getPointer().getInt(0);
                 return isRemote != 0;
             }
             return false;
         } finally {
-            if (ppRef != null)
-                Wtsapi32.INSTANCE.WTSFreeMemory(ppRef.getValue());
+            if (buffer != null)
+                Wtsapi32.INSTANCE.WTSFreeMemory(buffer.getValue());
         }
     }
 
