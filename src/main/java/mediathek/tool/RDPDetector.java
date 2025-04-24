@@ -20,6 +20,8 @@ package mediathek.tool;
 
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
+import com.sun.jna.platform.win32.User32;
+import com.sun.jna.platform.win32.WinDef;
 import com.sun.jna.platform.win32.WinNT;
 import com.sun.jna.platform.win32.Wtsapi32;
 import com.sun.jna.ptr.IntByReference;
@@ -29,6 +31,11 @@ import com.sun.jna.win32.StdCallLibrary;
 public class RDPDetector {
     public static final int WTS_CURRENT_SERVER_HANDLE = 0;
     public static final int WTSIsRemoteSession = 29;
+
+    public static boolean isRemoteSessionAlt() {
+        var result = User32.INSTANCE.GetSystemMetrics(User32.SM_REMOTESESSION);
+        return result != 0;
+    }
 
     public static boolean isRemoteSession() {
         var serverHandle = new WinNT.HANDLE(Pointer.createConstant(WTS_CURRENT_SERVER_HANDLE));

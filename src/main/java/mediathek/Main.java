@@ -389,9 +389,15 @@ public class Main {
         if (SystemUtils.IS_OS_WINDOWS) {
             if (VersionHelpers.IsWindows8OrGreater()) {
                 if (RDPDetector.isRemoteSession())
-                    System.out.println("IS REMOTE SESSION");
+                    System.out.println("V1 IS REMOTE SESSION");
                 else
-                    System.out.println("NO REMOTE SESSION");
+                    System.out.println("V1 NO REMOTE SESSION");
+
+                if (RDPDetector.isRemoteSessionAlt()) {
+                    System.out.println("V2 IS REMOTE SESSION");
+                }
+                else
+                    System.out.println("V2 NO REMOTE SESSION");
             }
         }
         else {
