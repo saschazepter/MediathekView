@@ -56,11 +56,40 @@ public class TimedTextMarkupLanguageParser implements AutoCloseable {
   private final Map<String, List<String>> colorMap = new HashMap<>();
   private final Map<String, Integer> regionMap = new HashMap<>();
   private final List<Subtitle> subtitleList = new ArrayList<>();
+  private final String backgroundColor = "#000000C2";
   private String color = "#FFFFFF";
-  private String backgroundColor = "#000000C2";
   private Document doc;
 
   public TimedTextMarkupLanguageParser() {}
+
+  /** Convert a {@link Color} into a BGR hex string */
+  private static String colorToBGR(Color color) {
+    return String.format("%02X%02X%02X", color.getBlue(), color.getGreen(), color.getRed());
+  }
+
+  /**
+   * Converts a hex string to a {@link Color}. If it can't be converted null is returned.
+   *
+   * @param hex (i.e. #CCCCCCFF or CCCCCC)
+   * @return Color
+   */
+  // https://stackoverflow.com/a/43764322
+  private static Color hexToColor(String hex) {
+    hex = hex.replace("#", "");
+    if (hex.length() == 6) {
+      return new Color(
+          Integer.valueOf(hex.substring(0, 2), 16),
+          Integer.valueOf(hex.substring(2, 4), 16),
+          Integer.valueOf(hex.substring(4, 6), 16));
+    } else if (hex.length() == 8) {
+      return new Color(
+          Integer.valueOf(hex.substring(0, 2), 16),
+          Integer.valueOf(hex.substring(2, 4), 16),
+          Integer.valueOf(hex.substring(4, 6), 16),
+          Integer.valueOf(hex.substring(6, 8), 16));
+    }
+    return null;
+  }
 
   /**
    * Build a map of used alignments within the TTML file.
@@ -86,28 +115,12 @@ public class TimedTextMarkupLanguageParser implements AutoCloseable {
         final Node idNode = attrMap.getNamedItem("xml:id");
         final Node alignmentNode = attrMap.getNamedItem("tts:textAlign");
         if (idNode != null && alignmentNode != null) {
-          Integer alignment = 0;
-          switch (alignmentNode.getNodeValue()) {
-            case "start":
-              alignment = -1;
-              break;
-            case "left":
-              alignment = -1;
-              break;
-            case "center":
-              alignment = 0;
-              break;
-            case "right":
-              alignment = 1;
-              break;
-            case "end":
-              alignment = 1;
-              break;
-            default:
-              alignment = 0;
-              break;
-          }
-          alignMap.put(idNode.getNodeValue(), alignment);
+          int alignment = switch (alignmentNode.getNodeValue()) {
+              case "start", "left" -> -1;
+              case "right", "end" -> 1;
+              default -> 0;
+          };
+            alignMap.put(idNode.getNodeValue(), alignment);
         }
       }
     }
@@ -164,22 +177,12 @@ public class TimedTextMarkupLanguageParser implements AutoCloseable {
         final Node idNode = attrMap.getNamedItem("xml:id");
         final Node regionNode = attrMap.getNamedItem("tts:displayAlign");
         if (idNode != null && regionNode != null) {
-          Integer region = 0;
-          switch (regionNode.getNodeValue()) {
-            case "before":
-              region = 8;
-              break;
-            case "center":
-              region = 5;
-              break;
-            case "after":
-              region = 2;
-              break;
-            default:
-              region = 2;
-              break;
-          }
-          regionMap.put(idNode.getNodeValue(), region);
+          int region = switch (regionNode.getNodeValue()) {
+              case "before" -> 8;
+              case "center" -> 5;
+              default -> 2;
+          };
+            regionMap.put(idNode.getNodeValue(), region);
         }
       }
     }
@@ -419,45 +422,16 @@ public class TimedTextMarkupLanguageParser implements AutoCloseable {
     return assTime.substring(0, assTime.length() - 1);
   }
 
-  /** Convert a {@link Color} into a BGR hex string */
-  private static String colorToBGR(Color color) {
-    return String.format("%02X%02X%02X", color.getBlue(), color.getGreen(), color.getRed());
-  }
-
-  /**
-   * Converts a hex string to a {@link Color}. If it can't be converted null is returned.
-   *
-   * @param hex (i.e. #CCCCCCFF or CCCCCC)
-   * @return Color
-   */
-  // https://stackoverflow.com/a/43764322
-  private static Color hexToColor(String hex) {
-    hex = hex.replace("#", "");
-    if (hex.length() == 6) {
-      return new Color(
-          Integer.valueOf(hex.substring(0, 2), 16),
-          Integer.valueOf(hex.substring(2, 4), 16),
-          Integer.valueOf(hex.substring(4, 6), 16));
-    } else if (hex.length() == 8) {
-      return new Color(
-          Integer.valueOf(hex.substring(0, 2), 16),
-          Integer.valueOf(hex.substring(2, 4), 16),
-          Integer.valueOf(hex.substring(4, 6), 16),
-          Integer.valueOf(hex.substring(6, 8), 16));
-    }
-    return null;
-  }
-
   /**
    * Convert internal representation into Advanced Substation Alpha Format and save to file.
    *
    * <p>References:
    *
-   * <p>- https://github.com/libass/libass/wiki/ASS-File-Format-Guide
+   * <p>- <a href="https://github.com/libass/libass/wiki/ASS-File-Format-Guide">ASS File Format Guide</a>
    *
-   * <p>- https://aegisub.org/docs/latest/styles/#the-style-editor
+   * <p>- <a href="https://aegisub.org/docs/latest/styles/#the-style-editor">Aegisub Style Editor</a>
    *
-   * <p>- https://aegisub.org/docs/latest/ass_tags/
+   * <p>- <a href="https://aegisub.org/docs/latest/ass_tags/">Aegisub ASS tags</a>
    */
   public void toAss(Path assFile) {
     try (FileOutputStream fos = new FileOutputStream(assFile.toFile());
