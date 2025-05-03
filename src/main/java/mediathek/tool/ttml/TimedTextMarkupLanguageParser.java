@@ -88,9 +88,9 @@ public class TimedTextMarkupLanguageParser implements AutoCloseable {
           Integer.valueOf(hex.substring(4, 6), 16),
           Integer.valueOf(hex.substring(6, 8), 16));
     }
-    // return a default black color if something failed
+    // return a default white color if something failed
     logger.error("Failed to convert hex color string: {}", hex);
-    return Color.BLACK;
+    return Color.WHITE;
   }
 
   /**
