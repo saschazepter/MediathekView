@@ -63,7 +63,7 @@ public class TimedTextMarkupLanguageParser implements AutoCloseable {
   public TimedTextMarkupLanguageParser() {}
 
   /** Convert a {@link Color} into a BGR hex string */
-  private static String colorToBGR(Color color) {
+  private String colorToBGR(Color color) {
     return String.format("%02X%02X%02X", color.getBlue(), color.getGreen(), color.getRed());
   }
 
@@ -74,7 +74,7 @@ public class TimedTextMarkupLanguageParser implements AutoCloseable {
    * @return Color
    */
   // https://stackoverflow.com/a/43764322
-  private static Color hexToColor(String hex) {
+  private Color hexToColor(@NotNull String hex) {
     hex = hex.replace("#", "");
     if (hex.length() == 6) {
       return new Color(
@@ -88,7 +88,9 @@ public class TimedTextMarkupLanguageParser implements AutoCloseable {
           Integer.valueOf(hex.substring(4, 6), 16),
           Integer.valueOf(hex.substring(6, 8), 16));
     }
-    return null;
+    // return a default black color if something failed
+    logger.error("Failed to convert hex color string: {}", hex);
+    return Color.BLACK;
   }
 
   /**
@@ -478,19 +480,24 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
           final String entryColorString = entry.getColor();
           if (!entryColorString.isEmpty()) {
             // \1c = primary fill color
-            entryText.append("\\1c&H" + colorToBGR(hexToColor(entryColorString)) + "&");
+            entryText.append("\\1c&H")
+                    .append(colorToBGR(hexToColor(entryColorString)))
+                    .append("&");
           }
 
           final String entryBackgroundColorString = entry.getBackgroundColor();
           if (!entryBackgroundColorString.isEmpty()) {
             final Color entryBackgroundColor = hexToColor(entryBackgroundColorString);
             // \3c = border color
-            entryText.append("\\3c&H" + colorToBGR(entryBackgroundColor) + "&");
+            entryText.append("\\3c&H")
+                    .append(colorToBGR(entryBackgroundColor))
+                    .append("&");
 
             // \3a = border alpha
             // The value is inverted to regular RGBA alpha
-            entryText.append(
-                "\\3a&H" + String.format("%02X", 255 - entryBackgroundColor.getAlpha()) + "&");
+            entryText.append("\\3a&H")
+                    .append(String.format("%02X", 255 - entryBackgroundColor.getAlpha()))
+                    .append("&");
           }
 
           // end formatting options
@@ -500,7 +507,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
           // ORF inline line break tags, replace them when found
           entryText.append(entry.getText().replace("<br/>", "\\N"));
         }
-        writer.println(titleText + entryText.toString());
+        writer.println(titleText + entryText);
       }
     } catch (Exception ex) {
       logger.error("File: {}", assFile, ex);
