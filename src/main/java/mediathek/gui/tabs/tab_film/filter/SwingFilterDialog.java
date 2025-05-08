@@ -24,10 +24,12 @@ package mediathek.gui.tabs.tab_film.filter;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
 import com.jidesoft.swing.CheckBoxList;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
+import mediathek.controller.SenderFilmlistLoadApprover;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
 import mediathek.gui.messages.ReloadTableDataEvent;
@@ -244,7 +246,9 @@ public class SwingFilterDialog extends JDialog {
 
     private void setupSenderList() {
         //here we show all senders as a filter might be set up for them...
-        senderList.setModel(GlazedListsSwing.eventListModel(Daten.getInstance().getAllSendersList()));
+        var allSenders = Daten.getInstance().getAllSendersList();
+        var filteredList = new FilterList<>(allSenders, SenderFilmlistLoadApprover::isApproved);
+        senderList.setModel(GlazedListsSwing.eventListModel(filteredList));
         senderList.getCheckBoxListSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 var newSelectedSenderList = ((SenderCheckBoxList) senderList).getSelectedSenders();
