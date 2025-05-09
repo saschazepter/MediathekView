@@ -108,6 +108,7 @@
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <controlsfx.version>11.2.2</controlsfx.version>
         <flatlaf.version>3.5.4</flatlaf.version>
+        <glazedlists.version>1.11.0</glazedlists.version>
         <guava.version>33.4.8-jre</guava.version>
         <icu4j.version>76.1</icu4j.version>
         <jackson.version>2.18.0</jackson.version>
@@ -134,6 +135,7 @@
         <maven-resources-plugin.version>3.2.0</maven-resources-plugin.version>
         <maven-source-plugin.version>3.2.1</maven-source-plugin.version>
         <maven-surefire-plugin.version>3.0.0-M5</maven-surefire-plugin.version>
+        <mbassador.version>1.3.2</mbassador.version>
         <miglayout.version>11.3</miglayout.version>
         <mockito.version>5.12.0</mockito.version>
         <okhttp.version>5.0.0-alpha.14</okhttp.version>
@@ -383,7 +385,7 @@
         <dependency>
             <groupId>net.engio</groupId>
             <artifactId>mbassador</artifactId>
-            <version>1.3.2</version>
+            <version>${mbassador.version}</version>
         </dependency>
 
         <dependency>
@@ -419,7 +421,7 @@
         <dependency>
             <groupId>com.glazedlists</groupId>
             <artifactId>glazedlists</artifactId>
-            <version>1.11.0</version>
+            <version>${glazedlists.version}</version>
         </dependency>
 
         <!-- Logging -->
