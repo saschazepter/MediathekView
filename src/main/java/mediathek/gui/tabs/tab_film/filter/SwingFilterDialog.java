@@ -92,7 +92,6 @@ public class SwingFilterDialog extends JDialog {
 
         setupButtons();
         setupCheckBoxes();
-        setupSenderList();
         setupThemaComboBox();
         setupFilmLengthSlider();
         setupZeitraumSpinner();
@@ -244,29 +243,6 @@ public class SwingFilterDialog extends JDialog {
         });
     }
 
-    private void setupSenderList() {
-        //here we show all senders as a filter might be set up for them...
-        var allSenders = Daten.getInstance().getAllSendersList();
-        var filteredList = new FilterList<>(allSenders, SenderFilmlistLoadApprover::isApproved);
-        senderList.setModel(GlazedListsSwing.eventListModel(filteredList));
-        senderList.getCheckBoxListSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                var newSelectedSenderList = ((SenderCheckBoxList) senderList).getSelectedSenders();
-                filterConfig.setCheckedChannels(newSelectedSenderList);
-
-                updateThemaComboBox();
-                MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
-            }
-        });
-
-        var contextMenu = new JPopupMenu();
-        var menuItem = new JMenuItem("Alle Senderfilter zurücksetzen");
-        menuItem.addActionListener(l -> senderList.selectNone());
-        contextMenu.add(menuItem);
-        senderList.setComponentPopupMenu(contextMenu);
-
-    }
-
     private void setupZeitraumSpinner() {
         try {
             spZeitraum.restoreFilterConfig(filterConfig);
@@ -296,7 +272,7 @@ public class SwingFilterDialog extends JDialog {
 
         jcbThema.setSelectedItem(filterConfig.getThema());
 
-        ((SenderCheckBoxList) senderList).restoreFilterConfig(filterConfig);
+        ((SenderCheckBoxList) senderList).restoreFilterConfig();
         ((FilmLengthSlider) filmLengthSlider).restoreFilterConfig(filterConfig);
         spZeitraum.restoreFilterConfig(filterConfig);
     }
@@ -410,7 +386,33 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private class SenderCheckBoxList extends CheckBoxList {
-        public List<String> getSelectedSenders() {
+        public SenderCheckBoxList() {
+            setupSenderList();
+        }
+
+        protected void setupSenderList() {
+            //here we show all senders as a filter might be set up for them...
+            var allSenders = Daten.getInstance().getAllSendersList();
+            var filteredList = new FilterList<>(allSenders, SenderFilmlistLoadApprover::isApproved);
+            setModel(GlazedListsSwing.eventListModel(filteredList));
+            getCheckBoxListSelectionModel().addListSelectionListener(e -> {
+                if (!e.getValueIsAdjusting()) {
+                    var newSelectedSenderList = getSelectedSenders();
+                    filterConfig.setCheckedChannels(newSelectedSenderList);
+
+                    updateThemaComboBox();
+                    MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+                }
+            });
+
+            var contextMenu = new JPopupMenu();
+            var menuItem = new JMenuItem("Alle Senderfilter zurücksetzen");
+            menuItem.addActionListener(l -> selectNone());
+            contextMenu.add(menuItem);
+            setComponentPopupMenu(contextMenu);
+        }
+
+        protected List<String> getSelectedSenders() {
             var newSelectedSenderList = new ArrayList<String>();
             final var senderListModel = getModel();
             final var cblsm = getCheckBoxListSelectionModel();
@@ -423,10 +425,10 @@ public class SwingFilterDialog extends JDialog {
             return newSelectedSenderList;
         }
 
-        public void restoreFilterConfig(@NotNull FilterConfiguration filterConfig) {
+        public void restoreFilterConfig() {
             final var checkedSenders = filterConfig.getCheckedChannels();
             final var cblsm = getCheckBoxListSelectionModel();
-            final var senderListModel = senderList.getModel();
+            final var senderListModel = getModel();
 
             selectNone();
             cblsm.setValueIsAdjusting(true);
