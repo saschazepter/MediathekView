@@ -399,7 +399,7 @@ public class SwingFilterDialog extends JDialog {
         }
 
         private void restoreVerticalWrapState() {
-            if (ApplicationConfiguration.getConfiguration().getBoolean(CONFIG_SENDERLIST_VERTICAL_WRAP, false)) {
+            if (ApplicationConfiguration.getConfiguration().getBoolean(CONFIG_SENDERLIST_VERTICAL_WRAP, true)) {
                 miVerticalWrap.doClick();
             }
         }
