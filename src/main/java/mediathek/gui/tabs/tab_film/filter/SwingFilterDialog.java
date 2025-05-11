@@ -474,17 +474,29 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private class AddNewFilterAction extends AbstractAction {
+        private static final String STR_ACTION_NAME = "Neuen Filter anlegen";
         public AddNewFilterAction() {
             putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/plus.svg"));
-            putValue(Action.SHORT_DESCRIPTION, "Neuen Filter anlegen");
+            putValue(Action.SHORT_DESCRIPTION, STR_ACTION_NAME);
         }
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), String.format("Filter %d", filterConfig.getAvailableFilters().size() + 1));
-            filterConfig.addNewFilter(newFilter);
-            checkDeleteCurrentFilterButtonState();
-            filterSelectionComboBoxModel.setSelectedItem(newFilter);
+            String newFilterName = (String)JOptionPane.showInputDialog(MediathekGui.ui(), "Filtername:",
+                    STR_ACTION_NAME, JOptionPane.PLAIN_MESSAGE, null, null,
+                    String.format("Filter %d", filterConfig.getAvailableFilters().size() + 1));
+            if (newFilterName != null) {
+                filterConfig.findFilterForName(newFilterName).ifPresentOrElse(f ->
+                        JOptionPane.showMessageDialog(MediathekGui.ui(),
+                        "Ein Filter mit dem gewählten Namen existiert bereits!",
+                        STR_ACTION_NAME, JOptionPane.ERROR_MESSAGE), () -> {
+                    FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), newFilterName);
+                    filterConfig.addNewFilter(newFilter);
+                    checkDeleteCurrentFilterButtonState();
+                    filterSelectionComboBoxModel.setSelectedItem(newFilter);
+                });
+
+            }
         }
     }
 
