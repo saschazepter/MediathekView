@@ -6,7 +6,7 @@ new FormModel {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 			"$layoutConstraints": "fillx,insets 5,hidemode 3"
 			"$columnConstraints": "[left]"
-			"$rowConstraints": "[][shrink 0,top]0[]0[]0[]0[]0[]0[shrink 0]0[]0[]0[]0[]0[]0[]0[shrink 0][][grow][shrink 0][][shrink 0][][shrink 0][]"
+			"$rowConstraints": "[][shrink 0,top]0[]0[]0[]0[]0[]0[shrink 0]0[]0[]0[]0[]0[]0[]0[shrink 0][grow,fill][shrink 0][][shrink 0][][shrink 0][]"
 		} ) {
 			name: "this"
 			"type": enum java.awt.Window$Type UTILITY
@@ -14,9 +14,9 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$layoutConstraints": "fillx,insets 0,hidemode 3"
 				"$columnConstraints": "[grow,fill][fill][fill][left][fill][fill]"
-				"$rowConstraints": "[grow,fill]"
+				"$rowConstraints": "[fill]"
 			} ) {
-				name: "panel1"
+				name: "pnlFilterCommon"
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -151,27 +151,45 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 14,growx"
 			} )
-			add( new FormComponent( "javax.swing.JLabel" ) {
-				name: "label3"
-				"text": "Sender:"
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 15"
-			} )
-			add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
-				name: "scpSenderList"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$columnConstraints": "[left]"
+				"$rowConstraints": "[][grow]"
+				"$layoutConstraints": "fill,insets 0,hidemode 3"
+			} ) {
+				name: "pnlSenderlist"
+				"preferredSize": new java.awt.Dimension( 258, 220 )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
-				add( new FormComponent( "com.jidesoft.swing.CheckBoxList" ) {
-					name: "senderList"
-					"selectionMode": 0
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label3"
+					"text": "Sender:"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0"
+				} )
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scpSenderList"
+					"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"maximumSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
 					auxiliary() {
-						"JavaCodeGenerator.variableModifiers": 1
-						"JavaCodeGenerator.customCreateCode": "new SenderCheckBoxList();"
+						"JavaCodeGenerator.variableLocal": true
 					}
+					add( new FormComponent( "com.jidesoft.swing.CheckBoxList" ) {
+						name: "senderList"
+						"selectionMode": 0
+						"maximumSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"minimumSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 1
+							"JavaCodeGenerator.customCreateCode": "new SenderCheckBoxList();"
+						}
+					} )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 1,grow,hmin 50"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 16,grow,hmin 50"
+				"value": "cell 0 15,growx"
 			} )
 			add( new FormComponent( "javax.swing.JSeparator" ) {
 				name: "separator5"
@@ -179,7 +197,7 @@ new FormModel {
 					"JavaCodeGenerator.variableLocal": true
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 17,growx"
+				"value": "cell 0 16,growx"
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$columnConstraints": "[left][grow,fill][fill]"
@@ -211,7 +229,7 @@ new FormModel {
 					"value": "cell 2 0"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 18,growx"
+				"value": "cell 0 17,growx"
 			} )
 			add( new FormComponent( "javax.swing.JSeparator" ) {
 				name: "separator6"
@@ -219,7 +237,7 @@ new FormModel {
 					"JavaCodeGenerator.variableLocal": true
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 19,growx"
+				"value": "cell 0 18,growx"
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$layoutConstraints": "fill,insets 0,hidemode 3"
@@ -271,7 +289,7 @@ new FormModel {
 					"value": "cell 0 1 5 1,growx"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 20,growx"
+				"value": "cell 0 19,growx"
 			} )
 			add( new FormComponent( "javax.swing.JSeparator" ) {
 				name: "separator7"
@@ -279,7 +297,7 @@ new FormModel {
 					"JavaCodeGenerator.variableLocal": true
 				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 21,growx"
+				"value": "cell 0 20,growx"
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$columnConstraints": "[left][grow,fill][fill]"
@@ -311,7 +329,7 @@ new FormModel {
 					"value": "cell 2 0"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 22,growx"
+				"value": "cell 0 21,growx"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )

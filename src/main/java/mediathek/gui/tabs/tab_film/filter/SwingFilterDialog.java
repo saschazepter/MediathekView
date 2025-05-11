@@ -642,7 +642,7 @@ public class SwingFilterDialog extends JDialog {
         // Generated using JFormDesigner non-commercial license
         createUIComponents();
 
-        var panel1 = new JPanel();
+        var pnlFilterCommon = new JPanel();
         btnRenameFilter = new JButton();
         btnAddNewFilter = new JButton();
         btnDeleteCurrentFilter = new JButton();
@@ -662,6 +662,7 @@ public class SwingFilterDialog extends JDialog {
         cbDontShowAudioVersions = new JCheckBox();
         cbDontShowDuplicates = new JCheckBox();
         var separator4 = new JSeparator();
+        var pnlSenderlist = new JPanel();
         label3 = new JLabel();
         var scpSenderList = new JScrollPane();
         senderList = new SenderCheckBoxList();
@@ -710,8 +711,7 @@ public class SwingFilterDialog extends JDialog {
                 .gap("0") //NON-NLS
                 .gap("0") //NON-NLS
                 .shrink(0).gap()
-                .gap()
-                .grow().gap()
+                .grow().fill().gap()
                 .shrink(0).gap()
                 .gap()
                 .shrink(0).gap()
@@ -719,9 +719,9 @@ public class SwingFilterDialog extends JDialog {
                 .shrink(0).gap()
                 ));
 
-        //======== panel1 ========
+        //======== pnlFilterCommon ========
         {
-            panel1.setLayout(new MigLayout(
+            pnlFilterCommon.setLayout(new MigLayout(
                 new LC().fillX().insets("0").hideMode(3), //NON-NLS
                 // columns
                 new AC()
@@ -733,21 +733,21 @@ public class SwingFilterDialog extends JDialog {
                     .fill(),
                 // rows
                 new AC()
-                    .grow().fill()));
-            panel1.add(cboxFilterSelection, new CC().cell(0, 0));
-            panel1.add(btnRenameFilter, new CC().cell(1, 0).alignX("center").growX(0)); //NON-NLS
-            panel1.add(btnAddNewFilter, new CC().cell(2, 0).alignX("center").growX(0)); //NON-NLS
-            panel1.add(btnDeleteCurrentFilter, new CC().cell(3, 0).alignX("center").growX(0)); //NON-NLS
+                    .fill()));
+            pnlFilterCommon.add(cboxFilterSelection, new CC().cell(0, 0));
+            pnlFilterCommon.add(btnRenameFilter, new CC().cell(1, 0).alignX("center").growX(0)); //NON-NLS
+            pnlFilterCommon.add(btnAddNewFilter, new CC().cell(2, 0).alignX("center").growX(0)); //NON-NLS
+            pnlFilterCommon.add(btnDeleteCurrentFilter, new CC().cell(3, 0).alignX("center").growX(0)); //NON-NLS
 
             //---- separator1 ----
             separator1.setOrientation(SwingConstants.VERTICAL);
-            panel1.add(separator1, new CC().cell(4, 0));
+            pnlFilterCommon.add(separator1, new CC().cell(4, 0));
 
             //---- btnResetCurrentFilter ----
             btnResetCurrentFilter.setToolTipText("Aktuellen Filter zur\u00fccksetzen"); //NON-NLS
-            panel1.add(btnResetCurrentFilter, new CC().cell(5, 0).alignX("center").growX(0)); //NON-NLS
+            pnlFilterCommon.add(btnResetCurrentFilter, new CC().cell(5, 0).alignX("center").growX(0)); //NON-NLS
         }
-        contentPane.add(panel1, new CC().cell(0, 0).growX());
+        contentPane.add(pnlFilterCommon, new CC().cell(0, 0).growX());
         contentPane.add(separator2, new CC().cell(0, 1).growX());
 
         //---- cbShowNewOnly ----
@@ -796,19 +796,39 @@ public class SwingFilterDialog extends JDialog {
         contentPane.add(cbDontShowDuplicates, new CC().cell(0, 13));
         contentPane.add(separator4, new CC().cell(0, 14).growX());
 
-        //---- label3 ----
-        label3.setText("Sender:"); //NON-NLS
-        contentPane.add(label3, new CC().cell(0, 15));
-
-        //======== scpSenderList ========
+        //======== pnlSenderlist ========
         {
+            pnlSenderlist.setPreferredSize(new Dimension(258, 220));
+            pnlSenderlist.setLayout(new MigLayout(
+                new LC().fill().insets("0").hideMode(3), //NON-NLS
+                // columns
+                new AC()
+                    .align("left"), //NON-NLS
+                // rows
+                new AC()
+                    .gap()
+                    .grow()));
 
-            //---- senderList ----
-            senderList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            scpSenderList.setViewportView(senderList);
+            //---- label3 ----
+            label3.setText("Sender:"); //NON-NLS
+            pnlSenderlist.add(label3, new CC().cell(0, 0));
+
+            //======== scpSenderList ========
+            {
+                scpSenderList.setPreferredSize(null);
+                scpSenderList.setMaximumSize(null);
+
+                //---- senderList ----
+                senderList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+                senderList.setMaximumSize(null);
+                senderList.setMinimumSize(null);
+                senderList.setPreferredSize(null);
+                scpSenderList.setViewportView(senderList);
+            }
+            pnlSenderlist.add(scpSenderList, new CC().cell(0, 1).grow().minHeight("50")); //NON-NLS
         }
-        contentPane.add(scpSenderList, new CC().cell(0, 16).grow().minHeight("50")); //NON-NLS
-        contentPane.add(separator5, new CC().cell(0, 17).growX());
+        contentPane.add(pnlSenderlist, new CC().cell(0, 15).growX());
+        contentPane.add(separator5, new CC().cell(0, 16).growX());
 
         //======== pnlThema ========
         {
@@ -832,8 +852,8 @@ public class SwingFilterDialog extends JDialog {
             pnlThema.add(jcbThema, new CC().cell(1, 0).growX().maxWidth("300")); //NON-NLS
             pnlThema.add(btnResetThema, new CC().cell(2, 0));
         }
-        contentPane.add(pnlThema, new CC().cell(0, 18).growX());
-        contentPane.add(separator6, new CC().cell(0, 19).growX());
+        contentPane.add(pnlThema, new CC().cell(0, 17).growX());
+        contentPane.add(separator6, new CC().cell(0, 18).growX());
 
         //======== pnlFlimlength ========
         {
@@ -869,8 +889,8 @@ public class SwingFilterDialog extends JDialog {
             pnlFlimlength.add(lblMaxFilmLengthValue, new CC().cell(4, 0));
             pnlFlimlength.add(filmLengthSlider, new CC().cell(0, 1, 5, 1).growX());
         }
-        contentPane.add(pnlFlimlength, new CC().cell(0, 20).growX());
-        contentPane.add(separator7, new CC().cell(0, 21).growX());
+        contentPane.add(pnlFlimlength, new CC().cell(0, 19).growX());
+        contentPane.add(separator7, new CC().cell(0, 20).growX());
 
         //======== pnlZeitraum ========
         {
@@ -894,7 +914,7 @@ public class SwingFilterDialog extends JDialog {
             label2.setText("Tage"); //NON-NLS
             pnlZeitraum.add(label2, new CC().cell(2, 0));
         }
-        contentPane.add(pnlZeitraum, new CC().cell(0, 22).growX());
+        contentPane.add(pnlZeitraum, new CC().cell(0, 21).growX());
         pack();
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents  @formatter:on
