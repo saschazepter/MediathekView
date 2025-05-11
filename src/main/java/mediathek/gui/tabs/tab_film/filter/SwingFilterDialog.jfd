@@ -269,25 +269,37 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 21 3 1,growx"
 			} )
-			add( new FormComponent( "javax.swing.JLabel" ) {
-				name: "label1"
-				"text": "Zeitraum:"
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 22"
-			} )
-			add( new FormComponent( "mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner" ) {
-				name: "spZeitraum"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$columnConstraints": "[left][grow,fill][fill]"
+				"$rowConstraints": "[]"
+				"$layoutConstraints": "fillx,insets 0,hidemode 3"
+			} ) {
+				name: "pnlZeitraum"
 				auxiliary() {
-					"JavaCodeGenerator.variableModifiers": 1
+					"JavaCodeGenerator.variableLocal": true
 				}
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label1"
+					"text": "Zeitraum:"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0"
+				} )
+				add( new FormComponent( "mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner" ) {
+					name: "spZeitraum"
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 1
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 0"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label2"
+					"text": "Tage"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 2 0"
+				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 1 22"
-			} )
-			add( new FormComponent( "javax.swing.JLabel" ) {
-				name: "label2"
-				"text": "Tage"
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 2 22"
+				"value": "cell 0 22 3 1,growx"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )

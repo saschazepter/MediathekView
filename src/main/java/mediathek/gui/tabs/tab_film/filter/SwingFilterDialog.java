@@ -678,6 +678,7 @@ public class SwingFilterDialog extends JDialog {
         lblMaxFilmLengthValue = new JLabel();
         filmLengthSlider = new FilmLengthSlider();
         var separator7 = new JSeparator();
+        var pnlZeitraum = new JPanel();
         label1 = new JLabel();
         spZeitraum = new ZeitraumSpinner();
         label2 = new JLabel();
@@ -857,14 +858,29 @@ public class SwingFilterDialog extends JDialog {
         contentPane.add(panel2, new CC().cell(0, 20, 3, 1).growX());
         contentPane.add(separator7, new CC().cell(0, 21, 3, 1).growX());
 
-        //---- label1 ----
-        label1.setText("Zeitraum:"); //NON-NLS
-        contentPane.add(label1, new CC().cell(0, 22));
-        contentPane.add(spZeitraum, new CC().cell(1, 22));
+        //======== pnlZeitraum ========
+        {
+            pnlZeitraum.setLayout(new MigLayout(
+                new LC().fillX().insets("0").hideMode(3), //NON-NLS
+                // columns
+                new AC()
+                    .align("left").gap() //NON-NLS
+                    .grow().fill().gap()
+                    .fill(),
+                // rows
+                new AC()
+                    ));
 
-        //---- label2 ----
-        label2.setText("Tage"); //NON-NLS
-        contentPane.add(label2, new CC().cell(2, 22));
+            //---- label1 ----
+            label1.setText("Zeitraum:"); //NON-NLS
+            pnlZeitraum.add(label1, new CC().cell(0, 0));
+            pnlZeitraum.add(spZeitraum, new CC().cell(1, 0));
+
+            //---- label2 ----
+            label2.setText("Tage"); //NON-NLS
+            pnlZeitraum.add(label2, new CC().cell(2, 0));
+        }
+        contentPane.add(pnlZeitraum, new CC().cell(0, 22, 3, 1).growX());
         pack();
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents  @formatter:on
