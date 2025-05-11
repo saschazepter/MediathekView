@@ -247,8 +247,7 @@ public class SwingFilterDialog extends JDialog {
         try {
             spZeitraum.restoreFilterConfig(filterConfig);
             spZeitraum.installFilterConfigurationChangeListener(filterConfig);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("Failed to setup zeitraum spinner", e);
         }
     }
@@ -370,6 +369,10 @@ public class SwingFilterDialog extends JDialog {
 
     }
 
+    private void createUIComponents() {
+        cboxFilterSelection = new FilterSelectionComboBox(filterSelectionComboBoxModel);
+    }
+
     public static class ToggleVisibilityKeyHandler {
         private static final String TOGGLE_FILTER_VISIBILITY = "toggle_dialog_visibility";
         private final JRootPane rootPane;
@@ -386,8 +389,18 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private class SenderCheckBoxList extends CheckBoxList {
+        private static final String CONFIG_SENDERLIST_VERTICAL_WRAP = "senderlist.vertical_wrap";
+        private final JCheckBoxMenuItem miVerticalWrap = new JCheckBoxMenuItem("Senderliste vertikal umbrechen", false);
+
         public SenderCheckBoxList() {
             setupSenderList();
+            restoreVerticalWrapState();
+        }
+
+        private void restoreVerticalWrapState() {
+            if (ApplicationConfiguration.getConfiguration().getBoolean(CONFIG_SENDERLIST_VERTICAL_WRAP, false)) {
+                miVerticalWrap.doClick();
+            }
         }
 
         protected void setupSenderList() {
@@ -405,10 +418,27 @@ public class SwingFilterDialog extends JDialog {
                 }
             });
 
+            setupContextMenu();
+        }
+
+        protected void setupContextMenu() {
             var contextMenu = new JPopupMenu();
             var menuItem = new JMenuItem("Alle Senderfilter zurücksetzen");
             menuItem.addActionListener(l -> selectNone());
             contextMenu.add(menuItem);
+            contextMenu.addSeparator();
+
+            miVerticalWrap.addActionListener(l -> {
+                boolean selected = miVerticalWrap.isSelected();
+                ApplicationConfiguration.getConfiguration().setProperty(CONFIG_SENDERLIST_VERTICAL_WRAP, selected);
+                if (selected) {
+                    setLayoutOrientation(JList.VERTICAL_WRAP);
+                } else {
+                    setLayoutOrientation(JList.VERTICAL);
+                }
+                repaint();
+            });
+            contextMenu.add(miVerticalWrap);
             setComponentPopupMenu(contextMenu);
         }
 
@@ -606,10 +636,6 @@ public class SwingFilterDialog extends JDialog {
         public void contentsChanged(ListDataEvent e) {
             restoreConfigSettings();
         }
-    }
-
-    private void createUIComponents() {
-        cboxFilterSelection = new FilterSelectionComboBox(filterSelectionComboBoxModel);
     }
 
     private void initComponents() {
