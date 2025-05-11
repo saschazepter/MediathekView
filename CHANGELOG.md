@@ -5,7 +5,7 @@
 - großflächiger Rückbau von JavaFX-Komponenten, dies sollte älteren Computern zugute kommen.
 - **BUGFIX:** Filter können nicht in existierende umbenannt werden.
 - **FEATURE:** Filter können bei der Neuanlage direkt mit einem Namen versehen werden.
-- **BUGFIX:** Duplikatsuche berücksicht nur HQ-URL wenn Film auch HQ ist.
+- **BUGFIX:** Duplikatsuche berücksichtigt nur HQ-URL wenn Film auch HQ ist.
 - **BUGFIX:** Alte tagesschau24 Filme in der Liste werden nur konvertiert wenn der Sender auch angezeigt werden soll.
 - **BUGFIX:** Darkmode Anzeigefehler im Kontextmenü des Tab Filme behoben.
 - **BUGFIX:** Filterdialog im Dark Mode ändert nicht mehr die Größe.
