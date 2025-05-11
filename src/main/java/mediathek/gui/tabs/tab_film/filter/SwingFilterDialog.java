@@ -392,6 +392,8 @@ public class SwingFilterDialog extends JDialog {
         private final JCheckBoxMenuItem miVerticalWrap = new JCheckBoxMenuItem("Senderliste vertikal umbrechen", false);
 
         public SenderCheckBoxList() {
+            setVisibleRowCount(-1);
+
             setupSenderList();
             restoreVerticalWrapState();
         }
