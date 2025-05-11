@@ -48,6 +48,7 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.sync.LockMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdesktop.swingx.VerticalLayout;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -764,81 +765,58 @@ public class SwingFilterDialog extends JDialog {
 
         //======== pnlShowOnly ========
         {
-            pnlShowOnly.setLayout(new MigLayout(
-                new LC().fillX().insets("0").hideMode(3), //NON-NLS
-                // columns
-                new AC()
-                    .align("left"), //NON-NLS
-                // rows
-                new AC()
-                    .gap("0") //NON-NLS
-                    .gap("0") //NON-NLS
-                    .gap("0") //NON-NLS
-                    .gap("0") //NON-NLS
-                    ));
+            pnlShowOnly.setLayout(new VerticalLayout());
 
             //---- cbShowNewOnly ----
             cbShowNewOnly.setText("Nur neue Filme anzeigen"); //NON-NLS
-            pnlShowOnly.add(cbShowNewOnly, new CC().cell(0, 0));
+            pnlShowOnly.add(cbShowNewOnly);
 
             //---- cbShowBookMarkedOnly ----
             cbShowBookMarkedOnly.setText("Nur gemerkte Filme anzeigen"); //NON-NLS
-            pnlShowOnly.add(cbShowBookMarkedOnly, new CC().cell(0, 1));
+            pnlShowOnly.add(cbShowBookMarkedOnly);
 
             //---- cbShowOnlyHq ----
             cbShowOnlyHq.setText("Nur High Quality(HQ) Filme anzeigen"); //NON-NLS
-            pnlShowOnly.add(cbShowOnlyHq, new CC().cell(0, 2));
+            pnlShowOnly.add(cbShowOnlyHq);
 
             //---- cbShowSubtitlesOnly ----
             cbShowSubtitlesOnly.setText("Nur Filme mit Untertitel anzeigen"); //NON-NLS
-            pnlShowOnly.add(cbShowSubtitlesOnly, new CC().cell(0, 3));
+            pnlShowOnly.add(cbShowSubtitlesOnly);
 
             //---- cbShowOnlyLivestreams ----
             cbShowOnlyLivestreams.setText("Nur Livestreams anzeigen"); //NON-NLS
-            pnlShowOnly.add(cbShowOnlyLivestreams, new CC().cell(0, 4));
+            pnlShowOnly.add(cbShowOnlyLivestreams);
         }
         contentPane.add(pnlShowOnly, new CC().cell(0, 2).growX());
         contentPane.add(separator3, new CC().cell(0, 3).growX());
 
         //======== pnlDontShow ========
         {
-            pnlDontShow.setLayout(new MigLayout(
-                new LC().fillX().insets("0").hideMode(3), //NON-NLS
-                // columns
-                new AC()
-                    .align("left"), //NON-NLS
-                // rows
-                new AC()
-                    .gap("0") //NON-NLS
-                    .gap("0") //NON-NLS
-                    .gap("0") //NON-NLS
-                    .gap("0") //NON-NLS
-                    .gap("0") //NON-NLS
-                    ));
+            pnlDontShow.setLayout(new VerticalLayout());
 
             //---- cbShowUnseenOnly ----
             cbShowUnseenOnly.setText("Gesehene Filme nicht anzeigen"); //NON-NLS
-            pnlDontShow.add(cbShowUnseenOnly, new CC().cell(0, 0));
+            pnlDontShow.add(cbShowUnseenOnly);
 
             //---- cbDontShowAbos ----
             cbDontShowAbos.setText("Abos nicht anzeigen"); //NON-NLS
-            pnlDontShow.add(cbDontShowAbos, new CC().cell(0, 1));
+            pnlDontShow.add(cbDontShowAbos);
 
             //---- cbDontShowSignLanguage ----
             cbDontShowSignLanguage.setText("Geb\u00e4rdensprache nicht anzeigen"); //NON-NLS
-            pnlDontShow.add(cbDontShowSignLanguage, new CC().cell(0, 2));
+            pnlDontShow.add(cbDontShowSignLanguage);
 
             //---- cbDontShowTrailers ----
             cbDontShowTrailers.setText("Trailer/Teaser/Vorschau nicht anzeigen"); //NON-NLS
-            pnlDontShow.add(cbDontShowTrailers, new CC().cell(0, 3));
+            pnlDontShow.add(cbDontShowTrailers);
 
             //---- cbDontShowAudioVersions ----
             cbDontShowAudioVersions.setText("H\u00f6rfassungen ausblenden"); //NON-NLS
-            pnlDontShow.add(cbDontShowAudioVersions, new CC().cell(0, 4));
+            pnlDontShow.add(cbDontShowAudioVersions);
 
             //---- cbDontShowDuplicates ----
             cbDontShowDuplicates.setText("Duplikate nicht anzeigen"); //NON-NLS
-            pnlDontShow.add(cbDontShowDuplicates, new CC().cell(0, 5));
+            pnlDontShow.add(cbDontShowDuplicates);
         }
         contentPane.add(pnlDontShow, new CC().cell(0, 4).growX());
         contentPane.add(separator4, new CC().cell(0, 5).growX());

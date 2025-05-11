@@ -72,11 +72,7 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 1,growx"
 			} )
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-				"$columnConstraints": "[left]"
-				"$rowConstraints": "0[]0[]0[]0[]0[]0"
-				"$layoutConstraints": "fillx,insets 0,hidemode 3"
-			} ) {
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.swingx.VerticalLayout ) ) {
 				name: "pnlShowOnly"
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
@@ -84,32 +80,22 @@ new FormModel {
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "cbShowNewOnly"
 					"text": "Nur neue Filme anzeigen"
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 0"
 				} )
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "cbShowBookMarkedOnly"
 					"text": "Nur gemerkte Filme anzeigen"
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 1"
 				} )
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "cbShowOnlyHq"
 					"text": "Nur High Quality(HQ) Filme anzeigen"
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 2"
 				} )
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "cbShowSubtitlesOnly"
 					"text": "Nur Filme mit Untertitel anzeigen"
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 3"
 				} )
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "cbShowOnlyLivestreams"
 					"text": "Nur Livestreams anzeigen"
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 4"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 2,growx"
@@ -122,11 +108,7 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 3,growx"
 			} )
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-				"$columnConstraints": "[left]"
-				"$rowConstraints": "0[]0[]0[]0[]0[]0[]0"
-				"$layoutConstraints": "fillx,insets 0,hidemode 3"
-			} ) {
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.swingx.VerticalLayout ) ) {
 				name: "pnlDontShow"
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
@@ -134,38 +116,26 @@ new FormModel {
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "cbShowUnseenOnly"
 					"text": "Gesehene Filme nicht anzeigen"
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 0"
 				} )
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "cbDontShowAbos"
 					"text": "Abos nicht anzeigen"
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 1"
 				} )
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "cbDontShowSignLanguage"
 					"text": "Gebärdensprache nicht anzeigen"
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 2"
 				} )
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "cbDontShowTrailers"
 					"text": "Trailer/Teaser/Vorschau nicht anzeigen"
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 3"
 				} )
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "cbDontShowAudioVersions"
 					"text": "Hörfassungen ausblenden"
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 4"
 				} )
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "cbDontShowDuplicates"
 					"text": "Duplikate nicht anzeigen"
-				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 5"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 4,growx"
