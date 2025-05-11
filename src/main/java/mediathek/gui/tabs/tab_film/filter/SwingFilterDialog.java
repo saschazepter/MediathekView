@@ -663,14 +663,15 @@ public class SwingFilterDialog extends JDialog {
         cbDontShowDuplicates = new JCheckBox();
         var separator4 = new JSeparator();
         label3 = new JLabel();
-        var scrollPane1 = new JScrollPane();
+        var scpSenderList = new JScrollPane();
         senderList = new SenderCheckBoxList();
         var separator5 = new JSeparator();
+        var pnlThema = new JPanel();
         label4 = new JLabel();
         jcbThema = new JComboBox<>();
         btnResetThema = new JButton();
         var separator6 = new JSeparator();
-        var panel2 = new JPanel();
+        var pnlFlimlength = new JPanel();
         label5 = new JLabel();
         lblMinFilmLengthValue = new JLabel();
         var hSpacer1 = new JPanel(null);
@@ -691,9 +692,7 @@ public class SwingFilterDialog extends JDialog {
             new LC().fillX().insets("5").hideMode(3), //NON-NLS
             // columns
             new AC()
-                .align("left").gap() //NON-NLS
-                .grow().fill().gap()
-                .fill(),
+                .align("left"), //NON-NLS
             // rows
             new AC()
                 .gap()
@@ -748,82 +747,97 @@ public class SwingFilterDialog extends JDialog {
             btnResetCurrentFilter.setToolTipText("Aktuellen Filter zur\u00fccksetzen"); //NON-NLS
             panel1.add(btnResetCurrentFilter, new CC().cell(5, 0).alignX("center").growX(0)); //NON-NLS
         }
-        contentPane.add(panel1, new CC().cell(0, 0, 3, 1).growX());
-        contentPane.add(separator2, new CC().cell(0, 1, 3, 1).growX());
+        contentPane.add(panel1, new CC().cell(0, 0).growX());
+        contentPane.add(separator2, new CC().cell(0, 1).growX());
 
         //---- cbShowNewOnly ----
         cbShowNewOnly.setText("Nur neue Filme anzeigen"); //NON-NLS
-        contentPane.add(cbShowNewOnly, new CC().cell(0, 2, 3, 1));
+        contentPane.add(cbShowNewOnly, new CC().cell(0, 2));
 
         //---- cbShowBookMarkedOnly ----
         cbShowBookMarkedOnly.setText("Nur gemerkte Filme anzeigen"); //NON-NLS
-        contentPane.add(cbShowBookMarkedOnly, new CC().cell(0, 3, 3, 1));
+        contentPane.add(cbShowBookMarkedOnly, new CC().cell(0, 3));
 
         //---- cbShowOnlyHq ----
         cbShowOnlyHq.setText("Nur High Quality(HQ) Filme anzeigen"); //NON-NLS
-        contentPane.add(cbShowOnlyHq, new CC().cell(0, 4, 3, 1));
+        contentPane.add(cbShowOnlyHq, new CC().cell(0, 4));
 
         //---- cbShowSubtitlesOnly ----
         cbShowSubtitlesOnly.setText("Nur Filme mit Untertitel anzeigen"); //NON-NLS
-        contentPane.add(cbShowSubtitlesOnly, new CC().cell(0, 5, 3, 1));
+        contentPane.add(cbShowSubtitlesOnly, new CC().cell(0, 5));
 
         //---- cbShowOnlyLivestreams ----
         cbShowOnlyLivestreams.setText("Nur Livestreams anzeigen"); //NON-NLS
-        contentPane.add(cbShowOnlyLivestreams, new CC().cell(0, 6, 3, 1));
-        contentPane.add(separator3, new CC().cell(0, 7, 3, 1).growX());
+        contentPane.add(cbShowOnlyLivestreams, new CC().cell(0, 6));
+        contentPane.add(separator3, new CC().cell(0, 7).growX());
 
         //---- cbShowUnseenOnly ----
         cbShowUnseenOnly.setText("Gesehene Filme nicht anzeigen"); //NON-NLS
-        contentPane.add(cbShowUnseenOnly, new CC().cell(0, 8, 3, 1));
+        contentPane.add(cbShowUnseenOnly, new CC().cell(0, 8));
 
         //---- cbDontShowAbos ----
         cbDontShowAbos.setText("Abos nicht anzeigen"); //NON-NLS
-        contentPane.add(cbDontShowAbos, new CC().cell(0, 9, 3, 1));
+        contentPane.add(cbDontShowAbos, new CC().cell(0, 9));
 
         //---- cbDontShowSignLanguage ----
         cbDontShowSignLanguage.setText("Geb\u00e4rdensprache nicht anzeigen"); //NON-NLS
-        contentPane.add(cbDontShowSignLanguage, new CC().cell(0, 10, 3, 1));
+        contentPane.add(cbDontShowSignLanguage, new CC().cell(0, 10));
 
         //---- cbDontShowTrailers ----
         cbDontShowTrailers.setText("Trailer/Teaser/Vorschau nicht anzeigen"); //NON-NLS
-        contentPane.add(cbDontShowTrailers, new CC().cell(0, 11, 3, 1));
+        contentPane.add(cbDontShowTrailers, new CC().cell(0, 11));
 
         //---- cbDontShowAudioVersions ----
         cbDontShowAudioVersions.setText("H\u00f6rfassungen ausblenden"); //NON-NLS
-        contentPane.add(cbDontShowAudioVersions, new CC().cell(0, 12, 3, 1));
+        contentPane.add(cbDontShowAudioVersions, new CC().cell(0, 12));
 
         //---- cbDontShowDuplicates ----
         cbDontShowDuplicates.setText("Duplikate nicht anzeigen"); //NON-NLS
-        contentPane.add(cbDontShowDuplicates, new CC().cell(0, 13, 3, 1));
-        contentPane.add(separator4, new CC().cell(0, 14, 3, 1).growX());
+        contentPane.add(cbDontShowDuplicates, new CC().cell(0, 13));
+        contentPane.add(separator4, new CC().cell(0, 14).growX());
 
         //---- label3 ----
         label3.setText("Sender:"); //NON-NLS
-        contentPane.add(label3, new CC().cell(0, 15, 3, 1));
+        contentPane.add(label3, new CC().cell(0, 15));
 
-        //======== scrollPane1 ========
+        //======== scpSenderList ========
         {
 
             //---- senderList ----
             senderList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            scrollPane1.setViewportView(senderList);
+            scpSenderList.setViewportView(senderList);
         }
-        contentPane.add(scrollPane1, new CC().cell(0, 16, 3, 1).grow().minHeight("50")); //NON-NLS
-        contentPane.add(separator5, new CC().cell(0, 17, 3, 1).growX());
+        contentPane.add(scpSenderList, new CC().cell(0, 16).grow().minHeight("50")); //NON-NLS
+        contentPane.add(separator5, new CC().cell(0, 17).growX());
 
-        //---- label4 ----
-        label4.setText("Thema:"); //NON-NLS
-        contentPane.add(label4, new CC().cell(0, 18));
-
-        //---- jcbThema ----
-        jcbThema.setMaximumRowCount(6);
-        contentPane.add(jcbThema, new CC().cell(1, 18).growX().maxWidth("300")); //NON-NLS
-        contentPane.add(btnResetThema, new CC().cell(2, 18));
-        contentPane.add(separator6, new CC().cell(0, 19, 3, 1).growX());
-
-        //======== panel2 ========
+        //======== pnlThema ========
         {
-            panel2.setLayout(new MigLayout(
+            pnlThema.setLayout(new MigLayout(
+                new LC().fillX().insets("0").hideMode(3), //NON-NLS
+                // columns
+                new AC()
+                    .align("left").gap() //NON-NLS
+                    .grow().fill().gap()
+                    .fill(),
+                // rows
+                new AC()
+                    ));
+
+            //---- label4 ----
+            label4.setText("Thema:"); //NON-NLS
+            pnlThema.add(label4, new CC().cell(0, 0));
+
+            //---- jcbThema ----
+            jcbThema.setMaximumRowCount(6);
+            pnlThema.add(jcbThema, new CC().cell(1, 0).growX().maxWidth("300")); //NON-NLS
+            pnlThema.add(btnResetThema, new CC().cell(2, 0));
+        }
+        contentPane.add(pnlThema, new CC().cell(0, 18).growX());
+        contentPane.add(separator6, new CC().cell(0, 19).growX());
+
+        //======== pnlFlimlength ========
+        {
+            pnlFlimlength.setLayout(new MigLayout(
                 new LC().fill().insets("0").hideMode(3), //NON-NLS
                 // columns
                 new AC()
@@ -839,24 +853,24 @@ public class SwingFilterDialog extends JDialog {
 
             //---- label5 ----
             label5.setText("Mindestl\u00e4nge:"); //NON-NLS
-            panel2.add(label5, new CC().cell(0, 0));
+            pnlFlimlength.add(label5, new CC().cell(0, 0));
 
             //---- lblMinFilmLengthValue ----
             lblMinFilmLengthValue.setText("0"); //NON-NLS
-            panel2.add(lblMinFilmLengthValue, new CC().cell(1, 0));
-            panel2.add(hSpacer1, new CC().cell(2, 0).growX());
+            pnlFlimlength.add(lblMinFilmLengthValue, new CC().cell(1, 0));
+            pnlFlimlength.add(hSpacer1, new CC().cell(2, 0).growX());
 
             //---- label7 ----
             label7.setText("Maximall\u00e4nge:"); //NON-NLS
-            panel2.add(label7, new CC().cell(3, 0));
+            pnlFlimlength.add(label7, new CC().cell(3, 0));
 
             //---- lblMaxFilmLengthValue ----
             lblMaxFilmLengthValue.setText("100"); //NON-NLS
-            panel2.add(lblMaxFilmLengthValue, new CC().cell(4, 0));
-            panel2.add(filmLengthSlider, new CC().cell(0, 1, 5, 1).growX());
+            pnlFlimlength.add(lblMaxFilmLengthValue, new CC().cell(4, 0));
+            pnlFlimlength.add(filmLengthSlider, new CC().cell(0, 1, 5, 1).growX());
         }
-        contentPane.add(panel2, new CC().cell(0, 20, 3, 1).growX());
-        contentPane.add(separator7, new CC().cell(0, 21, 3, 1).growX());
+        contentPane.add(pnlFlimlength, new CC().cell(0, 20).growX());
+        contentPane.add(separator7, new CC().cell(0, 21).growX());
 
         //======== pnlZeitraum ========
         {
@@ -880,7 +894,7 @@ public class SwingFilterDialog extends JDialog {
             label2.setText("Tage"); //NON-NLS
             pnlZeitraum.add(label2, new CC().cell(2, 0));
         }
-        contentPane.add(pnlZeitraum, new CC().cell(0, 22, 3, 1).growX());
+        contentPane.add(pnlZeitraum, new CC().cell(0, 22).growX());
         pack();
         setLocationRelativeTo(getOwner());
         // JFormDesigner - End of component initialization  //GEN-END:initComponents  @formatter:on
