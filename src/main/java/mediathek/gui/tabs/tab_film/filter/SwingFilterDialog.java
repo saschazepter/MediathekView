@@ -741,6 +741,11 @@ public class SwingFilterDialog extends JDialog {
                 // rows
                 new AC()
                     .fill()));
+
+            //---- cboxFilterSelection ----
+            cboxFilterSelection.setMaximumSize(null);
+            cboxFilterSelection.setPreferredSize(null);
+            cboxFilterSelection.setMinimumSize(new Dimension(50, 10));
             pnlFilterCommon.add(cboxFilterSelection, new CC().cell(0, 0));
             pnlFilterCommon.add(btnRenameFilter, new CC().cell(1, 0).alignX("center").growX(0)); //NON-NLS
             pnlFilterCommon.add(btnAddNewFilter, new CC().cell(2, 0).alignX("center").growX(0)); //NON-NLS
@@ -891,6 +896,9 @@ public class SwingFilterDialog extends JDialog {
 
             //---- jcbThema ----
             jcbThema.setMaximumRowCount(6);
+            jcbThema.setMinimumSize(new Dimension(50, 10));
+            jcbThema.setPreferredSize(null);
+            jcbThema.setMaximumSize(null);
             pnlThema.add(jcbThema, new CC().cell(1, 0).growX().maxWidth("300")); //NON-NLS
             pnlThema.add(btnResetThema, new CC().cell(2, 0));
         }

@@ -22,6 +22,9 @@ new FormModel {
 				}
 				add( new FormComponent( "mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox" ) {
 					name: "cboxFilterSelection"
+					"maximumSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"minimumSize": new java.awt.Dimension( 50, 10 )
 					auxiliary() {
 						"JavaCodeGenerator.customCreate": true
 					}
@@ -241,6 +244,9 @@ new FormModel {
 				add( new FormComponent( "javax.swing.JComboBox" ) {
 					name: "jcbThema"
 					"maximumRowCount": 6
+					"minimumSize": new java.awt.Dimension( 50, 10 )
+					"preferredSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
+					"maximumSize": sfield com.jformdesigner.model.FormObject NULL_VALUE
 					auxiliary() {
 						"JavaCodeGenerator.typeParameters": "String"
 					}
