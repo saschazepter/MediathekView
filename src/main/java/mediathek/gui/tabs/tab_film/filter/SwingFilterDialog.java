@@ -26,7 +26,11 @@ import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
+import com.jidesoft.swing.AutoCompletion;
 import com.jidesoft.swing.CheckBoxList;
+import com.jidesoft.swing.ComboBoxSearchable;
+import com.jidesoft.swing.Searchable;
+import com.jidesoft.swing.event.SearchableEvent;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.controller.SenderFilmlistLoadApprover;
@@ -77,6 +81,10 @@ public class SwingFilterDialog extends JDialog {
      * The "base" thema list
      */
     private final EventList<String> sourceThemaList = new BasicEventList<>();
+    /**
+     * Indicates whether an autocompletion action is currently active.
+     */
+    private boolean isAutoCompletionActive;
 
     public SwingFilterDialog(@NotNull Window owner, @NotNull FilterSelectionComboBoxModel model,
                              @NotNull JToggleButton filterToggleButton,
@@ -225,6 +233,30 @@ public class SwingFilterDialog extends JDialog {
         jcbThema.setSelectedItem(aktuellesThema);
     }
 
+    private Searchable getAutocompletionSearchable() {
+        Searchable searchable = new ComboBoxSearchable(jcbThema);
+        searchable.setSearchingDelay(500);
+        searchable.setSearchLabel("Suchtext:");
+        searchable.setFromStart(false);
+        searchable.setRepeats(true);
+        searchable.addSearchableListener(l -> {
+            //System.out.println(l.paramString());
+            switch (l.getID()) {
+                case SearchableEvent.SEARCHABLE_START -> isAutoCompletionActive = true;
+                case SearchableEvent.SEARCHABLE_END -> {
+                    isAutoCompletionActive = false;
+
+                    var sel = (String) jcbThema.getSelectedItem();
+                    if (sel != null) {
+                        filterConfig.setThema(sel);
+                    }
+                    MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
+                }
+            }
+        });
+        return searchable;
+    }
+
     private void setupThemaComboBox() {
         var model = GlazedListsSwing.eventComboBoxModel(new EventListWithEmptyFirstEntry(sourceThemaList));
         jcbThema.setModel(model);
@@ -234,7 +266,15 @@ public class SwingFilterDialog extends JDialog {
             sourceThemaList.add(thema);
         }
         jcbThema.setSelectedItem(thema);
+
+        //setup auto completion
+        new AutoCompletion(jcbThema, getAutocompletionSearchable());
+
         jcbThema.addActionListener(l -> {
+            //don't fire when we are in autocompletion search
+            if (isAutoCompletionActive)
+                return;
+
             var sel = (String) jcbThema.getSelectedItem();
             if (sel != null) {
                 filterConfig.setThema(sel);
@@ -476,6 +516,7 @@ public class SwingFilterDialog extends JDialog {
 
     private class AddNewFilterAction extends AbstractAction {
         private static final String STR_ACTION_NAME = "Neuen Filter anlegen";
+
         public AddNewFilterAction() {
             putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/plus.svg"));
             putValue(Action.SHORT_DESCRIPTION, STR_ACTION_NAME);
@@ -483,14 +524,14 @@ public class SwingFilterDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            String newFilterName = (String)JOptionPane.showInputDialog(MediathekGui.ui(), "Filtername:",
+            String newFilterName = (String) JOptionPane.showInputDialog(MediathekGui.ui(), "Filtername:",
                     STR_ACTION_NAME, JOptionPane.PLAIN_MESSAGE, null, null,
                     String.format("Filter %d", filterConfig.getAvailableFilters().size() + 1));
             if (newFilterName != null) {
                 filterConfig.findFilterForName(newFilterName).ifPresentOrElse(f ->
                         JOptionPane.showMessageDialog(MediathekGui.ui(),
-                        "Ein Filter mit dem gewählten Namen existiert bereits!",
-                        STR_ACTION_NAME, JOptionPane.ERROR_MESSAGE), () -> {
+                                "Ein Filter mit dem gewählten Namen existiert bereits!",
+                                STR_ACTION_NAME, JOptionPane.ERROR_MESSAGE), () -> {
                     FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), newFilterName);
                     filterConfig.addNewFilter(newFilter);
                     checkDeleteCurrentFilterButtonState();
