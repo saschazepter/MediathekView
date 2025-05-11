@@ -208,7 +208,6 @@ public class SwingFilterDialog extends JDialog {
 
     private void updateThemaComboBox() {
         //update the thema list -> updates the combobox automagically
-        //use transaction list to minimize updates...
         String aktuellesThema = (String) jcbThema.getSelectedItem();
 
         var selectedSenders = filterConfig.getCheckedChannels().stream().toList();
