@@ -75,15 +75,6 @@ public class AutoCompletionComboBox2 extends JComboBox<String> {
     }
 
     /**
-     * Gets the strict property.
-     *
-     * @return the value of strict property.
-     */
-    public boolean isStrict() {
-        return getAutoCompletion().isStrict();
-    }
-
-    /**
      * Sets the strict property. If true, it will not allow user to type in anything that is not in the known item list.
      * If false, user can type in whatever he/she wants. If the text can match with a item in the known item list, it
      * will still auto-complete.
@@ -95,22 +86,12 @@ public class AutoCompletionComboBox2 extends JComboBox<String> {
     }
 
     /**
-     * Gets the strict completion property.
-     *
-     * @return the value of strict completion property.
-     * @see #setStrictCompletion(boolean)
-     */
-    public boolean isStrictCompletion() {
-        return getAutoCompletion().isStrictCompletion();
-    }
-
-    /**
      * Sets the strict completion property. If true, in case insensitive searching, it will always use the exact item in
      * the Searchable to replace whatever user types. For example, when Searchable has an item "Arial" and user types in
      * "AR", if this flag is true, it will auto-completed as "Arial". If false, it will be auto-completed as "ARial". Of
      * course, this flag will only make a difference if Searchable is case insensitive.
      *
-     * @param strictCompletion
+     * @param strictCompletion true or false.
      */
     public void setStrictCompletion(boolean strictCompletion) {
         getAutoCompletion().setStrictCompletion(strictCompletion);

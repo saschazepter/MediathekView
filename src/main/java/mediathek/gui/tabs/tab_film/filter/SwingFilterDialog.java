@@ -241,7 +241,6 @@ public class SwingFilterDialog extends JDialog {
             var sel = (String) jcbThema.getSelectedItem();
             if (sel != null) {
                 filterConfig.setThema(sel);
-                System.out.println("Thema: " + sel);
             }
             MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
