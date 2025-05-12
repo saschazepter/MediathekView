@@ -226,6 +226,8 @@ public class SwingFilterDialog extends JDialog {
     }
 
     private void setupThemaComboBox() {
+        jcbThema.setNoActionOnKeyNavigation(true);
+        jcbThema.setStrict(true);
         var model = GlazedListsSwing.eventComboBoxModel(new EventListWithEmptyFirstEntry(sourceThemaList));
         jcbThema.setModel(model);
         //otherwise stored filter will not be accepted as entry may not be in list
@@ -238,6 +240,7 @@ public class SwingFilterDialog extends JDialog {
             var sel = (String) jcbThema.getSelectedItem();
             if (sel != null) {
                 filterConfig.setThema(sel);
+                System.out.println("Thema: " + sel);
             }
             MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
@@ -686,7 +689,7 @@ public class SwingFilterDialog extends JDialog {
         var separator5 = new JSeparator();
         var pnlThema = new JPanel();
         label4 = new JLabel();
-        jcbThema = new JComboBox<>();
+        jcbThema = new AutoCompletionComboBox2();
         btnResetThema = new JButton();
         var separator6 = new JSeparator();
         var pnlFlimlength = new JPanel();
@@ -873,7 +876,6 @@ public class SwingFilterDialog extends JDialog {
             pnlThema.add(label4, new CC().cell(0, 0));
 
             //---- jcbThema ----
-            jcbThema.setMaximumRowCount(6);
             jcbThema.setMinimumSize(new Dimension(50, 10));
             jcbThema.setPreferredSize(null);
             jcbThema.setMaximumSize(null);
@@ -969,7 +971,7 @@ public class SwingFilterDialog extends JDialog {
     private JLabel label3;
     public CheckBoxList senderList;
     private JLabel label4;
-    private JComboBox<String> jcbThema;
+    private AutoCompletionComboBox2 jcbThema;
     private JButton btnResetThema;
     private JLabel label5;
     private JLabel lblMinFilmLengthValue;
