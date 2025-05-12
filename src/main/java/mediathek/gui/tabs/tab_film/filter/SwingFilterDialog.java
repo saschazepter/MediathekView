@@ -26,10 +26,8 @@ import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FilterList;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
-import com.jidesoft.swing.AutoCompletion;
 import com.jidesoft.swing.CheckBoxList;
-import com.jidesoft.swing.ComboBoxSearchable;
-import com.jidesoft.swing.Searchable;
+import com.jidesoft.swing.SearchableUtils;
 import com.jidesoft.swing.event.SearchableEvent;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
@@ -54,15 +52,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdesktop.swingx.VerticalLayout;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -233,33 +229,29 @@ public class SwingFilterDialog extends JDialog {
         jcbThema.setSelectedItem(aktuellesThema);
     }
 
-    private Searchable getAutocompletionSearchable() {
-        Searchable searchable = new ComboBoxSearchable(jcbThema);
-        searchable.setSearchingDelay(500);
-        searchable.setSearchLabel("Suchtext:");
-        searchable.setFromStart(false);
-        searchable.setRepeats(true);
-        searchable.addSearchableListener(l -> {
-            //System.out.println(l.paramString());
-            switch (l.getID()) {
-                case SearchableEvent.SEARCHABLE_START -> isAutoCompletionActive = true;
-                case SearchableEvent.SEARCHABLE_END -> {
-                    isAutoCompletionActive = false;
-
-                    var sel = (String) jcbThema.getSelectedItem();
-                    if (sel != null) {
-                        filterConfig.setThema(sel);
-                    }
-                    MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
-                }
-            }
-        });
-        return searchable;
+    protected void setThemaItem(@Nullable String thema) {
+        if (thema != null) {
+            filterConfig.setThema(thema);
+        }
+        MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
     }
 
     private void setupThemaComboBox() {
         var model = GlazedListsSwing.eventComboBoxModel(new EventListWithEmptyFirstEntry(sourceThemaList));
         jcbThema.setModel(model);
+
+        var l = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getID() == ActionEvent.ACTION_PERFORMED) {
+                    var thema2 = (String)jcbThema.getSelectedItem();
+                    setThemaItem(thema2);
+                }
+            }
+        };
+
+        jcbThema.addActionListener(l);
+
         //otherwise stored filter will not be accepted as entry may not be in list
         var thema = filterConfig.getThema();
         if (!sourceThemaList.contains(thema)) {
@@ -268,18 +260,15 @@ public class SwingFilterDialog extends JDialog {
         jcbThema.setSelectedItem(thema);
 
         //setup auto completion
-        new AutoCompletion(jcbThema, getAutocompletionSearchable());
-
-        jcbThema.addActionListener(l -> {
-            //don't fire when we are in autocompletion search
-            if (isAutoCompletionActive)
-                return;
-
-            var sel = (String) jcbThema.getSelectedItem();
-            if (sel != null) {
-                filterConfig.setThema(sel);
+        var searchable = SearchableUtils.installSearchable(jcbThema);
+        searchable.addSearchableListener(searchableEvent -> {
+            if (searchableEvent.getID() == SearchableEvent.SEARCHABLE_START)
+                jcbThema.removeActionListener(l);
+            if (searchableEvent.getID() == SearchableEvent.SEARCHABLE_END) {
+                var thema2 = (String)jcbThema.getSelectedItem();
+                setThemaItem(thema2);
+                jcbThema.addActionListener(l);
             }
-            MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
         });
     }
 
@@ -569,8 +558,8 @@ public class SwingFilterDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            filterConfig.setThema("");
             jcbThema.setSelectedIndex(0);
+            setThemaItem("");
         }
     }
 
