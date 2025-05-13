@@ -18,11 +18,9 @@
 
 package mediathek.tool.swing;
 
-import com.jidesoft.swing.ComboBoxSearchable;
-
 import javax.swing.*;
 
-public class NoFireOnKeyComboBoxSearchable extends ComboBoxSearchable {
+public class NoFireOnKeyComboBoxSearchable extends ComboBoxSearchable2 {
     protected boolean _preventActionEvent;
     protected boolean _noActionOnKeyNavigation;
 
