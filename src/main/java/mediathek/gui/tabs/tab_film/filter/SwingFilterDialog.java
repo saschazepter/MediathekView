@@ -33,6 +33,7 @@ import mediathek.config.Konstanten;
 import mediathek.controller.SenderFilmlistLoadApprover;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
+import mediathek.gui.messages.DarkModeChangeEvent;
 import mediathek.gui.messages.ReloadTableDataEvent;
 import mediathek.gui.messages.TableModelChangeEvent;
 import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner;
@@ -95,11 +96,8 @@ public class SwingFilterDialog extends JDialog {
         initComponents();
 
         btnSplit.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/ellipsis-vertical.svg"));
-        btnSplit.add(renameFilterAction);
-        btnSplit.add(addNewFilterAction);
-        btnSplit.add(deleteCurrentFilterAction);
-        btnSplit.addSeparator();
-        btnSplit.add(resetCurrentFilterAction);
+        populateSplitButton();
+
         ToggleVisibilityKeyHandler handler = new ToggleVisibilityKeyHandler(this);
         handler.installHandler(filterToggleButton.getAction());
 
@@ -119,6 +117,22 @@ public class SwingFilterDialog extends JDialog {
         MessageBus.getMessageBus().subscribe(this);
 
         Daten.getInstance().getFilmeLaden().addAdListener(new FilmeLadenListener());
+    }
+
+    private void populateSplitButton() {
+        btnSplit.add(renameFilterAction);
+        btnSplit.add(addNewFilterAction);
+        btnSplit.add(deleteCurrentFilterAction);
+        btnSplit.addSeparator();
+        btnSplit.add(resetCurrentFilterAction);
+    }
+
+    @Handler
+    private void handleDarkModeChangeEvent(DarkModeChangeEvent e) {
+        SwingUtilities.invokeLater(() -> {
+            btnSplit.removeAll();
+            populateSplitButton();
+        });
     }
 
     private void setupButtons() {
@@ -781,6 +795,11 @@ public class SwingFilterDialog extends JDialog {
             cboxFilterSelection.setPreferredSize(null);
             cboxFilterSelection.setMinimumSize(new Dimension(50, 10));
             pnlFilterCommon.add(cboxFilterSelection, new CC().cell(0, 0));
+
+            //======== btnSplit ========
+            {
+                btnSplit.setAlwaysDropdown(true);
+            }
             pnlFilterCommon.add(btnSplit, new CC().cell(1, 0));
         }
         contentPane.add(pnlFilterCommon, new CC().cell(0, 0).growX());
