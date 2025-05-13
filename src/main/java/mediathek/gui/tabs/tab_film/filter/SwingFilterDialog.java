@@ -228,8 +228,6 @@ public class SwingFilterDialog extends JDialog {
 
     private void setupThemaComboBox() {
         jcbThema.setNoActionOnKeyNavigation(true);
-        jcbThema.setStrict(true);
-        jcbThema.setStrictCompletion(true);
         var model = GlazedListsSwing.eventComboBoxModel(new EventListWithEmptyFirstEntry(sourceThemaList));
         jcbThema.setModel(model);
         //otherwise stored filter will not be accepted as entry may not be in list
