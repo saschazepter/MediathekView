@@ -55,23 +55,7 @@ public class AutoCompletionComboBox2 extends JComboBox<String> {
      * @return the <code>AutoCompletion</code>.
      */
     protected AutoCompletion createAutoCompletion() {
-        return new AutoCompletion(this, new ComboBoxSearchable(this) {
-            @Override
-            protected void setSelectedIndex(int index, boolean incremental) {
-                Object propTableCellEditor = AutoCompletionComboBox2.this.getClientProperty("JComboBox.isTableCellEditor");
-                Object propNoActionOnKeyNavigation = UIManager.get("ComboBox.noActionOnKeyNavigation");
-                if ((propTableCellEditor instanceof Boolean && (Boolean) propTableCellEditor) ||
-                        (propNoActionOnKeyNavigation instanceof Boolean && (Boolean) propNoActionOnKeyNavigation) ||
-                        _noActionOnKeyNavigation) {
-                    _preventActionEvent = true;
-                }
-                try {
-                    super.setSelectedIndex(index, incremental);
-                } finally {
-                    _preventActionEvent = false;
-                }
-            }
-        });
+        return new AutoCompletion(this, new MyComboBoxSearchable());
     }
 
     /**
@@ -114,6 +98,28 @@ public class AutoCompletionComboBox2 extends JComboBox<String> {
             if (textLength != 0)
                 tf.setCaretPosition(textLength);
             super.fireActionEvent();
+        }
+    }
+
+    private class MyComboBoxSearchable extends ComboBoxSearchable {
+        public MyComboBoxSearchable() {
+            super(AutoCompletionComboBox2.this);
+        }
+
+        @Override
+        protected void setSelectedIndex(int index, boolean incremental) {
+            Object propTableCellEditor = AutoCompletionComboBox2.this.getClientProperty("JComboBox.isTableCellEditor");
+            Object propNoActionOnKeyNavigation = UIManager.get("ComboBox.noActionOnKeyNavigation");
+            if ((propTableCellEditor instanceof Boolean && (Boolean) propTableCellEditor) ||
+                    (propNoActionOnKeyNavigation instanceof Boolean && (Boolean) propNoActionOnKeyNavigation) ||
+                    _noActionOnKeyNavigation) {
+                _preventActionEvent = true;
+            }
+            try {
+                super.setSelectedIndex(index, incremental);
+            } finally {
+                _preventActionEvent = false;
+            }
         }
     }
 }
