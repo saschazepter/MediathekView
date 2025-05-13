@@ -145,12 +145,12 @@ public class ComboBoxSearchable2 extends Searchable implements ListDataListener,
         if ("model".equals(evt.getPropertyName())) {
             hidePopup();
 
-            if (evt.getOldValue() instanceof ComboBoxModel) {
-                ((ComboBoxModel<?>) evt.getOldValue()).removeListDataListener(this);
+            if (evt.getOldValue() instanceof ComboBoxModel<?> model) {
+                model.removeListDataListener(this);
             }
 
-            if (evt.getNewValue() instanceof ComboBoxModel) {
-                ((ComboBoxModel<?>) evt.getNewValue()).addListDataListener(this);
+            if (evt.getNewValue() instanceof ComboBoxModel<?> model) {
+                model.addListDataListener(this);
             }
             fireSearchableEvent(new SearchableEvent(this, SearchableEvent.SEARCHABLE_MODEL_CHANGE));
         }
