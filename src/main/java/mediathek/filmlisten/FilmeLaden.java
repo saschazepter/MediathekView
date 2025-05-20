@@ -359,15 +359,10 @@ public class FilmeLaden {
      * Search through history and mark new films.
      */
     private void findAndMarkNewFilms(ListeFilme listeFilme) {
-        listeFilme.neueFilme = false;
-
         listeFilme.parallelStream()
                 .peek(film -> film.setNew(false))
                 .filter(film -> !hashSet.contains(film.getUrlNormalQuality()))
-                .forEach(film -> {
-                    film.setNew(true);
-                    listeFilme.neueFilme = true;
-                });
+                .forEach(film -> film.setNew(true));
 
         hashSet.clear();
     }
