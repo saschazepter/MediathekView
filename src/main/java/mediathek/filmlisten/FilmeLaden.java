@@ -359,8 +359,12 @@ public class FilmeLaden {
      * Search through history and mark new films.
      */
     private void findAndMarkNewFilms(ListeFilme listeFilme) {
+        //reset all current new films to false
         listeFilme.parallelStream()
-                .peek(film -> film.setNew(false))
+                .filter(DatenFilm::isNew)
+                .forEach(film -> film.setNew(false));
+        // mark new entries
+        listeFilme.parallelStream()
                 .filter(film -> !hashSet.contains(film.getUrlNormalQuality()))
                 .forEach(film -> film.setNew(true));
 
