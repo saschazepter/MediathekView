@@ -1210,7 +1210,7 @@ public class MediathekGui extends JFrame {
         try {
             TimerPool.getRepeatingTimerFuture().cancel(true);
             timerPool.shutdown();
-            if (!timerPool.awaitTermination(2, TimeUnit.SECONDS)) {
+            if (!timerPool.awaitTermination(500, TimeUnit.MILLISECONDS)) {
                 if (Config.isDebugModeEnabled()) {
                     logger.warn("Time out occured before pool final termination");
                 }
