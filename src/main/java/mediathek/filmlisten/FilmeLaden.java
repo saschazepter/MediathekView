@@ -358,7 +358,7 @@ public class FilmeLaden {
     /**
      * Search through history and mark new films.
      */
-    private void findAndMarkNewFilms(ListeFilme listeFilme) {
+    private void findAndMarkNewFilms(@NotNull ListeFilme listeFilme) {
         //reset all current new films to false
         listeFilme.parallelStream()
                 .filter(DatenFilm::isNew)
