@@ -5,6 +5,7 @@ import com.jidesoft.utils.ThreadCheckingRepaintManager;
 import com.sun.jna.platform.win32.VersionHelpers;
 import javafx.application.Platform;
 import mediathek.config.*;
+import mediathek.controller.SenderFilmlistLoadApprover;
 import mediathek.controller.history.SeenHistoryMigrator;
 import mediathek.daten.IndexedFilmList;
 import mediathek.gui.dialog.DialogStarteinstellungen;
@@ -529,7 +530,8 @@ public class Main {
             var res = op.getValue();
             if (res != null) {
                 if ((int) res == JOptionPane.YES_OPTION) {
-                    System.out.println("YES CLICKED");
+                    logger.info("Activating new senders...");
+                    SenderFilmlistLoadApprover.approveAll();
                 }
                 ApplicationConfiguration.getConfiguration().setProperty(Konstanten.NEW_SENDER_ACTIVATED_QUESTION_CONFIG_KEY, true);
             }
