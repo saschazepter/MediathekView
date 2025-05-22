@@ -5,7 +5,6 @@ import com.jidesoft.utils.ThreadCheckingRepaintManager;
 import com.sun.jna.platform.win32.VersionHelpers;
 import javafx.application.Platform;
 import mediathek.config.*;
-import mediathek.controller.SenderFilmlistLoadApprover;
 import mediathek.controller.history.SeenHistoryMigrator;
 import mediathek.daten.IndexedFilmList;
 import mediathek.gui.dialog.DialogStarteinstellungen;
@@ -531,13 +530,21 @@ public class Main {
         var alreadyActivated = ApplicationConfiguration.getConfiguration().getBoolean(configKey, false);
         if (!alreadyActivated) {
             splashScreen.ifPresent(s -> s.setVisible(false));
-            var res = JOptionPane.showConfirmDialog(null,
+            var op = new JOptionPane(
                     "<html>Diese Version unterstützt neue Sender, die in den Einstellungen aktiviert werden müssen.<br/>" +
-                            "Soll MediathekView einmalig alle Sender aktivieren?</html>",
-                    Konstanten.PROGRAMMNAME, JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
-            if (res == JOptionPane.YES_OPTION) {
-                logger.info("Activating new senders...");
-                SenderFilmlistLoadApprover.approveAll();
+                            "Soll MediathekView einmalig alle Sender aktivieren?</html>", JOptionPane.QUESTION_MESSAGE,
+                    JOptionPane.YES_NO_OPTION);
+            JDialog dialog = op.createDialog(Konstanten.PROGRAMMNAME);
+            dialog.setAlwaysOnTop(true);
+            dialog.setModal(true);
+            dialog.setResizable(true);
+            dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+            dialog.setVisible(true);
+            var res = op.getValue();
+            if (res != null) {
+                if ((int)res == JOptionPane.YES_OPTION) {
+                    System.out.println("YES CLICKED");
+                }
                 ApplicationConfiguration.getConfiguration().setProperty(configKey, true);
             }
 
