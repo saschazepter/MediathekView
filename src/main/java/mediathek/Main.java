@@ -69,8 +69,7 @@ public class Main {
             try {
                 var oldFilmList = StandardLocations.getSettingsDirectory().resolve(Konstanten.JSON_DATEI_FILME);
                 Files.deleteIfExists(oldFilmList);
-            }
-            catch (IOException ignored) {
+            } catch (IOException ignored) {
             }
         }
     }
@@ -86,8 +85,7 @@ public class Main {
                 logger.info("Moving old unsupported media database to trash.");
                 mediathek.tool.FileUtils.moveToTrash(mediaDbPath);
             }
-        }
-        catch (IOException ignored) {
+        } catch (IOException ignored) {
         }
     }
 
@@ -122,8 +120,7 @@ public class Main {
         final PatternLayout consolePattern;
         if (Config.isEnhancedLoggingEnabled() || Config.isDebugModeEnabled()) {
             consolePattern = PatternLayout.newBuilder().withPattern("[%-5level] [%t] %c - %msg%n").build();
-        }
-        else {
+        } else {
             consolePattern = PatternLayout.newBuilder().withPattern(". %msg%n").build();
         }
 
@@ -226,13 +223,11 @@ public class Main {
                     try {
                         SettingsMigrator migrator = new SettingsMigrator(settingsFile);
                         migrator.migrate();
-                    }
-                    catch (Exception e) {
+                    } catch (Exception e) {
                         logger.error("settings migration error", e);
                     }
                 }
-            }
-            else
+            } else
                 logger.trace("nothing to migrate");
         }
     }
@@ -240,8 +235,7 @@ public class Main {
     private static void printPortableModeInfo() {
         if (Config.isPortableMode()) {
             logger.info("Configuring baseFilePath {} for portable mode", Config.baseFilePath);
-        }
-        else
+        } else
             logger.info("Configuring for non-portable mode");
     }
 
@@ -268,8 +262,7 @@ public class Main {
                     }
                 }
             }
-        }
-        catch (IOException ex) {
+        } catch (IOException ex) {
             logger.error("OS X Application image could not be loaded", ex);
         }
     }
@@ -343,8 +336,7 @@ public class Main {
         if (strScale != null) {
             try {
                 Integer.parseInt(strScale);
-            }
-            catch (NumberFormatException ex) {
+            } catch (NumberFormatException ex) {
                 // not an int -> show warning
                 // fractional scale is NOT supported under Linux, must use integer only.
                 var scaleFactor = Float.parseFloat(strScale);
@@ -367,8 +359,7 @@ public class Main {
         if (parseResult.hasMatchedOption("dpm")) {
             logger.trace("Dns preference mode set via CLI, storing config value");
             config.setProperty(ApplicationConfiguration.APPLICATION_NETWORKING_DNS_MODE, String.valueOf(Config.getDnsIpPreferenceMode()));
-        }
-        else {
+        } else {
             logger.trace("Dns preference mode NOT set, using config setting");
             var mode = IPvPreferenceMode.fromString(config.getString(ApplicationConfiguration.APPLICATION_NETWORKING_DNS_MODE, String.valueOf(Config.getDnsIpPreferenceMode())));
             Config.setDnsIpPreferenceMode(mode);
@@ -462,8 +453,7 @@ public class Main {
 
                 printJvmParameters();
                 printArguments(args);
-            }
-            catch (CommandLine.ParameterException ex) {
+            } catch (CommandLine.ParameterException ex) {
                 try (var err = cmd.getErr()) {
                     var errStr = ex.getMessage() + "\n\n" + ex.getCommandLine().getUsageMessage();
                     JOptionPane.showMessageDialog(null,
@@ -476,8 +466,7 @@ public class Main {
                     }
                     System.exit(cmd.getCommandSpec().exitCodeOnInvalidInput());
                 }
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 logger.error("Command line parse error:", ex);
                 System.exit(cmd.getCommandSpec().exitCodeOnExecutionException());
             }
@@ -490,12 +479,10 @@ public class Main {
             if (!isDebuggerAttached()) {
                 if (!Config.isSplashScreenDisabled()) {
                     splashScreen = Optional.of(new SplashScreen());
-                }
-                else {
+                } else {
                     logger.warn("Splash screen disabled...");
                 }
-            }
-            else {
+            } else {
                 logger.warn("Debugger detected -> Splash screen disabled...");
             }
             splashScreen.ifPresent(splash -> splash.setVisible(true));
@@ -541,7 +528,7 @@ public class Main {
             dialog.setVisible(true);
             var res = op.getValue();
             if (res != null) {
-                if ((int)res == JOptionPane.YES_OPTION) {
+                if ((int) res == JOptionPane.YES_OPTION) {
                     System.out.println("YES CLICKED");
                 }
                 ApplicationConfiguration.getConfiguration().setProperty(Konstanten.NEW_SENDER_ACTIVATED_QUESTION_CONFIG_KEY, true);
@@ -560,8 +547,7 @@ public class Main {
         if (Files.exists(indexPath)) {
             try {
                 FileUtils.deletePathRecursively(indexPath);
-            }
-            catch (IOException e) {
+            } catch (IOException e) {
                 logger.error("Failed to remove Lucene index directory", e);
             }
         }
@@ -584,8 +570,7 @@ public class Main {
             if (migrator.needsMigration()) {
                 migrator.migrate();
             }
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("migrateSeenHistory", e);
             splashScreen.ifPresent(SplashScreen::close);
             SwingErrorDialog.showExceptionMessage(null,
@@ -626,8 +611,7 @@ public class Main {
             var settingsPath = StandardLocations.getSettingsDirectory();
             var agentDb = settingsPath.resolve("user_agents.mv.db");
             Files.deleteIfExists(agentDb);
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             logger.error("Error deleting old user agent database occured", e);
         }
     }
@@ -647,8 +631,7 @@ public class Main {
                     .forEach(File::delete);
 
             Files.deleteIfExists(traceFile);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             logger.error("Got an error deleting old database directory", ex);
         }
     }
@@ -660,8 +643,7 @@ public class Main {
                     .map(Path::toFile)
                     //.peek(System.out::println)
                     .forEach(File::delete);
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             logger.error("Got an error deleting settings directory", ex);
         }
     }
@@ -739,14 +721,11 @@ public class Main {
 
         if (SystemUtils.IS_OS_MAC_OSX) {
             window = new MediathekGuiMac();
-        }
-        else if (SystemUtils.IS_OS_WINDOWS) {
+        } else if (SystemUtils.IS_OS_WINDOWS) {
             window = new MediathekGuiWindows();
-        }
-        else if (SystemUtils.IS_OS_LINUX) {
+        } else if (SystemUtils.IS_OS_LINUX) {
             window = new MediathekGuiX11();
-        }
-        else {
+        } else {
             JOptionPane.showMessageDialog(null,
                     """
                             Sie führen MediathekView auf einem nicht unterstützten Betriebssystem aus.
@@ -766,8 +745,7 @@ public class Main {
             LookAndFeel laf;
             if (darkMode) {
                 laf = DarkModeFactory.getLookAndFeel();
-            }
-            else {
+            } else {
                 laf = LightModeFactory.getLookAndFeel();
             }
 
@@ -787,12 +765,10 @@ public class Main {
                         .getBoolean(ApplicationConfiguration.APPLICATION_USE_SYSTEM_DARK_MODE, false);
                 if (useSystemMode) {
                     FlatLaf.setup(getCurrentLookAndFeel(DarkModeDetector.isDarkMode()));
-                }
-                else {
+                } else {
                     setupFlatLaf();
                 }
-            }
-            else {
+            } else {
                 logger.trace("dark mode detection not supported, using config");
                 setupFlatLaf();
             }
