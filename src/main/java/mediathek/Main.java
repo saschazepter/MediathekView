@@ -526,15 +526,14 @@ public class Main {
      * For newer versions configKey must be adapted.
      */
     private static void activateNewSenders() {
-        final String configKey = "newSendersActivated.fourteen.three";
-        var alreadyActivated = ApplicationConfiguration.getConfiguration().getBoolean(configKey, false);
+        var alreadyActivated = ApplicationConfiguration.getConfiguration().getBoolean(Konstanten.NEW_SENDER_ACTIVATED_QUESTION_CONFIG_KEY, false);
         if (!alreadyActivated) {
             splashScreen.ifPresent(s -> s.setVisible(false));
             var op = new JOptionPane(
                     "<html>Diese Version unterstützt neue Sender, die in den Einstellungen aktiviert werden müssen.<br/>" +
                             "Soll MediathekView einmalig alle Sender aktivieren?</html>", JOptionPane.QUESTION_MESSAGE,
                     JOptionPane.YES_NO_OPTION);
-            JDialog dialog = op.createDialog(Konstanten.PROGRAMMNAME);
+            var dialog = op.createDialog(Konstanten.PROGRAMMNAME);
             dialog.setAlwaysOnTop(true);
             dialog.setModal(true);
             dialog.setResizable(true);
@@ -545,7 +544,7 @@ public class Main {
                 if ((int)res == JOptionPane.YES_OPTION) {
                     System.out.println("YES CLICKED");
                 }
-                ApplicationConfiguration.getConfiguration().setProperty(configKey, true);
+                ApplicationConfiguration.getConfiguration().setProperty(Konstanten.NEW_SENDER_ACTIVATED_QUESTION_CONFIG_KEY, true);
             }
 
             splashScreen.ifPresent(s -> s.setVisible(true));
