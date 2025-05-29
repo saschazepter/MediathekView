@@ -430,8 +430,9 @@ public class BookmarkWindowController implements Initializable {
       @Override protected CustomMenuItem createColumnCustomMenuItem(
               final ContextMenu contextMenu, final TableColumn<?, ?> column) {
         final CheckBox checkBox;
-        if (!column.getText().isEmpty())
-          checkBox = new CheckBox(column.getText());
+        var columnText = column.getText();
+        if (!columnText.isEmpty())
+          checkBox = new CheckBox(columnText);
         else {
           checkBox = new CheckBox(" ");
           Node icon = switch (column.getId()) {
@@ -441,22 +442,15 @@ public class BookmarkWindowController implements Initializable {
           };
           checkBox.setGraphic(icon);
         }
-        // adds listener to the check box to change the size so the user
-        // can click anywhere in the menu items area and not just on the
-        // text to activate its onAction
-        contextMenu.focusedProperty().addListener(
-                _ -> checkBox.setPrefWidth(contextMenu.getWidth() * 0.75));
         // the context menu item's state controls its bound column's visibility
         checkBox.selectedProperty().bindBidirectional(column.visibleProperty());
 
-        final CustomMenuItem customMenuItem = new CustomMenuItem(checkBox);
-        customMenuItem.getStyleClass().set(1, "check-menu-item");
+        var customMenuItem = new CustomMenuItem(checkBox);
         customMenuItem.setOnAction(event -> {
           checkBox.setSelected(!checkBox.isSelected());
           event.consume();
         });
-        // set to false so the context menu stays visible after click
-        customMenuItem.setHideOnClick(false);
+        customMenuItem.setHideOnClick(false); // set to false so the context menu stays visible after click
         return customMenuItem;
       }
     };
