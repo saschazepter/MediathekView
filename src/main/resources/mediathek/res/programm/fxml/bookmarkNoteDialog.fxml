@@ -4,8 +4,6 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="190.0" minWidth="400.0" prefHeight="233.0" prefWidth="534.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1">
-    <DatePicker fx:id="fxDate" layoutX="125.0" layoutY="25.0" onAction="#handleChange" AnchorPane.leftAnchor="95.0" AnchorPane.topAnchor="25.0" />
-    <Label fx:id="fxExpiry" layoutX="18.0" layoutY="30.0" text="Verfügbar bis:" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="30.0" />
     <TextArea fx:id="fxNote" layoutX="17.0" layoutY="65.0" prefHeight="53.0" prefWidth="375.0" promptText="Notiz" wrapText="true" AnchorPane.bottomAnchor="55.0" AnchorPane.leftAnchor="95.0" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="65.0" />
     <Label layoutX="15.0" layoutY="72.0" text="Notiz:" AnchorPane.leftAnchor="5.0" AnchorPane.topAnchor="69.0" />
     <ProgressIndicator fx:id="fxProgress" layoutX="487.0" layoutY="22.0" prefHeight="33.0" prefWidth="32.0" visible="false" AnchorPane.rightAnchor="15.0" AnchorPane.topAnchor="22.0" />
