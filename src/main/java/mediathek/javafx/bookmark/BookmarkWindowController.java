@@ -126,8 +126,6 @@ public class BookmarkWindowController implements Initializable {
   @FXML
   private TableColumn<BookmarkData, String> colNote;
   @FXML
-  private TableColumn<BookmarkData, String> colExpiry;
-  @FXML
   private Label lblCount;
   @FXML
   private Label lblSeen;
@@ -281,8 +279,6 @@ public class BookmarkWindowController implements Initializable {
     colRunDate.setCellValueFactory(new PropertyValueFactory<>("sendDate"));
     colRunDate.setComparator(new BookmarkDateComparator());
     colNote.setCellValueFactory(new PropertyValueFactory<>("note"));
-    colExpiry.setCellValueFactory(new PropertyValueFactory<>("expiry"));
-    colExpiry.setComparator(new BookmarkDateComparator());
 
     // add button to play URL:
     colBtnPlay.setCellFactory((final var _) -> new TableCell<>() {
@@ -308,17 +304,6 @@ public class BookmarkWindowController implements Initializable {
         } else {
           setGraphic(new IconNode(FontAwesome.DOWNLOAD));
           this.setOnMouseClicked(_ -> loadAction(getTableView().getItems().get(getIndex())));
-        }
-      }
-    });
-
-    colExpiry.setCellFactory((final var _) -> new TableCell<>() {
-      @Override
-      public void updateItem(String item, boolean empty) {
-        super.updateItem(item, empty);
-        if (!empty) {
-          this.setText("UNUSED EXPIRY");
-          this.getStyleClass().add("Expiry");
         }
       }
     });

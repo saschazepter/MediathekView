@@ -71,7 +71,6 @@
                     <TableColumn fx:id="colRunDate" editable="false" text="Sendedatum"/>
                     <TableColumn fx:id="colBtnPlay" editable="false" prefWidth="25" sortable="false"/>
                     <TableColumn fx:id="colBtnDownload" editable="false" prefWidth="25" sortable="false"/>
-                    <TableColumn fx:id="colExpiry" editable="false" text="Verfügbar bis"/>
                     <TableColumn fx:id="colNote" prefWidth="400" text="Notiz"/>
                 </columns>
             </TableView>
