@@ -221,16 +221,16 @@ public class BookmarkDataList {
      * Executed in background
      */
     private void updateBookMarksFromFilmList() {
+        if (bookmarks.isEmpty())
+            return;
+
         ListeFilme listefilme = Daten.getInstance().getListeFilme();
 
-        for (var data : bookmarks) {
-            var filmdata = listefilme.getFilmByUrlAndSender(data.getUrl(), data.getSender());
-            if (filmdata != null) {
-                data.setDatenFilm(filmdata);
-                filmdata.setBookmark(data);   // Link backwards
-            }
-            else {
-                data.setDatenFilm(null);
+        for (var bookmark : bookmarks) {
+            var film = listefilme.getFilmByUrl(bookmark.getUrl());
+            bookmark.setDatenFilm(film);
+            if (film != null) {
+                film.setBookmark(bookmark);   // Link backwards
             }
         }
     }
