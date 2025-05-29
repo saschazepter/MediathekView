@@ -561,9 +561,7 @@ public class BookmarkWindowController implements Initializable {
     filterState = filterState.next();
     switch (filterState) {
       case ALL -> filteredBookmarkList.setPredicate(_ -> true);
-      case UNSEEN -> filteredBookmarkList.setPredicate(film -> { // show only unseen
-        return !film.getSeen();
-      });
+      case UNSEEN -> filteredBookmarkList.setPredicate(BookmarkData::getNotSeen);
       case SEEN -> filteredBookmarkList.setPredicate(BookmarkData::getSeen);
     }
 

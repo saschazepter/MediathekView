@@ -67,6 +67,10 @@ public class BookmarkData {
         return this.seen.get();
     }
 
+    public boolean getNotSeen() {
+        return !this.seen.get();
+    }
+
     public void setSeen(boolean seen) {
         this.seen.set(seen);
     }
