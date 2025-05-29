@@ -433,10 +433,11 @@ public class BookmarkWindowController implements Initializable {
   }
 
   private void updateDescriptionArea() {
-    taDescription.setText(tbBookmarks.getSelectionModel().getSelectedItems().size() == 1 ? tbBookmarks.getSelectionModel().getSelectedItem().getExtendedDescription() : "");
+    var model = tbBookmarks.getSelectionModel();
+    taDescription.setText(model.getSelectedItems().size() == 1 ? model.getSelectedItem().getExtendedDescription() : "");
     boolean showurl = false;
-    if (tbBookmarks.getSelectionModel().getSelectedItems().size() == 1) {
-      String url = tbBookmarks.getSelectionModel().getSelectedItem().getWebUrl();
+    if (model.getSelectedItems().size() == 1) {
+      String url = model.getSelectedItem().getWebUrl();
       if (url != null && !url.isEmpty()) {
         hyperLink.setTooltip(new Tooltip(url));
         hyperLink.setVisited(false);
