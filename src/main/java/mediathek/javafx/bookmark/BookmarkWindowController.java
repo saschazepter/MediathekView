@@ -181,9 +181,8 @@ public class BookmarkWindowController implements Initializable {
     ObservableList<BookmarkData> selections = tbBookmarks.getSelectionModel().getSelectedItems();
     if (!selections.isEmpty()) {
       boolean hasUnSeen = isUnSeenSelected(); // true if unseen in selection
-      List<BookmarkData> bookmarks = new ArrayList<>(selections); // copy list
       List<DatenFilm> filmlist = new ArrayList<>();
-      bookmarks.forEach((data) -> {
+      selections.forEach((data) -> {
         data.setSeen(hasUnSeen);
         DatenFilm film = data.getDatenFilm();
         if (film != null) {
@@ -200,10 +199,10 @@ public class BookmarkWindowController implements Initializable {
         }
       }
 
-      setSeenButtonState(hasUnSeen, selections.size() > 1);
+      setSeenButtonState(hasUnSeen, selections);
        // reselect to trigger updates:
       tbBookmarks.getSelectionModel().clearSelection();
-      bookmarks.forEach((data) -> tbBookmarks.getSelectionModel().select(data));
+      selections.forEach((data) -> tbBookmarks.getSelectionModel().select(data));
     }
   }
 
@@ -366,21 +365,24 @@ public class BookmarkWindowController implements Initializable {
     // Add listener to set button and context item state depending on selection
     tbBookmarks.getSelectionModel().selectedIndexProperty().addListener((_, _, newSelection) -> {
       boolean disable = newSelection == null || newSelection.intValue() == -1;
+      var selModel = tbBookmarks.getSelectionModel();
+      var items = selModel.getSelectedItems();
+      boolean multipleSelected = items.size() > 1;
+
       btnDeleteEntry.setDisable(disable);
       btnMarkViewed.setDisable(disable || onlyLifeStreamSelected());
-      boolean multipleSelected = tbBookmarks.getSelectionModel().getSelectedItems().size() > 1;
       disable = disable || multipleSelected; // allow only for single selection
       btnEditNote.setDisable(disable);
       playitem.setDisable(disable);
       edititem.setDisable(disable);
       loaditem.setDisable(disable);
       viewitem.setDisable(onlyLifeStreamSelected());
-      webitem.setDisable(disable || tbBookmarks.getSelectionModel().getSelectedItem().getWebUrl() == null);
+      webitem.setDisable(disable || selModel.getSelectedItem().getWebUrl() == null);
       ccopyitem.setDisable(disable);
 
       // Update buttons: Check if not seen in selection and adapt button text
       boolean setViewed = isUnSeenSelected();
-      setSeenButtonState(setViewed, multipleSelected);
+      setSeenButtonState(setViewed, items);
       deleteitem.setText(String.format("Film%s aus der Merkliste entfernen",(multipleSelected ? "e" : "")));
       // change description
       updateDescriptionArea();
@@ -473,7 +475,9 @@ public class BookmarkWindowController implements Initializable {
     hyperLink.setVisible(showurl);
   }
 
-  private void setSeenButtonState(boolean setViewed, boolean multipleSelected) {
+  private void setSeenButtonState(boolean setViewed, @NotNull ObservableList<BookmarkData> items) {
+    var multipleSelected = items.size() > 1;
+
     btnMarkViewed.setGraphic(new IconNode(setViewed ? FontAwesome.EYE: FontAwesome.EYE_SLASH));
     String text = String.format("Film%s als %sgesehen markieren", (multipleSelected ? "e" : ""), (setViewed ? "" : "un"));
     btnMarkViewed.setTooltip(new Tooltip(text));
