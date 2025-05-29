@@ -18,7 +18,7 @@
                     <Insets bottom="5.0" left="20.0" right="20.0" top="5.0"/>
                 </padding>
             </Button>
-            <Button fx:id="SaveButton" contentDisplay="CENTER" defaultButton="true" disable="true"
+            <Button fx:id="SaveButton" contentDisplay="CENTER" defaultButton="true"
                     mnemonicParsing="false" onAction="#handleSave" text="Speichern" textAlignment="CENTER">
                 <padding>
                     <Insets bottom="5.0" left="15.0" right="15.0" top="5.0"/>

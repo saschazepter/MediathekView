@@ -2,7 +2,9 @@ package mediathek.javafx.bookmark;
 
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,17 +22,13 @@ import java.util.ResourceBundle;
 
 public class BookmarkNoteDialogController implements Initializable {
     @FXML
+    private TextArea fxNote;
+    @FXML
     protected Button SaveButton;
     @FXML
     protected Button CancelButton;
     protected Stage stage;
     protected boolean datachanged;
-    @FXML
-    private TextArea fxNote;
-    @FXML
-    private ProgressIndicator fxProgress;
-    @FXML
-    private Label fxStatus;
     private BookmarkData data;
 
     @Override
@@ -61,8 +59,6 @@ public class BookmarkNoteDialogController implements Initializable {
         this.stage = dlgstage;
         stage.setTitle(data.getNote() != null ? "Anmerkungen ändern" : "Neue Anmerkungen");
         fxNote.setText(data.getNote() != null ? data.getNote() : "");
-
-        SaveButton.setDisable(false);
 
         stage.showAndWait();
         return datachanged;
