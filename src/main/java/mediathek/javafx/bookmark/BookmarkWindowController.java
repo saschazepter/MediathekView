@@ -433,9 +433,10 @@ public class BookmarkWindowController implements Initializable {
   }
 
   private void updateDescriptionArea() {
-    var model = tbBookmarks.getSelectionModel();
-    taDescription.setText(model.getSelectedItems().size() == 1 ? model.getSelectedItem().getExtendedDescription() : "");
     boolean showurl = false;
+    var model = tbBookmarks.getSelectionModel();
+
+    taDescription.setText(model.getSelectedItems().size() == 1 ? model.getSelectedItem().getExtendedDescription() : "");
     if (model.getSelectedItems().size() == 1) {
       String url = model.getSelectedItem().getWebUrl();
       if (url != null && !url.isEmpty()) {
@@ -444,6 +445,7 @@ public class BookmarkWindowController implements Initializable {
         showurl = true;
       }
     }
+
     hyperLink.setVisible(showurl);
   }
 
