@@ -393,7 +393,6 @@ public class BookmarkWindowController implements Initializable {
 
     setupColumnContextMenu();
 
-
     try {
       //load font for icons
       Font.loadFont(getClass().getResourceAsStream("/mediathek/res/programm/fxml/fontawesome-webfont.ttf"), 16);
