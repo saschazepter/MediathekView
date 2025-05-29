@@ -49,6 +49,11 @@ public class BookmarkData {
         return this.note;
     }
 
+    @JsonIgnore
+    public Optional<String> getNoteOptional() {
+        return Optional.ofNullable(note);
+    }
+
     public void setNote(String note) {
         this.note = note;
     }

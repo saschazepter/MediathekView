@@ -57,8 +57,14 @@ public class BookmarkNoteDialogController implements Initializable {
     public final boolean setAndShow(@NotNull Stage dlgstage, @NotNull BookmarkData data) {
         this.data = data;
         this.stage = dlgstage;
-        stage.setTitle(data.getNote() != null ? "Anmerkungen ändern" : "Neue Anmerkungen");
-        fxNote.setText(data.getNote() != null ? data.getNote() : "");
+
+        data.getNoteOptional().ifPresentOrElse(note -> {
+            stage.setTitle("Notizen ändern");
+            fxNote.setText(note);
+        }, () -> {
+            stage.setTitle("Neue Notiz");
+            fxNote.setText("");
+        });
 
         stage.showAndWait();
         return datachanged;
