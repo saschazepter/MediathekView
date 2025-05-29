@@ -411,8 +411,6 @@ public class BookmarkWindowController implements Initializable {
 
   private void setButtonFontIcons() {
     try {
-      //load font for icons
-
       btnDeleteEntry.setGraphic(new IconNode(FontAwesome.TRASH));
       btnMarkViewed.setGraphic(new IconNode(FontAwesome.EYE));
       btnEditNote.setGraphic(new IconNode(FontAwesome.PENCIL));
