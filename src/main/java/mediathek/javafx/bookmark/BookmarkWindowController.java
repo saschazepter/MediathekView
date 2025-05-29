@@ -70,20 +70,13 @@ import static javafx.scene.input.MouseButton.PRIMARY;
 public class BookmarkWindowController implements Initializable {
 
   private static final Logger logger = LogManager.getLogger();
-  /**
-   * Set the display filter:
-   * Rotate: All bookmarks -> Unseen bookmarks -> Seen Bookmarks -+
-   *              ^                                               |
-   *              +-----------------------------------------------+
-   */
-  private FilterState filterState = FilterState.UNDEFINED;
 
   static {
     Font.loadFont(BookmarkWindowController.class.getResourceAsStream("/mediathek/res/programm/fxml/fontawesome-webfont.ttf"), 16);
   }
 
   private final BookmarkDataList listeBookmarkList;
-  private final SeenHistoryController history = new SeenHistoryController();
+  private FilterState filterState = FilterState.UNDEFINED;
   private Stage stage;
   private FilteredList<BookmarkData> filteredBookmarkList;
   private MenuItem playitem;
@@ -197,12 +190,16 @@ public class BookmarkWindowController implements Initializable {
           filmlist.add(film);
         }
       });
-      if (hasUnSeen) {
-        history.markSeen(filmlist);
+
+      try (SeenHistoryController history = new SeenHistoryController()) {
+        if (hasUnSeen) {
+          history.markSeen(filmlist);
+        }
+        else {
+          history.markUnseen(filmlist);
+        }
       }
-      else {
-        history.markUnseen(filmlist);
-      }
+
       setSeenButtonState(hasUnSeen, selections.size() > 1);
        // reselect to trigger updates:
       tbBookmarks.getSelectionModel().clearSelection();
@@ -271,9 +268,7 @@ public class BookmarkWindowController implements Initializable {
     Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(data), null);
   }
 
-  @Override
-  public void initialize(URL arg0, ResourceBundle arg1) {
-    restoreTableStateAndContextMenu();
+  private void setupTableColumns() {
     // connect columns with underlying data
     colSender.setCellValueFactory(param -> {
       var film = param.getValue().getDatenFilm();
@@ -345,7 +340,9 @@ public class BookmarkWindowController implements Initializable {
         }
       }
     });
+  }
 
+  private void setupTableView() {
     // create filtered and sortable list
     var observableList = listeBookmarkList.getObervableList();
     filteredBookmarkList = new FilteredList<>(observableList, _ -> true);
@@ -368,30 +365,37 @@ public class BookmarkWindowController implements Initializable {
 
     // Add listener to set button and context item state depending on selection
     tbBookmarks.getSelectionModel().selectedIndexProperty().addListener((_, _, newSelection) -> {
-       boolean disable = newSelection == null || newSelection.intValue() == -1;
-       btnDeleteEntry.setDisable(disable);
-       btnMarkViewed.setDisable(disable || onlyLifeStreamSelected());
-       boolean multipleSelected = tbBookmarks.getSelectionModel().getSelectedItems().size() > 1;
-       disable = disable || multipleSelected; // allow only for single selection
-       btnEditNote.setDisable(disable);
-       playitem.setDisable(disable);
-       edititem.setDisable(disable);
-       loaditem.setDisable(disable);
-       viewitem.setDisable(onlyLifeStreamSelected());
-       webitem.setDisable(disable || tbBookmarks.getSelectionModel().getSelectedItem().getWebUrl() == null);
-       ccopyitem.setDisable(disable);
+      boolean disable = newSelection == null || newSelection.intValue() == -1;
+      btnDeleteEntry.setDisable(disable);
+      btnMarkViewed.setDisable(disable || onlyLifeStreamSelected());
+      boolean multipleSelected = tbBookmarks.getSelectionModel().getSelectedItems().size() > 1;
+      disable = disable || multipleSelected; // allow only for single selection
+      btnEditNote.setDisable(disable);
+      playitem.setDisable(disable);
+      edititem.setDisable(disable);
+      loaditem.setDisable(disable);
+      viewitem.setDisable(onlyLifeStreamSelected());
+      webitem.setDisable(disable || tbBookmarks.getSelectionModel().getSelectedItem().getWebUrl() == null);
+      ccopyitem.setDisable(disable);
 
-       // Update buttons: Check if not seen in selection and adapt button text
-       boolean setViewed = isUnSeenSelected();
-       setSeenButtonState(setViewed, multipleSelected);
-       deleteitem.setText(String.format("Film%s aus der Merkliste entfernen",(multipleSelected ? "e" : "")));
-       // change description
-       updateDescriptionArea();
+      // Update buttons: Check if not seen in selection and adapt button text
+      boolean setViewed = isUnSeenSelected();
+      setSeenButtonState(setViewed, multipleSelected);
+      deleteitem.setText(String.format("Film%s aus der Merkliste entfernen",(multipleSelected ? "e" : "")));
+      // change description
+      updateDescriptionArea();
     });
 
     tbBookmarks.getSortOrder().addListener((ListChangeListener.Change<? extends TableColumn<BookmarkData,?>> _) -> {
       tbBookmarks.getSelectionModel().clearSelection(); // clear selection after sort
     });
+  }
+
+  @Override
+  public void initialize(URL arg0, ResourceBundle arg1) {
+    restoreTableStateAndContextMenu();
+    setupTableColumns();
+    setupTableView();
 
     btnFilterAction (null);
     var config = ApplicationConfiguration.getConfiguration();
