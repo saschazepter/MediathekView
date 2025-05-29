@@ -120,8 +120,6 @@ public class BookmarkWindowController implements Initializable {
   @FXML
   private TableColumn<BookmarkData, String> colRunDate;
   @FXML
-  private TableColumn<BookmarkData, String> colUrl;
-  @FXML
   private TableColumn<BookmarkData, String> colBtnPlay;
   @FXML
   private TableColumn<BookmarkData, String> colBtnDownload;
@@ -282,7 +280,6 @@ public class BookmarkWindowController implements Initializable {
     colDuration.setCellValueFactory(new PropertyValueFactory<>("dauer"));
     colRunDate.setCellValueFactory(new PropertyValueFactory<>("sendDate"));
     colRunDate.setComparator(new BookmarkDateComparator());
-    colUrl.setCellValueFactory(new PropertyValueFactory<>("url"));
     colNote.setCellValueFactory(new PropertyValueFactory<>("note"));
     colExpiry.setCellValueFactory(new PropertyValueFactory<>("expiry"));
     colExpiry.setComparator(new BookmarkDateComparator());

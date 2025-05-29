@@ -2,6 +2,7 @@ package mediathek.javafx.bookmark;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -14,6 +15,7 @@ import mediathek.daten.DatenFilm;
  * Note: Prepared for Jackson JSON storage
  */
 @JsonIgnoreProperties(ignoreUnknown=true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookmarkData {
 
   private String url;
