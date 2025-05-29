@@ -347,11 +347,12 @@ public class BookmarkWindowController implements Initializable {
     });
 
     // create filtered and sortable list
-    filteredBookmarkList = new FilteredList<>(listeBookmarkList.getObervableList(), _ -> true);
+    var observableList = listeBookmarkList.getObervableList();
+    filteredBookmarkList = new FilteredList<>(observableList, _ -> true);
     SortedList<BookmarkData> sortedBookmarkList = new SortedList<>(filteredBookmarkList);
     sortedBookmarkList.comparatorProperty().bind(tbBookmarks.comparatorProperty());
 
-    listeBookmarkList.getObervableList().addListener((ListChangeListener.Change<? extends BookmarkData> c) -> {
+    observableList.addListener((ListChangeListener.Change<? extends BookmarkData> c) -> {
       while (c.next()) {
         if (c.wasAdded() || c.wasRemoved() || c.wasUpdated()) {
           listUpdated = true;
