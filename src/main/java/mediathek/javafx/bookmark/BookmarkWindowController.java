@@ -306,7 +306,7 @@ public class BookmarkWindowController implements Initializable {
       @Override
       public void updateItem(String item, boolean empty) {
         super.updateItem(item, empty);
-        if (empty || !getTableView().getItems().get(getIndex()).hasURL()) {
+        if (empty || getTableView().getItems().get(getIndex()).isNotInFilmList()) {
           setGraphic(null);
         } else {
           setGraphic(new IconNode(FontAwesome.DOWNLOAD));
