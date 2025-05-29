@@ -76,9 +76,7 @@ public class BookmarkWindowController implements Initializable {
    *              ^                                               |
    *              +-----------------------------------------------+
    */
-  private static final String[] BTNFILTER_TOOLTIPTEXT = {"Nur ungesehene Filme anzeigen", "Nur gesehene Filme anzeigen", "Alle Filme anzeigen"};
-  private static final String[] LBLFILTER_MESSAGETEXT = {"", "Ungesehene Filme", "Gesehene Filme"};
-  private static final boolean[] LBLSEEN_DISABLE = {false, true, false};
+  private FilterState filterState = FilterState.UNDEFINED;
 
   static {
     Font.loadFont(BookmarkWindowController.class.getResourceAsStream("/mediathek/res/programm/fxml/fontawesome-webfont.ttf"), 16);
@@ -100,7 +98,6 @@ public class BookmarkWindowController implements Initializable {
   private double divposition;
   private boolean listUpdated; // indicates new updates to bookmarklist
   private ScheduledFuture<?> SaveBookmarkTask; // Future task to save
-  private int FilterState;
   @FXML
   private Button btnSaveList;
   @FXML
@@ -388,7 +385,6 @@ public class BookmarkWindowController implements Initializable {
       tbBookmarks.getSelectionModel().clearSelection(); // clear selection after sort
     });
 
-    FilterState = -1;
     btnFilterAction (null);
     var config = ApplicationConfiguration.getConfiguration();
     btnShowDetails.setSelected(config.getBoolean(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".details", true));
@@ -562,21 +558,18 @@ public class BookmarkWindowController implements Initializable {
 
   @FXML
   private void btnFilterAction(ActionEvent e) {
-    if (++FilterState > 2) {
-      FilterState = 0;
-    }
-    switch (FilterState) {
-      case 0 -> filteredBookmarkList.setPredicate(_ -> true);  // show all
-      case 1 -> filteredBookmarkList.setPredicate(film -> { // show only unseen
+    filterState = filterState.next();
+    switch (filterState) {
+      case ALL -> filteredBookmarkList.setPredicate(_ -> true);
+      case UNSEEN -> filteredBookmarkList.setPredicate(film -> { // show only unseen
         return !film.getSeen();
       });
-      case 2 ->
-              // show only seen
-              filteredBookmarkList.setPredicate(BookmarkData::getSeen);
+      case SEEN -> filteredBookmarkList.setPredicate(BookmarkData::getSeen);
     }
-    btnFilter.setTooltip(new Tooltip(BTNFILTER_TOOLTIPTEXT[FilterState]));
-    lblFilter.setText(LBLFILTER_MESSAGETEXT[FilterState]);
-    lblSeen.setDisable(LBLSEEN_DISABLE[FilterState]);
+
+    btnFilter.setTooltip(new Tooltip(filterState.tooltipText()));
+    lblFilter.setText(filterState.messageText());
+    lblSeen.setDisable(filterState.buttonState());
     refresh();
   }
 
