@@ -124,10 +124,12 @@ public class BookmarkData {
     return (this.filmdata != null) ? this.filmdata.isLivestream() : false;
   }
     
+  @JsonIgnore
   public void setDatenFilm(DatenFilm filmdata) {
     this.filmdata = filmdata;
   }
   
+  @JsonIgnore
   public DatenFilm getDatenFilm() {
     return this.filmdata;
   }
