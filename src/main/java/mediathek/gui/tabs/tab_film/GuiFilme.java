@@ -516,9 +516,8 @@ public class GuiFilme extends AGuiTabPanel {
         Platform.runLater(() -> {
             if (bookmarkWindowController.isEmpty()) {
                 bookmarkWindowController = Optional.of(new BookmarkWindowController());
-                bookmarkWindowController.get().setPartner(this);
             }
-            bookmarkWindowController.get().show();
+            bookmarkWindowController.ifPresent(BookmarkWindowController::show);
         });
     }
 

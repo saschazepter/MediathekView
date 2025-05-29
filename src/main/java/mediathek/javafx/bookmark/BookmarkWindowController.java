@@ -33,9 +33,10 @@ import mediathek.daten.DatenDownload;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.actions.UrlHyperlinkAction;
 import mediathek.gui.dialog.DialogAddDownload;
-import mediathek.gui.tabs.tab_film.GuiFilme;
+import mediathek.gui.messages.ReloadTableDataEvent;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
+import mediathek.tool.MessageBus;
 import mediathek.tool.timer.TimerPool;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.sync.LockMode;
@@ -87,7 +88,6 @@ public class BookmarkWindowController implements Initializable {
   private MenuItem ccopyitem;
   private MenuItem edititem;
   private ContextMenu cellContextMenu;
-  private GuiFilme infotab;  // used for update information
   private double divposition;
   private boolean listUpdated; // indicates new updates to bookmarklist
   private ScheduledFuture<?> SaveBookmarkTask; // Future task to save
@@ -214,29 +214,31 @@ public class BookmarkWindowController implements Initializable {
 
   @FXML
   private void btnDeleteEntry(Event e) {
-    ArrayList<BookmarkData> selections = new ArrayList<>(tbBookmarks.getSelectionModel().getSelectedItems());
-    if (!selections.isEmpty()) {
-      listeBookmarkList.deleteEntries(tbBookmarks.getSelectionModel().getSelectedItems());
+    var selModel = tbBookmarks.getSelectionModel();
+    var items = selModel.getSelectedItems();
+
+    if (!items.isEmpty()) {
+      listeBookmarkList.deleteEntries(items);
       updateDisplay();
-      tbBookmarks.getSelectionModel().clearSelection();
-      infotab.repaint(); // Update display in GuiFilme
+      selModel.clearSelection();
+
+      MessageBus.getMessageBus().publishAsync(new ReloadTableDataEvent());
     }
   }
 
   @FXML
   private void btnEditNote(Event e) {
-
-    Stage dlgstage = new Stage();
-    dlgstage.initModality(Modality.WINDOW_MODAL);
-    dlgstage.initOwner(this.stage);
     try {
+      BookmarkNoteDialogController noteDialogController = new BookmarkNoteDialogController();
       FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/mediathek/res/programm/fxml/bookmarkNoteDialog.fxml"));
-      BookmarkNoteDialogController bdialog = new BookmarkNoteDialogController();
-      fxmlLoader.setController(bdialog);
-      Scene scene = new Scene(fxmlLoader.load());
-      dlgstage.getIcons().add(new Image("/mediathek/res/MediathekView.png"));
-      dlgstage.setScene(scene);
-      if (bdialog.setAndShow(dlgstage, tbBookmarks.getSelectionModel().getSelectedItem())) {
+      fxmlLoader.setController(noteDialogController);
+
+      var noteDialog = new Stage();
+      noteDialog.initModality(Modality.WINDOW_MODAL);
+      noteDialog.initOwner(stage);
+      noteDialog.getIcons().add(new Image("/mediathek/res/MediathekView.png"));
+      noteDialog.setScene(new Scene(fxmlLoader.load()));
+      if (noteDialogController.setAndShow(noteDialog, tbBookmarks.getSelectionModel().getSelectedItem())) {
         listUpdated = true;
         refresh();
       }
@@ -249,13 +251,13 @@ public class BookmarkWindowController implements Initializable {
   @FXML
   private void hyperLinkSelected(Event e) {
     String url = tbBookmarks.getSelectionModel().getSelectedItem().getWebUrl();
-    try {
-      if (url != null) {
-        UrlHyperlinkAction.openURL(url);
+    if (url != null) {
+      try {
+          UrlHyperlinkAction.openURL(url);
       }
-    }
-    catch (URISyntaxException ex) {
-      logger.error("Hyperlink Syntax exception", ex);
+      catch (URISyntaxException ex) {
+        logger.error("Hyperlink Syntax exception", ex);
+      }
     }
   }
 
@@ -646,11 +648,6 @@ public class BookmarkWindowController implements Initializable {
     });
   }
 
-  /**
-   * Store reference used to inform about changes
-   */
-  public void setPartner(GuiFilme partner) { this.infotab = partner;}
-
   private void refresh() {
     if (stage.isShowing()) {
       tbBookmarks.refresh();
@@ -658,18 +655,22 @@ public class BookmarkWindowController implements Initializable {
     }
   }
 
+  private void scheduleBookmarkSave() {
+    cancelBookmarkSave();
+    SaveBookmarkTask = TimerPool.getTimerPool().schedule(() -> {
+              saveBookMarkList();
+              SaveBookmarkTask = null;
+            },
+            30,
+            TimeUnit.SECONDS);
+  }
+
   private void updateDisplay() {
     lblCount.setText(String.format("Einträge: %d / %d", filteredBookmarkList.size(), listeBookmarkList.getNbOfEntries()));
     lblSeen.setText(String.format("Gesehen: %d", listeBookmarkList.getSeenNbOfEntries()));
     btnSaveList.setDisable(!listUpdated);
-    if (listUpdated) { // Schedule new save task after 30 s
-      cancelBookmarkSave();
-      SaveBookmarkTask = TimerPool.getTimerPool().schedule(() -> {
-                                        saveBookMarkList();
-                                        SaveBookmarkTask = null;
-                                    },
-                                    30,
-                                    TimeUnit.SECONDS);
+    if (listUpdated) {
+      scheduleBookmarkSave();
     }
   }
 
