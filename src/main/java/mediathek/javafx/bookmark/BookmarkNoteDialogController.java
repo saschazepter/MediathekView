@@ -54,9 +54,9 @@ public class BookmarkNoteDialogController implements Initializable {
 
     @Override
     public void initialize(URL arg0, ResourceBundle arg1) {
-        fxDate.setOnKeyTyped((var e) -> handleChange());
-        fxDate.setOnMouseClicked((var e) -> handleChange());
-        fxDate.getEditor().setOnKeyTyped((var e) -> handleChange());
+        fxDate.setOnKeyTyped((var _) -> handleChange());
+        fxDate.setOnMouseClicked((var _) -> handleChange());
+        fxDate.getEditor().setOnKeyTyped((var _) -> handleChange());
 
         ButtonBar.setButtonData(CancelButton, ButtonBar.ButtonData.CANCEL_CLOSE);
         ButtonBar.setButtonData(SaveButton, ButtonBar.ButtonData.OK_DONE);
@@ -106,7 +106,7 @@ public class BookmarkNoteDialogController implements Initializable {
         fxStatus.setVisible(true);
         btnWebDate.setDisable(true);
         var searchExpirationDateTask = new SearchExpirationDateTask(hasWebURL, data.getWebUrl());
-        searchExpirationDateTask.setOnSucceeded((WorkerStateEvent t) -> {
+        searchExpirationDateTask.setOnSucceeded((WorkerStateEvent _) -> {
             fxProgress.setVisible(false);
             fxStatus.setVisible(false);
 
