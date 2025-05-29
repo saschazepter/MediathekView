@@ -37,15 +37,15 @@ public class BookmarkData {
     seen = new SimpleBooleanProperty(false);
   }
  
-  public BookmarkData(DatenFilm filmdata) {
+  public BookmarkData(DatenFilm film) {
     this();
-    this.url = filmdata.getUrlNormalQuality();
-    this.sender = filmdata.getSender();
-    this.titel = filmdata.getTitle();
-    this.senddate = filmdata.getSendeDatum();
-    this.highQualityUrl = filmdata.getHighQualityUrl();
-    this.urlKlein = filmdata.getLowQualityUrl();
-    this.filmdata = filmdata; 
+    this.url = film.getUrlNormalQuality();
+    this.sender = film.getSender();
+    this.titel = film.getTitle();
+    this.senddate = film.getSendeDatum();
+    this.highQualityUrl = film.getHighQualityUrl();
+    this.urlKlein = film.getLowQualityUrl();
+    this.filmdata = film;
     this.willExpire = false;
   }
 
@@ -162,18 +162,18 @@ public class BookmarkData {
    */
   @JsonIgnore
   public DatenFilm getDataAsDatenFilm() {
-    DatenFilm Film = getDatenFilm();
-    if (Film == null) { // No reference in in object create new return object
-      Film = new DatenFilm();
-      Film.setThema(getThema());
-      Film.setTitle(getTitel());
-      Film.setNormalQualityUrl(getUrl());
-      Film.setHighQualityUrl(getHighQualityUrl());
-      Film.setLowQualityUrl(getUrlKlein());
-      Film.setSender(getSender());
-      Film.setFilmLength(getDauer());
+    var film = getDatenFilm();
+    if (film == null) { // No reference in in object create new return object
+      film = new DatenFilm();
+      film.setThema(getThema());
+      film.setTitle(getTitel());
+      film.setNormalQualityUrl(getUrl());
+      film.setHighQualityUrl(getHighQualityUrl());
+      film.setLowQualityUrl(getUrlKlein());
+      film.setSender(getSender());
+      film.setFilmLength(getDauer());
     }
-    return Film;
+    return film;
   }
 
   /**
