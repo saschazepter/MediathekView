@@ -22,6 +22,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.input.ContextMenuEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.text.Font;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import jiconfont.icons.font_awesome.FontAwesome;
@@ -391,6 +392,23 @@ public class BookmarkWindowController implements Initializable {
     updateDescriptionArea();
 
     setupColumnContextMenu();
+
+
+    try {
+      //load font for icons
+      Font.loadFont(getClass().getResourceAsStream("/mediathek/res/programm/fxml/fontawesome-webfont.ttf"), 16);
+
+      btnDeleteEntry.setGraphic(new IconNode(FontAwesome.TRASH));
+      btnMarkViewed.setGraphic(new IconNode(FontAwesome.EYE));
+      btnEditNote.setGraphic(new IconNode(FontAwesome.PENCIL));
+      btnSaveList.setGraphic(new IconNode(FontAwesome.FLOPPY_O));
+      btnShowDetails.setGraphic(new IconNode(FontAwesome.INFO_CIRCLE));
+      btnFilter.setGraphic(new IconNode(FontAwesome.FILTER));
+    }
+    catch (Exception e) {
+      logger.error("Could not load fontawesome font", e);
+    }
+
   }
 
   private void setupColumnContextMenu() {

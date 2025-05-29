@@ -4,7 +4,6 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import org.controlsfx.glyphfont.*?>
 <AnchorPane fx:id="BookmarkListDialog" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="200" minWidth="200"
             prefHeight="600.0" prefWidth="900.0" xmlns="http://javafx.com/javafx/11.0.1"
             xmlns:fx="http://javafx.com/fxml/1">
@@ -13,45 +12,27 @@
             <tooltip>
                 <Tooltip text="Aus der Merkliste löschen"/>
             </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="TRASH" fontSize="16"/>
-            </graphic>
         </Button>
         <Button fx:id="btnMarkViewed" disable="true" mnemonicParsing="false" onAction="#btnMarkEntryAsViewed">
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="EYE" fontSize="16"/>
-            </graphic>
         </Button>
         <Button fx:id="btnEditNote" disable="true" mnemonicParsing="false" onAction="#btnEditNote">
             <tooltip>
                 <Tooltip text="Anmerkungen bearbeiten"/>
             </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="PENCIL" fontSize="16"/>
-            </graphic>
         </Button>
         <Region HBox.hgrow="ALWAYS"/>
         <Button fx:id="btnSaveList" disable="true" mnemonicParsing="false" onAction="#btnSaveBookMarkList">
             <tooltip>
                 <Tooltip text="Geänderte Merkliste abspeichern"/>
             </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="SAVE" fontSize="16"/>
-            </graphic>
         </Button>
         <Separator orientation="VERTICAL"/>
         <ToggleButton fx:id="btnShowDetails" mnemonicParsing="false" onAction="#btnShowDetailsAction">
             <tooltip>
                 <Tooltip text="Erweiterte Film Informationen anzeigen"/>
             </tooltip>
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="INFO_CIRCLE" fontSize="16"/>
-            </graphic>
         </ToggleButton>
         <Button fx:id="btnFilter" mnemonicParsing="false" onAction="#btnFilterAction">
-            <graphic>
-                <Glyph fontFamily="FontAwesome" icon="FILTER" fontSize="16"/>
-            </graphic>
         </Button>
     </ToolBar>
     <SplitPane fx:id="spSplitPane" dividerPositions="0.75" orientation="VERTICAL" AnchorPane.bottomAnchor="30.0"
