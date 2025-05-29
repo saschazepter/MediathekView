@@ -79,7 +79,6 @@ public class BookmarkWindowController implements Initializable {
   private static final String[] BTNFILTER_TOOLTIPTEXT = {"Nur ungesehene Filme anzeigen", "Nur gesehene Filme anzeigen", "Alle Filme anzeigen"};
   private static final String[] LBLFILTER_MESSAGETEXT = {"", "Ungesehene Filme", "Gesehene Filme"};
   private static final boolean[] LBLSEEN_DISABLE = {false, true, false};
-  private static final String ALERT_TITLE = "Merkliste";
 
   static {
     Font.loadFont(BookmarkWindowController.class.getResourceAsStream("/mediathek/res/programm/fxml/fontawesome-webfont.ttf"), 16);
@@ -718,7 +717,7 @@ public class BookmarkWindowController implements Initializable {
                 "Ein Download für den Film existiert bereits.\nNochmal anlegen?",
                 yes, no);
         alert.initOwner(stage);
-        alert.setTitle(ALERT_TITLE);
+        alert.setTitle("Merkliste");
         alert.showAndWait().filter(response -> response == ButtonType.OK)
                 .ifPresent(_ -> createDownload(film));
       }
