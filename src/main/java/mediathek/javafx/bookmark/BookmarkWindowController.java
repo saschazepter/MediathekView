@@ -288,7 +288,7 @@ public class BookmarkWindowController implements Initializable {
     colExpiry.setComparator(new BookmarkDateComparator());
 
     // add button to play URL:
-    colBtnPlay.setCellFactory((final var UNUSED) -> new TableCell<>() {
+    colBtnPlay.setCellFactory((final var _) -> new TableCell<>() {
       @Override
       public void updateItem(String item, boolean empty) {
         super.updateItem(item, empty);
@@ -296,13 +296,13 @@ public class BookmarkWindowController implements Initializable {
           setGraphic(null);
         } else {
           setGraphic(new IconNode(FontAwesome.PLAY));
-          this.setOnMouseClicked(UNUSED -> playAction(getTableView().getItems().get(getIndex())));
+          this.setOnMouseClicked(_ -> playAction(getTableView().getItems().get(getIndex())));
         }
       }
     });
 
     // add button to download URL:
-    colBtnDownload.setCellFactory((final var UNUSED) -> new TableCell<>() {
+    colBtnDownload.setCellFactory((final var _) -> new TableCell<>() {
       @Override
       public void updateItem(String item, boolean empty) {
         super.updateItem(item, empty);
@@ -310,12 +310,12 @@ public class BookmarkWindowController implements Initializable {
           setGraphic(null);
         } else {
           setGraphic(new IconNode(FontAwesome.DOWNLOAD));
-          this.setOnMouseClicked(UNUSED -> loadAction(getTableView().getItems().get(getIndex())));
+          this.setOnMouseClicked(_ -> loadAction(getTableView().getItems().get(getIndex())));
         }
       }
     });
 
-    colExpiry.setCellFactory((final var UNUSED) -> new TableCell<>() {
+    colExpiry.setCellFactory((final var _) -> new TableCell<>() {
       @Override
       public void updateItem(String item, boolean empty) {
         super.updateItem(item, empty);
@@ -334,7 +334,7 @@ public class BookmarkWindowController implements Initializable {
     });
 
     // create filtered and sortable list
-    filteredBookmarkList = new FilteredList<>(listeBookmarkList.getObervableList(), p -> true);
+    filteredBookmarkList = new FilteredList<>(listeBookmarkList.getObervableList(), _ -> true);
     SortedList<BookmarkData> sortedBookmarkList = new SortedList<>(filteredBookmarkList);
     sortedBookmarkList.comparatorProperty().bind(tbBookmarks.comparatorProperty());
 
@@ -353,7 +353,7 @@ public class BookmarkWindowController implements Initializable {
     tbBookmarks.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
 
     // Add listener to set button and context item state depending on selection
-    tbBookmarks.getSelectionModel().selectedIndexProperty().addListener((obs, oldSelection, newSelection) -> {
+    tbBookmarks.getSelectionModel().selectedIndexProperty().addListener((_, _, newSelection) -> {
        boolean disable = newSelection == null || newSelection.intValue() == -1;
        btnDeleteEntry.setDisable(disable);
        btnMarkViewed.setDisable(disable || onlyLifeStreamSelected());
@@ -375,7 +375,7 @@ public class BookmarkWindowController implements Initializable {
        updateDescriptionArea();
     });
 
-    tbBookmarks.getSortOrder().addListener((ListChangeListener.Change<? extends TableColumn<BookmarkData,?>> pc) -> {
+    tbBookmarks.getSortOrder().addListener((ListChangeListener.Change<? extends TableColumn<BookmarkData,?>> _) -> {
       tbBookmarks.getSelectionModel().clearSelection(); // clear selection after sort
     });
 
@@ -411,7 +411,7 @@ public class BookmarkWindowController implements Initializable {
         // can click anywhere in the menu items area and not just on the
         // text to activate its onAction
         contextMenu.focusedProperty().addListener(
-                event -> checkBox.setPrefWidth(contextMenu.getWidth() * 0.75));
+                _ -> checkBox.setPrefWidth(contextMenu.getWidth() * 0.75));
         // the context menu item's state controls its bound column's visibility
         checkBox.selectedProperty().bindBidirectional(column.visibleProperty());
 
@@ -458,11 +458,11 @@ public class BookmarkWindowController implements Initializable {
     cellContextMenu = new ContextMenu();
     // - create items
     playitem = new MenuItem("Film abspielen");
-    playitem.setOnAction((ActionEvent UNUSED) -> playAction(tbBookmarks.getSelectionModel().getSelectedItem()));
+    playitem.setOnAction((ActionEvent _) -> playAction(tbBookmarks.getSelectionModel().getSelectedItem()));
     playitem.setGraphic(new IconNode(FontAwesome.PLAY));
 
     loaditem = new MenuItem("Film aufzeichnen");
-    loaditem.setOnAction((ActionEvent UNUSED) -> loadAction(tbBookmarks.getSelectionModel().getSelectedItem()));
+    loaditem.setOnAction((ActionEvent _) -> loadAction(tbBookmarks.getSelectionModel().getSelectedItem()));
     loaditem.setGraphic(new IconNode(FontAwesome.DOWNLOAD));
 
     viewitem = new MenuItem();
@@ -535,7 +535,7 @@ public class BookmarkWindowController implements Initializable {
       FilterState = 0;
     }
     switch (FilterState) {
-      case 0 -> filteredBookmarkList.setPredicate(f -> true);  // show all
+      case 0 -> filteredBookmarkList.setPredicate(_ -> true);  // show all
       case 1 -> filteredBookmarkList.setPredicate(film -> { // show only unseen
         return !film.getSeen();
       });
@@ -686,7 +686,7 @@ public class BookmarkWindowController implements Initializable {
         alert.initOwner(stage);
         alert.setTitle(ALERT_TITLE);
         alert.showAndWait().filter(response -> response == ButtonType.OK)
-                .ifPresent(response -> createDownload(film));
+                .ifPresent(_ -> createDownload(film));
       }
     });
   }
@@ -748,7 +748,7 @@ public class BookmarkWindowController implements Initializable {
   }
 
   private void setStageEvents() {
-    stage.setOnHiding(e -> {
+    stage.setOnHiding(_ -> {
       if (listUpdated) { // Save pending changes on hiding
         cancelBookmarkSave();
         saveBookMarkList();
