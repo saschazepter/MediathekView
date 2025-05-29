@@ -1,12 +1,9 @@
 package mediathek.javafx.bookmark;
 
-import javafx.concurrent.WorkerStateEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
-import mediathek.config.Konstanten;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -31,8 +28,6 @@ public class BookmarkNoteDialogController implements Initializable {
     protected Button SaveButton;
     @FXML
     protected Button CancelButton;
-    @FXML
-    protected Button btnWebDate;
     protected Stage dlgstage;
     protected boolean datachanged;
     @FXML
@@ -46,7 +41,6 @@ public class BookmarkNoteDialogController implements Initializable {
     @FXML
     private Label fxExpiry;
     private BookmarkData data;
-    private boolean hasWebURL;
 
     public BookmarkNoteDialogController() {
         dateformatter = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -95,51 +89,14 @@ public class BookmarkNoteDialogController implements Initializable {
         }
     }
 
-    /**
-     * Search the expiry date on Webpage
-     *
-     * @param e Starts own background task
-     */
-    @FXML
-    private void btnSearchWeb(Event e) {
-        fxProgress.setVisible(true);
-        fxStatus.setVisible(true);
-        btnWebDate.setDisable(true);
-        var searchExpirationDateTask = new SearchExpirationDateTask(hasWebURL, data.getWebUrl());
-        searchExpirationDateTask.setOnSucceeded((WorkerStateEvent _) -> {
-            fxProgress.setVisible(false);
-            fxStatus.setVisible(false);
-
-            String result = searchExpirationDateTask.getValue();
-            if (result == null) {
-                // do avail found
-                Alert alert = new Alert(Alert.AlertType.NONE);
-                alert.initOwner(dlgstage);
-                alert.setTitle(Konstanten.PROGRAMMNAME);
-                alert.setHeaderText("Suche nach Datum");
-                alert.setAlertType(Alert.AlertType.WARNING);
-                alert.setContentText("Es konnte keine Verfügbarkeit gefunden werden.");
-                alert.showAndWait();
-            }
-            else {
-                fxDate.getEditor().setText(result);
-            }
-
-            btnWebDate.setDisable(false);
-        });
-        new Thread(searchExpirationDateTask).start();
-    }
-
     public final boolean SetandShow(Stage dlgstage, BookmarkData data) {
         this.dlgstage = dlgstage;
         this.data = data;
-        this.hasWebURL = data.hasWebURL();
         this.dlgstage.setTitle(data.getNote() != null || data.getExpiry() != null ? "Anmerkungen ändern" : "Neue Anmerkungen");
         fxNote.setText(data.getNote() != null ? data.getNote() : "");
         if (data.isLiveStream()) { // For live stream disable expiry handling
             fxExpiry.setDisable(true);
             fxDate.setDisable(true);
-            btnWebDate.setDisable(true);
         } else {
             if (data.getExpiry() != null && !data.getExpiry().isEmpty()) { // copy expiry from record
                 try {
@@ -147,7 +104,6 @@ public class BookmarkNoteDialogController implements Initializable {
                 } catch (Exception ignored) {
                 }
             }
-            btnWebDate.setDisable(!hasWebURL);
         }
         handleChange();
         // Display the Dialog and wait
