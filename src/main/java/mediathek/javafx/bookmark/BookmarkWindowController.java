@@ -1,6 +1,7 @@
 package mediathek.javafx.bookmark;
 
 import javafx.application.Platform;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -273,10 +274,38 @@ public class BookmarkWindowController implements Initializable {
     restoreTableStateAndContextMenu();
     // connect columns with underlying data
     colSender.setCellValueFactory(new PropertyValueFactory<>("sender"));
-    colTheme.setCellValueFactory(new PropertyValueFactory<>("thema"));
-    colTitle.setCellValueFactory(new PropertyValueFactory<>("titel"));
-    colDuration.setCellValueFactory(new PropertyValueFactory<>("dauer"));
-    colRunDate.setCellValueFactory(new PropertyValueFactory<>("sendDate"));
+    colTheme.setCellValueFactory(param -> {
+      var film = param.getValue().getDatenFilm();
+      if (film != null) {
+        return new SimpleStringProperty(film.getThema());
+      }
+      else
+        return null;
+    });
+    colTitle.setCellValueFactory(param -> {
+      var film = param.getValue().getDatenFilm();
+      if (film != null) {
+        return new SimpleStringProperty(film.getTitle());
+      }
+      else
+        return new SimpleStringProperty("Kein Film gefunden!");
+    });
+    colDuration.setCellValueFactory(param -> {
+      var film = param.getValue().getDatenFilm();
+      if (film != null) {
+        return new SimpleStringProperty(film.getFilmLengthAsString());
+      }
+      else
+        return null;
+    });
+    colRunDate.setCellValueFactory(param -> {
+      var film = param.getValue().getDatenFilm();
+      if (film != null) {
+        return new SimpleStringProperty(film.getSendeDatum());
+      }
+      else
+        return null;
+    });
     colRunDate.setComparator(new BookmarkDateComparator());
     colNote.setCellValueFactory(new PropertyValueFactory<>("note"));
 
@@ -630,9 +659,11 @@ public class BookmarkWindowController implements Initializable {
   }
 
   private void playAction(BookmarkData data) {
-    Daten.getInstance().getStarterClass().urlMitProgrammStarten(Daten.listePset.getPsetAbspielen(), data.getDataAsDatenFilm(), "");
-    tbBookmarks.getSelectionModel().clearSelection(); // re-select to trigger UI update
-    tbBookmarks.getSelectionModel().select(data);
+    data.getDatenFilmOptional().ifPresent(film -> {
+      Daten.getInstance().getStarterClass().urlMitProgrammStarten(Daten.listePset.getPsetAbspielen(), film, "");
+      tbBookmarks.getSelectionModel().clearSelection(); // re-select to trigger UI update
+      tbBookmarks.getSelectionModel().select(data);
+    });
   }
 
   /**

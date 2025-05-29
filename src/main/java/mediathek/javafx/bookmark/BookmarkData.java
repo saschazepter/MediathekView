@@ -8,6 +8,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import mediathek.daten.DatenFilm;
 
+import java.util.Optional;
+
 /**
  * Bookmark data definition used to store movies
  * @author K. Wich
@@ -17,12 +19,8 @@ import mediathek.daten.DatenFilm;
 @JsonIgnoreProperties(ignoreUnknown=true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookmarkData {
-
   private String url;
   private String sender;
-  private String titel;
-  @JsonProperty("sendDate")
-  private String senddate;
   @JsonProperty("seen")
   private final BooleanProperty seen;
   @JsonIgnore
@@ -39,8 +37,6 @@ public class BookmarkData {
     this();
     this.url = film.getUrlNormalQuality();
     this.sender = film.getSender();
-    this.titel = film.getTitle();
-    this.senddate = film.getSendeDatum();
     this.highQualityUrl = film.getHighQualityUrl();
     this.urlKlein = film.getLowQualityUrl();
     this.filmdata = film;
@@ -53,27 +49,12 @@ public class BookmarkData {
   public String getSender(){ return this.sender; }
   public void   setSender(String url){ this.sender = url; }
 
-  public String getThema(){ return (filmdata != null ? filmdata.getThema(): ""); }
-  public void   setThema(String url){}
-
-  public String getTitel(){ return this.titel; }
-  public void   setTitel(String url){ this.titel = url;}
-
-  public String getDauer(){ return ((filmdata != null) ? filmdata.getFilmLengthAsString(): ""); }
-  public void   setDauer(String dauer){}
-
-  public String getDescription(){ return ((filmdata != null) ? filmdata.getDescription(): ""); }
-  public void   setDescription(String description){}
-  
   public String getNote(){ return this.note; }
   public void   setNote(String note){ this.note = note; }
   
   public boolean getSeen(){ return this.seen.get(); }
   public void   setSeen(boolean seen){ this.seen.set(seen);}
 
-  public String getSendDate(){ return this.senddate; }
-  public void   setSendDate(String senddate){ this.senddate = senddate; }
-  
   public String getHighQualityUrl(){ return this.highQualityUrl; }
   public void   setHighQualityUrl(String highQualityUrl){ this.highQualityUrl = highQualityUrl;}
   
@@ -138,26 +119,13 @@ public class BookmarkData {
   
   @JsonIgnore
   public String getExtendedDescription() {
-    return String.format("%s - %s\n\n%s%s", sender, titel, getDescription(), getFormattedNote());
+    var description = (filmdata != null) ? filmdata.getDescription() : "";
+    String titel = (filmdata != null) ? filmdata.getTitle() : "";
+    return String.format("%s - %s\n\n%s%s", sender, titel, description, getFormattedNote());
   }
-  
-  /**
-   * Get either the stored DatenFilm object or a new created from the internal data
-   * @return DatenFilm Object
-   */
+
   @JsonIgnore
-  public DatenFilm getDataAsDatenFilm() {
-    var film = getDatenFilm();
-    if (film == null) { // No reference in in object create new return object
-      film = new DatenFilm();
-      film.setThema(getThema());
-      film.setTitle(getTitel());
-      film.setNormalQualityUrl(getUrl());
-      film.setHighQualityUrl(getHighQualityUrl());
-      film.setLowQualityUrl(getUrlKlein());
-      film.setSender(getSender());
-      film.setFilmLength(getDauer());
-    }
-    return film;
+  public Optional<DatenFilm> getDatenFilmOptional() {
+    return Optional.ofNullable(filmdata);
   }
 }
