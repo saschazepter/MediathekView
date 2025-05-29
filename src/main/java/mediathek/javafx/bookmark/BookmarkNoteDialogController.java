@@ -69,11 +69,6 @@ public class BookmarkNoteDialogController implements Initializable {
             datachanged = true;
         }
 
-        String dv = getDateValue();
-        if (!(dv == null && data.getExpiry() == null) || (dv != null && !dv.equals(data.getExpiry()))) {
-            data.setExpiry(dv);
-            datachanged = true;
-        }
         dlgstage.hide();
     }
 
@@ -92,18 +87,11 @@ public class BookmarkNoteDialogController implements Initializable {
     public final boolean SetandShow(Stage dlgstage, BookmarkData data) {
         this.dlgstage = dlgstage;
         this.data = data;
-        this.dlgstage.setTitle(data.getNote() != null || data.getExpiry() != null ? "Anmerkungen ändern" : "Neue Anmerkungen");
+        this.dlgstage.setTitle(data.getNote() != null ? "Anmerkungen ändern" : "Neue Anmerkungen");
         fxNote.setText(data.getNote() != null ? data.getNote() : "");
         if (data.isLiveStream()) { // For live stream disable expiry handling
             fxExpiry.setDisable(true);
             fxDate.setDisable(true);
-        } else {
-            if (data.getExpiry() != null && !data.getExpiry().isEmpty()) { // copy expiry from record
-                try {
-                    fxDate.setValue(LocalDate.parse(data.getExpiry(), dateformatter));
-                } catch (Exception ignored) {
-                }
-            }
         }
         handleChange();
         // Display the Dialog and wait

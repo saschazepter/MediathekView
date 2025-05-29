@@ -317,15 +317,8 @@ public class BookmarkWindowController implements Initializable {
       public void updateItem(String item, boolean empty) {
         super.updateItem(item, empty);
         if (!empty) {
-          BookmarkData data = getTableView().getItems().get(getIndex());
-          this.setText(data.getExpiry());
-          if (data.willExpire()) {
-            this.getStyleClass().add("Expiry");
-          } else {
-            this.getStyleClass().removeAll("Expiry");
-          }
-        } else {
-          this.setText(null);
+          this.setText("UNUSED EXPIRY");
+          this.getStyleClass().add("Expiry");
         }
       }
     });

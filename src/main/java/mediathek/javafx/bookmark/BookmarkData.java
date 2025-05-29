@@ -30,9 +30,7 @@ public class BookmarkData {
   private String highQualityUrl;
   private String urlKlein;
   private String note;
-  private String expiry;
-  private boolean willExpire;
-  
+
   public BookmarkData() {
     seen = new SimpleBooleanProperty(false);
   }
@@ -46,7 +44,6 @@ public class BookmarkData {
     this.highQualityUrl = film.getHighQualityUrl();
     this.urlKlein = film.getLowQualityUrl();
     this.filmdata = film;
-    this.willExpire = false;
   }
 
   // getter/setter used for Jackson
@@ -71,13 +68,6 @@ public class BookmarkData {
   public String getNote(){ return this.note; }
   public void   setNote(String note){ this.note = note; }
   
-  public String getExpiry(){ return this.expiry; }
-  public void   setExpiry(String expiry){ 
-    this.expiry = expiry; 
-    // Check if expiry is about to happen:
-    willExpire = expiry != null && BookmarkDateDiff.getInstance().diff2Today(expiry) < 4;
-  }
-          
   public boolean getSeen(){ return this.seen.get(); }
   public void   setSeen(boolean seen){ this.seen.set(seen);}
 
@@ -148,12 +138,7 @@ public class BookmarkData {
   
   @JsonIgnore
   public String getExtendedDescription() {
-    if (expiry != null && !expiry.isEmpty()) {
-      return String.format("%s - %s (Verfügbar bis %s)\n\n%s%s", sender, titel, expiry, getDescription(), getFormattedNote());
-    }
-    else {
-      return String.format("%s - %s\n\n%s%s", sender, titel, getDescription(), getFormattedNote());
-    }
+    return String.format("%s - %s\n\n%s%s", sender, titel, getDescription(), getFormattedNote());
   }
   
   /**
@@ -174,16 +159,5 @@ public class BookmarkData {
       film.setFilmLength(getDauer());
     }
     return film;
-  }
-
-  /**
-   * Check if expiry date is about to expire
-   * @return true/false
-   *
-   * Note: Always returns false if no expiry date is set
-   */  
-  @JsonIgnore
-  public boolean willExpire() {
-    return this.willExpire;
   }
 }
