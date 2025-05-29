@@ -80,6 +80,11 @@ public class BookmarkWindowController implements Initializable {
   private static final String[] LBLFILTER_MESSAGETEXT = {"", "Ungesehene Filme", "Gesehene Filme"};
   private static final boolean[] LBLSEEN_DISABLE = {false, true, false};
   private static final String ALERT_TITLE = "Merkliste";
+
+  static {
+    Font.loadFont(BookmarkWindowController.class.getResourceAsStream("/mediathek/res/programm/fxml/fontawesome-webfont.ttf"), 16);
+  }
+
   private final BookmarkDataList listeBookmarkList;
   private final SeenHistoryController history = new SeenHistoryController();
   private Stage stage;
@@ -145,6 +150,20 @@ public class BookmarkWindowController implements Initializable {
     listUpdated = false;
   }
 
+  private static void setStageSize(Stage window) {
+    Configuration config = ApplicationConfiguration.getConfiguration();
+    try {
+      config.lock(LockMode.READ);
+      window.setWidth(config.getInt(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".width", 640));
+      window.setHeight(config.getInt(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".heigth", 480));
+      window.setX(config.getInt(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".location.x", 0));
+      window.setY(config.getInt(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".location.y", 0));
+    }
+    finally {
+      config.unlock(LockMode.READ);
+    }
+  }
+
   /**
    * Invoke on the JavaFx thread and wait for it to return. Be very careful
    * with this because this can cause deadlocks.
@@ -161,20 +180,6 @@ public class BookmarkWindowController implements Initializable {
       future.get();
     } catch (ExecutionException | InterruptedException e) {
       logger.error("invokeInFxThreadAndWait() failed", e);
-    }
-  }
-
-  private static void setStageSize(Stage window) {
-    Configuration config = ApplicationConfiguration.getConfiguration();
-    try {
-      config.lock(LockMode.READ);
-      window.setWidth(config.getInt(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".width", 640));
-      window.setHeight(config.getInt(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".heigth", 480));
-      window.setX(config.getInt(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".location.x", 0));
-      window.setY(config.getInt(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".location.y", 0));
-    }
-    finally {
-      config.unlock(LockMode.READ);
     }
   }
 
@@ -400,7 +405,6 @@ public class BookmarkWindowController implements Initializable {
   private void setButtonFontIcons() {
     try {
       //load font for icons
-      Font.loadFont(getClass().getResourceAsStream("/mediathek/res/programm/fxml/fontawesome-webfont.ttf"), 16);
 
       btnDeleteEntry.setGraphic(new IconNode(FontAwesome.TRASH));
       btnMarkViewed.setGraphic(new IconNode(FontAwesome.EYE));
