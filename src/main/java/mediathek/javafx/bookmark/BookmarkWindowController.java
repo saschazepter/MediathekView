@@ -393,6 +393,10 @@ public class BookmarkWindowController implements Initializable {
 
     setupColumnContextMenu();
 
+    setButtonFontIcons();
+  }
+
+  private void setButtonFontIcons() {
     try {
       //load font for icons
       Font.loadFont(getClass().getResourceAsStream("/mediathek/res/programm/fxml/fontawesome-webfont.ttf"), 16);
@@ -407,7 +411,6 @@ public class BookmarkWindowController implements Initializable {
     catch (Exception e) {
       logger.error("Could not load fontawesome font", e);
     }
-
   }
 
   private void setupColumnContextMenu() {
