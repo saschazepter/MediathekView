@@ -4,6 +4,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
+import org.jetbrains.annotations.NotNull;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -22,7 +23,7 @@ public class BookmarkNoteDialogController implements Initializable {
     protected Button SaveButton;
     @FXML
     protected Button CancelButton;
-    protected Stage dlgstage;
+    protected Stage stage;
     protected boolean datachanged;
     @FXML
     private TextArea fxNote;
@@ -41,28 +42,29 @@ public class BookmarkNoteDialogController implements Initializable {
     @FXML
     protected void handleCancel() {
         datachanged = false;
-        dlgstage.hide();
+        stage.hide();
     }
 
     @FXML
     protected void handleSave() {
-        if (!fxNote.getText().equals(data.getNote())) {
-            data.setNote(fxNote.getText());
+        var fxNoteText = fxNote.getText();
+        if (!fxNoteText.equals(data.getNote())) {
+            data.setNote(fxNoteText);
             datachanged = true;
         }
 
-        dlgstage.hide();
+        stage.hide();
     }
 
-    public final boolean SetandShow(Stage dlgstage, BookmarkData data) {
-        this.dlgstage = dlgstage;
+    public final boolean setAndShow(@NotNull Stage dlgstage, @NotNull BookmarkData data) {
         this.data = data;
-        this.dlgstage.setTitle(data.getNote() != null ? "Anmerkungen ändern" : "Neue Anmerkungen");
+        this.stage = dlgstage;
+        stage.setTitle(data.getNote() != null ? "Anmerkungen ändern" : "Neue Anmerkungen");
         fxNote.setText(data.getNote() != null ? data.getNote() : "");
 
         SaveButton.setDisable(false);
-        // Display the Dialog and wait
-        this.dlgstage.showAndWait();
+
+        stage.showAndWait();
         return datachanged;
     }
 }

@@ -237,7 +237,7 @@ public class BookmarkWindowController implements Initializable {
       Scene scene = new Scene(fxmlLoader.load());
       dlgstage.getIcons().add(new Image("/mediathek/res/MediathekView.png"));
       dlgstage.setScene(scene);
-      if (bdialog.SetandShow(dlgstage, tbBookmarks.getSelectionModel().getSelectedItem())) {
+      if (bdialog.setAndShow(dlgstage, tbBookmarks.getSelectionModel().getSelectedItem())) {
         listUpdated = true;
         refresh();
       }
