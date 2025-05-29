@@ -23,7 +23,6 @@ public class BookmarkData {
     @JsonProperty("seen")
     private final BooleanProperty seen;
     private String url;
-    private String sender;
     @JsonIgnore
     private DatenFilm filmdata;
     private String note;
@@ -35,7 +34,6 @@ public class BookmarkData {
     public BookmarkData(DatenFilm film) {
         this();
         this.url = film.getUrlNormalQuality();
-        this.sender = film.getSender();
         this.filmdata = film;
     }
 
@@ -45,14 +43,6 @@ public class BookmarkData {
 
     public void setUrl(String url) {
         this.url = url;
-    }
-
-    public String getSender() {
-        return this.sender;
-    }
-
-    public void setSender(String url) {
-        this.sender = url;
     }
 
     public String getNote() {
@@ -67,6 +57,7 @@ public class BookmarkData {
         return this.seen.get();
     }
 
+    @JsonIgnore
     public boolean getNotSeen() {
         return !this.seen.get();
     }
@@ -116,7 +107,7 @@ public class BookmarkData {
             return "Es wurde kein Filmobjekt mehr in der Filmliste gefunden. --> Ungültiger Eintrag!";
         }
         else {
-            return String.format("%s - %s\n\n%s%s", sender, filmdata.getTitle(), filmdata.getDescription(), getFormattedNote());
+            return String.format("%s - %s\n\n%s%s", filmdata.getSender(), filmdata.getTitle(), filmdata.getDescription(), getFormattedNote());
         }
     }
 

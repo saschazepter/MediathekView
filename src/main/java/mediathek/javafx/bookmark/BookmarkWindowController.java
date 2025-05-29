@@ -275,7 +275,14 @@ public class BookmarkWindowController implements Initializable {
   public void initialize(URL arg0, ResourceBundle arg1) {
     restoreTableStateAndContextMenu();
     // connect columns with underlying data
-    colSender.setCellValueFactory(new PropertyValueFactory<>("sender"));
+    colSender.setCellValueFactory(param -> {
+      var film = param.getValue().getDatenFilm();
+      if (film != null) {
+        return new SimpleStringProperty(film.getSender());
+      }
+      else
+        return null;
+    });
     colTheme.setCellValueFactory(param -> {
       var film = param.getValue().getDatenFilm();
       if (film != null) {
