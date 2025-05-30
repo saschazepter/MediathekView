@@ -50,10 +50,8 @@ import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledFuture;
@@ -622,7 +620,7 @@ public class BookmarkWindowController implements Initializable {
           fxmlLoader.setController(this);
           Scene scene = new Scene(fxmlLoader.load());
           stage.setScene(scene);
-          scene.getStylesheets().add(getClass().getResource("/mediathek/res/css/bookmarkWindow.css").toExternalForm());
+          scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/mediathek/res/css/bookmarkWindow.css")).toExternalForm());
         }
         catch (IOException e) {
           logger.error("Can't find/load the FXML description!", e);
