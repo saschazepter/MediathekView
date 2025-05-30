@@ -6,6 +6,7 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.collections.transformation.SortedList;
+import javafx.embed.swing.SwingNode;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -30,6 +31,7 @@ import mediathek.daten.DatenFilm;
 import mediathek.gui.actions.UrlHyperlinkAction;
 import mediathek.gui.dialog.DialogAddDownload;
 import mediathek.gui.messages.BookmarkDeleteRepaintEvent;
+import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.GuiFunktionen;
@@ -113,11 +115,9 @@ public class BookmarkWindowController implements Initializable {
   @FXML
   private Label lblFilter;
   @FXML
-  private TextArea taDescription;
-  @FXML
   private SplitPane spSplitPane;
   @FXML
-  private Hyperlink hyperLink;
+  private SwingNode swingNode;
 
   public BookmarkWindowController() {
     listeBookmarkList = Daten.getInstance().getListeBookmarkList();
@@ -398,7 +398,14 @@ public class BookmarkWindowController implements Initializable {
     setupColumnContextMenu();
 
     setupButtons();
+
+    SwingUtilities.invokeLater(() -> {
+      descriptionPanel = new FilmDescriptionPanel();
+      swingNode.setContent(descriptionPanel);
+    });
   }
+
+  private FilmDescriptionPanel descriptionPanel;
 
   private void setupButtons() {
     try {
@@ -459,20 +466,20 @@ public class BookmarkWindowController implements Initializable {
   }
 
   private void updateDescriptionArea() {
-    boolean showurl = false;
     var model = tbBookmarks.getSelectionModel();
-
-    taDescription.setText(model.getSelectedItems().size() == 1 ? model.getSelectedItem().getExtendedDescription() : "");
-    if (model.getSelectedItems().size() == 1) {
-      String url = model.getSelectedItem().getWebUrl();
-      if (url != null && !url.isEmpty()) {
-        hyperLink.setTooltip(new Tooltip(url));
-        hyperLink.setVisited(false);
-        showurl = true;
-      }
+    var item = model.getSelectedItem();
+    if (item != null) {
+      item.getDatenFilmOptional()
+              .ifPresentOrElse(film ->
+                      SwingUtilities.invokeLater(() -> descriptionPanel.setCurrentFilm(film)),
+                      () -> SwingUtilities.invokeLater(() -> descriptionPanel.setCurrentFilm(null)));
     }
-
-    hyperLink.setVisible(showurl);
+    else {
+      SwingUtilities.invokeLater(() -> {
+        if (descriptionPanel != null)
+          descriptionPanel.setCurrentFilm(null);
+      });
+    }
   }
 
   private void setSeenButtonState(boolean setViewed, @NotNull ObservableList<BookmarkData> items) {

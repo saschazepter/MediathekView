@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 
+<?import javafx.embed.swing.SwingNode?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
@@ -57,11 +58,10 @@
             </TableView>
         </AnchorPane>
         <AnchorPane minHeight="0.0" SplitPane.resizableWithParent="false">
-            <TextArea fx:id="taDescription" editable="false" prefHeight="60.0" wrapText="true"
-                      AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
-                      AnchorPane.topAnchor="0.0"/>
-            <Hyperlink fx:id="hyperLink" onAction="#hyperLinkSelected" prefHeight="20.0"
-                       text="Link zur Webseite" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"/>
+            <SwingNode fx:id="swingNode" AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
+                       AnchorPane.topAnchor="0.0">
+
+            </SwingNode>
         </AnchorPane>
     </SplitPane>
     <HBox alignment="CENTER_LEFT" layoutY="574.0" prefHeight="30.0" spacing="20.0"

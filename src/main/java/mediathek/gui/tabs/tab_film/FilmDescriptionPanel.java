@@ -149,17 +149,20 @@ public class FilmDescriptionPanel extends JPanel {
         add(hyperlink, new CC().cell(1, 3));
     }
 
+    public void setCurrentFilm(@Nullable DatenFilm film) {
+        currentFilm = film;
+        if (film == null) {
+            setAllFieldsEmpty();
+        } else {
+            showFilmDescription(film);
+        }
+    }
+
     public void install(@NotNull JTabbedPane tabbedPane, @NotNull JTable tabelle, @NotNull Supplier<Optional<DatenFilm>> filmSupplier) {
         tabbedPane.add("Beschreibung", this);
 
         tabelle.getSelectionModel().addListSelectionListener(e ->
-                filmSupplier.get().ifPresentOrElse(film -> {
-                    showFilmDescription(film);
-                    currentFilm = film;
-                }, () -> {
-                    setAllFieldsEmpty();
-                    currentFilm = null;
-                }));
+                filmSupplier.get().ifPresentOrElse(this::setCurrentFilm, () -> setCurrentFilm(null)));
     }
 
     private void setAllFieldsEmpty() {
