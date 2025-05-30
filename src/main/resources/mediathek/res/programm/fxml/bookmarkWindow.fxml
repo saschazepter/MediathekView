@@ -70,7 +70,6 @@
             <Insets left="10.0"/>
         </padding>
         <Label fx:id="lblCount" text="Label"/>
-        <Label fx:id="lblSeen" text="Label"/>
         <Label fx:id="lblFilter" text="Label"/>
     </HBox>
 </AnchorPane>

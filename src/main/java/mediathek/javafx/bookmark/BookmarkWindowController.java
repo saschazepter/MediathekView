@@ -111,8 +111,6 @@ public class BookmarkWindowController implements Initializable {
   @FXML
   private Label lblCount;
   @FXML
-  private Label lblSeen;
-  @FXML
   private Label lblFilter;
   @FXML
   private TextArea taDescription;
@@ -555,18 +553,21 @@ public class BookmarkWindowController implements Initializable {
     spSplitPane.setDividerPositions(newposition);
   }
 
-  @FXML
-  private void btnFilterAction(ActionEvent e) {
+  private void updateFilterState() {
     filterState = filterState.next();
     switch (filterState) {
       case ALL -> filteredBookmarkList.setPredicate(_ -> true);
       case UNSEEN -> filteredBookmarkList.setPredicate(BookmarkData::getNotSeen);
       case SEEN -> filteredBookmarkList.setPredicate(BookmarkData::getSeen);
     }
+  }
+
+  @FXML
+  private void btnFilterAction(ActionEvent e) {
+    updateFilterState();
 
     btnFilter.setTooltip(new Tooltip(filterState.tooltipText()));
     lblFilter.setText(filterState.messageText());
-    lblSeen.setDisable(filterState.buttonState());
     refresh();
   }
 
@@ -650,13 +651,12 @@ public class BookmarkWindowController implements Initializable {
               saveBookMarkList();
               SaveBookmarkTask = null;
             },
-            30,
+            5,
             TimeUnit.SECONDS);
   }
 
   private void updateDisplay() {
     lblCount.setText(String.format("Einträge: %d / %d", filteredBookmarkList.size(), listeBookmarkList.getNbOfEntries()));
-    lblSeen.setText(String.format("Gesehen: %d", listeBookmarkList.getSeenNbOfEntries()));
     btnSaveList.setDisable(!listUpdated);
     if (listUpdated) {
       scheduleBookmarkSave();

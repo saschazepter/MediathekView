@@ -72,16 +72,6 @@ public class BookmarkDataList {
     }
 
     /**
-     * Get number of Films marked as seen
-     *
-     * @return number
-     */
-    @JsonIgnore
-    public long getSeenNbOfEntries() {
-        return bookmarks.stream().filter(BookmarkData::getSeen).count();
-    }
-
-    /**
      * Add given film(s) to List if not yet in list
      * otherwise remove them from list
      * Note: if one of the given films is not bookmarked all are bookmarked
