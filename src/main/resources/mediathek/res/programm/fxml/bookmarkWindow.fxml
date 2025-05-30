@@ -38,8 +38,7 @@
     <SplitPane fx:id="spSplitPane" dividerPositions="0.75" orientation="VERTICAL" AnchorPane.bottomAnchor="30.0"
                AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="40.0">
         <AnchorPane>
-            <TableView fx:id="tbBookmarks" onContextMenuRequested="#tbviewOnContextRequested"
-                       onMouseClicked="#tbviewMouseClick" AnchorPane.bottomAnchor="0.0"
+            <TableView fx:id="tbBookmarks" AnchorPane.bottomAnchor="0.0"
                        AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                 <placeholder>
                     <Label text="Keine Einträge vorhanden!"/>
@@ -60,7 +59,7 @@
             <TextArea fx:id="taDescription" editable="false" prefHeight="60.0" wrapText="true"
                       AnchorPane.bottomAnchor="20.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0"
                       AnchorPane.topAnchor="0.0"/>
-            <Hyperlink fx:id="hyperLink" onAction="#hyperLinkSelected" prefHeight="20.0"
+            <Hyperlink fx:id="hyperLink" prefHeight="20.0"
                        text="Link zur Webseite" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0"/>
         </AnchorPane>
     </SplitPane>

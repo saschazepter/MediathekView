@@ -235,7 +235,6 @@ public class BookmarkWindowController implements Initializable {
     }
   }
 
-  @FXML
   private void hyperLinkSelected(Event e) {
     String url = tbBookmarks.getSelectionModel().getSelectedItem().getWebUrl();
     if (url != null) {
@@ -387,6 +386,11 @@ public class BookmarkWindowController implements Initializable {
     restoreTableStateAndContextMenu();
     setupTableColumns();
     setupTableView();
+
+    tbBookmarks.setOnContextMenuRequested(this::tbviewOnContextRequested);
+    tbBookmarks.setOnMouseClicked(this::tbviewMouseClick);
+
+    hyperLink.setOnAction(this::hyperLinkSelected);
 
     btnFilterAction (null);
     var config = ApplicationConfiguration.getConfiguration();
@@ -582,7 +586,6 @@ public class BookmarkWindowController implements Initializable {
     refresh();
   }
 
-  @FXML
   @SuppressWarnings("unchecked")
   private void tbviewOnContextRequested(ContextMenuEvent event) {
     if (!tbBookmarks.getSelectionModel().getSelectedItems().isEmpty()) { // Do not show row context menu if nothing is selected
@@ -597,7 +600,6 @@ public class BookmarkWindowController implements Initializable {
     }
   }
 
-  @FXML
   private void tbviewMouseClick(MouseEvent e) {
     if (e.getButton() == PRIMARY) {
       if (cellContextMenu.isShowing())
