@@ -23,8 +23,8 @@ import org.jetbrains.annotations.NotNull;
 enum FilterState {
     UNDEFINED("", "", false),
     ALL("Nur ungesehene Filme anzeigen", "Kein Filter", false),
-    UNSEEN("Nur gesehene Filme anzeigen", "Ungesehene Filme", true),
-    SEEN("Alle Filme anzeigen", "Gesehene Filme", false);
+    UNSEEN("Nur gesehene Filme anzeigen", "Filter: Nur ungesehene Filme", true),
+    SEEN("Alle Filme anzeigen", "Filter: Nur gesehene Filme", false);
 
     private final String tooltipText;
     private final String messageText;

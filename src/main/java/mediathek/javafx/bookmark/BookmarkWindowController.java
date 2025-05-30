@@ -14,10 +14,6 @@ import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.MenuItem;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.input.ContextMenuEvent;
@@ -36,6 +32,7 @@ import mediathek.gui.dialog.DialogAddDownload;
 import mediathek.gui.messages.BookmarkDeleteRepaintEvent;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
+import mediathek.tool.GuiFunktionen;
 import mediathek.tool.MessageBus;
 import mediathek.tool.timer.TimerPool;
 import org.apache.commons.configuration2.Configuration;
@@ -45,13 +42,10 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.datatransfer.StringSelection;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledFuture;
@@ -261,7 +255,7 @@ public class BookmarkWindowController implements Initializable {
     TablePosition<BookmarkData, String> pos = tbBookmarks.getSelectionModel().getSelectedCells().getFirst();
     BookmarkData item = tbBookmarks.getItems().get(pos.getRow());
     String data = pos.getTableColumn().getCellObservableValue(item).getValue();
-    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(data), null);
+    GuiFunktionen.copyToClipboard(data);
   }
 
   private void setupTableColumns() {
