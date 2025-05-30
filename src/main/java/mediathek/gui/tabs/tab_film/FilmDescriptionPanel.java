@@ -161,7 +161,7 @@ public class FilmDescriptionPanel extends JPanel {
     public void install(@NotNull JTabbedPane tabbedPane, @NotNull JTable tabelle, @NotNull Supplier<Optional<DatenFilm>> filmSupplier) {
         tabbedPane.add("Beschreibung", this);
 
-        tabelle.getSelectionModel().addListSelectionListener(e ->
+        tabelle.getSelectionModel().addListSelectionListener(_ ->
                 filmSupplier.get().ifPresentOrElse(this::setCurrentFilm, () -> setCurrentFilm(null)));
     }
 
