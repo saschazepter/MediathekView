@@ -71,11 +71,6 @@ import static javafx.scene.input.MouseButton.PRIMARY;
 public class BookmarkWindowController implements Initializable {
 
   private static final Logger logger = LogManager.getLogger();
-
-  static {
-    Font.loadFont(BookmarkWindowController.class.getResourceAsStream("/mediathek/res/programm/fxml/fontawesome-webfont.ttf"), 16);
-  }
-
   private final BookmarkDataList listeBookmarkList;
   private FilterState filterState = FilterState.UNDEFINED;
   private Stage stage;
@@ -137,6 +132,8 @@ public class BookmarkWindowController implements Initializable {
   public BookmarkWindowController() {
     listeBookmarkList = Daten.getInstance().getListeBookmarkList();
     listUpdated = false;
+    // needed for JIconFonts to work properly
+    Font.loadFont(BookmarkWindowController.class.getResourceAsStream("/mediathek/res/programm/fxml/fontawesome-webfont.ttf"), 16);
   }
 
   private static void setStageSize(Stage window) {
