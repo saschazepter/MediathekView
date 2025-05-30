@@ -32,7 +32,6 @@ import mediathek.gui.dialog.DialogAddDownload;
 import mediathek.gui.messages.BookmarkDeleteRepaintEvent;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
-import mediathek.tool.GuiFunktionen;
 import mediathek.tool.MessageBus;
 import mediathek.tool.timer.TimerPool;
 import org.apache.commons.configuration2.Configuration;
@@ -72,7 +71,6 @@ public class BookmarkWindowController implements Initializable {
   private MenuItem deleteitem;
   private MenuItem viewitem;
   private MenuItem webitem;
-  private MenuItem ccopyitem;
   private MenuItem edititem;
   private ContextMenu cellContextMenu;
   private double divposition;
@@ -247,14 +245,6 @@ public class BookmarkWindowController implements Initializable {
     }
   }
 
-  @SuppressWarnings("unchecked")
-  private void copy2Clipboard(Event e) {
-    TablePosition<BookmarkData, String> pos = tbBookmarks.getSelectionModel().getSelectedCells().getFirst();
-    BookmarkData item = tbBookmarks.getItems().get(pos.getRow());
-    String data = pos.getTableColumn().getCellObservableValue(item).getValue();
-    GuiFunktionen.copyToClipboard(data);
-  }
-
   private void setupTableColumns() {
     // connect columns with underlying data
     colSender.setCellValueFactory(param -> {
@@ -366,7 +356,6 @@ public class BookmarkWindowController implements Initializable {
       loaditem.setDisable(disable);
       viewitem.setDisable(onlyLifeStreamSelected());
       webitem.setDisable(disable || selModel.getSelectedItem().getWebUrl() == null);
-      ccopyitem.setDisable(disable);
 
       // Update buttons: Check if not seen in selection and adapt button text
       boolean setViewed = isUnSeenSelected();
@@ -518,12 +507,9 @@ public class BookmarkWindowController implements Initializable {
     webitem = new MenuItem("Film Webseite öffnen");
     webitem.setOnAction(this::hyperLinkSelected);
 
-    ccopyitem = new MenuItem("Zellinhalt in die Ablage kopieren");
-    ccopyitem.setOnAction(this::copy2Clipboard);
-
     // - add menue items to Cell ContextMenu
     cellContextMenu.getItems().addAll(playitem, loaditem, viewitem, new SeparatorMenuItem(), edititem, deleteitem,
-                                      new SeparatorMenuItem(), webitem, ccopyitem);
+                                      new SeparatorMenuItem(), webitem);
 
     // Restore column width, state and sequence
     Configuration config = ApplicationConfiguration.getConfiguration();
@@ -586,16 +572,8 @@ public class BookmarkWindowController implements Initializable {
     refresh();
   }
 
-  @SuppressWarnings("unchecked")
   private void tbviewOnContextRequested(ContextMenuEvent event) {
     if (!tbBookmarks.getSelectionModel().getSelectedItems().isEmpty()) { // Do not show row context menu if nothing is selected
-      if (!ccopyitem.isDisable()) { // adapt copy content to column
-        TablePosition<BookmarkData, String> pos = tbBookmarks.getSelectionModel().getSelectedCells().getFirst();
-        BookmarkData item = tbBookmarks.getItems().get(pos.getRow());
-        String sdata = pos.getTableColumn() != null ? pos.getTableColumn().getCellObservableValue(item).getValue() : "";
-        ccopyitem.setDisable(sdata == null || sdata.isBlank()); // Disable if cell is empty:
-        ccopyitem.setText((pos.getTableColumn() != null ? pos.getTableColumn().getText(): "Text" ) +  " kopieren");
-      }
       cellContextMenu.show(tbBookmarks, event.getScreenX(), event.getScreenY());
     }
   }
