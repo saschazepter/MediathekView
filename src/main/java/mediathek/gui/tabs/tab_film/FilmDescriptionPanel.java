@@ -42,7 +42,7 @@ public class FilmDescriptionPanel extends JPanel {
         initComponents();
 
 
-        hyperlink.addActionListener(l -> {
+        hyperlink.addActionListener(_ -> {
             if (!hyperlink.getToolTipText().isEmpty()) {
                 var toolTipText = hyperlink.getToolTipText();
                 if (Desktop.isDesktopSupported()) {
@@ -72,7 +72,7 @@ public class FilmDescriptionPanel extends JPanel {
 
     private void createPopupMenu() {
         var item = new JMenuItem("Beschreibung ändern...");
-        item.addActionListener(l -> {
+        item.addActionListener(_ -> {
             DialogFilmBeschreibung dialog = new DialogFilmBeschreibung(MediathekGui.ui(), currentFilm);
             dialog.setVisible(true);
         });
@@ -80,11 +80,11 @@ public class FilmDescriptionPanel extends JPanel {
         popupMenu.addSeparator();
 
         item = new JMenuItem("Beschreibung in Zwischenablage kopieren");
-        item.addActionListener(l -> GuiFunktionen.copyToClipboard(currentFilm.getDescription()));
+        item.addActionListener(_ -> GuiFunktionen.copyToClipboard(currentFilm.getDescription()));
         popupMenu.add(item);
 
         item = new JMenuItem("Filmbasisinformationen in Zwischenablage kopieren");
-        item.addActionListener(l -> {
+        item.addActionListener(_ -> {
             String sb = currentFilm.getSender() +
                     " - " +
                     currentFilm.getThema() +
@@ -97,7 +97,7 @@ public class FilmDescriptionPanel extends JPanel {
 
         popupMenu.addSeparator();
         item = new JMenuItem("Auswahl kopieren");
-        item.addActionListener(l -> {
+        item.addActionListener(_ -> {
             final var selected = (textArea.getSelectionEnd() - textArea.getSelectionStart()) > 0;
             if (!selected) {
                 JOptionPane.showMessageDialog(this, "Kein Text markiert!", Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE);
