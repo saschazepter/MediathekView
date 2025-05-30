@@ -77,7 +77,6 @@ public class BookmarkWindowController implements Initializable {
   private MenuItem ccopyitem;
   private MenuItem edititem;
   private ContextMenu cellContextMenu;
-  private double divposition;
   private boolean listUpdated; // indicates new updates to bookmarklist
   private ScheduledFuture<?> SaveBookmarkTask; // Future task to save
   @FXML
@@ -391,7 +390,6 @@ public class BookmarkWindowController implements Initializable {
     btnFilterAction (null);
     var config = ApplicationConfiguration.getConfiguration();
     btnShowDetails.setSelected(config.getBoolean(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".details", true));
-    divposition = config.getDouble(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".divider", spSplitPane.getDividerPositions()[0]);
     btnShowDetailsAction(null);
     updateDescriptionArea();
 
@@ -560,15 +558,7 @@ public class BookmarkWindowController implements Initializable {
 
   @FXML
   private void btnShowDetailsAction(ActionEvent event) {
-    double newposition;
-    if (btnShowDetails.isSelected()) {
-      newposition = divposition;
-    }
-    else {
-      divposition = spSplitPane.getDividerPositions()[0];
-      newposition = 1.0;
-    }
-    spSplitPane.setDividerPositions(newposition);
+    swingNode.setVisible(btnShowDetails.isSelected());
   }
 
   private void updateFilterState() {
@@ -774,10 +764,7 @@ public class BookmarkWindowController implements Initializable {
         config.setProperty(colref + ".size", (int)column.getWidth());
         config.setProperty(colref + ".visible", column.isVisible());
       }
-      // - Button States:
       config.setProperty(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".details", btnShowDetails.isSelected());
-      config.setProperty(ApplicationConfiguration.APPLICATION_UI_BOOKMARKLIST + ".divider", btnShowDetails.isSelected()
-        ? spSplitPane.getDividerPositions()[0] : divposition);
     }
     catch(Exception e) {
       logger.error("Save Config exception: ", e);
