@@ -397,16 +397,27 @@ public class BookmarkWindowController implements Initializable {
 
     setupColumnContextMenu();
 
-    setButtonFontIcons();
+    setupButtons();
   }
 
-  private void setButtonFontIcons() {
+  private void setupButtons() {
     try {
+      btnDeleteEntry.setOnAction(this::btnDeleteEntry);
       btnDeleteEntry.setGraphic(new IconNode(FontAwesome.TRASH));
+
+      btnMarkViewed.setOnAction(this::btnMarkEntryAsViewed);
       btnMarkViewed.setGraphic(new IconNode(FontAwesome.EYE));
+
+      btnEditNote.setOnAction(this::btnEditNote);
       btnEditNote.setGraphic(new IconNode(FontAwesome.PENCIL));
+
+      btnSaveList.setOnAction(this::btnSaveBookMarkList);
       btnSaveList.setGraphic(new IconNode(FontAwesome.FLOPPY_O));
+
+      btnShowDetails.setOnAction(this::btnShowDetailsAction);
       btnShowDetails.setGraphic(new IconNode(FontAwesome.INFO_CIRCLE));
+
+      btnFilter.setOnAction(this::btnFilterAction);
       btnFilter.setGraphic(new IconNode(FontAwesome.FILTER));
     }
     catch (Exception e) {
