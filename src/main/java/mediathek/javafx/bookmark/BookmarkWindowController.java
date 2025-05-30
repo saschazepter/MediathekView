@@ -33,7 +33,7 @@ import mediathek.daten.DatenDownload;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.actions.UrlHyperlinkAction;
 import mediathek.gui.dialog.DialogAddDownload;
-import mediathek.gui.messages.ReloadTableDataEvent;
+import mediathek.gui.messages.BookmarkDeleteRepaintEvent;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.MessageBus;
@@ -222,7 +222,7 @@ public class BookmarkWindowController implements Initializable {
       updateDisplay();
       selModel.clearSelection();
 
-      MessageBus.getMessageBus().publishAsync(new ReloadTableDataEvent());
+      MessageBus.getMessageBus().publishAsync(new BookmarkDeleteRepaintEvent());
     }
   }
 
