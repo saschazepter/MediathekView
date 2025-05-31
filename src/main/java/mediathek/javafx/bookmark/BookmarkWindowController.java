@@ -45,8 +45,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -135,25 +133,6 @@ public class BookmarkWindowController implements Initializable {
     }
     finally {
       config.unlock(LockMode.READ);
-    }
-  }
-
-  /**
-   * Invoke on the JavaFx thread and wait for it to return. Be very careful
-   * with this because this can cause deadlocks.
-   */
-  private void invokeInFxThreadAndWait(final Runnable run) {
-    if (Platform.isFxApplicationThread()) {
-      run.run();
-      return;
-    }
-
-    try {
-      FutureTask<Void> future = new FutureTask<>(run, null);
-      Platform.runLater(future);
-      future.get();
-    } catch (ExecutionException | InterruptedException e) {
-      logger.error("invokeInFxThreadAndWait() failed", e);
     }
   }
 
@@ -334,7 +313,7 @@ public class BookmarkWindowController implements Initializable {
         }
       }
       tbBookmarks.refresh();
-      invokeInFxThreadAndWait(this::updateDisplay);
+      updateDisplay();
     });
 
     tbBookmarks.setItems(sortedBookmarkList);
@@ -594,7 +573,7 @@ public class BookmarkWindowController implements Initializable {
    * During first call a new window is created, for successive calls the existing window is reused
    */
   public void show() {
-    invokeInFxThreadAndWait(() -> {
+    Platform.runLater(() -> {
       if (stage == null) {
         stage = new Stage();
         setStageSize(stage); // restore size
