@@ -45,7 +45,7 @@ class MediathekGuiMac : MediathekGui {
     }
 
     @Throws(IllegalStateException::class)
-    private fun getProcessorBrand(): String? {
+    private fun getProcessorBrand(): String {
         val name = "machdep.cpu.brand_string" // Common name for processor type/brand on macOS
 
         // First call to get the size
@@ -53,14 +53,10 @@ class MediathekGuiMac : MediathekGui {
         var ret = SystemB.INSTANCE.sysctlbyname(name, null, size, null, 0)
         check(ret == 0) { "size query failed" }
 
-        // Allocate buffer
-        val buffer = Memory(size.getValue().toLong())
-
+        val buffer = Memory(size.value.toLong())
         // Second call to get the actual value
         ret = SystemB.INSTANCE.sysctlbyname(name, buffer, size, null, 0)
         check(ret == 0) { "value query failed" }
-
-        // Get the string result
         return buffer.getString(0)
     }
 
@@ -72,9 +68,9 @@ class MediathekGuiMac : MediathekGui {
         logger.trace("Checking for correct JVM architecture on macOS...")
         val jvmBinaryArch = SystemUtils.OS_ARCH.lowercase(Locale.getDefault())
         val isAppleSilicon: Boolean = try {
-            val brand = getProcessorBrand()?.lowercase()
+            val brand = getProcessorBrand().lowercase()
             println(brand)
-            brand?.contains("apple") ?: false
+            brand.contains("apple")
         } catch (_: IllegalStateException) {
             false
         }
