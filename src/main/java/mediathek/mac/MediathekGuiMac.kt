@@ -41,7 +41,7 @@ class MediathekGuiMac : MediathekGui {
     private val powerManager = OsxPowerManager()
 
     constructor() : super() {
-        TimerPool.timerPool.schedule({checkForCorrectArchitecture()}, 15, TimeUnit.SECONDS)
+        TimerPool.timerPool.schedule({ checkForCorrectArchitecture() }, 15, TimeUnit.SECONDS)
     }
 
     @Throws(IllegalStateException::class)
@@ -66,28 +66,27 @@ class MediathekGuiMac : MediathekGui {
      */
     private fun checkForCorrectArchitecture() {
         logger.trace("Checking for correct JVM architecture on macOS...")
-        val jvmBinaryArch = SystemUtils.OS_ARCH.lowercase(Locale.getDefault())
-        val isAppleSilicon: Boolean = try {
-            val brand = getProcessorBrand().lowercase()
-            println(brand)
-            brand.contains("apple")
-        } catch (_: IllegalStateException) {
-            false
-        }
-        println("isAppleSilicon: $isAppleSilicon")
-        val isJVMIntel = jvmBinaryArch == "x86_64" || jvmBinaryArch == "amd64"
-        println("isJVMIntel: $isJVMIntel")
+        try {
+            val jvmBinaryArch = SystemUtils.OS_ARCH.lowercase(Locale.getDefault())
+            val isAppleSilicon = getProcessorBrand().lowercase().contains("apple")
+            println("isAppleSilicon: $isAppleSilicon")
+            val isJVMIntel = jvmBinaryArch == "x86_64" || jvmBinaryArch == "amd64"
+            println("isJVMIntel: $isJVMIntel")
 
-        if (isAppleSilicon && isJVMIntel) {
-            logger.warn("⚠️ Running an Intel JVM on Apple Silicon. Consider using a native ARM64 JVM for better performance.")
-            SwingUtilities.invokeLater {
-                val msg = "<html>Ihr Mac hat eine moderne Apple Silicon CPU.<br/>" +
-                        "Sie nutzen jedoch eine MediathekView Version für Intel Prozessoren.<br/><br/>" +
-                        "Um die Geschwindigkeit des Programms erheblich zu verbessern laden Sie bitte<br/>" +
-                        "die passende <b>MediathekView für Apple Silicon</b> herunter.</html>"
-                JOptionPane.showMessageDialog(this,msg, Konstanten.PROGRAMMNAME, JOptionPane.WARNING_MESSAGE)
+            if (isAppleSilicon && isJVMIntel) {
+                logger.warn("⚠️ Running an Intel JVM on Apple Silicon. Consider using a native ARM64 JVM for better performance.")
+                SwingUtilities.invokeLater {
+                    val msg = "<html>Ihr Mac hat eine moderne Apple Silicon CPU.<br/>" +
+                            "Sie nutzen jedoch eine MediathekView Version für Intel Prozessoren.<br/><br/>" +
+                            "Um die Geschwindigkeit des Programms erheblich zu verbessern laden Sie bitte<br/>" +
+                            "die passende <b>MediathekView für Apple Silicon</b> herunter.</html>"
+                    JOptionPane.showMessageDialog(this, msg, Konstanten.PROGRAMMNAME, JOptionPane.WARNING_MESSAGE)
+                }
             }
+        } catch (e: IllegalArgumentException) {
+            logger.error("Failed to query processor brand", e)
         }
+
     }
 
     override fun resetTabPlacement() {
@@ -101,6 +100,7 @@ class MediathekGuiMac : MediathekGui {
     override fun addSettingsMenuItem() {
         //using native handler instead
     }
+
     override fun setToolBarProperties() {
         //not used on macOS
     }
@@ -113,7 +113,7 @@ class MediathekGuiMac : MediathekGui {
         private class MacFullWindowPlaceHolder : JPanel() {
             init {
                 layout = FlowLayout()
-                putClientProperty( FlatClientProperties.FULL_WINDOW_CONTENT_BUTTONS_PLACEHOLDER, "mac zeroInFullScreen" )
+                putClientProperty(FlatClientProperties.FULL_WINDOW_CONTENT_BUTTONS_PLACEHOLDER, "mac zeroInFullScreen")
             }
         }
 
@@ -123,6 +123,7 @@ class MediathekGuiMac : MediathekGui {
             add(commonToolBar, BorderLayout.CENTER)
         }
     }
+
     override fun installToolBar() {
         contentPane.add(MacToolBarPanel(commonToolBar), BorderLayout.PAGE_START)
     }
