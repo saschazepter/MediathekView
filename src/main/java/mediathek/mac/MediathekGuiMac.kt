@@ -2,6 +2,9 @@ package mediathek.mac
 
 import com.formdev.flatlaf.FlatClientProperties
 import com.formdev.flatlaf.util.SystemInfo
+import com.sun.jna.Memory
+import com.sun.jna.platform.mac.SystemB
+import com.sun.jna.ptr.IntByReference
 import mediathek.config.Konstanten
 import mediathek.gui.actions.ShowAboutAction
 import mediathek.gui.messages.DownloadFinishedEvent
@@ -16,6 +19,7 @@ import mediathek.tool.notification.MacNotificationCenter
 import mediathek.tool.threads.IndicatorThread
 import mediathek.tool.timer.TimerPool
 import net.engio.mbassy.listener.Handler
+import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.awt.BorderLayout
@@ -40,18 +44,43 @@ class MediathekGuiMac : MediathekGui {
         TimerPool.timerPool.schedule({checkForCorrectArchitecture()}, 15, TimeUnit.SECONDS)
     }
 
+    @Throws(IllegalStateException::class)
+    private fun getProcessorBrand(): String? {
+        val name = "machdep.cpu.brand_string" // Common name for processor type/brand on macOS
+
+        // First call to get the size
+        val size = IntByReference(0)
+        var ret = SystemB.INSTANCE.sysctlbyname(name, null, size, null, 0)
+        check(ret == 0) { "size query failed" }
+
+        // Allocate buffer
+        val buffer = Memory(size.getValue().toLong())
+
+        // Second call to get the actual value
+        ret = SystemB.INSTANCE.sysctlbyname(name, buffer, size, null, 0)
+        check(ret == 0) { "value query failed" }
+
+        // Get the string result
+        return buffer.getString(0)
+    }
+
     /**
      * Check if MV is running "old" intel application on a new Mac with ARM cpu.
      * Issue warning if true as we have a faster alternative.
      */
     private fun checkForCorrectArchitecture() {
         logger.trace("Checking for correct JVM architecture on macOS...")
-        val osName = System.getProperty("os.name").lowercase(Locale.getDefault())
-        val osArch = System.getProperty("os.arch").lowercase(Locale.getDefault()) // native arch
-        val jvmBinaryArch = System.getProperty("os.arch").lowercase(Locale.getDefault())
-
-        val isAppleSilicon = osName.contains("mac") && osArch.contains("aarch64")
+        val jvmBinaryArch = SystemUtils.OS_ARCH.lowercase(Locale.getDefault())
+        val isAppleSilicon: Boolean = try {
+            val brand = getProcessorBrand()?.lowercase()
+            println(brand)
+            brand?.contains("apple") ?: false
+        } catch (_: IllegalStateException) {
+            false
+        }
+        println("isAppleSilicon: $isAppleSilicon")
         val isJVMIntel = jvmBinaryArch == "x86_64" || jvmBinaryArch == "amd64"
+        println("isJVMIntel: $isJVMIntel")
 
         if (isAppleSilicon && isJVMIntel) {
             logger.warn("⚠️ Running an Intel JVM on Apple Silicon. Consider using a native ARM64 JVM for better performance.")
