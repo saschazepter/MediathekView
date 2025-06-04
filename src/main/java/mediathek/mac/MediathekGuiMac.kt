@@ -69,9 +69,9 @@ class MediathekGuiMac : MediathekGui {
         try {
             val jvmBinaryArch = SystemUtils.OS_ARCH.lowercase(Locale.getDefault())
             val isAppleSilicon = getProcessorBrand().lowercase().contains("apple")
-            println("isAppleSilicon: $isAppleSilicon")
+            //println("isAppleSilicon: $isAppleSilicon")
             val isJVMIntel = jvmBinaryArch == "x86_64" || jvmBinaryArch == "amd64"
-            println("isJVMIntel: $isJVMIntel")
+            //println("isJVMIntel: $isJVMIntel")
 
             if (isAppleSilicon && isJVMIntel) {
                 logger.warn("⚠️ Running an Intel JVM on Apple Silicon. Consider using a native ARM64 JVM for better performance.")
