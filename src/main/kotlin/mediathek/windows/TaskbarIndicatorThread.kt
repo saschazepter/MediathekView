@@ -3,17 +3,15 @@ package mediathek.windows
 import mediathek.tool.threads.IndicatorThread
 import org.apache.logging.log4j.LogManager
 import java.awt.Taskbar
-import java.lang.foreign.FunctionDescriptor
-import java.lang.foreign.Linker
-import java.lang.foreign.ValueLayout
+import java.lang.foreign.*
 import java.lang.invoke.MethodHandle
 import java.util.concurrent.TimeUnit
 import javax.swing.JFrame
 
 internal class TaskbarIndicatorThread(parent: MediathekGuiWindows) : IndicatorThread() {
-    private val taskbar: Taskbar
     private val parent: JFrame
     private val setThreadExecutionState: MethodHandle?
+    private val arena = Arena.ofAuto()
 
     private fun disableStandby() {
         val res = setThreadExecutionState?.invoke(WinFlags.ES_CONTINUOUS or WinFlags.ES_SYSTEM_REQUIRED) ?: 0
@@ -30,6 +28,7 @@ internal class TaskbarIndicatorThread(parent: MediathekGuiWindows) : IndicatorTh
     }
 
     override fun run() {
+        val taskbar = Taskbar.getTaskbar()
         try {
             while (!isInterrupted) {
                 val percentage = calculateOverallPercentage().toInt()
@@ -52,13 +51,12 @@ internal class TaskbarIndicatorThread(parent: MediathekGuiWindows) : IndicatorTh
 
     init {
         name = "TaskbarIndicatorThread"
-        taskbar = Taskbar.getTaskbar()
         this.parent = parent
 
         val linker = Linker.nativeLinker()
-        val setThreadExecutionStateMemSeg = linker.defaultLookup().find("SetThreadExecutionState").orElseThrow()
+        val kernel32 = SymbolLookup.libraryLookup("kernel32.dll", arena)
         setThreadExecutionState = linker.downcallHandle(
-            setThreadExecutionStateMemSeg,
+            kernel32.find("SetThreadExecutionState").orElseThrow(),
             FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT)
         )
     }
