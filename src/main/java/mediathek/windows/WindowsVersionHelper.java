@@ -21,13 +21,9 @@ package mediathek.windows;
 import java.lang.foreign.*;
 
 public class WindowsVersionHelper {
-
-    // Constants for VerSetConditionMask dwTypeBitMask parameter
     private static final int VER_MINORVERSION = 0x0000001;
     private static final int VER_MAJORVERSION = 0x0000002;
     private static final int VER_SERVICEPACKMAJOR = 0x0000020;
-
-    // Constants for VerSetConditionMask dwCondition parameter
     private static final byte VER_GREATER_EQUAL = 3;
 
     private static final GroupLayout OSVERSIONINFOEXW_LAYOUT = MemoryLayout.structLayout(
@@ -48,30 +44,30 @@ public class WindowsVersionHelper {
 
 
     public static boolean IsWindows10OrGreater() throws Throwable {
-        return isWindowsVersionOrGreater(10,0,0);
+        return isWindowsVersionOrGreater(10, 0, 0);
     }
 
     public static boolean isWindowsVersionOrGreater(int major, int minor, int servicePackMajor) throws Throwable {
         try (Arena arena = Arena.ofConfined()) {
             SymbolLookup kernel32 = SymbolLookup.libraryLookup("kernel32.dll", Arena.global());
 
-            var NATIVE_LINKER = Linker.nativeLinker();
-            var MH_VerSetConditionMask = NATIVE_LINKER.downcallHandle(
+            var nativeLinker = Linker.nativeLinker();
+            var MH_VerSetConditionMask = nativeLinker.downcallHandle(
                     kernel32.find("VerSetConditionMask").orElseThrow(() -> new UnsatisfiedLinkError("VerSetConditionMask not found")),
                     FunctionDescriptor.of(ValueLayout.JAVA_LONG, ValueLayout.JAVA_LONG, ValueLayout.JAVA_INT, ValueLayout.JAVA_BYTE)
             );
 
-            var MH_VerifyVersionInfoW = NATIVE_LINKER.downcallHandle(
+            var MH_VerifyVersionInfoW = nativeLinker.downcallHandle(
                     kernel32.find("VerifyVersionInfoW").orElseThrow(() -> new UnsatisfiedLinkError("VerifyVersionInfoW not found")),
                     FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_INT, ValueLayout.JAVA_LONG)
             );
-            MemorySegment osvi = arena.allocate(OSVERSIONINFOEXW_LAYOUT);
 
             var VH_dwOSVersionInfoSize = OSVERSIONINFOEXW_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("dwOSVersionInfoSize"));
             var VH_dwMajorVersion = OSVERSIONINFOEXW_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("dwMajorVersion"));
             var VH_dwMinorVersion = OSVERSIONINFOEXW_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("dwMinorVersion"));
             var VH_wServicePackMajor = OSVERSIONINFOEXW_LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("wServicePackMajor"));
 
+            var osvi = arena.allocate(OSVERSIONINFOEXW_LAYOUT);
             VH_dwOSVersionInfoSize.set(osvi, 0L, (int) OSVERSIONINFOEXW_STRUCT_SIZE);
             VH_dwMajorVersion.set(osvi, 0L, major);
             VH_dwMinorVersion.set(osvi, 0L, minor);
@@ -82,9 +78,7 @@ public class WindowsVersionHelper {
             conditionMask = (long) MH_VerSetConditionMask.invokeExact(conditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
             conditionMask = (long) MH_VerSetConditionMask.invokeExact(conditionMask, VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
 
-            int typeMask = VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR;
-
-            int result = (int) MH_VerifyVersionInfoW.invokeExact(osvi, typeMask, conditionMask);
+            int result = (int) MH_VerifyVersionInfoW.invokeExact(osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, conditionMask);
 
             return result != 0;
         }
@@ -107,7 +101,8 @@ public class WindowsVersionHelper {
             boolean isFutureVersion = v.isWindowsVersionOrGreater(99, 0, 0);
             System.out.println("Is current OS Windows 99.0 SP0 or greater? " + isFutureVersion);
 
-        } catch (Throwable t) {
+        }
+        catch (Throwable t) {
             System.err.println("An error occurred during the Windows version check:");
             t.printStackTrace();
         }
