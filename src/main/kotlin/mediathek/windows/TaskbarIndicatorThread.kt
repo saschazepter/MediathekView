@@ -1,25 +1,32 @@
 package mediathek.windows
 
-import com.sun.jna.platform.win32.Kernel32
-import com.sun.jna.platform.win32.WinBase
 import mediathek.tool.threads.IndicatorThread
 import org.apache.logging.log4j.LogManager
 import java.awt.Taskbar
+import java.lang.foreign.FunctionDescriptor
+import java.lang.foreign.Linker
+import java.lang.foreign.ValueLayout
+import java.lang.invoke.MethodHandle
 import java.util.concurrent.TimeUnit
 import javax.swing.JFrame
 
 internal class TaskbarIndicatorThread(parent: MediathekGuiWindows) : IndicatorThread() {
     private val taskbar: Taskbar
     private val parent: JFrame
+    private val setThreadExecutionState: MethodHandle?
 
     private fun disableStandby() {
-        if (Kernel32.INSTANCE.SetThreadExecutionState(WinBase.ES_CONTINUOUS or WinBase.ES_SYSTEM_REQUIRED) == 0)
+        val res = setThreadExecutionState?.invoke(WinFlags.ES_CONTINUOUS or WinFlags.ES_SYSTEM_REQUIRED) ?: 0
+        if (res as Int == 0) {
             logger.error("disableStandby() failed!")
+        }
     }
 
     private fun enableStandby() {
-        if (Kernel32.INSTANCE.SetThreadExecutionState(WinBase.ES_CONTINUOUS) == 0)
+        val res = setThreadExecutionState?.invoke(WinFlags.ES_CONTINUOUS) ?: 0
+        if (res as Int == 0) {
             logger.error("enableStandby() failed!")
+        }
     }
 
     override fun run() {
@@ -31,7 +38,7 @@ internal class TaskbarIndicatorThread(parent: MediathekGuiWindows) : IndicatorTh
                 disableStandby()
                 TimeUnit.MILLISECONDS.sleep(500)
             }
-        } catch (ignored: InterruptedException) {
+        } catch (_: InterruptedException) {
         } finally {
             //when we are finished, stop progress
             taskbar.setWindowProgressState(parent, Taskbar.State.OFF)
@@ -47,5 +54,12 @@ internal class TaskbarIndicatorThread(parent: MediathekGuiWindows) : IndicatorTh
         name = "TaskbarIndicatorThread"
         taskbar = Taskbar.getTaskbar()
         this.parent = parent
+
+        val linker = Linker.nativeLinker()
+        val setThreadExecutionStateMemSeg = linker.defaultLookup().find("SetThreadExecutionState").orElseThrow()
+        setThreadExecutionState = linker.downcallHandle(
+            setThreadExecutionStateMemSeg,
+            FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT)
+        )
     }
 }
