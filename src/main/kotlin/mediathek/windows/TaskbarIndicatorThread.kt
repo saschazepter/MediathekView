@@ -70,11 +70,12 @@ internal class TaskbarIndicatorThread(parent: MediathekGuiWindows) : IndicatorTh
         name = "TaskbarIndicatorThread"
         this.parent = parent
 
-        val linker = Linker.nativeLinker()
-        val kernel32 = SymbolLookup.libraryLookup("kernel32.dll", Arena.global())
-        setThreadExecutionState = linker.downcallHandle(
-            kernel32.find("SetThreadExecutionState").orElseThrow(),
-            FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT)
-        )
+        Linker.nativeLinker().let { linker ->
+            val kernel32 = SymbolLookup.libraryLookup("kernel32.dll", Arena.global())
+            setThreadExecutionState = linker.downcallHandle(
+                kernel32.find("SetThreadExecutionState").orElseThrow(),
+                FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.JAVA_INT)
+            )
+        }
     }
 }

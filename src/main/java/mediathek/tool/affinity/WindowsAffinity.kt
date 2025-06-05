@@ -29,15 +29,15 @@ class WindowsAffinity : IAffinity {
         val affinityMask = (0 until numCpus).fold(0L) { acc, i -> acc or (1L shl i) }
 
         Linker.nativeLinker().let { linker ->
-            val symbolLookup = SymbolLookup.loaderLookup()
+            val kernel32 = SymbolLookup.libraryLookup("kernel32.dll", Arena.global())
 
             val getCurrentProcess: MethodHandle = linker.downcallHandle(
-                symbolLookup.find("GetCurrentProcess").orElseThrow(),
+                kernel32.find("GetCurrentProcess").orElseThrow(),
                 FunctionDescriptor.of(ValueLayout.ADDRESS)
             )
 
             val setAffinity: MethodHandle = linker.downcallHandle(
-                symbolLookup.find("SetProcessAffinityMask").orElseThrow(),
+                kernel32.find("SetProcessAffinityMask").orElseThrow(),
                 FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS, ValueLayout.JAVA_LONG)
             )
 
@@ -46,7 +46,6 @@ class WindowsAffinity : IAffinity {
 
             if (result != 0) {
                 logger.info("CPU affinity was set successfully to mask: 0x${affinityMask.toString(16)}")
-                logger.trace("Available processors: {}", Runtime.getRuntime().availableProcessors())
             } else {
                 logger.warn("Failed to set CPU affinity.")
             }

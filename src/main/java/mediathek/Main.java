@@ -265,10 +265,15 @@ public class Main {
     }
 
     private static void setupCpuAffinity() {
-        final int numCpus = Config.getNumCpus();
-        if (numCpus != 0) {
-            var affinity = Affinity.getAffinityImpl();
-            affinity.setDesiredCpuAffinity(numCpus);
+        try {
+            final int numCpus = Config.getNumCpus();
+            if (numCpus != 0) {
+                var affinity = Affinity.getAffinityImpl();
+                affinity.setDesiredCpuAffinity(numCpus);
+            }
+        }
+        catch (Exception e) {
+            logger.error("Failed to set cpu affinity", e);
         }
     }
 
