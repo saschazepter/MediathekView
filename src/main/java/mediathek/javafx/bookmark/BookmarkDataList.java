@@ -2,10 +2,7 @@ package mediathek.javafx.bookmark;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.ObservableElementList;
 import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.common.hash.HashCode;
@@ -33,13 +30,10 @@ import java.util.List;
 public class BookmarkDataList {
     private static final Logger logger = LogManager.getLogger();
     private final BasicEventList<BookmarkData> bookmarks;
-    private final ObservableElementList<BookmarkData> observableElementList;
     private final ObjectMapper objectMapper;
 
     public BookmarkDataList(@NotNull Daten daten) {
         bookmarks = new BasicEventList<>();
-        var bookmarkConnector = GlazedLists.beanConnector(BookmarkData.class);
-        observableElementList = new ObservableElementList<>(bookmarks, bookmarkConnector);
 
         objectMapper = JsonMapper.builder().findAndAddModules().build();
 
@@ -71,11 +65,6 @@ public class BookmarkDataList {
     @JsonGetter("bookmarks")
     public EventList<BookmarkData> getEventList() {
         return bookmarks;
-    }
-
-    @JsonIgnore
-    public ObservableElementList<BookmarkData> getObservableElementList() {
-        return observableElementList;
     }
 
     /**

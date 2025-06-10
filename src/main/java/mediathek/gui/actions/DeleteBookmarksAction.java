@@ -27,7 +27,7 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 
 public class DeleteBookmarksAction extends AbstractAction {
-    private final JFrame owner;
+    private final MediathekGui owner;
 
     public DeleteBookmarksAction(MediathekGui parent) {
         super();
@@ -40,6 +40,13 @@ public class DeleteBookmarksAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        boolean restoreManageBookmarkWindow = false;
+        var bookmarkDialog = owner.tabFilme.bookmarkDialog;
+
+        if (bookmarkDialog.isVisible()) {
+            restoreManageBookmarkWindow = true;
+            bookmarkDialog.setVisible(false);
+        }
         var res = JOptionPane.showConfirmDialog(owner,
                 "Möchten Sie wirklich die Merkliste vollständig löschen?", Konstanten.PROGRAMMNAME, JOptionPane.YES_NO_OPTION);
         if (res == JOptionPane.YES_OPTION) {
@@ -47,6 +54,10 @@ public class DeleteBookmarksAction extends AbstractAction {
             bookmarkList.clear();
             bookmarkList.saveToFile();
             JOptionPane.showMessageDialog(owner, "Die Merkliste wurde gelöscht", Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
+        }
+
+        if (restoreManageBookmarkWindow) {
+            bookmarkDialog.setVisible(true);
         }
 
     }

@@ -360,11 +360,6 @@
 
         <dependency>
             <groupId>com.github.jiconfont</groupId>
-            <artifactId>jiconfont-javafx</artifactId>
-            <version>1.0.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.jiconfont</groupId>
             <artifactId>jiconfont-font_awesome</artifactId>
             <version>4.7.0.1</version>
         </dependency>
@@ -692,7 +687,6 @@
                 </os>
             </activation>
             <properties>
-                <javafx.platform>win</javafx.platform>
                 <install4j.platform>windows</install4j.platform>
             </properties>
             <build>
@@ -768,7 +762,6 @@
                 </os>
             </activation>
             <properties>
-                <javafx.platform>win</javafx.platform>
                 <install4j.platform>windows</install4j.platform>
             </properties>
             <build>
@@ -824,7 +817,6 @@
                 </os>
             </activation>
             <properties>
-                <javafx.platform>linux</javafx.platform>
                 <install4j.platform>linux</install4j.platform>
             </properties>
             <build>
@@ -877,7 +869,6 @@
                 </os>
             </activation>
             <properties>
-                <javafx.platform>linux-aarch64</javafx.platform>
                 <install4j.platform>arm</install4j.platform>
             </properties>
             <build>
@@ -929,9 +920,6 @@
                     <arch>x86_64</arch>
                 </os>
             </activation>
-            <properties>
-                <javafx.platform>mac</javafx.platform>
-            </properties>
             <build>
                 <plugins>
                     <plugin>
@@ -1005,10 +993,6 @@
                     <arch>aarch64</arch>
                 </os>
             </activation>
-            <properties>
-                <javafx.platform>mac-aarch64</javafx.platform>
-                <javafx.sdk>${project.basedir}/javafx_sdk/mac/aarch64/javafx-sdk/lib</javafx.sdk>
-            </properties>
             <build>
                 <plugins>
                     <plugin>

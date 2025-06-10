@@ -2,6 +2,10 @@ package mediathek.gui.tabs.tab_film;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.ObservableElementList;
+import ca.odell.glazedlists.swing.DefaultEventSelectionModel;
+import ca.odell.glazedlists.swing.DefaultEventTableModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -34,6 +38,7 @@ import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.gui.tabs.tab_film.helpers.GuiFilmeModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.LuceneGuiFilmeModelHelper;
+import mediathek.javafx.bookmark.BookmarkData;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import mediathek.tool.cellrenderer.CellRendererFilme;
@@ -503,12 +508,83 @@ public class GuiFilme extends AGuiTabPanel {
         }
     }
 
+    static class BookmarkDialog extends JDialog {
+        private DefaultEventSelectionModel<BookmarkData> selectionModel;
+        private final JButton updateTableButton = new JButton("Set Note");
+        private final JButton removeTableButton = new JButton("Remove Note");
+
+        public BookmarkDialog(Frame owner) {
+            super(owner);
+            setTitle("Merkliste verwalten");
+            setModal(false);
+            setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            setSize(400, 200);
+
+            JTable table = new JTable();
+            JScrollPane scrollPane = new JScrollPane(table);
+            getContentPane().add(scrollPane, BorderLayout.CENTER);
+
+            updateTableButton.addActionListener(_ -> {
+                if (!selectionModel.isSelectionEmpty()) {
+                    var selectedPeople = selectionModel.getSelected();
+                    for (var bookmark: selectedPeople) {
+                        bookmark.setNote("Hello World22");
+                    }
+                    Daten.getInstance().getListeBookmarkList().saveToFile();
+                }
+            });
+            removeTableButton.addActionListener(_ -> {
+                if (!selectionModel.isSelectionEmpty()) {
+                    var selectedPeople = selectionModel.getSelected();
+                    for (var bookmark: selectedPeople) {
+                        bookmark.setNote(null);
+                    }
+                    Daten.getInstance().getListeBookmarkList().saveToFile();
+                }
+            });
+
+            JPanel btnPanel = new JPanel(new VerticalLayout());
+            btnPanel.add(updateTableButton);
+            btnPanel.add(removeTableButton);
+            getContentPane().add(btnPanel, BorderLayout.SOUTH);
+
+            ObservableElementList.Connector<BookmarkData> personConnector = GlazedLists.beanConnector(BookmarkData.class);
+            var observedBookmarks =
+                    new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
+
+
+            var model = new DefaultEventTableModel<>(observedBookmarks, GlazedLists.tableFormat(new String[]{"filmHashCode", "note"} , new String[]{"Hash Code", "Notiz"}));
+            selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
+            selectionModel.addListSelectionListener(l -> {
+                if (!l.getValueIsAdjusting()) {
+                    var selectedBookmarks = selectionModel.getSelected();
+                    if (selectedBookmarks.size() > 1) {
+                        System.out.println("TOO MANY SELECTIONS");
+                    }
+                    else if (selectedBookmarks.size() == 1) {
+                        System.out.println("Showing info");
+                        System.out.println(selectedBookmarks.getFirst().getFilmHashCode());
+                    }
+                }
+            });
+
+            table.setModel(model);
+            table.setSelectionModel(selectionModel);
+        }
+    }
     /**
      * If necessary instantiate and show the bookmark window
      */
     public void showManageBookmarkWindow() {
-        //FIXME implement bookmark window
+        if (bookmarkDialog == null) {
+            bookmarkDialog = new BookmarkDialog(mediathekGui);
+            bookmarkDialog.setVisible(true);
+        }
+        else {
+            bookmarkDialog.setVisible(true);
+        }
     }
+    public JDialog bookmarkDialog;
 
     public void playerStarten(DatenPset pSet) {
         // Url mit Prognr. starten
