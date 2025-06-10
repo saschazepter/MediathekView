@@ -653,15 +653,10 @@ public class BookmarkWindowController implements Initializable {
             final var pSet = Daten.listePset.getListeSpeichern().getFirst();
             var dlg = new DialogAddDownload(MediathekGui.ui(), film, pSet, Optional.empty());
             dlg.setVisible(true);
-            showStage();
-        });
-    }
-
-    private void showStage() {
-        //this may be called from swing EDT!
-        Platform.runLater(() -> {
-            stage.show();
-            drawStageAttention();
+            Platform.runLater(() -> {
+                stage.show();
+                drawStageAttention();
+            });
         });
     }
 
