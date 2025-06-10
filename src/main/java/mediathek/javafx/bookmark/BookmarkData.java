@@ -175,7 +175,7 @@ public class BookmarkData {
     public void setSeen(boolean seen) {
         boolean oldSeen = this.seen;
         this.seen = seen;
-        support.firePropertyChange("firstName", oldSeen, seen);
+        support.firePropertyChange("seen", oldSeen, seen);
     }
 
     @JsonIgnore
@@ -203,21 +203,6 @@ public class BookmarkData {
     @JsonIgnore
     public String getWebUrl() {
         return (this.filmdata != null) ? this.filmdata.getWebsiteUrl() : null;
-    }
-
-    @JsonIgnore
-    public String getFormattedNote() {
-        return note != null && !note.isEmpty() ? String.format("\n\nNotiz:\n%s", note) : "";
-    }
-
-    @JsonIgnore
-    public String getExtendedDescription() {
-        if (filmdata == null) {
-            return "Es wurde kein Filmobjekt mehr in der Filmliste gefunden. --> Ungültiger Eintrag!";
-        }
-        else {
-            return String.format("%s - %s\n\n%s%s", filmdata.getSender(), filmdata.getTitle(), filmdata.getDescription(), getFormattedNote());
-        }
     }
 
     @JsonIgnore

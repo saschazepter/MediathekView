@@ -38,8 +38,8 @@ import java.util.ArrayList;
 import java.util.concurrent.TimeUnit;
 
 public class BookmarkDialog extends JDialog {
-    private DefaultEventSelectionModel<BookmarkData> selectionModel;
     private final FilmDescriptionPanel filmDescriptionPanel = new FilmDescriptionPanel();
+    private DefaultEventSelectionModel<BookmarkData> selectionModel;
 
     public BookmarkDialog(Frame owner) {
         super(owner);
@@ -102,6 +102,15 @@ public class BookmarkDialog extends JDialog {
         btnPanel.add(removeTableButton);
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         tabbedPane.addTab("Beschreibung", filmDescriptionPanel);
+        JPanel notePanel = new JPanel(new BorderLayout());
+        notePanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        var noteArea = new JTextArea();
+        noteArea.setLineWrap(true);
+        noteArea.setWrapStyleWord(true);
+        noteArea.setEditable(false);
+        noteArea.setText("Platzhalter für eine Notiz");
+        notePanel.add(noteArea, BorderLayout.CENTER);
+        tabbedPane.addTab("Notizen", notePanel);
         btnPanel.add(tabbedPane);
         getContentPane().add(btnPanel, BorderLayout.SOUTH);
 
@@ -117,7 +126,9 @@ public class BookmarkDialog extends JDialog {
             if (!l.getValueIsAdjusting()) {
                 var selectedBookmarks = selectionModel.getSelected();
                 if (selectedBookmarks.size() == 1) {
-                    filmDescriptionPanel.setCurrentFilm(selectedBookmarks.getFirst().getDatenFilm());
+                    selectedBookmarks.getFirst().getDatenFilmOptional()
+                            .ifPresentOrElse(filmDescriptionPanel::setCurrentFilm,
+                                    () -> filmDescriptionPanel.setCurrentFilm(null));
                 }
                 else
                     filmDescriptionPanel.setCurrentFilm(null);
