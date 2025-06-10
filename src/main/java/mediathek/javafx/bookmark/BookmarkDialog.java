@@ -31,6 +31,7 @@ import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -101,6 +102,7 @@ public class BookmarkDialog extends JDialog {
         columnModel.getColumn(3).setCellRenderer(new FilmLengthCellRenderer());
         //sendedatum column
         columnModel.getColumn(4).setCellRenderer(new CenteredCellRenderer());
+        columnModel.getColumn(7).setCellRenderer(new NoteCellRenderer());
         //hinzugefügt am Column
         columnModel.getColumn(9).setCellRenderer(new AddedAtCellRenderer());
     }
@@ -179,14 +181,34 @@ public class BookmarkDialog extends JDialog {
         }
     }
 
+    static class NoteCellRenderer extends JPanel implements TableCellRenderer {
+        private final JCheckBox checkBox = new JCheckBox();
+
+        public NoteCellRenderer() {
+            setLayout(new BorderLayout());
+            checkBox.setHorizontalAlignment(SwingConstants.CENTER);
+            add(checkBox, BorderLayout.CENTER);
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            checkBox.setSelected(value != null);
+            return this;
+        }
+    }
+
     static class FilmLengthCellRenderer extends CenteredCellRenderer {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             long length = (int) value;
-            var duration = TimeUnit.MILLISECONDS.convert(length, TimeUnit.SECONDS);
-            var durationStr = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
-            setText(durationStr);
+            if (length >= 0) {
+                var duration = TimeUnit.MILLISECONDS.convert(length, TimeUnit.SECONDS);
+                var durationStr = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
+                setText(durationStr);
+            }
+            else
+                setText(null);
             return this;
         }
     }
@@ -196,7 +218,9 @@ public class BookmarkDialog extends JDialog {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             var date = (LocalDate) value;
-            setText(date.format(DateUtil.FORMATTER));
+            if (date != null) {
+                setText(date.format(DateUtil.FORMATTER));
+            }
             return this;
         }
     }
