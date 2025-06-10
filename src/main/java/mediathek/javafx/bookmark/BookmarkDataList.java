@@ -135,27 +135,6 @@ public class BookmarkDataList {
     }
 
     /**
-     * Delete given bookmarkList from list and remove reference in film list)
-     *
-     * @param bookmarkList The list of bookmarkList.
-     */
-    public void deleteEntries(@NotNull List<BookmarkData> bookmarkList) {
-        for (var bookmark : bookmarkList) {  // delete references
-            var movie = bookmark.getDatenFilm();
-            if (movie != null) {
-                movie.setBookmark(null);
-            }
-        }
-        bookmarks.getReadWriteLock().writeLock().lock();
-        try {
-            bookmarks.removeAll(bookmarkList);
-        }
-        finally {
-            bookmarks.getReadWriteLock().writeLock().unlock();
-        }
-    }
-
-    /**
      * Load Bookmarklist from backup medium
      */
     public void loadFromFile() {
