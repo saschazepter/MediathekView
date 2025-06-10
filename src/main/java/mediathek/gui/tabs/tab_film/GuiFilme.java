@@ -42,6 +42,7 @@ import mediathek.javafx.bookmark.BookmarkData;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import mediathek.tool.cellrenderer.CellRendererFilme;
+import mediathek.tool.datum.DateUtil;
 import mediathek.tool.datum.DatumFilm;
 import mediathek.tool.listener.BeobTableHeader;
 import mediathek.tool.models.TModelFilm;
@@ -57,6 +58,7 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -67,6 +69,7 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -570,7 +573,7 @@ public class GuiFilme extends AGuiTabPanel {
             var observedBookmarks =
                     new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
 
-            var tableFormat = GlazedLists.tableFormat(new String[]{"sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "url", "note", "filmHashCode", "AddedAt"} ,
+            var tableFormat = GlazedLists.tableFormat(new String[]{"sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "url", "note", "filmHashCode", "BookmarkAdded"} ,
                     new String[]{"Sender", "Thema", "Titel", "Dauer", "Sendedatum", "Verfügbar bis", "URL", "Notiz", "Hash Code", "hinzugefügt am"});
             var model = new DefaultEventTableModel<>(observedBookmarks, tableFormat);
             selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
@@ -589,6 +592,16 @@ public class GuiFilme extends AGuiTabPanel {
 
             table.setModel(model);
             table.setSelectionModel(selectionModel);
+            //hinzugefügt am Column
+            table.getColumnModel().getColumn(9).setCellRenderer(new DefaultTableCellRenderer() {
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                    var date = (LocalDate) value;
+                    setText(date.format(DateUtil.FORMATTER));
+                    return this;
+                }
+            });
             /*table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
 
                 @Override
