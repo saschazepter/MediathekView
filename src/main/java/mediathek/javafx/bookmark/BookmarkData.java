@@ -48,6 +48,42 @@ public class BookmarkData {
         this.filmdata = film;
     }
 
+    @JsonIgnore
+    public String getSender() {
+        if (filmdata != null) {
+            return filmdata.getSender();
+        }
+        else
+            return "NO SENDER";
+    }
+
+    @JsonIgnore
+    public String getThema() {
+        if (filmdata != null) {
+            return filmdata.getThema();
+        }
+        else
+            return "NO THEMA";
+    }
+
+    @JsonIgnore
+    public String getTitle() {
+        if (filmdata != null) {
+            return filmdata.getTitle();
+        }
+        else
+            return "NO TITLE";
+    }
+
+    @JsonIgnore
+    public int getDauer() {
+        if (filmdata != null) {
+            return filmdata.getFilmLength();
+        }
+        else
+            return -1;
+    }
+
     @SuppressWarnings("unused")
     public LocalDate getBookmarkAdded() {
         return bookmarkAdded;

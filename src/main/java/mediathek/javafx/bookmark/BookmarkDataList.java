@@ -67,6 +67,16 @@ public class BookmarkDataList {
         return bookmarks;
     }
 
+    public void removeBookmark(@NotNull BookmarkData bookmark) {
+        var filmOpt = bookmark.getDatenFilmOptional();
+        filmOpt.ifPresent(film -> {
+            film.setBookmark(null);
+        });
+        bookmark.setDatenFilm(null);
+        System.out.println("Deleting Bookmark: " + bookmark.getFilmHashCode());
+        bookmarks.remove(bookmark);
+    }
+
     /**
      * Add given film(s) to List if not yet in list
      * otherwise remove them from list

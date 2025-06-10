@@ -512,6 +512,7 @@ public class GuiFilme extends AGuiTabPanel {
         private DefaultEventSelectionModel<BookmarkData> selectionModel;
         private final JButton updateTableButton = new JButton("Set Note");
         private final JButton removeTableButton = new JButton("Remove Note");
+        private final JButton deleteEntryButton = new JButton("Delete Entry");
 
         public BookmarkDialog(Frame owner) {
             super(owner);
@@ -542,20 +543,37 @@ public class GuiFilme extends AGuiTabPanel {
                     Daten.getInstance().getListeBookmarkList().saveToFile();
                 }
             });
+            deleteEntryButton.addActionListener(_ -> {
+               if (!selectionModel.isSelectionEmpty()) {
+                   var bookmarkList = Daten.getInstance().getListeBookmarkList();
+                   //we need to make a copy otherwise the selection list will get modified during deletion
+                   //and will fail to delete all bookmarks
+                   ArrayList<BookmarkData> list = new ArrayList<>(selectionModel.getSelected());
+                   System.out.println("SIZE: " + list.size());
+                   for (var bookmark: list) {
+                       System.out.println("source bookmark: " + bookmark.getFilmHashCode());
+                       bookmarkList.removeBookmark(bookmark);
+                   }
+                   bookmarkList.saveToFile();
+               }
+               SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
+
+            });
 
             JPanel btnPanel = new JPanel(new VerticalLayout());
             btnPanel.add(updateTableButton);
             btnPanel.add(removeTableButton);
+            btnPanel.add(deleteEntryButton);
             getContentPane().add(btnPanel, BorderLayout.SOUTH);
 
             ObservableElementList.Connector<BookmarkData> personConnector = GlazedLists.beanConnector(BookmarkData.class);
             var observedBookmarks =
                     new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
 
-
-            var model = new DefaultEventTableModel<>(observedBookmarks, GlazedLists.tableFormat(new String[]{"filmHashCode", "note"} , new String[]{"Hash Code", "Notiz"}));
+            var tableFormat = GlazedLists.tableFormat(new String[]{"sender", "thema", "title", "dauer", "filmHashCode", "note"} , new String[]{"Sender", "Thema", "Titel", "Dauer", "Hash Code", "Notiz"});
+            var model = new DefaultEventTableModel<>(observedBookmarks, tableFormat);
             selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
-            selectionModel.addListSelectionListener(l -> {
+            /*selectionModel.addListSelectionListener(l -> {
                 if (!l.getValueIsAdjusting()) {
                     var selectedBookmarks = selectionModel.getSelected();
                     if (selectedBookmarks.size() > 1) {
@@ -566,7 +584,7 @@ public class GuiFilme extends AGuiTabPanel {
                         System.out.println(selectedBookmarks.getFirst().getFilmHashCode());
                     }
                 }
-            });
+            });*/
 
             table.setModel(model);
             table.setSelectionModel(selectionModel);
