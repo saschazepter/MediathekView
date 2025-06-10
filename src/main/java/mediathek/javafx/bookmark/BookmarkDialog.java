@@ -37,21 +37,19 @@ import java.util.concurrent.TimeUnit;
 
 public class BookmarkDialog extends JDialog {
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
-    private final JButton updateTableButton = new JButton("Set Note");
-    private final JButton removeTableButton = new JButton("Remove Note");
-    private final JButton deleteEntryButton = new JButton("Delete Entry");
 
     public BookmarkDialog(Frame owner) {
         super(owner);
         setTitle("Merkliste verwalten");
         setModal(false);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(400, 200);
+        setSize(800, 400);
 
         JTable table = new JTable();
         JScrollPane scrollPane = new JScrollPane(table);
         getContentPane().add(scrollPane, BorderLayout.CENTER);
 
+        JButton updateTableButton = new JButton("Set Note");
         updateTableButton.addActionListener(_ -> {
             if (!selectionModel.isSelectionEmpty()) {
                 var selectedPeople = selectionModel.getSelected();
@@ -61,6 +59,7 @@ public class BookmarkDialog extends JDialog {
                 Daten.getInstance().getListeBookmarkList().saveToFile();
             }
         });
+        JButton removeTableButton = new JButton("Remove Note");
         removeTableButton.addActionListener(_ -> {
             if (!selectionModel.isSelectionEmpty()) {
                 var selectedPeople = selectionModel.getSelected();
@@ -70,6 +69,7 @@ public class BookmarkDialog extends JDialog {
                 Daten.getInstance().getListeBookmarkList().saveToFile();
             }
         });
+        JButton deleteEntryButton = new JButton("Delete Entry");
         deleteEntryButton.addActionListener(_ -> {
             if (!selectionModel.isSelectionEmpty()) {
                 var bookmarkList = Daten.getInstance().getListeBookmarkList();
@@ -97,7 +97,7 @@ public class BookmarkDialog extends JDialog {
         var observedBookmarks =
                 new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
 
-        var tableFormat = GlazedLists.tableFormat(new String[]{"sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "url", "note", "filmHashCode", "BookmarkAdded"},
+        var tableFormat = GlazedLists.tableFormat(new String[]{"sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "NormalQualityUrl", "note", "filmHashCode", "BookmarkAdded"},
                 new String[]{"Sender", "Thema", "Titel", "Dauer", "Sendedatum", "Verfügbar bis", "URL", "Notiz", "Hash Code", "hinzugefügt am"});
         var model = new DefaultEventTableModel<>(observedBookmarks, tableFormat);
         selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
@@ -119,8 +119,10 @@ public class BookmarkDialog extends JDialog {
         /*
          */
         var columnModel = table.getColumnModel();
+        //sender column
+        columnModel.getColumn(0).setCellRenderer(new CenteredCellRenderer());
         // dauer column
-        columnModel.getColumn(3).setCellRenderer(new DefaultTableCellRenderer() {
+        columnModel.getColumn(3).setCellRenderer(new CenteredCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -128,12 +130,13 @@ public class BookmarkDialog extends JDialog {
                 var duration = TimeUnit.MILLISECONDS.convert(length, TimeUnit.SECONDS);
                 var durationStr = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
                 setText(durationStr);
-                setHorizontalAlignment(JLabel.CENTER);
+                //setHorizontalAlignment(JLabel.CENTER);
                 return this;
             }
         });
+        columnModel.getColumn(4).setCellRenderer(new CenteredCellRenderer());
         //hinzugefügt am Column
-        columnModel.getColumn(9).setCellRenderer(new DefaultTableCellRenderer() {
+        columnModel.getColumn(9).setCellRenderer(new CenteredCellRenderer() {
             @Override
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
@@ -142,15 +145,14 @@ public class BookmarkDialog extends JDialog {
                 return this;
             }
         });
-        /*table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
+    }
 
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                var elem = ((DefaultEventTableModel<BookmarkData>)table.getModel()).getElementAt(row);
-                setText(value == null ? "null" : elem.getDatenFilm().getTitle());
-                return this;
-            }
-        });*/
+    static class CenteredCellRenderer extends DefaultTableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            setHorizontalAlignment(JLabel.CENTER);
+            return this;
+        }
     }
 }

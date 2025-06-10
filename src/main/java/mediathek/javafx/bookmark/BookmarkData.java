@@ -130,6 +130,15 @@ public class BookmarkData {
         return this.url;
     }
 
+    @JsonIgnore
+    public String getNormalQualityUrl() {
+        if (filmdata != null) {
+            return filmdata.getUrlNormalQuality();
+        }
+        else
+            return "NO URL";
+    }
+
     public void setUrl(String url) {
         String oldUrl = this.url;
         this.url = url;
