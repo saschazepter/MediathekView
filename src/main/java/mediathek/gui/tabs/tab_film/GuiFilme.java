@@ -2,10 +2,6 @@ package mediathek.gui.tabs.tab_film;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.ObservableElementList;
-import ca.odell.glazedlists.swing.DefaultEventSelectionModel;
-import ca.odell.glazedlists.swing.DefaultEventTableModel;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,11 +34,10 @@ import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.gui.tabs.tab_film.helpers.GuiFilmeModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.LuceneGuiFilmeModelHelper;
-import mediathek.javafx.bookmark.BookmarkData;
+import mediathek.javafx.bookmark.BookmarkDialog;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import mediathek.tool.cellrenderer.CellRendererFilme;
-import mediathek.tool.datum.DateUtil;
 import mediathek.tool.datum.DatumFilm;
 import mediathek.tool.listener.BeobTableHeader;
 import mediathek.tool.models.TModelFilm;
@@ -58,7 +53,6 @@ import org.jetbrains.annotations.Nullable;
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
@@ -69,7 +63,6 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -511,109 +504,6 @@ public class GuiFilme extends AGuiTabPanel {
         }
     }
 
-    static class BookmarkDialog extends JDialog {
-        private DefaultEventSelectionModel<BookmarkData> selectionModel;
-        private final JButton updateTableButton = new JButton("Set Note");
-        private final JButton removeTableButton = new JButton("Remove Note");
-        private final JButton deleteEntryButton = new JButton("Delete Entry");
-
-        public BookmarkDialog(Frame owner) {
-            super(owner);
-            setTitle("Merkliste verwalten");
-            setModal(false);
-            setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-            setSize(400, 200);
-
-            JTable table = new JTable();
-            JScrollPane scrollPane = new JScrollPane(table);
-            getContentPane().add(scrollPane, BorderLayout.CENTER);
-
-            updateTableButton.addActionListener(_ -> {
-                if (!selectionModel.isSelectionEmpty()) {
-                    var selectedPeople = selectionModel.getSelected();
-                    for (var bookmark: selectedPeople) {
-                        bookmark.setNote("Hello World22");
-                    }
-                    Daten.getInstance().getListeBookmarkList().saveToFile();
-                }
-            });
-            removeTableButton.addActionListener(_ -> {
-                if (!selectionModel.isSelectionEmpty()) {
-                    var selectedPeople = selectionModel.getSelected();
-                    for (var bookmark: selectedPeople) {
-                        bookmark.setNote(null);
-                    }
-                    Daten.getInstance().getListeBookmarkList().saveToFile();
-                }
-            });
-            deleteEntryButton.addActionListener(_ -> {
-               if (!selectionModel.isSelectionEmpty()) {
-                   var bookmarkList = Daten.getInstance().getListeBookmarkList();
-                   //we need to make a copy otherwise the selection list will get modified during deletion
-                   //and will fail to delete all bookmarks
-                   ArrayList<BookmarkData> list = new ArrayList<>(selectionModel.getSelected());
-                   System.out.println("SIZE: " + list.size());
-                   for (var bookmark: list) {
-                       System.out.println("source bookmark: " + bookmark.getFilmHashCode());
-                       bookmarkList.removeBookmark(bookmark);
-                   }
-                   bookmarkList.saveToFile();
-               }
-               SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
-
-            });
-
-            JPanel btnPanel = new JPanel(new VerticalLayout());
-            btnPanel.add(updateTableButton);
-            btnPanel.add(removeTableButton);
-            btnPanel.add(deleteEntryButton);
-            getContentPane().add(btnPanel, BorderLayout.SOUTH);
-
-            ObservableElementList.Connector<BookmarkData> personConnector = GlazedLists.beanConnector(BookmarkData.class);
-            var observedBookmarks =
-                    new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
-
-            var tableFormat = GlazedLists.tableFormat(new String[]{"sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "url", "note", "filmHashCode", "BookmarkAdded"} ,
-                    new String[]{"Sender", "Thema", "Titel", "Dauer", "Sendedatum", "Verfügbar bis", "URL", "Notiz", "Hash Code", "hinzugefügt am"});
-            var model = new DefaultEventTableModel<>(observedBookmarks, tableFormat);
-            selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
-            /*selectionModel.addListSelectionListener(l -> {
-                if (!l.getValueIsAdjusting()) {
-                    var selectedBookmarks = selectionModel.getSelected();
-                    if (selectedBookmarks.size() > 1) {
-                        System.out.println("TOO MANY SELECTIONS");
-                    }
-                    else if (selectedBookmarks.size() == 1) {
-                        System.out.println("Showing info");
-                        System.out.println(selectedBookmarks.getFirst().getFilmHashCode());
-                    }
-                }
-            });*/
-
-            table.setModel(model);
-            table.setSelectionModel(selectionModel);
-            //hinzugefügt am Column
-            table.getColumnModel().getColumn(9).setCellRenderer(new DefaultTableCellRenderer() {
-                @Override
-                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                    var date = (LocalDate) value;
-                    setText(date.format(DateUtil.FORMATTER));
-                    return this;
-                }
-            });
-            /*table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
-
-                @Override
-                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                    var elem = ((DefaultEventTableModel<BookmarkData>)table.getModel()).getElementAt(row);
-                    setText(value == null ? "null" : elem.getDatenFilm().getTitle());
-                    return this;
-                }
-            });*/
-        }
-    }
     /**
      * If necessary instantiate and show the bookmark window
      */
