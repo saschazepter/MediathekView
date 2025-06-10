@@ -30,6 +30,7 @@ import mediathek.tool.datum.DateUtil;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import javax.swing.*;
+import javax.swing.plaf.UIResource;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
@@ -192,6 +193,26 @@ public class BookmarkDialog extends JDialog {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (table == null) {
+                return this;
+            }
+
+            if (isSelected) {
+                setForeground(table.getSelectionForeground());
+                setBackground(table.getSelectionBackground());
+            }
+            else {
+                Color background = table.getBackground();
+                if (background == null || background instanceof UIResource) {
+                    Color alternateColor = UIManager.getColor("Table.alternateRowColor");
+                    if (alternateColor != null && row % 2 != 0) {
+                        background = alternateColor;
+                    }
+                }
+                setForeground(table.getForeground());
+                setBackground(background);
+            }
+
             checkBox.setSelected(value != null);
             return this;
         }
