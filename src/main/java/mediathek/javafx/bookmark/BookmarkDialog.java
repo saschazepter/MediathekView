@@ -28,7 +28,6 @@ import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.SVGIconUtilities;
 import mediathek.tool.datum.DateUtil;
 import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.jdesktop.swingx.VerticalLayout;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -41,6 +40,7 @@ import java.util.concurrent.TimeUnit;
 public class BookmarkDialog extends JDialog {
     private final FilmDescriptionPanel filmDescriptionPanel = new FilmDescriptionPanel();
     private final JTextArea noteArea = new JTextArea();
+    private final JTable table = new JTable();
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
 
     public BookmarkDialog(Frame owner) {
@@ -50,58 +50,11 @@ public class BookmarkDialog extends JDialog {
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(800, 400);
 
-        JToolBar toolBar = new JToolBar();
-        toolBar.setFloatable(false);
+        setupToolBar();
 
-        JButton deleteEntryButton = new JButton("Delete Entry");
-        deleteEntryButton.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
-        deleteEntryButton.addActionListener(_ -> {
-            if (!selectionModel.isSelectionEmpty()) {
-                var bookmarkList = Daten.getInstance().getListeBookmarkList();
-                //we need to make a copy otherwise the selection list will get modified during deletion
-                //and will fail to delete all bookmarks
-                ArrayList<BookmarkData> list = new ArrayList<>(selectionModel.getSelected());
-                System.out.println("SIZE: " + list.size());
-                for (var bookmark : list) {
-                    System.out.println("source bookmark: " + bookmark.getFilmHashCode());
-                    bookmarkList.removeBookmark(bookmark);
-                }
-                bookmarkList.saveToFile();
-            }
-            SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
-        });
-        toolBar.add(deleteEntryButton);
-
-        getContentPane().add(toolBar, BorderLayout.NORTH);
-
-        JTable table = new JTable();
         JScrollPane scrollPane = new JScrollPane(table);
         getContentPane().add(scrollPane, BorderLayout.CENTER);
 
-        JButton updateTableButton = new JButton("Set Note");
-        updateTableButton.addActionListener(_ -> {
-            if (!selectionModel.isSelectionEmpty()) {
-                var selectedPeople = selectionModel.getSelected();
-                for (var bookmark : selectedPeople) {
-                    bookmark.setNote("Hello World22");
-                }
-                Daten.getInstance().getListeBookmarkList().saveToFile();
-            }
-        });
-        JButton removeTableButton = new JButton("Remove Note");
-        removeTableButton.addActionListener(_ -> {
-            if (!selectionModel.isSelectionEmpty()) {
-                var selectedPeople = selectionModel.getSelected();
-                for (var bookmark : selectedPeople) {
-                    bookmark.setNote(null);
-                }
-                Daten.getInstance().getListeBookmarkList().saveToFile();
-            }
-        });
-
-        JPanel btnPanel = new JPanel(new VerticalLayout());
-        btnPanel.add(updateTableButton);
-        btnPanel.add(removeTableButton);
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         tabbedPane.addTab("Beschreibung", filmDescriptionPanel);
         JPanel notePanel = new JPanel(new BorderLayout());
@@ -112,9 +65,12 @@ public class BookmarkDialog extends JDialog {
         noteArea.setText("Platzhalter für eine Notiz");
         notePanel.add(noteArea, BorderLayout.CENTER);
         tabbedPane.addTab("Notizen", notePanel);
-        btnPanel.add(tabbedPane);
-        getContentPane().add(btnPanel, BorderLayout.SOUTH);
+        getContentPane().add(tabbedPane, BorderLayout.SOUTH);
 
+        setupTable();
+    }
+
+    private void setupTable() {
         ObservableElementList.Connector<BookmarkData> personConnector = GlazedLists.beanConnector(BookmarkData.class);
         var observedBookmarks =
                 new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
@@ -122,7 +78,6 @@ public class BookmarkDialog extends JDialog {
         var tableFormat = GlazedLists.tableFormat(new String[]{"sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "NormalQualityUrl", "note", "filmHashCode", "BookmarkAdded"},
                 new String[]{"Sender", "Thema", "Titel", "Dauer", "Sendedatum", "Verfügbar bis", "URL", "Notiz", "Hash Code", "hinzugefügt am"});
         var model = new DefaultEventTableModel<>(observedBookmarks, tableFormat);
-        model.addTableModelListener(_ -> updateInfoTabs());
 
         selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
         selectionModel.addListSelectionListener(l -> {
@@ -133,27 +88,75 @@ public class BookmarkDialog extends JDialog {
 
         table.setModel(model);
         table.setSelectionModel(selectionModel);
-        /*
-         */
+        setupCellRenderers();
+
+        table.getColumnModel().removeColumn(table.getColumnModel().getColumn(8));
+    }
+
+    private void setupCellRenderers() {
         var columnModel = table.getColumnModel();
         //sender column
         columnModel.getColumn(0).setCellRenderer(new CenteredCellRenderer());
         // dauer column
-        columnModel.getColumn(3).setCellRenderer(new CenteredCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                long length = (int) value;
-                var duration = TimeUnit.MILLISECONDS.convert(length, TimeUnit.SECONDS);
-                var durationStr = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
-                setText(durationStr);
-                //setHorizontalAlignment(JLabel.CENTER);
-                return this;
-            }
-        });
+        columnModel.getColumn(3).setCellRenderer(new FilmLengthCellRenderer());
+        //sendedatum column
         columnModel.getColumn(4).setCellRenderer(new CenteredCellRenderer());
         //hinzugefügt am Column
         columnModel.getColumn(9).setCellRenderer(new AddedAtCellRenderer());
+    }
+
+    private void setupToolBar() {
+        JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+
+        JButton deleteEntryButton = new JButton("Delete Entry");
+        deleteEntryButton.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
+        deleteEntryButton.addActionListener(_ -> deleteBookmarkSelection());
+        toolBar.add(deleteEntryButton);
+
+        JButton setNoteButton = new JButton("Set Note");
+        setNoteButton.addActionListener(_ -> {
+            if (!selectionModel.isSelectionEmpty()) {
+                var selectedPeople = selectionModel.getSelected();
+                for (var bookmark : selectedPeople) {
+                    bookmark.setNote("Hello World22");
+                }
+                Daten.getInstance().getListeBookmarkList().saveToFile();
+                updateInfoTabs();
+            }
+        });
+        toolBar.add(setNoteButton);
+
+        JButton removeNoteButton = new JButton("Remove Note");
+        removeNoteButton.addActionListener(_ -> {
+            if (!selectionModel.isSelectionEmpty()) {
+                var selectedPeople = selectionModel.getSelected();
+                for (var bookmark : selectedPeople) {
+                    bookmark.setNote(null);
+                }
+                Daten.getInstance().getListeBookmarkList().saveToFile();
+                updateInfoTabs();
+            }
+        });
+        toolBar.add(removeNoteButton);
+
+        getContentPane().add(toolBar, BorderLayout.NORTH);
+    }
+
+    private void deleteBookmarkSelection() {
+        if (!selectionModel.isSelectionEmpty()) {
+            var bookmarkList = Daten.getInstance().getListeBookmarkList();
+            //we need to make a copy otherwise the selection list will get modified during deletion
+            //and will fail to delete all bookmarks
+            var list = new ArrayList<>(selectionModel.getSelected());
+            //System.out.println("SIZE: " + list.size());
+            for (var bookmark : list) {
+                //System.out.println("source bookmark: " + bookmark.getFilmHashCode());
+                bookmarkList.removeBookmark(bookmark);
+            }
+            bookmarkList.saveToFile();
+        }
+        SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
     }
 
     private void updateInfoTabs() {
@@ -173,6 +176,18 @@ public class BookmarkDialog extends JDialog {
         else {
             filmDescriptionPanel.setCurrentFilm(null);
             noteArea.setText("");
+        }
+    }
+
+    static class FilmLengthCellRenderer extends CenteredCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            long length = (int) value;
+            var duration = TimeUnit.MILLISECONDS.convert(length, TimeUnit.SECONDS);
+            var durationStr = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
+            setText(durationStr);
+            return this;
         }
     }
 
