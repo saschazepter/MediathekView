@@ -570,6 +570,16 @@ public class GuiFilme extends AGuiTabPanel {
 
             table.setModel(model);
             table.setSelectionModel(selectionModel);
+            /*table.getColumnModel().getColumn(0).setCellRenderer(new DefaultTableCellRenderer() {
+
+                @Override
+                public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                    super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                    var elem = ((DefaultEventTableModel<BookmarkData>)table.getModel()).getElementAt(row);
+                    setText(value == null ? "null" : elem.getDatenFilm().getTitle());
+                    return this;
+                }
+            });*/
         }
     }
     /**
