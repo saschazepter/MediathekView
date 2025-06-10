@@ -35,10 +35,12 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class BookmarkDialog extends JDialog {
     private final FilmDescriptionPanel filmDescriptionPanel = new FilmDescriptionPanel();
+    private final JTextArea noteArea = new JTextArea();
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
 
     public BookmarkDialog(Frame owner) {
@@ -103,8 +105,7 @@ public class BookmarkDialog extends JDialog {
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         tabbedPane.addTab("Beschreibung", filmDescriptionPanel);
         JPanel notePanel = new JPanel(new BorderLayout());
-        notePanel.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
-        var noteArea = new JTextArea();
+        notePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         noteArea.setLineWrap(true);
         noteArea.setWrapStyleWord(true);
         noteArea.setEditable(false);
@@ -121,17 +122,12 @@ public class BookmarkDialog extends JDialog {
         var tableFormat = GlazedLists.tableFormat(new String[]{"sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "NormalQualityUrl", "note", "filmHashCode", "BookmarkAdded"},
                 new String[]{"Sender", "Thema", "Titel", "Dauer", "Sendedatum", "Verfügbar bis", "URL", "Notiz", "Hash Code", "hinzugefügt am"});
         var model = new DefaultEventTableModel<>(observedBookmarks, tableFormat);
+        model.addTableModelListener(_ -> updateInfoTabs());
+
         selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
         selectionModel.addListSelectionListener(l -> {
             if (!l.getValueIsAdjusting()) {
-                var selectedBookmarks = selectionModel.getSelected();
-                if (selectedBookmarks.size() == 1) {
-                    selectedBookmarks.getFirst().getDatenFilmOptional()
-                            .ifPresentOrElse(filmDescriptionPanel::setCurrentFilm,
-                                    () -> filmDescriptionPanel.setCurrentFilm(null));
-                }
-                else
-                    filmDescriptionPanel.setCurrentFilm(null);
+                updateInfoTabs();
             }
         });
 
@@ -148,27 +144,46 @@ public class BookmarkDialog extends JDialog {
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 long length = (int) value;
-                if (length >= 0) {
-                    var duration = TimeUnit.MILLISECONDS.convert(length, TimeUnit.SECONDS);
-                    var durationStr = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
-                    setText(durationStr);
-                }
+                var duration = TimeUnit.MILLISECONDS.convert(length, TimeUnit.SECONDS);
+                var durationStr = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
+                setText(durationStr);
+                //setHorizontalAlignment(JLabel.CENTER);
                 return this;
             }
         });
         columnModel.getColumn(4).setCellRenderer(new CenteredCellRenderer());
         //hinzugefügt am Column
-        columnModel.getColumn(9).setCellRenderer(new CenteredCellRenderer() {
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-                var date = (LocalDate) value;
-                if (date != null) {
-                    setText(date.format(DateUtil.FORMATTER));
-                }
-                return this;
-            }
-        });
+        columnModel.getColumn(9).setCellRenderer(new AddedAtCellRenderer());
+    }
+
+    private void updateInfoTabs() {
+        var selectedBookmarks = selectionModel.getSelected();
+        if (selectedBookmarks.size() == 1) {
+            var bookmark = selectedBookmarks.getFirst();
+            bookmark.getDatenFilmOptional()
+                    .ifPresentOrElse(film -> {
+                                filmDescriptionPanel.setCurrentFilm(film);
+                                noteArea.setText(Objects.requireNonNullElse(bookmark.getNote(), ""));
+                            },
+                            () -> {
+                                filmDescriptionPanel.setCurrentFilm(null);
+                                noteArea.setText("");
+                            });
+        }
+        else {
+            filmDescriptionPanel.setCurrentFilm(null);
+            noteArea.setText("");
+        }
+    }
+
+    static class AddedAtCellRenderer extends CenteredCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            var date = (LocalDate) value;
+            setText(date.format(DateUtil.FORMATTER));
+            return this;
+        }
     }
 
     static class CenteredCellRenderer extends DefaultTableCellRenderer {
