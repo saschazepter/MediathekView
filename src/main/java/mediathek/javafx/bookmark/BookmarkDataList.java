@@ -1,12 +1,14 @@
 package mediathek.javafx.bookmark;
 
+import ca.odell.glazedlists.BasicEventList;
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.GlazedLists;
+import ca.odell.glazedlists.ObservableElementList;
 import com.fasterxml.jackson.annotation.JsonGetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 import com.google.common.hash.HashCode;
-import javafx.beans.Observable;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import mediathek.config.Daten;
 import mediathek.config.StandardLocations;
 import mediathek.controller.history.SeenHistoryController;
@@ -30,13 +32,14 @@ import java.util.List;
  */
 public class BookmarkDataList {
     private static final Logger logger = LogManager.getLogger();
-    private final ObservableList<BookmarkData> bookmarks;
+    private final BasicEventList<BookmarkData> bookmarks;
+    private final ObservableElementList<BookmarkData> observableElementList;
     private final ObjectMapper objectMapper;
 
     public BookmarkDataList(@NotNull Daten daten) {
-        bookmarks = FXCollections.observableArrayList((BookmarkData data) -> new Observable[]{
-                data.getSeenProperty()
-        });
+        bookmarks = new BasicEventList<>();
+        var bookmarkConnector = GlazedLists.beanConnector(BookmarkData.class);
+        observableElementList = new ObservableElementList<>(bookmarks, bookmarkConnector);
 
         objectMapper = JsonMapper.builder().findAndAddModules().build();
 
@@ -66,8 +69,13 @@ public class BookmarkDataList {
      * @return observable List
      */
     @JsonGetter("bookmarks")
-    public ObservableList<BookmarkData> getObervableList() {
+    public EventList<BookmarkData> getEventList() {
         return bookmarks;
+    }
+
+    @JsonIgnore
+    public ObservableElementList<BookmarkData> getObservableElementList() {
+        return observableElementList;
     }
 
     /**
@@ -96,6 +104,7 @@ public class BookmarkDataList {
 
         if (add) {
             // Check if history list is known
+            bookmarks.getReadWriteLock().writeLock().lock();
             try (var history = new SeenHistoryController()) {
                 addlist.forEach(movie -> {
                     BookmarkData bdata = new BookmarkData(movie);
@@ -109,10 +118,19 @@ public class BookmarkDataList {
             catch (Exception ex) {
                 logger.error("history produced error", ex);
             }
+            finally {
+                bookmarks.getReadWriteLock().writeLock().unlock();
+            }
         }
         else { // delete existing bookmarks
             movies.forEach(movie -> movie.setBookmark(null));
-            bookmarks.removeAll(dellist);
+            bookmarks.getReadWriteLock().writeLock().lock();
+            try {
+                bookmarks.removeAll(dellist);
+            }
+            finally {
+                bookmarks.getReadWriteLock().writeLock().unlock();
+            }
         }
     }
 
@@ -128,7 +146,13 @@ public class BookmarkDataList {
                 movie.setBookmark(null);
             }
         }
-        bookmarks.removeAll(bookmarkList);
+        bookmarks.getReadWriteLock().writeLock().lock();
+        try {
+            bookmarks.removeAll(bookmarkList);
+        }
+        finally {
+            bookmarks.getReadWriteLock().writeLock().unlock();
+        }
     }
 
     /**

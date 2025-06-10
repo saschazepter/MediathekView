@@ -8,6 +8,8 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import mediathek.daten.DatenFilm;
 
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -22,6 +24,7 @@ import java.util.Optional;
 public class BookmarkData {
     @JsonProperty("seen")
     private final BooleanProperty seen;
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private String url;
     @JsonIgnore
     private DatenFilm filmdata;
@@ -40,6 +43,7 @@ public class BookmarkData {
         seen = new SimpleBooleanProperty(false);
         //availableUntil = LocalDate.now();
     }
+
     public BookmarkData(DatenFilm film) {
         this();
         this.url = film.getUrlNormalQuality();
@@ -52,7 +56,9 @@ public class BookmarkData {
     }
 
     public void setBookmarkAdded(LocalDate bookmarkAdded) {
+        LocalDate oldDate = this.bookmarkAdded;
         this.bookmarkAdded = bookmarkAdded;
+        support.firePropertyChange("bookmarkAdded", oldDate, bookmarkAdded);
     }
 
     public String getFilmHashCode() {
@@ -60,8 +66,10 @@ public class BookmarkData {
     }
 
     public void setFilmHashCode(String filmHashCode) {
+        String oldHash = this.filmHashCode;
         this.filmHashCode = filmHashCode;
         this.url = null; // remove Url if we use the hashcode.
+        support.firePropertyChange("hashCode", oldHash, filmHashCode);
     }
 
     public LocalDate getAvailableUntil() {
@@ -69,7 +77,9 @@ public class BookmarkData {
     }
 
     public void setAvailableUntil(LocalDate availableUntil) {
+        LocalDate oldDate = this.availableUntil;
         this.availableUntil = availableUntil;
+        support.firePropertyChange("availableUntil", oldDate, availableUntil);
     }
 
     public String getUrl() {
@@ -77,7 +87,9 @@ public class BookmarkData {
     }
 
     public void setUrl(String url) {
+        String oldUrl = this.url;
         this.url = url;
+        support.firePropertyChange("url", oldUrl, url);
     }
 
     public String getNote() {
@@ -85,7 +97,17 @@ public class BookmarkData {
     }
 
     public void setNote(String note) {
+        String oldNote = this.note;
         this.note = note;
+        support.firePropertyChange("note", oldNote, note);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        support.addPropertyChangeListener(l);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        support.removePropertyChangeListener(l);
     }
 
     @JsonIgnore
@@ -98,7 +120,9 @@ public class BookmarkData {
     }
 
     public void setSeen(boolean seen) {
+        boolean oldSeen = this.seen.get();
         this.seen.set(seen);
+        support.firePropertyChange("firstName", oldSeen, seen);
     }
 
     @JsonIgnore
@@ -123,7 +147,9 @@ public class BookmarkData {
 
     @JsonIgnore
     public void setDatenFilm(DatenFilm filmdata) {
+        DatenFilm oldFilm = this.filmdata;
         this.filmdata = filmdata;
+        support.firePropertyChange("datenFilm", oldFilm, filmdata);
     }
 
     @JsonIgnore
