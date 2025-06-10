@@ -5,10 +5,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import mediathek.daten.DatenFilm;
+import mediathek.tool.datum.DateUtil;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -84,9 +86,27 @@ public class BookmarkData {
             return -1;
     }
 
+    @JsonIgnore
+    public Date getSendedatum() {
+        if (filmdata != null) {
+            return filmdata.getDatumFilm();
+        }
+        else
+            return null;
+    }
+
     @SuppressWarnings("unused")
     public LocalDate getBookmarkAdded() {
         return bookmarkAdded;
+    }
+
+    @JsonIgnore
+    public String getAddedAt() {
+        if (filmdata != null) {
+            return DateUtil.FORMATTER.format(bookmarkAdded);
+        }
+        else
+            return null;
     }
 
     public void setBookmarkAdded(LocalDate bookmarkAdded) {

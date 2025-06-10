@@ -570,7 +570,8 @@ public class GuiFilme extends AGuiTabPanel {
             var observedBookmarks =
                     new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
 
-            var tableFormat = GlazedLists.tableFormat(new String[]{"sender", "thema", "title", "dauer", "filmHashCode", "note"} , new String[]{"Sender", "Thema", "Titel", "Dauer", "Hash Code", "Notiz"});
+            var tableFormat = GlazedLists.tableFormat(new String[]{"sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "url", "note", "filmHashCode", "AddedAt"} ,
+                    new String[]{"Sender", "Thema", "Titel", "Dauer", "Sendedatum", "Verfügbar bis", "URL", "Notiz", "Hash Code", "hinzugefügt am"});
             var model = new DefaultEventTableModel<>(observedBookmarks, tableFormat);
             selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
             /*selectionModel.addListSelectionListener(l -> {
