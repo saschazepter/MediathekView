@@ -130,10 +130,11 @@ public class BookmarkDialog extends JDialog {
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 long length = (int) value;
-                var duration = TimeUnit.MILLISECONDS.convert(length, TimeUnit.SECONDS);
-                var durationStr = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
-                setText(durationStr);
-                //setHorizontalAlignment(JLabel.CENTER);
+                if (length >= 0) {
+                    var duration = TimeUnit.MILLISECONDS.convert(length, TimeUnit.SECONDS);
+                    var durationStr = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
+                    setText(durationStr);
+                }
                 return this;
             }
         });
@@ -144,7 +145,9 @@ public class BookmarkDialog extends JDialog {
             public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
                 super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 var date = (LocalDate) value;
-                setText(date.format(DateUtil.FORMATTER));
+                if (date != null) {
+                    setText(date.format(DateUtil.FORMATTER));
+                }
                 return this;
             }
         });
