@@ -136,7 +136,7 @@ public class BookmarkData {
             return filmdata.getUrlNormalQuality();
         }
         else
-            return "NO URL";
+            return null;
     }
 
     public void setUrl(String url) {

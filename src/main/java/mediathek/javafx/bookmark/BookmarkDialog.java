@@ -23,6 +23,7 @@ import ca.odell.glazedlists.ObservableElementList;
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel;
 import ca.odell.glazedlists.swing.DefaultEventTableModel;
 import mediathek.config.Daten;
+import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.datum.DateUtil;
 import org.apache.commons.lang3.time.DurationFormatUtils;
@@ -37,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 
 public class BookmarkDialog extends JDialog {
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
+    private final FilmDescriptionPanel filmDescriptionPanel = new FilmDescriptionPanel();
 
     public BookmarkDialog(Frame owner) {
         super(owner);
@@ -91,6 +93,9 @@ public class BookmarkDialog extends JDialog {
         btnPanel.add(updateTableButton);
         btnPanel.add(removeTableButton);
         btnPanel.add(deleteEntryButton);
+        JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
+        tabbedPane.addTab("Beschreibung", filmDescriptionPanel);
+        btnPanel.add(tabbedPane);
         getContentPane().add(btnPanel, BorderLayout.SOUTH);
 
         ObservableElementList.Connector<BookmarkData> personConnector = GlazedLists.beanConnector(BookmarkData.class);
@@ -101,18 +106,16 @@ public class BookmarkDialog extends JDialog {
                 new String[]{"Sender", "Thema", "Titel", "Dauer", "Sendedatum", "Verfügbar bis", "URL", "Notiz", "Hash Code", "hinzugefügt am"});
         var model = new DefaultEventTableModel<>(observedBookmarks, tableFormat);
         selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
-        /*selectionModel.addListSelectionListener(l -> {
+        selectionModel.addListSelectionListener(l -> {
             if (!l.getValueIsAdjusting()) {
                 var selectedBookmarks = selectionModel.getSelected();
-                if (selectedBookmarks.size() > 1) {
-                    System.out.println("TOO MANY SELECTIONS");
+                if (selectedBookmarks.size() == 1) {
+                    filmDescriptionPanel.setCurrentFilm(selectedBookmarks.getFirst().getDatenFilm());
                 }
-                else if (selectedBookmarks.size() == 1) {
-                    System.out.println("Showing info");
-                    System.out.println(selectedBookmarks.getFirst().getFilmHashCode());
-                }
+                else
+                    filmDescriptionPanel.setCurrentFilm(null);
             }
-        });*/
+        });
 
         table.setModel(model);
         table.setSelectionModel(selectionModel);
