@@ -11,8 +11,6 @@ import com.formdev.flatlaf.icons.FlatSearchWithHistoryIcon;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import javafx.application.Platform;
-import javafx.embed.swing.JFXPanel;
 import mediathek.config.*;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.controller.starter.Start;
@@ -36,7 +34,6 @@ import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.gui.tabs.tab_film.helpers.GuiFilmeModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.LuceneGuiFilmeModelHelper;
-import mediathek.javafx.bookmark.BookmarkWindowController;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import mediathek.tool.cellrenderer.CellRendererFilme;
@@ -113,7 +110,6 @@ public class GuiFilme extends AGuiTabPanel {
     public final ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction();
     protected final SearchField searchField;
     protected PsetButtonsPanel psetButtonsPanel;
-    private Optional<BookmarkWindowController> bookmarkWindowController = Optional.empty();
     private boolean stopBeob;
     private MVFilmTable tabelle;
     /**
@@ -516,14 +512,7 @@ public class GuiFilme extends AGuiTabPanel {
      * If necessary instantiate and show the bookmark window
      */
     public void showManageBookmarkWindow() {
-        //init JavaFX when needed...
-        var fxPanel = new JFXPanel();
-        Platform.runLater(() -> {
-            if (bookmarkWindowController.isEmpty()) {
-                bookmarkWindowController = Optional.of(new BookmarkWindowController());
-            }
-            bookmarkWindowController.ifPresent(BookmarkWindowController::show);
-        });
+        //FIXME implement bookmark window
     }
 
     public void playerStarten(DatenPset pSet) {
@@ -545,13 +534,6 @@ public class GuiFilme extends AGuiTabPanel {
             filmSelection.ifPresent(
                     film -> daten.getStarterClass().urlMitProgrammStarten(pSet, film, aufloesung));
         }
-    }
-
-    /**
-     * Cleanup during shutdown
-     */
-    public void saveSettings() {
-        bookmarkWindowController.ifPresent(BookmarkWindowController::saveSettings);
     }
 
     /**

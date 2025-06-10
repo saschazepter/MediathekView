@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import mediathek.daten.DatenFilm;
 
 import java.beans.PropertyChangeListener;
@@ -23,7 +21,7 @@ import java.util.Optional;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class BookmarkData {
     @JsonProperty("seen")
-    private final BooleanProperty seen;
+    private boolean seen;
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private String url;
     @JsonIgnore
@@ -40,7 +38,7 @@ public class BookmarkData {
     private String filmHashCode;
 
     public BookmarkData() {
-        seen = new SimpleBooleanProperty(false);
+        seen = false;
         //availableUntil = LocalDate.now();
     }
 
@@ -116,23 +114,18 @@ public class BookmarkData {
     }
 
     public boolean getSeen() {
-        return this.seen.get();
+        return this.seen;
     }
 
     public void setSeen(boolean seen) {
-        boolean oldSeen = this.seen.get();
-        this.seen.set(seen);
+        boolean oldSeen = this.seen;
+        this.seen = seen;
         support.firePropertyChange("firstName", oldSeen, seen);
     }
 
     @JsonIgnore
     public boolean getNotSeen() {
-        return !this.seen.get();
-    }
-
-    @JsonIgnore
-    public BooleanProperty getSeenProperty() {
-        return seen;
+        return !this.seen;
     }
 
     @JsonIgnore
