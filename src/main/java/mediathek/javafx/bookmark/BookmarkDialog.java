@@ -25,6 +25,7 @@ import ca.odell.glazedlists.swing.DefaultEventTableModel;
 import mediathek.config.Daten;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
+import mediathek.tool.SVGIconUtilities;
 import mediathek.tool.datum.DateUtil;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.jdesktop.swingx.VerticalLayout;
@@ -46,6 +47,30 @@ public class BookmarkDialog extends JDialog {
         setModal(false);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setSize(800, 400);
+
+        JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+
+        JButton deleteEntryButton = new JButton("Delete Entry");
+        deleteEntryButton.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
+        deleteEntryButton.addActionListener(_ -> {
+            if (!selectionModel.isSelectionEmpty()) {
+                var bookmarkList = Daten.getInstance().getListeBookmarkList();
+                //we need to make a copy otherwise the selection list will get modified during deletion
+                //and will fail to delete all bookmarks
+                ArrayList<BookmarkData> list = new ArrayList<>(selectionModel.getSelected());
+                System.out.println("SIZE: " + list.size());
+                for (var bookmark : list) {
+                    System.out.println("source bookmark: " + bookmark.getFilmHashCode());
+                    bookmarkList.removeBookmark(bookmark);
+                }
+                bookmarkList.saveToFile();
+            }
+            SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
+        });
+        toolBar.add(deleteEntryButton);
+
+        getContentPane().add(toolBar, BorderLayout.NORTH);
 
         JTable table = new JTable();
         JScrollPane scrollPane = new JScrollPane(table);
@@ -71,28 +96,10 @@ public class BookmarkDialog extends JDialog {
                 Daten.getInstance().getListeBookmarkList().saveToFile();
             }
         });
-        JButton deleteEntryButton = new JButton("Delete Entry");
-        deleteEntryButton.addActionListener(_ -> {
-            if (!selectionModel.isSelectionEmpty()) {
-                var bookmarkList = Daten.getInstance().getListeBookmarkList();
-                //we need to make a copy otherwise the selection list will get modified during deletion
-                //and will fail to delete all bookmarks
-                ArrayList<BookmarkData> list = new ArrayList<>(selectionModel.getSelected());
-                System.out.println("SIZE: " + list.size());
-                for (var bookmark : list) {
-                    System.out.println("source bookmark: " + bookmark.getFilmHashCode());
-                    bookmarkList.removeBookmark(bookmark);
-                }
-                bookmarkList.saveToFile();
-            }
-            SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
-
-        });
 
         JPanel btnPanel = new JPanel(new VerticalLayout());
         btnPanel.add(updateTableButton);
         btnPanel.add(removeTableButton);
-        btnPanel.add(deleteEntryButton);
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         tabbedPane.addTab("Beschreibung", filmDescriptionPanel);
         btnPanel.add(tabbedPane);

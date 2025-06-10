@@ -1184,6 +1184,9 @@ public class MediathekGui extends JFrame {
         logger.trace("Close main window.");
         dispose();
 
+        logger.trace("Write bookmarks");
+        daten.getListeBookmarkList().saveToFile();
+
         //write all settings if not done already...
         logger.trace("Write app config.");
         ApplicationConfiguration.getInstance().writeConfiguration();
