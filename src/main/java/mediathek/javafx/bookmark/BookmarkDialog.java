@@ -90,7 +90,7 @@ public class BookmarkDialog extends JDialog {
         table.setSelectionModel(selectionModel);
         setupCellRenderers();
 
-        table.getColumnModel().removeColumn(table.getColumnModel().getColumn(8));
+        //table.getColumnModel().removeColumn(table.getColumnModel().getColumn(8));
     }
 
     private void setupCellRenderers() {
