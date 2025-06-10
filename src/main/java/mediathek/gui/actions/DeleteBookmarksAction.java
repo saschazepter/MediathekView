@@ -20,9 +20,7 @@ package mediathek.gui.actions;
 
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
-import mediathek.gui.messages.BookmarkDeleteRepaintEvent;
 import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.MessageBus;
 import mediathek.tool.SVGIconUtilities;
 
 import javax.swing.*;
@@ -49,7 +47,6 @@ public class DeleteBookmarksAction extends AbstractAction {
             bookmarkList.clear();
             bookmarkList.saveToFile();
             JOptionPane.showMessageDialog(owner, "Die Merkliste wurde gelöscht", Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
-            MessageBus.getMessageBus().publishAsync(new BookmarkDeleteRepaintEvent());
         }
 
     }

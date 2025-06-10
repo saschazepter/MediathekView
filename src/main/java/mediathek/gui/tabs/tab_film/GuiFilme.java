@@ -189,11 +189,6 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     @Handler
-    private void handleBookmarkDeleteRepaintEvent(BookmarkDeleteRepaintEvent e) {
-        SwingUtilities.invokeLater(this::repaint);
-    }
-
-    @Handler
     public void handleTableModelChange(TableModelChangeEvent e) {
         final Consumer<Boolean> function = (Boolean flag) -> {
             playFilmAction.setEnabled(flag);
