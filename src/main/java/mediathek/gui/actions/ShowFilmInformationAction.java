@@ -14,7 +14,7 @@ public class ShowFilmInformationAction extends AbstractAction {
     public ShowFilmInformationAction() {
         putValue(Action.NAME, "Filminformation anzeigen");
         putValue(Action.SHORT_DESCRIPTION, "Filminformation anzeigen");
-        putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeSolid.INFO_CIRCLE));
+        putValue(Action.SMALL_ICON, IconUtils.windowBarSpecificToolbarIcon(FontAwesomeSolid.INFO_CIRCLE));
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_I, GuiFunktionen.getPlatformControlKey()));
     }
 

@@ -22,7 +22,7 @@ class ManageAboAction : AbstractAction() {
 
     init {
         putValue(NAME, "Abos verwalten...")
-        putValue(SMALL_ICON, IconUtils.toolbarIcon(MaterialDesignD.DATABASE))
+        putValue(SMALL_ICON, IconUtils.windowBarSpecificToolbarIcon(MaterialDesignD.DATABASE))
         putValue(SHORT_DESCRIPTION, "Abos verwalten")
     }
 }

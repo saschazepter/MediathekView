@@ -19,7 +19,7 @@ public class EditBlacklistAction extends AbstractAction {
         this.parent = parent;
 
         putValue(NAME, "Blacklist bearbeiten...");
-        putValue(SMALL_ICON, IconUtils.toolbarIcon(MaterialDesignL.LIST_BOX_OUTLINE));
+        putValue(SMALL_ICON, IconUtils.windowBarSpecificToolbarIcon(MaterialDesignL.LIST_BOX_OUTLINE));
         putValue(SHORT_DESCRIPTION, "Blacklist bearbeiten");
         KeyStroke keyStroke;
         if (SystemUtils.IS_OS_MAC_OSX)

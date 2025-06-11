@@ -19,8 +19,7 @@
 package mediathek.javafx.bookmark;
 
 import com.formdev.flatlaf.FlatLaf;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang3.SystemUtils;
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.swing.FontIcon;
 
@@ -37,8 +36,9 @@ public class IconUtils {
     public static final int DEFAULT_TOOLBAR_SIZE = 18;
     public static final Color DEFAULT_LIGHT_COLOR = new Color(110,110,110);
     public static final Color DEFAULT_DARK_COLOR = new Color(176,177,179);
+    /// used only on macOS when icons are on window button level
+    protected static final int DEFAULT_MAC_TOOLBAR_WINDOWBAR_SIZE = 16;
     private static final List<WeakReference<FontIcon>> themedIcons = new ArrayList<>();
-    private static final Logger logger = LogManager.getLogger();
 
     static {
         PropertyChangeListener lafListener = evt -> {
@@ -54,12 +54,26 @@ public class IconUtils {
         return of(ikon, DEFAULT_SIZE);
     }
 
+    /// Returns a smaller size for toolbar icons on macOS as we are installed close to the window controls
+    protected static int windowBarSpecificSize() {
+        int size = DEFAULT_TOOLBAR_SIZE;
+        if (SystemUtils.IS_OS_MAC_OSX) {
+            size = DEFAULT_MAC_TOOLBAR_WINDOWBAR_SIZE;
+        }
+        return size;
+    }
+
+    public static FontIcon windowBarSpecificToolbarIcon(Ikon ikon) {
+        return of(ikon, windowBarSpecificSize());
+    }
+
     public static FontIcon toolbarIcon(Ikon ikon) {
         return of(ikon, DEFAULT_TOOLBAR_SIZE);
     }
 
-    public static FontIcon toolbarIcon(Ikon ikon, Color color) {
-        return FontIcon.of(ikon, DEFAULT_TOOLBAR_SIZE, color);
+    public static FontIcon windowBarSpecificToolbarIcon(Ikon ikon, Color color) {
+        // will not be stored in weak ref list as we do not want LaF changes
+        return FontIcon.of(ikon, windowBarSpecificSize(), color);
     }
 
     private static Color defaultColor() {
@@ -86,7 +100,7 @@ public class IconUtils {
             var icon = iter.next().get();
             // remove dead icons which got GCed...
             if (icon == null) {
-                logger.trace("Removed lost reference to icon");
+                System.out.println("REMOVED REFERENCE TO WEAK ICON");
                 iter.remove();
             }
             else  {

@@ -19,8 +19,8 @@ public class ToggleBlacklistAction extends AbstractAction {
     private boolean blacklist_is_on;
 
     public ToggleBlacklistAction() {
-        enabledIcon = IconUtils.toolbarIcon(MaterialDesignL.LIST_STATUS);
-        disabledIcon = IconUtils.toolbarIcon(MaterialDesignL.LIST_STATUS, Color.RED);
+        enabledIcon = IconUtils.windowBarSpecificToolbarIcon(MaterialDesignL.LIST_STATUS);
+        disabledIcon = IconUtils.windowBarSpecificToolbarIcon(MaterialDesignL.LIST_STATUS, Color.RED);
 
         blacklist_is_on = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.BLACKLIST_IS_ON, false);
         setupState();

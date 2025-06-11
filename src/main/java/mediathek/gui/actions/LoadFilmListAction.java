@@ -14,7 +14,7 @@ public class LoadFilmListAction extends AbstractAction {
     public LoadFilmListAction(MediathekGui mediathekGui) {
         this.mediathekGui = mediathekGui;
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F5, 0));
-        putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeSolid.CLOUD_DOWNLOAD_ALT));
+        putValue(Action.SMALL_ICON, IconUtils.windowBarSpecificToolbarIcon(FontAwesomeSolid.CLOUD_DOWNLOAD_ALT));
         putValue(Action.NAME, "Neue Filmliste laden...");
         putValue(Action.SHORT_DESCRIPTION, "Neue Filmliste laden");
     }
