@@ -40,7 +40,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdesktop.swingx.JXStatusBar;
 import org.jetbrains.annotations.NotNull;
-import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 
 import javax.swing.*;
@@ -1245,7 +1244,7 @@ public class GuiDownloads extends AGuiTabPanel {
             jPopupMenu.addSeparator();
 
             JMenuItem itemPlayer = new JMenuItem("Film (URL) abspielen");
-            itemPlayer.setIcon(IconUtils.of(FontAwesomeRegular.PLAY_CIRCLE));
+            itemPlayer.setIcon(IconUtils.of(FontAwesomeSolid.PLAY_CIRCLE));
             itemPlayer.addActionListener(_ -> {
                 final int nr1 = tabelle.rowAtPoint(p);
                 if (nr1 != -1) {
