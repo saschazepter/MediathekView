@@ -32,8 +32,8 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
     private final FontIcon download_stop_sw_tab;
     private final FlatSVGIcon download_start_tab;
     private final Icon download_start_sw_tab;
-    private final FlatSVGIcon download_clear_tab_selected;
-    private final Icon download_clear_sw_tab;
+    private final FontIcon download_clear_tab_selected;
+    private final FontIcon download_clear_sw_tab;
     private final FlatSVGIcon download_del_tab_selected;
     private final Icon download_del_sw_tab;
     private final JProgressBar progressBar = new JProgressBar(0, 1000);
@@ -45,9 +45,8 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
         download_start_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/caret-down.svg");
         download_start_tab.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> Color.WHITE));
         download_start_sw_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/caret-down.svg");
-        download_clear_tab_selected = SVGIconUtilities.createSVGIcon("icons/fontawesome/eraser.svg");
-        download_clear_tab_selected.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> Color.WHITE));
-        download_clear_sw_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/eraser.svg");
+        download_clear_tab_selected = FontIcon.of(FontAwesomeSolid.ERASER, IconUtils.DEFAULT_SIZE, Color.WHITE);
+        download_clear_sw_tab = IconUtils.of(FontAwesomeSolid.ERASER);
 
         download_del_tab_selected = SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg");
         download_del_tab_selected.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> Color.WHITE));
