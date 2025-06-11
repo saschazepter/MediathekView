@@ -29,10 +29,11 @@ public class CellRendererBaseWithStart extends CellRendererBase {
     public static final String ICON_POSITION_RIGHT = "ui.list.iconposition_right";
     private static final EnumSet<Country> euCountryList = EnumSet.of(Country.DE, Country.AT, Country.FR);
     protected final Configuration config = ApplicationConfiguration.getConfiguration();
-    protected final FlatSVGIcon lockedIcon;
-    protected final FlatSVGIcon lockedIconSelected;
-    protected final FlatSVGIcon unlockedIcon;
-    protected final FlatSVGIcon unlockedIconSelected;
+    protected final FontIcon lockedIcon;
+    protected final FontIcon lockedIconSelected;
+    protected final FontIcon unlockedIcon;
+    protected final FontIcon unlockedIconSelected;
+    protected final FlatSVGIcon.ColorFilter whiteColorFilter = new FlatSVGIcon.ColorFilter(_ -> Color.WHITE);
     /**
      * Temporary storage for the icons that will be assembled to a compound icon.
      */
@@ -45,18 +46,15 @@ public class CellRendererBaseWithStart extends CellRendererBase {
     private final FontIcon liveStreamIconSelected;
     private final FlatSVGIcon audioDescription;
     private final FlatSVGIcon audioDescriptionSelected;
-    protected final FlatSVGIcon.ColorFilter whiteColorFilter = new FlatSVGIcon.ColorFilter(_ -> Color.WHITE);
 
     public CellRendererBaseWithStart() {
         MessageBus.getMessageBus().subscribe(this);
 
-        lockedIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/lock.svg");
-        lockedIconSelected = SVGIconUtilities.createSVGIcon("icons/fontawesome/lock.svg");
-        lockedIconSelected.setColorFilter(whiteColorFilter);
+        lockedIcon = IconUtils.of(FontAwesomeSolid.LOCK);
+        lockedIconSelected = FontIcon.of(FontAwesomeSolid.LOCK, IconUtils.DEFAULT_SIZE, Color.WHITE);
 
-        unlockedIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/lock-open.svg");
-        unlockedIconSelected = SVGIconUtilities.createSVGIcon("icons/fontawesome/lock-open.svg");
-        unlockedIconSelected.setColorFilter(whiteColorFilter);
+        unlockedIcon = IconUtils.of(FontAwesomeSolid.LOCK_OPEN);
+        unlockedIconSelected = FontIcon.of(FontAwesomeSolid.LOCK_OPEN, IconUtils.DEFAULT_SIZE, Color.WHITE);
 
         subtitleIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/closed-captioning.svg");
         subtitleIconSelected = SVGIconUtilities.createSVGIcon("icons/fontawesome/closed-captioning.svg");
