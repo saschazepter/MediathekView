@@ -7,12 +7,15 @@ import mediathek.controller.history.SeenHistoryController;
 import mediathek.controller.starter.Start;
 import mediathek.daten.DatenDownload;
 import mediathek.daten.DatenFilm;
+import mediathek.javafx.bookmark.IconUtils;
 import mediathek.tool.ColorUtils;
 import mediathek.tool.SVGIconUtilities;
 import mediathek.tool.table.MVTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
+import org.kordamp.ikonli.swing.FontIcon;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,9 +30,9 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
     private final FlatSVGIcon normalDownloadIcon;
     private final FlatSVGIcon selectedPlayIcon;
     private final FlatSVGIcon normalPlayIcon;
-    private final FlatSVGIcon selectedBookmarkIcon;
-    private final FlatSVGIcon normalBookmarkIcon;
-    private final FlatSVGIcon selectedBookmarkIconHighlighted;
+    private final FontIcon selectedBookmarkIcon;
+    private final FontIcon normalBookmarkIcon;
+    private final FontIcon selectedBookmarkIconHighlighted;
 
     public CellRendererFilme() {
         selectedDownloadIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/download.svg");
@@ -47,13 +50,11 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
 
         normalStopIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/stop.svg");
 
-        selectedBookmarkIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/bookmark.svg");
-        selectedBookmarkIcon.setColorFilter(whiteColorFilter);
+        selectedBookmarkIcon = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.WHITE);
 
-        selectedBookmarkIconHighlighted = SVGIconUtilities.createSVGIcon("icons/fontawesome/bookmark.svg");
-        selectedBookmarkIconHighlighted.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> Color.ORANGE));
+        selectedBookmarkIconHighlighted = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.ORANGE);
 
-        normalBookmarkIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/bookmark.svg");
+        normalBookmarkIcon = IconUtils.of(FontAwesomeSolid.BOOKMARK);
     }
 
     private JTextArea createTextArea(String content) {

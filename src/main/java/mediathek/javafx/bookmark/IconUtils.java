@@ -33,10 +33,10 @@ import java.util.List;
 
 
 public class IconUtils {
-    private static final int DEFAULT_SIZE = 16;
-    private static final int DEFAULT_TOOLBAR_SIZE = 18;
-    private static final Color DEFAULT_LIGHT_COLOR = new Color(110,110,110);
-    private static final Color DEFAULT_DARK_COLOR = new Color(176,177,179);
+    public static final int DEFAULT_SIZE = 16;
+    public static final int DEFAULT_TOOLBAR_SIZE = 18;
+    public static final Color DEFAULT_LIGHT_COLOR = new Color(110,110,110);
+    public static final Color DEFAULT_DARK_COLOR = new Color(176,177,179);
     private static final List<WeakReference<FontIcon>> themedIcons = new ArrayList<>();
     private static final Logger logger = LogManager.getLogger();
 
