@@ -69,9 +69,7 @@ public class BookmarkDataList {
 
     public void removeBookmark(@NotNull BookmarkData bookmark) {
         var filmOpt = bookmark.getDatenFilmOptional();
-        filmOpt.ifPresent(film -> {
-            film.setBookmark(null);
-        });
+        filmOpt.ifPresent(film -> film.setBookmark(null));
         bookmark.setDatenFilm(null);
         bookmarks.remove(bookmark);
     }

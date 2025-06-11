@@ -57,19 +57,26 @@ public class BookmarkDialog extends JDialog {
         JScrollPane scrollPane = new JScrollPane(table);
         getContentPane().add(scrollPane, BorderLayout.CENTER);
 
+        setupNoteArea();
+        getContentPane().add(createTabbedPane(), BorderLayout.SOUTH);
+
+        setupTable();
+    }
+
+    private void setupNoteArea() {
+        noteArea.setLineWrap(true);
+        noteArea.setWrapStyleWord(true);
+        noteArea.setEditable(false);
+    }
+
+    private JTabbedPane createTabbedPane() {
         JTabbedPane tabbedPane = new JTabbedPane(JTabbedPane.TOP);
         tabbedPane.addTab("Beschreibung", filmDescriptionPanel);
         JPanel notePanel = new JPanel(new BorderLayout());
         notePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        noteArea.setLineWrap(true);
-        noteArea.setWrapStyleWord(true);
-        noteArea.setEditable(false);
-        noteArea.setText("Platzhalter für eine Notiz");
         notePanel.add(noteArea, BorderLayout.CENTER);
         tabbedPane.addTab("Notizen", notePanel);
-        getContentPane().add(tabbedPane, BorderLayout.SOUTH);
-
-        setupTable();
+        return tabbedPane;
     }
 
     private void setupTable() {
