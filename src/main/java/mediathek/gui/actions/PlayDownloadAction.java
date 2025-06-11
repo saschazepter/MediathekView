@@ -15,7 +15,7 @@ public class PlayDownloadAction extends AbstractAction {
         this.guiDownloads = guiDownloads;
         putValue(Action.NAME, ACTION_TEXT);
         putValue(Action.SHORT_DESCRIPTION, ACTION_TEXT);
-        putValue(Action.SMALL_ICON, IconUtils.of(FontAwesomeSolid.PLAY));
+        putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeSolid.PLAY));
     }
 
     @Override
