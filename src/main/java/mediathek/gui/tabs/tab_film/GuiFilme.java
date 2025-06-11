@@ -51,6 +51,7 @@ import org.jdesktop.swingx.VerticalLayout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
+import org.kordamp.ikonli.materialdesign2.MaterialDesignF;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -1116,7 +1117,7 @@ public class GuiFilme extends AGuiTabPanel {
             putValue(Action.ACCELERATOR_KEY, keyStroke);
             putValue(Action.SHORT_DESCRIPTION, "Ausgewählte Filme in der Merkliste speichern");
             putValue(Action.NAME, "Ausgewählte Filme merken");
-            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/file-circle-plus.svg"));
+            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(MaterialDesignF.FILE_DOCUMENT_PLUS));
         }
 
         @Override
@@ -1138,7 +1139,7 @@ public class GuiFilme extends AGuiTabPanel {
         public BookmarkRemoveFilmAction() {
             putValue(Action.SHORT_DESCRIPTION, "Ausgewählte Filme aus der Merkliste löschen");
             putValue(Action.NAME, "Ausgewählte Filme aus der Merkliste löschen");
-            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/file-circle-minus.svg"));
+            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(MaterialDesignF.FILE_DOCUMENT_MINUS));
         }
 
         @Override

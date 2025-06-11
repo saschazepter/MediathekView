@@ -20,8 +20,9 @@ package mediathek.gui.actions;
 
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
+import mediathek.javafx.bookmark.IconUtils;
 import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.SVGIconUtilities;
+import org.kordamp.ikonli.materialdesign2.MaterialDesignF;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -35,7 +36,7 @@ public class DeleteBookmarksAction extends AbstractAction {
 
         putValue(Action.SHORT_DESCRIPTION, "Merkliste vollständig löschen");
         putValue(NAME, "Merkliste vollständig löschen...");
-        putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/file-circle-xmark.svg"));
+        putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(MaterialDesignF.FILE_DOCUMENT_REMOVE));
     }
 
     @Override
