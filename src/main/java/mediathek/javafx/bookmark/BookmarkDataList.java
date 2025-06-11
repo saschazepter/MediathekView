@@ -73,7 +73,6 @@ public class BookmarkDataList {
             film.setBookmark(null);
         });
         bookmark.setDatenFilm(null);
-        System.out.println("Deleting Bookmark: " + bookmark.getFilmHashCode());
         bookmarks.remove(bookmark);
     }
 
