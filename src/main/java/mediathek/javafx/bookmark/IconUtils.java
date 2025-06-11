@@ -38,6 +38,7 @@ public class IconUtils {
     public static final Color DEFAULT_DARK_COLOR = new Color(176,177,179);
     /// used only on macOS when icons are on window button level
     protected static final int DEFAULT_MAC_TOOLBAR_WINDOWBAR_SIZE = 16;
+    protected static final int DEFAULT_WINDOWS_TOOLBAR_WINDOWBAR_SIZE = 18;
     private static final List<WeakReference<FontIcon>> themedIcons = new ArrayList<>();
 
     static {
@@ -59,6 +60,9 @@ public class IconUtils {
         int size = DEFAULT_TOOLBAR_SIZE;
         if (SystemUtils.IS_OS_MAC_OSX) {
             size = DEFAULT_MAC_TOOLBAR_WINDOWBAR_SIZE;
+        }
+        else if (SystemUtils.IS_OS_WINDOWS) {
+            size = DEFAULT_WINDOWS_TOOLBAR_WINDOWBAR_SIZE;
         }
         return size;
     }
