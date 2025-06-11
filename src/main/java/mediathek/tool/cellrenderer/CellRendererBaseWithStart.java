@@ -5,12 +5,15 @@ import mediathek.config.MVColor;
 import mediathek.controller.starter.Start;
 import mediathek.daten.Country;
 import mediathek.daten.DatenFilm;
+import mediathek.javafx.bookmark.IconUtils;
 import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.MessageBus;
 import mediathek.tool.SVGIconUtilities;
 import mediathek.tool.swing.CompoundIcon;
 import org.apache.commons.configuration2.Configuration;
 import org.jetbrains.annotations.NotNull;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
+import org.kordamp.ikonli.swing.FontIcon;
 
 import javax.swing.*;
 import java.awt.*;
@@ -38,11 +41,11 @@ public class CellRendererBaseWithStart extends CellRendererBase {
     private final FlatSVGIcon subtitleIconSelected;
     private final FlatSVGIcon highQualityIcon;
     private final FlatSVGIcon highQualityIconSelected;
-    private final FlatSVGIcon liveStreamIcon;
-    private final FlatSVGIcon liveStreamIconSelected;
+    private final FontIcon liveStreamIcon;
+    private final FontIcon liveStreamIconSelected;
     private final FlatSVGIcon audioDescription;
     private final FlatSVGIcon audioDescriptionSelected;
-    protected final FlatSVGIcon.ColorFilter whiteColorFilter = new FlatSVGIcon.ColorFilter(color -> Color.WHITE);
+    protected final FlatSVGIcon.ColorFilter whiteColorFilter = new FlatSVGIcon.ColorFilter(_ -> Color.WHITE);
 
     public CellRendererBaseWithStart() {
         MessageBus.getMessageBus().subscribe(this);
@@ -63,9 +66,8 @@ public class CellRendererBaseWithStart extends CellRendererBase {
         highQualityIconSelected = SVGIconUtilities.createSVGIcon("icons/derreisende77/high-quality.svg");
         highQualityIconSelected.setColorFilter(whiteColorFilter);
 
-        liveStreamIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/tower-cell.svg");
-        liveStreamIconSelected = SVGIconUtilities.createSVGIcon("icons/fontawesome/tower-cell.svg");
-        liveStreamIconSelected.setColorFilter(whiteColorFilter);
+        liveStreamIcon = IconUtils.of(FontAwesomeSolid.BROADCAST_TOWER);
+        liveStreamIconSelected = FontIcon.of(FontAwesomeSolid.BROADCAST_TOWER, IconUtils.DEFAULT_SIZE, Color.WHITE);
 
         audioDescription = SVGIconUtilities.createSVGIcon("icons/fontawesome/audio-description.svg");
         audioDescriptionSelected = SVGIconUtilities.createSVGIcon("icons/fontawesome/audio-description.svg");
