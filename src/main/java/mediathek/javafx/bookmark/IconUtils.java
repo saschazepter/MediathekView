@@ -58,12 +58,20 @@ public class IconUtils {
         return of(ikon, DEFAULT_TOOLBAR_SIZE);
     }
 
+    public static FontIcon toolbarIcon(Ikon ikon, Color color) {
+        return FontIcon.of(ikon, DEFAULT_TOOLBAR_SIZE, color);
+    }
+
     private static Color defaultColor() {
         return FlatLaf.isLafDark() ? DEFAULT_DARK_COLOR : DEFAULT_LIGHT_COLOR;
     }
 
     public static FontIcon of(Ikon ikon, int size) {
-        var icon = FontIcon.of(ikon, size, defaultColor());
+        return of(ikon, size, defaultColor());
+    }
+
+    protected static FontIcon of(Ikon ikon, int size, Color color) {
+        var icon = FontIcon.of(ikon, size, color);
         themedIcons.add(new WeakReference<>(icon));
         return icon;
     }
