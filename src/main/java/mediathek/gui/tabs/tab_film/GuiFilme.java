@@ -729,7 +729,7 @@ public class GuiFilme extends AGuiTabPanel {
         public ToggleFilterDialogVisibilityAction() {
             putValue(Action.NAME, "Filterdialog anzeigen");
             putValue(Action.SHORT_DESCRIPTION, "Filter anzeigen");
-            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/filter.svg"));
+            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeSolid.FILTER));
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
         }
 
