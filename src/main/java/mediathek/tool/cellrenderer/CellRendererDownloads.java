@@ -9,6 +9,7 @@ import mediathek.tool.SVGIconUtilities;
 import mediathek.tool.table.MVTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 import org.kordamp.ikonli.swing.FontIcon;
 
@@ -34,8 +35,8 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
     private final Icon download_start_sw_tab;
     private final FontIcon download_clear_tab_selected;
     private final FontIcon download_clear_sw_tab;
-    private final FlatSVGIcon download_del_tab_selected;
-    private final Icon download_del_sw_tab;
+    private final FontIcon download_del_tab_selected;
+    private final FontIcon download_del_sw_tab;
     private final JProgressBar progressBar = new JProgressBar(0, 1000);
 
     public CellRendererDownloads() {
@@ -48,9 +49,8 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
         download_clear_tab_selected = FontIcon.of(FontAwesomeSolid.ERASER, IconUtils.DEFAULT_SIZE, Color.WHITE);
         download_clear_sw_tab = IconUtils.of(FontAwesomeSolid.ERASER);
 
-        download_del_tab_selected = SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg");
-        download_del_tab_selected.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> Color.WHITE));
-        download_del_sw_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg");
+        download_del_tab_selected = FontIcon.of(FontAwesomeRegular.TRASH_ALT, IconUtils.DEFAULT_SIZE, Color.WHITE);
+        download_del_sw_tab = IconUtils.of(FontAwesomeRegular.TRASH_ALT);
 
         film_start_tab = FontIcon.of(FontAwesomeSolid.PLAY, IconUtils.DEFAULT_SIZE, Color.WHITE);
         film_start_sw_tab = IconUtils.of(FontAwesomeSolid.PLAY);
