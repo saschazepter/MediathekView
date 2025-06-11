@@ -84,8 +84,8 @@ public class BookmarkDialog extends JDialog {
         var observedBookmarks =
                 new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
 
-        var tableFormat = GlazedLists.tableFormat(new String[]{"sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "NormalQualityUrl", "note", "filmHashCode", "BookmarkAdded"},
-                new String[]{"Sender", "Thema", "Titel", "Dauer", "Sendedatum", "Verfügbar bis", "URL", "Notiz", "Hash Code", "hinzugefügt am"});
+        var tableFormat = GlazedLists.tableFormat(new String[]{"seen", "sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "NormalQualityUrl", "note", "filmHashCode", "BookmarkAdded"},
+                new String[]{"Gesehen", "Sender", "Thema", "Titel", "Dauer", "Sendedatum", "Verfügbar bis", "URL", "Notiz", "Hash Code", "hinzugefügt am"});
         var model = new DefaultEventTableModel<>(observedBookmarks, tableFormat);
 
         selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
@@ -104,15 +104,17 @@ public class BookmarkDialog extends JDialog {
 
     private void setupCellRenderers() {
         var columnModel = table.getColumnModel();
+        //seen column
+        columnModel.getColumn(0).setCellRenderer(new SeenCellRenderer());
         //sender column
-        columnModel.getColumn(0).setCellRenderer(new CenteredCellRenderer());
+        columnModel.getColumn(1).setCellRenderer(new CenteredCellRenderer());
         // dauer column
-        columnModel.getColumn(3).setCellRenderer(new FilmLengthCellRenderer());
+        columnModel.getColumn(4).setCellRenderer(new FilmLengthCellRenderer());
         //sendedatum column
-        columnModel.getColumn(4).setCellRenderer(new CenteredCellRenderer());
-        columnModel.getColumn(7).setCellRenderer(new NoteCellRenderer());
+        columnModel.getColumn(5).setCellRenderer(new CenteredCellRenderer());
+        columnModel.getColumn(8).setCellRenderer(new NoteCellRenderer());
         //hinzugefügt am Column
-        columnModel.getColumn(9).setCellRenderer(new AddedAtCellRenderer());
+        columnModel.getColumn(10).setCellRenderer(new AddedAtCellRenderer());
     }
 
     private void setupToolBar() {
@@ -190,7 +192,7 @@ public class BookmarkDialog extends JDialog {
     }
 
     static class NoteCellRenderer extends JPanel implements TableCellRenderer {
-        private final JCheckBox checkBox = new JCheckBox();
+        protected final JCheckBox checkBox = new JCheckBox();
 
         public NoteCellRenderer() {
             setLayout(new BorderLayout());
@@ -198,12 +200,7 @@ public class BookmarkDialog extends JDialog {
             add(checkBox, BorderLayout.CENTER);
         }
 
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (table == null) {
-                return this;
-            }
-
+        protected void performSelectionDrawing(JTable table, boolean isSelected, int row) {
             if (isSelected) {
                 setForeground(table.getSelectionForeground());
                 setBackground(table.getSelectionBackground());
@@ -219,8 +216,32 @@ public class BookmarkDialog extends JDialog {
                 setForeground(table.getForeground());
                 setBackground(background);
             }
+        }
+
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (table == null) {
+                return this;
+            }
+
+            performSelectionDrawing(table, isSelected, row);
 
             checkBox.setSelected(value != null);
+            return this;
+        }
+    }
+
+    static class SeenCellRenderer extends NoteCellRenderer implements TableCellRenderer {
+        @Override
+        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+            if (table == null) {
+                return this;
+            }
+
+            performSelectionDrawing(table, isSelected, row);
+
+            boolean seen = (boolean) value;
+            checkBox.setSelected(seen);
             return this;
         }
     }
