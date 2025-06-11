@@ -43,14 +43,14 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
         download_stop_sw_tab = IconUtils.of(FontAwesomeSolid.STOP);
 
         download_start_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/caret-down.svg");
-        download_start_tab.setColorFilter(whiteColorFilter);
+        download_start_tab.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> Color.WHITE));
         download_start_sw_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/caret-down.svg");
         download_clear_tab_selected = SVGIconUtilities.createSVGIcon("icons/fontawesome/eraser.svg");
-        download_clear_tab_selected.setColorFilter(whiteColorFilter);
+        download_clear_tab_selected.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> Color.WHITE));
         download_clear_sw_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/eraser.svg");
 
         download_del_tab_selected = SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg");
-        download_del_tab_selected.setColorFilter(whiteColorFilter);
+        download_del_tab_selected.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> Color.WHITE));
         download_del_sw_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg");
 
         film_start_tab = FontIcon.of(FontAwesomeSolid.PLAY, IconUtils.DEFAULT_SIZE, Color.WHITE);

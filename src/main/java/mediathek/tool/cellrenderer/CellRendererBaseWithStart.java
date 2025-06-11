@@ -33,7 +33,6 @@ public class CellRendererBaseWithStart extends CellRendererBase {
     protected final FontIcon lockedIconSelected;
     protected final FontIcon unlockedIcon;
     protected final FontIcon unlockedIconSelected;
-    protected final FlatSVGIcon.ColorFilter whiteColorFilter = new FlatSVGIcon.ColorFilter(_ -> Color.WHITE);
     /**
      * Temporary storage for the icons that will be assembled to a compound icon.
      */
@@ -61,7 +60,7 @@ public class CellRendererBaseWithStart extends CellRendererBase {
 
         highQualityIcon = SVGIconUtilities.createSVGIcon("icons/derreisende77/high-quality.svg");
         highQualityIconSelected = SVGIconUtilities.createSVGIcon("icons/derreisende77/high-quality.svg");
-        highQualityIconSelected.setColorFilter(whiteColorFilter);
+        highQualityIconSelected.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> Color.WHITE));
 
         liveStreamIcon = IconUtils.of(FontAwesomeSolid.BROADCAST_TOWER);
         liveStreamIconSelected = FontIcon.of(FontAwesomeSolid.BROADCAST_TOWER, IconUtils.DEFAULT_SIZE, Color.WHITE);
