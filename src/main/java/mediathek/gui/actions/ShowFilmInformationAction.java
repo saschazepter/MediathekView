@@ -1,8 +1,9 @@
 package mediathek.gui.actions;
 
+import mediathek.javafx.bookmark.IconUtils;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.GuiFunktionen;
-import mediathek.tool.SVGIconUtilities;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -13,7 +14,7 @@ public class ShowFilmInformationAction extends AbstractAction {
     public ShowFilmInformationAction() {
         putValue(Action.NAME, "Filminformation anzeigen");
         putValue(Action.SHORT_DESCRIPTION, "Filminformation anzeigen");
-        putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-info.svg", 14f));
+        putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeSolid.INFO_CIRCLE));
         putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_I, GuiFunktionen.getPlatformControlKey()));
     }
 
