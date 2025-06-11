@@ -25,9 +25,10 @@ import ca.odell.glazedlists.swing.DefaultEventTableModel;
 import mediathek.config.Daten;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.SVGIconUtilities;
 import mediathek.tool.datum.DateUtil;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 
 import javax.swing.*;
 import javax.swing.plaf.UIResource;
@@ -121,12 +122,9 @@ public class BookmarkDialog extends JDialog {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        JButton deleteEntryButton = new JButton("Delete Entry");
-        deleteEntryButton.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
-        deleteEntryButton.addActionListener(_ -> deleteBookmarkSelection());
-        toolBar.add(deleteEntryButton);
-
-        JButton setNoteButton = new JButton("Set Note");
+        JButton setNoteButton = new JButton();
+        setNoteButton.setToolTipText("Notiz hinzufügen");
+        setNoteButton.setIcon(IconUtils.toolbarIcon(FontAwesomeRegular.EDIT));
         setNoteButton.addActionListener(_ -> {
             if (!selectionModel.isSelectionEmpty()) {
                 var selectedPeople = selectionModel.getSelected();
@@ -139,7 +137,9 @@ public class BookmarkDialog extends JDialog {
         });
         toolBar.add(setNoteButton);
 
-        JButton removeNoteButton = new JButton("Remove Note");
+        JButton removeNoteButton = new JButton();
+        removeNoteButton.setToolTipText("Notiz entfernen");
+        removeNoteButton.setIcon(IconUtils.toolbarIcon(FontAwesomeSolid.ERASER));
         removeNoteButton.addActionListener(_ -> {
             if (!selectionModel.isSelectionEmpty()) {
                 var selectedPeople = selectionModel.getSelected();
@@ -151,6 +151,13 @@ public class BookmarkDialog extends JDialog {
             }
         });
         toolBar.add(removeNoteButton);
+
+        toolBar.addSeparator();
+        JButton deleteEntryButton = new JButton();
+        deleteEntryButton.setToolTipText("Eintrag löschen");
+        deleteEntryButton.setIcon(IconUtils.toolbarIcon(FontAwesomeRegular.TRASH_ALT));
+        deleteEntryButton.addActionListener(_ -> deleteBookmarkSelection());
+        toolBar.add(deleteEntryButton);
 
         getContentPane().add(toolBar, BorderLayout.NORTH);
     }

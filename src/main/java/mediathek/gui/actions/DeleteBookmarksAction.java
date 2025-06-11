@@ -35,7 +35,7 @@ public class DeleteBookmarksAction extends AbstractAction {
 
         putValue(Action.SHORT_DESCRIPTION, "Merkliste vollständig löschen");
         putValue(NAME, "Merkliste vollständig löschen...");
-        putValue(Action.SMALL_ICON, SVGIconUtilities.createToolBarIcon("icons/fontawesome/file-circle-xmark.svg"));
+        putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/file-circle-xmark.svg"));
     }
 
     @Override
