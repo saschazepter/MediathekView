@@ -34,8 +34,8 @@ import java.util.List;
 public class IconUtils {
     public static final int DEFAULT_SIZE = 16;
     public static final int DEFAULT_TOOLBAR_SIZE = 18;
-    public static final Color DEFAULT_LIGHT_COLOR = new Color(110,110,110);
-    public static final Color DEFAULT_DARK_COLOR = new Color(176,177,179);
+    public static final Color DEFAULT_LIGHT_COLOR = new Color(110, 110, 110);
+    public static final Color DEFAULT_DARK_COLOR = new Color(176, 177, 179);
     /// used only on macOS when icons are on window button level
     protected static final int DEFAULT_MAC_TOOLBAR_WINDOWBAR_SIZE = 16;
     protected static final int DEFAULT_WINDOWS_TOOLBAR_WINDOWBAR_SIZE = 18;
@@ -57,12 +57,15 @@ public class IconUtils {
 
     /// Returns a smaller size for toolbar icons on macOS as we are installed close to the window controls
     protected static int windowBarSpecificSize() {
-        int size = DEFAULT_TOOLBAR_SIZE;
+        int size;
         if (SystemUtils.IS_OS_MAC_OSX) {
             size = DEFAULT_MAC_TOOLBAR_WINDOWBAR_SIZE;
         }
         else if (SystemUtils.IS_OS_WINDOWS) {
             size = DEFAULT_WINDOWS_TOOLBAR_WINDOWBAR_SIZE;
+        }
+        else {
+            size = DEFAULT_TOOLBAR_SIZE;
         }
         return size;
     }
@@ -107,7 +110,7 @@ public class IconUtils {
                 System.out.println("REMOVED REFERENCE TO WEAK ICON");
                 iter.remove();
             }
-            else  {
+            else {
                 icon.setIconColor(defaultColor());
             }
         }
