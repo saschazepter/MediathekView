@@ -58,9 +58,12 @@ public class IconUtils {
         return of(ikon, DEFAULT_TOOLBAR_SIZE);
     }
 
+    private static Color defaultColor() {
+        return FlatLaf.isLafDark() ? DEFAULT_DARK_COLOR : DEFAULT_LIGHT_COLOR;
+    }
+
     public static FontIcon of(Ikon ikon, int size) {
-        var color = FlatLaf.isLafDark() ? DEFAULT_DARK_COLOR : DEFAULT_LIGHT_COLOR;
-        var icon = FontIcon.of(ikon, size, color);
+        var icon = FontIcon.of(ikon, size, defaultColor());
         themedIcons.add(new WeakReference<>(icon));
         return icon;
     }
@@ -69,8 +72,6 @@ public class IconUtils {
         if (themedIcons.isEmpty()) {
             return;
         }
-
-        var color = FlatLaf.isLafDark() ? DEFAULT_DARK_COLOR : DEFAULT_LIGHT_COLOR;
 
         var iter = themedIcons.iterator();
         while (iter.hasNext()) {
@@ -81,7 +82,7 @@ public class IconUtils {
                 iter.remove();
             }
             else  {
-                icon.setIconColor(color);
+                icon.setIconColor(defaultColor());
             }
         }
     }
