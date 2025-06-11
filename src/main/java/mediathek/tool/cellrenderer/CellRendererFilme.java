@@ -26,8 +26,8 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
     private final FlatSVGIcon selectedStopIcon;
     private final FlatSVGIcon normalStopIcon;
     private final SeenHistoryController history = new SeenHistoryController();
-    private final FlatSVGIcon selectedDownloadIcon;
-    private final FlatSVGIcon normalDownloadIcon;
+    private final FontIcon selectedDownloadIcon;
+    private final FontIcon normalDownloadIcon;
     private final FlatSVGIcon selectedPlayIcon;
     private final FlatSVGIcon normalPlayIcon;
     private final FontIcon selectedBookmarkIcon;
@@ -35,25 +35,19 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
     private final FontIcon selectedBookmarkIconHighlighted;
 
     public CellRendererFilme() {
-        selectedDownloadIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/download.svg");
-        selectedDownloadIcon.setColorFilter(whiteColorFilter);
-
-        normalDownloadIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/download.svg");
+        selectedDownloadIcon = FontIcon.of(FontAwesomeSolid.DOWNLOAD, IconUtils.DEFAULT_SIZE, Color.WHITE);
+        normalDownloadIcon = IconUtils.of(FontAwesomeSolid.DOWNLOAD);
 
         selectedPlayIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/play.svg");
         selectedPlayIcon.setColorFilter(whiteColorFilter);
-
         normalPlayIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/play.svg");
 
         selectedStopIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/stop.svg");
         selectedStopIcon.setColorFilter(whiteColorFilter);
-
         normalStopIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/stop.svg");
 
         selectedBookmarkIcon = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.WHITE);
-
         selectedBookmarkIconHighlighted = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.ORANGE);
-
         normalBookmarkIcon = IconUtils.of(FontAwesomeSolid.BOOKMARK);
     }
 

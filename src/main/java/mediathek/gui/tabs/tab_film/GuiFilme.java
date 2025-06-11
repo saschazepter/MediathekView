@@ -35,6 +35,7 @@ import mediathek.gui.tabs.tab_film.helpers.GuiFilmeModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.LuceneGuiFilmeModelHelper;
 import mediathek.javafx.bookmark.BookmarkDialog;
+import mediathek.javafx.bookmark.IconUtils;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import mediathek.tool.cellrenderer.CellRendererFilme;
@@ -49,6 +50,7 @@ import org.apache.logging.log4j.Logger;
 import org.jdesktop.swingx.VerticalLayout;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -1088,7 +1090,7 @@ public class GuiFilme extends AGuiTabPanel {
         public SaveFilmAction() {
             putValue(Action.SHORT_DESCRIPTION, "Film downloaden");
             putValue(Action.NAME, "Film downloaden");
-            putValue(Action.SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/download.svg"));
+            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeSolid.DOWNLOAD));
             KeyStroke keyStroke;
             if (SystemUtils.IS_OS_MAC_OSX) {
                 keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F7, GuiFunktionen.getPlatformControlKey());
