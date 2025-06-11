@@ -1,6 +1,5 @@
 package mediathek.tool.cellrenderer;
 
-import com.formdev.flatlaf.extras.FlatSVGIcon;
 import mediathek.config.Daten;
 import mediathek.config.MVColor;
 import mediathek.controller.history.SeenHistoryController;
@@ -9,7 +8,6 @@ import mediathek.daten.DatenDownload;
 import mediathek.daten.DatenFilm;
 import mediathek.javafx.bookmark.IconUtils;
 import mediathek.tool.ColorUtils;
-import mediathek.tool.SVGIconUtilities;
 import mediathek.tool.table.MVTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,13 +21,13 @@ import java.util.ArrayList;
 
 public class CellRendererFilme extends CellRendererBaseWithStart {
     private static final Logger logger = LogManager.getLogger(CellRendererFilme.class);
-    private final FlatSVGIcon selectedStopIcon;
-    private final FlatSVGIcon normalStopIcon;
+    private final FontIcon selectedStopIcon;
+    private final FontIcon normalStopIcon;
     private final SeenHistoryController history = new SeenHistoryController();
     private final FontIcon selectedDownloadIcon;
     private final FontIcon normalDownloadIcon;
-    private final FlatSVGIcon selectedPlayIcon;
-    private final FlatSVGIcon normalPlayIcon;
+    private final FontIcon selectedPlayIcon;
+    private final FontIcon normalPlayIcon;
     private final FontIcon selectedBookmarkIcon;
     private final FontIcon normalBookmarkIcon;
     private final FontIcon selectedBookmarkIconHighlighted;
@@ -38,13 +36,11 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
         selectedDownloadIcon = FontIcon.of(FontAwesomeSolid.DOWNLOAD, IconUtils.DEFAULT_SIZE, Color.WHITE);
         normalDownloadIcon = IconUtils.of(FontAwesomeSolid.DOWNLOAD);
 
-        selectedPlayIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/play.svg");
-        selectedPlayIcon.setColorFilter(whiteColorFilter);
-        normalPlayIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/play.svg");
+        selectedPlayIcon = FontIcon.of(FontAwesomeSolid.PLAY, IconUtils.DEFAULT_SIZE, Color.WHITE);
+        normalPlayIcon = IconUtils.of(FontAwesomeSolid.PLAY);
 
-        selectedStopIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/stop.svg");
-        selectedStopIcon.setColorFilter(whiteColorFilter);
-        normalStopIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/stop.svg");
+        selectedStopIcon = FontIcon.of(FontAwesomeSolid.STOP, IconUtils.DEFAULT_SIZE, Color.WHITE);
+        normalStopIcon = IconUtils.of(FontAwesomeSolid.STOP);
 
         selectedBookmarkIcon = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.WHITE);
         selectedBookmarkIconHighlighted = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.ORANGE);
