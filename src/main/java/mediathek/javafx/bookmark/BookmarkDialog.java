@@ -26,11 +26,15 @@ import ca.odell.glazedlists.impl.beans.BeanTableFormat;
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import mediathek.config.Daten;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.datum.DateUtil;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 
@@ -38,11 +42,15 @@ import javax.swing.*;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Objects;
+import java.util.*;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class BookmarkDialog extends JDialog {
@@ -57,6 +65,8 @@ public class BookmarkDialog extends JDialog {
     private static final int COLUMN_NOTIZ = 8;
     private static final int COLUMN_HASHCODE = 9;
     private static final int COLUM_BOOKMARK_ADDED_AT = 10;
+    private static final File DEFAULT_FILE = new File("/Users/christianfranzke/Desktop/columns.json");
+    private static final Logger logger = LogManager.getLogger();
     private final FilmDescriptionPanel filmDescriptionPanel = new FilmDescriptionPanel();
     private final JTextArea noteArea = new JTextArea();
     private final JTable table = new JTable();
@@ -78,6 +88,21 @@ public class BookmarkDialog extends JDialog {
         getContentPane().add(createTabbedPane(), BorderLayout.SOUTH);
 
         setupTable();
+
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                try {
+                    Set<Integer> versteckteSpalten = Set.of(2, 4);
+                    TableColumnState.saveColumnState(table, DEFAULT_FILE, versteckteSpalten);
+                }
+                catch (Exception ex) {
+                    logger.error("Error saving column state", ex);
+                }
+
+                dispose();
+            }
+        });
     }
 
     private void setupNoteArea() {
@@ -130,6 +155,12 @@ public class BookmarkDialog extends JDialog {
 
         setupCellRenderers();
 
+        try {
+            TableColumnState.restoreColumnState(table, DEFAULT_FILE);
+        }
+        catch (Exception ex) {
+            logger.error("Could not restore default column state", ex);
+        }
         //table.getColumnModel().removeColumn(table.getColumnModel().getColumn(8));
     }
 
@@ -325,6 +356,73 @@ public class BookmarkDialog extends JDialog {
             super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             setHorizontalAlignment(JLabel.CENTER);
             return this;
+        }
+    }
+
+    public static class TableColumnState {
+
+        private static final ObjectMapper mapper = new ObjectMapper();
+
+        public static void saveColumnState(JTable table, File file, Set<Integer> hiddenColumns) throws IOException {
+            List<ColumnInfo> infos = new ArrayList<>();
+            var colModel = table.getColumnModel();
+            for (int viewIndex = 0; viewIndex < colModel.getColumnCount(); viewIndex++) {
+                var column = colModel.getColumn(viewIndex);
+                int modelIndex = column.getModelIndex();
+                int width = column.getWidth();
+                var visible = !hiddenColumns.contains(modelIndex);
+                infos.add(new ColumnInfo(modelIndex, viewIndex, width, visible));
+            }
+            mapper.writerWithDefaultPrettyPrinter().writeValue(file, infos);
+        }
+
+        public static void restoreColumnState(JTable table, File file) throws IOException {
+            if (!file.exists())
+                return;
+
+            List<ColumnInfo> infos = mapper.readValue(file, new TypeReference<>() {
+            });
+            var model = table.getColumnModel();
+
+            // Temporäre Liste für sichtbare Spalten
+            List<TableColumn> currentColumns = Collections.list(model.getColumns());
+
+            // Sichtbare Spalten entfernen
+            for (var col : currentColumns) {
+                model.removeColumn(col);
+            }
+
+            // Neue Reihenfolge und Breite anwenden
+            infos.sort(Comparator.comparingInt(c -> c.viewIndex));
+            for (var info : infos) {
+                if (info.visible) {
+                    for (var col : currentColumns) {
+                        if (col.getModelIndex() == info.modelIndex) {
+                            col.setPreferredWidth(info.width);
+                            model.addColumn(col);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+
+        public static class ColumnInfo {
+            public int modelIndex;
+            public int viewIndex;
+            public int width;
+            public boolean visible;
+
+            public ColumnInfo() {
+            } // Für Jackson
+
+            public ColumnInfo(int modelIndex, int viewIndex, int width, boolean visible) {
+                this.modelIndex = modelIndex;
+                this.viewIndex = viewIndex;
+                this.width = width;
+                this.visible = visible;
+            }
         }
     }
 }
