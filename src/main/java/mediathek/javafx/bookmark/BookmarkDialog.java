@@ -20,8 +20,12 @@ package mediathek.javafx.bookmark;
 
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.ObservableElementList;
+import ca.odell.glazedlists.SortedList;
+import ca.odell.glazedlists.gui.TableFormat;
+import ca.odell.glazedlists.impl.beans.BeanTableFormat;
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel;
-import ca.odell.glazedlists.swing.DefaultEventTableModel;
+import ca.odell.glazedlists.swing.GlazedListsSwing;
+import ca.odell.glazedlists.swing.TableComparatorChooser;
 import mediathek.config.Daten;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
@@ -37,10 +41,22 @@ import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 public class BookmarkDialog extends JDialog {
+    private static final int COLUMN_SEEN = 0;
+    private static final int COLUMN_SENDER = 1;
+    private static final int COLUMN_THEMA = 2;
+    private static final int COLUMN_TITLE = 3;
+    private static final int COLUMN_DAUER = 4;
+    private static final int COLUMN_SENDEDATUM = 5;
+    private static final int COLUMN_AVAILABLE_UNTIL = 6;
+    private static final int COLUMN_NORMAL_QUALITY_URL = 7;
+    private static final int COLUMN_NOTIZ = 8;
+    private static final int COLUMN_HASHCODE = 9;
+    private static final int COLUM_BOOKMARK_ADDED_AT = 10;
     private final FilmDescriptionPanel filmDescriptionPanel = new FilmDescriptionPanel();
     private final JTextArea noteArea = new JTextArea();
     private final JTable table = new JTable();
@@ -51,7 +67,7 @@ public class BookmarkDialog extends JDialog {
         setTitle("Merkliste verwalten");
         setModal(false);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(800, 400);
+        setSize(800, 500);
 
         setupToolBar();
 
@@ -80,15 +96,24 @@ public class BookmarkDialog extends JDialog {
         return tabbedPane;
     }
 
+    private TableFormat<BookmarkData> getTableFormat() {
+        var propertyNames = new String[]{"seen", "sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "NormalQualityUrl", "note", "filmHashCode", "BookmarkAdded"};
+        var columnLabels = new String[]{"Gesehen", "Sender", "Thema", "Titel", "Dauer", "Sendedatum", "Verfügbar bis", "URL", "Notiz", "Hash Code", "hinzugefügt am"};
+        return new BeanTableFormat<>(BookmarkData.class, propertyNames, columnLabels);
+    }
+
+    private void disableSortableColumns(TableComparatorChooser<BookmarkData> comparatorChooser) {
+        comparatorChooser.getComparatorsForColumn(COLUMN_NORMAL_QUALITY_URL).clear();
+        comparatorChooser.getComparatorsForColumn(COLUMN_HASHCODE).clear();
+    }
+
     private void setupTable() {
         ObservableElementList.Connector<BookmarkData> personConnector = GlazedLists.beanConnector(BookmarkData.class);
         var observedBookmarks =
                 new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
+        var sortedList = new SortedList<>(observedBookmarks, new BookmarkComparator());
 
-        var tableFormat = GlazedLists.tableFormat(new String[]{"seen", "sender", "thema", "title", "dauer", "sendedatum", "AvailableUntil", "NormalQualityUrl", "note", "filmHashCode", "BookmarkAdded"},
-                new String[]{"Gesehen", "Sender", "Thema", "Titel", "Dauer", "Sendedatum", "Verfügbar bis", "URL", "Notiz", "Hash Code", "hinzugefügt am"});
-        var model = new DefaultEventTableModel<>(observedBookmarks, tableFormat);
-
+        var model = GlazedListsSwing.eventTableModelWithThreadProxyList(sortedList, getTableFormat());
         selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
         selectionModel.addListSelectionListener(l -> {
             if (!l.getValueIsAdjusting()) {
@@ -96,8 +121,13 @@ public class BookmarkDialog extends JDialog {
             }
         });
 
+        table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.setModel(model);
         table.setSelectionModel(selectionModel);
+        var comparatorChooser = TableComparatorChooser.install(table, sortedList, TableComparatorChooser.SINGLE_COLUMN);
+        //disable sort for url and hashcode
+        disableSortableColumns(comparatorChooser);
+
         setupCellRenderers();
 
         //table.getColumnModel().removeColumn(table.getColumnModel().getColumn(8));
@@ -106,16 +136,16 @@ public class BookmarkDialog extends JDialog {
     private void setupCellRenderers() {
         var columnModel = table.getColumnModel();
         //seen column
-        columnModel.getColumn(0).setCellRenderer(new SeenCellRenderer());
+        columnModel.getColumn(COLUMN_SEEN).setCellRenderer(new SeenCellRenderer());
         //sender column
-        columnModel.getColumn(1).setCellRenderer(new CenteredCellRenderer());
+        columnModel.getColumn(COLUMN_SENDER).setCellRenderer(new CenteredCellRenderer());
         // dauer column
-        columnModel.getColumn(4).setCellRenderer(new FilmLengthCellRenderer());
+        columnModel.getColumn(COLUMN_DAUER).setCellRenderer(new FilmLengthCellRenderer());
         //sendedatum column
-        columnModel.getColumn(5).setCellRenderer(new CenteredCellRenderer());
-        columnModel.getColumn(8).setCellRenderer(new NoteCellRenderer());
+        columnModel.getColumn(COLUMN_SENDEDATUM).setCellRenderer(new CenteredCellRenderer());
+        columnModel.getColumn(COLUMN_NOTIZ).setCellRenderer(new NoteCellRenderer());
         //hinzugefügt am Column
-        columnModel.getColumn(10).setCellRenderer(new AddedAtCellRenderer());
+        columnModel.getColumn(COLUM_BOOKMARK_ADDED_AT).setCellRenderer(new AddedAtCellRenderer());
     }
 
     private void setupToolBar() {
@@ -195,6 +225,14 @@ public class BookmarkDialog extends JDialog {
         else {
             filmDescriptionPanel.setCurrentFilm(null);
             noteArea.setText("");
+        }
+    }
+
+    public static class BookmarkComparator implements Comparator<BookmarkData> {
+
+        @Override
+        public int compare(BookmarkData o1, BookmarkData o2) {
+            return o1.getBookmarkAdded().compareTo(o2.getBookmarkAdded());
         }
     }
 
