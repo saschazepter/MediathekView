@@ -44,8 +44,8 @@ public class CellRendererBaseWithStart extends CellRendererBase {
     private final FlatSVGIcon highQualityIconSelected;
     private final FontIcon liveStreamIcon;
     private final FontIcon liveStreamIconSelected;
-    private final FlatSVGIcon audioDescription;
-    private final FlatSVGIcon audioDescriptionSelected;
+    private final FontIcon audioDescription;
+    private final FontIcon audioDescriptionSelected;
 
     public CellRendererBaseWithStart() {
         MessageBus.getMessageBus().subscribe(this);
@@ -67,9 +67,8 @@ public class CellRendererBaseWithStart extends CellRendererBase {
         liveStreamIcon = IconUtils.of(FontAwesomeSolid.BROADCAST_TOWER);
         liveStreamIconSelected = FontIcon.of(FontAwesomeSolid.BROADCAST_TOWER, IconUtils.DEFAULT_SIZE, Color.WHITE);
 
-        audioDescription = SVGIconUtilities.createSVGIcon("icons/fontawesome/audio-description.svg");
-        audioDescriptionSelected = SVGIconUtilities.createSVGIcon("icons/fontawesome/audio-description.svg");
-        audioDescriptionSelected.setColorFilter(whiteColorFilter);
+        audioDescription = IconUtils.of(FontAwesomeSolid.AUDIO_DESCRIPTION);
+        audioDescriptionSelected = FontIcon.of(FontAwesomeSolid.AUDIO_DESCRIPTION, IconUtils.DEFAULT_SIZE, Color.WHITE);
     }
 
     protected void drawGeolocationIcons(@NotNull DatenFilm film, boolean isSelected) {
