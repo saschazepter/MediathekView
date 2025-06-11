@@ -28,8 +28,8 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
     private final Border emptyBorder = BorderFactory.createEmptyBorder(3,2,3,2);
     private final Border largeBorder = BorderFactory.createEmptyBorder(9, 2, 9, 2);
     private final JPanel panel;
-    private final FlatSVGIcon download_stop_tab;
-    private final FlatSVGIcon download_stop_sw_tab;
+    private final FontIcon download_stop_tab;
+    private final FontIcon download_stop_sw_tab;
     private final FlatSVGIcon download_start_tab;
     private final Icon download_start_sw_tab;
     private final FlatSVGIcon download_clear_tab_selected;
@@ -39,9 +39,9 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
     private final JProgressBar progressBar = new JProgressBar(0, 1000);
 
     public CellRendererDownloads() {
-        download_stop_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/stop.svg");
-        download_stop_tab.setColorFilter(whiteColorFilter);
-        download_stop_sw_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/stop.svg");
+        download_stop_tab = FontIcon.of(FontAwesomeSolid.STOP, IconUtils.DEFAULT_SIZE, Color.WHITE);
+        download_stop_sw_tab = IconUtils.of(FontAwesomeSolid.STOP);
+
         download_start_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/caret-down.svg");
         download_start_tab.setColorFilter(whiteColorFilter);
         download_start_sw_tab = SVGIconUtilities.createSVGIcon("icons/fontawesome/caret-down.svg");
