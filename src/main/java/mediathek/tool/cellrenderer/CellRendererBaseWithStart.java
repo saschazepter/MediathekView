@@ -38,8 +38,8 @@ public class CellRendererBaseWithStart extends CellRendererBase {
      * Temporary storage for the icons that will be assembled to a compound icon.
      */
     private final List<Icon> iconList = new ArrayList<>();
-    private final FlatSVGIcon subtitleIcon;
-    private final FlatSVGIcon subtitleIconSelected;
+    private final FontIcon subtitleIcon;
+    private final FontIcon subtitleIconSelected;
     private final FlatSVGIcon highQualityIcon;
     private final FlatSVGIcon highQualityIconSelected;
     private final FontIcon liveStreamIcon;
@@ -56,9 +56,8 @@ public class CellRendererBaseWithStart extends CellRendererBase {
         unlockedIcon = IconUtils.of(FontAwesomeSolid.LOCK_OPEN);
         unlockedIconSelected = FontIcon.of(FontAwesomeSolid.LOCK_OPEN, IconUtils.DEFAULT_SIZE, Color.WHITE);
 
-        subtitleIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/closed-captioning.svg");
-        subtitleIconSelected = SVGIconUtilities.createSVGIcon("icons/fontawesome/closed-captioning.svg");
-        subtitleIconSelected.setColorFilter(whiteColorFilter);
+        subtitleIcon = IconUtils.of(FontAwesomeSolid.CLOSED_CAPTIONING);
+        subtitleIconSelected = FontIcon.of(FontAwesomeSolid.CLOSED_CAPTIONING, IconUtils.DEFAULT_SIZE, Color.WHITE);
 
         highQualityIcon = SVGIconUtilities.createSVGIcon("icons/derreisende77/high-quality.svg");
         highQualityIconSelected = SVGIconUtilities.createSVGIcon("icons/derreisende77/high-quality.svg");
