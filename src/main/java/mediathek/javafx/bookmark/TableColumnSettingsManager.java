@@ -10,6 +10,7 @@ import org.apache.commons.configuration2.sync.LockMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignE;
+import org.kordamp.ikonli.materialdesign2.MaterialDesignN;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
@@ -156,6 +157,21 @@ public class TableColumnSettingsManager<E> {
         }
     }
 
+    private JCheckBoxMenuItem createMenuItem(String columnName, boolean visible) {
+        JCheckBoxMenuItem item;
+        if (columnName.equalsIgnoreCase("Gesehen")) {
+            item = new IconizedCheckBoxMenuItem(IconUtils.of(MaterialDesignE.EYE), visible);
+        }
+        else if (columnName.equalsIgnoreCase("Notiz")) {
+            item = new IconizedCheckBoxMenuItem(IconUtils.of(MaterialDesignN.NOTE), visible);
+        }
+        else {
+            item = new JCheckBoxMenuItem(columnName, visible);
+        }
+
+        return item;
+    }
+
     /**
      * Install a header context menu to toggle column visibility.
      */
@@ -171,14 +187,7 @@ public class TableColumnSettingsManager<E> {
                     .filter(s -> s.id.equals(columnName))
                     .findFirst();
             boolean visible = csOpt.map(s -> s.visible).orElse(true);
-            JCheckBoxMenuItem item;
-            if (columnName.equalsIgnoreCase("Gesehen")) {
-                item = new IconizedCheckBoxMenuItem(IconUtils.of(MaterialDesignE.EYE));
-                item.setState(visible);
-            }
-            else {
-                item = new JCheckBoxMenuItem(columnName, visible);
-            }
+            var item = createMenuItem(columnName, visible);
             item.addActionListener(_ -> {
                 TableColumnModel m = table.getColumnModel();
                 csOpt.ifPresent(s -> s.visible = item.isSelected());
@@ -206,9 +215,6 @@ public class TableColumnSettingsManager<E> {
         item.addActionListener(_ -> comparatorChooser.clearComparator());
         popup.add(item);
 
-        /*var iconItem = new IconizedCheckBoxMenuItem(IconUtils.of(MaterialDesignE.EYE));
-        iconItem.setState(true);
-        popup.add(iconItem);*/
         table.getTableHeader().setComponentPopupMenu(popup);
     }
 
@@ -228,6 +234,7 @@ public class TableColumnSettingsManager<E> {
         public int width;
         public boolean visible;
 
+        @SuppressWarnings("unused")
         public ColumnSetting() {
         }
 

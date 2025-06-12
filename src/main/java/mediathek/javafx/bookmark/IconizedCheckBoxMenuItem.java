@@ -27,9 +27,14 @@ import java.awt.*;
 public class IconizedCheckBoxMenuItem extends JCheckBoxMenuItem {
     private final IconizedCheckBoxMenuItemUI myUI;
 
+    public IconizedCheckBoxMenuItem(FontIcon icon, boolean state) {
+        this(icon);
+        setState(state);
+    }
+
     public IconizedCheckBoxMenuItem(FontIcon icon) {
         super();
-        // we need dummy text for icon width and height
+        // we need dummy text for icon width and height, otherwise we will no be called...
         setText("dummy");
         myUI = new IconizedCheckBoxMenuItemUI(icon);
         setUI(myUI);

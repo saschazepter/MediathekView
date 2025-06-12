@@ -43,6 +43,7 @@ public class IconHeaderCellRenderer extends DefaultTableCellRenderer {
             lbl.setIcon(icon);
             lbl.setText("");
             lbl.setToolTipText(tooltipText);
+            lbl.setBorder(UIManager.getBorder("TableHeader.cellBorder"));
         }
         return comp;
     }
