@@ -30,27 +30,19 @@ import mediathek.config.Daten;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
-import mediathek.tool.datum.DateUtil;
 import org.apache.commons.configuration2.sync.LockMode;
-import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignE;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignN;
 
 import javax.swing.*;
-import javax.swing.plaf.UIResource;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 public class BookmarkDialog extends JDialog {
     private static final int COLUMN_SEEN = 0;
@@ -74,6 +66,7 @@ public class BookmarkDialog extends JDialog {
     private final JTable table = new JTable();
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
     private TableColumnSettingsManager mgr;
+
     public BookmarkDialog(Frame owner) {
         super(owner);
         setTitle("Merkliste verwalten");
@@ -170,7 +163,7 @@ public class BookmarkDialog extends JDialog {
         ObservableElementList.Connector<BookmarkData> personConnector = GlazedLists.beanConnector(BookmarkData.class);
         var observedBookmarks =
                 new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
-        var sortedList = new SortedList<>(observedBookmarks, new BookmarkComparator());
+        var sortedList = new SortedList<>(observedBookmarks, new BookmarkAddedAtComparator());
 
         var model = GlazedListsSwing.eventTableModelWithThreadProxyList(sortedList, getTableFormat());
         selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
@@ -291,111 +284,6 @@ public class BookmarkDialog extends JDialog {
         else {
             filmDescriptionPanel.setCurrentFilm(null);
             noteArea.setText("");
-        }
-    }
-
-    public static class BookmarkComparator implements Comparator<BookmarkData> {
-
-        @Override
-        public int compare(BookmarkData o1, BookmarkData o2) {
-            var o1ba = o1.getBookmarkAdded();
-            var o2ba = o2.getBookmarkAdded();
-            if (o1ba == null || o2ba == null) {
-                return 0;
-            }
-            return o1ba.compareTo(o2ba);
-        }
-    }
-
-    static class NoteCellRenderer extends JPanel implements TableCellRenderer {
-        protected final JCheckBox checkBox = new JCheckBox();
-
-        public NoteCellRenderer() {
-            setLayout(new BorderLayout());
-            checkBox.setHorizontalAlignment(SwingConstants.CENTER);
-            add(checkBox, BorderLayout.CENTER);
-        }
-
-        protected void performSelectionDrawing(JTable table, boolean isSelected, int row) {
-            if (isSelected) {
-                setForeground(table.getSelectionForeground());
-                setBackground(table.getSelectionBackground());
-            }
-            else {
-                Color background = table.getBackground();
-                if (background == null || background instanceof UIResource) {
-                    Color alternateColor = UIManager.getColor("Table.alternateRowColor");
-                    if (alternateColor != null && row % 2 != 0) {
-                        background = alternateColor;
-                    }
-                }
-                setForeground(table.getForeground());
-                setBackground(background);
-            }
-        }
-
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (table == null) {
-                return this;
-            }
-
-            performSelectionDrawing(table, isSelected, row);
-
-            checkBox.setSelected(value != null);
-            return this;
-        }
-    }
-
-    static class SeenCellRenderer extends NoteCellRenderer implements TableCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            if (table == null) {
-                return this;
-            }
-
-            performSelectionDrawing(table, isSelected, row);
-
-            boolean seen = (boolean) value;
-            checkBox.setSelected(seen);
-            return this;
-        }
-    }
-
-    static class FilmLengthCellRenderer extends CenteredCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            long length = (int) value;
-            if (length >= 0) {
-                var duration = TimeUnit.MILLISECONDS.convert(length, TimeUnit.SECONDS);
-                var durationStr = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
-                setText(durationStr);
-            }
-            else
-                setText(null);
-            return this;
-        }
-    }
-
-    static class AddedAtCellRenderer extends CenteredCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            var date = (LocalDate) value;
-            if (date != null) {
-                setText(date.format(DateUtil.FORMATTER));
-            }
-            return this;
-        }
-    }
-
-    static class CenteredCellRenderer extends DefaultTableCellRenderer {
-        @Override
-        public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            setHorizontalAlignment(JLabel.CENTER);
-            return this;
         }
     }
 
