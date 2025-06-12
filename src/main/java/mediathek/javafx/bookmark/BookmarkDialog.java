@@ -410,7 +410,6 @@ public class BookmarkDialog extends JDialog {
         @Override
         public void actionPerformed(ActionEvent e) {
             var bookmarkList = Daten.getInstance().getListeBookmarkList();
-
             var list = new ArrayList<>(selectionModel.getSelected());
             for (var bookmark : list) {
                 bookmarkList.removeBookmark(bookmark);
