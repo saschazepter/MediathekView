@@ -43,18 +43,20 @@ import org.kordamp.ikonli.materialdesign2.MaterialDesignN;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Objects;
 
 public class BookmarkDialog extends JDialog {
     private static final int COLUMN_SEEN = 0;
     private static final int COLUMN_SENDER = 1;
+    @SuppressWarnings("unused")
     private static final int COLUMN_THEMA = 2;
+    @SuppressWarnings("unused")
     private static final int COLUMN_TITLE = 3;
     private static final int COLUMN_DAUER = 4;
     private static final int COLUMN_SENDEDATUM = 5;
+    @SuppressWarnings("unused")
     private static final int COLUMN_AVAILABLE_UNTIL = 6;
     private static final int COLUMN_NORMAL_QUALITY_URL = 7;
     private static final int COLUMN_NOTIZ = 8;
@@ -68,6 +70,7 @@ public class BookmarkDialog extends JDialog {
     private final FilmDescriptionPanel filmDescriptionPanel = new FilmDescriptionPanel();
     private final JTextArea noteArea = new JTextArea();
     private final JTable table = new JTable();
+    private final AddNoteAction addNoteAction = new AddNoteAction();
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
     private BookmarkTableColumnSettingsManager<BookmarkData> tableColumnSettingsManager;
     private GlazedSortKeysPersister<BookmarkData> sortPersister;
@@ -92,6 +95,63 @@ public class BookmarkDialog extends JDialog {
         installListener();
 
         restoreBounds();
+    }
+
+    private void installTableContextMenu() {
+        table.addMouseListener(new MouseAdapter() {
+            private void showPopup(MouseEvent e) {
+                if (!e.isPopupTrigger())
+                    return;
+
+                // ensure right‐clicked row is selected
+                int row = table.rowAtPoint(e.getPoint());
+                if (row != -1 && !table.isRowSelected(row)) {
+                    table.getSelectionModel().setSelectionInterval(row, row);
+                }
+
+                int count = table.getSelectedRowCount();
+                JPopupMenu popup = new JPopupMenu();
+
+                var selectedItems = selectionModel.getSelected();
+                var numSelectedItems = selectedItems.size();
+                assert numSelectedItems == count : "MISMATCH SELECTION SIZE";
+
+                if (selectedItems.isEmpty()) {
+                    JMenuItem info = new JMenuItem("No rows selected");
+                    info.setEnabled(false);
+                    popup.add(info);
+                }
+
+                if (numSelectedItems == 1) {
+                    JMenuItem menuItem = new NoIconMenuItem(addNoteAction);
+                    popup.add(menuItem);
+                }
+                if (numSelectedItems >= 1) {
+                    JMenuItem menuItem = new JMenuItem("Notiz löschen...");
+                    popup.add(menuItem);
+                    popup.addSeparator();
+                    menuItem = new JMenuItem("Als gesehen markieren");
+                    popup.add(menuItem);
+                    menuItem = new JMenuItem("Als ungesehen markieren");
+                    popup.add(menuItem);
+                    popup.addSeparator();
+                    menuItem = new JMenuItem("Aus Merkliste löschen...");
+                    popup.add(menuItem);
+                }
+
+                popup.show(e.getComponent(), e.getX(), e.getY());
+            }
+
+            @Override
+            public void mousePressed(MouseEvent e) {
+                showPopup(e);
+            }
+
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                showPopup(e);
+            }
+        });
     }
 
     private void installListener() {
@@ -199,6 +259,8 @@ public class BookmarkDialog extends JDialog {
         tableColumnSettingsManager = new BookmarkTableColumnSettingsManager<>(table, CONFIG_PREFIX, comparatorChooser);
         tableColumnSettingsManager.load();
         tableColumnSettingsManager.installContextMenu();
+
+        installTableContextMenu();
     }
 
     private void setupCellRenderers() {
@@ -224,19 +286,7 @@ public class BookmarkDialog extends JDialog {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        JButton setNoteButton = new JButton();
-        setNoteButton.setToolTipText("Notiz hinzufügen");
-        setNoteButton.setIcon(IconUtils.toolbarIcon(FontAwesomeRegular.EDIT));
-        setNoteButton.addActionListener(_ -> {
-            if (!selectionModel.isSelectionEmpty()) {
-                var selectedPeople = selectionModel.getSelected();
-                for (var bookmark : selectedPeople) {
-                    bookmark.setNote("Hello World22");
-                }
-                Daten.getInstance().getListeBookmarkList().saveToFile();
-                updateInfoTabs();
-            }
-        });
+        JButton setNoteButton = new IconOnlyButton(addNoteAction);
         toolBar.add(setNoteButton);
 
         JButton removeNoteButton = new JButton();
@@ -297,6 +347,24 @@ public class BookmarkDialog extends JDialog {
         else {
             filmDescriptionPanel.setCurrentFilm(null);
             noteArea.setText("");
+        }
+    }
+
+    class AddNoteAction extends AbstractAction {
+        public AddNoteAction() {
+            putValue(Action.NAME, "Notiz hinzufügen...");
+            putValue(Action.SHORT_DESCRIPTION, "Notiz hinzufügen");
+            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeRegular.EDIT));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            var selectedBookmarks = selectionModel.getSelected();
+            for (var bookmark : selectedBookmarks) {
+                bookmark.setNote("Hello World22");
+            }
+            Daten.getInstance().getListeBookmarkList().saveToFile();
+            updateInfoTabs();
         }
     }
 
