@@ -5,9 +5,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mediathek.tool.ApplicationConfiguration;
+import mediathek.tool.swing.IconUtils;
 import org.apache.commons.configuration2.sync.LockMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.kordamp.ikonli.materialdesign2.MaterialDesignE;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
@@ -164,12 +166,19 @@ public class TableColumnSettingsManager<E> {
 
         // Toggle visibility per column
         for (TableColumn col : allColumns) {
-            String id = col.getIdentifier().toString();
+            String columnName = col.getIdentifier().toString();
             Optional<ColumnSetting> csOpt = lastSettings.stream()
-                    .filter(s -> s.id.equals(id))
+                    .filter(s -> s.id.equals(columnName))
                     .findFirst();
             boolean visible = csOpt.map(s -> s.visible).orElse(true);
-            JCheckBoxMenuItem item = new JCheckBoxMenuItem(id, visible);
+            JCheckBoxMenuItem item;
+            if (columnName.equalsIgnoreCase("Gesehen")) {
+                item = new IconizedCheckBoxMenuItem(IconUtils.of(MaterialDesignE.EYE));
+                item.setState(visible);
+            }
+            else {
+                item = new JCheckBoxMenuItem(columnName, visible);
+            }
             item.addActionListener(_ -> {
                 TableColumnModel m = table.getColumnModel();
                 csOpt.ifPresent(s -> s.visible = item.isSelected());
@@ -183,7 +192,7 @@ public class TableColumnSettingsManager<E> {
                 }
                 else {
                     if (isInModel(col)) {
-                        int idx = m.getColumnIndex(id);
+                        int idx = m.getColumnIndex(columnName);
                         csOpt.ifPresent(s -> s.position = idx);
                         m.removeColumn(col);
                     }
@@ -197,6 +206,9 @@ public class TableColumnSettingsManager<E> {
         item.addActionListener(_ -> comparatorChooser.clearComparator());
         popup.add(item);
 
+        /*var iconItem = new IconizedCheckBoxMenuItem(IconUtils.of(MaterialDesignE.EYE));
+        iconItem.setState(true);
+        popup.add(iconItem);*/
         table.getTableHeader().setComponentPopupMenu(popup);
     }
 
