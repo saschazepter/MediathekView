@@ -68,6 +68,7 @@ public class BookmarkDialog extends JDialog {
     private final JTextArea noteArea = new JTextArea();
     private final JTable table = new JTable();
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
+    private TableColumnSettingsManager mgr;
 
     public BookmarkDialog(Frame owner) {
         super(owner);
@@ -85,11 +86,12 @@ public class BookmarkDialog extends JDialog {
         getContentPane().add(createTabbedPane(), BorderLayout.SOUTH);
 
         setupTable();
+        TableUtils.fitColumnHeaders(table, 5);
 
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-
+                mgr.save();
                 dispose();
             }
         });
@@ -139,12 +141,16 @@ public class BookmarkDialog extends JDialog {
         table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         table.setModel(model);
         table.setSelectionModel(selectionModel);
+
         var comparatorChooser = TableComparatorChooser.install(table, sortedList, TableComparatorChooser.SINGLE_COLUMN);
         //disable sort for url and hashcode
         disableSortableColumns(comparatorChooser);
 
         setupCellRenderers();
 
+        mgr = new TableColumnSettingsManager(table, DEFAULT_FILE);
+        mgr.load();
+        mgr.installContextMenu();
     }
 
     private void setupCellRenderers() {
