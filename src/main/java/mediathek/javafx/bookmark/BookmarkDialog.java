@@ -298,7 +298,12 @@ public class BookmarkDialog extends JDialog {
 
         @Override
         public int compare(BookmarkData o1, BookmarkData o2) {
-            return o1.getBookmarkAdded().compareTo(o2.getBookmarkAdded());
+            var o1ba = o1.getBookmarkAdded();
+            var o2ba = o2.getBookmarkAdded();
+            if (o1ba == null || o2ba == null) {
+                return 0;
+            }
+            return o1ba.compareTo(o2ba);
         }
     }
 
