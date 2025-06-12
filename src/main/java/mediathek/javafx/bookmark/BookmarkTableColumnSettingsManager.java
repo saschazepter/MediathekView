@@ -19,9 +19,9 @@
 package mediathek.javafx.bookmark;
 
 import ca.odell.glazedlists.swing.TableComparatorChooser;
-import mediathek.swing.ATableColumnSettingsManager;
 import mediathek.swing.IconUtils;
 import mediathek.swing.IconizedCheckBoxMenuItem;
+import mediathek.swing.table.ATableColumnSettingsManager;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignE;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignN;
 
