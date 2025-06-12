@@ -183,12 +183,17 @@ public class BookmarkDialog extends JDialog {
         //disable sort for url and hashcode
         disableSortableColumns(comparatorChooser);
 
+        sortPersister = new GlazedSortKeysPersister<>(CONFIG_PREFIX);
+        sortPersister.restoreSortState(comparatorChooser);
+        comparatorChooser.addSortActionListener(_ -> sortPersister.saveSortState(comparatorChooser));
+
         setupCellRenderers();
 
         mgr = new TableColumnSettingsManager(table, CONFIG_PREFIX);
         mgr.load();
         mgr.installContextMenu();
     }
+    private GlazedSortKeysPersister<BookmarkData> sortPersister;
 
     private void setupCellRenderers() {
         var columnModel = table.getColumnModel();
