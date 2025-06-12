@@ -29,20 +29,42 @@ public class IconOnlyButton extends JButton {
         super(action);
         setHideActionText(true);
 
-        FontIcon normalIcon = (FontIcon) action.getValue(Action.SMALL_ICON);
-        BufferedImage img = new BufferedImage(normalIcon.getIconWidth(), normalIcon.getIconHeight(),
-                BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = img.createGraphics();
-        try {
-            normalIcon.paintIcon(null, g2, 0, 0);
-        }
-        finally {
-            g2.dispose();
-        }
+        setDisabledIcon(generateDisabledIcon());
+    }
 
-        var disabledImg = GrayFilter.createDisabledImage(img);
-        var disabledIcon = new ImageIcon(disabledImg);
+    private ImageIcon generateDisabledIcon() {
+        var action = getAction();
+        if (action != null) {
+            FontIcon normalIcon = (FontIcon) action.getValue(Action.SMALL_ICON);
+            if (normalIcon != null) {
+                BufferedImage img = new BufferedImage(normalIcon.getIconWidth(), normalIcon.getIconHeight(),
+                        BufferedImage.TYPE_INT_ARGB);
+                Graphics2D g2 = img.createGraphics();
+                try {
+                    normalIcon.paintIcon(null, g2, 0, 0);
+                }
+                finally {
+                    g2.dispose();
+                }
 
-        setDisabledIcon(disabledIcon);
+                var disabledImg = GrayFilter.createDisabledImage(img);
+                return new ImageIcon(disabledImg);
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            return null;
+        }
+    }
+
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        var icon = generateDisabledIcon();
+        if (icon != null) {
+            setDisabledIcon(generateDisabledIcon());
+        }
     }
 }
