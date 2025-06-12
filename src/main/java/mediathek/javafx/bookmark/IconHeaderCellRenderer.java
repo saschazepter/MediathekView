@@ -37,10 +37,7 @@ public class IconHeaderCellRenderer extends DefaultTableCellRenderer {
                                                    boolean isSelected,
                                                    boolean hasFocus,
                                                    int row, int column) {
-        var comp =
-                table.getTableHeader().getDefaultRenderer().getTableCellRendererComponent(
-                        table, value, isSelected, hasFocus, row, column);
-
+        var comp = (Component)table.getTableHeader().getColumnModel().getColumn(column).getHeaderRenderer();
         if (comp instanceof JLabel lbl) {
             lbl.setHorizontalTextPosition(SwingConstants.LEFT);
             lbl.setIcon(icon);
