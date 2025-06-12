@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.javafx.bookmark;
+package mediathek.tool.swing;
 
 import com.formdev.flatlaf.FlatLaf;
 import org.apache.commons.lang3.SystemUtils;

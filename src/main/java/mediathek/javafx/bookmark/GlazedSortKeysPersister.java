@@ -38,12 +38,14 @@ public class GlazedSortKeysPersister<E> {
     private static final Logger LOG = LogManager.getLogger();
     private final ObjectMapper mapper = new ObjectMapper();
     private final String configPrefix;
+    private final TableComparatorChooser<E> chooser;
 
-    public GlazedSortKeysPersister(String configPrefix) {
+    public GlazedSortKeysPersister(String configPrefix, TableComparatorChooser<E> chooser) {
         this.configPrefix = configPrefix;
+        this.chooser = chooser;
     }
 
-    public void saveSortState(TableComparatorChooser<E> chooser) {
+    public void saveSortState() {
         var sortedCols = chooser.getSortingColumns();            // :contentReference[oaicite:0]{index=0}
         List<SortKeyInfo> infos = new ArrayList<>(sortedCols.size());
         for (int col : sortedCols) {
@@ -59,7 +61,7 @@ public class GlazedSortKeysPersister<E> {
         }
     }
 
-    public void restoreSortState(TableComparatorChooser<E> chooser) {
+    public void restoreSortState() {
         try {
             String json = ApplicationConfiguration.getConfiguration().getString(configPrefix + CONFIG_KEY);
             if (json.isEmpty())

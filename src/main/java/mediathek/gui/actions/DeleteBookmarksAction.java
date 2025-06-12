@@ -20,8 +20,8 @@ package mediathek.gui.actions;
 
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
-import mediathek.javafx.bookmark.IconUtils;
 import mediathek.mainwindow.MediathekGui;
+import mediathek.tool.swing.IconUtils;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignF;
 
 import javax.swing.*;

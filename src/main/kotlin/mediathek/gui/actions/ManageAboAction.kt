@@ -1,8 +1,8 @@
 package mediathek.gui.actions
 
 import mediathek.gui.abo.ManageAboDialog
-import mediathek.javafx.bookmark.IconUtils
 import mediathek.mainwindow.MediathekGui
+import mediathek.tool.swing.IconUtils
 import org.kordamp.ikonli.materialdesign2.MaterialDesignD
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction

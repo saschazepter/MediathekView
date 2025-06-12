@@ -4,9 +4,9 @@ import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.daten.DatenPset;
 import mediathek.gui.tabs.tab_film.GuiFilme;
-import mediathek.javafx.bookmark.IconUtils;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.GuiFunktionen;
+import mediathek.tool.swing.IconUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 

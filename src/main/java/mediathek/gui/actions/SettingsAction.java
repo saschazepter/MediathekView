@@ -1,8 +1,8 @@
 package mediathek.gui.actions;
 
 import mediathek.gui.messages.ShowSettingsDialogEvent;
-import mediathek.javafx.bookmark.IconUtils;
 import mediathek.tool.MessageBus;
+import mediathek.tool.swing.IconUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 

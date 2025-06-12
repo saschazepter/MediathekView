@@ -1,5 +1,6 @@
 package mediathek.javafx.bookmark;
 
+import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,7 +28,7 @@ import java.util.Optional;
  * mgr.installContextMenu();
  * dialog.addWindowListener(e -> mgr.save());
  */
-public class TableColumnSettingsManager {
+public class TableColumnSettingsManager<E> {
     private static final Logger LOG = LogManager.getLogger();
     private static final String COLUMN_SETTINGS = ".colummn-settings";
     private final JTable table;
@@ -35,10 +36,12 @@ public class TableColumnSettingsManager {
     private final ObjectMapper mapper = new ObjectMapper();
     private final List<ColumnSetting> lastSettings = new ArrayList<>();
     private final String configPrefix;
+    private final TableComparatorChooser<E> comparatorChooser;
 
-    public TableColumnSettingsManager(JTable table, String configPrefix) {
+    public TableColumnSettingsManager(JTable table, String configPrefix, TableComparatorChooser<E> comparatorChooser) {
         this.table = table;
         this.configPrefix = configPrefix;
+        this.comparatorChooser = comparatorChooser;
 
         // Initialize from table's current model
         var columnModel = table.getColumnModel();
@@ -189,22 +192,24 @@ public class TableColumnSettingsManager {
             });
             popup.add(item);
         }
+        popup.addSeparator();
+        var item = new JMenuItem("Sortierschlüssel zurücksetzen");
+        item.addActionListener(_ -> comparatorChooser.clearComparator());
+        popup.add(item);
+
         table.getTableHeader().setComponentPopupMenu(popup);
     }
 
     // Helper to check if a column is currently visible
     private boolean isInModel(TableColumn col) {
-        TableColumnModel cm = table.getColumnModel();
-        for (int i = 0; i < cm.getColumnCount(); i++) {
-            if (cm.getColumn(i) == col)
+        var columnModel = table.getColumnModel();
+        for (int i = 0; i < columnModel.getColumnCount(); i++) {
+            if (columnModel.getColumn(i) == col)
                 return true;
         }
         return false;
     }
 
-    /**
-     * POJO for column settings
-     */
     public static class ColumnSetting {
         public String id;
         public int position;

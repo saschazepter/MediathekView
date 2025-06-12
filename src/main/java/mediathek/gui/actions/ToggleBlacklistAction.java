@@ -2,9 +2,9 @@ package mediathek.gui.actions;
 
 import mediathek.config.Daten;
 import mediathek.gui.messages.BlacklistChangedEvent;
-import mediathek.javafx.bookmark.IconUtils;
 import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.MessageBus;
+import mediathek.tool.swing.IconUtils;
 import net.engio.mbassy.listener.Handler;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignL;
 import org.kordamp.ikonli.swing.FontIcon;

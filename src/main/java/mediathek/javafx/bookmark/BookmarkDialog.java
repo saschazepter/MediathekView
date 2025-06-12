@@ -30,6 +30,7 @@ import mediathek.config.Daten;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
+import mediathek.tool.swing.IconUtils;
 import org.apache.commons.configuration2.sync.LockMode;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
@@ -64,7 +65,7 @@ public class BookmarkDialog extends JDialog {
     private final JTextArea noteArea = new JTextArea();
     private final JTable table = new JTable();
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
-    private TableColumnSettingsManager mgr;
+    private TableColumnSettingsManager<BookmarkData> tableColumnSettingsManager;
 
     public BookmarkDialog(Frame owner) {
         super(owner);
@@ -93,7 +94,7 @@ public class BookmarkDialog extends JDialog {
             @Override
             public void windowClosing(WindowEvent e) {
                 saveBounds();
-                mgr.save();
+                tableColumnSettingsManager.save();
                 dispose();
             }
 
@@ -179,19 +180,18 @@ public class BookmarkDialog extends JDialog {
         table.setModel(model);
         table.setSelectionModel(selectionModel);
 
-        var comparatorChooser = TableComparatorChooser.install(table, sortedList, TableComparatorChooser.SINGLE_COLUMN);
+        var comparatorChooser = TableComparatorChooser.install(table, sortedList, TableComparatorChooser.MULTIPLE_COLUMN_MOUSE);
         //disable sort for url and hashcode
         disableSortableColumns(comparatorChooser);
 
-        sortPersister = new GlazedSortKeysPersister<>(CONFIG_PREFIX);
-        sortPersister.restoreSortState(comparatorChooser);
-        comparatorChooser.addSortActionListener(_ -> sortPersister.saveSortState(comparatorChooser));
-
+        sortPersister = new GlazedSortKeysPersister<>(CONFIG_PREFIX, comparatorChooser);
+        sortPersister.restoreSortState();
+        comparatorChooser.addSortActionListener(_ -> sortPersister.saveSortState());
         setupCellRenderers();
 
-        mgr = new TableColumnSettingsManager(table, CONFIG_PREFIX);
-        mgr.load();
-        mgr.installContextMenu();
+        tableColumnSettingsManager = new TableColumnSettingsManager<>(table, CONFIG_PREFIX, comparatorChooser);
+        tableColumnSettingsManager.load();
+        tableColumnSettingsManager.installContextMenu();
     }
     private GlazedSortKeysPersister<BookmarkData> sortPersister;
 
