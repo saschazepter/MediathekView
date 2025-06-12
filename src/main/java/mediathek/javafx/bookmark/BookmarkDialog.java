@@ -29,10 +29,10 @@ import ca.odell.glazedlists.swing.TableComparatorChooser;
 import mediathek.config.Daten;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
+import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.datum.DateUtil;
+import org.apache.commons.configuration2.sync.LockMode;
 import org.apache.commons.lang3.time.DurationFormatUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 
@@ -63,13 +63,15 @@ public class BookmarkDialog extends JDialog {
     private static final int COLUMN_HASHCODE = 9;
     private static final int COLUM_BOOKMARK_ADDED_AT = 10;
     private static final File DEFAULT_FILE = new File("/Users/christianfranzke/Desktop/columns.json");
-    private static final Logger logger = LogManager.getLogger();
+    private static final String BOOKMARK_POS_X = "ui.bookmark-dialog.x";
+    private static final String BOOKMARK_POS_Y = "ui.bookmark-dialog.y";
+    private static final String BOOKMARK_WIDTH = "ui.bookmark-dialog.width";
+    private static final String BOOKMARK_HEIGHT = "ui.bookmark-dialog.height";
     private final FilmDescriptionPanel filmDescriptionPanel = new FilmDescriptionPanel();
     private final JTextArea noteArea = new JTextArea();
     private final JTable table = new JTable();
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
     private TableColumnSettingsManager mgr;
-
     public BookmarkDialog(Frame owner) {
         super(owner);
         setTitle("Merkliste verwalten");
@@ -91,10 +93,48 @@ public class BookmarkDialog extends JDialog {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                saveBounds();
                 mgr.save();
                 dispose();
             }
+
+            @Override
+            public void windowClosed(WindowEvent e) {
+                saveBounds();
+            }
         });
+
+        restoreBounds();
+    }
+
+    private void saveBounds() {
+        var config = ApplicationConfiguration.getConfiguration();
+        config.lock(LockMode.WRITE);
+        try {
+            Rectangle b = getBounds();
+            config.setProperty(BOOKMARK_POS_X, b.x);
+            config.setProperty(BOOKMARK_POS_Y, b.y);
+            config.setProperty(BOOKMARK_WIDTH, b.width);
+            config.setProperty(BOOKMARK_HEIGHT, b.height);
+        }
+        finally {
+            config.unlock(LockMode.WRITE);
+        }
+    }
+
+    private void restoreBounds() {
+        var config = ApplicationConfiguration.getConfiguration();
+        config.lock(LockMode.READ);
+        try {
+            int x = config.getInt(BOOKMARK_POS_X, 100);
+            int y = config.getInt(BOOKMARK_POS_Y, 100);
+            int w = config.getInt(BOOKMARK_WIDTH, 800);
+            int h = config.getInt(BOOKMARK_HEIGHT, 600);
+            setBounds(x, y, w, h);
+        }
+        finally {
+            config.unlock(LockMode.READ);
+        }
     }
 
     private void setupNoteArea() {
