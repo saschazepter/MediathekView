@@ -35,6 +35,7 @@ import mediathek.gui.tabs.tab_film.GuiFilme;
 import mediathek.gui.tasks.BlacklistFilterWorker;
 import mediathek.gui.tasks.LuceneIndexWorker;
 import mediathek.gui.tasks.RefreshAboWorker;
+import mediathek.javafx.bookmark.IconOnlyButton;
 import mediathek.res.GetIcon;
 import mediathek.tool.*;
 import mediathek.tool.notification.GenericNotificationCenter;
@@ -381,20 +382,19 @@ public class MediathekGui extends JFrame {
             commonToolBar.add(new JButton(toggleBlacklistAction));
         }
         else {
-            commonToolBar.add(toggleBlacklistAction);
+            commonToolBar.add(new IconOnlyButton(toggleBlacklistAction));
         }
     }
 
     protected void createCommonToolBar() {
-        commonToolBar.add(loadFilmListAction);
-        commonToolBar.add(showFilmInformationAction);
+        commonToolBar.add(new IconOnlyButton(loadFilmListAction));
+        commonToolBar.add(new IconOnlyButton(showFilmInformationAction));
         createToggleBlacklistButton();
         commonToolBar.addSeparator();
-        commonToolBar.add(editBlacklistAction);
-        commonToolBar.add(manageAboAction);
-        //commonToolBar.add(manageBookmarkAction);
+        commonToolBar.add(new IconOnlyButton(editBlacklistAction));
+        commonToolBar.add(new IconOnlyButton(manageAboAction));
         commonToolBar.addSeparator();
-        commonToolBar.add(settingsAction);
+        commonToolBar.add(new IconOnlyButton(settingsAction));
         createDarkModeToggleButton();
 
         setToolBarProperties();
