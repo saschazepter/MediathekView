@@ -178,6 +178,7 @@ public class BookmarkDataList {
                 });
     }
 
+    /// called from [SeenHistoryController].
     public void updateSeen(boolean seen, @NotNull DatenFilm film) {
         if (film.isBookmarked()) {
             var bookmark = film.getBookmark();

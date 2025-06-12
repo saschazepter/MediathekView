@@ -27,6 +27,7 @@ import ca.odell.glazedlists.swing.DefaultEventSelectionModel;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 import mediathek.config.Daten;
+import mediathek.controller.history.SeenHistoryController;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.javafx.bookmark.renderer.*;
 import mediathek.mainwindow.MediathekGui;
@@ -71,6 +72,8 @@ public class BookmarkDialog extends JDialog {
     private final JTextArea noteArea = new JTextArea();
     private final JTable table = new JTable();
     private final AddNoteAction addNoteAction = new AddNoteAction();
+    private final MarkSeenAction markSeenAction = new MarkSeenAction();
+    private final MarkUnseenAction markUnseenAction = new MarkUnseenAction();
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
     private BookmarkTableColumnSettingsManager<BookmarkData> tableColumnSettingsManager;
     private GlazedSortKeysPersister<BookmarkData> sortPersister;
@@ -122,17 +125,15 @@ public class BookmarkDialog extends JDialog {
                     popup.add(info);
                 }
 
-                if (numSelectedItems == 1) {
-                    JMenuItem menuItem = new NoIconMenuItem(addNoteAction);
-                    popup.add(menuItem);
-                }
+                JMenuItem menuItem = new NoIconMenuItem(addNoteAction);
+                popup.add(menuItem);
                 if (numSelectedItems >= 1) {
-                    JMenuItem menuItem = new JMenuItem("Notiz löschen...");
+                    menuItem = new JMenuItem("Notiz löschen...");
                     popup.add(menuItem);
                     popup.addSeparator();
-                    menuItem = new JMenuItem("Als gesehen markieren");
+                    menuItem = new NoIconMenuItem(markSeenAction);
                     popup.add(menuItem);
-                    menuItem = new JMenuItem("Als ungesehen markieren");
+                    menuItem = new NoIconMenuItem(markUnseenAction);
                     popup.add(menuItem);
                     popup.addSeparator();
                     menuItem = new JMenuItem("Aus Merkliste löschen...");
@@ -239,6 +240,8 @@ public class BookmarkDialog extends JDialog {
         selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
         selectionModel.addListSelectionListener(l -> {
             if (!l.getValueIsAdjusting()) {
+                var numSelections = selectionModel.getSelected().size();
+                addNoteAction.setEnabled(numSelections == 1);
                 updateInfoTabs();
             }
         });
@@ -286,9 +289,8 @@ public class BookmarkDialog extends JDialog {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
 
-        JButton setNoteButton = new IconOnlyButton(addNoteAction);
-        toolBar.add(setNoteButton);
-
+        JButton addNoteButton = new IconOnlyButton(addNoteAction);
+        toolBar.add(addNoteButton);
         JButton removeNoteButton = new JButton();
         removeNoteButton.setToolTipText("Notiz entfernen");
         removeNoteButton.setIcon(IconUtils.toolbarIcon(FontAwesomeSolid.ERASER));
@@ -303,6 +305,12 @@ public class BookmarkDialog extends JDialog {
             }
         });
         toolBar.add(removeNoteButton);
+        toolBar.addSeparator();
+
+        JButton markSeenButton = new IconOnlyButton(markSeenAction);
+        toolBar.add(markSeenButton);
+        JButton markUnseenButton = new IconOnlyButton(markUnseenAction);
+        toolBar.add(markUnseenButton);
 
         toolBar.addSeparator();
         JButton deleteEntryButton = new JButton();
@@ -347,6 +355,44 @@ public class BookmarkDialog extends JDialog {
         else {
             filmDescriptionPanel.setCurrentFilm(null);
             noteArea.setText("");
+        }
+    }
+
+    class MarkSeenAction extends AbstractAction {
+
+        public MarkSeenAction() {
+            putValue(Action.NAME, "Als gesehen markieren");
+            putValue(Action.SHORT_DESCRIPTION, "Als gesehen markieren");
+            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(MaterialDesignE.EYE));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            var selFilms = selectionModel.getSelected().stream().filter(bookmark -> bookmark.getDatenFilmOptional().isPresent())
+                    .map(bookmark -> bookmark.getDatenFilmOptional().get())
+                    .toList();
+            try (var controller = new SeenHistoryController()) {
+                controller.markSeen(selFilms);
+            }
+        }
+    }
+
+    class MarkUnseenAction extends AbstractAction {
+
+        public MarkUnseenAction() {
+            putValue(Action.NAME, "Als ungesehen markieren");
+            putValue(Action.SHORT_DESCRIPTION, "Als ungesehen markieren");
+            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(MaterialDesignE.EYE_OFF));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            var selFilms = selectionModel.getSelected().stream().filter(bookmark -> bookmark.getDatenFilmOptional().isPresent())
+                    .map(bookmark -> bookmark.getDatenFilmOptional().get())
+                    .toList();
+            try (var controller = new SeenHistoryController()) {
+                controller.markUnseen(selFilms);
+            }
         }
     }
 
