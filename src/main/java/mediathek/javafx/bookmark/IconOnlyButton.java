@@ -18,53 +18,28 @@
 
 package mediathek.javafx.bookmark;
 
-import org.kordamp.ikonli.swing.FontIcon;
-
 import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 
 public class IconOnlyButton extends JButton {
     public IconOnlyButton(Action action) {
         super(action);
+        /*var icon = (FontIcon) action.getValue(Action.SMALL_ICON);
+        icon.setIconSize(32);
+        setIcon(icon);*/
         setHideActionText(true);
 
-        setDisabledIcon(generateDisabledIcon());
-    }
-
-    private ImageIcon generateDisabledIcon() {
-        var action = getAction();
-        if (action != null) {
-            FontIcon normalIcon = (FontIcon) action.getValue(Action.SMALL_ICON);
-            if (normalIcon != null) {
-                BufferedImage img = new BufferedImage(normalIcon.getIconWidth(), normalIcon.getIconHeight(),
-                        BufferedImage.TYPE_INT_ARGB);
-                Graphics2D g2 = img.createGraphics();
-                try {
-                    normalIcon.paintIcon(null, g2, 0, 0);
-                }
-                finally {
-                    g2.dispose();
-                }
-
-                var disabledImg = GrayFilter.createDisabledImage(img);
-                return new ImageIcon(disabledImg);
-            }
-            else {
-                return null;
-            }
-        }
-        else {
-            return null;
-        }
+        setDisabledIcon(IconUtils.generateDisabledIcon(action));
     }
 
     @Override
     public void updateUI() {
         super.updateUI();
-        var icon = generateDisabledIcon();
-        if (icon != null) {
-            setDisabledIcon(generateDisabledIcon());
+        var action = getAction();
+        if (action != null) {
+            var icon = IconUtils.generateDisabledIcon(action);
+            if (icon != null) {
+                setDisabledIcon(icon);
+            }
         }
     }
 }
