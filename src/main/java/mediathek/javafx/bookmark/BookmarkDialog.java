@@ -74,6 +74,7 @@ public class BookmarkDialog extends JDialog {
     private final AddNoteAction addNoteAction = new AddNoteAction();
     private final MarkSeenAction markSeenAction = new MarkSeenAction();
     private final MarkUnseenAction markUnseenAction = new MarkUnseenAction();
+    private final RemoveNoteAction removeNoteAction = new RemoveNoteAction();
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
     private BookmarkTableColumnSettingsManager<BookmarkData> tableColumnSettingsManager;
     private GlazedSortKeysPersister<BookmarkData> sortPersister;
@@ -128,7 +129,7 @@ public class BookmarkDialog extends JDialog {
                 JMenuItem menuItem = new NoIconMenuItem(addNoteAction);
                 popup.add(menuItem);
                 if (numSelectedItems >= 1) {
-                    menuItem = new JMenuItem("Notiz löschen...");
+                    menuItem = new NoIconMenuItem(removeNoteAction);
                     popup.add(menuItem);
                     popup.addSeparator();
                     menuItem = new NoIconMenuItem(markSeenAction);
@@ -291,19 +292,7 @@ public class BookmarkDialog extends JDialog {
 
         JButton addNoteButton = new IconOnlyButton(addNoteAction);
         toolBar.add(addNoteButton);
-        JButton removeNoteButton = new JButton();
-        removeNoteButton.setToolTipText("Notiz entfernen");
-        removeNoteButton.setIcon(IconUtils.toolbarIcon(FontAwesomeSolid.ERASER));
-        removeNoteButton.addActionListener(_ -> {
-            if (!selectionModel.isSelectionEmpty()) {
-                var selectedPeople = selectionModel.getSelected();
-                for (var bookmark : selectedPeople) {
-                    bookmark.setNote(null);
-                }
-                Daten.getInstance().getListeBookmarkList().saveToFile();
-                updateInfoTabs();
-            }
-        });
+        JButton removeNoteButton = new IconOnlyButton(removeNoteAction);
         toolBar.add(removeNoteButton);
         toolBar.addSeparator();
 
@@ -405,12 +394,26 @@ public class BookmarkDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            var selectedBookmarks = selectionModel.getSelected();
-            for (var bookmark : selectedBookmarks) {
-                bookmark.setNote("Hello World22");
-            }
+            selectionModel.getSelected().forEach(bookmark -> bookmark.setNote("Hello World"));
             Daten.getInstance().getListeBookmarkList().saveToFile();
             updateInfoTabs();
+        }
+    }
+
+    class RemoveNoteAction extends AbstractAction {
+        public RemoveNoteAction() {
+            putValue(Action.NAME, "Notiz löschen...");
+            putValue(Action.SHORT_DESCRIPTION, "Notiz löschen");
+            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeSolid.ERASER));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (!selectionModel.isSelectionEmpty()) {
+                selectionModel.getSelected().forEach(bookmark -> bookmark.setNote(null));
+                Daten.getInstance().getListeBookmarkList().saveToFile();
+                updateInfoTabs();
+            }
         }
     }
 
