@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.javafx.bookmark;
+package mediathek.javafx.bookmark.renderer;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 
@@ -24,7 +24,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.concurrent.TimeUnit;
 
-class FilmLengthCellRenderer extends CenteredCellRenderer {
+public class FilmLengthCellRenderer extends CenteredCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);

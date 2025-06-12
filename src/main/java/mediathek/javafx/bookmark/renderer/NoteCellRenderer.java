@@ -16,14 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.javafx.bookmark;
+package mediathek.javafx.bookmark.renderer;
 
 import javax.swing.*;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.TableCellRenderer;
 import java.awt.*;
 
-class NoteCellRenderer extends JPanel implements TableCellRenderer {
+public class NoteCellRenderer extends JPanel implements TableCellRenderer {
     protected final JCheckBox checkBox = new JCheckBox();
 
     public NoteCellRenderer() {

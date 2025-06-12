@@ -16,23 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.javafx.bookmark;
+package mediathek.javafx.bookmark.renderer;
+
+import mediathek.tool.datum.DateUtil;
 
 import javax.swing.*;
-import javax.swing.table.TableCellRenderer;
 import java.awt.*;
+import java.time.LocalDate;
 
-class SeenCellRenderer extends NoteCellRenderer implements TableCellRenderer {
+public class AddedAtCellRenderer extends CenteredCellRenderer {
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-        if (table == null) {
-            return this;
+        super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        var date = (LocalDate) value;
+        if (date != null) {
+            setText(date.format(DateUtil.FORMATTER));
         }
-
-        performSelectionDrawing(table, isSelected, row);
-
-        boolean seen = (boolean) value;
-        checkBox.setSelected(seen);
         return this;
     }
 }
