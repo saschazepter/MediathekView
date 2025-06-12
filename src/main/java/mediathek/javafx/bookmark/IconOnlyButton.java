@@ -18,11 +18,31 @@
 
 package mediathek.javafx.bookmark;
 
+import org.kordamp.ikonli.swing.FontIcon;
+
 import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
 
 public class IconOnlyButton extends JButton {
     public IconOnlyButton(Action action) {
         super(action);
         setHideActionText(true);
+
+        FontIcon normalIcon = (FontIcon) action.getValue(Action.SMALL_ICON);
+        BufferedImage img = new BufferedImage(normalIcon.getIconWidth(), normalIcon.getIconHeight(),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g2 = img.createGraphics();
+        try {
+            normalIcon.paintIcon(null, g2, 0, 0);
+        }
+        finally {
+            g2.dispose();
+        }
+
+        var disabledImg = GrayFilter.createDisabledImage(img);
+        var disabledIcon = new ImageIcon(disabledImg);
+
+        setDisabledIcon(disabledIcon);
     }
 }
