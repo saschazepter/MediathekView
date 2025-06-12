@@ -162,6 +162,8 @@ public class BookmarkDialog extends JDialog {
     private void disableSortableColumns(TableComparatorChooser<BookmarkData> comparatorChooser) {
         comparatorChooser.getComparatorsForColumn(COLUMN_NORMAL_QUALITY_URL).clear();
         comparatorChooser.getComparatorsForColumn(COLUMN_HASHCODE).clear();
+        comparatorChooser.getComparatorsForColumn(COLUMN_NOTIZ).clear();
+        comparatorChooser.getComparatorsForColumn(COLUMN_SEEN).clear();
     }
 
     private void setupTable() {
@@ -211,7 +213,7 @@ public class BookmarkDialog extends JDialog {
         columnModel.getColumn(COLUMN_SENDEDATUM).setCellRenderer(new CenteredCellRenderer());
         var colNote = columnModel.getColumn(COLUMN_NOTIZ);
         colNote.setCellRenderer(new NoteCellRenderer());
-        colNote.setHeaderRenderer(new IconHeaderCellRenderer(IconUtils.of(MaterialDesignN.NOTE), "Notiz"));
+        colNote.setHeaderRenderer(new IconHeaderCellRenderer(IconUtils.of(MaterialDesignN.NOTE), "Notiz vorhanden"));
         //hinzugefügt am Column
         columnModel.getColumn(COLUM_BOOKMARK_ADDED_AT).setCellRenderer(new AddedAtCellRenderer());
     }
