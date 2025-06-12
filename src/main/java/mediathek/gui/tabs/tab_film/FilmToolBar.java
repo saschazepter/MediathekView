@@ -24,6 +24,7 @@ import mediathek.gui.actions.PlayFilmAction;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
 import mediathek.javafx.bookmark.IconOnlyButton;
+import mediathek.javafx.bookmark.IconOnlyToggleButton;
 import mediathek.tool.ApplicationConfiguration;
 import org.jetbrains.annotations.NotNull;
 
@@ -64,12 +65,12 @@ public class FilmToolBar extends JToolBar {
         add(btnToggleFilterDialogVisibility);
 
         addSeparator();
-        add(bookmarkAddFilmAction);
-        add(bookmarkRemoveFilmAction);
+        add(new IconOnlyButton(bookmarkAddFilmAction));
+        add(new IconOnlyButton(bookmarkRemoveFilmAction));
         addSeparator();
-        add(bookmarkClearListAction);
+        add(new IconOnlyButton(bookmarkClearListAction));
         addSeparator();
-        add(manageBookmarkAction);
+        add(new IconOnlyButton(manageBookmarkAction));
     }
 
     public FilterVisibilityToggleButton getToggleFilterDialogVisibilityButton() {
@@ -85,10 +86,9 @@ public class FilmToolBar extends JToolBar {
         toggleFilterDialogVisibilityAction.setEnabled(enabled);
     }
 
-    public static class FilterVisibilityToggleButton extends JToggleButton {
+    public static class FilterVisibilityToggleButton extends IconOnlyToggleButton {
         public FilterVisibilityToggleButton(Action a) {
             super(a);
-            setHideActionText(true);
             final boolean visible = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.FilterDialog.VISIBLE, false);
             setSelected(visible);
         }

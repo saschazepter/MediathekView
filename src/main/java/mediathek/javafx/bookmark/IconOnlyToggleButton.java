@@ -20,12 +20,10 @@ package mediathek.javafx.bookmark;
 
 import javax.swing.*;
 
-public class IconOnlyButton extends JButton {
-    public IconOnlyButton(Action action) {
+public class IconOnlyToggleButton extends JToggleButton {
+    public IconOnlyToggleButton(Action action) {
         super(action);
-
         setHideActionText(true);
-
         setDisabledIcon(IconUtils.generateDisabledIcon(action));
     }
 
