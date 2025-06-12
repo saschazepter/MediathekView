@@ -45,7 +45,6 @@ import org.kordamp.ikonli.materialdesign2.MaterialDesignN;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
 import java.util.Objects;
 
 public class BookmarkDialog extends JDialog {
@@ -225,9 +224,10 @@ public class BookmarkDialog extends JDialog {
         comparatorChooser.getComparatorsForColumn(COLUMN_SEEN).clear();
     }
 
+    private ObservableElementList<BookmarkData> observedBookmarks;
     private void setupTable() {
         ObservableElementList.Connector<BookmarkData> personConnector = GlazedLists.beanConnector(BookmarkData.class);
-        var observedBookmarks =
+        observedBookmarks =
                 new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
         var sortedList = new SortedList<>(observedBookmarks, new BookmarkAddedAtComparator());
 
@@ -401,17 +401,16 @@ public class BookmarkDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            var bookmarkList = Daten.getInstance().getListeBookmarkList();
-            //we need to make a copy otherwise the selection list will get modified during deletion
-            //and will fail to delete all bookmarks
-            var list = new ArrayList<>(selectionModel.getSelected());
-            System.out.println("SIZE: " + list.size());
-            for (var bookmark : list) {
-                System.out.println("source bookmark: " + bookmark.getFilmHashCode());
-                bookmarkList.removeBookmark(bookmark);
+            var tbdFilms = selectionModel.getSelected().stream()
+                    .filter(bookmark -> bookmark.getDatenFilmOptional().isPresent())
+                    .map(bookmark -> bookmark.getDatenFilmOptional().get())
+                    .toList();
+            if (!tbdFilms.isEmpty()) {
+                var bookmarkList = Daten.getInstance().getListeBookmarkList();
+                bookmarkList.checkAndBookmarkMovies(tbdFilms);
+                bookmarkList.saveToFile();
+                SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
             }
-            bookmarkList.saveToFile();
-            SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
         }
     }
 
