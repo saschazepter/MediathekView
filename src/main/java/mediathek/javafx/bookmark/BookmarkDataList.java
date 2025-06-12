@@ -55,6 +55,7 @@ public class BookmarkDataList {
             filmOpt.ifPresent(film -> film.setBookmark(null));
         });
         bookmarks.clear();
+        saveToFile();
     }
 
     /**

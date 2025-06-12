@@ -415,6 +415,7 @@ public class BookmarkDialog extends JDialog {
                 bookmarkList.removeBookmark(bookmark);
             }
 
+            bookmarkList.saveToFile();
             SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
         }
     }
