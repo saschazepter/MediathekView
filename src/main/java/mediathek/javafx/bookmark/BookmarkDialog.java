@@ -35,6 +35,7 @@ import org.apache.commons.configuration2.sync.LockMode;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
+import org.kordamp.ikonli.materialdesign2.MaterialDesignE;
 
 import javax.swing.*;
 import javax.swing.plaf.UIResource;
@@ -196,7 +197,9 @@ public class BookmarkDialog extends JDialog {
     private void setupCellRenderers() {
         var columnModel = table.getColumnModel();
         //seen column
-        columnModel.getColumn(COLUMN_SEEN).setCellRenderer(new SeenCellRenderer());
+        var colSeen = columnModel.getColumn(COLUMN_SEEN);
+        colSeen.setCellRenderer(new SeenCellRenderer());
+        colSeen.setHeaderRenderer(new IconHeaderCellRenderer(IconUtils.of(MaterialDesignE.EYE), "Gesehen"));
         //sender column
         columnModel.getColumn(COLUMN_SENDER).setCellRenderer(new CenteredCellRenderer());
         // dauer column
@@ -387,4 +390,5 @@ public class BookmarkDialog extends JDialog {
             return this;
         }
     }
+
 }
