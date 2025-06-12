@@ -18,6 +18,8 @@
 
 package mediathek.javafx.bookmark;
 
+import mediathek.swing.IconUtils;
+
 import javax.swing.*;
 
 public class IconOnlyButton extends JButton {

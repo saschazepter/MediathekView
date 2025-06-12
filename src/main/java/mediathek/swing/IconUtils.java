@@ -20,11 +20,13 @@ package mediathek.swing;
 
 import com.formdev.flatlaf.FlatLaf;
 import org.apache.commons.lang3.SystemUtils;
+import org.jetbrains.annotations.NotNull;
 import org.kordamp.ikonli.Ikon;
 import org.kordamp.ikonli.swing.FontIcon;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -68,6 +70,27 @@ public class IconUtils {
             size = DEFAULT_TOOLBAR_SIZE;
         }
         return size;
+    }
+
+    public static ImageIcon generateDisabledIcon(@NotNull Action action) {
+        FontIcon normalIcon = (FontIcon) action.getValue(Action.SMALL_ICON);
+        if (normalIcon != null) {
+            BufferedImage img = new BufferedImage(normalIcon.getIconWidth(), normalIcon.getIconHeight(),
+                    BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = img.createGraphics();
+            try {
+                normalIcon.paintIcon(null, g2, 0, 0);
+            }
+            finally {
+                g2.dispose();
+            }
+
+            var disabledImg = GrayFilter.createDisabledImage(img);
+            return new ImageIcon(disabledImg);
+        }
+        else {
+            return null;
+        }
     }
 
     public static FontIcon windowBarSpecificToolbarIcon(Ikon ikon) {
