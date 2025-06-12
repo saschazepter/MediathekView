@@ -30,9 +30,11 @@ import mediathek.config.Daten;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.javafx.bookmark.renderer.*;
 import mediathek.mainwindow.MediathekGui;
+import mediathek.swing.GlazedSortKeysPersister;
+import mediathek.swing.IconHeaderCellRenderer;
+import mediathek.swing.IconUtils;
+import mediathek.swing.TableUtils;
 import mediathek.tool.ApplicationConfiguration;
-import mediathek.tool.swing.IconUtils;
-import mediathek.tool.swing.TableUtils;
 import org.apache.commons.configuration2.sync.LockMode;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
@@ -67,7 +69,8 @@ public class BookmarkDialog extends JDialog {
     private final JTextArea noteArea = new JTextArea();
     private final JTable table = new JTable();
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
-    private TableColumnSettingsManager<BookmarkData> tableColumnSettingsManager;
+    private BookmarkTableColumnSettingsManager<BookmarkData> tableColumnSettingsManager;
+    private GlazedSortKeysPersister<BookmarkData> sortPersister;
 
     public BookmarkDialog(Frame owner) {
         super(owner);
@@ -193,11 +196,10 @@ public class BookmarkDialog extends JDialog {
         comparatorChooser.addSortActionListener(_ -> sortPersister.saveSortState());
         setupCellRenderers();
 
-        tableColumnSettingsManager = new TableColumnSettingsManager<>(table, CONFIG_PREFIX, comparatorChooser);
+        tableColumnSettingsManager = new BookmarkTableColumnSettingsManager<>(table, CONFIG_PREFIX, comparatorChooser);
         tableColumnSettingsManager.load();
         tableColumnSettingsManager.installContextMenu();
     }
-    private GlazedSortKeysPersister<BookmarkData> sortPersister;
 
     private void setupCellRenderers() {
         var columnModel = table.getColumnModel();

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.tool.swing;
+package mediathek.swing;
 
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;

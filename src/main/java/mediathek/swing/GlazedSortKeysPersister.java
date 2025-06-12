@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.javafx.bookmark;
+package mediathek.swing;
 
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.fasterxml.jackson.core.type.TypeReference;

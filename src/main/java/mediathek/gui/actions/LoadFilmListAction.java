@@ -1,7 +1,7 @@
 package mediathek.gui.actions;
 
 import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.swing.IconUtils;
+import mediathek.swing.IconUtils;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 
 import javax.swing.*;

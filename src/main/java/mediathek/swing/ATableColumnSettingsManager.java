@@ -1,20 +1,34 @@
-package mediathek.javafx.bookmark;
+/*
+ * Copyright (c) 2025 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package mediathek.swing;
 
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import mediathek.tool.ApplicationConfiguration;
-import mediathek.tool.swing.IconUtils;
 import org.apache.commons.configuration2.sync.LockMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.kordamp.ikonli.materialdesign2.MaterialDesignE;
-import org.kordamp.ikonli.materialdesign2.MaterialDesignN;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -31,17 +45,17 @@ import java.util.Optional;
  * mgr.installContextMenu();
  * dialog.addWindowListener(e -> mgr.save());
  */
-public class TableColumnSettingsManager<E> {
+public abstract class ATableColumnSettingsManager<E> {
     private static final Logger LOG = LogManager.getLogger();
     private static final String COLUMN_SETTINGS = ".colummn-settings";
-    private final JTable table;
-    private final List<TableColumn> allColumns = new ArrayList<>();
+    protected final JTable table;
+    protected final List<TableColumn> allColumns = new ArrayList<>();
+    protected final List<ColumnSetting> lastSettings = new ArrayList<>();
+    protected final TableComparatorChooser<E> comparatorChooser;
     private final ObjectMapper mapper = new ObjectMapper();
-    private final List<ColumnSetting> lastSettings = new ArrayList<>();
     private final String configPrefix;
-    private final TableComparatorChooser<E> comparatorChooser;
 
-    public TableColumnSettingsManager(JTable table, String configPrefix, TableComparatorChooser<E> comparatorChooser) {
+    public ATableColumnSettingsManager(JTable table, String configPrefix, TableComparatorChooser<E> comparatorChooser) {
         this.table = table;
         this.configPrefix = configPrefix;
         this.comparatorChooser = comparatorChooser;
@@ -157,69 +171,13 @@ public class TableColumnSettingsManager<E> {
         }
     }
 
-    private JCheckBoxMenuItem createMenuItem(String columnName, boolean visible) {
-        JCheckBoxMenuItem item;
-        if (columnName.equalsIgnoreCase("Gesehen")) {
-            item = new IconizedCheckBoxMenuItem(IconUtils.of(MaterialDesignE.EYE), visible);
-        }
-        else if (columnName.equalsIgnoreCase("Notiz")) {
-            item = new IconizedCheckBoxMenuItem(IconUtils.of(MaterialDesignN.NOTE), visible);
-        }
-        else {
-            item = new JCheckBoxMenuItem(columnName, visible);
-        }
-
-        return item;
-    }
-
     /**
      * Install a header context menu to toggle column visibility.
      */
-    public void installContextMenu() {
-        // Apply current settings
-        load();
-        JPopupMenu popup = new JPopupMenu();
-
-        // Toggle visibility per column
-        for (TableColumn col : allColumns) {
-            String columnName = col.getIdentifier().toString();
-            Optional<ColumnSetting> csOpt = lastSettings.stream()
-                    .filter(s -> s.id.equals(columnName))
-                    .findFirst();
-            boolean visible = csOpt.map(s -> s.visible).orElse(true);
-            var item = createMenuItem(columnName, visible);
-            item.addActionListener(_ -> {
-                TableColumnModel m = table.getColumnModel();
-                csOpt.ifPresent(s -> s.visible = item.isSelected());
-                if (item.isSelected()) {
-                    if (!isInModel(col)) {
-                        m.addColumn(col);
-                        int lastIndex = m.getColumnCount() - 1;
-                        int target = csOpt.map(s -> s.position).orElse(lastIndex);
-                        m.moveColumn(lastIndex, Math.max(0, Math.min(target, lastIndex)));
-                    }
-                }
-                else {
-                    if (isInModel(col)) {
-                        int idx = m.getColumnIndex(columnName);
-                        csOpt.ifPresent(s -> s.position = idx);
-                        m.removeColumn(col);
-                    }
-                }
-                save();
-            });
-            popup.add(item);
-        }
-        popup.addSeparator();
-        var item = new JMenuItem("Sortierschlüssel zurücksetzen");
-        item.addActionListener(_ -> comparatorChooser.clearComparator());
-        popup.add(item);
-
-        table.getTableHeader().setComponentPopupMenu(popup);
-    }
+    public abstract void installContextMenu();
 
     // Helper to check if a column is currently visible
-    private boolean isInModel(TableColumn col) {
+    protected boolean isInModel(TableColumn col) {
         var columnModel = table.getColumnModel();
         for (int i = 0; i < columnModel.getColumnCount(); i++) {
             if (columnModel.getColumn(i) == col)

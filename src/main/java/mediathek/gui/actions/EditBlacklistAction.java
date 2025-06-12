@@ -3,8 +3,8 @@ package mediathek.gui.actions;
 import mediathek.config.Daten;
 import mediathek.gui.dialog.DialogLeer;
 import mediathek.gui.dialogEinstellungen.PanelBlacklist;
+import mediathek.swing.IconUtils;
 import mediathek.tool.GuiFunktionen;
-import mediathek.tool.swing.IconUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignL;
 
