@@ -75,6 +75,7 @@ public class BookmarkDialog extends JDialog {
     private final MarkSeenAction markSeenAction = new MarkSeenAction();
     private final MarkUnseenAction markUnseenAction = new MarkUnseenAction();
     private final RemoveNoteAction removeNoteAction = new RemoveNoteAction();
+    private final DeleteBookmarkAction deleteBookmarkAction = new DeleteBookmarkAction();
     private DefaultEventSelectionModel<BookmarkData> selectionModel;
     private BookmarkTableColumnSettingsManager<BookmarkData> tableColumnSettingsManager;
     private GlazedSortKeysPersister<BookmarkData> sortPersister;
@@ -113,33 +114,26 @@ public class BookmarkDialog extends JDialog {
                     table.getSelectionModel().setSelectionInterval(row, row);
                 }
 
-                int count = table.getSelectedRowCount();
-                JPopupMenu popup = new JPopupMenu();
-
                 var selectedItems = selectionModel.getSelected();
-                var numSelectedItems = selectedItems.size();
-                assert numSelectedItems == count : "MISMATCH SELECTION SIZE";
-
                 if (selectedItems.isEmpty()) {
-                    JMenuItem info = new JMenuItem("No rows selected");
-                    info.setEnabled(false);
-                    popup.add(info);
+                    return;
                 }
 
+                JPopupMenu popup = new JPopupMenu();
                 JMenuItem menuItem = new NoIconMenuItem(addNoteAction);
                 popup.add(menuItem);
-                if (numSelectedItems >= 1) {
-                    menuItem = new NoIconMenuItem(removeNoteAction);
-                    popup.add(menuItem);
-                    popup.addSeparator();
-                    menuItem = new NoIconMenuItem(markSeenAction);
-                    popup.add(menuItem);
-                    menuItem = new NoIconMenuItem(markUnseenAction);
-                    popup.add(menuItem);
-                    popup.addSeparator();
-                    menuItem = new JMenuItem("Aus Merkliste löschen...");
-                    popup.add(menuItem);
-                }
+                //if (numSelectedItems >= 1) {
+                menuItem = new NoIconMenuItem(removeNoteAction);
+                popup.add(menuItem);
+                popup.addSeparator();
+                menuItem = new NoIconMenuItem(markSeenAction);
+                popup.add(menuItem);
+                menuItem = new NoIconMenuItem(markUnseenAction);
+                popup.add(menuItem);
+                popup.addSeparator();
+                menuItem = new NoIconMenuItem(deleteBookmarkAction);
+                popup.add(menuItem);
+                //}
 
                 popup.show(e.getComponent(), e.getX(), e.getY());
             }
@@ -302,29 +296,10 @@ public class BookmarkDialog extends JDialog {
         toolBar.add(markUnseenButton);
 
         toolBar.addSeparator();
-        JButton deleteEntryButton = new JButton();
-        deleteEntryButton.setToolTipText("Eintrag löschen");
-        deleteEntryButton.setIcon(IconUtils.toolbarIcon(FontAwesomeRegular.TRASH_ALT));
-        deleteEntryButton.addActionListener(_ -> deleteBookmarkSelection());
+        JButton deleteEntryButton = new IconOnlyButton(deleteBookmarkAction);
         toolBar.add(deleteEntryButton);
 
         getContentPane().add(toolBar, BorderLayout.NORTH);
-    }
-
-    private void deleteBookmarkSelection() {
-        if (!selectionModel.isSelectionEmpty()) {
-            var bookmarkList = Daten.getInstance().getListeBookmarkList();
-            //we need to make a copy otherwise the selection list will get modified during deletion
-            //and will fail to delete all bookmarks
-            var list = new ArrayList<>(selectionModel.getSelected());
-            //System.out.println("SIZE: " + list.size());
-            for (var bookmark : list) {
-                //System.out.println("source bookmark: " + bookmark.getFilmHashCode());
-                bookmarkList.removeBookmark(bookmark);
-            }
-            bookmarkList.saveToFile();
-        }
-        SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
     }
 
     private void updateInfoTabs() {
@@ -414,6 +389,29 @@ public class BookmarkDialog extends JDialog {
                 Daten.getInstance().getListeBookmarkList().saveToFile();
                 updateInfoTabs();
             }
+        }
+    }
+
+    class DeleteBookmarkAction extends AbstractAction {
+        public DeleteBookmarkAction() {
+            putValue(Action.NAME, "Aus Merkliste löschen...");
+            putValue(Action.SHORT_DESCRIPTION, "Aus Merkliste löschen");
+            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeRegular.TRASH_ALT));
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            var bookmarkList = Daten.getInstance().getListeBookmarkList();
+            //we need to make a copy otherwise the selection list will get modified during deletion
+            //and will fail to delete all bookmarks
+            var list = new ArrayList<>(selectionModel.getSelected());
+            System.out.println("SIZE: " + list.size());
+            for (var bookmark : list) {
+                System.out.println("source bookmark: " + bookmark.getFilmHashCode());
+                bookmarkList.removeBookmark(bookmark);
+            }
+            bookmarkList.saveToFile();
+            SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
         }
     }
 
