@@ -72,7 +72,6 @@ public class BookmarkDialog extends JDialog {
         setTitle("Merkliste verwalten");
         setModal(false);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setSize(800, 500);
 
         setupToolBar();
 
@@ -85,6 +84,12 @@ public class BookmarkDialog extends JDialog {
         setupTable();
         TableUtils.fitColumnHeaders(table, 5);
 
+        installListener();
+
+        restoreBounds();
+    }
+
+    private void installListener() {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
@@ -98,8 +103,6 @@ public class BookmarkDialog extends JDialog {
                 saveBounds();
             }
         });
-
-        restoreBounds();
     }
 
     private void saveBounds() {
