@@ -269,21 +269,12 @@ public class GuiFilme extends AGuiTabPanel {
 
     @Override
     public void installMenuEntries(JMenu menu) {
-        JMenuItem miMarkFilmAsSeen = new JMenuItem("Filme als gesehen markieren");
-        miMarkFilmAsSeen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK));
-        miMarkFilmAsSeen.addActionListener(markFilmAsSeenAction);
-
-        JMenuItem miMarkFilmAsUnseen = new JMenuItem("Filme als ungesehen markieren");
-        miMarkFilmAsUnseen.setAccelerator(
-                KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
-        miMarkFilmAsUnseen.addActionListener(markFilmAsUnseenAction);
-
         menu.add(playFilmAction);
         menu.add(saveFilmAction);
         menu.add(bookmarkAddFilmAction);
         menu.addSeparator();
-        menu.add(miMarkFilmAsSeen);
-        menu.add(miMarkFilmAsUnseen);
+        menu.add(markFilmAsSeenAction);
+        menu.add(markFilmAsUnseenAction);
         menu.addSeparator();
         menu.add(mediathekGui.toggleBlacklistAction);
         menu.add(mediathekGui.editBlacklistAction);

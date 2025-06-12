@@ -322,14 +322,6 @@ public class GuiDownloads extends AGuiTabPanel {
 
     @Override
     public void installMenuEntries(JMenu menu) {
-        JMenuItem miMarkFilmAsSeen = new JMenuItem("Filme als gesehen markieren");
-        miMarkFilmAsSeen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK));
-        miMarkFilmAsSeen.addActionListener(markFilmAsSeenAction);
-
-        JMenuItem miMarkFilmAsUnseen = new JMenuItem("Filme als ungesehen markieren");
-        miMarkFilmAsUnseen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
-        miMarkFilmAsUnseen.addActionListener(markFilmAsUnseenAction);
-
         menu.add(startAllDownloadsAction);
         menu.add(startAllDownloadsTimedAction);
         menu.add(stopAllDownloadsAction);
@@ -348,8 +340,8 @@ public class GuiDownloads extends AGuiTabPanel {
         menu.addSeparator();
         menu.add(cbShowDownloadDescription);
         menu.addSeparator();
-        menu.add(miMarkFilmAsSeen);
-        menu.add(miMarkFilmAsUnseen);
+        menu.add(markFilmAsSeenAction);
+        menu.add(markFilmAsUnseenAction);
         menu.add(playDownloadAction);
     }
 
