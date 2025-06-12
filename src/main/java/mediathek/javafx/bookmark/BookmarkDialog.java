@@ -45,6 +45,7 @@ import org.kordamp.ikonli.materialdesign2.MaterialDesignN;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.Objects;
 
 public class BookmarkDialog extends JDialog {
@@ -224,15 +225,22 @@ public class BookmarkDialog extends JDialog {
         comparatorChooser.getComparatorsForColumn(COLUMN_SEEN).clear();
     }
 
-    private ObservableElementList<BookmarkData> observedBookmarks;
     private void setupTable() {
         ObservableElementList.Connector<BookmarkData> personConnector = GlazedLists.beanConnector(BookmarkData.class);
-        observedBookmarks =
-                new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
-        var sortedList = new SortedList<>(observedBookmarks, new BookmarkAddedAtComparator());
+        var sourceEventList = Daten.getInstance().getListeBookmarkList().getEventList();
+        sourceEventList.getReadWriteLock().readLock().lock();
 
-        var model = GlazedListsSwing.eventTableModelWithThreadProxyList(sortedList, getTableFormat());
-        selectionModel = new DefaultEventSelectionModel<>(observedBookmarks);
+        ObservableElementList<BookmarkData> observedBookmarks;
+        SortedList<BookmarkData> sortedList;
+        try {
+            observedBookmarks = new ObservableElementList<>(Daten.getInstance().getListeBookmarkList().getEventList(), personConnector);
+            sortedList = new SortedList<>(observedBookmarks, new BookmarkAddedAtComparator());
+        }
+        finally {
+            sourceEventList.getReadWriteLock().readLock().unlock();
+        }
+        var model = GlazedListsSwing.eventTableModel(sortedList, getTableFormat());
+        selectionModel = new DefaultEventSelectionModel<>(sortedList);
         selectionModel.addListSelectionListener(l -> {
             if (!l.getValueIsAdjusting()) {
                 var numSelections = selectionModel.getSelected().size();
@@ -401,16 +409,13 @@ public class BookmarkDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            var tbdFilms = selectionModel.getSelected().stream()
-                    .filter(bookmark -> bookmark.getDatenFilmOptional().isPresent())
-                    .map(bookmark -> bookmark.getDatenFilmOptional().get())
-                    .toList();
-            if (!tbdFilms.isEmpty()) {
-                var bookmarkList = Daten.getInstance().getListeBookmarkList();
-                bookmarkList.checkAndBookmarkMovies(tbdFilms);
-                bookmarkList.saveToFile();
-                SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
-            }
+            var bookmarkList = Daten.getInstance().getListeBookmarkList();
+                var list = new ArrayList<>(selectionModel.getSelected());
+                for (var bookmark : list) {
+                    bookmarkList.removeBookmark(bookmark);
+                }
+
+            SwingUtilities.invokeLater(() -> MediathekGui.ui().tabFilme.repaint());
         }
     }
 
