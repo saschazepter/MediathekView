@@ -40,7 +40,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -56,11 +55,11 @@ public class BookmarkDialog extends JDialog {
     private static final int COLUMN_NOTIZ = 8;
     private static final int COLUMN_HASHCODE = 9;
     private static final int COLUM_BOOKMARK_ADDED_AT = 10;
-    private static final File DEFAULT_FILE = new File("/Users/christianfranzke/Desktop/columns.json");
-    private static final String BOOKMARK_POS_X = "ui.bookmark-dialog.x";
-    private static final String BOOKMARK_POS_Y = "ui.bookmark-dialog.y";
-    private static final String BOOKMARK_WIDTH = "ui.bookmark-dialog.width";
-    private static final String BOOKMARK_HEIGHT = "ui.bookmark-dialog.height";
+    private static final String CONFIG_PREFIX = "ui.bookmark-dialog";
+    private static final String BOOKMARK_POS_X = CONFIG_PREFIX + ".x";
+    private static final String BOOKMARK_POS_Y = CONFIG_PREFIX + ".y";
+    private static final String BOOKMARK_WIDTH = CONFIG_PREFIX + ".width";
+    private static final String BOOKMARK_HEIGHT = CONFIG_PREFIX + ".height";
     private final FilmDescriptionPanel filmDescriptionPanel = new FilmDescriptionPanel();
     private final JTextArea noteArea = new JTextArea();
     private final JTable table = new JTable();
@@ -186,7 +185,7 @@ public class BookmarkDialog extends JDialog {
 
         setupCellRenderers();
 
-        mgr = new TableColumnSettingsManager(table, DEFAULT_FILE);
+        mgr = new TableColumnSettingsManager(table, CONFIG_PREFIX);
         mgr.load();
         mgr.installContextMenu();
     }

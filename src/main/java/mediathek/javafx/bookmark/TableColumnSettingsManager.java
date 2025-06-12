@@ -1,17 +1,16 @@
 package mediathek.javafx.bookmark;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import mediathek.tool.ApplicationConfiguration;
+import org.apache.commons.configuration2.sync.LockMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -30,19 +29,21 @@ import java.util.Optional;
  */
 public class TableColumnSettingsManager {
     private static final Logger LOG = LogManager.getLogger();
+    private static final String COLUMN_SETTINGS = ".colummn-settings";
     private final JTable table;
-    private final File settingsFile;
     private final List<TableColumn> allColumns = new ArrayList<>();
     private final ObjectMapper mapper = new ObjectMapper();
     private final List<ColumnSetting> lastSettings = new ArrayList<>();
+    private final String configPrefix;
 
-    public TableColumnSettingsManager(JTable table, File settingsFile) {
+    public TableColumnSettingsManager(JTable table, String configPrefix) {
         this.table = table;
-        this.settingsFile = settingsFile;
+        this.configPrefix = configPrefix;
+
         // Initialize from table's current model
-        TableColumnModel cm = table.getColumnModel();
-        for (int i = 0; i < cm.getColumnCount(); i++) {
-            TableColumn col = cm.getColumn(i);
+        var columnModel = table.getColumnModel();
+        for (int i = 0; i < columnModel.getColumnCount(); i++) {
+            var col = columnModel.getColumn(i);
             allColumns.add(col);
             ColumnSetting cs = new ColumnSetting(
                     col.getIdentifier().toString(),
@@ -59,40 +60,49 @@ public class TableColumnSettingsManager {
      * Merges file settings into runtime defaults to preserve any in-memory changes.
      */
     public void load() {
-        if (settingsFile.exists()) {
+        try {
+            // Read file into temporary list
+            List<ColumnSetting> fileSettings;
+            var config = ApplicationConfiguration.getConfiguration();
+            config.lock(LockMode.READ);
             try {
-                // Read file into temporary list
-                List<ColumnSetting> fileSettings = mapper.readValue(settingsFile, new TypeReference<>() {});
-                // Merge fileSettings into lastSettings
-                for (ColumnSetting fs : fileSettings) {
-                    Optional<ColumnSetting> existing = lastSettings.stream()
-                            .filter(ls -> ls.id.equals(fs.id))
-                            .findFirst();
-                    if (existing.isPresent()) {
-                        ColumnSetting ls = existing.get();
-                        ls.position = fs.position;
-                        ls.width = fs.width;
-                        ls.visible = fs.visible;
-                    }
-                    else {
-                        // New column entry
-                        lastSettings.add(new ColumnSetting(fs.id, fs.position, fs.width, fs.visible));
-                    }
+                var str = config.getString(configPrefix + COLUMN_SETTINGS);
+                fileSettings = mapper.readValue(str, new TypeReference<>() {
+                });
+            }
+            finally {
+                config.unlock(LockMode.READ);
+            }
+            // Merge fileSettings into lastSettings
+            for (var fs : fileSettings) {
+                Optional<ColumnSetting> existing = lastSettings.stream()
+                        .filter(ls -> ls.id.equals(fs.id))
+                        .findFirst();
+                if (existing.isPresent()) {
+                    var ls = existing.get();
+                    ls.position = fs.position;
+                    ls.width = fs.width;
+                    ls.visible = fs.visible;
                 }
-                // Remove any lastSettings entries not present in allColumns
-                var validIds = allColumns.stream()
-                        .map(c -> c.getIdentifier().toString())
-                        .toList();
-                lastSettings.removeIf(ls -> !validIds.contains(ls.id));
+                else {
+                    // New column entry
+                    lastSettings.add(new ColumnSetting(fs.id, fs.position, fs.width, fs.visible));
+                }
             }
-            catch (IOException ex) {
-                LOG.error("Failed to load column settings.", ex);
-            }
+            // Remove any lastSettings entries not present in allColumns
+            var validIds = allColumns.stream()
+                    .map(c -> c.getIdentifier().toString())
+                    .toList();
+            lastSettings.removeIf(ls -> !validIds.contains(ls.id));
         }
+        catch (Exception ex) {
+            LOG.error("Failed to load column settings.", ex);
+        }
+
         // Apply settings to table
-        TableColumnModel cm = table.getColumnModel();
-        while (cm.getColumnCount() > 0) {
-            cm.removeColumn(cm.getColumn(0));
+        var columnModel = table.getColumnModel();
+        while (columnModel.getColumnCount() > 0) {
+            columnModel.removeColumn(columnModel.getColumn(0));
         }
         lastSettings.stream()
                 .filter(s -> s.visible)
@@ -101,7 +111,7 @@ public class TableColumnSettingsManager {
                         .filter(col -> col.getIdentifier().toString().equals(s.id))
                         .findFirst()
                         .ifPresent(col -> {
-                            cm.addColumn(col);
+                            columnModel.addColumn(col);
                             col.setPreferredWidth(s.width);
                         }));
     }
@@ -111,34 +121,33 @@ public class TableColumnSettingsManager {
      * Hidden columns preserve their last known position.
      */
     public void save() {
-        TableColumnModel cm = table.getColumnModel();
-        // Update lastSettings with current state
-        for (ColumnSetting ls : lastSettings) {
+        var columnModel = table.getColumnModel();
+        for (var ls : lastSettings) {
             Optional<TableColumn> colOpt = allColumns.stream()
                     .filter(c -> c.getIdentifier().toString().equals(ls.id))
                     .findFirst();
             if (colOpt.isEmpty())
                 continue;
-            TableColumn col = colOpt.get();
+            var col = colOpt.get();
             boolean visible = isInModel(col);
             ls.visible = visible;
             if (visible) {
-                ls.position = cm.getColumnIndex(ls.id);
+                ls.position = columnModel.getColumnIndex(ls.id);
                 ls.width = col.getWidth();
             }
-            // if hidden, position/width remain from last load or hide event
         }
-        // Write JSON if needed
+
+        var config = ApplicationConfiguration.getConfiguration();
+        config.lock(LockMode.WRITE);
         try {
-            Path parent = settingsFile.toPath().getParent();
-            if (parent != null && !Files.exists(parent)) {
-                Files.createDirectories(parent);
-            }
-            mapper.writerWithDefaultPrettyPrinter()
-                    .writeValue(settingsFile, lastSettings);
+            var output = mapper.writeValueAsString(lastSettings);
+            config.setProperty(configPrefix + COLUMN_SETTINGS, output);
         }
-        catch (IOException ex) {
+        catch (JsonProcessingException ex) {
             LOG.error("Failed to save column settings.", ex);
+        }
+        finally {
+            config.unlock(LockMode.WRITE);
         }
     }
 
