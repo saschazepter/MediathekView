@@ -381,7 +381,10 @@ public class BookmarkDialog extends JDialog {
             BookmarkEditNoteDialog dialog = new BookmarkEditNoteDialog(BookmarkDialog.this, bm.getNote());
             dialog.setVisible(true);
             if (dialog.isOkPressed()) {
-                bm.setNote(dialog.getNotiz());
+                var notizText = dialog.getNotiz();
+                if (notizText.isBlank())
+                    notizText = null;
+                bm.setNote(notizText);
                 Daten.getInstance().getListeBookmarkList().saveToFile();
                 updateInfoTabs();
             }
