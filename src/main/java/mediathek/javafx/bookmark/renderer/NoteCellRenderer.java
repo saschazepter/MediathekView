@@ -59,6 +59,12 @@ public class NoteCellRenderer extends JPanel implements TableCellRenderer {
         performSelectionDrawing(table, isSelected, row);
 
         checkBox.setSelected(value != null);
+        if (value != null) {
+            setToolTipText((String) value);
+        }
+        else
+            setToolTipText(null);
+
         return this;
     }
 }
