@@ -765,6 +765,39 @@
                             </execution>
                         </executions>
                     </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactSet>
+                                        <includes>
+                                            <include>org.xerial:sqlite-jdbc</include>
+                                        </includes>
+                                    </artifactSet>
+                                    <filters>
+                                        <filter>
+                                            <artifact>org.xerial:sqlite-jdbc</artifact>
+                                            <excludes>
+                                                <exclude>**/native/FreeBSD/**</exclude>
+                                                <exclude>**/native/Linux/**</exclude>
+                                                <exclude>**/native/Linux-Android/**</exclude>
+                                                <exclude>**/native/Linux-Musl/**</exclude>
+                                                <exclude>**/native/Mac/**</exclude>
+                                                <exclude>META-INF/MANIFEST.MF</exclude>
+                                            </excludes>
+                                        </filter>
+                                    </filters>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
                 </plugins>
             </build>
         </profile>
@@ -801,6 +834,39 @@
                                     <unpack>true</unpack>
                                     <outputDirectory>${project.build.directory}/res/bin</outputDirectory>
                                     <md5>3812b8f3c99cf33278dad42a79bff973</md5>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-shade-plugin</artifactId>
+                        <version>3.5.0</version>
+                        <executions>
+                            <execution>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>shade</goal>
+                                </goals>
+                                <configuration>
+                                    <artifactSet>
+                                        <includes>
+                                            <include>org.xerial:sqlite-jdbc</include>
+                                        </includes>
+                                    </artifactSet>
+                                    <filters>
+                                        <filter>
+                                            <artifact>org.xerial:sqlite-jdbc</artifact>
+                                            <excludes>
+                                                <exclude>**/native/FreeBSD/**</exclude>
+                                                <exclude>**/native/Linux/**</exclude>
+                                                <exclude>**/native/Linux-Android/**</exclude>
+                                                <exclude>**/native/Linux-Musl/**</exclude>
+                                                <exclude>**/native/Mac/**</exclude>
+                                                <exclude>META-INF/MANIFEST.MF</exclude>
+                                            </excludes>
+                                        </filter>
+                                    </filters>
                                 </configuration>
                             </execution>
                         </executions>
