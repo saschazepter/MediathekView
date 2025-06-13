@@ -377,9 +377,14 @@ public class BookmarkDialog extends JDialog {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            selectionModel.getSelected().forEach(bookmark -> bookmark.setNote("Hello World"));
-            Daten.getInstance().getListeBookmarkList().saveToFile();
-            updateInfoTabs();
+            var bm = selectionModel.getSelected().getFirst();
+            BookmarkEditNoteDialog dialog = new BookmarkEditNoteDialog(BookmarkDialog.this, bm.getNote());
+            dialog.setVisible(true);
+            if (dialog.isOkPressed()) {
+                bm.setNote(dialog.getNotiz());
+                Daten.getInstance().getListeBookmarkList().saveToFile();
+                updateInfoTabs();
+            }
         }
     }
 
