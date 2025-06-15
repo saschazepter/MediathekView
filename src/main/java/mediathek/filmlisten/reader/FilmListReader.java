@@ -3,6 +3,7 @@ package mediathek.filmlisten.reader;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.google.common.base.Stopwatch;
 import mediathek.config.Config;
 import mediathek.config.Konstanten;
 import mediathek.controller.SenderFilmlistLoadApprover;
@@ -15,6 +16,7 @@ import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.InputStreamProgressMonitor;
 import mediathek.tool.ProgressMonitorInputStream;
 import mediathek.tool.TrailerTeaserChecker;
+import mediathek.tool.episodes.TitleParser;
 import mediathek.tool.http.MVHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -30,7 +32,6 @@ import javax.swing.event.EventListenerList;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -42,22 +43,24 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FilmListReader implements AutoCloseable {
     private static final int PROGRESS_MAX = 100;
     private static final Logger logger = LogManager.getLogger(FilmListReader.class);
     private static final String THEMA_LIVE = "Livestream";
-    private final EventListenerList listeners = new EventListenerList();
-    private final ListenerFilmeLadenEvent progressEvent = new ListenerFilmeLadenEvent("", "Download", 0, 0, false);
-    private final int max;
-    private final TrailerTeaserChecker ttc = new TrailerTeaserChecker();
     /**
      * Memory limit for the xz decompressor. No limit by default.
      */
     protected final int DECOMPRESSOR_MEMORY_LIMIT = -1;
+    private final EventListenerList listeners = new EventListenerList();
+    private final ListenerFilmeLadenEvent progressEvent = new ListenerFilmeLadenEvent("", "Download", 0, 0, false);
+    private final int max;
+    private final TrailerTeaserChecker ttc = new TrailerTeaserChecker();
     private int progress;
     private IDateFilter dateFilter;
     private String sender = "";
@@ -386,19 +389,37 @@ public class FilmListReader implements AutoCloseable {
 
             if (days == 0) {
                 dateFilter = new NoOpDateFilter(listeFilme);
-            } else {
+            }
+            else {
                 dateFilter = new DateFilter(listeFilme, days);
             }
 
             notifyStart(source); // für die Progressanzeige
 
             if (source.startsWith("http")) {
-                    final var sourceUrl = new URI(source);
-                    processFromWeb(sourceUrl.toURL(), listeFilme);
-            } else
+                final var sourceUrl = new URI(source);
+                processFromWeb(sourceUrl.toURL(), listeFilme);
+            }
+            else
                 processFromFile(source, listeFilme);
 
-        } catch (MalformedURLException | URISyntaxException ex) {
+            Stopwatch stopwatch = Stopwatch.createStarted();
+            var res = listeFilme.parallelStream()
+                    .map(DatenFilm::getTitle)
+                    .sorted()
+                    .distinct()
+                    .map(line -> new AbstractMap.SimpleEntry<>(line, TitleParser.parseSeasonEpisode(line).orElse(null)))
+                    .filter(e -> e.getValue() != null)               // drop non-matches
+                    .collect(Collectors.toConcurrentMap(
+                            Map.Entry::getKey,
+                            Map.Entry::getValue
+                    ));
+            stopwatch.stop();
+            System.out.println("it took: " + stopwatch);
+            System.out.println("Orig list size: " + listeFilme.size());
+            System.out.println("Found episodes: " + res.size());
+        }
+        catch (URISyntaxException | IOException ex) {
             logger.warn(ex);
         }
 
@@ -429,20 +450,21 @@ public class FilmListReader implements AutoCloseable {
                  JsonParser jp = new JsonFactory().createParser(in)) {
                 readData(jp, listeFilme);
             }
-        } catch (FileNotFoundException | NoSuchFileException ex) {
+        }
+        catch (FileNotFoundException | NoSuchFileException ex) {
             logger.debug("FilmListe existiert nicht: {}", source);
             listeFilme.clear();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             logger.error("FilmListe: {}", source, ex);
             listeFilme.clear();
         }
     }
 
-    private String buildClientInfo()
-    {
+    private String buildClientInfo() {
         List<Object> clientData = Arrays.asList(Konstanten.PROGRAMMNAME, Konstanten.MVVERSION, SystemUtils.OS_ARCH,
                 SystemUtils.OS_NAME, SystemUtils.OS_VERSION);
-        return clientData.stream().map( Object::toString ).collect( Collectors.joining( "," ) );
+        return clientData.stream().map(Object::toString).collect(Collectors.joining(","));
     }
 
     /**
@@ -472,10 +494,12 @@ public class FilmListReader implements AutoCloseable {
                      JsonParser jp = new JsonFactory().createParser(is)) {
                     readData(jp, listeFilme);
                 }
-            } else
+            }
+            else
                 logger.warn("processFromWeb HTTP Response Code: {} for {}", response.code(), response.request().url().url());
 
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             logger.error("FilmListe: {}", source, ex);
             listeFilme.clear();
         }
