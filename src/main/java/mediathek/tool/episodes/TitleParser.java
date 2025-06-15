@@ -18,14 +18,9 @@
 
 package mediathek.tool.episodes;
 
-import java.io.IOException;
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 public class TitleParser {
     // Patterns to try, in order
@@ -41,20 +36,6 @@ public class TitleParser {
             // e.g. "… Folge 96 …" (episode only; season left null)
             Pattern.compile("(?i).*?Folge[\\s\\.:-]*(\\d{1,3}).*")
     };
-
-    public static Map<String, SeasonEpisode> parseListConcurrent(List<String> lines) throws IOException {
-        return lines
-                .parallelStream()                                      // process in parallel
-                .map(line -> new AbstractMap.SimpleEntry<>(
-                        line,
-                        parseSeasonEpisode(line).orElse(null)
-                ))
-                .filter(e -> e.getValue() != null)               // drop non-matches
-                .collect(Collectors.toConcurrentMap(
-                        Map.Entry::getKey,
-                        Map.Entry::getValue
-                ));
-    }
 
     /**
      * Attempts to extract season and episode numbers from a title.
