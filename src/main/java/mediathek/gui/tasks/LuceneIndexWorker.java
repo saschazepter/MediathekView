@@ -29,6 +29,7 @@ import mediathek.tool.LuceneDefaultAnalyzer;
 import mediathek.tool.SwingErrorDialog;
 import mediathek.tool.datum.DateUtil;
 import mediathek.tool.datum.DatumFilm;
+import mediathek.tool.episodes.TitleParser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.document.*;
@@ -67,6 +68,8 @@ public class LuceneIndexWorker extends SwingWorker<Void, Void> {
     }
 
     private void indexFilm(@NotNull IndexWriter writer, @NotNull DatenFilm film) throws IOException {
+        var epiInfo = TitleParser.parseSeasonEpisode(film.getTitle());
+
         var doc = new Document();
         // store fields for debugging, otherwise they should stay disabled
         doc.add(new StringField(LuceneIndexKeys.ID, Integer.toString(film.getFilmNr()), Field.Store.YES));
@@ -85,6 +88,18 @@ public class LuceneIndexWorker extends SwingWorker<Void, Void> {
         doc.add(new StringField(LuceneIndexKeys.AUDIOVERSION, Boolean.toString(film.isAudioVersion()), Field.Store.NO));
         doc.add(new StringField(LuceneIndexKeys.SIGN_LANGUAGE, Boolean.toString(film.isSignLanguage()), Field.Store.NO));
         doc.add(new StringField(LuceneIndexKeys.DUPLICATE, Boolean.toString(film.isDuplicate()), Field.Store.NO));
+        Integer season = 0;
+        Integer episode = 0;
+        if (epiInfo.isPresent()) {
+            var epi = epiInfo.get();
+            if (epi.season() != null)
+                season = epi.season();
+            if (epi.episode() != null)
+                episode = epi.episode();
+        }
+
+        doc.add(new IntPoint(LuceneIndexKeys.SEASON, season));
+        doc.add(new IntPoint(LuceneIndexKeys.EPISODE, episode));
 
         addSendeDatum(doc, film);
         addSendeZeit(doc, film);

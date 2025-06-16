@@ -9,6 +9,7 @@ import mediathek.tool.FileSize;
 import mediathek.tool.FilmSize;
 import mediathek.tool.GermanStringSorter;
 import mediathek.tool.datum.DatumFilm;
+import mediathek.tool.episodes.SeasonEpisode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.LogManager;
@@ -622,9 +623,38 @@ public class DatenFilm implements Comparable<DatenFilm> {
         return dataMap.containsKey(MapKeys.BOOKMARK_DATA);
     }
 
-    enum MapKeys {FILM_NR, SUBTITLE_URL, WEBSITE_URL, LOW_QUALITY_URL, NORMAL_QUALITY_URL, HIGH_QUALITY_URL,
+    /// store the associated seaon episode data
+    public void setSeasonEpisode(SeasonEpisode seasonEpisode) {
+        if (seasonEpisode.season() != null) {
+            dataMap.put(MapKeys.SEASON, seasonEpisode.season());
+        }
+        else
+            dataMap.remove(MapKeys.SEASON);
+        if (seasonEpisode.episode() != null) {
+            dataMap.put(MapKeys.EPISODE, seasonEpisode.episode());
+        }
+        else
+            dataMap.remove(MapKeys.EPISODE);
+    }
+
+    public int getSeason() {
+        return (int)dataMap.getOrDefault(MapKeys.SEASON, 0);
+    }
+
+    public int getEpisode() {
+        return (int)dataMap.getOrDefault(MapKeys.EPISODE, 0);
+    }
+
+    enum MapKeys {FILM_NR,
+        SUBTITLE_URL,
+        WEBSITE_URL,
+        LOW_QUALITY_URL,
+        NORMAL_QUALITY_URL,
+        HIGH_QUALITY_URL,
         BOOKMARK_DATA,
         ABO_DATA,
-        TEMP_DATUM_LONG
+        TEMP_DATUM_LONG,
+        SEASON,
+        EPISODE,
     }
 }

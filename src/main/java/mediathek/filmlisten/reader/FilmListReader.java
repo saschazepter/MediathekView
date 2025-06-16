@@ -43,10 +43,8 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.AbstractMap;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 public class FilmListReader implements AutoCloseable {
@@ -404,20 +402,15 @@ public class FilmListReader implements AutoCloseable {
                 processFromFile(source, listeFilme);
 
             Stopwatch stopwatch = Stopwatch.createStarted();
-            var res = listeFilme.parallelStream()
-                    .map(DatenFilm::getTitle)
-                    .sorted()
-                    .distinct()
-                    .map(line -> new AbstractMap.SimpleEntry<>(line, TitleParser.parseSeasonEpisode(line).orElse(null)))
-                    .filter(e -> e.getValue() != null)               // drop non-matches
-                    .collect(Collectors.toConcurrentMap(
-                            Map.Entry::getKey,
-                            Map.Entry::getValue
-                    ));
+            listeFilme.parallelStream()
+                    .forEach(film -> {
+                        int season = 0, episode = 0;
+                        var opt = TitleParser.parseSeasonEpisode(film.getTitle());
+                        opt.ifPresent(film::setSeasonEpisode);
+                    });
+
             stopwatch.stop();
-            System.out.println("it took: " + stopwatch);
-            System.out.println("Orig list size: " + listeFilme.size());
-            System.out.println("Found episodes: " + res.size());
+            System.out.println("season episode took: " + stopwatch);
         }
         catch (URISyntaxException | IOException ex) {
             logger.warn(ex);
