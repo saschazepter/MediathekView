@@ -35,7 +35,7 @@ public class TitleParser {
             // e.g. "… Season 1 Ep 2 …"
             Pattern.compile("(?i).*?Season[\\s\\.:-]*(\\d{1,2})[\\s\\.:-]*Ep[\\s\\.:-]*(\\d{1,2}).*"),
             // e.g. "… Folge 96 …" (episode only; season left null)
-            Pattern.compile("(?i).*?Folge[\\s\\.:-]*(\\d{1,3}).*")
+            Pattern.compile("(?i).*?Folge[\\s\\.:-]*(\\d{1,4}).*")
     };
 
     /**
