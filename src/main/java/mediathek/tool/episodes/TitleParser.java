@@ -18,9 +18,10 @@
 
 package mediathek.tool.episodes;
 
+import com.google.re2j.Matcher;
+import com.google.re2j.Pattern;
+
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class TitleParser {
     // Patterns to try, in order
