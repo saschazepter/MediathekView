@@ -66,23 +66,4 @@ public class TitleParser {
         }
         return Optional.empty();
     }
-
-    // Example usage
-    public static void main(String[] args) {
-        String[] titles = {
-                "\"… (S2024/E04)\"",
-                "\"My Show S03E07: The Adventure\"",
-                "\"Documentary – Season 2 Episode 5\"",
-                "\"Talkrunde: Folge 96\"",
-                "\"No episode info here\""
-        };
-        for (var t : titles) {
-            System.out.printf("%s -> %s%n",
-                    t,
-                    parseSeasonEpisode(t)
-                            .map(se -> "season=" + se.season() + ", episode=" + se.episode())
-                            .orElse("no match")
-            );
-        }
-    }
 }

@@ -45,6 +45,7 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
 public class FilmListReader implements AutoCloseable {
@@ -401,16 +402,20 @@ public class FilmListReader implements AutoCloseable {
             else
                 processFromFile(source, listeFilme);
 
+            logger.info("Parsing season and episode info...");
+            AtomicLong counter = new AtomicLong(0);
             Stopwatch stopwatch = Stopwatch.createStarted();
             listeFilme.parallelStream()
                     .forEach(film -> {
-                        int season = 0, episode = 0;
                         var opt = TitleParser.parseSeasonEpisode(film.getTitle());
                         opt.ifPresent(film::setSeasonEpisode);
+                        if (opt.isPresent()) {
+                            counter.incrementAndGet();
+                        }
                     });
 
             stopwatch.stop();
-            System.out.println("season episode took: " + stopwatch);
+            logger.info("Parsing season and episode info finished in {}, found {} data points", stopwatch, counter.get());
         }
         catch (URISyntaxException | IOException ex) {
             logger.warn(ex);
