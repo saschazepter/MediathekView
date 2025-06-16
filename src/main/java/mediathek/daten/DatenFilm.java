@@ -643,16 +643,8 @@ public class DatenFilm implements Comparable<DatenFilm> {
 
     /// store the associated seaon episode data
     public void setSeasonEpisode(SeasonEpisode seasonEpisode) {
-        if (seasonEpisode.season() != null) {
             season = seasonEpisode.season();
-        }
-        else
-            season = 0;
-        if (seasonEpisode.episode() != null) {
             episode = seasonEpisode.episode();
-        }
-        else
-            episode = 0;
     }
 
     public int getSeason() {

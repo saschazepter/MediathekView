@@ -16,7 +16,8 @@ import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.InputStreamProgressMonitor;
 import mediathek.tool.ProgressMonitorInputStream;
 import mediathek.tool.TrailerTeaserChecker;
-import mediathek.tool.episodes.TitleParser;
+import mediathek.tool.episodes.SeasonEpisode;
+import mediathek.tool.episodes.TitleParserManager;
 import mediathek.tool.http.MVHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -45,7 +46,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 public class FilmListReader implements AutoCloseable {
@@ -402,20 +404,103 @@ public class FilmListReader implements AutoCloseable {
             else
                 processFromFile(source, listeFilme);
 
-            logger.info("Parsing season and episode info...");
-            AtomicLong counter = new AtomicLong(0);
+            var manager = new TitleParserManager();
+            manager.register("3Sat",
+                    // 1) Parenthesized "(S2025/E15)"
+                    "\\(\\s*[sS](?<season>\\d{4})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                    // 2) Un-parenthesized "S2025/E15"
+                    "[sS](?<season>\\d{4})/[eE](?<episode>\\d{1,2})",
+                    // 3) Continuous "S2024E81"
+                    "[sS](?<season>\\d{4})[eE](?<episode>\\d{1,2})",
+                    // 4) Parenthesized hyphen "(S2025-E15)"
+                    "\\(\\s*[sS](?<season>\\d{4})-[eE](?<episode>\\d{1,2})\\s*\\)"
+            );
+            manager.register("ARD",
+                    // 1) "15. Staffel, 188. Die alte Frau" – dot-number season, comma, dot-number episode
+                    "(?<season>\\d{1,2})\\.\\s*Staffel,\\s*(?<episode>\\d{1,3})\\.",
+                    // 2) "Sturm der Liebe\", Staffel 1, Folge 1 (2005)" – explicit Staffel…Folge
+                    "Staffel\\s*(?<season>\\d{1,2})[,\\s]*Folge\\s*(?<episode>\\d{1,3})",
+                    // 3) "(S03E27352)" – parenthesized SxxExxxxx
+                    "\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,5})\\s*\\)",
+                    // 4) "(S01/E02)" – parenthesized Sxx/Exx
+                    "\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,5})\\s*\\)",
+                    // 5) "S3/E12" – inline Sx/Exx
+                    "[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,5})"
+            );
+            manager.register("ARD-alpha",
+                    // 1) Parenthesized "(S01/E04)"
+                    "\\(\\s*[sS](?<season>\\d{2})/[eE](?<episode>\\d{2})\\s*\\)",
+                    // 2) Un-parenthesized "S05/E03"
+                    "[sS](?<season>\\d{2})/[eE](?<episode>\\d{2})",
+                    // 3) Continuous "S05E03"
+                    "[sS](?<season>\\d{2})[eE](?<episode>\\d{2})"
+            );
+            manager.register("BR",
+                    // 1) Parenthesized "(S03/E05)"
+                    "\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                    // 2) Prefix-colon pattern: "100: ... (S04/E20)"
+                    "^(?:\\d{1,3}):[^\\(]*\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                    // 3) "Folge 5: ... (S02/E05)"
+                    "Folge\\s*\\d{1,3}[:\\-][^\\(]*\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)"
+            );
+            manager.register("HR",
+                    // 1) Parenthesized slash notation, e.g. (S01/E11)
+                    "\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,3})\\s*\\)",
+                    // 2) Staffel X, Folge Y pattern, e.g. Staffel 10, Folge 5
+                    "Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})"
+            );
+            manager.register("MDR",
+                    // 1) Parenthesized slash notation, e.g. (S04/E03)
+                    "\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,3})\\s*\\)",
+                    // 2) Un-parenthesized slash notation, e.g. S04/E03
+                    "[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,3})"
+            );
+            manager.register("NDR",
+                    // 1) Parenthesized slash notation: (S03x/E07)
+                    "\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)");
+            manager.register("RBB",
+                    // 1) Parenthesized S/E pattern, e.g. (S05/E01)
+                    "\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                    // 2) Parenthesized ratio-only pattern, e.g. (1/4)
+                    "\\(\\s*(?<season>\\d{1,2})/(?<episode>\\d{1,2})\\s*\\)"
+            );
+            manager.register("WDR",
+                    // 1) Parenthesized slash notation: (S03x/E07)
+                    "\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                    // 2) Parenthesized continuous notation: (S03E07)
+                    "\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})\\s*\\)",
+                    // 3) Inline slash notation: S03/E07
+                    "[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})",
+                    // 4) Inline continuous notation: S03E07
+                    "[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})",
+                    // 5) German Staffel/Folge: Staffel 2, Folge 5
+                    "Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})"
+            );
+            manager.register("ZDF",
+                    // Parenthesized slash notation, e.g. (S2025/E11)
+                    "\\(\\s*[sS](?<season>\\d{1,4})/[eE](?<episode>\\d{1,4})\\s*\\)",
+                    // Parenthesized continuous notation, e.g. (S2024E11)
+                    "\\(\\s*[sS](?<season>\\d{1,4})[eE](?<episode>\\d{1,4})\\s*\\)",
+                    // Un-parenthesized slash notation, e.g. S2025/E102
+                    "[sS](?<season>\\d{1,4})/[eE](?<episode>\\d{1,4})",
+                    // Un-parenthesized continuous notation, e.g. S01E16
+                    "[sS](?<season>\\d{1,4})[eE](?<episode>\\d{1,4})"
+            );
+
+            AtomicInteger counter = new AtomicInteger(0);
             Stopwatch stopwatch = Stopwatch.createStarted();
             listeFilme.parallelStream()
                     .forEach(film -> {
-                        var opt = TitleParser.parseSeasonEpisode(film.getTitle());
-                        opt.ifPresent(film::setSeasonEpisode);
-                        if (opt.isPresent()) {
+                        Optional<SeasonEpisode> result = manager.parse(film.getSender(), film.getTitle());
+                        result.ifPresent( sea -> {
+                            film.setSeasonEpisode(sea);
                             counter.incrementAndGet();
-                        }
+                        });
                     });
-
             stopwatch.stop();
-            logger.info("Parsing season and episode info finished in {}, found {} data points", stopwatch, counter.get());
+            System.out.println("Detection took: " + stopwatch);
+            System.out.println("Detected seasons: " + counter.get());
+
         }
         catch (URISyntaxException | IOException ex) {
             logger.warn(ex);

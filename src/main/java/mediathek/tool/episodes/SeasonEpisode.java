@@ -18,5 +18,4 @@
 
 package mediathek.tool.episodes;
 
-public record SeasonEpisode(Integer season, Integer episode) {
-}
+public record SeasonEpisode(int season, int episode) {}
