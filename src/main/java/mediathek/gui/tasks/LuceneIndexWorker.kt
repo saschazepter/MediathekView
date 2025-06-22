@@ -43,6 +43,9 @@ import javax.swing.JLabel
 import javax.swing.JProgressBar
 import javax.swing.SwingUtilities
 import javax.swing.SwingWorker
+import kotlin.concurrent.atomics.AtomicInt
+import kotlin.concurrent.atomics.ExperimentalAtomicApi
+import kotlin.concurrent.atomics.incrementAndFetch
 
 class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: JProgressBar) :
     SwingWorker<Void?, Void?>() {
@@ -62,7 +65,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
     }
 
     @Throws(IOException::class)
-    private fun indexFilm(writer: IndexWriter, film: DatenFilm) {
+    private fun createIndexDocument(film: DatenFilm) : Document {
         val doc = Document()
         // store fields for debugging, otherwise they should stay disabled
         doc.add(StringField(LuceneIndexKeys.ID, film.filmNr.toString(), Field.Store.YES))
@@ -94,7 +97,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         addSendeZeit(doc, film)
         addWochentag(doc, film)
 
-        writer.addDocument(doc)
+        return doc;
     }
 
     private fun addSendeZeit(doc: Document, film: DatenFilm) {
@@ -120,6 +123,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         doc.add(StringField(LuceneIndexKeys.SENDE_DATUM, sendeDatumStr, Field.Store.NO))
     }
 
+    @OptIn(ExperimentalAtomicApi::class)
     override fun doInBackground(): Void? {
         val filmListe = Daten.getInstance().listeFilmeNachBlackList as IndexedFilmList
         SwingUtilities.invokeLater {
@@ -137,20 +141,25 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         try {
             IndexWriter(filmListe.luceneDirectory, indexWriterConfig).use { writer ->
                 val totalSize = filmListe.size.toFloat()
-                var counter = 0
+                val counter = AtomicInt(0)
                 val watch = Stopwatch.createStarted()
                 //for safety delete all entries
                 writer.deleteAll()
 
                 for (film in filmListe) {
-                    counter++
-                    indexFilm(writer, film)
+                    counter.incrementAndFetch()
+                    val doc = createIndexDocument(film)
+                    writer.addDocument(doc)
 
-                    val progress = (100.0f * (counter / totalSize)).toInt()
+                    val progress = (100.0f * (counter.load() / totalSize)).toInt()
                     if (progress != oldProgress) {
                         oldProgress = progress
                         SwingUtilities.invokeLater { progressBar.setValue(progress) }
                     }
+                }
+                SwingUtilities.invokeLater {
+                    progLabel.setText("Writing index")
+                    progressBar.setIndeterminate(true)
                 }
                 writer.commit()
                 watch.stop()
