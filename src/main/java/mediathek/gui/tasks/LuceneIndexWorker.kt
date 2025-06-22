@@ -123,9 +123,17 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         doc.add(StringField(LuceneIndexKeys.SENDE_DATUM, sendeDatumStr, Field.Store.NO))
     }
 
+    private fun createIndexWriter(liste: IndexedFilmList): IndexWriter {
+        val indexWriterConfig = IndexWriterConfig(LuceneDefaultAnalyzer.buildAnalyzer())
+        indexWriterConfig.ramBufferSizeMB = 256.0
+        val writer = IndexWriter(liste.luceneDirectory, indexWriterConfig)
+        //for safety delete all entries
+        writer.deleteAll()
+        return writer
+    }
+
     @OptIn(ExperimentalAtomicApi::class)
     override fun doInBackground(): Void? {
-        val filmListe = Daten.getInstance().listeFilmeNachBlackList as IndexedFilmList
         SwingUtilities.invokeLater {
             progLabel.setText("Indiziere Filme")
             progressBar.minimum = 0
@@ -134,17 +142,13 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
             progressBar.setIndeterminate(false)
         }
 
-        //index filmlist after blacklist only
-        val indexWriterConfig = IndexWriterConfig(LuceneDefaultAnalyzer.buildAnalyzer())
-        indexWriterConfig.ramBufferSizeMB = 256.0
-
         try {
-            IndexWriter(filmListe.luceneDirectory, indexWriterConfig).use { writer ->
+            //index filmlist after blacklist only
+            val filmListe = Daten.getInstance().listeFilmeNachBlackList as IndexedFilmList
+            createIndexWriter(filmListe).use { writer ->
                 val totalSize = filmListe.size.toFloat()
                 val counter = AtomicInt(0)
                 val watch = Stopwatch.createStarted()
-                //for safety delete all entries
-                writer.deleteAll()
 
                 for (film in filmListe) {
                     counter.incrementAndFetch()
