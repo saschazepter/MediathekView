@@ -18,46 +18,49 @@
 
 package mediathek.gui.tabs.tab_livestreams
 
-import org.jdesktop.swingx.HorizontalLayout
-import org.jdesktop.swingx.VerticalLayout
+import java.awt.BorderLayout
 import java.awt.Component
+import java.time.Instant
 import javax.swing.*
 
-class StreamListCellRenderer : JPanel(), ListCellRenderer<StreamInfo> {
+class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
     private val nameLabel = JLabel()
-    private val streamUrlLabel = JLabel()
+    private val showLabel = JLabel()
+    private val progressBar = JProgressBar()
 
     init {
-        isOpaque = true
-        layout = HorizontalLayout(5)
-
-        val panel = JPanel()
-        panel.isOpaque = false
-        panel.layout = VerticalLayout()
-        panel.add(nameLabel)
-        panel.add(streamUrlLabel)
-
-        add(JLabel("Logo"))
-        add(panel)
-
-        border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        layout = BorderLayout(5, 5)
+        add(nameLabel, BorderLayout.NORTH)
+        add(showLabel, BorderLayout.CENTER)
+        add(progressBar, BorderLayout.SOUTH)
     }
 
     override fun getListCellRendererComponent(
-        list: JList<out StreamInfo>,
-        value: StreamInfo,
+        list: JList<out LivestreamEntry>,
+        value: LivestreamEntry,
         index: Int,
         isSelected: Boolean,
         cellHasFocus: Boolean
     ): Component {
-        nameLabel.text = value.name
-        streamUrlLabel.text = value.streamUrl
+
+        nameLabel.text = value.streamName
+        val show = value.show
+
+        if (show != null && show.startTime.isBefore(Instant.now()) && show.endTime.isAfter(Instant.now())) {
+            showLabel.text = "${show.title} - ${show.subtitle}"
+            val total = show.endTime.epochSecond - show.startTime.epochSecond
+            val elapsed = Instant.now().epochSecond - show.startTime.epochSecond
+            progressBar.maximum = total.toInt()
+            progressBar.value = elapsed.toInt()
+        } else {
+            showLabel.text = "Keine Sendung oder außerhalb des Zeitraums"
+            progressBar.maximum = 100
+            progressBar.value = 0
+        }
 
         background = if (isSelected) list.selectionBackground else list.background
         foreground = if (isSelected) list.selectionForeground else list.foreground
-        nameLabel.foreground = foreground
-        streamUrlLabel.foreground = foreground
 
         return this
     }

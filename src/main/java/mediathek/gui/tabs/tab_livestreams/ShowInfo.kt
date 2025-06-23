@@ -16,14 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.tabs.tab_livestreams.services
+package mediathek.gui.tabs.tab_livestreams
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
-import retrofit2.http.GET
-import retrofit2.http.Path
 import java.time.Instant
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 data class ShowInfo(
     val title: String = "",
     val subtitle: String = "",
@@ -32,13 +28,3 @@ data class ShowInfo(
     val startTime: Instant = Instant.EPOCH,
     val endTime: Instant = Instant.EPOCH
 )
-
-@JsonIgnoreProperties(ignoreUnknown = true)
-data class ShowsResponse(
-    val shows: List<ShowInfo> = emptyList()
-)
-
-interface ShowService {
-    @GET("/v1/shows/{key}")
-    suspend fun getShow(@Path("key") key: String): ShowsResponse
-}

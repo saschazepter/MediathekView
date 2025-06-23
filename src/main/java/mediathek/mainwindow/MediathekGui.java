@@ -32,7 +32,7 @@ import mediathek.gui.history.ResetDownloadHistoryAction;
 import mediathek.gui.messages.*;
 import mediathek.gui.tabs.tab_downloads.GuiDownloads;
 import mediathek.gui.tabs.tab_film.GuiFilme;
-import mediathek.gui.tabs.tab_livestreams.LivestreamsPanel;
+import mediathek.gui.tabs.tab_livestreams.LivestreamPanel;
 import mediathek.gui.tasks.BlacklistFilterWorker;
 import mediathek.gui.tasks.LuceneIndexWorker;
 import mediathek.gui.tasks.RefreshAboWorker;
@@ -829,7 +829,7 @@ public class MediathekGui extends JFrame {
     }
 
     protected void installLivestreamsTab() {
-        var panel = new LivestreamsPanel();
+        var panel = new LivestreamPanel();
         tabbedPane.addTab("Livestreams", panel);
     }
 

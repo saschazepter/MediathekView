@@ -20,22 +20,22 @@ package mediathek.gui.tabs.tab_livestreams
 
 import javax.swing.AbstractListModel
 
-class StreamListModel : AbstractListModel<StreamInfo>() {
+class LivestreamListModel : AbstractListModel<LivestreamEntry>() {
 
-    private val streams = mutableListOf<StreamInfo>()
+    private val entries = mutableListOf<LivestreamEntry>()
 
-    override fun getSize(): Int = streams.size
+    override fun getSize(): Int = entries.size
 
-    override fun getElementAt(index: Int): StreamInfo = streams[index]
+    override fun getElementAt(index: Int): LivestreamEntry = entries[index]
 
-    fun setData(newStreams: List<StreamInfo>) {
-        streams.clear()
-        streams.addAll(newStreams)
-        fireContentsChanged(this, 0, streams.size - 1)
+    fun setData(newData: List<LivestreamEntry>) {
+        entries.clear()
+        entries.addAll(newData)
+        fireContentsChanged(this, 0, entries.size - 1)
     }
 
-    fun clear() {
-        streams.clear()
-        fireContentsChanged(this, 0, 0)
+    fun updateEntry(index: Int, updated: LivestreamEntry) {
+        entries[index] = updated
+        fireContentsChanged(this, index, index)
     }
 }

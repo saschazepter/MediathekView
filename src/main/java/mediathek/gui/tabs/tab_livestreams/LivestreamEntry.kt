@@ -18,7 +18,11 @@
 
 package mediathek.gui.tabs.tab_livestreams
 
-data class StreamInfo(
-    val streamUrl: String = "",
-    val name: String = ""
+import mediathek.gui.tabs.tab_livestreams.services.ShowInfo
+
+data class LivestreamEntry(
+    val key: String,
+    val streamName: String,
+    val streamUrl: String,
+    var show: ShowInfo? = null
 )
