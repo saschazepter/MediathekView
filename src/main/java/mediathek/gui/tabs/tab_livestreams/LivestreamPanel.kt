@@ -109,16 +109,21 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
     private fun loadShowDetailsForEntry(entry: LivestreamEntry, index: Int) {
         launch(Dispatchers.IO) {
             try {
-                val showResponse = showService.getShow(entry.key)
-                val aktuelleShow = showResponse.shows.firstOrNull()
-                if (aktuelleShow != null) {
-                    entry.show = aktuelleShow
-                    withContext(Dispatchers.Swing) {
-                        listModel.updateEntry(index, entry)
+                val response = showService.getShow(entry.key)
+
+                withContext(Dispatchers.Swing) {
+                    if (response.error != null) {
+                        println("API-Fehler für ${entry.key}: ${response.error}")
+                        entry.show = null
+                    } else {
+                        val aktuelleShow = response.shows.firstOrNull()
+                        entry.show = aktuelleShow
                     }
+
+                    listModel.updateEntry(index, entry)
                 }
             } catch (ex: Exception) {
-                LOG.error("Failed to load show details for entry", ex)
+                LOG.error("Failed to load show details", ex)
             }
         }
     }

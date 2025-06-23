@@ -22,5 +22,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ShowsResponse(
-    val shows: List<ShowInfo> = emptyList()
+    val shows: List<ShowInfo> = emptyList(),
+    val error: String? = null
 )
