@@ -45,7 +45,7 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
     private val streamService: StreamService
     private val showService: ShowService
     private val refreshTimer =
-        Timer(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS).toInt()) { checkForExpiredShows() } // alle 10s prüfen
+        Timer(TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS).toInt()) { checkForExpiredShows() } // alle 10s prüfen
 
     init {
         val mapper = ObjectMapper().apply {
