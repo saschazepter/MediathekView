@@ -39,18 +39,17 @@ import java.nio.file.Files
 import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 import javax.swing.JLabel
 import javax.swing.JProgressBar
 import javax.swing.SwingUtilities
 import javax.swing.SwingWorker
-import kotlin.concurrent.atomics.AtomicInt
 import kotlin.concurrent.atomics.ExperimentalAtomicApi
-import kotlin.concurrent.atomics.incrementAndFetch
 
 class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: JProgressBar) :
     SwingWorker<Void?, Void?>() {
     private val weekdayFormatter: DateFormat = SimpleDateFormat("EEEE", Locale.GERMAN)
-    private var oldProgress = 0
 
     init {
         SwingUtilities.invokeLater {
@@ -134,45 +133,40 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
 
     @OptIn(ExperimentalAtomicApi::class)
     override fun doInBackground(): Void? {
-        SwingUtilities.invokeLater {
-            progLabel.setText("Indiziere Filme")
-            progressBar.minimum = 0
-            progressBar.maximum = 100
-            progressBar.setValue(0)
-            progressBar.setIndeterminate(false)
-        }
-
         try {
+            SwingUtilities.invokeLater {
+                progLabel.setText("Indiziere Filme")
+                progressBar.setIndeterminate(true)
+            }
+
             //index filmlist after blacklist only
             val filmListe = Daten.getInstance().listeFilmeNachBlackList as IndexedFilmList
             createIndexWriter(filmListe).use { writer ->
-                val totalSize = filmListe.size.toFloat()
-                val counter = AtomicInt(0)
                 val watch = Stopwatch.createStarted()
 
+                val executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
                 for (film in filmListe) {
-                    counter.incrementAndFetch()
-                    val doc = createIndexDocument(film)
-                    writer.addDocument(doc)
-
-                    val progress = (100.0f * (counter.load() / totalSize)).toInt()
-                    if (progress != oldProgress) {
-                        oldProgress = progress
-                        SwingUtilities.invokeLater { progressBar.setValue(progress) }
-                    }
+                    executor.submit({
+                        try {
+                            val doc = createIndexDocument(film)
+                            writer.addDocument(doc)
+                        } catch (ex: IOException) {
+                            ex.printStackTrace()
+                        }
+                    })
                 }
+                executor.shutdown()
+                executor.awaitTermination(1, TimeUnit.MINUTES)
+
                 SwingUtilities.invokeLater {
                     progLabel.setText("Writing index")
-                    progressBar.setIndeterminate(true)
                 }
                 writer.commit()
                 watch.stop()
                 logger.trace("Lucene index creation took {}", watch)
 
-                var reader = filmListe.reader
-                reader?.close()
-                reader = DirectoryReader.open(filmListe.luceneDirectory)
-                filmListe.reader = reader
+                filmListe.reader?.close()
+                filmListe.reader = DirectoryReader.open(filmListe.luceneDirectory)
             }
         } catch (ex: Exception) {
             logger.error("Lucene film index most probably damaged, deleting it.")
