@@ -125,6 +125,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         val writer = IndexWriter(liste.luceneDirectory, indexWriterConfig)
         //for safety delete all entries
         writer.deleteAll()
+        writer.commit()
         return writer
     }
 
