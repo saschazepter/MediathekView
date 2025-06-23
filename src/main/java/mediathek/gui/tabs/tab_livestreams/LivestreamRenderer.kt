@@ -31,6 +31,8 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
     init {
         layout = BorderLayout(5, 5)
+        border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+
         add(nameLabel, BorderLayout.NORTH)
         add(showLabel, BorderLayout.CENTER)
         add(progressBar, BorderLayout.SOUTH)

@@ -28,6 +28,7 @@ import mediathek.gui.tabs.tab_livestreams.services.StreamService
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.awt.BorderLayout
+import java.awt.Desktop
 import java.time.Instant
 import javax.swing.JList
 import javax.swing.JPanel
@@ -62,6 +63,14 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
             .create(ShowService::class.java)
 
         list.cellRenderer = LivestreamRenderer()
+        list.addMouseListener(object : java.awt.event.MouseAdapter() {
+            override fun mouseClicked(e: java.awt.event.MouseEvent) {
+                if (e.clickCount == 2) {
+                    val selected = list.selectedValue ?: return
+                    Desktop.getDesktop().browse(java.net.URI(selected.streamUrl))
+                }
+            }
+        })
 
         add(JScrollPane(list), BorderLayout.CENTER)
 
