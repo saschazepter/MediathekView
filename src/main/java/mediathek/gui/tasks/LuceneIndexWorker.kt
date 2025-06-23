@@ -40,6 +40,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.JLabel
 import javax.swing.JProgressBar
 import javax.swing.SwingUtilities
@@ -93,7 +94,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         addSendeZeit(doc, film)
         addWochentag(doc, film)
 
-        return doc;
+        return doc
     }
 
     private fun addSendeZeit(doc: Document, film: DatenFilm) {
@@ -133,30 +134,43 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         try {
             SwingUtilities.invokeLater {
                 progLabel.setText("Indiziere Filme")
-                progressBar.setIndeterminate(true)
+                progressBar.isIndeterminate = false
+                progressBar.minimum = 0
+                progressBar.maximum = 100
+                progressBar.value = 0
             }
 
             //index filmlist after blacklist only
             val filmListe = Daten.getInstance().listeFilmeNachBlackList as IndexedFilmList
             createIndexWriter(filmListe).use { writer ->
                 val watch = Stopwatch.createStarted()
+                val counter = AtomicInteger(0)
+                val totalCount = filmListe.size
+                var oldProgress = 0
 
                 val executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
                 for (film in filmListe) {
-                    executor.submit({
+                    executor.submit {
                         try {
                             val doc = createIndexDocument(film)
                             writer.addDocument(doc)
+                            val progress = (counter.incrementAndGet() * 100) / totalCount
+                            if (progress > oldProgress) {
+                                SwingUtilities.invokeLater { progressBar.value = progress }
+                                oldProgress = progress
+                            }
                         } catch (ex: IOException) {
                             ex.printStackTrace()
                         }
-                    })
+                    }
                 }
+                SwingUtilities.invokeLater { progressBar.value = 100 }
                 executor.shutdown()
-                executor.awaitTermination(1, TimeUnit.MINUTES)
+                executor.awaitTermination(5, TimeUnit.MINUTES)
 
                 SwingUtilities.invokeLater {
-                    progLabel.setText("Writing index")
+                    progressBar.isIndeterminate = true
+                    progLabel.setText("Schreibe Index")
                 }
                 writer.commit()
                 watch.stop()
