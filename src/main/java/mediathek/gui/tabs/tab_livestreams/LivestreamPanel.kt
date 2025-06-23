@@ -25,18 +25,20 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.gui.tabs.tab_livestreams.services.ShowService
 import mediathek.gui.tabs.tab_livestreams.services.StreamService
+import mediathek.swing.OverlayPanel
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.awt.BorderLayout
 import java.awt.Desktop
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.time.Instant
 import java.util.concurrent.TimeUnit
-import javax.swing.JList
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.Timer
+import javax.swing.*
 
 class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
 
@@ -46,6 +48,8 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
     private val showService: ShowService
     private val refreshTimer =
         Timer(TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS).toInt()) { checkForExpiredShows() } // alle 10s prüfen
+    private val overlay = OverlayPanel("Livestreams konnten nicht geladen werden")
+
 
     init {
         val mapper = ObjectMapper().apply {
@@ -66,16 +70,28 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
             .create(ShowService::class.java)
 
         list.cellRenderer = LivestreamRenderer()
-        list.addMouseListener(object : java.awt.event.MouseAdapter() {
-            override fun mouseClicked(e: java.awt.event.MouseEvent) {
+        list.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2) {
                     val selected = list.selectedValue ?: return
                     Desktop.getDesktop().browse(java.net.URI(selected.streamUrl))
                 }
             }
         })
+        list.addComponentListener(object : ComponentAdapter() {
+            override fun componentResized(e: ComponentEvent?) {
+                overlay.setSize(list.width, list.height)
+            }
+        })
 
-        add(JScrollPane(list), BorderLayout.CENTER)
+        overlay.isVisible = false
+
+        val container = JLayeredPane().apply {
+            layout = OverlayLayout(this)
+            add(overlay)
+            add(JScrollPane(list))
+        }
+        add(container, BorderLayout.CENTER)
 
         loadLivestreams()
 
@@ -95,6 +111,9 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                 }
             } catch (ex: Exception) {
                 LOG.error("Failed to load livestreams", ex)
+                withContext(Dispatchers.Swing) {
+                    overlay.isVisible = true
+                }
             }
         }
     }
