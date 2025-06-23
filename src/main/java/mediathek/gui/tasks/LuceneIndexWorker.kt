@@ -36,7 +36,6 @@ import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
 import java.io.IOException
 import java.nio.file.Files
-import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executors
@@ -49,7 +48,6 @@ import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: JProgressBar) :
     SwingWorker<Void?, Void?>() {
-    private val weekdayFormatter: DateFormat = SimpleDateFormat("EEEE", Locale.GERMAN)
 
     init {
         SwingUtilities.invokeLater {
@@ -109,7 +107,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
     private fun addWochentag(doc: Document, film: DatenFilm) {
         val date = film.datumFilm
         if (date !== DatumFilm.UNDEFINED_FILM_DATE) {
-            val strDate = weekdayFormatter.format(date)
+            val strDate = SimpleDateFormat("EEEE", Locale.GERMAN).format(date)
             doc.add(TextField(LuceneIndexKeys.SENDE_WOCHENTAG, strDate, Field.Store.NO))
         }
     }
