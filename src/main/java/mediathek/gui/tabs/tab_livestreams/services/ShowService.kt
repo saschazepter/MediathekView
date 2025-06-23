@@ -16,11 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.tabs.tab_livestreams
+package mediathek.gui.tabs.tab_livestreams.services
 
 import retrofit2.http.GET
+import retrofit2.http.Path
+import java.time.Instant
 
-interface StreamService {
-    @GET("/v1/channelinfolist") // Anpassen!
-    suspend fun getStreams(): Map<String, StreamInfo>
+data class ShowInfo(
+    val title: String = "",
+    val subtitle: String = "",
+    val description: String = "",
+    val channel: String = "",
+    val startTime: Instant = Instant.EPOCH,
+    val endTime: Instant = Instant.EPOCH
+)
+
+data class ShowsResponse(
+    val shows: List<ShowInfo> = emptyList()
+)
+
+interface ShowService {
+    @GET("/v1/shows/{key}")
+    suspend fun getShow(@Path("key") key: String): ShowsResponse
 }
