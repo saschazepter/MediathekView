@@ -70,6 +70,7 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
             .create(ShowService::class.java)
 
         list.cellRenderer = LivestreamRenderer()
+        list.selectionMode = ListSelectionModel.SINGLE_SELECTION
         list.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2) {
