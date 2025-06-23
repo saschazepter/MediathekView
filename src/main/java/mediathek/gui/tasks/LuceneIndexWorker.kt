@@ -44,7 +44,6 @@ import javax.swing.JLabel
 import javax.swing.JProgressBar
 import javax.swing.SwingUtilities
 import javax.swing.SwingWorker
-import kotlin.concurrent.atomics.ExperimentalAtomicApi
 
 class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: JProgressBar) :
     SwingWorker<Void?, Void?>() {
@@ -129,7 +128,6 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         return writer
     }
 
-    @OptIn(ExperimentalAtomicApi::class)
     override fun doInBackground(): Void? {
         try {
             SwingUtilities.invokeLater {
