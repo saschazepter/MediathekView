@@ -25,11 +25,14 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.gui.tabs.tab_livestreams.services.ShowService
 import mediathek.gui.tabs.tab_livestreams.services.StreamService
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.awt.BorderLayout
 import java.awt.Desktop
 import java.time.Instant
+import java.util.concurrent.TimeUnit
 import javax.swing.JList
 import javax.swing.JPanel
 import javax.swing.JScrollPane
@@ -41,8 +44,8 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
     private val list = JList(listModel)
     private val streamService: StreamService
     private val showService: ShowService
-
-    private val refreshTimer = Timer(10000) { checkForExpiredShows() } // alle 10s prüfen
+    private val refreshTimer =
+        Timer(TimeUnit.MILLISECONDS.convert(10, TimeUnit.SECONDS).toInt()) { checkForExpiredShows() } // alle 10s prüfen
 
     init {
         val mapper = ObjectMapper().apply {
@@ -74,12 +77,12 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
 
         add(JScrollPane(list), BorderLayout.CENTER)
 
-        ladeLivestreams()
+        loadLivestreams()
 
         refreshTimer.start()
     }
 
-    private fun ladeLivestreams() {
+    private fun loadLivestreams() {
         launch(Dispatchers.IO) {
             try {
                 val streams = streamService.getStreams()
@@ -88,22 +91,22 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                 }
                 withContext(Dispatchers.Swing) {
                     listModel.setData(entries)
-                    ladeShowsFuerAlle()
+                    loadAllShows()
                 }
             } catch (ex: Exception) {
-                ex.printStackTrace()
+                LOG.error("Failed to load livestreams", ex)
             }
         }
     }
 
-    private fun ladeShowsFuerAlle() {
+    private fun loadAllShows() {
         for (i in 0 until listModel.size) {
             val entry = listModel.getElementAt(i)
-            ladeShowFuerEintrag(entry, i)
+            loadShowDetailsForEntry(entry, i)
         }
     }
 
-    private fun ladeShowFuerEintrag(entry: LivestreamEntry, index: Int) {
+    private fun loadShowDetailsForEntry(entry: LivestreamEntry, index: Int) {
         launch(Dispatchers.IO) {
             try {
                 val showResponse = showService.getShow(entry.key)
@@ -115,9 +118,13 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                     }
                 }
             } catch (ex: Exception) {
-                ex.printStackTrace()
+                LOG.error("Failed to load show details for entry", ex)
             }
         }
+    }
+
+    companion object {
+        private val LOG: Logger = LogManager.getLogger()
     }
 
     private fun checkForExpiredShows() {
@@ -125,7 +132,7 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
         for (i in 0 until listModel.size) {
             val entry = listModel.getElementAt(i)
             if (entry.show?.endTime?.isBefore(now) == true) {
-                ladeShowFuerEintrag(entry, i)
+                loadShowDetailsForEntry(entry, i)
             } else {
                 listModel.updateEntry(i, entry) // Fortschritt aktualisieren
             }
