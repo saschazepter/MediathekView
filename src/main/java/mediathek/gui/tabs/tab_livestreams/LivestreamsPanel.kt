@@ -20,10 +20,15 @@ package mediathek.gui.tabs.tab_livestreams
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.awt.BorderLayout
-import java.lang.Runnable
+import java.awt.Desktop
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
+import java.net.URI
 import javax.swing.JButton
 import javax.swing.JList
 import javax.swing.JPanel
@@ -40,6 +45,14 @@ class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
         layout = BorderLayout()
 
         list.cellRenderer = StreamListCellRenderer()
+        list.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                if (e.clickCount == 2) {
+                    val selected = list.selectedValue ?: return
+                    Desktop.getDesktop().browse(URI(selected.streamUrl))
+                }
+            }
+        })
         add(JScrollPane(list), BorderLayout.CENTER)
         add(reloadButton, BorderLayout.SOUTH)
 
@@ -49,10 +62,16 @@ class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
             .build()
 
         service = retrofit.create(StreamService::class.java)
-        reloadButton.addActionListener { ladeDaten({}, {}) }
+        reloadButton.addActionListener { ladeDaten() }
+
+        ladeDaten()
     }
 
-    fun ladeDaten(onSuccess: Runnable, onError: java.util.function.Consumer<Throwable>) {
+    companion object {
+        private val LOG: Logger = LogManager.getLogger()
+    }
+
+    fun ladeDaten() {
         reloadButton.isEnabled = false
         listModel.clear()
 
@@ -62,13 +81,9 @@ class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
                 withContext(Dispatchers.Swing) {
                     listModel.setData(result.values.toList())
                     reloadButton.isEnabled = true
-                    onSuccess.run()
                 }
             } catch (ex: Exception) {
-                withContext(Dispatchers.Swing) {
-                    //reloadButton.isEnabled = true
-                    onError.accept(ex)
-                }
+                LOG.error("Failed to load Livestreams tab", ex)
             }
         }
     }
