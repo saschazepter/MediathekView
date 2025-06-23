@@ -18,15 +18,23 @@
 
 package mediathek.gui.tabs.tab_livestreams
 
+import org.jdesktop.swingx.VerticalLayout
 import java.awt.Component
-import javax.swing.JLabel
-import javax.swing.JList
-import javax.swing.ListCellRenderer
+import javax.swing.*
 
-class StreamListCellRenderer : JLabel(), ListCellRenderer<StreamInfo> {
+class StreamListCellRenderer : JPanel(), ListCellRenderer<StreamInfo> {
+
+    private val nameLabel = JLabel()
+    private val streamUrlLabel = JLabel()
 
     init {
         isOpaque = true
+        layout = VerticalLayout(5)
+
+        add(nameLabel)
+        add(streamUrlLabel)
+
+        border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
     }
 
     override fun getListCellRendererComponent(
@@ -36,10 +44,13 @@ class StreamListCellRenderer : JLabel(), ListCellRenderer<StreamInfo> {
         isSelected: Boolean,
         cellHasFocus: Boolean
     ): Component {
-        text = "${value.name} - ${value.streamUrl}"
+        nameLabel.text = value.name
+        streamUrlLabel.text = value.streamUrl
 
         background = if (isSelected) list.selectionBackground else list.background
         foreground = if (isSelected) list.selectionForeground else list.foreground
+        nameLabel.foreground = foreground
+        streamUrlLabel.foreground = foreground
 
         return this
     }

@@ -19,6 +19,6 @@
 package mediathek.gui.tabs.tab_livestreams
 
 data class StreamInfo(
-    val streamUrl: String,
-    val name: String
+    val streamUrl: String = "",
+    val name: String = ""
 )

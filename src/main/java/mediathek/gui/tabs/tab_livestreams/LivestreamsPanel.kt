@@ -46,6 +46,8 @@ class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
 
         service = retrofit.create(StreamService::class.java)
         reloadButton.addActionListener { ladeDaten() }
+
+        ladeDaten()
     }
 
     private fun ladeDaten() {
@@ -61,6 +63,7 @@ class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
                 }
             } catch (ex: Exception) {
                 withContext(Dispatchers.Swing) {
+                    ex.printStackTrace()
                     JOptionPane.showMessageDialog(null, "Fehler: ${ex.message}")
                     reloadButton.isEnabled = true
                 }
