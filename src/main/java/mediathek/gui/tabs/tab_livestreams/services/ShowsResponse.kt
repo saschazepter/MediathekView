@@ -18,11 +18,9 @@
 
 package mediathek.gui.tabs.tab_livestreams.services
 
-import retrofit2.http.GET
-import retrofit2.http.Path
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 
-
-interface ShowService {
-    @GET("/v1/shows/{key}")
-    suspend fun getShow(@Path("key") key: String): ShowsResponse
-}
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class ShowsResponse(
+    val shows: List<ShowInfo> = emptyList()
+)

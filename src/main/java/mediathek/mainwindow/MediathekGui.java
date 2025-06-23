@@ -830,7 +830,7 @@ public class MediathekGui extends JFrame {
 
     protected void installLivestreamsTab() {
         var panel = new LivestreamPanel();
-        tabbedPane.addTab("Livestreams", panel);
+        tabbedPane.addTab("zapp Livestreams", panel);
     }
 
     /**

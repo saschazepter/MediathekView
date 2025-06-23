@@ -20,11 +20,6 @@ package mediathek.gui.tabs.tab_livestreams.services
 
 import retrofit2.http.GET
 
-data class StreamInfo(
-    val streamUrl: String = "",
-    val name: String = ""
-)
-
 interface StreamService {
     @GET("/v1/channelinfolist") // Anpassen!
     suspend fun getStreams(): Map<String, StreamInfo>

@@ -18,11 +18,15 @@
 
 package mediathek.gui.tabs.tab_livestreams.services
 
-import retrofit2.http.GET
-import retrofit2.http.Path
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
+import java.time.Instant
 
-
-interface ShowService {
-    @GET("/v1/shows/{key}")
-    suspend fun getShow(@Path("key") key: String): ShowsResponse
-}
+@JsonIgnoreProperties(ignoreUnknown = true)
+data class ShowInfo(
+    val title: String = "",
+    val subtitle: String = "",
+    val description: String = "",
+    val channel: String = "",
+    val startTime: Instant = Instant.EPOCH,
+    val endTime: Instant = Instant.EPOCH
+)

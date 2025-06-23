@@ -18,11 +18,7 @@
 
 package mediathek.gui.tabs.tab_livestreams.services
 
-import retrofit2.http.GET
-import retrofit2.http.Path
-
-
-interface ShowService {
-    @GET("/v1/shows/{key}")
-    suspend fun getShow(@Path("key") key: String): ShowsResponse
-}
+data class StreamInfo(
+    val streamUrl: String = "",
+    val name: String = ""
+)
