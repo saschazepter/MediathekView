@@ -55,7 +55,13 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         val show = value.show
 
         if (show != null && show.startTime.isBefore(Instant.now()) && show.endTime.isAfter(Instant.now())) {
-            showLabel.text = "${show.title} - ${show.subtitle}"
+            if (show.subtitle != null) {
+                showLabel.text = "${show.title} - ${show.subtitle}"
+            }
+            else {
+                showLabel.text = show.title
+            }
+
             val total = show.endTime.epochSecond - show.startTime.epochSecond
             val elapsed = Instant.now().epochSecond - show.startTime.epochSecond
             progressBar.maximum = total.toInt()
@@ -68,6 +74,9 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
         background = if (isSelected) list.selectionBackground else list.background
         foreground = if (isSelected) list.selectionForeground else list.foreground
+
+        nameLabel.foreground = foreground
+        showLabel.foreground = foreground
 
         return this
     }

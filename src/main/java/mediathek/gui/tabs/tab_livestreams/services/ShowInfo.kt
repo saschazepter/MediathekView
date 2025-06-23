@@ -24,7 +24,7 @@ import java.time.Instant
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class ShowInfo(
     val title: String = "",
-    val subtitle: String = "",
+    val subtitle: String? = "",
     val description: String = "",
     val channel: String = "",
     val startTime: Instant = Instant.EPOCH,
