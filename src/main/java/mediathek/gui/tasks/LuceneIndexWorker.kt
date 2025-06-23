@@ -36,7 +36,8 @@ import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
 import java.io.IOException
 import java.nio.file.Files
-import java.text.SimpleDateFormat
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
@@ -62,7 +63,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
     }
 
     @Throws(IOException::class)
-    private fun createIndexDocument(film: DatenFilm) : Document {
+    private fun createIndexDocument(film: DatenFilm): Document {
         val doc = Document()
         // store fields for debugging, otherwise they should stay disabled
         doc.add(StringField(LuceneIndexKeys.ID, film.filmNr.toString(), Field.Store.YES))
@@ -104,10 +105,13 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         }
     }
 
+    private val formatter = DateTimeFormatter.ofPattern("EEEE", Locale.GERMAN)
+    private val berlinZoneId = ZoneId.of("Europe/Berlin")
+
     private fun addWochentag(doc: Document, film: DatenFilm) {
         val date = film.datumFilm
         if (date !== DatumFilm.UNDEFINED_FILM_DATE) {
-            val strDate = SimpleDateFormat("EEEE", Locale.GERMAN).format(date)
+            val strDate = formatter.format(date.toInstant().atZone(berlinZoneId))
             doc.add(TextField(LuceneIndexKeys.SENDE_WOCHENTAG, strDate, Field.Store.NO))
         }
     }
