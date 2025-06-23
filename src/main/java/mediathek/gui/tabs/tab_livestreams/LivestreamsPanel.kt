@@ -18,6 +18,9 @@
 
 package mediathek.gui.tabs.tab_livestreams
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.SerializationFeature
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import org.apache.logging.log4j.LogManager
@@ -29,10 +32,9 @@ import java.awt.Desktop
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.net.URI
-import javax.swing.JButton
-import javax.swing.JList
-import javax.swing.JPanel
-import javax.swing.JScrollPane
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import javax.swing.*
 
 class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
     private val listModel = StreamListModel()
@@ -40,6 +42,8 @@ class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
     private val reloadButton = JButton("Aktualisieren")
 
     private val service: StreamService
+    private val showService: ShowService
+    private val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm").withZone(ZoneId.systemDefault())
 
     init {
         layout = BorderLayout()
@@ -62,7 +66,19 @@ class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
             .build()
 
         service = retrofit.create(StreamService::class.java)
-        reloadButton.addActionListener { ladeDaten() }
+
+        val mapper = ObjectMapper().apply {
+            registerModule(JavaTimeModule())
+            disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        }
+
+        showService = Retrofit.Builder()
+            .baseUrl("https://api.zapp.mediathekview.de/")
+            .addConverterFactory(JacksonConverterFactory.create(mapper))
+            .build()
+            .create(ShowService::class.java)
+
+        reloadButton.addActionListener { ladeAktuelleSendung("das_erste") }
 
         ladeDaten()
     }
@@ -84,6 +100,44 @@ class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
                 }
             } catch (ex: Exception) {
                 LOG.error("Failed to load Livestreams tab", ex)
+            }
+        }
+    }
+
+    private fun ladeAktuelleSendung(key: String) {
+        reloadButton.isEnabled = false
+
+        launch(Dispatchers.IO) {
+            try {
+                val response = showService.getShow(key)
+                val ersteSendung = response.shows.firstOrNull()
+
+                withContext(Dispatchers.Swing) {
+                    reloadButton.isEnabled = true
+                    if (ersteSendung != null) {
+                        JOptionPane.showMessageDialog(
+                            this@LivestreamsPanel,
+                            """
+                            Aktuelle Sendung:
+                            Titel: ${ersteSendung.title}
+                            Untertitel: ${ersteSendung.subtitle}
+                            Beschreibung: ${ersteSendung.description}
+                            Start: ${formatter.format(ersteSendung.startTime)}
+                            Ende: ${formatter.format(ersteSendung.endTime)}
+                            """.trimIndent()
+                        )
+                    } else {
+                        JOptionPane.showMessageDialog(this@LivestreamsPanel, "Keine Sendung gefunden.")
+                    }
+                }
+            } catch (ex: Exception) {
+                withContext(Dispatchers.Swing) {
+                    reloadButton.isEnabled = true
+                    JOptionPane.showMessageDialog(
+                        this@LivestreamsPanel,
+                        "Fehler beim Abrufen: ${ex.localizedMessage}"
+                    )
+                }
             }
         }
     }
