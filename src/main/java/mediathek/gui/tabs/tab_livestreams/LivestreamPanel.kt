@@ -113,7 +113,7 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
 
                 withContext(Dispatchers.Swing) {
                     if (response.error != null) {
-                        println("API-Fehler für ${entry.key}: ${response.error}")
+                        //println("API-Fehler für ${entry.key}: ${response.error}")
                         entry.show = null
                     } else {
                         val aktuelleShow = response.shows.firstOrNull()

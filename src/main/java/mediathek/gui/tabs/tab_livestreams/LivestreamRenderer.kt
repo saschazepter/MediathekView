@@ -38,6 +38,10 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         add(progressBar, BorderLayout.SOUTH)
     }
 
+    private fun sanitizeName(name: String): String {
+        return name.replace(Regex("[\\u00AD\\p{Cf}]"), "")
+    }
+
     override fun getListCellRendererComponent(
         list: JList<out LivestreamEntry>,
         value: LivestreamEntry,
@@ -46,7 +50,8 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         cellHasFocus: Boolean
     ): Component {
 
-        nameLabel.text = value.streamName
+        //Parlamentsfernsehen contains soft hyphens...
+        nameLabel.text = sanitizeName(value.streamName)
         val show = value.show
 
         if (show != null && show.startTime.isBefore(Instant.now()) && show.endTime.isAfter(Instant.now())) {
