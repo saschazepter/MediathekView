@@ -18,6 +18,7 @@
 
 package mediathek.gui.tabs.tab_livestreams
 
+import org.jdesktop.swingx.HorizontalLayout
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.Component
 import javax.swing.*
@@ -29,10 +30,16 @@ class StreamListCellRenderer : JPanel(), ListCellRenderer<StreamInfo> {
 
     init {
         isOpaque = true
-        layout = VerticalLayout(5)
+        layout = HorizontalLayout(5)
 
-        add(nameLabel)
-        add(streamUrlLabel)
+        val panel = JPanel()
+        panel.isOpaque = false
+        panel.layout = VerticalLayout()
+        panel.add(nameLabel)
+        panel.add(streamUrlLabel)
+
+        add(JLabel("Logo"))
+        add(panel)
 
         border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
     }
