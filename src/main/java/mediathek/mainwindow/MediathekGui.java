@@ -817,7 +817,10 @@ public class MediathekGui extends JFrame {
         Main.splashScreen.ifPresent(s -> s.update(UIProgressState.ADD_TABS_TO_UI));
         tabbedPane.addTab(GuiFilme.NAME, tabFilme);
         tabbedPane.addTab(GuiDownloads.NAME, tabDownloads);
-        tabbedPane.addTab("Livestreams", new LivestreamsPanel());
+        var panel = new LivestreamsPanel();
+        panel.ladeDaten(() -> tabbedPane.addTab("Livestreams", panel), ex -> {
+            logger.error("Could not open livestreams panel", ex);
+        });
 
         if (ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.APPLICATION_RESTORE_SELECTED_TAB, false))
             tabbedPane.restoreSavedTabPosition();

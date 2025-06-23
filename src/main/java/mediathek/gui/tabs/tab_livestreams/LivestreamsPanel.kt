@@ -23,7 +23,11 @@ import kotlinx.coroutines.swing.Swing
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.awt.BorderLayout
-import javax.swing.*
+import java.lang.Runnable
+import javax.swing.JButton
+import javax.swing.JList
+import javax.swing.JPanel
+import javax.swing.JScrollPane
 
 class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
     private val listModel = StreamListModel()
@@ -45,12 +49,10 @@ class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
             .build()
 
         service = retrofit.create(StreamService::class.java)
-        reloadButton.addActionListener { ladeDaten() }
-
-        ladeDaten()
+        reloadButton.addActionListener { ladeDaten({}, {}) }
     }
 
-    private fun ladeDaten() {
+    fun ladeDaten(onSuccess: Runnable, onError: java.util.function.Consumer<Throwable>) {
         reloadButton.isEnabled = false
         listModel.clear()
 
@@ -60,12 +62,12 @@ class LivestreamsPanel : JPanel(), CoroutineScope by MainScope() {
                 withContext(Dispatchers.Swing) {
                     listModel.setData(result.values.toList())
                     reloadButton.isEnabled = true
+                    onSuccess.run()
                 }
             } catch (ex: Exception) {
                 withContext(Dispatchers.Swing) {
-                    ex.printStackTrace()
-                    JOptionPane.showMessageDialog(null, "Fehler: ${ex.message}")
-                    reloadButton.isEnabled = true
+                    //reloadButton.isEnabled = true
+                    onError.accept(ex)
                 }
             }
         }
