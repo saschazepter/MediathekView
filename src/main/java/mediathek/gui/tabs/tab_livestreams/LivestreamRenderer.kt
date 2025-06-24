@@ -20,7 +20,10 @@ package mediathek.gui.tabs.tab_livestreams
 
 import mediathek.gui.tabs.SenderIconLabel
 import mediathek.tool.datum.DateUtil
-import java.awt.*
+import java.awt.BorderLayout
+import java.awt.Component
+import java.awt.Dimension
+import java.awt.FlowLayout
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import javax.swing.*
@@ -28,10 +31,8 @@ import javax.swing.*
 class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
     private val lblSender = SenderIconLabel()
-    private val showLabel = JLabel()
-    private val lblSubtitle = JLabel()
     private val lblZeitraum = JLabel()
-    private val progressBar = JProgressBar()
+    private val listCell = ListCell()
     private val senderMap = mutableMapOf<String, String>()
     private val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(DateUtil.MV_DEFAULT_TIMEZONE)
 
@@ -39,8 +40,6 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         layout = BorderLayout()
         border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
         minimumSize = Dimension(100, 200)
-
-        showLabel.font = showLabel.font.deriveFont(Font.BOLD)
 
         initComponents()
         setupSenderMap()
@@ -56,14 +55,11 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         val vPanel = JPanel()
         vPanel.isOpaque = false
         vPanel.layout = BoxLayout(vPanel, BoxLayout.Y_AXIS)
-        vPanel.add(showLabel)
-        vPanel.add(lblSubtitle)
         vPanel.add(lblZeitraum)
-        vPanel.add(progressBar)
 
         hPanel.add(vPanel)
 
-        add(hPanel, BorderLayout.CENTER)
+        add(listCell, BorderLayout.CENTER)
     }
 
     private fun setupSenderMap() {
@@ -113,33 +109,33 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
         if (show != null && show.startTime.isBefore(Instant.now()) && show.endTime.isAfter(Instant.now())) {
             if (show.subtitle != null) {
-                showLabel.text = show.title
-                lblSubtitle.text = show.subtitle
+                listCell.lblTitle.text = show.title
+                listCell.lblSubtitle.text = show.subtitle
             } else {
-                showLabel.text = show.title
-                lblSubtitle.text = ""
+                listCell.lblTitle.text = show.title
+                listCell.lblSubtitle.text = ""
             }
             val zeitraum = formatter.format(show.startTime) + " - " + formatter.format(show.endTime)
             lblZeitraum.text = zeitraum
 
             val total = show.endTime.epochSecond - show.startTime.epochSecond
             val elapsed = Instant.now().epochSecond - show.startTime.epochSecond
-            progressBar.maximum = total.toInt()
-            progressBar.value = elapsed.toInt()
+            listCell.progressBar.maximum = total.toInt()
+            listCell.progressBar.value = elapsed.toInt()
         } else {
-            showLabel.text = "Keine Sendung oder außerhalb des Zeitraums"
-            lblSubtitle.text = ""
+            listCell.lblTitle.text = "Keine Sendung oder außerhalb des Zeitraums"
+            listCell.lblSubtitle.text = ""
             lblZeitraum.text = ""
-            progressBar.maximum = 100
-            progressBar.value = 0
+            listCell.progressBar.maximum = 100
+            listCell.progressBar.value = 0
         }
 
         background = if (isSelected) list.selectionBackground else list.background
         foreground = if (isSelected) list.selectionForeground else list.foreground
 
         lblSender.foreground = foreground
-        showLabel.foreground = foreground
-        lblSubtitle.foreground = foreground
+        listCell.lblTitle.foreground = foreground
+        listCell.lblSubtitle.foreground = foreground
         lblZeitraum.foreground = foreground
 
         return this
