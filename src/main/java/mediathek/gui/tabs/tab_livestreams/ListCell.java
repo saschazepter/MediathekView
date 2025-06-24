@@ -51,8 +51,9 @@ public class ListCell extends JPanel {
 
         //======== this ========
         setOpaque(false);
+        setMinimumSize(new Dimension(215, 116));
         setLayout(new MigLayout(
-            new LC().insets("5").hideMode(3),
+            new LC().insets("0").hideMode(3),
             // columns
             new AC()
                 .fill().gap()
