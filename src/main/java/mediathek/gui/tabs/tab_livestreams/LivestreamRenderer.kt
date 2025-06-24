@@ -67,10 +67,9 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
             return this
         }
 
-        val sanitized = sanitizeName(value.streamName).lowercase()
+        val sanitized = sanitizeName(value.streamName)
         //println("sanitized: $sanitized")
-        val iconUrl =
-            SvgIconCache.getIconUrl(sanitized, "https://upload.wikimedia.org/wikipedia/commons/3/34/IPod_placeholder.svg")
+        val iconUrl = SvgIconCache.getIconUrl(sanitized.lowercase())
         listCell.lblSender.setSenderIcon(iconUrl, 64)
 
         val show = value.show

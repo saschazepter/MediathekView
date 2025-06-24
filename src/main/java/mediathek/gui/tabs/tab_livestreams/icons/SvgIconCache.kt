@@ -56,9 +56,11 @@ object SvgIconCache {
     )
     private val cache = mutableMapOf<String, URL>()
 
-    fun getIconUrl(senderKey: String, fallback: String): URL {
+    private const val FALLBACK_URL = "https://upload.wikimedia.org/wikipedia/commons/3/34/IPod_placeholder.svg"
+
+    fun getIconUrl(senderKey: String): URL {
         return cache.getOrPut(senderKey) {
-            val iconUrl = senderIconMap[senderKey] ?: fallback
+            val iconUrl = senderIconMap[senderKey] ?: FALLBACK_URL
             URI(iconUrl).toURL()
         }
     }
