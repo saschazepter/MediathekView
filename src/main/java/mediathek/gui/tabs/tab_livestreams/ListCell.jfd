@@ -10,9 +10,12 @@ new FormModel {
 		} ) {
 			name: "this"
 			"opaque": false
-			add( new FormComponent( "javax.swing.JLabel" ) {
-				name: "label1"
-				"text": "Sender"
+			add( new FormComponent( "mediathek.gui.tabs.SenderIconLabel" ) {
+				name: "lblSender"
+				"toolTipText": "SerIconLabl"
+				auxiliary() {
+					"JavaCodeGenerator.variableModifiers": 1
+				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 0"
 			} )
@@ -23,6 +26,9 @@ new FormModel {
 			} ) {
 				name: "panel1"
 				"opaque": false
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "lblTitle"
 					"text": "Titel"

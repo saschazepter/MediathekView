@@ -18,12 +18,10 @@
 
 package mediathek.gui.tabs.tab_livestreams
 
-import mediathek.gui.tabs.SenderIconLabel
 import mediathek.tool.datum.DateUtil
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.Dimension
-import java.awt.FlowLayout
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import javax.swing.BorderFactory
@@ -33,7 +31,6 @@ import javax.swing.ListCellRenderer
 
 class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
-    private val lblSender = SenderIconLabel()
     private val listCell = ListCell()
     private val senderMap = mutableMapOf<String, String>()
     private val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(DateUtil.MV_DEFAULT_TIMEZONE)
@@ -43,17 +40,8 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
         minimumSize = Dimension(100, 200)
 
-        initComponents()
-        setupSenderMap()
-    }
-
-    private fun initComponents() {
-        val hPanel = JPanel()
-        hPanel.isOpaque = false
-        hPanel.layout = FlowLayout(FlowLayout.LEFT)
-
-        hPanel.add(lblSender)
         add(listCell, BorderLayout.CENTER)
+        setupSenderMap()
     }
 
     private fun setupSenderMap() {
@@ -98,7 +86,7 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
             senderName = senderMapName
         }
 
-        lblSender.setSender(senderName)
+        listCell.lblSender.setSender(senderName)
         val show = value.show
 
         if (show != null && show.startTime.isBefore(Instant.now()) && show.endTime.isAfter(Instant.now())) {
@@ -127,7 +115,7 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         background = if (isSelected) list.selectionBackground else list.background
         foreground = if (isSelected) list.selectionForeground else list.foreground
 
-        lblSender.foreground = foreground
+        listCell.lblSender.foreground = foreground
         listCell.lblTitle.foreground = foreground
         listCell.lblSubtitle.foreground = foreground
         listCell.lblZeitraum.foreground = foreground

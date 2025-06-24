@@ -22,6 +22,7 @@
 
 package mediathek.gui.tabs.tab_livestreams;
 
+import mediathek.gui.tabs.SenderIconLabel;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
@@ -41,8 +42,8 @@ public class ListCell extends JPanel {
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
         // Generated using JFormDesigner non-commercial license
-        label1 = new JLabel();
-        panel1 = new JPanel();
+        lblSender = new SenderIconLabel();
+        var panel1 = new JPanel();
         lblTitle = new JLabel();
         lblSubtitle = new JLabel();
         lblZeitraum = new JLabel();
@@ -60,9 +61,9 @@ public class ListCell extends JPanel {
             new AC()
                 ));
 
-        //---- label1 ----
-        label1.setText("Sender");
-        add(label1, new CC().cell(0, 0));
+        //---- lblSender ----
+        lblSender.setToolTipText("SerIconLabl");
+        add(lblSender, new CC().cell(0, 0));
 
         //======== panel1 ========
         {
@@ -99,8 +100,7 @@ public class ListCell extends JPanel {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off
     // Generated using JFormDesigner non-commercial license
-    private JLabel label1;
-    private JPanel panel1;
+    public SenderIconLabel lblSender;
     public JLabel lblTitle;
     public JLabel lblSubtitle;
     public JLabel lblZeitraum;
