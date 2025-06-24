@@ -23,6 +23,7 @@ import net.miginfocom.layout.AC
 import net.miginfocom.layout.CC
 import net.miginfocom.layout.LC
 import net.miginfocom.swing.MigLayout
+import org.apache.commons.lang3.SystemUtils
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.Font
@@ -38,9 +39,21 @@ class ListCell : JPanel() {
     val lblZeitraum = JLabel()
     val progressBar = JProgressBar()
 
+    private fun getCellHeight(): Dimension {
+        return if (SystemUtils.IS_OS_WINDOWS) {
+            Dimension(215, 90)
+        } else if (SystemUtils.IS_OS_MAC_OSX) {
+            Dimension(215, 115)
+        } else if (SystemUtils.IS_OS_LINUX) {
+            Dimension(215, 120)
+        } else {
+            throw IllegalStateException("Unknown OS")
+        }
+    }
+
     init {
         isOpaque = false
-        val size = Dimension(215,120)
+        val size = getCellHeight()
         minimumSize = size
         preferredSize = size
 
@@ -53,13 +66,14 @@ class ListCell : JPanel() {
         lblSender.horizontalAlignment = JLabel.CENTER
         lblSender.verticalAlignment = JLabel.TOP
 
-        add(lblSender, CC()
-            .cell(0, 0)
-            .alignY("top")
-            .growY()
-            .minWidth("pref")
-            .minHeight("pref")
-            .gapAfter("5px")
+        add(
+            lblSender, CC()
+                .cell(0, 0)
+                .alignY("top")
+                .growY()
+                .minWidth("pref")
+                .minHeight("pref")
+                .gapAfter("5px")
         )
 
         val panel = JPanel(MigLayout(LC().hideMode(3), AC().fill().grow(), AC().gap().gap().gap()))
@@ -78,8 +92,7 @@ class ListCell : JPanel() {
         if (title.isNotEmpty()) {
             lblSubtitle.text = title
             lblSubtitle.isVisible = true
-        }
-        else {
+        } else {
             lblSubtitle.isVisible = false
             lblSubtitle.text = title
         }
