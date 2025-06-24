@@ -40,7 +40,9 @@ class ListCell : JPanel() {
 
     init {
         isOpaque = false
-        minimumSize = Dimension(215, 80)
+        val size = Dimension(215,120)
+        minimumSize = size
+        preferredSize = size
 
         layout = MigLayout(
             LC().insets("0").hideMode(3),

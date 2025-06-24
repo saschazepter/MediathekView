@@ -115,6 +115,6 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
     companion object {
         private val REMAINING_TIME_THRESHOLD = TimeUnit.SECONDS.convert(5, TimeUnit.MINUTES)
         private val COLOR_ORANGE = Color(255, 140, 0)
-        val ICON_SIZE = 64
+        const val ICON_SIZE = 64
     }
 }
