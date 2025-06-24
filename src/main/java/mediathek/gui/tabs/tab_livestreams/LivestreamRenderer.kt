@@ -18,6 +18,7 @@
 
 package mediathek.gui.tabs.tab_livestreams
 
+import org.apache.commons.lang3.SystemUtils
 import java.awt.BorderLayout
 import java.awt.Component
 import java.time.Instant
@@ -32,6 +33,12 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
     init {
         layout = BorderLayout(5, 5)
         border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+
+        if (!SystemUtils.IS_OS_MAC_OSX) {
+            val dim = progressBar.maximumSize
+            dim.height = 25
+            progressBar.maximumSize = dim
+        }
 
         add(nameLabel, BorderLayout.NORTH)
         add(showLabel, BorderLayout.CENTER)
