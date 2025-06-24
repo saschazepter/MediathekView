@@ -114,8 +114,13 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                 }.sortedWith (compareBy(GermanStringSorter.getInstance()) { it.streamName} )
 
                 withContext(Dispatchers.Swing) {
-                    listModel.setData(entries)
-                    loadAllShows()
+                    if (entries.isEmpty()) {
+                        overlay.isVisible = true
+                    } else {
+                        listModel.setData(entries)
+                        overlay.isVisible = false
+                        loadAllShows()
+                    }
                 }
             } catch (ex: Exception) {
                 LOG.error("Failed to load livestreams", ex)
@@ -137,17 +142,7 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
         launch(Dispatchers.IO) {
             try {
                 val response = showService.getShow(entry.key)
-
                 withContext(Dispatchers.Swing) {
-                    if (response.error != null) {
-                        //println("API-Fehler für ${entry.key}: ${response.error}")
-                        entry.show = null
-                    } else {
-                        val aktuelleShow = response.shows.firstOrNull()
-                        entry.show = aktuelleShow
-                    }
-
-                    //listModel.updateEntry(index, entry)
                     entry.show = response.shows.firstOrNull().takeIf { response.error == null }
                     listModel.updateEntry(index, entry)
                 }
@@ -168,10 +163,14 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
         val now = Instant.now()
         for (i in 0 until listModel.size) {
             val entry = listModel.getElementAt(i)
-            if (entry.show?.endTime?.isBefore(now) == true) {
-                loadShowDetailsForEntry(entry, i)
-            } else {
-                listModel.updateEntry(i, entry) // Fortschritt aktualisieren
+            val show = entry.show
+
+            if (show != null) {
+                if (show.endTime.isBefore(now)) {
+                    loadShowDetailsForEntry(entry, i)
+                } else if (show.startTime.isBefore(now)) {
+                    listModel.updateEntry(i, entry) // Nur laufende Shows aktualisieren
+                }
             }
         }
     }
