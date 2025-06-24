@@ -45,6 +45,9 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         add(progressBar, BorderLayout.SOUTH)
     }
 
+    /**
+     * Remove soft hyphens and control characters from string.
+     */
     private fun sanitizeName(name: String): String {
         return name.replace(Regex("[\\u00AD\\p{Cf}]"), "")
     }
