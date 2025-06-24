@@ -27,6 +27,7 @@ import mediathek.config.Konstanten
 import mediathek.gui.tabs.tab_livestreams.services.ShowService
 import mediathek.gui.tabs.tab_livestreams.services.StreamService
 import mediathek.swing.OverlayPanel
+import mediathek.tool.GermanStringSorter
 import mediathek.tool.http.MVHttpClient
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -110,7 +111,8 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                 val streams = streamService.getStreams()
                 val entries = streams.map { (key, info) ->
                     LivestreamEntry(key, info.name, info.streamUrl)
-                }
+                }.sortedWith (compareBy(GermanStringSorter.getInstance()) { it.streamName} )
+
                 withContext(Dispatchers.Swing) {
                     listModel.setData(entries)
                     loadAllShows()
