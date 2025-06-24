@@ -169,7 +169,6 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
 
     companion object {
         private val LOG: Logger = LogManager.getLogger()
-        private val LISTCELL_HEIGHT = 116
     }
 
     private fun checkForExpiredShows() {
