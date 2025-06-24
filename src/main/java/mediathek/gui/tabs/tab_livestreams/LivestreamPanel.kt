@@ -113,8 +113,9 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                 overlay.setSize(list.width, list.height)
             }
         })
-        list.toolTipText = ""  // Enable tooltip system
 
+        // Enable tooltip system
+        list.toolTipText = ""
         list.addMouseMotionListener(object : MouseMotionAdapter() {
             override fun mouseMoved(e: MouseEvent) {
                 val index = list.locationToIndex(e.point)
@@ -133,7 +134,7 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
 
                 // Calculate icon area relative to bounds
                 val iconSize = LivestreamRenderer.ICON_SIZE
-                val iconX = bounds.x + 2  // left padding, adjust as needed
+                val iconX = bounds.x + 2
                 val iconY = bounds.y + (bounds.height - iconSize) / 2
 
                 val iconArea = Rectangle(iconX, iconY, iconSize, iconSize)
