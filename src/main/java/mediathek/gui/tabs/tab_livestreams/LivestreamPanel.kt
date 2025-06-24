@@ -129,7 +129,7 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
     private fun loadAllShows() {
         for (i in 0 until listModel.size) {
             val entry = listModel.getElementAt(i)
-            loadShowDetailsForEntry(entry, i)
+            launch { loadShowDetailsForEntry(entry, i) }
         }
     }
 
@@ -147,11 +147,16 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                         entry.show = aktuelleShow
                     }
 
+                    //listModel.updateEntry(index, entry)
+                    entry.show = response.shows.firstOrNull().takeIf { response.error == null }
                     listModel.updateEntry(index, entry)
                 }
             } catch (ex: Exception) {
                 LOG.error("Failed to load show details", ex)
-            }
+                withContext(Dispatchers.Swing) {
+                    entry.show = null
+                    listModel.updateEntry(index, entry)
+                }}
         }
     }
 

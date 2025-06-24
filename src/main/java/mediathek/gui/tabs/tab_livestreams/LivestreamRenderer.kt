@@ -109,6 +109,7 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
             listCell.lblSubtitle.text = ""
             listCell.lblZeitraum.text = ""
             listCell.progressBar.maximum = 100
+            listCell.progressBar.minimum = 0
             listCell.progressBar.value = 0
         }
 
