@@ -11,6 +11,7 @@ new FormModel {
 			name: "this"
 			"opaque": false
 			"minimumSize": new java.awt.Dimension( 215, 116 )
+			"preferredSize": new java.awt.Dimension( 215, 116 )
 			add( new FormComponent( "mediathek.gui.tabs.SenderIconLabel" ) {
 				name: "lblSender"
 				"toolTipText": "SerIconLabl"

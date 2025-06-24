@@ -37,10 +37,6 @@ import java.awt.*;
 public class ListCell extends JPanel {
     public ListCell() {
         initComponents();
-
-        var size = new Dimension(215,116);
-        setPreferredSize(size);
-        setMinimumSize(size);
     }
 
     public void setSubtitle(String subtitle) {
@@ -70,6 +66,7 @@ public class ListCell extends JPanel {
         //======== this ========
         setOpaque(false);
         setMinimumSize(new Dimension(215, 116));
+        setPreferredSize(new Dimension(215, 116));
         setLayout(new MigLayout(
             new LC().insets("0").hideMode(3),
             // columns
