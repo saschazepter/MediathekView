@@ -55,6 +55,25 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
 
 
     init {
+        val container = JLayeredPane().apply {
+            layout = OverlayLayout(this)
+            add(overlay)
+            add(JScrollPane(list))
+        }
+        add(container, BorderLayout.CENTER)
+        overlay.isVisible = false
+
+        // load livestreams when list is empty and panel becomes visible
+        this.addComponentListener(object : ComponentAdapter() {
+            override fun componentShown(e: ComponentEvent?) {
+                if (listModel.size == 0) {
+                    SwingUtilities.invokeLater {
+                        loadLivestreams()
+                    }
+                }
+            }
+        })
+
         val mapper = ObjectMapper().apply {
             registerModule(JavaTimeModule())
             disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
@@ -91,17 +110,6 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
             }
         })
 
-        overlay.isVisible = false
-
-        val container = JLayeredPane().apply {
-            layout = OverlayLayout(this)
-            add(overlay)
-            add(JScrollPane(list))
-        }
-        add(container, BorderLayout.CENTER)
-
-        loadLivestreams()
-
         refreshTimer.start()
     }
 
@@ -117,8 +125,8 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                     if (entries.isEmpty()) {
                         overlay.isVisible = true
                     } else {
-                        listModel.setData(entries)
                         overlay.isVisible = false
+                        listModel.setData(entries)
                         loadAllShows()
                     }
                 }

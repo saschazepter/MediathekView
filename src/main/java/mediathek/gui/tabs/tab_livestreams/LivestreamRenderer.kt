@@ -78,6 +78,15 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         cellHasFocus: Boolean
     ): Component {
 
+        if (list.width <= 0 || list.height <= 0) {
+            listCell.lblSender.text = ""
+            listCell.lblTitle.text = ""
+            listCell.lblSubtitle.text = ""
+            listCell.lblZeitraum.text = ""
+            listCell.progressBar.value = 0
+            return this
+        }
+
         val sanitized = sanitizeName(value.streamName)
         val senderName = senderMap[sanitized] ?: sanitized
         listCell.lblSender.setSender(senderName)
