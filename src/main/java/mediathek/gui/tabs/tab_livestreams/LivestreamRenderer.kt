@@ -23,6 +23,8 @@ import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
+import java.net.URI
+import java.net.URL
 import java.time.Instant
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
@@ -31,26 +33,6 @@ import javax.swing.*
 class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
     private val listCell = ListCell()
-    private val senderMap = mapOf(
-        "rbb Fernsehen Brandenburg" to "RBB",
-        "rbb Fernsehen Berlin" to "RBB",
-        "MDR Sachsen" to "MDR",
-        "MDR Sachsen-Anhalt" to "MDR",
-        "MDR Thüringen" to "MDR",
-        "3sat" to "3Sat",
-        "ARTE" to "ARTE.DE",
-        "BR Nord" to "BR",
-        "BR Süd" to "BR",
-        "Radio Bremen" to "Radio Bremen TV",
-        "NDR Hamburg" to "NDR",
-        "NDR Schleswig-Holstein" to "NDR",
-        "NDR Mecklenburg-Vorpommern" to "NDR",
-        "NRD Niedersachsen" to "NDR",
-        "Das Erste" to "ARD",
-        "SWR Baden-Württemberg" to "SWR",
-        "SWR Rheinland-Pfalz" to "SWR",
-        "phoenix" to "PHOENIX"
-    )
 
     private val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(DateUtil.MV_DEFAULT_TIMEZONE)
 
@@ -67,6 +49,49 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
      */
     private fun sanitizeName(name: String): String {
         return name.replace(Regex("[\\u00AD\\p{Cf}]"), "")
+    }
+
+    object IconCache {
+        private val senderIconMap = mapOf(
+            "zdfneo" to "https://upload.wikimedia.org/wikipedia/commons/8/8c/ZDFneo2017_Logo.svg",
+            "parlamentsfernsehen kanal 1" to "https://upload.wikimedia.org/wikipedia/commons/b/b5/Deutscher_Bundestag_logo.svg",
+            "parlamentsfernsehen kanal 2" to "https://upload.wikimedia.org/wikipedia/commons/b/b5/Deutscher_Bundestag_logo.svg",
+            "zdfinfo" to "https://upload.wikimedia.org/wikipedia/commons/3/34/ZDFinfo_2011.svg",
+            "3sat" to "https://upload.wikimedia.org/wikipedia/commons/8/81/3sat_2019.svg",
+            "ard-alpha" to "https://upload.wikimedia.org/wikipedia/commons/4/4b/ARD_alpha.svg",
+            "tagesschau24" to "https://upload.wikimedia.org/wikipedia/commons/2/24/Tagesschau24-2012.svg",
+            "arte" to "https://upload.wikimedia.org/wikipedia/commons/4/43/Arte_Logo_2017.svg",
+            "one" to "https://upload.wikimedia.org/wikipedia/commons/3/3d/One_2022.svg",
+            "phoenix" to "https://upload.wikimedia.org/wikipedia/commons/4/43/Phoenix-logo-2018.svg",
+            "br nord" to "https://upload.wikimedia.org/wikipedia/commons/5/51/Logo_Bayerischer_Rundfunk_2024.svg",
+            "br süd" to "https://upload.wikimedia.org/wikipedia/commons/5/51/Logo_Bayerischer_Rundfunk_2024.svg",
+            "ndr hamburg" to "https://upload.wikimedia.org/wikipedia/commons/3/33/NDR_Logo.svg",
+            "ndr mecklenburg-vorpommern" to "https://upload.wikimedia.org/wikipedia/commons/3/33/NDR_Logo.svg",
+            "ndr schleswig-holstein" to "https://upload.wikimedia.org/wikipedia/commons/3/33/NDR_Logo.svg",
+            "nrd niedersachsen" to "https://upload.wikimedia.org/wikipedia/commons/3/33/NDR_Logo.svg",
+            "mdr sachsen" to "https://upload.wikimedia.org/wikipedia/commons/6/61/MDR_Logo_2017.svg",
+            "mdr sachsen-anhalt" to "https://upload.wikimedia.org/wikipedia/commons/6/61/MDR_Logo_2017.svg",
+            "mdr thüringen" to "https://upload.wikimedia.org/wikipedia/commons/6/61/MDR_Logo_2017.svg",
+            "rbb fernsehen berlin" to "https://upload.wikimedia.org/wikipedia/commons/7/79/Rbb_Logo_2017.08.svg",
+            "rbb fernsehen brandenburg" to "https://upload.wikimedia.org/wikipedia/commons/7/79/Rbb_Logo_2017.08.svg",
+            "swr baden-württemberg" to "https://upload.wikimedia.org/wikipedia/commons/2/26/SWR_Logo_2023.svg",
+            "swr rheinland-pfalz" to "https://upload.wikimedia.org/wikipedia/commons/2/26/SWR_Logo_2023.svg",
+            "zdf" to "https://upload.wikimedia.org/wikipedia/commons/c/c1/ZDF_logo.svg",
+            "wdr" to "https://upload.wikimedia.org/wikipedia/commons/9/9b/WDR_Dachmarke.svg",
+            "das erste" to "https://upload.wikimedia.org/wikipedia/commons/1/19/ARD_Logo_2019.svg",
+            "hr" to "https://upload.wikimedia.org/wikipedia/commons/e/ea/HR-Fernsehen_Logo_2023.svg",
+            "kika" to "https://upload.wikimedia.org/wikipedia/commons/f/f5/Kika_2012.svg",
+            "sr" to "https://upload.wikimedia.org/wikipedia/commons/9/9c/SR_Fernsehen_Logo_2023.svg",
+            "radio bremen" to "https://upload.wikimedia.org/wikipedia/commons/3/39/Logo_Radio_Bremen.svg"
+        )
+        private val cache = mutableMapOf<String, URL>()
+
+        fun getIconUrl(senderKey: String, fallback: String): URL {
+            return cache.getOrPut(senderKey) {
+                val iconUrl = senderIconMap[senderKey] ?: fallback
+                URI(iconUrl).toURL()
+            }
+        }
     }
 
     override fun getListCellRendererComponent(
@@ -86,9 +111,11 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
             return this
         }
 
-        val sanitized = sanitizeName(value.streamName)
-        val senderName = senderMap[sanitized] ?: sanitized
-        listCell.lblSender.setSender(senderName)
+        val sanitized = sanitizeName(value.streamName).lowercase()
+        //println("sanitized: $sanitized")
+        val iconUrl =
+            IconCache.getIconUrl(sanitized, "https://upload.wikimedia.org/wikipedia/commons/3/34/IPod_placeholder.svg")
+        listCell.lblSender.setSenderIcon(iconUrl, 64)
 
         val show = value.show
         if (show != null && show.startTime.isBefore(Instant.now()) && show.endTime.isAfter(Instant.now())) {
