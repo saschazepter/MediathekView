@@ -19,7 +19,6 @@
 package mediathek.gui.tabs.tab_livestreams
 
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.Component
 import java.time.Instant
 import javax.swing.*
@@ -29,7 +28,6 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
     private val nameLabel = JLabel()
     private val showLabel = JLabel()
     private val progressBar = JProgressBar()
-    private val progressBarForegroundColor: Color = progressBar.foreground
 
     init {
         layout = BorderLayout(5, 5)
@@ -81,11 +79,6 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
         nameLabel.foreground = foreground
         showLabel.foreground = foreground
-        if (isSelected) {
-            progressBar.foreground = foreground
-        } else {
-            progressBar.foreground = progressBarForegroundColor
-        }
 
         return this
     }
