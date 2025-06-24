@@ -32,7 +32,27 @@ import javax.swing.ListCellRenderer
 class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
     private val listCell = ListCell()
-    private val senderMap = mutableMapOf<String, String>()
+    private val senderMap = mapOf(
+        "rbb Fernsehen Brandenburg" to "RBB",
+        "rbb Fernsehen Berlin" to "RBB",
+        "MDR Sachsen" to "MDR",
+        "MDR Sachsen-Anhalt" to "MDR",
+        "MDR Thüringen" to "MDR",
+        "3sat" to "3Sat",
+        "ARTE" to "ARTE.DE",
+        "BR Nord" to "BR",
+        "BR Süd" to "BR",
+        "Radio Bremen" to "Radio Bremen TV",
+        "NDR Hamburg" to "NDR",
+        "NDR Schleswig-Holstein" to "NDR",
+        "NDR Mecklenburg-Vorpommern" to "NDR",
+        "NRD Niedersachsen" to "NDR",
+        "Das Erste" to "ARD",
+        "SWR Baden-Württemberg" to "SWR",
+        "SWR Rheinland-Pfalz" to "SWR",
+        "phoenix" to "PHOENIX"
+    )
+
     private val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(DateUtil.MV_DEFAULT_TIMEZONE)
 
     init {
@@ -41,28 +61,6 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         minimumSize = Dimension(100, 200)
 
         add(listCell, BorderLayout.CENTER)
-        setupSenderMap()
-    }
-
-    private fun setupSenderMap() {
-        senderMap.put("rbb Fernsehen Brandenburg", "RBB")
-        senderMap.put("rbb Fernsehen Berlin", "RBB")
-        senderMap.put("MDR Sachsen", "MDR")
-        senderMap.put("MDR Sachsen-Anhalt", "MDR")
-        senderMap.put("MDR Thüringen", "MDR")
-        senderMap.put("3sat", "3Sat")
-        senderMap.put("ARTE", "ARTE.DE")
-        senderMap.put("BR Nord", "BR")
-        senderMap.put("BR Süd", "BR")
-        senderMap.put("Radio Bremen", "Radio Bremen TV")
-        senderMap.put("NDR Hamburg", "NDR")
-        senderMap.put("NDR Schleswig-Holstein", "NDR")
-        senderMap.put("NDR Mecklenburg-Vorpommern", "NDR")
-        senderMap.put("NRD Niedersachsen", "NDR")
-        senderMap.put("Das Erste", "ARD")
-        senderMap.put("SWR Baden-Württemberg", "SWR")
-        senderMap.put("SWR Rheinland-Pfalz", "SWR")
-        senderMap.put("phoenix", "PHOENIX")
     }
 
     /**
@@ -80,15 +78,11 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         cellHasFocus: Boolean
     ): Component {
 
-        var senderName = sanitizeName(value.streamName)
-        val senderMapName = senderMap[senderName]
-        if (senderMapName != null) {
-            senderName = senderMapName
-        }
-
+        val sanitized = sanitizeName(value.streamName)
+        val senderName = senderMap[sanitized] ?: sanitized
         listCell.lblSender.setSender(senderName)
-        val show = value.show
 
+        val show = value.show
         if (show != null && show.startTime.isBefore(Instant.now()) && show.endTime.isAfter(Instant.now())) {
             if (show.subtitle != null) {
                 listCell.lblTitle.text = show.title
@@ -100,10 +94,11 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
             val zeitraum = formatter.format(show.startTime) + " - " + formatter.format(show.endTime)
             listCell.lblZeitraum.text = zeitraum
 
-            val total = show.endTime.epochSecond - show.startTime.epochSecond
+            val total = (show.endTime.epochSecond - show.startTime.epochSecond).coerceAtLeast(1)
             val elapsed = Instant.now().epochSecond - show.startTime.epochSecond
+
             listCell.progressBar.maximum = total.toInt()
-            listCell.progressBar.value = elapsed.toInt()
+            listCell.progressBar.value = elapsed.coerceAtLeast(0).toInt()
         } else {
             listCell.lblTitle.text = "Keine Sendung oder außerhalb des Zeitraums"
             listCell.lblSubtitle.text = ""
