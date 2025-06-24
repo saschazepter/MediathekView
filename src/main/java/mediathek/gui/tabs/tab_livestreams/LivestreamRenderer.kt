@@ -109,9 +109,9 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
             listCell.progressBar.maximum = total.toInt()
             listCell.progressBar.value = elapsed.coerceAtLeast(0).toInt()
 
-            if (remaining in 1..WARNUNG_RESTZEIT_SEKUNDEN) {
-                listCell.progressBar.foreground = Color(255, 140, 0) // Orange
-                listCell.lblZeitraum.foreground = Color(255, 140, 0)
+            if (remaining in 1..REMAINING_TIME_THRESHOLD) {
+                listCell.progressBar.foreground = COLOR_ORANGE
+                listCell.lblZeitraum.foreground = COLOR_ORANGE
             } else {
                 listCell.progressBar.foreground = UIManager.getColor("ProgressBar.foreground")
                 listCell.lblZeitraum.foreground = foreground
@@ -137,5 +137,8 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         return this
     }
 
-    private val WARNUNG_RESTZEIT_SEKUNDEN = TimeUnit.SECONDS.convert(5, TimeUnit.MINUTES)
+    companion object {
+        private val REMAINING_TIME_THRESHOLD = TimeUnit.SECONDS.convert(5, TimeUnit.MINUTES)
+        private val COLOR_ORANGE = Color(255, 140, 0)
+    }
 }
