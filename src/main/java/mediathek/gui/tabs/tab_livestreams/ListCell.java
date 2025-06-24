@@ -49,6 +49,7 @@ public class ListCell extends JPanel {
         progressBar = new JProgressBar();
 
         //======== this ========
+        setOpaque(false);
         setLayout(new MigLayout(
             new LC().insets("5").hideMode(3),
             // columns
@@ -65,6 +66,7 @@ public class ListCell extends JPanel {
 
         //======== panel1 ========
         {
+            panel1.setOpaque(false);
             panel1.setLayout(new MigLayout(
                 new LC().hideMode(3),
                 // columns

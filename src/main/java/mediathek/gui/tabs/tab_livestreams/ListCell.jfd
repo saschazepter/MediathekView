@@ -9,6 +9,7 @@ new FormModel {
 			"$rowConstraints": "[]"
 		} ) {
 			name: "this"
+			"opaque": false
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label1"
 				"text": "Sender"
@@ -21,6 +22,7 @@ new FormModel {
 				"$rowConstraints": "[][][][]"
 			} ) {
 				name: "panel1"
+				"opaque": false
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "lblTitle"
 					"text": "Titel"

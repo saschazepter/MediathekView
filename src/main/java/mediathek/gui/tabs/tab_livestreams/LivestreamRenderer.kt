@@ -26,12 +26,14 @@ import java.awt.Dimension
 import java.awt.FlowLayout
 import java.time.Instant
 import java.time.format.DateTimeFormatter
-import javax.swing.*
+import javax.swing.BorderFactory
+import javax.swing.JList
+import javax.swing.JPanel
+import javax.swing.ListCellRenderer
 
 class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
     private val lblSender = SenderIconLabel()
-    private val lblZeitraum = JLabel()
     private val listCell = ListCell()
     private val senderMap = mutableMapOf<String, String>()
     private val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(DateUtil.MV_DEFAULT_TIMEZONE)
@@ -51,14 +53,6 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         hPanel.layout = FlowLayout(FlowLayout.LEFT)
 
         hPanel.add(lblSender)
-
-        val vPanel = JPanel()
-        vPanel.isOpaque = false
-        vPanel.layout = BoxLayout(vPanel, BoxLayout.Y_AXIS)
-        vPanel.add(lblZeitraum)
-
-        hPanel.add(vPanel)
-
         add(listCell, BorderLayout.CENTER)
     }
 
@@ -116,7 +110,7 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
                 listCell.lblSubtitle.text = ""
             }
             val zeitraum = formatter.format(show.startTime) + " - " + formatter.format(show.endTime)
-            lblZeitraum.text = zeitraum
+            listCell.lblZeitraum.text = zeitraum
 
             val total = show.endTime.epochSecond - show.startTime.epochSecond
             val elapsed = Instant.now().epochSecond - show.startTime.epochSecond
@@ -125,7 +119,7 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         } else {
             listCell.lblTitle.text = "Keine Sendung oder außerhalb des Zeitraums"
             listCell.lblSubtitle.text = ""
-            lblZeitraum.text = ""
+            listCell.lblZeitraum.text = ""
             listCell.progressBar.maximum = 100
             listCell.progressBar.value = 0
         }
@@ -136,7 +130,7 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         lblSender.foreground = foreground
         listCell.lblTitle.foreground = foreground
         listCell.lblSubtitle.foreground = foreground
-        lblZeitraum.foreground = foreground
+        listCell.lblZeitraum.foreground = foreground
 
         return this
     }
