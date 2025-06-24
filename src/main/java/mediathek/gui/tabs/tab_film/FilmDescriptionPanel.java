@@ -22,7 +22,6 @@ import mediathek.config.Konstanten;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.actions.UrlHyperlinkAction;
 import mediathek.gui.dialog.DialogFilmBeschreibung;
-import mediathek.gui.tabs.SenderIconLabel;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.CopyToClipboardAction;
 import mediathek.tool.GuiFunktionen;

@@ -16,15 +16,31 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.tabs.tab_livestreams
+package mediathek.gui.tabs.tab_livestreams.icons
 
-import java.time.Instant
+import com.formdev.flatlaf.extras.FlatSVGIcon
+import java.awt.Dimension
+import java.net.URL
+import javax.swing.JLabel
 
-data class ShowInfo(
-    val title: String = "",
-    val subtitle: String = "",
-    val description: String = "",
-    val channel: String = "",
-    val startTime: Instant = Instant.EPOCH,
-    val endTime: Instant = Instant.EPOCH
-)
+class SvgSenderIconLabel : JLabel() {
+
+    private var iconUrl: URL? = null
+    private var targetSize = 24  // Both width and height for bounding box
+
+    fun setSenderIcon(url: URL, boundingSize: Int = 24) {
+        iconUrl = url
+        targetSize = boundingSize
+        icon = iconUrl?.let {
+            FlatSVGIcon(it).derive(targetSize, targetSize)
+        }
+        horizontalAlignment = CENTER
+        verticalAlignment = CENTER
+        revalidate()
+        repaint()
+    }
+
+    override fun getPreferredSize(): Dimension {
+        return Dimension(targetSize, targetSize)
+    }
+}

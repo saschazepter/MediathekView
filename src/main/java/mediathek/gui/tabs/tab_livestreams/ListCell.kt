@@ -18,6 +18,7 @@
 
 package mediathek.gui.tabs.tab_livestreams
 
+import mediathek.gui.tabs.tab_livestreams.icons.SvgSenderIconLabel
 import net.miginfocom.layout.AC
 import net.miginfocom.layout.CC
 import net.miginfocom.layout.LC

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.tabs;
+package mediathek.gui.tabs.tab_film;
 
 import com.formdev.flatlaf.util.ScaledImageIcon;
 import mediathek.tool.GuiFunktionen;
