@@ -50,7 +50,7 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
     private val streamService: StreamService
     private val showService: ShowService
     private val refreshTimer =
-        Timer(TimeUnit.MILLISECONDS.convert(5, TimeUnit.SECONDS).toInt()) { checkForExpiredShows() } // alle 10s prüfen
+        Timer(TimeUnit.MILLISECONDS.convert(4, TimeUnit.SECONDS).toInt()) { checkForExpiredShows() } // alle 10s prüfen
     private val overlay = OverlayPanel("Livestreams konnten nicht geladen werden")
 
 

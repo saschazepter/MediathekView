@@ -18,24 +18,73 @@
 
 package mediathek.gui.tabs.tab_livestreams
 
-import java.awt.BorderLayout
-import java.awt.Component
+import mediathek.gui.tabs.SenderIconLabel
+import mediathek.tool.datum.DateUtil
+import java.awt.*
 import java.time.Instant
+import java.time.format.DateTimeFormatter
 import javax.swing.*
 
 class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
-    private val nameLabel = JLabel()
+    private val lblSender = SenderIconLabel()
     private val showLabel = JLabel()
+    private val lblSubtitle = JLabel()
+    private val lblZeitraum = JLabel()
     private val progressBar = JProgressBar()
+    private val senderMap = mutableMapOf<String, String>()
+    private val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(DateUtil.MV_DEFAULT_TIMEZONE)
 
     init {
-        layout = BorderLayout(5, 5)
+        layout = BorderLayout()
         border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
+        minimumSize = Dimension(100, 200)
 
-        add(nameLabel, BorderLayout.NORTH)
-        add(showLabel, BorderLayout.CENTER)
-        add(progressBar, BorderLayout.SOUTH)
+        showLabel.font = showLabel.font.deriveFont(Font.BOLD)
+
+        initComponents()
+        setupSenderMap()
+    }
+
+    private fun initComponents() {
+        val hPanel = JPanel()
+        hPanel.isOpaque = false
+        hPanel.layout = FlowLayout(FlowLayout.LEFT)
+
+        hPanel.add(lblSender)
+
+        val vPanel = JPanel()
+        vPanel.isOpaque = false
+        vPanel.layout = BoxLayout(vPanel, BoxLayout.Y_AXIS)
+        vPanel.add(showLabel)
+        vPanel.add(lblSubtitle)
+        vPanel.add(lblZeitraum)
+        vPanel.add(progressBar)
+
+        hPanel.add(vPanel)
+
+        add(hPanel, BorderLayout.CENTER)
+    }
+
+    private fun setupSenderMap() {
+        senderMap.put("rbb Fernsehen Brandenburg", "RBB")
+        senderMap.put("rbb Fernsehen Berlin", "RBB")
+        senderMap.put("MDR Sachsen", "MDR")
+        senderMap.put("MDR Sachsen-Anhalt", "MDR")
+        senderMap.put("MDR Thüringen", "MDR")
+        senderMap.put("3sat", "3Sat")
+        senderMap.put("ARTE", "ARTE.DE")
+        senderMap.put("BR Nord", "BR")
+        senderMap.put("BR Süd", "BR")
+        senderMap.put("Radio Bremen", "Radio Bremen TV")
+        senderMap.put("NDR Hamburg", "NDR")
+        senderMap.put("NDR Schleswig-Holstein", "NDR")
+        senderMap.put("NDR Mecklenburg-Vorpommern", "NDR")
+        senderMap.put("NRD Niedersachsen", "NDR")
+        senderMap.put("Das Erste", "ARD")
+        senderMap.put("SWR Baden-Württemberg", "SWR")
+        senderMap.put("SWR Rheinland-Pfalz", "SWR")
+        senderMap.put("phoenix", "PHOENIX")
     }
 
     /**
@@ -53,16 +102,25 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         cellHasFocus: Boolean
     ): Component {
 
-        //Parlamentsfernsehen contains soft hyphens...
-        nameLabel.text = sanitizeName(value.streamName)
+        var senderName = sanitizeName(value.streamName)
+        val senderMapName = senderMap[senderName]
+        if (senderMapName != null) {
+            senderName = senderMapName
+        }
+
+        lblSender.setSender(senderName)
         val show = value.show
 
         if (show != null && show.startTime.isBefore(Instant.now()) && show.endTime.isAfter(Instant.now())) {
             if (show.subtitle != null) {
-                showLabel.text = "${show.title} - ${show.subtitle}"
+                showLabel.text = show.title
+                lblSubtitle.text = show.subtitle
             } else {
                 showLabel.text = show.title
+                lblSubtitle.text = ""
             }
+            val zeitraum = formatter.format(show.startTime) + " - " + formatter.format(show.endTime)
+            lblZeitraum.text = zeitraum
 
             val total = show.endTime.epochSecond - show.startTime.epochSecond
             val elapsed = Instant.now().epochSecond - show.startTime.epochSecond
@@ -70,6 +128,8 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
             progressBar.value = elapsed.toInt()
         } else {
             showLabel.text = "Keine Sendung oder außerhalb des Zeitraums"
+            lblSubtitle.text = ""
+            lblZeitraum.text = ""
             progressBar.maximum = 100
             progressBar.value = 0
         }
@@ -77,8 +137,10 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         background = if (isSelected) list.selectionBackground else list.background
         foreground = if (isSelected) list.selectionForeground else list.foreground
 
-        nameLabel.foreground = foreground
+        lblSender.foreground = foreground
         showLabel.foreground = foreground
+        lblSubtitle.foreground = foreground
+        lblZeitraum.foreground = foreground
 
         return this
     }
