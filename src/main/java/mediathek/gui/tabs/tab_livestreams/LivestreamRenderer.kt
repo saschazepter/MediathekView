@@ -43,13 +43,6 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         add(listCell, BorderLayout.CENTER)
     }
 
-    /**
-     * Remove soft hyphens and control characters from string.
-     */
-    private fun sanitizeName(name: String): String {
-        return name.replace(Regex("[\\u00AD\\p{Cf}]"), "")
-    }
-
     override fun getListCellRendererComponent(
         list: JList<out LivestreamEntry>,
         value: LivestreamEntry,
@@ -67,10 +60,10 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
             return this
         }
 
-        val sanitized = sanitizeName(value.streamName)
+        val sanitized = SenderUtils.sanitizeName(value.streamName)
         //println("sanitized: $sanitized")
         val iconUrl = SvgIconCache.getIconUrl(sanitized.lowercase())
-        listCell.lblSender.setSenderIcon(iconUrl, 64)
+        listCell.lblSender.setSenderIcon(iconUrl, ICON_SIZE)
 
         val show = value.show
         if (show != null && show.startTime.isBefore(Instant.now()) && show.endTime.isAfter(Instant.now())) {
@@ -122,5 +115,6 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
     companion object {
         private val REMAINING_TIME_THRESHOLD = TimeUnit.SECONDS.convert(5, TimeUnit.MINUTES)
         private val COLOR_ORANGE = Color(255, 140, 0)
+        val ICON_SIZE = 64
     }
 }

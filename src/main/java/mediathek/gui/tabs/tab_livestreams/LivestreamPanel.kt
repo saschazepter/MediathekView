@@ -35,10 +35,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.awt.BorderLayout
 import java.awt.Desktop
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
+import java.awt.Rectangle
+import java.awt.event.*
 import java.time.Instant
 import java.util.concurrent.TimeUnit
 import javax.swing.*
@@ -115,6 +113,39 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                 overlay.setSize(list.width, list.height)
             }
         })
+        list.toolTipText = ""  // Enable tooltip system
+
+        list.addMouseMotionListener(object : MouseMotionAdapter() {
+            override fun mouseMoved(e: MouseEvent) {
+                val index = list.locationToIndex(e.point)
+                if (index < 0) {
+                    list.toolTipText = null
+                    return
+                }
+
+                val bounds = list.getCellBounds(index, index)
+                if (bounds == null || !bounds.contains(e.point)) {
+                    list.toolTipText = null
+                    return
+                }
+
+                val entry = list.model.getElementAt(index)
+
+                // Calculate icon area relative to bounds
+                val iconSize = LivestreamRenderer.ICON_SIZE
+                val iconX = bounds.x + 2  // left padding, adjust as needed
+                val iconY = bounds.y + (bounds.height - iconSize) / 2
+
+                val iconArea = Rectangle(iconX, iconY, iconSize, iconSize)
+
+                if (iconArea.contains(e.point)) {
+                    list.toolTipText = SenderUtils.sanitizeName(entry.streamName)
+                } else {
+                    list.toolTipText = null
+                }
+            }
+        })
+
     }
 
     private fun loadLivestreams() {
