@@ -63,6 +63,8 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
         add(container, BorderLayout.CENTER)
         overlay.isVisible = false
 
+        setupList()
+
         // load livestreams when list is empty and panel becomes visible
         this.addComponentListener(object : ComponentAdapter() {
             override fun componentShown(e: ComponentEvent?) {
@@ -94,8 +96,13 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
             .build()
             .create(ShowService::class.java)
 
+        refreshTimer.start()
+    }
+
+    private fun setupList() {
         list.cellRenderer = LivestreamRenderer()
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
+        list.fixedCellHeight = LISTCELL_HEIGHT
         list.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2) {
@@ -109,8 +116,6 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                 overlay.setSize(list.width, list.height)
             }
         })
-
-        refreshTimer.start()
     }
 
     private fun loadLivestreams() {
@@ -165,6 +170,7 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
 
     companion object {
         private val LOG: Logger = LogManager.getLogger()
+        private val LISTCELL_HEIGHT = 116
     }
 
     private fun checkForExpiredShows() {
