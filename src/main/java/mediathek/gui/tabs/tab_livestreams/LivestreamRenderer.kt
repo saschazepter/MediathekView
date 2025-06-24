@@ -20,14 +20,13 @@ package mediathek.gui.tabs.tab_livestreams
 
 import mediathek.tool.datum.DateUtil
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
 import java.time.Instant
 import java.time.format.DateTimeFormatter
-import javax.swing.BorderFactory
-import javax.swing.JList
-import javax.swing.JPanel
-import javax.swing.ListCellRenderer
+import java.util.concurrent.TimeUnit
+import javax.swing.*
 
 class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
@@ -105,9 +104,19 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
             val total = (show.endTime.epochSecond - show.startTime.epochSecond).coerceAtLeast(1)
             val elapsed = Instant.now().epochSecond - show.startTime.epochSecond
+            val remaining = show.endTime.epochSecond - Instant.now().epochSecond
 
             listCell.progressBar.maximum = total.toInt()
             listCell.progressBar.value = elapsed.coerceAtLeast(0).toInt()
+
+            if (remaining in 1..WARNUNG_RESTZEIT_SEKUNDEN) {
+                listCell.progressBar.foreground = Color(255, 140, 0) // Orange
+                listCell.lblZeitraum.foreground = Color(255, 140, 0)
+            } else {
+                listCell.progressBar.foreground = UIManager.getColor("ProgressBar.foreground")
+                listCell.lblZeitraum.foreground = foreground
+            }
+
         } else {
             listCell.lblTitle.text = "Keine Sendung oder außerhalb des Zeitraums"
             listCell.lblSubtitle.text = ""
@@ -127,4 +136,6 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
         return this
     }
+
+    private val WARNUNG_RESTZEIT_SEKUNDEN = TimeUnit.SECONDS.convert(5, TimeUnit.MINUTES)
 }
