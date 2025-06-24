@@ -24,6 +24,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Konstanten
+import mediathek.gui.actions.UrlHyperlinkAction
 import mediathek.gui.tabs.tab_livestreams.services.ShowService
 import mediathek.gui.tabs.tab_livestreams.services.StreamService
 import mediathek.swing.OverlayPanel
@@ -34,7 +35,6 @@ import org.apache.logging.log4j.Logger
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
 import java.awt.BorderLayout
-import java.awt.Desktop
 import java.awt.Rectangle
 import java.awt.event.*
 import java.time.Instant
@@ -104,7 +104,7 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2) {
                     val selected = list.selectedValue ?: return
-                    Desktop.getDesktop().browse(java.net.URI(selected.streamUrl))
+                    UrlHyperlinkAction.openURL(selected.streamUrl)
                 }
             }
         })
@@ -155,7 +155,7 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                 val streams = streamService.getStreams()
                 val entries = streams.map { (key, info) ->
                     LivestreamEntry(key, info.name, info.streamUrl)
-                }.sortedWith (compareBy(GermanStringSorter.getInstance()) { it.streamName} )
+                }.sortedWith(compareBy(GermanStringSorter.getInstance()) { it.streamName })
 
                 withContext(Dispatchers.Swing) {
                     if (entries.isEmpty()) {
@@ -195,7 +195,8 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
                 withContext(Dispatchers.Swing) {
                     entry.show = null
                     listModel.updateEntry(index, entry)
-                }}
+                }
+            }
         }
     }
 
