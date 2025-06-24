@@ -102,7 +102,6 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
     private fun setupList() {
         list.cellRenderer = LivestreamRenderer()
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
-        list.fixedCellHeight = LISTCELL_HEIGHT
         list.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2) {

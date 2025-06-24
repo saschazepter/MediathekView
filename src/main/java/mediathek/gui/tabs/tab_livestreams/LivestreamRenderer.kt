@@ -80,7 +80,7 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         if (list.width <= 0 || list.height <= 0) {
             listCell.lblSender.text = ""
             listCell.lblTitle.text = ""
-            listCell.lblSubtitle.text = ""
+            listCell.setSubtitle("")
             listCell.lblZeitraum.text = ""
             listCell.progressBar.value = 0
             return this
@@ -94,10 +94,10 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
         if (show != null && show.startTime.isBefore(Instant.now()) && show.endTime.isAfter(Instant.now())) {
             if (show.subtitle != null) {
                 listCell.lblTitle.text = show.title
-                listCell.lblSubtitle.text = show.subtitle
+                listCell.setSubtitle(show.subtitle)
             } else {
                 listCell.lblTitle.text = show.title
-                listCell.lblSubtitle.text = ""
+                listCell.setSubtitle("")
             }
             val zeitraum = formatter.format(show.startTime) + " - " + formatter.format(show.endTime)
             listCell.lblZeitraum.text = zeitraum
@@ -119,7 +119,7 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
         } else {
             listCell.lblTitle.text = "Keine Sendung oder außerhalb des Zeitraums"
-            listCell.lblSubtitle.text = ""
+            listCell.setSubtitle("")
             listCell.lblZeitraum.text = ""
             listCell.progressBar.maximum = 100
             listCell.progressBar.minimum = 0
@@ -131,7 +131,7 @@ class LivestreamRenderer : JPanel(), ListCellRenderer<LivestreamEntry> {
 
         listCell.lblSender.foreground = foreground
         listCell.lblTitle.foreground = foreground
-        listCell.lblSubtitle.foreground = foreground
+        listCell.setSubtitleForegroundColor(foreground)
         listCell.lblZeitraum.foreground = foreground
 
         return this

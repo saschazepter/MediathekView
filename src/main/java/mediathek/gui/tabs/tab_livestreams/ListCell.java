@@ -37,6 +37,24 @@ import java.awt.*;
 public class ListCell extends JPanel {
     public ListCell() {
         initComponents();
+
+        var size = new Dimension(215,116);
+        setPreferredSize(size);
+        setMinimumSize(size);
+    }
+
+    public void setSubtitle(String subtitle) {
+        if (subtitle.isEmpty()) {
+            lblSubtitle.setVisible(false);
+        }
+        else {
+            lblSubtitle.setText(subtitle);
+            lblSubtitle.setVisible(true);
+        }
+    }
+
+    public void setSubtitleForegroundColor(Color color) {
+        lblSubtitle.setForeground(color);
     }
 
     private void initComponents() {
@@ -103,7 +121,7 @@ public class ListCell extends JPanel {
     // Generated using JFormDesigner non-commercial license
     public SenderIconLabel lblSender;
     public JLabel lblTitle;
-    public JLabel lblSubtitle;
+    private JLabel lblSubtitle;
     public JLabel lblZeitraum;
     public JProgressBar progressBar;
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
