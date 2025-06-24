@@ -23,36 +23,41 @@ import java.net.URL
 
 object SvgIconCache {
     private val senderIconMap = mapOf(
-        "zdfneo" to "https://upload.wikimedia.org/wikipedia/commons/8/8c/ZDFneo2017_Logo.svg",
-        "parlamentsfernsehen kanal 1" to "https://upload.wikimedia.org/wikipedia/commons/b/b5/Deutscher_Bundestag_logo.svg",
-        "parlamentsfernsehen kanal 2" to "https://upload.wikimedia.org/wikipedia/commons/b/b5/Deutscher_Bundestag_logo.svg",
-        "zdfinfo" to "https://upload.wikimedia.org/wikipedia/commons/3/34/ZDFinfo_2011.svg",
-        "3sat" to "https://upload.wikimedia.org/wikipedia/commons/8/81/3sat_2019.svg",
-        "ard-alpha" to "https://upload.wikimedia.org/wikipedia/commons/4/4b/ARD_alpha.svg",
-        "tagesschau24" to "https://upload.wikimedia.org/wikipedia/commons/2/24/Tagesschau24-2012.svg",
-        "arte" to "https://upload.wikimedia.org/wikipedia/commons/4/43/Arte_Logo_2017.svg",
-        "one" to "https://upload.wikimedia.org/wikipedia/commons/3/3d/One_2022.svg",
-        "phoenix" to "https://upload.wikimedia.org/wikipedia/commons/4/43/Phoenix-logo-2018.svg",
-        "br nord" to "https://upload.wikimedia.org/wikipedia/commons/5/51/Logo_Bayerischer_Rundfunk_2024.svg",
-        "br süd" to "https://upload.wikimedia.org/wikipedia/commons/5/51/Logo_Bayerischer_Rundfunk_2024.svg",
-        "ndr hamburg" to "https://upload.wikimedia.org/wikipedia/commons/3/33/NDR_Logo.svg",
-        "ndr mecklenburg-vorpommern" to "https://upload.wikimedia.org/wikipedia/commons/3/33/NDR_Logo.svg",
-        "ndr schleswig-holstein" to "https://upload.wikimedia.org/wikipedia/commons/3/33/NDR_Logo.svg",
-        "nrd niedersachsen" to "https://upload.wikimedia.org/wikipedia/commons/3/33/NDR_Logo.svg",
-        "mdr sachsen" to "https://upload.wikimedia.org/wikipedia/commons/6/61/MDR_Logo_2017.svg",
-        "mdr sachsen-anhalt" to "https://upload.wikimedia.org/wikipedia/commons/6/61/MDR_Logo_2017.svg",
-        "mdr thüringen" to "https://upload.wikimedia.org/wikipedia/commons/6/61/MDR_Logo_2017.svg",
-        "rbb fernsehen berlin" to "https://upload.wikimedia.org/wikipedia/commons/7/79/Rbb_Logo_2017.08.svg",
-        "rbb fernsehen brandenburg" to "https://upload.wikimedia.org/wikipedia/commons/7/79/Rbb_Logo_2017.08.svg",
-        "swr baden-württemberg" to "https://upload.wikimedia.org/wikipedia/commons/2/26/SWR_Logo_2023.svg",
-        "swr rheinland-pfalz" to "https://upload.wikimedia.org/wikipedia/commons/2/26/SWR_Logo_2023.svg",
-        "zdf" to "https://upload.wikimedia.org/wikipedia/commons/c/c1/ZDF_logo.svg",
-        "wdr" to "https://upload.wikimedia.org/wikipedia/commons/9/9b/WDR_Dachmarke.svg",
-        "das erste" to "https://upload.wikimedia.org/wikipedia/commons/1/19/ARD_Logo_2019.svg",
-        "hr" to "https://upload.wikimedia.org/wikipedia/commons/e/ea/HR-Fernsehen_Logo_2023.svg",
-        "kika" to "https://upload.wikimedia.org/wikipedia/commons/f/f5/Kika_2012.svg",
-        "sr" to "https://upload.wikimedia.org/wikipedia/commons/9/9c/SR_Fernsehen_Logo_2023.svg",
-        "radio bremen" to "https://upload.wikimedia.org/wikipedia/commons/3/39/Logo_Radio_Bremen.svg"
+        "arte" to SvgSenderIconLabel::class.java.getResource("/icons/sender/arte.svg")!!.toString(),
+        "3sat" to SvgSenderIconLabel::class.java.getResource("/icons/sender/3sat.svg")!!.toString(),
+        "ard-alpha" to SvgSenderIconLabel::class.java.getResource("/icons/sender/ard-alpha.svg")!!.toString(),
+        "br nord" to SvgSenderIconLabel::class.java.getResource("/icons/sender/br.svg")!!.toString(),
+        "br süd" to SvgSenderIconLabel::class.java.getResource("/icons/sender/br.svg")!!.toString(),
+        "das erste" to SvgSenderIconLabel::class.java.getResource("/icons/sender/ard.svg")!!.toString(),
+        "hr" to SvgSenderIconLabel::class.java.getResource("/icons/sender/hr.svg")!!.toString(),
+        "kika" to SvgSenderIconLabel::class.java.getResource("/icons/sender/kika.svg")!!.toString(),
+        "mdr sachsen" to SvgSenderIconLabel::class.java.getResource("/icons/sender/mdr.svg")!!.toString(),
+        "mdr sachsen-anhalt" to SvgSenderIconLabel::class.java.getResource("/icons/sender/mdr.svg")!!.toString(),
+        "mdr thüringen" to SvgSenderIconLabel::class.java.getResource("/icons/sender/mdr.svg")!!.toString(),
+        "ndr hamburg" to SvgSenderIconLabel::class.java.getResource("/icons/sender/ndr.svg")!!.toString(),
+        "ndr mecklenburg-vorpommern" to SvgSenderIconLabel::class.java.getResource("/icons/sender/ndr.svg")!!
+            .toString(),
+        "ndr schleswig-holstein" to SvgSenderIconLabel::class.java.getResource("/icons/sender/ndr.svg")!!
+            .toString(),
+        "nrd niedersachsen" to SvgSenderIconLabel::class.java.getResource("/icons/sender/ndr.svg")!!.toString(),
+        "one" to SvgSenderIconLabel::class.java.getResource("/icons/sender/one.svg")!!.toString(),
+        "parlamentsfernsehen kanal 1" to SvgSenderIconLabel::class.java.getResource("/icons/sender/Deutscher_Bundestag.svg")!!
+            .toString(),
+        "parlamentsfernsehen kanal 2" to SvgSenderIconLabel::class.java.getResource("/icons/sender/Deutscher_Bundestag.svg")!!
+            .toString(),
+        "phoenix" to SvgSenderIconLabel::class.java.getResource("/icons/sender/phoenix.svg")!!.toString(),
+        "radio bremen" to SvgSenderIconLabel::class.java.getResource("/icons/sender/radio-bremen.svg")!!.toString(),
+        "rbb fernsehen berlin" to SvgSenderIconLabel::class.java.getResource("/icons/sender/rbb.svg")!!.toString(),
+        "rbb fernsehen brandenburg" to SvgSenderIconLabel::class.java.getResource("/icons/sender/rbb.svg")!!.toString(),
+        "sr" to SvgSenderIconLabel::class.java.getResource("/icons/sender/sr.svg")!!.toString(),
+        "swr baden-württemberg" to SvgSenderIconLabel::class.java.getResource("/icons/sender/swr.svg")!!.toString(),
+        "swr rheinland-pfalz" to SvgSenderIconLabel::class.java.getResource("/icons/sender/swr.svg")!!.toString(),
+        "tagesschau24" to SvgSenderIconLabel::class.java.getResource("/icons/sender/tagesschau24.svg")!!
+            .toString(),
+        "wdr" to SvgSenderIconLabel::class.java.getResource("/icons/sender/wdr.svg")!!.toString(),
+        "zdf" to SvgSenderIconLabel::class.java.getResource("/icons/sender/zdf.svg")!!.toString(),
+        "zdfinfo" to SvgSenderIconLabel::class.java.getResource("/icons/sender/ZDFinfo.svg")!!.toString(),
+        "zdfneo" to SvgSenderIconLabel::class.java.getResource("/icons/sender/ZDFneo.svg")!!.toString()
     )
     private val cache = mutableMapOf<String, URL>()
 
