@@ -134,6 +134,7 @@ public class MediathekGui extends JFrame {
     private final ManageAboAction manageAboAction = new ManageAboAction();
     private final ShowBandwidthUsageAction showBandwidthUsageAction = new ShowBandwidthUsageAction(this);
     private final ShowDuplicateStatisticsAction showDuplicateStatisticsAction = new ShowDuplicateStatisticsAction(this);
+    private final LivestreamPanel tabLivestreams = new LivestreamPanel();
     public FixedRedrawStatusBar swingStatusBar;
     public GuiFilme tabFilme;
     public GuiDownloads tabDownloads;
@@ -829,8 +830,10 @@ public class MediathekGui extends JFrame {
     }
 
     protected void installLivestreamsTab() {
-        var panel = new LivestreamPanel();
-        tabbedPane.addTab("zapp Livestreams", panel);
+        var show = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.APPLICATION_UI_SHOW_ZAPP_LIVESTREAMS, true);
+        if (show) {
+            tabbedPane.addTab("zapp Livestreams", tabLivestreams);
+        }
     }
 
     /**
