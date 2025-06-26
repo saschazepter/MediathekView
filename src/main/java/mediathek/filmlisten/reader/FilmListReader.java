@@ -130,6 +130,9 @@ public class FilmListReader implements AutoCloseable {
             }
         }
     }
+    private static final String PLAYLIST_SUFFIX = ".m3u8";
+    private static final String SENDER_RBTV = "rbtv";
+    private static final String SENDER_RADIO_BREMEN = "Radio Bremen TV";
 
     private void parseSender(JsonParser jp, DatenFilm datenFilm) throws IOException {
         String parsedSender = checkedString(jp);
@@ -141,8 +144,8 @@ public class FilmListReader implements AutoCloseable {
             sender = parsedSender;
         }
 
-        if (datenFilm.getSender().equalsIgnoreCase("rbtv")) {
-            datenFilm.setSender("Radio Bremen TV");
+        if (datenFilm.getSender().equalsIgnoreCase(SENDER_RBTV)) {
+            datenFilm.setSender(SENDER_RADIO_BREMEN);
         }
     }
 
@@ -380,7 +383,7 @@ public class FilmListReader implements AutoCloseable {
      * @param datenFilm the film to check.
      */
     private void checkPlayList(@NotNull DatenFilm datenFilm) {
-        if (datenFilm.getUrlNormalQuality().endsWith(".m3u8"))
+        if (datenFilm.getUrlNormalQuality().endsWith(PLAYLIST_SUFFIX))
             datenFilm.setPlayList(true);
     }
 
@@ -425,6 +428,7 @@ public class FilmListReader implements AutoCloseable {
                         counter.incrementAndGet();
                     });
                 });
+
         stopwatch.stop();
         logger.info("Season and episode detection took: {}", stopwatch);
         logger.info("Number of detected seasons and episodes: {}", counter.get());
@@ -558,8 +562,12 @@ public class FilmListReader implements AutoCloseable {
 
         @Override
         public void progress(long bytesRead, long size) {
+            if (size <= 0) {
+                return;
+            }
+
             final int iProgress = (int) (bytesRead * 100 / size);
-            if (iProgress != oldProgress) {
+            if (iProgress >= oldProgress + 1) {
                 oldProgress = iProgress;
                 notifyProgress(sourceString, iProgress);
             }
