@@ -491,7 +491,7 @@ public class FilmListReader implements AutoCloseable {
 
         try (Response response = MVHttpClient.getInstance().getHttpClient().newCall(request).execute();
              ResponseBody body = response.body()) {
-            if (response.isSuccessful() && body != null) {
+            if (response.isSuccessful()) {
                 final var endRequest = response.request();
                 if (Config.isEnhancedLoggingEnabled()) {
                     logger.trace("Final Endpoint URL for filmlist: {}", endRequest.url().toString());
@@ -556,7 +556,7 @@ public class FilmListReader implements AutoCloseable {
         private static final long MIN_TIME_BETWEEN_UPDATES_MS = 500;
         private final String sourceString;
         private int oldProgress;
-        private long lastUpdate = 0;
+        private long lastUpdate;
 
         public ProgressMonitor(String source) {
             sourceString = source;
