@@ -54,6 +54,9 @@ public class FilmListReader implements AutoCloseable {
     private static final int PROGRESS_MAX = 100;
     private static final Logger logger = LogManager.getLogger(FilmListReader.class);
     private static final String THEMA_LIVE = "Livestream";
+    private static final String PLAYLIST_SUFFIX = ".m3u8";
+    private static final String SENDER_RBTV = "rbtv";
+    private static final String SENDER_RADIO_BREMEN = "Radio Bremen TV";
     /**
      * Memory limit for the xz decompressor. No limit by default.
      */
@@ -130,9 +133,6 @@ public class FilmListReader implements AutoCloseable {
             }
         }
     }
-    private static final String PLAYLIST_SUFFIX = ".m3u8";
-    private static final String SENDER_RBTV = "rbtv";
-    private static final String SENDER_RADIO_BREMEN = "Radio Bremen TV";
 
     private void parseSender(JsonParser jp, DatenFilm datenFilm) throws IOException {
         String parsedSender = checkedString(jp);
@@ -553,8 +553,10 @@ public class FilmListReader implements AutoCloseable {
     }
 
     class ProgressMonitor implements InputStreamProgressMonitor {
+        private static final long MIN_TIME_BETWEEN_UPDATES_MS = 500;
         private final String sourceString;
         private int oldProgress;
+        private long lastUpdate = 0;
 
         public ProgressMonitor(String source) {
             sourceString = source;
@@ -566,9 +568,12 @@ public class FilmListReader implements AutoCloseable {
                 return;
             }
 
-            final int iProgress = (int) (bytesRead * 100 / size);
-            if (iProgress >= oldProgress + 1) {
+            int iProgress = (int) (bytesRead * 100 / size);
+            long now = System.currentTimeMillis();
+
+            if (iProgress >= oldProgress + 1 || now - lastUpdate > MIN_TIME_BETWEEN_UPDATES_MS) {
                 oldProgress = iProgress;
+                lastUpdate = now;
                 notifyProgress(sourceString, iProgress);
             }
         }
