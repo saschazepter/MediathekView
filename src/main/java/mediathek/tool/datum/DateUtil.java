@@ -25,4 +25,8 @@ public class DateUtil {
                 .atZone(MV_DEFAULT_TIMEZONE)
                 .toLocalDate();
     }
+
+    public static Date convertToDate(LocalDate ld) {
+        return Date.from(ld.atStartOfDay(MV_DEFAULT_TIMEZONE).toInstant());
+    }
 }

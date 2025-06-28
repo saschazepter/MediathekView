@@ -385,13 +385,16 @@ public class BookmarkDialog extends JDialog {
         @Override
         public void actionPerformed(ActionEvent e) {
             var bm = selectionModel.getSelected().getFirst();
-            var dialog = new BookmarkEditNoteDialog(BookmarkDialog.this, bm.getNote());
+            var dialog = new BookmarkEditNoteDialog(BookmarkDialog.this, bm);
             dialog.setVisible(true);
             if (dialog.isOkPressed()) {
                 var notizText = dialog.getNotiz();
                 if (notizText.isBlank())
                     notizText = null;
                 bm.setNote(notizText);
+
+                var availableDate = dialog.getAvailableUntilDate();
+                bm.setAvailableUntil(availableDate);
                 Daten.getInstance().getListeBookmarkList().saveToFile();
                 updateInfoTabs();
             }

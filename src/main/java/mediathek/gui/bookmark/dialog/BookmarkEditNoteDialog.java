@@ -22,27 +22,34 @@
 
 package mediathek.gui.bookmark.dialog;
 
+import mediathek.gui.bookmark.BookmarkData;
 import mediathek.swing.IconUtils;
 import mediathek.tool.EscapeKeyHandler;
+import mediathek.tool.datum.DateUtil;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 import org.jdesktop.swingx.JXDatePicker;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignE;
 
 import javax.swing.*;
 import java.awt.*;
+import java.time.LocalDate;
 
 /**
  * @author christianfranzke
  */
 public class BookmarkEditNoteDialog extends JDialog {
     private boolean okPressed;
+    private final BookmarkData bm;
 
-    public BookmarkEditNoteDialog(Dialog owner, @Nullable String initialText) {
+    public BookmarkEditNoteDialog(Dialog owner, @NotNull BookmarkData bm) {
         super(owner);
+        this.bm = bm;
+
         initComponents();
 
         okButton.addActionListener(_ -> {
@@ -52,16 +59,33 @@ public class BookmarkEditNoteDialog extends JDialog {
         cancelButton.addActionListener(_ -> dispose());
 
         EscapeKeyHandler.installHandler(this, this::dispose);
+        var initialText = bm.getNote();
         textArea.setText(initialText != null ? initialText : "");
+
+        setupDatePicker();
 
         btnSearch.setIcon(IconUtils.of(MaterialDesignE.EYE, 20));
         btnSearch.addActionListener(_ -> {
-            //FIXME implement
+            var curDate = LocalDate.now();
+            var date = DateUtil.convertToDate(curDate);
+            datePicker.setDate(date);
+            bm.setAvailableUntil(curDate);
         });
+    }
+
+    private void setupDatePicker() {
+        var localAvailableUntilDate = bm.getAvailableUntil();
+        if (localAvailableUntilDate != null) {
+            datePicker.setDate(DateUtil.convertToDate(localAvailableUntilDate));
+        }
     }
 
     public String getNotiz() {
         return textArea.getText();
+    }
+
+    public @Nullable LocalDate getAvailableUntilDate() {
+        return DateUtil.convertToLocalDate(datePicker.getDate());
     }
 
     public boolean isOkPressed() {
