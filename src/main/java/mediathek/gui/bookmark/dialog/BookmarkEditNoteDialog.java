@@ -22,6 +22,7 @@
 
 package mediathek.gui.bookmark.dialog;
 
+import mediathek.swing.IconUtils;
 import mediathek.tool.EscapeKeyHandler;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
@@ -29,6 +30,7 @@ import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 import org.jdesktop.swingx.JXDatePicker;
 import org.jetbrains.annotations.Nullable;
+import org.kordamp.ikonli.materialdesign2.MaterialDesignE;
 
 import javax.swing.*;
 import java.awt.*;
@@ -51,6 +53,8 @@ public class BookmarkEditNoteDialog extends JDialog {
 
         EscapeKeyHandler.installHandler(this, this::dispose);
         textArea.setText(initialText != null ? initialText : "");
+
+        btnSearch.setIcon(IconUtils.of(MaterialDesignE.EYE, 20));
     }
 
     public String getNotiz() {
@@ -68,7 +72,7 @@ public class BookmarkEditNoteDialog extends JDialog {
         contentPanel = new JPanel();
         var label1 = new JLabel();
         xDatePicker1 = new JXDatePicker();
-        button1 = new JButton();
+        btnSearch = new JButton();
         var label2 = new JLabel();
         scrollPane1 = new JScrollPane();
         textArea = new JTextArea();
@@ -109,10 +113,7 @@ public class BookmarkEditNoteDialog extends JDialog {
                 label1.setText("Verf\u00fcgbar bis:");
                 contentPanel.add(label1, new CC().cell(0, 0));
                 contentPanel.add(xDatePicker1, new CC().cell(1, 0));
-
-                //---- button1 ----
-                button1.setText("S");
-                contentPanel.add(button1, new CC().cell(2, 0));
+                contentPanel.add(btnSearch, new CC().cell(2, 0));
 
                 //---- label2 ----
                 label2.setText("Notiz:");
@@ -165,7 +166,7 @@ public class BookmarkEditNoteDialog extends JDialog {
     private JPanel dialogPane;
     private JPanel contentPanel;
     private JXDatePicker xDatePicker1;
-    private JButton button1;
+    private JButton btnSearch;
     private JScrollPane scrollPane1;
     private JTextArea textArea;
     private JPanel buttonBar;
