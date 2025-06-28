@@ -56,8 +56,10 @@ public class BookmarkEditNoteDialog extends JDialog {
 
         btnSearch.setIcon(IconUtils.of(MaterialDesignE.EYE, 20));
         btnSearch.addActionListener(_ -> {
-            JOptionPane.showMessageDialog(this,"Not implemented");
+            JOptionPane.showMessageDialog(this,"Noch nicht implementiert, kommt noch :)");
         });
+
+        textArea.requestFocus();
     }
 
     private void setupButtonBar() {
@@ -71,6 +73,7 @@ public class BookmarkEditNoteDialog extends JDialog {
     private void setupNotizArea() {
         var initialText = bm.getNote();
         textArea.setText(initialText != null ? initialText : "");
+        textArea.setCaretPosition(0);
     }
 
     private void setupDatePicker() {
