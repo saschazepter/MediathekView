@@ -200,9 +200,11 @@ public class GuiDownloads extends AGuiTabPanel {
                         if (dlInfo.mVFilmSize.getSize() != oldSize)
                             updateNeeded = true;
                     }
-                } else
+                }
+                else
                     logger.error("Could not get download object");
-            } catch (Exception ignored) {
+            }
+            catch (Exception ignored) {
             }
         }
 
@@ -523,7 +525,8 @@ public class GuiDownloads extends AGuiTabPanel {
                 DatenDownload datenDownload = (DatenDownload) model.getValueAt(tabelle.convertRowIndexToModel(row), DatenDownload.DOWNLOAD_REF);
                 arrayDownloads.add(datenDownload);
             }
-        } else {
+        }
+        else {
             NoSelectionErrorDialog.show(this);
         }
         return arrayDownloads;
@@ -542,10 +545,12 @@ public class GuiDownloads extends AGuiTabPanel {
                 else
                     optRet = Optional.of(download.film);
                 return optRet;
-            } else {
+            }
+            else {
                 return Optional.empty();
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return Optional.empty();
         }
     }
@@ -555,7 +560,8 @@ public class GuiDownloads extends AGuiTabPanel {
         final int row = tabelle.getSelectedRow();
         if (row != -1) {
             datenDownload = (DatenDownload) tabelle.getModel().getValueAt(tabelle.convertRowIndexToModel(row), DatenDownload.DOWNLOAD_REF);
-        } else {
+        }
+        else {
             NoSelectionErrorDialog.show(this);
         }
         return datenDownload;
@@ -635,7 +641,8 @@ public class GuiDownloads extends AGuiTabPanel {
                     throw new Exception();
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             MVMessageDialog.showMessageDialog(mediathekGui, "Konnte die Datei nicht löschen!", "Film löschen", JOptionPane.ERROR_MESSAGE);
             logger.error("Fehler beim löschen: {}", datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD_DATEINAME]);
         }
@@ -666,7 +673,8 @@ public class GuiDownloads extends AGuiTabPanel {
                                 datenDownload.arr[DatenDownload.DOWNLOAD_TITEL],
                                 datenDownload.arr[DatenDownload.DOWNLOAD_HISTORY_URL]));
                     }
-                } else {
+                }
+                else {
                     // wenn nicht dauerhaft
                     datenDownload.zurueckstellen();
                 }
@@ -678,7 +686,8 @@ public class GuiDownloads extends AGuiTabPanel {
 
             daten.getListeDownloads().downloadLoeschen(arrayDownloadsLoeschen);
             reloadTable();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             logger.error("downloadLoeschen()", ex);
         }
     }
@@ -818,7 +827,8 @@ public class GuiDownloads extends AGuiTabPanel {
                             if (selectedDownloadsList.size() > 1) {
                                 text = "Es sind bereits fertige Filme dabei,\n"
                                         + "diese nochmal starten?";
-                            } else {
+                            }
+                            else {
                                 text = "Film nochmal starten?  ==> " + download.arr[DatenDownload.DOWNLOAD_TITEL];
                             }
                             antwort = GuiFunktionen.createDismissableMessageDialog(mediathekGui, "Fertiger Download",
@@ -843,7 +853,8 @@ public class GuiDownloads extends AGuiTabPanel {
                     }
                 }
                 listeDownloadsStarten.add(download);
-            } else if (download.start != null) {
+            }
+            else if (download.start != null) {
                 // ==========================================
                 // stoppen
                 // wenn kein s -> dann gibts auch nichts zum stoppen oder wieder-starten
@@ -905,7 +916,8 @@ public class GuiDownloads extends AGuiTabPanel {
                     arrayFilme.add(datenDownload.film);
                 }
             }
-        } else {
+        }
+        else {
             NoSelectionErrorDialog.show(this);
         }
         return arrayFilme;
@@ -984,7 +996,8 @@ public class GuiDownloads extends AGuiTabPanel {
                 daten.getListeDownloads().filmEintragen();
                 if (Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_ABOS_SOFORT_SUCHEN))) {
                     updateDownloads();
-                } else {
+                }
+                else {
                     reloadTable(); // damit die Filmnummern richtig angezeigt werden
                 }
             }
@@ -1034,7 +1047,8 @@ public class GuiDownloads extends AGuiTabPanel {
                     if (row >= 0) {
                         buttonTable(row, column);
                     }
-                } else if (arg0.getClickCount() > 1) {
+                }
+                else if (arg0.getClickCount() > 1) {
                     editDownload();
                 }
             }
@@ -1071,21 +1085,26 @@ public class GuiDownloads extends AGuiTabPanel {
                     if (datenDownload.start != null && !datenDownload.isDownloadManager()) {
                         if (datenDownload.start.status == Start.STATUS_FERTIG) {
                             filmAbspielen();
-                        } else
+                        }
+                        else
                             filmStartenWiederholenStoppen(false, datenDownload.start.status == Start.STATUS_ERR, true, false);
-                    } else {
+                    }
+                    else {
                         // Download starten
                         filmStartenWiederholenStoppen(false, true, true, false);
                     }
-                } else if (tabelle.convertColumnIndexToModel(column) == DatenDownload.DOWNLOAD_BUTTON_DEL) {
+                }
+                else if (tabelle.convertColumnIndexToModel(column) == DatenDownload.DOWNLOAD_BUTTON_DEL) {
                     if (datenDownload.start != null) {
                         if (datenDownload.start.status >= Start.STATUS_FERTIG) {
                             downloadsAufraeumen(datenDownload);
-                        } else {
+                        }
+                        else {
                             // Download dauerhaft löschen
                             downloadLoeschen(true);
                         }
-                    } else {
+                    }
+                    else {
                         // Download dauerhaft löschen
                         downloadLoeschen(true);
                     }
@@ -1155,17 +1174,20 @@ public class GuiDownloads extends AGuiTabPanel {
                 submenueAbo.setEnabled(false);
                 itemChangeAbo.setEnabled(false);
                 itemDelAbo.setEnabled(false);
-            } else if (datenDownload.film == null) {
+            }
+            else if (datenDownload.film == null) {
                 submenueAbo.setEnabled(false);
                 itemChangeAbo.setEnabled(false);
                 itemDelAbo.setEnabled(false);
-            } else {
+            }
+            else {
                 final DatenAbo datenAbo = daten.getListeAbo().getAboFuerFilm_schnell(datenDownload.film, false /*die Länge nicht prüfen*/);
                 if (datenAbo == null) {
                     submenueAbo.setEnabled(false);
                     itemChangeAbo.setEnabled(false);
                     itemDelAbo.setEnabled(false);
-                } else {
+                }
+                else {
                     // dann können wir auch ändern
                     itemDelAbo.addActionListener(_ -> daten.getListeAbo().aboLoeschen(datenAbo));
                     itemChangeAbo.addActionListener(_ -> {
@@ -1205,7 +1227,8 @@ public class GuiDownloads extends AGuiTabPanel {
                         final String menuPath;
                         if (SystemUtils.IS_OS_MAC_OSX) {
                             menuPath = "MediathekView->Einstellungen…->Aufzeichnen und Abspielen->Set bearbeiten";
-                        } else {
+                        }
+                        else {
                             menuPath = "Datei->Einstellungen->Set bearbeiten";
                         }
                         JOptionPane.showMessageDialog(mediathekGui, "Bitte legen Sie im Menü \"" + menuPath + "\" ein Programm zum Abspielen fest.",
