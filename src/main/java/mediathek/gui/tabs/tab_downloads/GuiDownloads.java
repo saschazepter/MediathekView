@@ -127,7 +127,6 @@ public class GuiDownloads extends AGuiTabPanel {
     private JPanel jPanelFilterExtern;
     private JComboBox<String> cbDisplayCategories;
     private JComboBox<String> cbView;
-    private JButton btnClear;
     private JScrollPane downloadListScrollPane;
 
     public GuiDownloads(Daten aDaten, MediathekGui mediathekGui) {
@@ -413,11 +412,6 @@ public class GuiDownloads extends AGuiTabPanel {
                 COLUMNS_DISABLED,
                 new int[]{DatenDownload.DOWNLOAD_BUTTON_START, DatenDownload.DOWNLOAD_BUTTON_DEL},
                 true, MVConfig.Configs.SYSTEM_TAB_DOWNLOAD_LINEBREAK));
-
-        btnClear.addActionListener(_ -> {
-            cbDisplayCategories.setSelectedIndex(0);
-            cbView.setSelectedIndex(0);
-        });
 
         setSplitDividerLocation();
     }
@@ -963,7 +957,6 @@ public class GuiDownloads extends AGuiTabPanel {
         cbDisplayCategories = new JComboBox<>();
         var label2 = new JLabel();
         cbView = new JComboBox<>();
-        btnClear = new JButton();
         var downloadListArea = new JPanel();
         downloadListScrollPane = new JScrollPane();
 
@@ -993,8 +986,7 @@ public class GuiDownloads extends AGuiTabPanel {
                 // rows
                 new AC()
                         .fill().gap()
-                        .fill().gap()
-                        .fill()));
+                        .fill().gap()));
 
         label1.setText("Typ:"); //NON-NLS
         panel3.add(label1, new CC().cell(0, 0));
@@ -1004,9 +996,6 @@ public class GuiDownloads extends AGuiTabPanel {
         panel3.add(label2, new CC().cell(0, 1));
         panel3.add(cbView, new CC().cell(1, 1));
 
-        btnClear.setIcon(IconUtils.of(FontAwesomeSolid.BROOM));
-        btnClear.setToolTipText("Filter zurücksetzen"); //NON-NLS
-        panel3.add(btnClear, new CC().cell(0, 2, 2, 1).alignX("right").growX(0).width("32:32:32").height("32:32:32")); //NON-NLS
         jPanelFilterExtern.add(panel3, new CC().cell(0, 0));
         jPanelFilterExtern.add(dlConfigPanel, new CC().cell(0, 1));
         jSplitPane1.setLeftComponent(jPanelFilterExtern);
