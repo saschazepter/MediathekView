@@ -66,10 +66,7 @@ public class BookmarkEditNoteDialog extends JDialog {
 
         btnSearch.setIcon(IconUtils.of(MaterialDesignE.EYE, 20));
         btnSearch.addActionListener(_ -> {
-            var curDate = LocalDate.now();
-            var date = DateUtil.convertToDate(curDate);
-            datePicker.setDate(date);
-            bm.setAvailableUntil(curDate);
+            JOptionPane.showMessageDialog(this,"Not implemented");
         });
     }
 
