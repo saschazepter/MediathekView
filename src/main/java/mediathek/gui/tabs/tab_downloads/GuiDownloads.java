@@ -1012,7 +1012,7 @@ public class GuiDownloads extends AGuiTabPanel {
             popup.setTransient(true); // Schließt sich bei Klick außerhalb
             popup.setLayout(new BorderLayout());
             popup.add(jPanelFilterExtern, BorderLayout.CENTER);
-            popup.setPreferredSize(new Dimension(250, 120));
+            popup.packPopup();
 
             popup.showPopup(btn);
         });
