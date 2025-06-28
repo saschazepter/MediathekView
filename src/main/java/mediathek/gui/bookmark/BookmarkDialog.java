@@ -288,6 +288,9 @@ public class BookmarkDialog extends JDialog {
         columnModel.getColumn(COLUMN_DAUER).setCellRenderer(new FilmLengthCellRenderer());
         //sendedatum column
         columnModel.getColumn(COLUMN_SENDEDATUM).setCellRenderer(new CenteredCellRenderer());
+        //verfügbar bis
+        columnModel.getColumn(COLUMN_AVAILABLE_UNTIL).setCellRenderer(new AvailableUntilCellRenderer());
+
         var colNote = columnModel.getColumn(COLUMN_NOTIZ);
         colNote.setCellRenderer(new NoteCellRenderer());
         colNote.setHeaderRenderer(new IconHeaderCellRenderer(IconUtils.of(MaterialDesignN.NOTE), "Notiz vorhanden"));
