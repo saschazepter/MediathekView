@@ -28,6 +28,7 @@ import ca.odell.glazedlists.swing.GlazedListsSwing;
 import ca.odell.glazedlists.swing.TableComparatorChooser;
 import mediathek.config.Daten;
 import mediathek.controller.history.SeenHistoryController;
+import mediathek.gui.bookmark.dialog.BookmarkEditNoteDialog;
 import mediathek.gui.bookmark.renderer.*;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
@@ -384,7 +385,7 @@ public class BookmarkDialog extends JDialog {
         @Override
         public void actionPerformed(ActionEvent e) {
             var bm = selectionModel.getSelected().getFirst();
-            BookmarkEditNoteDialog dialog = new BookmarkEditNoteDialog(BookmarkDialog.this, bm.getNote());
+            var dialog = new BookmarkEditNoteDialog(BookmarkDialog.this, bm.getNote());
             dialog.setVisible(true);
             if (dialog.isOkPressed()) {
                 var notizText = dialog.getNotiz();
