@@ -55,6 +55,9 @@ public class BookmarkEditNoteDialog extends JDialog {
         textArea.setText(initialText != null ? initialText : "");
 
         btnSearch.setIcon(IconUtils.of(MaterialDesignE.EYE, 20));
+        btnSearch.addActionListener(_ -> {
+            //FIXME implement
+        });
     }
 
     public String getNotiz() {
@@ -68,15 +71,15 @@ public class BookmarkEditNoteDialog extends JDialog {
     private void initComponents() {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
         // Generated using JFormDesigner non-commercial license
-        dialogPane = new JPanel();
+        var dialogPane = new JPanel();
         contentPanel = new JPanel();
         var label1 = new JLabel();
-        xDatePicker1 = new JXDatePicker();
+        datePicker = new JXDatePicker();
         btnSearch = new JButton();
         var label2 = new JLabel();
-        scrollPane1 = new JScrollPane();
+        var scrollPane1 = new JScrollPane();
         textArea = new JTextArea();
-        buttonBar = new JPanel();
+        var buttonBar = new JPanel();
         okButton = new JButton();
         cancelButton = new JButton();
 
@@ -112,7 +115,7 @@ public class BookmarkEditNoteDialog extends JDialog {
                 //---- label1 ----
                 label1.setText("Verf\u00fcgbar bis:");
                 contentPanel.add(label1, new CC().cell(0, 0));
-                contentPanel.add(xDatePicker1, new CC().cell(1, 0));
+                contentPanel.add(datePicker, new CC().cell(1, 0));
                 contentPanel.add(btnSearch, new CC().cell(2, 0));
 
                 //---- label2 ----
@@ -121,12 +124,14 @@ public class BookmarkEditNoteDialog extends JDialog {
 
                 //======== scrollPane1 ========
                 {
+                    scrollPane1.setMinimumSize(new Dimension(400, 150));
+                    scrollPane1.setPreferredSize(new Dimension(400, 150));
 
                     //---- textArea ----
                     textArea.setLineWrap(true);
                     textArea.setWrapStyleWord(true);
-                    textArea.setMinimumSize(new Dimension(396, 150));
-                    textArea.setPreferredSize(new Dimension(396, 150));
+                    textArea.setMinimumSize(null);
+                    textArea.setPreferredSize(null);
                     scrollPane1.setViewportView(textArea);
                 }
                 contentPanel.add(scrollPane1, new CC().cell(1, 1, 3, 1).grow());
@@ -163,13 +168,10 @@ public class BookmarkEditNoteDialog extends JDialog {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off
     // Generated using JFormDesigner non-commercial license
-    private JPanel dialogPane;
     private JPanel contentPanel;
-    private JXDatePicker xDatePicker1;
+    private JXDatePicker datePicker;
     private JButton btnSearch;
-    private JScrollPane scrollPane1;
     private JTextArea textArea;
-    private JPanel buttonBar;
     private JButton okButton;
     private JButton cancelButton;
     // JFormDesigner - End of variables declaration  //GEN-END:variables  @formatter:on
