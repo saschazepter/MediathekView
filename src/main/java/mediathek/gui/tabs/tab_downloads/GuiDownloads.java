@@ -3,6 +3,7 @@ package mediathek.gui.tabs.tab_downloads;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
+import com.jidesoft.popup.JidePopup;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.config.MVConfig;
@@ -23,6 +24,7 @@ import mediathek.gui.tabs.AGuiTabPanel;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.swing.IconUtils;
+import mediathek.swing.JIkonliSafeButton;
 import mediathek.tool.*;
 import mediathek.tool.cellrenderer.CellRendererDownloads;
 import mediathek.tool.datum.Datum;
@@ -59,7 +61,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class GuiDownloads extends AGuiTabPanel {
     public static final String NAME = "Downloads";
-    public static final int DIVIDER_LOCATION = -1;
     private static final String COMBO_DISPLAY_ALL = "alle";
     private static final String COMBO_DISPLAY_DOWNLOADS_ONLY = "nur Downloads";
     private static final String COMBO_DISPLAY_ABOS_ONLY = "nur Abos";
@@ -107,7 +108,6 @@ public class GuiDownloads extends AGuiTabPanel {
     protected final EditDownloadAction editDownloadAction = new EditDownloadAction(this);
     protected final DeleteDownloadAction deleteDownloadAction = new DeleteDownloadAction(this);
     protected final OpenTargetFolderAction openTargetFolderAction = new OpenTargetFolderAction(this);
-    protected final ToggleFilterPanelAction toggleFilterPanelAction = new ToggleFilterPanelAction();
     protected final MergeSubtitleWithVideoAction mergeSubtitleWithVideoAction = new MergeSubtitleWithVideoAction(MediathekGui.ui());
     protected final JToolBar swingToolBar = new JToolBar();
     private boolean onlyAbos;
@@ -123,7 +123,6 @@ public class GuiDownloads extends AGuiTabPanel {
      */
     private TModelDownload model;
     private MVDownloadsTable tabelle;
-    private JSplitPane jSplitPane1;
     private JPanel jPanelFilterExtern;
     private JComboBox<String> cbDisplayCategories;
     private JComboBox<String> cbView;
@@ -158,8 +157,6 @@ public class GuiDownloads extends AGuiTabPanel {
         setupDisplayCategories();
 
         setupCheckboxView();
-
-        setupFilterPanel();
 
         if (Taskbar.isTaskbarSupported())
             setupTaskbarMenu();
@@ -264,40 +261,6 @@ public class GuiDownloads extends AGuiTabPanel {
         tabelle.setSpalten();
         if (tabelle.getRowCount() > 0) {
             tabelle.setRowSelectionInterval(0, 0);
-        }
-    }
-
-    private void setupFilterPanel() {
-        final boolean visible = MVConfig.getBool(MVConfig.Configs.SYSTEM_TAB_DOWNLOAD_FILTER_VIS);
-        updateFilterVisibility(visible);
-
-        setSplitDividerLocation();
-        jSplitPane1.addPropertyChangeListener(JSplitPane.DIVIDER_LOCATION_PROPERTY, _ -> {
-            if (jPanelFilterExtern.isVisible()) {
-                config.setProperty(ApplicationConfiguration.APPLICATION_UI_DOWNLOAD_TAB_DIVIDER_LOCATION, jSplitPane1.getDividerLocation());
-            }
-        });
-    }
-
-    protected void toggleDownloadFilterPanel() {
-        boolean visibility = !jPanelFilterExtern.isVisible();
-        updateFilterVisibility(visibility);
-        MVConfig.add(MVConfig.Configs.SYSTEM_TAB_DOWNLOAD_FILTER_VIS, Boolean.toString(visibility));
-    }
-
-    private void updateFilterVisibility(boolean visible) {
-        jPanelFilterExtern.setVisible(visible);
-        if (visible) {
-            setSplitDividerLocation();
-        }
-    }
-
-    private void setSplitDividerLocation() {
-        var location = config.getInt(ApplicationConfiguration.APPLICATION_UI_DOWNLOAD_TAB_DIVIDER_LOCATION, DIVIDER_LOCATION);
-        if (location == DIVIDER_LOCATION) {
-            jSplitPane1.resetToPreferredSizes();
-        } else {
-            jSplitPane1.setDividerLocation(location);
         }
     }
 
@@ -412,8 +375,6 @@ public class GuiDownloads extends AGuiTabPanel {
                 COLUMNS_DISABLED,
                 new int[]{DatenDownload.DOWNLOAD_BUTTON_START, DatenDownload.DOWNLOAD_BUTTON_DEL},
                 true, MVConfig.Configs.SYSTEM_TAB_DOWNLOAD_LINEBREAK));
-
-        setSplitDividerLocation();
     }
 
     @Handler
@@ -950,7 +911,6 @@ public class GuiDownloads extends AGuiTabPanel {
     }
 
     private void initComponents() {
-        jSplitPane1 = new JSplitPane();
         jPanelFilterExtern = new JPanel();
         var panel3 = new JPanel();
         var label1 = new JLabel();
@@ -961,8 +921,6 @@ public class GuiDownloads extends AGuiTabPanel {
         downloadListScrollPane = new JScrollPane();
 
         setLayout(new BorderLayout());
-
-        jSplitPane1.setDividerLocation(330);
 
         jPanelFilterExtern.setPreferredSize(new Dimension(200, 644));
         jPanelFilterExtern.setLayout(new MigLayout(
@@ -998,7 +956,6 @@ public class GuiDownloads extends AGuiTabPanel {
 
         jPanelFilterExtern.add(panel3, new CC().cell(0, 0));
         jPanelFilterExtern.add(dlConfigPanel, new CC().cell(0, 1));
-        jSplitPane1.setLeftComponent(jPanelFilterExtern);
 
         downloadListArea.setLayout(new BorderLayout());
         JPanel tempPanel = new JPanel();
@@ -1007,8 +964,7 @@ public class GuiDownloads extends AGuiTabPanel {
         tempPanel.add(statusBar, BorderLayout.SOUTH);
         downloadListArea.add(tempPanel, BorderLayout.CENTER);
         downloadListArea.add(descriptionTab, BorderLayout.SOUTH);
-        jSplitPane1.setRightComponent(downloadListArea);
-        add(jSplitPane1, BorderLayout.CENTER);
+        add(downloadListArea, BorderLayout.CENTER);
         add(swingToolBar, BorderLayout.NORTH);
 
         createSwingToolBar();
@@ -1045,20 +1001,23 @@ public class GuiDownloads extends AGuiTabPanel {
         swingToolBar.add(deleteDownloadsAction);
         swingToolBar.add(cleanupDownloadListAction);
         swingToolBar.addSeparator();
-        swingToolBar.add(toggleFilterPanelAction);
-    }
+        JIkonliSafeButton btn = new JIkonliSafeButton();
+        btn.setToolTipText("New Filter");
+        btn.setIcon(IconUtils.toolbarIcon(FontAwesomeSolid.FILTER));
 
-    public class ToggleFilterPanelAction extends AbstractAction {
-        public ToggleFilterPanelAction() {
-            putValue(Action.NAME, "Filter anzeigen/ausblenden");
-            putValue(Action.SHORT_DESCRIPTION, "Filter anzeigen/ausblenden");
-            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeSolid.FILTER));
-        }
+        btn.addActionListener(_ -> {
+            JidePopup popup = new JidePopup();
+            popup.setMovable(false); // Bleibt an Ort und Stelle
+            popup.setResizable(true);
+            popup.setFocusable(true);
+            popup.setTransient(true); // Schließt sich bei Klick außerhalb
+            popup.setLayout(new BorderLayout());
+            popup.add(jPanelFilterExtern, BorderLayout.CENTER);
+            popup.setPreferredSize(new Dimension(250, 120));
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            toggleDownloadFilterPanel();
-        }
+            popup.showPopup(btn);
+        });
+        swingToolBar.add(btn);
     }
 
     public class BeobMausTabelle extends MouseAdapter {
