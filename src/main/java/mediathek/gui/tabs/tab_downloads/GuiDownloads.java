@@ -1015,7 +1015,7 @@ public class GuiDownloads extends AGuiTabPanel {
 
         swingToolBar.addSeparator();
         var btn = new JIkonliSafeButton();
-        btn.setToolTipText("New Filter");
+        btn.setToolTipText("Filter");
         btn.setIcon(IconUtils.toolbarIcon(FontAwesomeSolid.FILTER));
         btn.addActionListener(_ -> popup.showPopup(btn));
         swingToolBar.add(btn);
