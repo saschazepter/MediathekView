@@ -72,7 +72,7 @@ public class BookmarkEditNoteDialog extends JDialog {
         // JFormDesigner - Component initialization - DO NOT MODIFY  //GEN-BEGIN:initComponents  @formatter:off
         // Generated using JFormDesigner non-commercial license
         var dialogPane = new JPanel();
-        contentPanel = new JPanel();
+        var contentPanel = new JPanel();
         var label1 = new JLabel();
         datePicker = new JXDatePicker();
         btnSearch = new JButton();
@@ -168,7 +168,6 @@ public class BookmarkEditNoteDialog extends JDialog {
 
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off
     // Generated using JFormDesigner non-commercial license
-    private JPanel contentPanel;
     private JXDatePicker datePicker;
     private JButton btnSearch;
     private JTextArea textArea;

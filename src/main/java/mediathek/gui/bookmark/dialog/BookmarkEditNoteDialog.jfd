@@ -22,6 +22,9 @@ new FormModel {
 					"$rowConstraints": "[][grow,top]"
 				} ) {
 					name: "contentPanel"
+					auxiliary() {
+						"JavaCodeGenerator.variableLocal": true
+					}
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "label1"
 						"text": "Verfügbar bis:"
