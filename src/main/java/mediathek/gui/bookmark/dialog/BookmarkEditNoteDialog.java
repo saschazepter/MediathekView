@@ -39,9 +39,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.time.LocalDate;
 
-/**
- * @author christianfranzke
- */
 public class BookmarkEditNoteDialog extends JDialog {
     private boolean okPressed;
     private final BookmarkData bm;
