@@ -92,7 +92,6 @@ public class GuiDownloads extends AGuiTabPanel {
     private final ActiveDownloadsInfoLabel activeDownloadsInfoLabel = new ActiveDownloadsInfoLabel(startInfoProperty);
     private final FinishedDownloadsInfoLabel finishedDownloadsInfoLabel = new FinishedDownloadsInfoLabel(startInfoProperty);
     private final FailedDownloadsInfoLabel failedDownloadsInfoLabel = new FailedDownloadsInfoLabel(startInfoProperty);
-    private final DownloadsConfigPanel dlConfigPanel = new DownloadsConfigPanel();
     protected final StartAllDownloadsAction startAllDownloadsAction = new StartAllDownloadsAction(this);
     protected final StartAllDownloadsTimedAction startAllDownloadsTimedAction = new StartAllDownloadsTimedAction(this);
     protected final StopAllDownloadsAction stopAllDownloadsAction = new StopAllDownloadsAction(this);
@@ -922,7 +921,6 @@ public class GuiDownloads extends AGuiTabPanel {
 
         setLayout(new BorderLayout());
 
-        jPanelFilterExtern.setPreferredSize(new Dimension(200, 644));
         jPanelFilterExtern.setLayout(new MigLayout(
                 new LC().insets("0").hideMode(3).gridGap("0", "0"), //NON-NLS
                 // columns
@@ -955,10 +953,11 @@ public class GuiDownloads extends AGuiTabPanel {
         panel3.add(cbView, new CC().cell(1, 1));
 
         jPanelFilterExtern.add(panel3, new CC().cell(0, 0));
+        var dlConfigPanel = new DownloadsConfigPanel();
         jPanelFilterExtern.add(dlConfigPanel, new CC().cell(0, 1));
 
         downloadListArea.setLayout(new BorderLayout());
-        JPanel tempPanel = new JPanel();
+        var tempPanel = new JPanel();
         tempPanel.setLayout(new BorderLayout());
         tempPanel.add(downloadListScrollPane, BorderLayout.CENTER);
         tempPanel.add(statusBar, BorderLayout.SOUTH);
