@@ -78,20 +78,6 @@ public class GuiDownloads extends AGuiTabPanel {
     private final static int[] COLUMNS_DISABLED = {DatenDownload.DOWNLOAD_BUTTON_START, DatenDownload.DOWNLOAD_BUTTON_DEL,
             DatenDownload.DOWNLOAD_REF, DatenDownload.DOWNLOAD_URL_RTMP};
     private static final Logger logger = LogManager.getLogger(GuiDownloads.class);
-    private final AtomicLong _lastUpdate = new AtomicLong(0);
-    private final JCheckBoxMenuItem cbShowDownloadDescription = new JCheckBoxMenuItem("Filmbeschreibung anzeigen");
-    private final Configuration config = ApplicationConfiguration.getConfiguration();
-    private final MarkFilmAsSeenAction markFilmAsSeenAction = new MarkFilmAsSeenAction();
-    private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
-    private final JXStatusBar statusBar = new JXStatusBar();
-    private final DownloadStartInfoProperty startInfoProperty = new DownloadStartInfoProperty();
-    private final AboLabel lblAbos = new AboLabel(startInfoProperty);
-    private final TotalDownloadsLabel totalDownloadsLabel = new TotalDownloadsLabel(startInfoProperty);
-    private final ManualDownloadsInfoLabel manualDownloadsInfoLabel = new ManualDownloadsInfoLabel(startInfoProperty);
-    private final WaitingDownloadsInfoLabel waitingDownloadsInfoLabel = new WaitingDownloadsInfoLabel(startInfoProperty);
-    private final ActiveDownloadsInfoLabel activeDownloadsInfoLabel = new ActiveDownloadsInfoLabel(startInfoProperty);
-    private final FinishedDownloadsInfoLabel finishedDownloadsInfoLabel = new FinishedDownloadsInfoLabel(startInfoProperty);
-    private final FailedDownloadsInfoLabel failedDownloadsInfoLabel = new FailedDownloadsInfoLabel(startInfoProperty);
     protected final StartAllDownloadsAction startAllDownloadsAction = new StartAllDownloadsAction(this);
     protected final StartAllDownloadsTimedAction startAllDownloadsTimedAction = new StartAllDownloadsTimedAction(this);
     protected final StopAllDownloadsAction stopAllDownloadsAction = new StopAllDownloadsAction(this);
@@ -109,6 +95,21 @@ public class GuiDownloads extends AGuiTabPanel {
     protected final OpenTargetFolderAction openTargetFolderAction = new OpenTargetFolderAction(this);
     protected final MergeSubtitleWithVideoAction mergeSubtitleWithVideoAction = new MergeSubtitleWithVideoAction(MediathekGui.ui());
     protected final JToolBar swingToolBar = new JToolBar();
+    private final AtomicLong _lastUpdate = new AtomicLong(0);
+    private final JCheckBoxMenuItem cbShowDownloadDescription = new JCheckBoxMenuItem("Filmbeschreibung anzeigen");
+    private final Configuration config = ApplicationConfiguration.getConfiguration();
+    private final MarkFilmAsSeenAction markFilmAsSeenAction = new MarkFilmAsSeenAction();
+    private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
+    private final JXStatusBar statusBar = new JXStatusBar();
+    private final DownloadStartInfoProperty startInfoProperty = new DownloadStartInfoProperty();
+    private final AboLabel lblAbos = new AboLabel(startInfoProperty);
+    private final TotalDownloadsLabel totalDownloadsLabel = new TotalDownloadsLabel(startInfoProperty);
+    private final ManualDownloadsInfoLabel manualDownloadsInfoLabel = new ManualDownloadsInfoLabel(startInfoProperty);
+    private final WaitingDownloadsInfoLabel waitingDownloadsInfoLabel = new WaitingDownloadsInfoLabel(startInfoProperty);
+    private final ActiveDownloadsInfoLabel activeDownloadsInfoLabel = new ActiveDownloadsInfoLabel(startInfoProperty);
+    private final FinishedDownloadsInfoLabel finishedDownloadsInfoLabel = new FinishedDownloadsInfoLabel(startInfoProperty);
+    private final FailedDownloadsInfoLabel failedDownloadsInfoLabel = new FailedDownloadsInfoLabel(startInfoProperty);
+    private final JidePopup popup = new JidePopup();
     private boolean onlyAbos;
     private boolean onlyDownloads;
     private boolean onlyWaiting;
@@ -1003,17 +1004,14 @@ public class GuiDownloads extends AGuiTabPanel {
         JIkonliSafeButton btn = new JIkonliSafeButton();
         btn.setToolTipText("New Filter");
         btn.setIcon(IconUtils.toolbarIcon(FontAwesomeSolid.FILTER));
-
+        popup.setMovable(false); // Bleibt an Ort und Stelle
+        popup.setResizable(true);
+        popup.setFocusable(true);
+        popup.setTransient(true); // Schließt sich bei Klick außerhalb
+        popup.setLayout(new BorderLayout());
+        popup.add(jPanelFilterExtern, BorderLayout.CENTER);
+        popup.packPopup();
         btn.addActionListener(_ -> {
-            JidePopup popup = new JidePopup();
-            popup.setMovable(false); // Bleibt an Ort und Stelle
-            popup.setResizable(true);
-            popup.setFocusable(true);
-            popup.setTransient(true); // Schließt sich bei Klick außerhalb
-            popup.setLayout(new BorderLayout());
-            popup.add(jPanelFilterExtern, BorderLayout.CENTER);
-            popup.packPopup();
-
             popup.showPopup(btn);
         });
         swingToolBar.add(btn);
