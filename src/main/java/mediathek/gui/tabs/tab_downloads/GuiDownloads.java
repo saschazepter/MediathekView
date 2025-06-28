@@ -1004,7 +1004,7 @@ public class GuiDownloads extends AGuiTabPanel {
         panel3.add(label2, new CC().cell(0, 1));
         panel3.add(cbView, new CC().cell(1, 1));
 
-        btnClear.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/broom.svg")); //NON-NLS
+        btnClear.setIcon(IconUtils.of(FontAwesomeSolid.BROOM));
         btnClear.setToolTipText("Filter zurücksetzen"); //NON-NLS
         panel3.add(btnClear, new CC().cell(0, 2, 2, 1).alignX("right").growX(0).width("32:32:32").height("32:32:32")); //NON-NLS
         jPanelFilterExtern.add(panel3, new CC().cell(0, 0));
