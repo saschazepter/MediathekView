@@ -32,7 +32,7 @@ public class PopupDemo {
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setLayout(new FlowLayout());
 
-            JButton btnShowPopup = new JButton("Einstellungen");
+            JButton btnShowPopup = new JButton("S");
 
             btnShowPopup.addActionListener(e -> showPopup(btnShowPopup));
 
