@@ -34,16 +34,8 @@ public class AvailableUntilCellRenderer extends CenteredCellRenderer {
         super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
         var date = (LocalDate) value;
-        var today = LocalDate.now();
         if (date != null) {
-            var dayDifference = Math.abs(ChronoUnit.DAYS.between(today, date));
-            if (date.isBefore(LocalDate.now())) {
-                setForeground(Color.red);
-            }
-            else if (dayDifference < DAYS_UNTIL_END) {
-                setForeground(Color.orange);
-            }
-            else {
+            if (!entryHasExpired(date)) {
                 setTextForeground(table, isSelected);
             }
             setText(date.format(DateUtil.FORMATTER));
@@ -51,18 +43,20 @@ public class AvailableUntilCellRenderer extends CenteredCellRenderer {
         return this;
     }
 
-    private boolean checkExpiry(LocalDate date) {
+    private boolean entryHasExpired(LocalDate date) {
+        boolean result = false;
         var today = LocalDate.now();
-        var dayDifference = Math.abs(ChronoUnit.DAYS.between(today, date));
-        if (date.isBefore(LocalDate.now())) {
+
+        if (date.isBefore(today)) {
             setForeground(Color.red);
-            return true;
+            result = true;
         }
-        else if (dayDifference < DAYS_UNTIL_END) {
+        else if (Math.abs(ChronoUnit.DAYS.between(today, date)) < DAYS_UNTIL_END) {
             setForeground(Color.orange);
-            return true;
+            result = true;
         }
-        return false;
+
+        return result;
     }
 
     private void setTextForeground(@NotNull JTable table, boolean isSelected) {
