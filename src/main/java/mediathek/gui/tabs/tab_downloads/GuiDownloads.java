@@ -134,8 +134,9 @@ public class GuiDownloads extends AGuiTabPanel {
         this.mediathekGui = mediathekGui;
         descriptionPanel = new FilmDescriptionPanel();
 
-
         initComponents();
+        setupFilterPopupMenu();
+
         // use rounded combo boxes
         cbDisplayCategories.putClientProperty("JComponent.roundRect", true);
         cbView.putClientProperty("JComponent.roundRect", true);
@@ -990,6 +991,23 @@ public class GuiDownloads extends AGuiTabPanel {
         });
     }
 
+    private void setupFilterPopupMenu() {
+        popup.setMovable(false);
+        popup.setResizable(false);
+        popup.setFocusable(true);
+        popup.setTransient(true);
+        popup.setLayout(new BorderLayout());
+        popup.add(jPanelFilterExtern, BorderLayout.CENTER);
+        popup.packPopup();
+
+        swingToolBar.addSeparator();
+        var btn = new JIkonliSafeButton();
+        btn.setToolTipText("New Filter");
+        btn.setIcon(IconUtils.toolbarIcon(FontAwesomeSolid.FILTER));
+        btn.addActionListener(_ -> popup.showPopup(btn));
+        swingToolBar.add(btn);
+    }
+
     protected void createSwingToolBar() {
         swingToolBar.setFloatable(true);
         swingToolBar.setName("Downloads");
@@ -1000,21 +1018,6 @@ public class GuiDownloads extends AGuiTabPanel {
         swingToolBar.add(deferDownloadsAction);
         swingToolBar.add(deleteDownloadsAction);
         swingToolBar.add(cleanupDownloadListAction);
-        swingToolBar.addSeparator();
-        JIkonliSafeButton btn = new JIkonliSafeButton();
-        btn.setToolTipText("New Filter");
-        btn.setIcon(IconUtils.toolbarIcon(FontAwesomeSolid.FILTER));
-        popup.setMovable(false); // Bleibt an Ort und Stelle
-        popup.setResizable(true);
-        popup.setFocusable(true);
-        popup.setTransient(true); // Schließt sich bei Klick außerhalb
-        popup.setLayout(new BorderLayout());
-        popup.add(jPanelFilterExtern, BorderLayout.CENTER);
-        popup.packPopup();
-        btn.addActionListener(_ -> {
-            popup.showPopup(btn);
-        });
-        swingToolBar.add(btn);
     }
 
     public class BeobMausTabelle extends MouseAdapter {
