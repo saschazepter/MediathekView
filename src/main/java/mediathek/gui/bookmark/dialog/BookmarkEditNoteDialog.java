@@ -51,23 +51,29 @@ public class BookmarkEditNoteDialog extends JDialog {
         this.bm = bm;
 
         initComponents();
-
-        okButton.addActionListener(_ -> {
-            okPressed = true;
-            dispose();
-        });
-        cancelButton.addActionListener(_ -> dispose());
-
         EscapeKeyHandler.installHandler(this, this::dispose);
-        var initialText = bm.getNote();
-        textArea.setText(initialText != null ? initialText : "");
 
+        setupButtonBar();
+        setupNotizArea();
         setupDatePicker();
 
         btnSearch.setIcon(IconUtils.of(MaterialDesignE.EYE, 20));
         btnSearch.addActionListener(_ -> {
             JOptionPane.showMessageDialog(this,"Not implemented");
         });
+    }
+
+    private void setupButtonBar() {
+        okButton.addActionListener(_ -> {
+            okPressed = true;
+            dispose();
+        });
+        cancelButton.addActionListener(_ -> dispose());
+    }
+
+    private void setupNotizArea() {
+        var initialText = bm.getNote();
+        textArea.setText(initialText != null ? initialText : "");
     }
 
     private void setupDatePicker() {
