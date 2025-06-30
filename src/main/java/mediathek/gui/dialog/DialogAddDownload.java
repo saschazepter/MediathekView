@@ -109,7 +109,7 @@ public class DialogAddDownload extends JDialog {
         if (SystemUtils.IS_OS_MAC_OSX)
             MINIMUM_HEIGHT += 20;
         else if (SystemUtils.IS_OS_LINUX) {
-            MINIMUM_HEIGHT += 100;
+            MINIMUM_HEIGHT += 120;
             MINIMUM_WIDTH = 800;
         }
         var minDim = new Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT);
