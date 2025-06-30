@@ -85,6 +85,11 @@ public class DialogAddDownload extends JDialog {
         super(parent, true);
         initComponents();
 
+        //only install on windows and linux, macOS works...
+        if (!SystemUtils.IS_OS_MAC_OSX) {
+            installMinResizePreventer();
+        }
+
         getRootPane().setDefaultButton(jButtonOk);
         EscapeKeyHandler.installHandler(this, this::dispose);
 
@@ -101,6 +106,23 @@ public class DialogAddDownload extends JDialog {
         setLocationRelativeTo(parent);
 
         addComponentListener(new DialogPositionComponentListener());
+    }
+
+    /// Prevents that a dialog can be resized smaller than its minimum dimensions.
+    /// Needed on Windows and Linux, but not macOS.
+    private void installMinResizePreventer() {
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentResized(ComponentEvent e) {
+                Dimension min = getMinimumSize();
+                Dimension size = getSize();
+                int w = Math.max(size.width, min.width);
+                int h = Math.max(size.height, min.height);
+                if (w != size.width || h != size.height) {
+                    setSize(w, h);
+                }
+            }
+        });
     }
 
     public static void setModelPfad(String pfad, JComboBox<String> jcb) {
