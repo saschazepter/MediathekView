@@ -56,6 +56,8 @@ public class DialogAddDownload extends JDialog {
     private static final String KEY_LABEL_FOREGROUND = "Label.foreground";
     private static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
     private static final String TITLED_BORDER_STRING = "Download-Qualität";
+    private static final int MINIMUM_WIDTH = 660;
+    private static int MINIMUM_HEIGHT = 420;
     private final DatenFilm film;
     private final Optional<FilmResolution.Enum> requestedResolution;
     private final ListePset listeSpeichern = Daten.listePset.getListeSpeichern();
@@ -91,6 +93,9 @@ public class DialogAddDownload extends JDialog {
         this.active_pSet = pSet;
 
         setupUI();
+
+        if (SystemUtils.IS_OS_MAC_OSX)
+            MINIMUM_HEIGHT = 430;
 
         restoreWindowSizeFromConfig();
         setLocationRelativeTo(parent);
@@ -147,8 +152,6 @@ public class DialogAddDownload extends JDialog {
         MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, s);
     }
 
-    private static final int MINIMUM_WIDTH = 660;
-    private static final int MINIMUM_HEIGHT = 420;
     private void restoreWindowSizeFromConfig() {
         var config = ApplicationConfiguration.getConfiguration();
         try {
@@ -159,9 +162,11 @@ public class DialogAddDownload extends JDialog {
             final int y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y);
 
             setBounds(x, y, width, height);
-        } catch (NoSuchElementException ignored) {
+        }
+        catch (NoSuchElementException ignored) {
             //do not restore anything
-        } finally {
+        }
+        finally {
             config.unlock(LockMode.READ);
         }
 
@@ -196,6 +201,7 @@ public class DialogAddDownload extends JDialog {
 
     /**
      * Return only the first part of the long codec name.
+     *
      * @param stream The video stream from ffprobe.
      * @return First entry of long codec name.
      */
@@ -263,8 +269,7 @@ public class DialogAddDownload extends JDialog {
                 SwingUtilities.invokeLater(() -> resetBusyLabelAndButton());
             }
 
-            private int safe_process_bit_rate(Integer in)
-            {
+            private int safe_process_bit_rate(Integer in) {
                 int bits;
                 try {
                     bits = in / 1000;
@@ -334,7 +339,8 @@ public class DialogAddDownload extends JDialog {
                     var err_msg = msg[msg.length - 1].trim();
                     if (err_msg.startsWith(ERR_MSG_PART)) {
                         final_str = err_msg.substring(ERR_MSG_PART.length());
-                    } else {
+                    }
+                    else {
                         final_str = MSG_UNKNOWN_ERROR;
                     }
                 }
@@ -514,7 +520,8 @@ public class DialogAddDownload extends JDialog {
 
         if (active_pSet != null) {
             jComboBoxPset.setSelectedItem(active_pSet.getName());
-        } else {
+        }
+        else {
             active_pSet = listeSpeichern.get(jComboBoxPset.getSelectedIndex());
         }
         jComboBoxPset.addActionListener(_ -> setupResolutionButtons());
@@ -548,7 +555,8 @@ public class DialogAddDownload extends JDialog {
                     nameGeaendert = true;
                     if (!jTextFieldName.getText().equals(FilenameUtils.checkDateiname(jTextFieldName.getText(), false /*pfad*/))) {
                         jTextFieldName.setBackground(MVColor.DOWNLOAD_FEHLER.color);
-                    } else {
+                    }
+                    else {
                         jTextFieldName.setBackground(UIManager.getDefaults().getColor(KEY_TEXTFIELD_BACKGROUND));
                     }
                 }
@@ -586,7 +594,8 @@ public class DialogAddDownload extends JDialog {
                         final var editor = jComboBoxPfad.getEditor().getEditorComponent();
                         if (!s.equals(FilenameUtils.checkDateiname(s, true))) {
                             editor.setBackground(MVColor.DOWNLOAD_FEHLER.color);
-                        } else {
+                        }
+                        else {
                             editor.setBackground(UIManager.getColor(KEY_TEXTFIELD_BACKGROUND));
                         }
                     }
@@ -605,7 +614,7 @@ public class DialogAddDownload extends JDialog {
             if (!Objects.requireNonNull(jComboBoxPfad.getSelectedItem()).toString().isEmpty()) {
                 initialDirectory = jComboBoxPfad.getSelectedItem().toString();
             }
-            var directory = FileDialogs.chooseDirectoryLocation(MediathekGui.ui(),"Film speichern",initialDirectory);
+            var directory = FileDialogs.chooseDirectoryLocation(MediathekGui.ui(), "Film speichern", initialDirectory);
             if (directory != null) {
                 var selectedDirectory = directory.getAbsolutePath();
                 jComboBoxPfad.addItem(selectedDirectory);
@@ -630,7 +639,8 @@ public class DialogAddDownload extends JDialog {
             hqFuture.get();
             hochFuture.get();
             kleinFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
+        }
+        catch (InterruptedException | ExecutionException e) {
             logger.error("Error occured while waiting for file size futures", e);
         }
         finally {
@@ -659,7 +669,8 @@ public class DialogAddDownload extends JDialog {
                 jButtonZiel.setEnabled(false);
                 jTextFieldName.setText("");
                 jComboBoxPfad.setModel(new DefaultComboBoxModel<>(new String[]{""}));
-            } else {
+            }
+            else {
                 jTextFieldName.setEnabled(true);
                 jComboBoxPfad.setEnabled(true);
                 jButtonZiel.setEnabled(true);
@@ -691,12 +702,14 @@ public class DialogAddDownload extends JDialog {
                 if (path == null) {
                     //there is no way to determine usable space...
                     usableSpace = 0;
-                } else {
+                }
+                else {
                     final FileStore fileStore = Files.getFileStore(path);
                     usableSpace = fileStore.getUsableSpace();
                 }
-            } catch (Exception ex) {
-                logger.error("getFreeDiskSpace Failed",ex);
+            }
+            catch (Exception ex) {
+                logger.error("getFreeDiskSpace Failed", ex);
             }
         }
         return usableSpace;
@@ -714,11 +727,12 @@ public class DialogAddDownload extends JDialog {
         }
 
         try {
-            var filmBorder = (TitledBorder)jPanelSize.getBorder();
+            var filmBorder = (TitledBorder) jPanelSize.getBorder();
             long usableSpace = getFreeDiskSpace(cbPathTextComponent.getText());
             if (usableSpace > 0) {
                 filmBorder.setTitle(TITLED_BORDER_STRING + " [ Freier Speicherplatz: " + FileUtils.humanReadableByteCountBinary(usableSpace) + " ]");
-            } else {
+            }
+            else {
                 filmBorder.setTitle(TITLED_BORDER_STRING);
             }
             //border needs to be repainted after update...
@@ -747,7 +761,8 @@ public class DialogAddDownload extends JDialog {
                     }
                 }
             }
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             logger.error("calculateAndCheckDiskSpace()", ex);
         }
     }
@@ -789,9 +804,11 @@ public class DialogAddDownload extends JDialog {
         requestedResolution.ifPresent(it -> highQualityMandated = it == FilmResolution.Enum.HIGH_QUALITY);
         if (highQualityMandated || isHighQualityRequested()) {
             jRadioButtonAufloesungHd.setSelected(true);
-        } else if (isLowQualityRequested()) {
+        }
+        else if (isLowQualityRequested()) {
             jRadioButtonAufloesungKlein.setSelected(true);
-        } else {
+        }
+        else {
             jRadioButtonAufloesungHoch.setSelected(true);
         }
     }
@@ -799,7 +816,8 @@ public class DialogAddDownload extends JDialog {
     private void prepareSubtitleCheckbox() {
         if (!film.hasSubtitle()) {
             jCheckBoxSubtitle.setEnabled(false);
-        } else {
+        }
+        else {
             jCheckBoxSubtitle.setSelected(active_pSet.shouldDownloadSubtitle());
         }
     }
@@ -812,9 +830,11 @@ public class DialogAddDownload extends JDialog {
     private FilmResolution.Enum getFilmResolution() {
         if (jRadioButtonAufloesungHd.isSelected()) {
             return FilmResolution.Enum.HIGH_QUALITY;
-        } else if (jRadioButtonAufloesungKlein.isSelected()) {
+        }
+        else if (jRadioButtonAufloesungKlein.isSelected()) {
             return FilmResolution.Enum.LOW;
-        } else {
+        }
+        else {
             return FilmResolution.Enum.NORMAL;
         }
     }
@@ -822,9 +842,11 @@ public class DialogAddDownload extends JDialog {
     private String getFilmSize() {
         if (jRadioButtonAufloesungHd.isSelected()) {
             return dateiGroesse_HQ;
-        } else if (jRadioButtonAufloesungKlein.isSelected()) {
+        }
+        else if (jRadioButtonAufloesungKlein.isSelected()) {
             return dateiGroesse_Klein;
-        } else {
+        }
+        else {
             return dateiGroesse_Hoch;
         }
     }
@@ -836,13 +858,15 @@ public class DialogAddDownload extends JDialog {
         if (datenDownload != null) {
             if (pfad.isEmpty() || name.isEmpty()) {
                 MVMessageDialog.showMessageDialog(this, "Pfad oder Name ist leer", "Fehlerhafter Pfad/Name!", JOptionPane.ERROR_MESSAGE);
-            } else {
+            }
+            else {
                 if (!pfad.substring(pfad.length() - 1).equals(File.separator)) {
                     pfad += File.separator;
                 }
                 if (GuiFunktionenProgramme.checkPathWriteable(pfad)) {
                     ok = true;
-                } else {
+                }
+                else {
                     MVMessageDialog.showMessageDialog(this, "Pfad ist nicht beschreibbar", "Fehlerhafter Pfad!", JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -850,8 +874,7 @@ public class DialogAddDownload extends JDialog {
         return ok;
     }
 
-    private void addDownloadToQueue()
-    {
+    private void addDownloadToQueue() {
         Daten.getInstance().getListeDownloads().addMitNummer(datenDownload);
         MessageBus.getMessageBus().publishAsync(new DownloadListChangedEvent());
 
@@ -898,7 +921,8 @@ public class DialogAddDownload extends JDialog {
                 config.setProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT, dims.height);
                 config.setProperty(ApplicationConfiguration.AddDownloadDialog.X, loc.x);
                 config.setProperty(ApplicationConfiguration.AddDownloadDialog.Y, loc.y);
-            } finally {
+            }
+            finally {
                 config.unlock(LockMode.WRITE);
             }
         }
@@ -1188,7 +1212,7 @@ public class DialogAddDownload extends JDialog {
                         .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(7, Short.MAX_VALUE))
+                        .addContainerGap(8, Short.MAX_VALUE))
             );
         }
 
