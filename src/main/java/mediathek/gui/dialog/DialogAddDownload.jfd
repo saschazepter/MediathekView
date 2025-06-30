@@ -5,7 +5,7 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 			"$horizontalGroup": "par l {seq {space :::p, par l {comp jTextFieldSender::l:::x, comp jPanel1::t:::x, comp jPanel2::t::656:x, comp jPanelSize::l:::x, comp buttonPanel::l:::x}, space :::p}}"
-			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanel2:::p::p, space :::p, comp jPanelSize:::p:113:p, space :::p, comp buttonPanel:::p::p, space ::4:x}}"
+			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanel2:::p::p, space :::p, comp jPanelSize:::p::p, space :::p, comp buttonPanel:::p::p, space :::x}}"
 		} ) {
 			name: "this"
 			"defaultCloseOperation": 2

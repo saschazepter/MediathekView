@@ -57,7 +57,7 @@ public class DialogAddDownload extends JDialog {
     private static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
     private static final String TITLED_BORDER_STRING = "Download-Qualität";
     private static int MINIMUM_WIDTH = 660;
-    private static int MINIMUM_HEIGHT = 420;
+    private static int MINIMUM_HEIGHT = 450;
     private final DatenFilm film;
     private final Optional<FilmResolution.Enum> requestedResolution;
     private final ListePset listeSpeichern = Daten.listePset.getListeSpeichern();
@@ -101,13 +101,15 @@ public class DialogAddDownload extends JDialog {
         setLocationRelativeTo(parent);
 
         addComponentListener(new DialogPositionComponentListener());
+
+        SwingUtilities.invokeLater(() -> jButtonOk.requestFocus());
     }
 
     private void setupMinimumSizeForOs() {
         if (SystemUtils.IS_OS_MAC_OSX)
-            MINIMUM_HEIGHT = 430;
+            MINIMUM_HEIGHT += 10;
         else if (SystemUtils.IS_OS_LINUX) {
-            MINIMUM_HEIGHT = 520;
+            MINIMUM_HEIGHT += 100;
             MINIMUM_WIDTH = 800;
         }
         var minDim = new Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT);
@@ -1275,10 +1277,10 @@ public class DialogAddDownload extends JDialog {
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(jPanelSize, GroupLayout.PREFERRED_SIZE, 113, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanelSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(buttonPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(4, Short.MAX_VALUE))
+                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pack();
         setLocationRelativeTo(getOwner());
