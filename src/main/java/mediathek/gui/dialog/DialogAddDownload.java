@@ -107,7 +107,7 @@ public class DialogAddDownload extends JDialog {
 
     private void setupMinimumSizeForOs() {
         if (SystemUtils.IS_OS_MAC_OSX)
-            MINIMUM_HEIGHT += 10;
+            MINIMUM_HEIGHT += 20;
         else if (SystemUtils.IS_OS_LINUX) {
             MINIMUM_HEIGHT += 100;
             MINIMUM_WIDTH = 800;
