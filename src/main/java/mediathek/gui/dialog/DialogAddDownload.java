@@ -91,9 +91,7 @@ public class DialogAddDownload extends JDialog {
         this.active_pSet = pSet;
 
         setupUI();
-        if (SystemUtils.IS_OS_MAC_OSX) {
-            pack();
-        }
+
         restoreWindowSizeFromConfig();
         setLocationRelativeTo(parent);
 
@@ -942,8 +940,8 @@ public class DialogAddDownload extends JDialog {
         //======== this ========
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Film speichern");
-        setMinimumSize(new Dimension(646, 420));
-        setPreferredSize(new Dimension(646, 420));
+        setMinimumSize(new Dimension(660, 420));
+        setPreferredSize(new Dimension(660, 420));
         var contentPane = getContentPane();
 
         //======== panel1 ========
@@ -1201,7 +1199,7 @@ public class DialogAddDownload extends JDialog {
                     .addGroup(contentPaneLayout.createParallelGroup()
                         .addComponent(jCheckBoxStarten)
                         .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(2, Short.MAX_VALUE))
+                    .addContainerGap(3, Short.MAX_VALUE))
         );
         pack();
         setLocationRelativeTo(getOwner());

@@ -5,13 +5,13 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 			"$horizontalGroup": "par l {seq t {space :::p, par t {comp jPanel1::t:::x, comp jTextFieldSender::l:::x, comp jPanelSize::l:::x, seq l {comp jCheckBoxStarten:::p::p, space ::252:x, comp panel1:::p::p}}, space :::p}}"
-			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanelSize:::p::p, space :p::p, par l {comp jCheckBoxStarten:::p::p, comp panel1:::p::p}, space ::2:x}}"
+			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanelSize:::p::p, space :p::p, par l {comp jCheckBoxStarten:::p::p, comp panel1:::p::p}, space ::3:x}}"
 		} ) {
 			name: "this"
 			"defaultCloseOperation": 2
 			"title": "Film speichern"
-			"minimumSize": new java.awt.Dimension( 646, 420 )
-			"preferredSize": new java.awt.Dimension( 646, 420 )
+			"minimumSize": new java.awt.Dimension( 660, 420 )
+			"preferredSize": new java.awt.Dimension( 660, 420 )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 				"$horizontalGroup": "par l {seq {space :::p, comp jButtonOk:1::p:93:p, space :::p, comp jButtonAbbrechen:1::p::p, space :::p}}"
 				"$verticalGroup": "par l {seq {space :::p, par b {comp jButtonOk::b:p::p, comp jButtonAbbrechen::b:p::p}, space :::p}}"
