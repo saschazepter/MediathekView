@@ -4,19 +4,23 @@ new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-			"$horizontalGroup": "par l {seq l {space :::p, par l {comp panel2:::::x, comp jPanel1::t:::x, comp jTextFieldSender::l:::x, comp jPanelSize::l:::x}, space :::p}}"
-			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanelSize:::p::p, space :::p, comp panel2:::p::p, space :::x}}"
+			"$horizontalGroup": "par l {seq l {space :::p, par l {comp buttonPanel:::::x, comp jPanel1::t:::x, comp jTextFieldSender::l:::x, comp jPanelSize::l:::x}, space :::p}}"
+			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanelSize:::p:113:p, space :::p, comp buttonPanel:::p::p, space :::x}}"
 		} ) {
 			name: "this"
 			"defaultCloseOperation": 2
 			"title": "Film speichern"
 			"minimumSize": new java.awt.Dimension( 660, 420 )
 			"preferredSize": new java.awt.Dimension( 660, 420 )
+			"maximumSize": new java.awt.Dimension( 1024, 800 )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 				"$horizontalGroup": "par l {seq {space :::p, comp jCheckBoxStarten:::p::p, space :::x, comp panel1:::p::p, space :::p}}"
 				"$verticalGroup": "par l {seq {space :::p, par l {comp jCheckBoxStarten:::p::p, comp panel1:::p::p}, space :::p}}"
 			} ) {
-				name: "panel2"
+				name: "buttonPanel"
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 					"$horizontalGroup": "par l {seq {space :::p, comp jButtonOk:1::p:93:p, space :::p, comp jButtonAbbrechen:1::p::p, space :::p}}"
 					"$verticalGroup": "par l {seq {space :::p, par b {comp jButtonOk::b:p::p, comp jButtonAbbrechen::b:p::p}, space :::p}}"
@@ -135,7 +139,7 @@ new FormModel {
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::626:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
-				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space ::8:x}}"
+				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space :::x}}"
 			} ) {
 				name: "jPanelSize"
 				"border": new javax.swing.border.TitledBorder( "Download-Qualität" )

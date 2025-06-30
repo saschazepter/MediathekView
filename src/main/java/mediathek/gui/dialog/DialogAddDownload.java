@@ -962,7 +962,7 @@ public class DialogAddDownload extends JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     // Generated using JFormDesigner non-commercial license
     private void initComponents() {
-        panel2 = new JPanel();
+        var buttonPanel = new JPanel();
         panel1 = new JPanel();
         jButtonOk = new JButton();
         jButtonAbbrechen = new JButton();
@@ -1000,9 +1000,10 @@ public class DialogAddDownload extends JDialog {
         setTitle("Film speichern");
         setMinimumSize(new Dimension(660, 420));
         setPreferredSize(new Dimension(660, 420));
+        setMaximumSize(new Dimension(1024, 800));
         var contentPane = getContentPane();
 
-        //======== panel2 ========
+        //======== buttonPanel ========
         {
 
             //======== panel1 ========
@@ -1041,22 +1042,22 @@ public class DialogAddDownload extends JDialog {
             jCheckBoxStarten.setSelected(true);
             jCheckBoxStarten.setText("Download sofort starten");
 
-            GroupLayout panel2Layout = new GroupLayout(panel2);
-            panel2.setLayout(panel2Layout);
-            panel2Layout.setHorizontalGroup(
-                panel2Layout.createParallelGroup()
-                    .addGroup(panel2Layout.createSequentialGroup()
+            GroupLayout buttonPanelLayout = new GroupLayout(buttonPanel);
+            buttonPanel.setLayout(buttonPanelLayout);
+            buttonPanelLayout.setHorizontalGroup(
+                buttonPanelLayout.createParallelGroup()
+                    .addGroup(buttonPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(jCheckBoxStarten)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
             );
-            panel2Layout.setVerticalGroup(
-                panel2Layout.createParallelGroup()
-                    .addGroup(panel2Layout.createSequentialGroup()
+            buttonPanelLayout.setVerticalGroup(
+                buttonPanelLayout.createParallelGroup()
+                    .addGroup(buttonPanelLayout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(panel2Layout.createParallelGroup()
+                        .addGroup(buttonPanelLayout.createParallelGroup()
                             .addComponent(jCheckBoxStarten)
                             .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                         .addContainerGap())
@@ -1243,7 +1244,7 @@ public class DialogAddDownload extends JDialog {
                         .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(8, Short.MAX_VALUE))
+                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
         }
 
@@ -1260,7 +1261,7 @@ public class DialogAddDownload extends JDialog {
                 .addGroup(contentPaneLayout.createSequentialGroup()
                     .addContainerGap()
                     .addGroup(contentPaneLayout.createParallelGroup()
-                        .addComponent(panel2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(buttonPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jPanel1, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(jTextFieldSender)
                         .addComponent(jPanelSize, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -1274,9 +1275,9 @@ public class DialogAddDownload extends JDialog {
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(jPanelSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanelSize, GroupLayout.PREFERRED_SIZE, 113, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(panel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(buttonPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pack();
@@ -1291,7 +1292,6 @@ public class DialogAddDownload extends JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JPanel panel2;
     private JPanel panel1;
     private JButton jButtonOk;
     private JButton jButtonAbbrechen;
