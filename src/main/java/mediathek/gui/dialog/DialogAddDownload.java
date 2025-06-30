@@ -57,7 +57,7 @@ public class DialogAddDownload extends JDialog {
     private static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
     private static final String TITLED_BORDER_STRING = "Download-Qualität";
     private static int MINIMUM_WIDTH = 660;
-    private static int MINIMUM_HEIGHT = 450;
+    private static int MINIMUM_HEIGHT = 430;
     private final DatenFilm film;
     private final Optional<FilmResolution.Enum> requestedResolution;
     private final ListePset listeSpeichern = Daten.listePset.getListeSpeichern();
@@ -1114,7 +1114,7 @@ public class DialogAddDownload extends JDialog {
                                         .addComponent(jLabel1))
                                     .addGap(20, 20, 20)
                                     .addGroup(jPanel7Layout.createParallelGroup()
-                                        .addComponent(jPanel4, GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
+                                        .addComponent(jPanel4, GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
                                         .addComponent(jComboBoxPset)))
                                 .addGroup(jPanel7Layout.createSequentialGroup()
                                     .addComponent(jLabel4)
@@ -1224,7 +1224,7 @@ public class DialogAddDownload extends JDialog {
                         .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap(7, Short.MAX_VALUE))
             );
         }
 
