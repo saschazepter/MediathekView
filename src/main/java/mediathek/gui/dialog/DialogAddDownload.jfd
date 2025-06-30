@@ -4,8 +4,8 @@ new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-			"$horizontalGroup": "par l {seq t {space :::p, par t {comp jPanel1::t:::x, comp jTextFieldSender::l:::x, comp jPanelSize::l:::x, seq l {comp jCheckBoxStarten:::p::p, space ::252:x, comp panel1:::p::p}}, space :::p}}"
-			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanelSize:::p::p, space :p::p, par l {comp jCheckBoxStarten:::p::p, comp panel1:::p::p}, space ::3:x}}"
+			"$horizontalGroup": "par l {seq l {space :::p, par l {comp panel2:::::x, comp jPanel1::t:::x, comp jTextFieldSender::l:::x, comp jPanelSize::l:::x}, space :::p}}"
+			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanelSize:::p::p, space :::p, comp panel2:::p::p, space :::x}}"
 		} ) {
 			name: "this"
 			"defaultCloseOperation": 2
@@ -13,23 +13,29 @@ new FormModel {
 			"minimumSize": new java.awt.Dimension( 660, 420 )
 			"preferredSize": new java.awt.Dimension( 660, 420 )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, comp jButtonOk:1::p:93:p, space :::p, comp jButtonAbbrechen:1::p::p, space :::p}}"
-				"$verticalGroup": "par l {seq {space :::p, par b {comp jButtonOk::b:p::p, comp jButtonAbbrechen::b:p::p}, space :::p}}"
+				"$horizontalGroup": "par l {seq {space :::p, comp jCheckBoxStarten:::p::p, space :::x, comp panel1:::p::p, space :::p}}"
+				"$verticalGroup": "par l {seq {space :::p, par l {comp jCheckBoxStarten:::p::p, comp panel1:::p::p}, space :::p}}"
 			} ) {
-				name: "panel1"
-				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "jButtonOk"
-					"text": "Ok"
+				name: "panel2"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
+					"$horizontalGroup": "par l {seq {space :::p, comp jButtonOk:1::p:93:p, space :::p, comp jButtonAbbrechen:1::p::p, space :::p}}"
+					"$verticalGroup": "par l {seq {space :::p, par b {comp jButtonOk::b:p::p, comp jButtonAbbrechen::b:p::p}, space :::p}}"
+				} ) {
+					name: "panel1"
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "jButtonOk"
+						"text": "Ok"
+					} )
+					add( new FormComponent( "javax.swing.JButton" ) {
+						name: "jButtonAbbrechen"
+						"text": "Abbrechen"
+					} )
 				} )
-				add( new FormComponent( "javax.swing.JButton" ) {
-					name: "jButtonAbbrechen"
-					"text": "Abbrechen"
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "jCheckBoxStarten"
+					"selected": true
+					"text": "Download sofort starten"
 				} )
-			} )
-			add( new FormComponent( "javax.swing.JCheckBox" ) {
-				name: "jCheckBoxStarten"
-				"selected": true
-				"text": "Download sofort starten"
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel2::::636:x, comp jPanel7:::::x}, space :::p}}"
@@ -129,7 +135,7 @@ new FormModel {
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::626:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
-				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space :::x}}"
+				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space ::7:x}}"
 			} ) {
 				name: "jPanelSize"
 				"border": new javax.swing.border.TitledBorder( "Download-Qualität" )

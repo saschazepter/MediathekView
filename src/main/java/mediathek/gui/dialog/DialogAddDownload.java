@@ -147,12 +147,14 @@ public class DialogAddDownload extends JDialog {
         MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, s);
     }
 
+    private static final int MINIMUM_WIDTH = 660;
+    private static final int MINIMUM_HEIGHT = 420;
     private void restoreWindowSizeFromConfig() {
         var config = ApplicationConfiguration.getConfiguration();
         try {
             config.lock(LockMode.READ);
-            final int width = config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH);
-            final int height = config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT);
+            int width = Math.max(config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH), MINIMUM_WIDTH);
+            int height = Math.max(config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT), MINIMUM_HEIGHT);
             final int x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X);
             final int y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y);
 
@@ -905,6 +907,7 @@ public class DialogAddDownload extends JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     // Generated using JFormDesigner non-commercial license
     private void initComponents() {
+        panel2 = new JPanel();
         panel1 = new JPanel();
         jButtonOk = new JButton();
         jButtonAbbrechen = new JButton();
@@ -944,41 +947,66 @@ public class DialogAddDownload extends JDialog {
         setPreferredSize(new Dimension(660, 420));
         var contentPane = getContentPane();
 
-        //======== panel1 ========
+        //======== panel2 ========
         {
 
-            //---- jButtonOk ----
-            jButtonOk.setText("Ok");
+            //======== panel1 ========
+            {
 
-            //---- jButtonAbbrechen ----
-            jButtonAbbrechen.setText("Abbrechen");
+                //---- jButtonOk ----
+                jButtonOk.setText("Ok");
 
-            GroupLayout panel1Layout = new GroupLayout(panel1);
-            panel1.setLayout(panel1Layout);
-            panel1Layout.setHorizontalGroup(
-                panel1Layout.createParallelGroup()
-                    .addGroup(panel1Layout.createSequentialGroup()
+                //---- jButtonAbbrechen ----
+                jButtonAbbrechen.setText("Abbrechen");
+
+                GroupLayout panel1Layout = new GroupLayout(panel1);
+                panel1.setLayout(panel1Layout);
+                panel1Layout.setHorizontalGroup(
+                    panel1Layout.createParallelGroup()
+                        .addGroup(panel1Layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addComponent(jButtonOk, GroupLayout.PREFERRED_SIZE, 93, GroupLayout.PREFERRED_SIZE)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                            .addComponent(jButtonAbbrechen)
+                            .addContainerGap())
+                );
+                panel1Layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {jButtonAbbrechen, jButtonOk});
+                panel1Layout.setVerticalGroup(
+                    panel1Layout.createParallelGroup()
+                        .addGroup(panel1Layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addGroup(panel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(jButtonOk)
+                                .addComponent(jButtonAbbrechen))
+                            .addContainerGap())
+                );
+            }
+
+            //---- jCheckBoxStarten ----
+            jCheckBoxStarten.setSelected(true);
+            jCheckBoxStarten.setText("Download sofort starten");
+
+            GroupLayout panel2Layout = new GroupLayout(panel2);
+            panel2.setLayout(panel2Layout);
+            panel2Layout.setHorizontalGroup(
+                panel2Layout.createParallelGroup()
+                    .addGroup(panel2Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(jButtonOk, GroupLayout.PREFERRED_SIZE, 93, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonAbbrechen)
+                        .addComponent(jCheckBoxStarten)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addContainerGap())
             );
-            panel1Layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {jButtonAbbrechen, jButtonOk});
-            panel1Layout.setVerticalGroup(
-                panel1Layout.createParallelGroup()
-                    .addGroup(panel1Layout.createSequentialGroup()
+            panel2Layout.setVerticalGroup(
+                panel2Layout.createParallelGroup()
+                    .addGroup(panel2Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(panel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                            .addComponent(jButtonOk)
-                            .addComponent(jButtonAbbrechen))
+                        .addGroup(panel2Layout.createParallelGroup()
+                            .addComponent(jCheckBoxStarten)
+                            .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                         .addContainerGap())
             );
         }
-
-        //---- jCheckBoxStarten ----
-        jCheckBoxStarten.setSelected(true);
-        jCheckBoxStarten.setText("Download sofort starten");
 
         //======== jPanel1 ========
         {
@@ -1160,7 +1188,7 @@ public class DialogAddDownload extends JDialog {
                         .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap(7, Short.MAX_VALUE))
             );
         }
 
@@ -1174,16 +1202,13 @@ public class DialogAddDownload extends JDialog {
         contentPane.setLayout(contentPaneLayout);
         contentPaneLayout.setHorizontalGroup(
             contentPaneLayout.createParallelGroup()
-                .addGroup(GroupLayout.Alignment.TRAILING, contentPaneLayout.createSequentialGroup()
+                .addGroup(contentPaneLayout.createSequentialGroup()
                     .addContainerGap()
-                    .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                        .addComponent(jPanel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jTextFieldSender, GroupLayout.Alignment.LEADING)
-                        .addComponent(jPanelSize, GroupLayout.Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(GroupLayout.Alignment.LEADING, contentPaneLayout.createSequentialGroup()
-                            .addComponent(jCheckBoxStarten)
-                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 252, Short.MAX_VALUE)
-                            .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(contentPaneLayout.createParallelGroup()
+                        .addComponent(panel2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jPanel1, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jTextFieldSender)
+                        .addComponent(jPanelSize, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addContainerGap())
         );
         contentPaneLayout.setVerticalGroup(
@@ -1196,10 +1221,8 @@ public class DialogAddDownload extends JDialog {
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(jPanelSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(contentPaneLayout.createParallelGroup()
-                        .addComponent(jCheckBoxStarten)
-                        .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(3, Short.MAX_VALUE))
+                    .addComponent(panel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         pack();
         setLocationRelativeTo(getOwner());
@@ -1213,6 +1236,7 @@ public class DialogAddDownload extends JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
+    private JPanel panel2;
     private JPanel panel1;
     private JButton jButtonOk;
     private JButton jButtonAbbrechen;
