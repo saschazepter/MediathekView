@@ -56,7 +56,7 @@ public class DialogAddDownload extends JDialog {
     private static final String KEY_LABEL_FOREGROUND = "Label.foreground";
     private static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
     private static final String TITLED_BORDER_STRING = "Download-Qualität";
-    private static final int MINIMUM_WIDTH = 660;
+    private static int MINIMUM_WIDTH = 660;
     private static int MINIMUM_HEIGHT = 420;
     private final DatenFilm film;
     private final Optional<FilmResolution.Enum> requestedResolution;
@@ -85,11 +85,6 @@ public class DialogAddDownload extends JDialog {
         super(parent, true);
         initComponents();
 
-        //only install on windows and linux, macOS works...
-        if (!SystemUtils.IS_OS_MAC_OSX) {
-            installMinResizePreventer();
-        }
-
         getRootPane().setDefaultButton(jButtonOk);
         EscapeKeyHandler.installHandler(this, this::dispose);
 
@@ -99,17 +94,30 @@ public class DialogAddDownload extends JDialog {
 
         setupUI();
 
-        if (SystemUtils.IS_OS_MAC_OSX)
-            MINIMUM_HEIGHT = 430;
+        setupMinimumSizeForOs();
+        restoreWindowSizeFromConfig();        //only install on windows and linux, macOS works...
+        if (SystemUtils.IS_OS_WINDOWS) {
+            installMinResizePreventer();
+        }
 
-        restoreWindowSizeFromConfig();
         setLocationRelativeTo(parent);
 
         addComponentListener(new DialogPositionComponentListener());
     }
 
+    private void setupMinimumSizeForOs() {
+        if (SystemUtils.IS_OS_MAC_OSX)
+            MINIMUM_HEIGHT = 430;
+        else if (SystemUtils.IS_OS_LINUX) {
+            MINIMUM_HEIGHT = 520;
+            MINIMUM_WIDTH = 800;
+        }
+        var minDim = new Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT);
+        setMinimumSize(minDim);
+    }
+
     /// Prevents that a dialog can be resized smaller than its minimum dimensions.
-    /// Needed on Windows and Linux, but not macOS.
+    /// Needed on Windows, but not macOS and Linux.
     private void installMinResizePreventer() {
         addComponentListener(new ComponentAdapter() {
             @Override
