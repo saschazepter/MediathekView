@@ -1234,7 +1234,7 @@ public class DialogAddDownload extends JDialog {
 
         //======== jPanel2 ========
         {
-            jPanel2.setBorder(new TitledBorder("text"));
+            jPanel2.setBorder(new TitledBorder("Optionen"));
             jPanel2.setLayout(new GridLayout(2, 2));
 
             //---- jCheckBoxInfodatei ----
@@ -1275,7 +1275,7 @@ public class DialogAddDownload extends JDialog {
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(jPanelSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanelSize, GroupLayout.PREFERRED_SIZE, 113, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(buttonPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addContainerGap(4, Short.MAX_VALUE))
