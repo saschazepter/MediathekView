@@ -22,6 +22,7 @@ import org.apache.commons.configuration2.sync.LockMode;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdesktop.swingx.JXBusyLabel;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -190,7 +191,7 @@ public class DialogAddDownload extends JDialog {
         jRadioButtonAufloesungHoch.addActionListener(listener);
         jRadioButtonAufloesungHoch.setSelected(true);
 
-        btnRequestLiveInfo.addActionListener(l -> handleRequestLiveFilmInfo());
+        btnRequestLiveInfo.addActionListener(_ -> handleRequestLiveFilmInfo());
     }
 
     /**
@@ -379,18 +380,18 @@ public class DialogAddDownload extends JDialog {
         launchResolutionFutures();
 
         jCheckBoxStarten.setSelected(Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN)));
-        jCheckBoxStarten.addActionListener(e -> MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN, String.valueOf(jCheckBoxStarten.isSelected())));
+        jCheckBoxStarten.addActionListener(_ -> MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN, String.valueOf(jCheckBoxStarten.isSelected())));
 
         setupZielButton();
 
-        jButtonOk.addActionListener(e -> {
+        jButtonOk.addActionListener(_ -> {
             if (check()) {
                 saveComboPfad(jComboBoxPfad, orgPfad);
                 saveDownload();
             }
         });
 
-        jButtonAbbrechen.addActionListener(e -> dispose());
+        jButtonAbbrechen.addActionListener(_ -> dispose());
 
         setupPSetComboBox();
         setupSenderTextField();
@@ -516,7 +517,7 @@ public class DialogAddDownload extends JDialog {
         } else {
             active_pSet = listeSpeichern.get(jComboBoxPset.getSelectedIndex());
         }
-        jComboBoxPset.addActionListener(e -> setupResolutionButtons());
+        jComboBoxPset.addActionListener(_ -> setupResolutionButtons());
     }
 
     private void setupSenderTextField() {
@@ -599,7 +600,7 @@ public class DialogAddDownload extends JDialog {
     private void setupZielButton() {
         jButtonZiel.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/folder-open.svg"));
         jButtonZiel.setText("");
-        jButtonZiel.addActionListener(l -> {
+        jButtonZiel.addActionListener(_ -> {
             var initialDirectory = "";
             if (!Objects.requireNonNull(jComboBoxPfad.getSelectedItem()).toString().isEmpty()) {
                 initialDirectory = jComboBoxPfad.getSelectedItem().toString();
@@ -617,7 +618,7 @@ public class DialogAddDownload extends JDialog {
     private void setupDeleteHistoryButton() {
         jButtonDelHistory.setText("");
         jButtonDelHistory.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
-        jButtonDelHistory.addActionListener(e -> {
+        jButtonDelHistory.addActionListener(_ -> {
             MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, "");
             jComboBoxPfad.setModel(new DefaultComboBoxModel<>(new String[]{orgPfad}));
         });
@@ -641,7 +642,7 @@ public class DialogAddDownload extends JDialog {
     private void setupPfadSpeichernCheckBox() {
         final Configuration config = ApplicationConfiguration.getConfiguration();
         jCheckBoxPfadSpeichern.setSelected(config.getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true));
-        jCheckBoxPfadSpeichern.addActionListener(e ->
+        jCheckBoxPfadSpeichern.addActionListener(_ ->
                 config.setProperty(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, jCheckBoxPfadSpeichern.isSelected()));
     }
 
@@ -904,268 +905,336 @@ public class DialogAddDownload extends JDialog {
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    // Generated using JFormDesigner non-commercial license
     private void initComponents() {
-
-        javax.swing.ButtonGroup buttonGroup1 = new javax.swing.ButtonGroup();
-        jButtonOk = new javax.swing.JButton();
-        jButtonAbbrechen = new javax.swing.JButton();
-        jCheckBoxStarten = new javax.swing.JCheckBox();
-        javax.swing.JPanel jPanel1 = new javax.swing.JPanel();
-        javax.swing.JPanel jPanel2 = new javax.swing.JPanel();
-        jCheckBoxInfodatei = new javax.swing.JCheckBox();
-        jCheckBoxPfadSpeichern = new javax.swing.JCheckBox();
-        jCheckBoxSubtitle = new javax.swing.JCheckBox();
-        javax.swing.JPanel jPanel7 = new javax.swing.JPanel();
-        javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
-        jTextFieldName = new javax.swing.JTextField();
-        javax.swing.JLabel jLabelSet = new javax.swing.JLabel();
+        panel1 = new JPanel();
+        jButtonOk = new JButton();
+        jButtonAbbrechen = new JButton();
+        jCheckBoxStarten = new JCheckBox();
+        var jPanel1 = new JPanel();
+        var jPanel2 = new JPanel();
+        jCheckBoxInfodatei = new JCheckBox();
+        jCheckBoxPfadSpeichern = new JCheckBox();
+        jCheckBoxSubtitle = new JCheckBox();
+        var jPanel7 = new JPanel();
+        var jLabel1 = new JLabel();
+        jTextFieldName = new JTextField();
+        var jLabelSet = new JLabel();
         jComboBoxPset = new javax.swing.JComboBox<>();
-        javax.swing.JLabel jLabel4 = new javax.swing.JLabel();
-        javax.swing.JPanel jPanel4 = new javax.swing.JPanel();
+        var jLabel4 = new JLabel();
+        var jPanel4 = new JPanel();
         jComboBoxPfad = new javax.swing.JComboBox<>();
-        javax.swing.Box.Filler filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 32767));
-        jButtonZiel = new javax.swing.JButton();
-        javax.swing.Box.Filler filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 0), new java.awt.Dimension(5, 32767));
-        jButtonDelHistory = new javax.swing.JButton();
-        jPanelSize = new javax.swing.JPanel();
-        javax.swing.JPanel jPanel3 = new javax.swing.JPanel();
-        btnRequestLiveInfo = new javax.swing.JButton();
-        lblBusyIndicator = new org.jdesktop.swingx.JXBusyLabel();
-        javax.swing.JPanel jPanel5 = new javax.swing.JPanel();
-        lblStatus = new javax.swing.JLabel();
-        lblAudioInfo = new javax.swing.JLabel();
-        javax.swing.JPanel jPanel6 = new javax.swing.JPanel();
-        jRadioButtonAufloesungHd = new javax.swing.JRadioButton();
-        jRadioButtonAufloesungHoch = new javax.swing.JRadioButton();
-        jRadioButtonAufloesungKlein = new javax.swing.JRadioButton();
-        jTextFieldSender = new javax.swing.JTextField();
+        jButtonZiel = new JButton();
+        jButtonDelHistory = new JButton();
+        jPanelSize = new JPanel();
+        var jPanel3 = new JPanel();
+        btnRequestLiveInfo = new JButton();
+        lblBusyIndicator = new JXBusyLabel();
+        var jPanel5 = new JPanel();
+        lblStatus = new JLabel();
+        lblAudioInfo = new JLabel();
+        var jPanel6 = new JPanel();
+        jRadioButtonAufloesungHd = new JRadioButton();
+        jRadioButtonAufloesungHoch = new JRadioButton();
+        jRadioButtonAufloesungKlein = new JRadioButton();
+        jTextFieldSender = new JTextField();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        //======== this ========
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Film speichern");
-        setMinimumSize(new java.awt.Dimension(646, 372));
+        setMinimumSize(new Dimension(646, 420));
+        setPreferredSize(new Dimension(646, 420));
+        var contentPane = getContentPane();
 
-        jButtonOk.setText("Ok");
+        //======== panel1 ========
+        {
 
-        jButtonAbbrechen.setText("Abbrechen");
+            //---- jButtonOk ----
+            jButtonOk.setText("Ok");
 
+            //---- jButtonAbbrechen ----
+            jButtonAbbrechen.setText("Abbrechen");
+
+            GroupLayout panel1Layout = new GroupLayout(panel1);
+            panel1.setLayout(panel1Layout);
+            panel1Layout.setHorizontalGroup(
+                panel1Layout.createParallelGroup()
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jButtonOk, GroupLayout.PREFERRED_SIZE, 93, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jButtonAbbrechen)
+                        .addContainerGap())
+            );
+            panel1Layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {jButtonAbbrechen, jButtonOk});
+            panel1Layout.setVerticalGroup(
+                panel1Layout.createParallelGroup()
+                    .addGroup(panel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(panel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                            .addComponent(jButtonOk)
+                            .addComponent(jButtonAbbrechen))
+                        .addContainerGap())
+            );
+        }
+
+        //---- jCheckBoxStarten ----
         jCheckBoxStarten.setSelected(true);
         jCheckBoxStarten.setText("Download sofort starten");
 
-        jPanel2.setLayout(new java.awt.GridLayout(2, 2));
+        //======== jPanel1 ========
+        {
 
-        jCheckBoxInfodatei.setText("Lege Infodatei an");
-        jCheckBoxInfodatei.setToolTipText("Erzeugt eine Infodatei im Format \"Infodatei.txt\"");
-        jPanel2.add(jCheckBoxInfodatei);
+            //======== jPanel2 ========
+            {
+                jPanel2.setLayout(new GridLayout(2, 2));
 
-        jCheckBoxPfadSpeichern.setText("Zielpfad speichern");
-        jPanel2.add(jCheckBoxPfadSpeichern);
+                //---- jCheckBoxInfodatei ----
+                jCheckBoxInfodatei.setText("Lege Infodatei an");
+                jCheckBoxInfodatei.setToolTipText("Erzeugt eine Infodatei im Format \"Infodatei.txt\"");
+                jPanel2.add(jCheckBoxInfodatei);
 
-        jCheckBoxSubtitle.setText("Untertitel speichern: \"Filmname.xxx\"");
-        jPanel2.add(jCheckBoxSubtitle);
+                //---- jCheckBoxPfadSpeichern ----
+                jCheckBoxPfadSpeichern.setText("Zielpfad speichern");
+                jPanel2.add(jCheckBoxPfadSpeichern);
 
-        jPanel7.setMaximumSize(new java.awt.Dimension(606, 32767));
+                //---- jCheckBoxSubtitle ----
+                jCheckBoxSubtitle.setText("Untertitel speichern: \"Filmname.xxx\"");
+                jPanel2.add(jCheckBoxSubtitle);
+            }
 
-        jLabel1.setText("Zielpfad:");
+            //======== jPanel7 ========
+            {
+                jPanel7.setMaximumSize(new Dimension(606, 32767));
 
-        jLabelSet.setText("Set:");
+                //---- jLabel1 ----
+                jLabel1.setText("Zielpfad:");
 
-        jLabel4.setText("Dateiname:");
+                //---- jLabelSet ----
+                jLabelSet.setText("Set:");
 
-        jPanel4.setLayout(new javax.swing.BoxLayout(jPanel4, javax.swing.BoxLayout.LINE_AXIS));
+                //---- jLabel4 ----
+                jLabel4.setText("Dateiname:");
 
-        jComboBoxPfad.setEditable(true);
-        jPanel4.add(jComboBoxPfad);
-        jPanel4.add(filler1);
+                //======== jPanel4 ========
+                {
+                    jPanel4.setLayout(new BoxLayout(jPanel4, BoxLayout.X_AXIS));
 
-        jButtonZiel.setText("F");
-        jButtonZiel.setToolTipText("Zielpfad auswählen");
-        jPanel4.add(jButtonZiel);
-        jPanel4.add(filler2);
+                    //---- jComboBoxPfad ----
+                    jComboBoxPfad.setEditable(true);
+                    jPanel4.add(jComboBoxPfad);
 
-        jButtonDelHistory.setText("H");
-        jButtonDelHistory.setToolTipText("History löschen");
-        jPanel4.add(jButtonDelHistory);
+                    //---- jButtonZiel ----
+                    jButtonZiel.setText("F");
+                    jButtonZiel.setToolTipText("Zielpfad ausw\u00e4hlen");
+                    jPanel4.add(jButtonZiel);
 
-        javax.swing.GroupLayout jPanel7Layout = new javax.swing.GroupLayout(jPanel7);
-        jPanel7.setLayout(jPanel7Layout);
-        jPanel7Layout.setHorizontalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel7Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel7Layout.createSequentialGroup()
-                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabelSet)
-                            .addComponent(jLabel1))
-                        .addGap(20, 20, 20)
-                        .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(jComboBoxPset, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                    .addGroup(jPanel7Layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextFieldName)))
-                .addContainerGap())
-        );
-        jPanel7Layout.setVerticalGroup(
-            jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel7Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabelSet)
-                    .addComponent(jComboBoxPset, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(jLabel4)
-                    .addComponent(jTextFieldName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
-        );
+                    //---- jButtonDelHistory ----
+                    jButtonDelHistory.setText("H");
+                    jButtonDelHistory.setToolTipText("History l\u00f6schen");
+                    jPanel4.add(jButtonDelHistory);
+                }
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, 606, Short.MAX_VALUE)
-                    .addComponent(jPanel7, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap())
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel1Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel7, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(12, 12, 12)
-                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                GroupLayout jPanel7Layout = new GroupLayout(jPanel7);
+                jPanel7.setLayout(jPanel7Layout);
+                jPanel7Layout.setHorizontalGroup(
+                    jPanel7Layout.createParallelGroup()
+                        .addGroup(jPanel7Layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addGroup(jPanel7Layout.createParallelGroup()
+                                .addGroup(jPanel7Layout.createSequentialGroup()
+                                    .addGroup(jPanel7Layout.createParallelGroup()
+                                        .addComponent(jLabelSet)
+                                        .addComponent(jLabel1))
+                                    .addGap(20, 20, 20)
+                                    .addGroup(jPanel7Layout.createParallelGroup()
+                                        .addComponent(jPanel4, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(jComboBoxPset)))
+                                .addGroup(jPanel7Layout.createSequentialGroup()
+                                    .addComponent(jLabel4)
+                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                                    .addComponent(jTextFieldName)))
+                            .addContainerGap())
+                );
+                jPanel7Layout.setVerticalGroup(
+                    jPanel7Layout.createParallelGroup()
+                        .addGroup(jPanel7Layout.createSequentialGroup()
+                            .addContainerGap()
+                            .addGroup(jPanel7Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                                .addComponent(jLabelSet)
+                                .addComponent(jComboBoxPset, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                            .addGroup(jPanel7Layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                                .addComponent(jPanel4, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addComponent(jLabel1))
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(jPanel7Layout.createParallelGroup(GroupLayout.Alignment.CENTER)
+                                .addComponent(jLabel4)
+                                .addComponent(jTextFieldName, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                            .addContainerGap())
+                );
+            }
 
-        jPanelSize.setBorder(javax.swing.BorderFactory.createTitledBorder("Download-Qualität"));
+            GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
+            jPanel1.setLayout(jPanel1Layout);
+            jPanel1Layout.setHorizontalGroup(
+                jPanel1Layout.createParallelGroup()
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(jPanel1Layout.createParallelGroup()
+                            .addComponent(jPanel2, GroupLayout.DEFAULT_SIZE, 636, Short.MAX_VALUE)
+                            .addComponent(jPanel7, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addContainerGap())
+            );
+            jPanel1Layout.setVerticalGroup(
+                jPanel1Layout.createParallelGroup()
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jPanel7, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addGap(12, 12, 12)
+                        .addComponent(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+        }
 
-        jPanel3.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        //======== jPanelSize ========
+        {
+            jPanelSize.setBorder(new TitledBorder("Download-Qualit\u00e4t"));
 
-        btnRequestLiveInfo.setText("Codec-Details abrufen...");
-        jPanel3.add(btnRequestLiveInfo);
-        jPanel3.add(lblBusyIndicator);
+            //======== jPanel3 ========
+            {
+                jPanel3.setLayout(new FlowLayout(FlowLayout.LEFT));
 
-        jPanel5.setLayout(new java.awt.GridLayout(2, 1));
+                //---- btnRequestLiveInfo ----
+                btnRequestLiveInfo.setText("Codec-Details abrufen...");
+                jPanel3.add(btnRequestLiveInfo);
+                jPanel3.add(lblBusyIndicator);
 
-        lblStatus.setText("status");
-        jPanel5.add(lblStatus);
+                //======== jPanel5 ========
+                {
+                    jPanel5.setLayout(new GridLayout(2, 1));
 
-        lblAudioInfo.setText("audio");
-        jPanel5.add(lblAudioInfo);
+                    //---- lblStatus ----
+                    lblStatus.setText("status");
+                    jPanel5.add(lblStatus);
 
-        jPanel3.add(jPanel5);
+                    //---- lblAudioInfo ----
+                    lblAudioInfo.setText("audio");
+                    jPanel5.add(lblAudioInfo);
+                }
+                jPanel3.add(jPanel5);
+            }
 
-        buttonGroup1.add(jRadioButtonAufloesungHd);
-        jRadioButtonAufloesungHd.setText("Höchste/Hoch");
-        jPanel6.add(jRadioButtonAufloesungHd);
+            //======== jPanel6 ========
+            {
+                jPanel6.setLayout(new FlowLayout());
 
-        buttonGroup1.add(jRadioButtonAufloesungHoch);
-        jRadioButtonAufloesungHoch.setText("Mittel");
-        jPanel6.add(jRadioButtonAufloesungHoch);
+                //---- jRadioButtonAufloesungHd ----
+                jRadioButtonAufloesungHd.setText("H\u00f6chste/Hoch");
+                jPanel6.add(jRadioButtonAufloesungHd);
 
-        buttonGroup1.add(jRadioButtonAufloesungKlein);
-        jRadioButtonAufloesungKlein.setText("Niedrig");
-        jPanel6.add(jRadioButtonAufloesungKlein);
+                //---- jRadioButtonAufloesungHoch ----
+                jRadioButtonAufloesungHoch.setText("Mittel");
+                jPanel6.add(jRadioButtonAufloesungHoch);
 
-        javax.swing.GroupLayout jPanelSizeLayout = new javax.swing.GroupLayout(jPanelSize);
-        jPanelSize.setLayout(jPanelSizeLayout);
-        jPanelSizeLayout.setHorizontalGroup(
-            jPanelSizeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelSizeLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(jPanelSizeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, 596, Short.MAX_VALUE)
+                //---- jRadioButtonAufloesungKlein ----
+                jRadioButtonAufloesungKlein.setText("Niedrig");
+                jPanel6.add(jRadioButtonAufloesungKlein);
+            }
+
+            GroupLayout jPanelSizeLayout = new GroupLayout(jPanelSize);
+            jPanelSize.setLayout(jPanelSizeLayout);
+            jPanelSizeLayout.setHorizontalGroup(
+                jPanelSizeLayout.createParallelGroup()
                     .addGroup(jPanelSizeLayout.createSequentialGroup()
-                        .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE)))
-                .addContainerGap())
-        );
-        jPanelSizeLayout.setVerticalGroup(
-            jPanelSizeLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanelSizeLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+                        .addContainerGap()
+                        .addGroup(jPanelSizeLayout.createParallelGroup()
+                            .addComponent(jPanel3, GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
+                            .addGroup(jPanelSizeLayout.createSequentialGroup()
+                                .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                                .addGap(0, 0, Short.MAX_VALUE)))
+                        .addContainerGap())
+            );
+            jPanelSizeLayout.setVerticalGroup(
+                jPanelSizeLayout.createParallelGroup()
+                    .addGroup(jPanelSizeLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            );
+        }
 
+        //---- jTextFieldSender ----
         jTextFieldSender.setEditable(false);
-        jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | java.awt.Font.BOLD));
+        jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | Font.BOLD));
         jTextFieldSender.setText(" ARD: Tatort, ...");
-        jTextFieldSender.setBorder(javax.swing.BorderFactory.createTitledBorder("Film"));
+        jTextFieldSender.setBorder(new TitledBorder("Film"));
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jTextFieldSender, javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jPanelSize, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+        GroupLayout contentPaneLayout = new GroupLayout(contentPane);
+        contentPane.setLayout(contentPaneLayout);
+        contentPaneLayout.setHorizontalGroup(
+            contentPaneLayout.createParallelGroup()
+                .addGroup(GroupLayout.Alignment.TRAILING, contentPaneLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addGroup(contentPaneLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                        .addComponent(jPanel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jTextFieldSender, GroupLayout.Alignment.LEADING)
+                        .addComponent(jPanelSize, GroupLayout.Alignment.LEADING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGroup(GroupLayout.Alignment.LEADING, contentPaneLayout.createSequentialGroup()
+                            .addComponent(jCheckBoxStarten)
+                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 252, Short.MAX_VALUE)
+                            .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .addContainerGap())
+        );
+        contentPaneLayout.setVerticalGroup(
+            contentPaneLayout.createParallelGroup()
+                .addGroup(contentPaneLayout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(jTextFieldSender, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(jPanelSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                    .addGroup(contentPaneLayout.createParallelGroup()
                         .addComponent(jCheckBoxStarten)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 264, Short.MAX_VALUE)
-                        .addComponent(jButtonOk, javax.swing.GroupLayout.PREFERRED_SIZE, 93, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jButtonAbbrechen)))
-                .addContainerGap())
+                        .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addContainerGap(2, Short.MAX_VALUE))
         );
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, jButtonAbbrechen, jButtonOk);
-
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jTextFieldSender, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanelSize, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCheckBoxStarten, javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jButtonOk)
-                        .addComponent(jButtonAbbrechen)))
-                .addContainerGap())
-        );
-
         pack();
+        setLocationRelativeTo(getOwner());
+
+        //---- buttonGroup1 ----
+        var buttonGroup1 = new ButtonGroup();
+        buttonGroup1.add(jRadioButtonAufloesungHd);
+        buttonGroup1.add(jRadioButtonAufloesungHoch);
+        buttonGroup1.add(jRadioButtonAufloesungKlein);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnRequestLiveInfo;
-    private javax.swing.JButton jButtonAbbrechen;
-    private javax.swing.JButton jButtonDelHistory;
-    private javax.swing.JButton jButtonOk;
-    private javax.swing.JButton jButtonZiel;
-    private javax.swing.JCheckBox jCheckBoxInfodatei;
-    private javax.swing.JCheckBox jCheckBoxPfadSpeichern;
-    private javax.swing.JCheckBox jCheckBoxStarten;
-    private javax.swing.JCheckBox jCheckBoxSubtitle;
-    private javax.swing.JComboBox<String> jComboBoxPfad;
-    private javax.swing.JComboBox<String> jComboBoxPset;
-    private javax.swing.JPanel jPanelSize;
-    private javax.swing.JRadioButton jRadioButtonAufloesungHd;
-    private javax.swing.JRadioButton jRadioButtonAufloesungHoch;
-    private javax.swing.JRadioButton jRadioButtonAufloesungKlein;
-    private javax.swing.JTextField jTextFieldName;
-    private javax.swing.JTextField jTextFieldSender;
-    private javax.swing.JLabel lblAudioInfo;
-    private org.jdesktop.swingx.JXBusyLabel lblBusyIndicator;
-    private javax.swing.JLabel lblStatus;
+    // Generated using JFormDesigner non-commercial license
+    private JPanel panel1;
+    private JButton jButtonOk;
+    private JButton jButtonAbbrechen;
+    private JCheckBox jCheckBoxStarten;
+    private JCheckBox jCheckBoxInfodatei;
+    private JCheckBox jCheckBoxPfadSpeichern;
+    private JCheckBox jCheckBoxSubtitle;
+    private JTextField jTextFieldName;
+    private JComboBox<String> jComboBoxPset;
+    private JComboBox<String> jComboBoxPfad;
+    private JButton jButtonZiel;
+    private JButton jButtonDelHistory;
+    private JPanel jPanelSize;
+    private JButton btnRequestLiveInfo;
+    private JXBusyLabel lblBusyIndicator;
+    private JLabel lblStatus;
+    private JLabel lblAudioInfo;
+    private JRadioButton jRadioButtonAufloesungHd;
+    private JRadioButton jRadioButtonAufloesungHoch;
+    private JRadioButton jRadioButtonAufloesungKlein;
+    private JTextField jTextFieldSender;
     // End of variables declaration//GEN-END:variables
 }
