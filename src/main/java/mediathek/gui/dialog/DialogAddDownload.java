@@ -963,16 +963,14 @@ public class DialogAddDownload extends JDialog {
         jButtonOk = new JButton();
         jButtonAbbrechen = new JButton();
         var jPanel1 = new JPanel();
-        var jPanel7 = new JPanel();
-        var jLabel1 = new JLabel();
-        jTextFieldName = new JTextField();
         var jLabelSet = new JLabel();
         jComboBoxPset = new javax.swing.JComboBox<>();
-        var jLabel4 = new JLabel();
-        var jPanel4 = new JPanel();
+        var jLabel1 = new JLabel();
         jComboBoxPfad = new javax.swing.JComboBox<>();
         jButtonZiel = new JButton();
         jButtonDelHistory = new JButton();
+        var jLabel4 = new JLabel();
+        jTextFieldName = new JTextField();
         jPanelSize = new JPanel();
         var jPanel3 = new JPanel();
         btnRequestLiveInfo = new JButton();
@@ -1064,95 +1062,49 @@ public class DialogAddDownload extends JDialog {
 
         //======== jPanel1 ========
         {
+            jPanel1.setBorder(new TitledBorder("text"));
+            jPanel1.setLayout(new MigLayout(
+                new LC().insets("5").hideMode(3),
+                // columns
+                new AC()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .grow().fill(),
+                // rows
+                new AC()
+                    .gap()
+                    .gap()
+                    ));
 
-            //======== jPanel7 ========
-            {
-                jPanel7.setMaximumSize(new Dimension(606, 32767));
+            //---- jLabelSet ----
+            jLabelSet.setText("Set:");
+            jPanel1.add(jLabelSet, new CC().cell(0, 0));
+            jPanel1.add(jComboBoxPset, new CC().cell(1, 0, 4, 1));
 
-                //---- jLabel1 ----
-                jLabel1.setText("Zielpfad:");
+            //---- jLabel1 ----
+            jLabel1.setText("Zielpfad:");
+            jPanel1.add(jLabel1, new CC().cell(0, 1));
 
-                //---- jLabelSet ----
-                jLabelSet.setText("Set:");
+            //---- jComboBoxPfad ----
+            jComboBoxPfad.setEditable(true);
+            jPanel1.add(jComboBoxPfad, new CC().cell(1, 1));
 
-                //---- jLabel4 ----
-                jLabel4.setText("Dateiname:");
+            //---- jButtonZiel ----
+            jButtonZiel.setText("F");
+            jButtonZiel.setToolTipText("Zielpfad ausw\u00e4hlen");
+            jPanel1.add(jButtonZiel, new CC().cell(2, 1));
 
-                //======== jPanel4 ========
-                {
-                    jPanel4.setLayout(new BoxLayout(jPanel4, BoxLayout.X_AXIS));
+            //---- jButtonDelHistory ----
+            jButtonDelHistory.setText("H");
+            jButtonDelHistory.setToolTipText("History l\u00f6schen");
+            jPanel1.add(jButtonDelHistory, new CC().cell(3, 1));
 
-                    //---- jComboBoxPfad ----
-                    jComboBoxPfad.setEditable(true);
-                    jPanel4.add(jComboBoxPfad);
-
-                    //---- jButtonZiel ----
-                    jButtonZiel.setText("F");
-                    jButtonZiel.setToolTipText("Zielpfad ausw\u00e4hlen");
-                    jPanel4.add(jButtonZiel);
-
-                    //---- jButtonDelHistory ----
-                    jButtonDelHistory.setText("H");
-                    jButtonDelHistory.setToolTipText("History l\u00f6schen");
-                    jPanel4.add(jButtonDelHistory);
-                }
-
-                GroupLayout jPanel7Layout = new GroupLayout(jPanel7);
-                jPanel7.setLayout(jPanel7Layout);
-                jPanel7Layout.setHorizontalGroup(
-                    jPanel7Layout.createParallelGroup()
-                        .addGroup(jPanel7Layout.createSequentialGroup()
-                            .addContainerGap()
-                            .addGroup(jPanel7Layout.createParallelGroup()
-                                .addGroup(jPanel7Layout.createSequentialGroup()
-                                    .addGroup(jPanel7Layout.createParallelGroup()
-                                        .addComponent(jLabelSet)
-                                        .addComponent(jLabel1))
-                                    .addGap(20, 20, 20)
-                                    .addGroup(jPanel7Layout.createParallelGroup()
-                                        .addComponent(jPanel4, GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
-                                        .addComponent(jComboBoxPset)))
-                                .addGroup(jPanel7Layout.createSequentialGroup()
-                                    .addComponent(jLabel4)
-                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jTextFieldName)))
-                            .addContainerGap())
-                );
-                jPanel7Layout.setVerticalGroup(
-                    jPanel7Layout.createParallelGroup()
-                        .addGroup(jPanel7Layout.createSequentialGroup()
-                            .addContainerGap()
-                            .addGroup(jPanel7Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabelSet)
-                                .addComponent(jComboBoxPset, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addGroup(jPanel7Layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                                .addComponent(jPanel4, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel1))
-                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(jPanel7Layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-                                .addComponent(jLabel4)
-                                .addComponent(jTextFieldName, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                            .addContainerGap())
-                );
-            }
-
-            GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
-            jPanel1.setLayout(jPanel1Layout);
-            jPanel1Layout.setHorizontalGroup(
-                jPanel1Layout.createParallelGroup()
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel7, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
-            );
-            jPanel1Layout.setVerticalGroup(
-                jPanel1Layout.createParallelGroup()
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel7, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            );
+            //---- jLabel4 ----
+            jLabel4.setText("Dateiname:");
+            jPanel1.add(jLabel4, new CC().cell(0, 2));
+            jPanel1.add(jTextFieldName, new CC().cell(1, 2, 4, 1));
         }
         contentPane.add(jPanel1, new CC().cell(0, 1));
 
@@ -1255,11 +1207,11 @@ public class DialogAddDownload extends JDialog {
     private JCheckBox jCheckBoxStarten;
     private JButton jButtonOk;
     private JButton jButtonAbbrechen;
-    private JTextField jTextFieldName;
     private JComboBox<String> jComboBoxPset;
     private JComboBox<String> jComboBoxPfad;
     private JButton jButtonZiel;
     private JButton jButtonDelHistory;
+    private JTextField jTextFieldName;
     private JPanel jPanelSize;
     private JButton btnRequestLiveInfo;
     private JXBusyLabel lblBusyIndicator;

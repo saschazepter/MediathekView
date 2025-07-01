@@ -52,78 +52,80 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 4"
 			} )
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, comp jPanel7:::::x, space :::p}}"
-				"$verticalGroup": "par l {seq l {space :::p, comp jPanel7:::p::p, space :::x}}"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "insets 5,hidemode 3"
+				"$columnConstraints": "[fill][fill][fill][fill][grow,fill]"
+				"$rowConstraints": "[][][]"
 			} ) {
 				name: "jPanel1"
+				"border": new javax.swing.border.TitledBorder( "text" )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-					"$horizontalGroup": "par l {seq {space :::p, par l {seq l {par l {comp jLabelSet::l:p::p, comp jLabel1::l:p::p}, space :p:20:p, par l {comp jPanel4::::580:x, comp jComboBoxPset:::::x}}, seq l {comp jLabel4:::p::p, space :::p, comp jTextFieldName:::::x:2}}, space :::p}}"
-					"$verticalGroup": "par l {seq {space :::p, par b {comp jLabelSet::b:p::p, comp jComboBoxPset::b:p::p}, space u:p::p, par t {comp jPanel4:::p::p, comp jLabel1:::p::p}, space :::p, par c {comp jLabel4::c:p::p, comp jTextFieldName::c:p::p}, space :::p}}"
-				} ) {
-					name: "jPanel7"
-					"maximumSize": new java.awt.Dimension( 606, 32767 )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "jLabelSet"
+					"text": "Set:"
 					auxiliary() {
 						"JavaCodeGenerator.variableLocal": true
 					}
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "jLabel1"
-						"text": "Zielpfad:"
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-					} )
-					add( new FormComponent( "javax.swing.JTextField" ) {
-						name: "jTextFieldName"
-					} )
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "jLabelSet"
-						"text": "Set:"
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-					} )
-					add( new FormComponent( "javax.swing.JComboBox" ) {
-						name: "jComboBoxPset"
-						auxiliary() {
-							"JavaCodeGenerator.customCreateCode": "new javax.swing.JComboBox<>();"
-							"JavaCodeGenerator.typeParameters": "String"
-						}
-					} )
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "jLabel4"
-						"text": "Dateiname:"
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
-						name: "jPanel4"
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-						add( new FormComponent( "javax.swing.JComboBox" ) {
-							name: "jComboBoxPfad"
-							"editable": true
-							auxiliary() {
-								"JavaCodeGenerator.customCreateCode": "new javax.swing.JComboBox<>();"
-								"JavaCodeGenerator.typeParameters": "String"
-							}
-						} )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "jButtonZiel"
-							"text": "F"
-							"toolTipText": "Zielpfad auswählen"
-						} )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "jButtonDelHistory"
-							"text": "H"
-							"toolTipText": "History löschen"
-						} )
-					} )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0"
+				} )
+				add( new FormComponent( "javax.swing.JComboBox" ) {
+					name: "jComboBoxPset"
+					auxiliary() {
+						"JavaCodeGenerator.customCreateCode": "new javax.swing.JComboBox<>();"
+						"JavaCodeGenerator.typeParameters": "String"
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 0 4 1"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "jLabel1"
+					"text": "Zielpfad:"
+					auxiliary() {
+						"JavaCodeGenerator.variableLocal": true
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 1"
+				} )
+				add( new FormComponent( "javax.swing.JComboBox" ) {
+					name: "jComboBoxPfad"
+					"editable": true
+					auxiliary() {
+						"JavaCodeGenerator.customCreateCode": "new javax.swing.JComboBox<>();"
+						"JavaCodeGenerator.typeParameters": "String"
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 1"
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "jButtonZiel"
+					"text": "F"
+					"toolTipText": "Zielpfad auswählen"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 2 1"
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "jButtonDelHistory"
+					"text": "H"
+					"toolTipText": "History löschen"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 3 1"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "jLabel4"
+					"text": "Dateiname:"
+					auxiliary() {
+						"JavaCodeGenerator.variableLocal": true
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 2"
+				} )
+				add( new FormComponent( "javax.swing.JTextField" ) {
+					name: "jTextFieldName"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 2 4 1"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 1"
@@ -231,7 +233,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 690, 445 )
+			"size": new java.awt.Dimension( 690, 420 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
 			name: "buttonGroup1"
