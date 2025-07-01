@@ -50,6 +50,9 @@ public class DialogAddDownload extends JDialog {
     private ListenableFuture<String> hqFuture;
     private ListenableFuture<String> hochFuture;
     private ListenableFuture<String> kleinFuture;
+    /**
+     * Temporary storage of config var is we need to activate it for this dialog no matter what
+     */
     private boolean restoreFetchSize;
 
     public DialogAddDownload(@NotNull Frame parent, @NotNull DatenFilm film) {
