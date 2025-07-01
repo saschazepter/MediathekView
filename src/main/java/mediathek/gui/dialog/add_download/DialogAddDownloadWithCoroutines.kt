@@ -26,7 +26,11 @@ import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.MVConfig
+import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.EscapeKeyHandler
+import mediathek.tool.GuiFunktionenProgramme
+import mediathek.tool.SVGIconUtilities
+import org.apache.commons.configuration2.sync.LockMode
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
 import java.awt.Color
@@ -34,8 +38,12 @@ import java.awt.Dimension
 import java.awt.Frame
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
+import javax.swing.DefaultComboBoxModel
 import javax.swing.UIManager
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.max
 
 class DialogAddDownloadWithCoroutines(
     parent: Frame,
@@ -137,6 +145,106 @@ class DialogAddDownloadWithCoroutines(
 
         jRadioButtonAufloesungHoch.addActionListener(listener)
         jRadioButtonAufloesungHoch.setSelected(true)
+    }
+
+    private fun setupPSetComboBox() {
+        // disable when only one entry...
+        if (listeSpeichern.size == 1) {
+            jComboBoxPset.setEnabled(false)
+        }
+
+        val model = DefaultComboBoxModel(listeSpeichern.getObjectDataCombo())
+        jComboBoxPset.setModel(model)
+
+        if (active_pSet != null) {
+            jComboBoxPset.setSelectedItem(active_pSet.name)
+        } else {
+            active_pSet = listeSpeichern[jComboBoxPset.getSelectedIndex()]
+        }
+        jComboBoxPset.addActionListener { _: ActionEvent? -> setupResolutionButtons() }
+    }
+
+    private fun setupSenderTextField() {
+        jTextFieldSender.text = "${film.sender}: ${film.title}"
+        jTextFieldSender.setBackground(UIManager.getColor("Label.background"))
+    }
+
+    private fun setupDeleteHistoryButton() {
+        jButtonDelHistory.setText("")
+        jButtonDelHistory.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"))
+        jButtonDelHistory.addActionListener { _: ActionEvent? ->
+            MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, "")
+            jComboBoxPfad.setModel(DefaultComboBoxModel(arrayOf<String?>(orgPfad)))
+        }
+    }
+
+    private fun setupPfadSpeichernCheckBox() {
+        val config = ApplicationConfiguration.getConfiguration()
+        jCheckBoxPfadSpeichern.setSelected(
+            config.getBoolean(
+                ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH,
+                true
+            )
+        )
+        jCheckBoxPfadSpeichern.addActionListener(ActionListener { `_`: ActionEvent? ->
+            config.setProperty(
+                ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH,
+                jCheckBoxPfadSpeichern.isSelected()
+            )
+        })
+    }
+
+    private fun detectFfprobeExecutable() {
+        try {
+            ffprobePath = GuiFunktionenProgramme.findExecutableOnPath("ffprobe").parent
+        } catch (ex: java.lang.Exception) {
+            logger.error("ffprobe not found", ex)
+            lblBusyIndicator.setText("Hilfsprogramm nicht gefunden!")
+            lblBusyIndicator.setForeground(Color.RED)
+            btnRequestLiveInfo.setEnabled(false)
+        }
+    }
+
+    /** Prevents that a dialog can be resized smaller than its minimum dimensions.
+     * Needed on Windows, but not macOS and Linux. */
+    private fun installMinResizePreventer() {
+        if (!SystemUtils.IS_OS_WINDOWS) return
+
+        addComponentListener(object : ComponentAdapter() {
+            override fun componentResized(e: ComponentEvent?) {
+                val size = getSize()
+                val w = max(size.width, minimumSize.width)
+                val h = max(size.height, minimumSize.height)
+                if (w != size.width || h != size.height) {
+                    setSize(w, h)
+                }
+            }
+        })
+    }
+
+    private fun restoreWindowSizeFromConfig() {
+        val config = ApplicationConfiguration.getConfiguration()
+        try {
+            config.lock(LockMode.READ)
+            val width = max(config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH), MINIMUM_WIDTH)
+            val height = max(config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT), MINIMUM_HEIGHT)
+            val x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X)
+            val y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y)
+
+            setBounds(x, y, width, height)
+        } catch (_: NoSuchElementException) {
+            //do not restore anything
+        } finally {
+            config.unlock(LockMode.READ)
+        }
+    }
+
+    private fun setupBusyIndicator() {
+        lblBusyIndicator.setText("")
+        lblBusyIndicator.setBusy(false)
+        lblBusyIndicator.isVisible = false
+        lblStatus.setText("")
+        lblAudioInfo.setText("")
     }
 
     private fun setupMinimumSizeForOs() {

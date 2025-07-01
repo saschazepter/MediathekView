@@ -66,14 +66,23 @@ new FormModel {
 						name: "jCheckBoxInfodatei"
 						"text": "Lege Infodatei an"
 						"toolTipText": "Erzeugt eine Infodatei im Format \"Infodatei.txt\""
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 					add( new FormComponent( "javax.swing.JCheckBox" ) {
 						name: "jCheckBoxPfadSpeichern"
 						"text": "Zielpfad speichern"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 					add( new FormComponent( "javax.swing.JCheckBox" ) {
 						name: "jCheckBoxSubtitle"
 						"text": "Untertitel speichern: \"Filmname.xxx\""
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
@@ -107,6 +116,7 @@ new FormModel {
 						auxiliary() {
 							"JavaCodeGenerator.customCreateCode": "new javax.swing.JComboBox<>();"
 							"JavaCodeGenerator.typeParameters": "String"
+							"JavaCodeGenerator.variableModifiers": 4
 						}
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
@@ -134,11 +144,17 @@ new FormModel {
 							name: "jButtonZiel"
 							"text": "F"
 							"toolTipText": "Zielpfad auswählen"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "jButtonDelHistory"
 							"text": "H"
 							"toolTipText": "History löschen"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 						} )
 					} )
 				} )
@@ -230,6 +246,9 @@ new FormModel {
 				"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
 				"text": " ARD: Tatort, ..."
 				"border": new javax.swing.border.TitledBorder( "Film" )
+				auxiliary() {
+					"JavaCodeGenerator.variableModifiers": 4
+				}
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )

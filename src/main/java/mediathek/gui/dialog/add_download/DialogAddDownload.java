@@ -18,7 +18,6 @@
 
 package mediathek.gui.dialog.add_download;
 
-import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -30,7 +29,6 @@ import mediathek.daten.*;
 import mediathek.gui.messages.DownloadListChangedEvent;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
-import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.sync.LockMode;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
@@ -53,7 +51,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
@@ -68,13 +65,12 @@ public class DialogAddDownload extends JDialog {
     protected static int MINIMUM_HEIGHT = 430;
     protected final DatenFilm film;
     protected final Optional<FilmResolution.Enum> requestedResolution;
-    private final ListePset listeSpeichern = Daten.listePset.getListeSpeichern();
+    protected final ListePset listeSpeichern = Daten.listePset.getListeSpeichern();
     /**
      * The currently selected pSet or null when no selection.
      */
     protected DatenPset active_pSet;
     protected Path ffprobePath;
-    protected ListenableFuture<FFprobeResult> resultListenableFuture;
     private DatenDownload datenDownload;
     protected String orgPfad = "";
     private String dateiGroesse_HQ = "";
@@ -95,26 +91,6 @@ public class DialogAddDownload extends JDialog {
         this.active_pSet = pSet;
         this.requestedResolution = requestedResolution;
         initComponents();
-    }
-
-    /// Prevents that a dialog can be resized smaller than its minimum dimensions.
-    /// Needed on Windows, but not macOS and Linux.
-    protected void installMinResizePreventer() {
-        if (!SystemUtils.IS_OS_WINDOWS)
-            return;
-
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                Dimension min = getMinimumSize();
-                Dimension size = getSize();
-                int w = Math.max(size.width, min.width);
-                int h = Math.max(size.height, min.height);
-                if (w != size.width || h != size.height) {
-                    setSize(w, h);
-                }
-            }
-        });
     }
 
     public static void setModelPfad(String pfad, JComboBox<String> jcb) {
@@ -164,46 +140,6 @@ public class DialogAddDownload extends JDialog {
                     .collect(Collectors.joining("<>"));
         }
         MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, s);
-    }
-
-    protected void restoreWindowSizeFromConfig() {
-        var config = ApplicationConfiguration.getConfiguration();
-        try {
-            config.lock(LockMode.READ);
-            int width = Math.max(config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH), MINIMUM_WIDTH);
-            int height = Math.max(config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT), MINIMUM_HEIGHT);
-            int x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X);
-            int y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y);
-
-            setBounds(x, y, width, height);
-        }
-        catch (NoSuchElementException ignored) {
-            //do not restore anything
-        }
-        finally {
-            config.unlock(LockMode.READ);
-        }
-
-    }
-
-    protected void detectFfprobeExecutable() {
-        try {
-            ffprobePath = GuiFunktionenProgramme.findExecutableOnPath("ffprobe").getParent();
-        }
-        catch (Exception ex) {
-            logger.error("ffprobe not found", ex);
-            lblBusyIndicator.setText("Hilfsprogramm nicht gefunden!");
-            lblBusyIndicator.setForeground(Color.RED);
-            btnRequestLiveInfo.setEnabled(false);
-        }
-    }
-
-    protected void setupBusyIndicator() {
-        lblBusyIndicator.setText("");
-        lblBusyIndicator.setBusy(false);
-        lblBusyIndicator.setVisible(false);
-        lblStatus.setText("");
-        lblAudioInfo.setText("");
     }
 
     protected void launchResolutionFutures() {
@@ -291,33 +227,6 @@ public class DialogAddDownload extends JDialog {
                 });
             }
         }, decoratedPool);
-    }
-
-    private DefaultComboBoxModel<String> createPSetComboBoxModel() {
-        return new DefaultComboBoxModel<>(listeSpeichern.getObjectDataCombo());
-    }
-
-    protected void setupPSetComboBox() {
-        // disable when only one entry...
-        if (listeSpeichern.size() == 1) {
-            jComboBoxPset.setEnabled(false);
-        }
-
-        var model = createPSetComboBoxModel();
-        jComboBoxPset.setModel(model);
-
-        if (active_pSet != null) {
-            jComboBoxPset.setSelectedItem(active_pSet.getName());
-        }
-        else {
-            active_pSet = listeSpeichern.get(jComboBoxPset.getSelectedIndex());
-        }
-        jComboBoxPset.addActionListener(_ -> setupResolutionButtons());
-    }
-
-    protected void setupSenderTextField() {
-        jTextFieldSender.setText(' ' + film.getSender() + ":   " + film.getTitle());
-        jTextFieldSender.setBackground(UIManager.getColor("Label.background"));
     }
 
     protected void setupNameTextField() {
@@ -431,15 +340,6 @@ public class DialogAddDownload extends JDialog {
         });
     }
 
-    protected void setupDeleteHistoryButton() {
-        jButtonDelHistory.setText("");
-        jButtonDelHistory.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
-        jButtonDelHistory.addActionListener(_ -> {
-            MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, "");
-            jComboBoxPfad.setModel(new DefaultComboBoxModel<>(new String[]{orgPfad}));
-        });
-    }
-
     protected void waitForFileSizeFutures() {
         // for safety wait for all futures here...
         try {
@@ -454,13 +354,6 @@ public class DialogAddDownload extends JDialog {
             //reset fetch size state to previous value
             ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, restoreFetchSize);
         }
-    }
-
-    protected void setupPfadSpeichernCheckBox() {
-        final Configuration config = ApplicationConfiguration.getConfiguration();
-        jCheckBoxPfadSpeichern.setSelected(config.getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true));
-        jCheckBoxPfadSpeichern.addActionListener(_ ->
-                config.setProperty(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, jCheckBoxPfadSpeichern.isSelected()));
     }
 
     protected void setNameFilm() {
@@ -1072,14 +965,14 @@ public class DialogAddDownload extends JDialog {
     protected JButton jButtonOk;
     protected JButton jButtonAbbrechen;
     protected JCheckBox jCheckBoxStarten;
-    private JCheckBox jCheckBoxInfodatei;
-    private JCheckBox jCheckBoxPfadSpeichern;
-    private JCheckBox jCheckBoxSubtitle;
+    protected JCheckBox jCheckBoxInfodatei;
+    protected JCheckBox jCheckBoxPfadSpeichern;
+    protected JCheckBox jCheckBoxSubtitle;
     private JTextField jTextFieldName;
-    private JComboBox<String> jComboBoxPset;
+    protected JComboBox<String> jComboBoxPset;
     protected JComboBox<String> jComboBoxPfad;
-    private JButton jButtonZiel;
-    private JButton jButtonDelHistory;
+    protected JButton jButtonZiel;
+    protected JButton jButtonDelHistory;
     private JPanel jPanelSize;
     protected JButton btnRequestLiveInfo;
     protected JXBusyLabel lblBusyIndicator;
@@ -1088,6 +981,6 @@ public class DialogAddDownload extends JDialog {
     protected JRadioButton jRadioButtonAufloesungHd;
     protected JRadioButton jRadioButtonAufloesungHoch;
     protected JRadioButton jRadioButtonAufloesungKlein;
-    private JTextField jTextFieldSender;
+    protected JTextField jTextFieldSender;
     // End of variables declaration//GEN-END:variables
 }
