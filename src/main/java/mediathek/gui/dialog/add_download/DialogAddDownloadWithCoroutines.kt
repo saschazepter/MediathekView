@@ -21,8 +21,11 @@ package mediathek.gui.dialog.add_download
 import com.github.kokorin.jaffree.StreamType
 import com.github.kokorin.jaffree.ffprobe.FFprobe
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult
+import com.github.kokorin.jaffree.ffprobe.Stream
+import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import org.apache.logging.log4j.LogManager
 import java.awt.Color
 import java.awt.Frame
 import javax.swing.UIManager
@@ -36,9 +39,17 @@ class DialogAddDownloadWithCoroutines(
 ) : DialogAddDownload(parent, film, pSet, requestedResolution) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
 
+    companion object {
+        private val logger = LogManager.getLogger()
+    }
     init {
-        // zusätzlichen ActionListener für Coroutines installieren
         btnRequestLiveInfo.addActionListener { fetchLiveFilmInfoCoroutine() }
+    }
+
+
+    override fun dispose() {
+        coroutineScope.cancel()
+        super.dispose()
     }
 
     private fun fetchLiveFilmInfoCoroutine() {
@@ -60,10 +71,12 @@ class DialogAddDownloadWithCoroutines(
                 }
 
                 processFFprobeResult(result)
-            } catch (ex: CancellationException) {
+            } catch (_: CancellationException) {
                 clearInfo()
-            } catch (ex: Exception) {
-                showError("Fehler: ${ex.message ?: "Unbekannt"}")
+            } catch (ex: JaffreeAbnormalExitException) {
+                setupLabels(getJaffreeErrorString(ex))
+            } catch (_: Exception) {
+                setupLabels("Unbekannter Fehler aufgetreten.")
             } finally {
                 resetBusyLabelAndButton()
             }
@@ -75,11 +88,13 @@ class DialogAddDownloadWithCoroutines(
         val videoStream = result.streams.find { it.codecType == StreamType.VIDEO }
 
         lblAudioInfo.foreground = UIManager.getColor(KEY_LABEL_FOREGROUND)
-        lblAudioInfo.text = audioStream?.codecLongName ?: NO_DATA_AVAILABLE
+        lblAudioInfo.text = audioStream?.let { getAudioInfo(it, it.sampleRate) } ?: NO_DATA_AVAILABLE
 
         lblStatus.foreground = UIManager.getColor(KEY_LABEL_FOREGROUND)
-        lblStatus.text = videoStream?.let { stream ->
-            "Video: ${stream.width}x${stream.height}, ${stream.codecLongName}"
+        lblStatus.text = videoStream?.let {
+            val frameRate = it.avgFrameRate.toInt()
+            val codecName = getVideoCodecName(it)
+            getVideoInfoString(it, frameRate, codecName)
         } ?: NO_DATA_AVAILABLE
     }
 
@@ -88,14 +103,65 @@ class DialogAddDownloadWithCoroutines(
         lblAudioInfo.text = ""
     }
 
-    private fun showError(msg: String) {
+    private fun setupLabels(text: String) {
+        lblStatus.text = text
         lblStatus.foreground = Color.RED
-        lblStatus.text = msg
         lblAudioInfo.text = ""
     }
 
-    override fun dispose() {
-        coroutineScope.cancel()
-        super.dispose()
+    /**
+     * Return only the first part of the long codec name.
+     *
+     * @param stream The video stream from ffprobe.
+     * @return First entry of long codec name.
+     */
+    private fun getVideoCodecName(stream: Stream): String {
+        logger.trace("video codec long name: {}", stream.codecLongName)
+        try {
+            val splitName: Array<String?> = stream.codecLongName.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
+            return splitName[0]!!.trim { it <= ' ' }
+        } catch (_: java.lang.Exception) {
+            return stream.codecLongName
+        }
+    }
+
+    private fun getAudioInfo(stream: Stream, sampleRate: Int?): String {
+        val bitRate = safeProcessBitRate(stream.bitRate)
+        return if (bitRate == 0) {
+            "Audio: ${sampleRate ?: "?"} Hz, ${stream.codecLongName}"
+        } else {
+            "Audio: ${sampleRate ?: "?"} Hz, $bitRate kBit/s, ${stream.codecLongName}"
+        }
+    }
+
+    private fun getVideoInfoString(stream: Stream, frameRate: Int, codecName: String?): String {
+        val bitRate = safeProcessBitRate(stream.bitRate)
+        return if (bitRate == 0) {
+            "Video: ${stream.width}x${stream.height}, $frameRate fps (avg), $codecName"
+        } else {
+            "Video: ${stream.width}x${stream.height}, $bitRate kBit/s, $frameRate fps (avg), $codecName"
+        }
+    }
+
+    private fun safeProcessBitRate(inBitRate: Int?): Int {
+        return try {
+            (inBitRate ?: 0) / 1000
+        } catch (_: Exception) {
+            0
+        }
+    }
+
+    private fun getJaffreeErrorString(ex: JaffreeAbnormalExitException): String {
+        return try {
+            val msg = ex.processErrorLogMessages.first().message.split(":")
+            val errMsg = msg.last().trim()
+            if (errMsg.startsWith("Server returned ")) {
+                errMsg.removePrefix("Server returned ").trim()
+            } else {
+                "Unbekannter Fehler aufgetreten."
+            }
+        } catch (e: Exception) {
+            "Unbekannter Fehler aufgetreten."
+        }
     }
 }

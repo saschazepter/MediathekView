@@ -18,14 +18,9 @@
 
 package mediathek.gui.dialog.add_download;
 
-import com.github.kokorin.jaffree.StreamType;
-import com.github.kokorin.jaffree.ffprobe.FFprobe;
 import com.github.kokorin.jaffree.ffprobe.FFprobeResult;
-import com.github.kokorin.jaffree.ffprobe.Stream;
-import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.JdkFutureAdapters;
 import com.google.common.util.concurrent.ListenableFuture;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
@@ -63,9 +58,7 @@ import java.util.ArrayList;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 public class DialogAddDownload extends JDialog {
@@ -244,159 +237,6 @@ public class DialogAddDownload extends JDialog {
 
         jRadioButtonAufloesungHoch.addActionListener(listener);
         jRadioButtonAufloesungHoch.setSelected(true);
-    }
-
-    /**
-     * Return only the first part of the long codec name.
-     *
-     * @param stream The video stream from ffprobe.
-     * @return First entry of long codec name.
-     */
-    private String getVideoCodecName(@NotNull Stream stream) {
-        var name = stream.getCodecLongName();
-        logger.trace("video codec long name: {}", name);
-        try {
-            var splitName = name.split("/");
-            return splitName[0].trim();
-        }
-        catch (Exception e) {
-            return name;
-        }
-    }
-
-    private void handleRequestLiveFilmInfo() {
-        var res = getFilmResolution();
-        var url = film.getUrlFuerAufloesung(res);
-
-        btnRequestLiveInfo.setEnabled(false);
-        lblBusyIndicator.setVisible(true);
-        lblBusyIndicator.setBusy(true);
-        lblStatus.setText("");
-        lblAudioInfo.setText("");
-
-        Future<FFprobeResult> resultFuture = FFprobe.atPath(ffprobePath)
-                .setShowStreams(true)
-                .setInput(url)
-                .executeAsync();
-        resultListenableFuture = JdkFutureAdapters.listenInPoolThread(resultFuture);
-        Futures.addCallback(resultListenableFuture, new FutureCallback<>() {
-            private static final String ERR_MSG_PART = "Server returned ";
-            private static final String MSG_UNKNOWN_ERROR = "Unbekannter Fehler aufgetreten.";
-
-            @Override
-            public void onSuccess(FFprobeResult result) {
-                var audioStreamResult = result.getStreams().stream().filter(stream -> stream.getCodecType() == StreamType.AUDIO).findAny();
-                audioStreamResult.ifPresentOrElse(astream -> {
-                            var sample_rate = astream.getSampleRate();
-                            final String audio_output = getAudioInfo(astream, sample_rate);
-                            SwingUtilities.invokeLater(() -> {
-                                lblAudioInfo.setForeground(UIManager.getColor(KEY_LABEL_FOREGROUND));
-                                lblAudioInfo.setText(audio_output);
-                            });
-                        },
-                        () -> SwingUtilities.invokeLater(() -> {
-                            lblAudioInfo.setForeground(UIManager.getColor(KEY_LABEL_FOREGROUND));
-                            lblAudioInfo.setText(NO_DATA_AVAILABLE);
-                        }));
-
-                var videoStreamResult = result.getStreams().stream().filter(stream -> stream.getCodecType() == StreamType.VIDEO).findAny();
-                videoStreamResult.ifPresentOrElse(stream -> {
-                    var frame_rate = stream.getAvgFrameRate().intValue();
-                    var codecName = getVideoCodecName(stream);
-                    final String video_output = getVideoInfoString(stream, frame_rate, codecName);
-                    SwingUtilities.invokeLater(() -> {
-                        lblStatus.setForeground(UIManager.getColor(KEY_LABEL_FOREGROUND));
-                        lblStatus.setText(video_output);
-                    });
-                }, () -> SwingUtilities.invokeLater(() -> {
-                    lblStatus.setForeground(UIManager.getColor(KEY_LABEL_FOREGROUND));
-                    lblStatus.setText(NO_DATA_AVAILABLE);
-                }));
-
-                SwingUtilities.invokeLater(() -> resetBusyLabelAndButton());
-            }
-
-            private int safe_process_bit_rate(Integer in) {
-                int bits;
-                try {
-                    bits = in / 1000;
-                }
-                catch (Exception e) {
-                    bits = 0;
-                }
-                return bits;
-            }
-
-            private String getVideoInfoString(Stream stream, int frame_rate, String codecName) {
-                int bit_rate = safe_process_bit_rate(stream.getBitRate());
-                String video_output;
-                if (bit_rate == 0) {
-                    video_output = String.format("Video: %dx%d, %d fps (avg), %s", stream.getWidth(), stream.getHeight(), frame_rate, codecName);
-                }
-                else {
-                    video_output = String.format("Video: %dx%d, %d kBit/s, %d fps (avg), %s", stream.getWidth(), stream.getHeight(), bit_rate, frame_rate, codecName);
-                }
-                return video_output;
-            }
-
-            private String getAudioInfo(Stream astream, Integer sample_rate) {
-                int bits_per_sample = safe_process_bit_rate(astream.getBitRate());
-                String audio_output;
-                if (bits_per_sample == 0) {
-                    audio_output = String.format("Audio: %d Hz, %s", sample_rate, astream.getCodecLongName());
-                }
-                else {
-                    audio_output = String.format("Audio: %d Hz, %d kBit/s, %s", sample_rate, bits_per_sample, astream.getCodecLongName());
-                }
-                return audio_output;
-            }
-
-            @Override
-            public void onFailure(@NotNull Throwable t) {
-                // show nothing when task was cancelled...
-                if (t instanceof CancellationException) {
-                    SwingUtilities.invokeLater(() -> {
-                        lblStatus.setText("");
-                        lblAudioInfo.setText("");
-                        resetBusyLabelAndButton();
-                    });
-                }
-                else if (t instanceof JaffreeAbnormalExitException e) {
-                    String final_str = getJaffreeErrorString(e);
-                    setupLabels(final_str);
-                }
-                else {
-                    setupLabels(MSG_UNKNOWN_ERROR);
-                }
-            }
-
-            private void setupLabels(String text) {
-                SwingUtilities.invokeLater(() -> {
-                    lblStatus.setText(text);
-                    lblStatus.setForeground(Color.RED);
-                    lblAudioInfo.setText("");
-                    resetBusyLabelAndButton();
-                });
-            }
-
-            private @NotNull String getJaffreeErrorString(JaffreeAbnormalExitException e) {
-                String final_str;
-                try {
-                    var msg = e.getProcessErrorLogMessages().getFirst().message.split(":");
-                    var err_msg = msg[msg.length - 1].trim();
-                    if (err_msg.startsWith(ERR_MSG_PART)) {
-                        final_str = err_msg.substring(ERR_MSG_PART.length());
-                    }
-                    else {
-                        final_str = MSG_UNKNOWN_ERROR;
-                    }
-                }
-                catch (Exception ignored) {
-                    final_str = MSG_UNKNOWN_ERROR;
-                }
-                return final_str;
-            }
-        }, Daten.getInstance().getDecoratedPool());
     }
 
     protected void resetBusyLabelAndButton() {
