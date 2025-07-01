@@ -78,7 +78,7 @@ class DialogAddDownloadWithCoroutines(
     private var dateiGroesseHighQuality: String = ""
     private var dateiGroesseNormalQuality: String = ""
     private var dateiGroesseLowQuality: String = ""
-    private lateinit var cbPathTextComponent : JTextComponent
+    private lateinit var cbPathTextComponent: JTextComponent
     private lateinit var datenDownload: DatenDownload
 
     companion object {
@@ -186,13 +186,11 @@ class DialogAddDownloadWithCoroutines(
             calculateAndCheckDiskSpace()
         }
 
-
-        jCheckBoxStarten.setSelected(MVConfig.get(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN).toBoolean())
-        jCheckBoxStarten.addActionListener { _: ActionEvent? ->
-            MVConfig.add(
-                MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN,
-                jCheckBoxStarten.isSelected.toString()
-            )
+        jCheckBoxStarten.apply {
+            setSelected(MVConfig.get(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN).toBoolean())
+            addActionListener {
+                MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN, jCheckBoxStarten.isSelected.toString())
+            }
         }
 
         setupZielButton()
@@ -251,7 +249,6 @@ class DialogAddDownloadWithCoroutines(
         activeProgramSet = listeSpeichern[jComboBoxPset.getSelectedIndex()]
 
         prepareResolutionButtons()
-
         prepareSubtitleCheckbox()
         setNameFilm()
     }
@@ -267,16 +264,21 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun setupInfoFileCreationCheckBox() {
-        //disable for Livestreams as they do not contain useful data, even if pset wants it...
-        jCheckBoxInfodatei.setEnabled(!film.isLivestream)
-        if (!film.isLivestream) {
-            jCheckBoxInfodatei.setSelected(activeProgramSet.shouldCreateInfofile())
-        } else jCheckBoxInfodatei.setSelected(false)
+        jCheckBoxInfodatei.apply {
+            if (film.isLivestream) {
+                //disable for Livestreams as they do not contain useful data, even if pset wants it...
+                isEnabled = false
+                isSelected = false
+            } else {
+                isEnabled = true
+                isSelected = activeProgramSet.shouldCreateInfofile()
+            }
+        }
     }
 
     private fun isLowQualityRequested(): Boolean {
         return activeProgramSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] == FilmResolution.Enum.LOW.toString() &&
-                !film.lowQualityUrl.isEmpty()
+                film.lowQualityUrl.isNotEmpty()
     }
 
     private fun isHighQualityRequested(): Boolean {
@@ -321,16 +323,22 @@ class DialogAddDownloadWithCoroutines(
 
             if (datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME].isEmpty()) {
                 // dann wird nicht gespeichert → eigentlich falsche Seteinstellungen?
-                jTextFieldName.isEnabled = false
-                jComboBoxPfad.isEnabled = false
+                jTextFieldName.apply {
+                    isEnabled = false
+                    text = ""
+                }
+                jComboBoxPfad.apply {
+                    isEnabled = false
+                    model = DefaultComboBoxModel(arrayOf(""))
+                }
                 jButtonZiel.isEnabled = false
-                jTextFieldName.text = ""
-                jComboBoxPfad.model = DefaultComboBoxModel(arrayOf(""))
             } else {
-                jTextFieldName.isEnabled = true
+                jTextFieldName.apply {
+                    isEnabled = true
+                    text = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME]
+                }
                 jComboBoxPfad.isEnabled = true
                 jButtonZiel.isEnabled = true
-                jTextFieldName.text = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME]
                 setModelPfad(datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD], jComboBoxPfad)
                 orgPfad = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD]
             }
@@ -441,8 +449,12 @@ class DialogAddDownloadWithCoroutines(
         jCheckBoxPfadSpeichern.apply {
             setSelected(config.getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true))
             addActionListener {
-                config.setProperty(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, jCheckBoxPfadSpeichern.isSelected)
-            }}
+                config.setProperty(
+                    ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH,
+                    jCheckBoxPfadSpeichern.isSelected
+                )
+            }
+        }
     }
 
     private fun detectFfprobeExecutable() {
@@ -738,7 +750,11 @@ class DialogAddDownloadWithCoroutines(
             private fun tus() {
                 if (!stopBeob) {
                     nameGeaendert = true
-                    if (jTextFieldName.text != FilenameUtils.checkFilenameForIllegalCharacters(jTextFieldName.text, false)) {
+                    if (jTextFieldName.text != FilenameUtils.checkFilenameForIllegalCharacters(
+                            jTextFieldName.text,
+                            false
+                        )
+                    ) {
                         jTextFieldName.background = MVColor.DOWNLOAD_FEHLER.color
                     } else {
                         jTextFieldName.background = UIManager.getDefaults().getColor(KEY_TEXTFIELD_BACKGROUND)
