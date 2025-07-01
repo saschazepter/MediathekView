@@ -52,6 +52,7 @@ class DialogAddDownloadWithCoroutines(
     requestedResolution: java.util.Optional<mediathek.daten.FilmResolution.Enum>
 ) : DialogAddDownload(parent, film, pSet, requestedResolution) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+    private var liveInfoJob: Job? = null
 
     companion object {
         private val logger = LogManager.getLogger()
@@ -73,7 +74,12 @@ class DialogAddDownloadWithCoroutines(
 
         addComponentListener(DialogPositionComponentListener())
 
-        btnRequestLiveInfo.addActionListener { fetchLiveFilmInfoCoroutine() }
+        btnRequestLiveInfo.addActionListener {
+            liveInfoJob?.cancel()
+            liveInfoJob = coroutineScope.launch {
+                fetchLiveFilmInfoCoroutine()
+            }
+        }
 
         jButtonOk.requestFocus()
     }
@@ -135,7 +141,7 @@ class DialogAddDownloadWithCoroutines(
             lblAudioInfo.setText("")
             lblBusyIndicator.setBusy(false)
             lblBusyIndicator.isVisible = false
-            coroutineScope.cancel()
+            liveInfoJob?.cancel()
         }
         jRadioButtonAufloesungHd.addActionListener(listener)
         jRadioButtonAufloesungHd.setEnabled(!film.highQualityUrl.isEmpty())
@@ -186,12 +192,9 @@ class DialogAddDownloadWithCoroutines(
                 true
             )
         )
-        jCheckBoxPfadSpeichern.addActionListener(ActionListener { `_`: ActionEvent? ->
-            config.setProperty(
-                ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH,
-                jCheckBoxPfadSpeichern.isSelected()
-            )
-        })
+        jCheckBoxPfadSpeichern.addActionListener { _: ActionEvent? ->
+            config.setProperty(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, jCheckBoxPfadSpeichern.isSelected)
+        }
     }
 
     private fun detectFfprobeExecutable() {
