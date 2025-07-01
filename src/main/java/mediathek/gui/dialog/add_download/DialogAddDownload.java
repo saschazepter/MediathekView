@@ -23,13 +23,9 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
-import mediathek.config.MVColor;
 import mediathek.config.MVConfig;
 import mediathek.daten.*;
-import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.*;
-import org.apache.commons.configuration2.sync.LockMode;
-import org.apache.commons.lang3.SystemUtils;
+import mediathek.tool.ApplicationConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdesktop.swingx.JXBusyLabel;
@@ -38,16 +34,8 @@ import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.nio.file.FileStore;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
@@ -58,7 +46,6 @@ public class DialogAddDownload extends JDialog {
     protected static final String KEY_LABEL_FOREGROUND = "Label.foreground";
     protected static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
     private static final Logger logger = LogManager.getLogger();
-    protected static final String TITLED_BORDER_STRING = "Download-Qualität";
     protected static int MINIMUM_WIDTH = 720;
     protected static int MINIMUM_HEIGHT = 430;
     protected final DatenFilm film;
@@ -68,20 +55,15 @@ public class DialogAddDownload extends JDialog {
      * The currently selected pSet or null when no selection.
      */
     protected DatenPset active_pSet;
-    protected Path ffprobePath;
     protected DatenDownload datenDownload;
-    protected String orgPfad = "";
     protected String dateiGroesse_HQ = "";
     protected String dateiGroesse_Hoch = "";
     protected String dateiGroesse_Klein = "";
-    protected boolean nameGeaendert;
-    protected boolean stopBeob;
     protected JTextComponent cbPathTextComponent;
     private ListenableFuture<String> hqFuture;
     private ListenableFuture<String> hochFuture;
     private ListenableFuture<String> kleinFuture;
     private boolean restoreFetchSize;
-    protected boolean highQualityMandated;
 
     public DialogAddDownload(@NotNull Frame parent, @NotNull DatenFilm film, @Nullable DatenPset pSet, @NotNull Optional<FilmResolution.Enum> requestedResolution) {
         super(parent, true);
@@ -227,117 +209,6 @@ public class DialogAddDownload extends JDialog {
         }, decoratedPool);
     }
 
-    protected void setupNameTextField() {
-        jTextFieldName.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                tus();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                tus();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                tus();
-            }
-
-            private void tus() {
-                if (!stopBeob) {
-                    nameGeaendert = true;
-                    if (!jTextFieldName.getText().equals(FilenameUtils.checkDateiname(jTextFieldName.getText(), false /*pfad*/))) {
-                        jTextFieldName.setBackground(MVColor.DOWNLOAD_FEHLER.color);
-                    }
-                    else {
-                        jTextFieldName.setBackground(UIManager.getDefaults().getColor(KEY_TEXTFIELD_BACKGROUND));
-                    }
-                }
-
-            }
-        });
-    }
-
-    protected void setupPathTextComponent() {
-        cbPathTextComponent = ((JTextComponent) jComboBoxPfad.getEditor().getEditorComponent());
-        cbPathTextComponent.setOpaque(true);
-        cbPathTextComponent.getDocument().addDocumentListener(new DocumentListener() {
-
-            /// Sichtbare Begrenzung im Textfeld der ComboBox
-            private static final int MAX_PATH_LENGTH = 50;
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                tus();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                tus();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                tus();
-            }
-
-            private void truncate() {
-                String text = cbPathTextComponent.getText();
-                if (text.length() > MAX_PATH_LENGTH) {
-                    String shortText = "..." + text.substring(text.length() - MAX_PATH_LENGTH);
-                    SwingUtilities.invokeLater(() -> cbPathTextComponent.setText(shortText));
-                }
-            }
-
-            private void fileNameCheck(@NotNull String filePath) {
-                //do not perform check on Windows
-                if (SystemUtils.IS_OS_WINDOWS)
-                    return;
-
-                final var editor = jComboBoxPfad.getEditor().getEditorComponent();
-                if (!filePath.equals(FilenameUtils.checkDateiname(filePath, true))) {
-                    editor.setBackground(MVColor.DOWNLOAD_FEHLER.color);
-                }
-                else {
-                    editor.setBackground(UIManager.getColor(KEY_TEXTFIELD_BACKGROUND));
-                }
-            }
-
-            private void tus() {
-                if (!stopBeob) {
-                    nameGeaendert = true;
-                    var s = (String) jComboBoxPfad.getSelectedItem();
-                    if (s != null) {
-                        fileNameCheck(s);
-                    }
-                    calculateAndCheckDiskSpace();
-                }
-                truncate();
-            }
-        });
-    }
-
-    protected void setupZielButton() {
-        jButtonZiel.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/folder-open.svg"));
-        jButtonZiel.setText("");
-        jButtonZiel.addActionListener(_ -> {
-            var initialDirectory = "";
-            if (!Objects.requireNonNull(jComboBoxPfad.getSelectedItem()).toString().isEmpty()) {
-                initialDirectory = jComboBoxPfad.getSelectedItem().toString();
-            }
-            var directory = FileDialogs.chooseDirectoryLocation(MediathekGui.ui(), "Film speichern", initialDirectory);
-            if (directory != null) {
-                var selectedDirectory = directory.getAbsolutePath();
-                SwingUtilities.invokeLater(() -> {
-                    jComboBoxPfad.addItem(selectedDirectory);
-                    jComboBoxPfad.setSelectedItem(selectedDirectory);
-                });
-            }
-        });
-    }
-
     protected void waitForFileSizeFutures() {
         // for safety wait for all futures here...
         try {
@@ -351,121 +222,6 @@ public class DialogAddDownload extends JDialog {
         finally {
             //reset fetch size state to previous value
             ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, restoreFetchSize);
-        }
-    }
-
-    /**
-     * Get the free disk space for a selected path.
-     *
-     * @return Free disk space in bytes.
-     */
-    protected long getFreeDiskSpace(final String strPath) {
-        long usableSpace = 0;
-        if (!strPath.isEmpty()) {
-            try {
-                Path path = Paths.get(strPath);
-                if (Files.notExists(path)) {
-                    //getParent() may return null...therefore we need to bail out this loop at some point.
-                    while ((path != null) && Files.notExists(path)) {
-                        path = path.getParent();
-                    }
-                }
-
-                if (path == null) {
-                    //there is no way to determine usable space...
-                    usableSpace = 0;
-                }
-                else {
-                    final FileStore fileStore = Files.getFileStore(path);
-                    usableSpace = fileStore.getUsableSpace();
-                }
-            }
-            catch (Exception ex) {
-                logger.error("getFreeDiskSpace Failed", ex);
-            }
-        }
-        return usableSpace;
-    }
-
-    /**
-     * Calculate free disk space on volume and check if the movies can be safely downloaded.
-     */
-    protected void calculateAndCheckDiskSpace() {
-        var fgColor = UIManager.getColor(KEY_LABEL_FOREGROUND);
-        if (fgColor != null) {
-            jRadioButtonAufloesungHd.setForeground(fgColor);
-            jRadioButtonAufloesungHoch.setForeground(fgColor);
-            jRadioButtonAufloesungKlein.setForeground(fgColor);
-        }
-
-        try {
-            var filmBorder = (TitledBorder) jPanelSize.getBorder();
-            long usableSpace = getFreeDiskSpace(cbPathTextComponent.getText());
-            if (usableSpace > 0) {
-                filmBorder.setTitle(TITLED_BORDER_STRING + " [ Freier Speicherplatz: " + FileUtils.humanReadableByteCountBinary(usableSpace) + " ]");
-            }
-            else {
-                filmBorder.setTitle(TITLED_BORDER_STRING);
-            }
-            //border needs to be repainted after update...
-            jPanelSize.repaint();
-
-            // jetzt noch prüfen, obs auf die Platte passt
-            usableSpace /= FileSize.ONE_MiB;
-            if (usableSpace > 0) {
-                int size;
-                if (!dateiGroesse_HQ.isEmpty()) {
-                    size = Integer.parseInt(dateiGroesse_HQ);
-                    if (size > usableSpace) {
-                        jRadioButtonAufloesungHd.setForeground(Color.red);
-                    }
-                }
-                if (!dateiGroesse_Hoch.isEmpty()) {
-                    size = Integer.parseInt(dateiGroesse_Hoch);
-                    if (size > usableSpace) {
-                        jRadioButtonAufloesungHoch.setForeground(Color.red);
-                    }
-                }
-                if (!dateiGroesse_Klein.isEmpty()) {
-                    size = Integer.parseInt(dateiGroesse_Klein);
-                    if (size > usableSpace) {
-                        jRadioButtonAufloesungKlein.setForeground(Color.red);
-                    }
-                }
-            }
-        }
-        catch (Exception ex) {
-            logger.error("calculateAndCheckDiskSpace()", ex);
-        }
-    }
-
-    protected static class DialogPositionComponentListener extends ComponentAdapter {
-        @Override
-        public void componentResized(ComponentEvent e) {
-            storeWindowPosition(e);
-        }
-
-        @Override
-        public void componentMoved(ComponentEvent e) {
-            storeWindowPosition(e);
-        }
-
-        private void storeWindowPosition(ComponentEvent e) {
-            var config = ApplicationConfiguration.getConfiguration();
-            var component = e.getComponent();
-
-            var dims = component.getSize();
-            var loc = component.getLocation();
-            try {
-                config.lock(LockMode.WRITE);
-                config.setProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH, dims.width);
-                config.setProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT, dims.height);
-                config.setProperty(ApplicationConfiguration.AddDownloadDialog.X, loc.x);
-                config.setProperty(ApplicationConfiguration.AddDownloadDialog.Y, loc.y);
-            }
-            finally {
-                config.unlock(LockMode.WRITE);
-            }
         }
     }
 

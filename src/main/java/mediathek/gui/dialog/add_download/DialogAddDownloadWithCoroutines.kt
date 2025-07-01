@@ -26,10 +26,12 @@ import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
+import mediathek.config.MVColor
 import mediathek.config.MVConfig
 import mediathek.daten.DatenPset
 import mediathek.daten.FilmResolution
 import mediathek.gui.messages.DownloadListChangedEvent
+import mediathek.mainwindow.MediathekGui
 import mediathek.tool.*
 import mediathek.tool.MessageBus.messageBus
 import org.apache.commons.configuration2.sync.LockMode
@@ -43,9 +45,16 @@ import java.awt.event.ActionListener
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JOptionPane
+import javax.swing.SwingUtilities
 import javax.swing.UIManager
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
+import javax.swing.text.JTextComponent
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.max
 
@@ -57,10 +66,16 @@ class DialogAddDownloadWithCoroutines(
 ) : DialogAddDownload(parent, film, pSet, requestedResolution) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private var liveInfoJob: Job? = null
+    private var highQualityMandated: Boolean = false
 
     companion object {
         private val logger = LogManager.getLogger()
-        private const val NO_DATA_AVAILABLE: String = "Keine Daten verfügbar."
+        private const val NO_DATA_AVAILABLE = "Keine Daten verfügbar."
+        private const val TITLED_BORDER_STRING = "Download-Qualität"
+        private var stopBeob = false
+        private var nameGeaendert = false
+        private var ffprobePath: Path? = null
+        private var orgPfad = ""
 
     }
 
@@ -547,7 +562,7 @@ class DialogAddDownloadWithCoroutines(
     /**
      * Calculate free disk space on volume and check if the movies can be safely downloaded.
      */
-    override fun calculateAndCheckDiskSpace() {
+    fun calculateAndCheckDiskSpace() {
         UIManager.getColor(KEY_LABEL_FOREGROUND)?.let { fgColor ->
             jRadioButtonAufloesungHd.foreground = fgColor
             jRadioButtonAufloesungHoch.foreground = fgColor
@@ -593,5 +608,146 @@ class DialogAddDownloadWithCoroutines(
             logger.error("calculateAndCheckDiskSpace()", ex)
         }
     }
+
+    private fun setupPathTextComponent() {
+        cbPathTextComponent = jComboBoxPfad.editor.editorComponent as JTextComponent
+        cbPathTextComponent.isOpaque = true
+
+        cbPathTextComponent.document.addDocumentListener(object : DocumentListener {
+            private val MAX_PATH_LENGTH = 50
+
+            override fun insertUpdate(e: DocumentEvent?) = tus()
+            override fun removeUpdate(e: DocumentEvent?) = tus()
+            override fun changedUpdate(e: DocumentEvent?) = tus()
+
+            private fun truncate() {
+                val text = cbPathTextComponent.text
+                if (text.length > MAX_PATH_LENGTH) {
+                    val shortText = "..." + text.takeLast(MAX_PATH_LENGTH)
+                    SwingUtilities.invokeLater {
+                        cbPathTextComponent.text = shortText
+                    }
+                }
+            }
+
+            private fun fileNameCheck(filePath: String) {
+                val editor = jComboBoxPfad.editor.editorComponent
+                if (filePath != FilenameUtils.checkDateiname(filePath, true)) {
+                    editor.background = MVColor.DOWNLOAD_FEHLER.color
+                } else {
+                    editor.background = UIManager.getColor(KEY_TEXTFIELD_BACKGROUND)
+                }
+            }
+
+            private fun tus() {
+                if (!stopBeob) {
+                    nameGeaendert = true
+                    // do not perform check on Windows
+                    if (SystemUtils.IS_OS_WINDOWS) {
+                        (jComboBoxPfad.selectedItem as? String)?.let { fileNameCheck(it) }
+                    }
+                    calculateAndCheckDiskSpace()
+                }
+                truncate()
+            }
+        })
+    }
+
+    private fun setupNameTextField() {
+        jTextFieldName.document.addDocumentListener(object : DocumentListener {
+
+            override fun insertUpdate(e: DocumentEvent?) = tus()
+            override fun removeUpdate(e: DocumentEvent?) = tus()
+            override fun changedUpdate(e: DocumentEvent?) = tus()
+
+            private fun tus() {
+                if (!stopBeob) {
+                    nameGeaendert = true
+                    if (jTextFieldName.text != FilenameUtils.checkDateiname(jTextFieldName.text, false)) {
+                        jTextFieldName.background = MVColor.DOWNLOAD_FEHLER.color
+                    } else {
+                        jTextFieldName.background = UIManager.getDefaults().getColor(KEY_TEXTFIELD_BACKGROUND)
+                    }
+                }
+            }
+        })
+    }
+
+    /**
+     * Get the free disk space for a selected path.
+     *
+     * @return Free disk space in bytes.
+     */
+    private fun getFreeDiskSpace(strPath: String): Long {
+        if (strPath.isEmpty()) return 0L
+
+        return try {
+            var path = Paths.get(strPath)
+            while (path != null && Files.notExists(path)) {
+                path = path.parent
+            }
+
+            if (path == null) {
+                0L
+            } else {
+                Files.getFileStore(path).usableSpace
+            }
+        } catch (ex: Exception) {
+            logger.error("getFreeDiskSpace Failed", ex)
+            0L
+        }
+    }
+
+    private fun setupZielButton() {
+        jButtonZiel.icon = SVGIconUtilities.createSVGIcon("icons/fontawesome/folder-open.svg")
+        jButtonZiel.text = ""
+
+        jButtonZiel.addActionListener {
+            val initialDirectory = (jComboBoxPfad.selectedItem as? String).orEmpty()
+
+            FileDialogs.chooseDirectoryLocation(
+                MediathekGui.ui(),
+                "Film speichern",
+                initialDirectory
+            )?.let { directory ->
+                val selectedDirectory = directory.absolutePath
+                SwingUtilities.invokeLater {
+                    jComboBoxPfad.addItem(selectedDirectory)
+                    jComboBoxPfad.selectedItem = selectedDirectory
+                }
+            }
+        }
+    }
+
+    private class DialogPositionComponentListener : ComponentAdapter() {
+
+        override fun componentResized(e: ComponentEvent) {
+            storeWindowPosition(e)
+        }
+
+        override fun componentMoved(e: ComponentEvent) {
+            storeWindowPosition(e)
+        }
+
+        private fun storeWindowPosition(e: ComponentEvent) {
+            val config = ApplicationConfiguration.getConfiguration()
+            val component = e.component
+
+            val dims = component.size
+            val loc = component.location
+
+            try {
+                config.lock(LockMode.WRITE)
+                config.setProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH, dims.width)
+                config.setProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT, dims.height)
+                config.setProperty(ApplicationConfiguration.AddDownloadDialog.X, loc.x)
+                config.setProperty(ApplicationConfiguration.AddDownloadDialog.Y, loc.y)
+            } finally {
+                config.unlock(LockMode.WRITE)
+            }
+        }
+
+    }
+
 
 }
