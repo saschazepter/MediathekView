@@ -22,39 +22,26 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import mediathek.config.Daten;
-import mediathek.config.Konstanten;
-import mediathek.config.MVConfig;
-import mediathek.daten.*;
+import mediathek.daten.DatenDownload;
+import mediathek.daten.DatenFilm;
+import mediathek.daten.FilmResolution;
 import mediathek.tool.ApplicationConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 public class DialogAddDownload extends JDialog {
     protected static final String KEY_LABEL_FOREGROUND = "Label.foreground";
     protected static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
     private static final Logger logger = LogManager.getLogger();
-    protected static int MINIMUM_WIDTH = 720;
-    protected static int MINIMUM_HEIGHT = 430;
     protected final DatenFilm film;
-    protected final Optional<FilmResolution.Enum> requestedResolution;
-    protected final ListePset listeSpeichern = Daten.listePset.getListeSpeichern();
-    /**
-     * The currently selected pSet or null when no selection.
-     */
-    protected DatenPset active_pSet;
     protected DatenDownload datenDownload;
     protected String dateiGroesse_HQ = "";
     protected String dateiGroesse_Hoch = "";
@@ -65,61 +52,10 @@ public class DialogAddDownload extends JDialog {
     private ListenableFuture<String> kleinFuture;
     private boolean restoreFetchSize;
 
-    public DialogAddDownload(@NotNull Frame parent, @NotNull DatenFilm film, @Nullable DatenPset pSet, @NotNull Optional<FilmResolution.Enum> requestedResolution) {
+    public DialogAddDownload(@NotNull Frame parent, @NotNull DatenFilm film) {
         super(parent, true);
         this.film = film;
-        this.active_pSet = pSet;
-        this.requestedResolution = requestedResolution;
         initComponents();
-    }
-
-    public static void setModelPfad(String pfad, JComboBox<String> jcb) {
-        ArrayList<String> pfade = new ArrayList<>();
-        final boolean showLastUsedPath = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true);
-
-        // wenn gewünscht, den letzten verwendeten Pfad an den Anfang setzen
-        if (!showLastUsedPath && !pfad.isEmpty()) {
-            // aktueller Pfad an Platz 1
-            pfade.add(pfad);
-
-        }
-        if (!MVConfig.get(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN).isEmpty()) {
-            String[] p = MVConfig.get(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN).split("<>");
-            for (String s : p) {
-                if (!pfade.contains(s)) {
-                    pfade.add(s);
-                }
-            }
-        }
-        if (showLastUsedPath && !pfad.isEmpty()) {
-            // aktueller Pfad zum Schluss
-            if (!pfade.contains(pfad)) {
-                pfade.add(pfad);
-            }
-        }
-        jcb.setModel(new DefaultComboBoxModel<>(pfade.toArray(new String[0])));
-    }
-
-    public static void saveComboPfad(JComboBox<String> jcb, String orgPath) {
-        ArrayList<String> pfade = new ArrayList<>();
-        String s = Objects.requireNonNull(jcb.getSelectedItem()).toString();
-
-        if (!s.equals(orgPath) || ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true)) {
-            pfade.add(s);
-        }
-        for (int i = 0; i < jcb.getItemCount(); ++i) {
-            s = jcb.getItemAt(i);
-            if (!s.equals(orgPath) && !pfade.contains(s)) {
-                pfade.add(s);
-            }
-        }
-        if (!pfade.isEmpty()) {
-            s = pfade.stream()
-                    .filter(pfad -> !pfad.isEmpty())
-                    .limit(Konstanten.MAX_PFADE_DIALOG_DOWNLOAD)
-                    .collect(Collectors.joining("<>"));
-        }
-        MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, s);
     }
 
     protected void launchResolutionFutures() {

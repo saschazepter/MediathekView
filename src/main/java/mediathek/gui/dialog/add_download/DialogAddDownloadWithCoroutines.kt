@@ -28,8 +28,10 @@ import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.config.MVColor
 import mediathek.config.MVConfig
+import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.daten.FilmResolution
+import mediathek.daten.ListePset
 import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.*
@@ -49,10 +51,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
-import javax.swing.DefaultComboBoxModel
-import javax.swing.JOptionPane
-import javax.swing.SwingUtilities
-import javax.swing.UIManager
+import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.JTextComponent
@@ -61,10 +60,13 @@ import kotlin.math.max
 
 class DialogAddDownloadWithCoroutines(
     parent: Frame,
-    film: mediathek.daten.DatenFilm,
-    pSet: DatenPset?,
-    requestedResolution: Optional<FilmResolution.Enum>
-) : DialogAddDownload(parent, film, pSet, requestedResolution) {
+    film: DatenFilm,
+    /**
+     * The currently selected pSet or null when no selection.
+     */
+    private var activeProgramSet: DatenPset,
+    private val requestedResolution: Optional<FilmResolution.Enum>
+) : DialogAddDownload(parent, film) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private var liveInfoJob: Job? = null
     private var highQualityMandated: Boolean = false
@@ -72,11 +74,71 @@ class DialogAddDownloadWithCoroutines(
     private var nameGeaendert = false
     private var ffprobePath: Path? = null
     private var orgPfad = ""
+    private var minimumDialogWidth: Int = 720
+    private var minimumDialogHeight: Int = 430
+    private val listeSpeichern: ListePset = Daten.listePset.listeSpeichern
 
     companion object {
         private val logger = LogManager.getLogger()
         private const val NO_DATA_AVAILABLE = "Keine Daten verfügbar."
         private const val TITLED_BORDER_STRING = "Download-Qualität"
+
+        @JvmStatic
+        fun saveComboPfad(jcb: JComboBox<String>, orgPath: String) {
+            val pfade = mutableListOf<String>()
+            val s = jcb.selectedItem?.toString().orEmpty()
+
+            if (s != orgPath || ApplicationConfiguration.getConfiguration()
+                    .getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true)
+            ) {
+                pfade.add(s)
+            }
+
+            for (i in 0 until jcb.itemCount) {
+                val item = jcb.getItemAt(i)
+                if (item != orgPath && item !in pfade) {
+                    pfade.add(item)
+                }
+            }
+
+            if (pfade.isNotEmpty()) {
+                val joined = pfade
+                    .filter { it.isNotEmpty() }
+                    .take(mediathek.config.Konstanten.MAX_PFADE_DIALOG_DOWNLOAD)
+                    .joinToString("<>")
+                MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, joined)
+            }
+        }
+
+        @JvmStatic
+        fun setModelPfad(pfad: String, jcb: JComboBox<String>) {
+            val pfade = mutableListOf<String>()
+            val showLastUsedPath = ApplicationConfiguration.getConfiguration()
+                .getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true)
+
+            // Wenn gewünscht, den letzten verwendeten Pfad an den Anfang setzen
+            if (!showLastUsedPath && pfad.isNotEmpty()) {
+                pfade.add(pfad)
+            }
+
+            val gespeichertePfade = MVConfig.get(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN)
+            if (gespeichertePfade.isNotEmpty()) {
+                val p = gespeichertePfade.split("<>")
+                for (s in p) {
+                    if (s !in pfade) {
+                        pfade.add(s)
+                    }
+                }
+            }
+
+            // aktueller Pfad ans Ende setzen
+            if (showLastUsedPath && pfad.isNotEmpty() && pfad !in pfade) {
+                pfade.add(pfad)
+            }
+
+            jcb.model = DefaultComboBoxModel(pfade.toTypedArray())
+        }
+
     }
 
     init {
@@ -158,7 +220,7 @@ class DialogAddDownloadWithCoroutines(
      */
     private fun saveDownload() {
         datenDownload = mediathek.daten.DatenDownload(
-            active_pSet,
+            activeProgramSet,
             film,
             mediathek.daten.DatenDownload.QUELLE_DOWNLOAD,
             null,
@@ -179,7 +241,7 @@ class DialogAddDownloadWithCoroutines(
      * Setup the resolution radio buttons based on available download URLs.
      */
     private fun setupResolutionButtons() {
-        active_pSet = listeSpeichern[jComboBoxPset.getSelectedIndex()]
+        activeProgramSet = listeSpeichern[jComboBoxPset.getSelectedIndex()]
 
         prepareResolutionButtons()
 
@@ -201,17 +263,17 @@ class DialogAddDownloadWithCoroutines(
         //disable for Livestreams as they do not contain useful data, even if pset wants it...
         jCheckBoxInfodatei.setEnabled(!film.isLivestream)
         if (!film.isLivestream) {
-            jCheckBoxInfodatei.setSelected(active_pSet.shouldCreateInfofile())
+            jCheckBoxInfodatei.setSelected(activeProgramSet.shouldCreateInfofile())
         } else jCheckBoxInfodatei.setSelected(false)
     }
 
     private fun isLowQualityRequested(): Boolean {
-        return active_pSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] == FilmResolution.Enum.LOW.toString() &&
+        return activeProgramSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] == FilmResolution.Enum.LOW.toString() &&
                 !film.lowQualityUrl.isEmpty()
     }
 
     private fun isHighQualityRequested(): Boolean {
-        return active_pSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] == FilmResolution.Enum.HIGH_QUALITY.toString()
+        return activeProgramSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] == FilmResolution.Enum.HIGH_QUALITY.toString()
                 && film.isHighQuality
     }
 
@@ -230,7 +292,7 @@ class DialogAddDownloadWithCoroutines(
         if (!film.hasSubtitle()) {
             jCheckBoxSubtitle.setEnabled(false)
         } else {
-            jCheckBoxSubtitle.setSelected(active_pSet.shouldDownloadSubtitle())
+            jCheckBoxSubtitle.setSelected(activeProgramSet.shouldDownloadSubtitle())
         }
     }
 
@@ -241,7 +303,7 @@ class DialogAddDownloadWithCoroutines(
             stopBeob = true
 
             datenDownload = mediathek.daten.DatenDownload(
-                active_pSet,
+                activeProgramSet,
                 film,
                 mediathek.daten.DatenDownload.QUELLE_DOWNLOAD,
                 null,
@@ -347,10 +409,10 @@ class DialogAddDownloadWithCoroutines(
         val model = DefaultComboBoxModel(listeSpeichern.getObjectDataCombo())
         jComboBoxPset.setModel(model)
 
-        if (active_pSet != null) {
-            jComboBoxPset.setSelectedItem(active_pSet.name)
+        if (activeProgramSet != null) {
+            jComboBoxPset.setSelectedItem(activeProgramSet.name)
         } else {
-            active_pSet = listeSpeichern[jComboBoxPset.getSelectedIndex()]
+            activeProgramSet = listeSpeichern[jComboBoxPset.getSelectedIndex()]
         }
         jComboBoxPset.addActionListener { _: ActionEvent? -> setupResolutionButtons() }
     }
@@ -414,8 +476,8 @@ class DialogAddDownloadWithCoroutines(
         val config = ApplicationConfiguration.getConfiguration()
         try {
             config.lock(LockMode.READ)
-            val width = max(config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH), MINIMUM_WIDTH)
-            val height = max(config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT), MINIMUM_HEIGHT)
+            val width = max(config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH), minimumDialogWidth)
+            val height = max(config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT), minimumDialogHeight)
             val x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X)
             val y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y)
 
@@ -436,12 +498,12 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun setupMinimumSizeForOs() {
-        if (SystemUtils.IS_OS_WINDOWS) MINIMUM_HEIGHT -= 10
+        if (SystemUtils.IS_OS_WINDOWS) minimumDialogHeight -= 10
         else if (SystemUtils.IS_OS_LINUX) {
-            MINIMUM_HEIGHT = 520
-            MINIMUM_WIDTH = 800
+            minimumDialogHeight = 520
+            minimumDialogWidth = 800
         }
-        minimumSize = Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT)
+        minimumSize = Dimension(minimumDialogWidth, minimumDialogHeight)
     }
 
     private suspend fun fetchLiveFilmInfoCoroutine() {

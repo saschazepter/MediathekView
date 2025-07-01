@@ -104,7 +104,7 @@ public class DialogAddMoreDownload extends JDialog {
             jComboBoxPath.setModel(new DefaultComboBoxModel<>(new String[]{pSet.getZielPfad()}));
         });
 
-        DialogAddDownload.setModelPfad(pSet.getZielPfad(), jComboBoxPath);
+        DialogAddDownloadWithCoroutines.setModelPfad(pSet.getZielPfad(), jComboBoxPath);
         orgPfad = pSet.getZielPfad();
         ((JTextComponent) jComboBoxPath.getEditor().getEditorComponent()).setOpaque(true);
         ((JTextComponent) jComboBoxPath.getEditor().getEditorComponent()).getDocument().addDocumentListener(new DocumentListener() {
@@ -152,7 +152,7 @@ public class DialogAddMoreDownload extends JDialog {
     }
 
     private void beenden() {
-        DialogAddDownload.saveComboPfad(jComboBoxPath, orgPfad);
+        DialogAddDownloadWithCoroutines.saveComboPfad(jComboBoxPath, orgPfad);
         dispose();
     }
 
