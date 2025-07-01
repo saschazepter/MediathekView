@@ -26,7 +26,6 @@ import mediathek.config.Konstanten;
 import mediathek.config.MVColor;
 import mediathek.config.MVConfig;
 import mediathek.daten.*;
-import mediathek.gui.messages.DownloadListChangedEvent;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import org.apache.commons.configuration2.sync.LockMode;
@@ -45,7 +44,6 @@ import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.io.File;
 import java.nio.file.FileStore;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -71,13 +69,13 @@ public class DialogAddDownload extends JDialog {
      */
     protected DatenPset active_pSet;
     protected Path ffprobePath;
-    private DatenDownload datenDownload;
+    protected DatenDownload datenDownload;
     protected String orgPfad = "";
-    private String dateiGroesse_HQ = "";
-    private String dateiGroesse_Hoch = "";
-    private String dateiGroesse_Klein = "";
+    protected String dateiGroesse_HQ = "";
+    protected String dateiGroesse_Hoch = "";
+    protected String dateiGroesse_Klein = "";
     protected boolean nameGeaendert;
-    private boolean stopBeob;
+    protected boolean stopBeob;
     private JTextComponent cbPathTextComponent;
     private ListenableFuture<String> hqFuture;
     private ListenableFuture<String> hochFuture;
@@ -356,32 +354,6 @@ public class DialogAddDownload extends JDialog {
         }
     }
 
-    protected void setNameFilm() {
-        // beim ersten mal werden die Standardpfade gesucht
-        if (!nameGeaendert) {
-            // nur wenn vom Benutzer noch nicht geändert!
-            stopBeob = true;
-            datenDownload = new DatenDownload(active_pSet, film, DatenDownload.QUELLE_DOWNLOAD, null, "", "", getFilmResolution().toString());
-            if (datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME].isEmpty()) {
-                // dann wird nicht gespeichert → eigentlich falsche Seteinstellungen?
-                jTextFieldName.setEnabled(false);
-                jComboBoxPfad.setEnabled(false);
-                jButtonZiel.setEnabled(false);
-                jTextFieldName.setText("");
-                jComboBoxPfad.setModel(new DefaultComboBoxModel<>(new String[]{""}));
-            }
-            else {
-                jTextFieldName.setEnabled(true);
-                jComboBoxPfad.setEnabled(true);
-                jButtonZiel.setEnabled(true);
-                jTextFieldName.setText(datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME]);
-                setModelPfad(datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD], jComboBoxPfad);
-                orgPfad = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD];
-            }
-            stopBeob = false;
-        }
-    }
-
     /**
      * Get the free disk space for a selected path.
      *
@@ -477,18 +449,6 @@ public class DialogAddDownload extends JDialog {
                 !film.getLowQualityUrl().isEmpty();
     }
 
-    /**
-     * Setup the resolution radio buttons based on available download URLs.
-     */
-    protected void setupResolutionButtons() {
-        active_pSet = listeSpeichern.get(jComboBoxPset.getSelectedIndex());
-
-        prepareResolutionButtons();
-
-        prepareSubtitleCheckbox();
-        setNameFilm();
-    }
-
     protected void setupInfoFileCreationCheckBox() {
         //disable for Livestreams as they do not contain useful data, even if pset wants it...
         final boolean isLivestream = film.isLivestream();
@@ -513,15 +473,6 @@ public class DialogAddDownload extends JDialog {
         }
     }
 
-    private void prepareSubtitleCheckbox() {
-        if (!film.hasSubtitle()) {
-            jCheckBoxSubtitle.setEnabled(false);
-        }
-        else {
-            jCheckBoxSubtitle.setSelected(active_pSet.shouldDownloadSubtitle());
-        }
-    }
-
     /**
      * Return the resolution string based on selected {@link javax.swing.JRadioButton}.
      *
@@ -537,65 +488,6 @@ public class DialogAddDownload extends JDialog {
         else {
             return FilmResolution.Enum.NORMAL;
         }
-    }
-
-    private String getFilmSize() {
-        if (jRadioButtonAufloesungHd.isSelected()) {
-            return dateiGroesse_HQ;
-        }
-        else if (jRadioButtonAufloesungKlein.isSelected()) {
-            return dateiGroesse_Klein;
-        }
-        else {
-            return dateiGroesse_Hoch;
-        }
-    }
-
-    protected boolean check() {
-        var ok = false;
-        String pfad = Objects.requireNonNull(jComboBoxPfad.getSelectedItem()).toString();
-        String name = jTextFieldName.getText();
-        if (datenDownload != null) {
-            if (pfad.isEmpty() || name.isEmpty()) {
-                MVMessageDialog.showMessageDialog(this, "Pfad oder Name ist leer", "Fehlerhafter Pfad/Name!", JOptionPane.ERROR_MESSAGE);
-            }
-            else {
-                if (!pfad.substring(pfad.length() - 1).equals(File.separator)) {
-                    pfad += File.separator;
-                }
-                if (GuiFunktionenProgramme.checkPathWriteable(pfad)) {
-                    ok = true;
-                }
-                else {
-                    MVMessageDialog.showMessageDialog(this, "Pfad ist nicht beschreibbar", "Fehlerhafter Pfad!", JOptionPane.ERROR_MESSAGE);
-                }
-            }
-        }
-        return ok;
-    }
-
-    private void addDownloadToQueue() {
-        Daten.getInstance().getListeDownloads().addMitNummer(datenDownload);
-        MessageBus.getMessageBus().publishAsync(new DownloadListChangedEvent());
-
-        if (jCheckBoxStarten.isSelected()) {
-            datenDownload.startDownload();
-        }
-    }
-
-    /**
-     * Store download in list and start immediately if requested.
-     */
-    protected void saveDownload() {
-        // jetzt wird mit den angegebenen Pfaden gearbeitet
-        datenDownload = new DatenDownload(active_pSet, film, DatenDownload.QUELLE_DOWNLOAD, null, jTextFieldName.getText(), Objects.requireNonNull(jComboBoxPfad.getSelectedItem()).toString(), getFilmResolution().toString());
-        datenDownload.setGroesse(getFilmSize());
-        datenDownload.arr[DatenDownload.DOWNLOAD_INFODATEI] = Boolean.toString(jCheckBoxInfodatei.isSelected());
-        datenDownload.arr[DatenDownload.DOWNLOAD_SUBTITLE] = Boolean.toString(jCheckBoxSubtitle.isSelected());
-
-        addDownloadToQueue();
-
-        dispose();
     }
 
     protected static class DialogPositionComponentListener extends ComponentAdapter {
@@ -968,7 +860,7 @@ public class DialogAddDownload extends JDialog {
     protected JCheckBox jCheckBoxInfodatei;
     protected JCheckBox jCheckBoxPfadSpeichern;
     protected JCheckBox jCheckBoxSubtitle;
-    private JTextField jTextFieldName;
+    protected JTextField jTextFieldName;
     protected JComboBox<String> jComboBoxPset;
     protected JComboBox<String> jComboBoxPfad;
     protected JButton jButtonZiel;

@@ -25,11 +25,11 @@ import com.github.kokorin.jaffree.ffprobe.Stream
 import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import mediathek.config.Daten
 import mediathek.config.MVConfig
-import mediathek.tool.ApplicationConfiguration
-import mediathek.tool.EscapeKeyHandler
-import mediathek.tool.GuiFunktionenProgramme
-import mediathek.tool.SVGIconUtilities
+import mediathek.gui.messages.DownloadListChangedEvent
+import mediathek.tool.*
+import mediathek.tool.MessageBus.messageBus
 import org.apache.commons.configuration2.sync.LockMode
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
@@ -40,7 +40,9 @@ import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import java.io.File
 import javax.swing.DefaultComboBoxModel
+import javax.swing.JOptionPane
 import javax.swing.UIManager
 import kotlin.coroutines.cancellation.CancellationException
 import kotlin.math.max
@@ -132,6 +134,133 @@ class DialogAddDownloadWithCoroutines(
 
         calculateAndCheckDiskSpace()
         nameGeaendert = false
+    }
+
+    /**
+     * Store download in list and start immediately if requested.
+     */
+    private fun saveDownload() {
+        datenDownload = mediathek.daten.DatenDownload(
+            active_pSet,
+            film,
+            mediathek.daten.DatenDownload.QUELLE_DOWNLOAD,
+            null,
+            jTextFieldName.text,
+            jComboBoxPfad.selectedItem?.toString() ?: "",
+            filmResolution.toString()
+        ).apply {
+            setGroesse(getFilmSize())
+            arr[mediathek.daten.DatenDownload.DOWNLOAD_INFODATEI] = jCheckBoxInfodatei.isSelected.toString()
+            arr[mediathek.daten.DatenDownload.DOWNLOAD_SUBTITLE] = jCheckBoxSubtitle.isSelected.toString()
+        }
+
+        addDownloadToQueue()
+        dispose()
+    }
+
+    /**
+     * Setup the resolution radio buttons based on available download URLs.
+     */
+    private fun setupResolutionButtons() {
+        active_pSet = listeSpeichern.get(jComboBoxPset.getSelectedIndex())
+
+        prepareResolutionButtons()
+
+        prepareSubtitleCheckbox()
+        setNameFilm()
+    }
+
+    private fun prepareSubtitleCheckbox() {
+        if (!film.hasSubtitle()) {
+            jCheckBoxSubtitle.setEnabled(false)
+        } else {
+            jCheckBoxSubtitle.setSelected(active_pSet.shouldDownloadSubtitle())
+        }
+    }
+
+    private fun setNameFilm() {
+        // beim ersten Mal werden die Standardpfade gesucht
+        if (!nameGeaendert) {
+            // nur wenn vom Benutzer noch nicht geändert!
+            stopBeob = true
+
+            datenDownload = mediathek.daten.DatenDownload(
+                active_pSet,
+                film,
+                mediathek.daten.DatenDownload.QUELLE_DOWNLOAD,
+                null,
+                "",
+                "",
+                filmResolution.toString()
+            )
+
+            if (datenDownload.arr[mediathek.daten.DatenDownload.DOWNLOAD_ZIEL_DATEINAME].isEmpty()) {
+                // dann wird nicht gespeichert → eigentlich falsche Seteinstellungen?
+                jTextFieldName.isEnabled = false
+                jComboBoxPfad.isEnabled = false
+                jButtonZiel.isEnabled = false
+                jTextFieldName.text = ""
+                jComboBoxPfad.model = DefaultComboBoxModel(arrayOf(""))
+            } else {
+                jTextFieldName.isEnabled = true
+                jComboBoxPfad.isEnabled = true
+                jButtonZiel.isEnabled = true
+                jTextFieldName.text = datenDownload.arr[mediathek.daten.DatenDownload.DOWNLOAD_ZIEL_DATEINAME]
+                setModelPfad(datenDownload.arr[mediathek.daten.DatenDownload.DOWNLOAD_ZIEL_PFAD], jComboBoxPfad)
+                orgPfad = datenDownload.arr[mediathek.daten.DatenDownload.DOWNLOAD_ZIEL_PFAD]
+            }
+
+            stopBeob = false
+        }
+    }
+
+    private fun addDownloadToQueue() {
+        Daten.getInstance().listeDownloads.addMitNummer(datenDownload)
+        messageBus.publishAsync(DownloadListChangedEvent())
+
+        if (jCheckBoxStarten.isSelected) {
+            datenDownload.startDownload()
+        }
+    }
+
+    private fun getFilmSize(): String {
+        return when {
+            jRadioButtonAufloesungHd.isSelected -> dateiGroesse_HQ
+            jRadioButtonAufloesungKlein.isSelected -> dateiGroesse_Klein
+            else -> dateiGroesse_Hoch
+        }
+    }
+
+
+    private fun check(): Boolean {
+        val pfadRaw = jComboBoxPfad.selectedItem?.toString() ?: return false
+        val name = jTextFieldName.text
+
+        if (datenDownload == null) return false
+
+        if (pfadRaw.isEmpty() || name.isEmpty()) {
+            MVMessageDialog.showMessageDialog(
+                this,
+                "Pfad oder Name ist leer",
+                "Fehlerhafter Pfad/Name!",
+                JOptionPane.ERROR_MESSAGE
+            )
+            return false
+        }
+
+        val pfad = if (pfadRaw.endsWith(File.separator)) pfadRaw else pfadRaw + File.separator
+
+        return if (GuiFunktionenProgramme.checkPathWriteable(pfad)) {
+            true
+        } else {
+            MVMessageDialog.showMessageDialog(
+                this,
+                "Pfad ist nicht beschreibbar",
+                "Fehlerhafter Pfad!",
+                JOptionPane.ERROR_MESSAGE
+            )
+            false
+        }
     }
 
     private fun setupFilmQualityRadioButtons() {
@@ -259,34 +388,32 @@ class DialogAddDownloadWithCoroutines(
         minimumSize = Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT)
     }
 
-    private fun fetchLiveFilmInfoCoroutine() {
+    private suspend fun fetchLiveFilmInfoCoroutine() {
         btnRequestLiveInfo.isEnabled = false
         lblBusyIndicator.isVisible = true
         lblBusyIndicator.isBusy = true
         lblStatus.text = ""
         lblAudioInfo.text = ""
 
-        coroutineScope.launch {
-            try {
-                val url = film.getUrlFuerAufloesung(filmResolution)
+        try {
+            val url = film.getUrlFuerAufloesung(filmResolution)
 
-                val result = withContext(Dispatchers.IO) {
-                    FFprobe.atPath(ffprobePath)
-                        .setShowStreams(true)
-                        .setInput(url)
-                        .execute()
-                }
-
-                processFFprobeResult(result)
-            } catch (_: CancellationException) {
-                clearInfo()
-            } catch (ex: JaffreeAbnormalExitException) {
-                setupLabels(getJaffreeErrorString(ex))
-            } catch (_: Exception) {
-                setupLabels("Unbekannter Fehler aufgetreten.")
-            } finally {
-                resetBusyLabelAndButton()
+            val result = withContext(Dispatchers.IO) {
+                FFprobe.atPath(ffprobePath)
+                    .setShowStreams(true)
+                    .setInput(url)
+                    .execute()
             }
+
+            processFFprobeResult(result)
+        } catch (_: CancellationException) {
+            clearInfo()
+        } catch (ex: JaffreeAbnormalExitException) {
+            setupLabels(getJaffreeErrorString(ex))
+        } catch (_: Exception) {
+            setupLabels("Unbekannter Fehler aufgetreten.")
+        } finally {
+            resetBusyLabelAndButton()
         }
     }
 
