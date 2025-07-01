@@ -648,9 +648,10 @@ public class DialogAddDownload extends JDialog {
             var directory = FileDialogs.chooseDirectoryLocation(MediathekGui.ui(), "Film speichern", initialDirectory);
             if (directory != null) {
                 var selectedDirectory = directory.getAbsolutePath();
-                jComboBoxPfad.addItem(selectedDirectory);
-                jComboBoxPfad.setSelectedItem(selectedDirectory);
-
+                SwingUtilities.invokeLater(() -> {
+                    jComboBoxPfad.addItem(selectedDirectory);
+                    jComboBoxPfad.setSelectedItem(selectedDirectory);
+                });
             }
         });
     }
@@ -725,7 +726,7 @@ public class DialogAddDownload extends JDialog {
                 Path path = Paths.get(strPath);
                 if (Files.notExists(path)) {
                     //getParent() may return null...therefore we need to bail out this loop at some point.
-                    while (Files.notExists(path) && (path != null)) {
+                    while ((path != null) && Files.notExists(path)) {
                         path = path.getParent();
                     }
                 }
