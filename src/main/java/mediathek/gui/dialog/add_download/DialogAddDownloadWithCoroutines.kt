@@ -48,6 +48,7 @@ import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
 import javax.swing.DefaultComboBoxModel
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
@@ -62,21 +63,20 @@ class DialogAddDownloadWithCoroutines(
     parent: Frame,
     film: mediathek.daten.DatenFilm,
     pSet: DatenPset?,
-    requestedResolution: java.util.Optional<FilmResolution.Enum>
+    requestedResolution: Optional<FilmResolution.Enum>
 ) : DialogAddDownload(parent, film, pSet, requestedResolution) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private var liveInfoJob: Job? = null
     private var highQualityMandated: Boolean = false
+    private var stopBeob = false
+    private var nameGeaendert = false
+    private var ffprobePath: Path? = null
+    private var orgPfad = ""
 
     companion object {
         private val logger = LogManager.getLogger()
         private const val NO_DATA_AVAILABLE = "Keine Daten verfügbar."
         private const val TITLED_BORDER_STRING = "Download-Qualität"
-        private var stopBeob = false
-        private var nameGeaendert = false
-        private var ffprobePath: Path? = null
-        private var orgPfad = ""
-
     }
 
     init {
