@@ -17,23 +17,23 @@ public class PanelDownload extends JPanel {
         initComponents();
 
         cbkDownloadError.setSelected(Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_DOWNLOAD_ERRORMSG)));
-        cbkDownloadError.addActionListener(e -> MVConfig.add(MVConfig.Configs.SYSTEM_DOWNLOAD_ERRORMSG, Boolean.toString(cbkDownloadError.isSelected())));
+        cbkDownloadError.addActionListener(_ -> MVConfig.add(MVConfig.Configs.SYSTEM_DOWNLOAD_ERRORMSG, Boolean.toString(cbkDownloadError.isSelected())));
 
         var config = ApplicationConfiguration.getConfiguration();
         jCheckBoxBeep.setSelected(config.getBoolean(ApplicationConfiguration.DOWNLOAD_SOUND_BEEP,false));
-        jCheckBoxBeep.addActionListener(l -> config.setProperty(ApplicationConfiguration.DOWNLOAD_SOUND_BEEP,jCheckBoxBeep.isSelected()));
+        jCheckBoxBeep.addActionListener(_ -> config.setProperty(ApplicationConfiguration.DOWNLOAD_SOUND_BEEP,jCheckBoxBeep.isSelected()));
 
         cbFetchMissingFileSize.setSelected(config.getBoolean(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true));
-        cbFetchMissingFileSize.addActionListener(l -> config.setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, cbFetchMissingFileSize.isSelected()));
+        cbFetchMissingFileSize.addActionListener(_ -> config.setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, cbFetchMissingFileSize.isSelected()));
 
-        jButtonBeep.addActionListener(ae -> Toolkit.getDefaultToolkit().beep());
+        jButtonBeep.addActionListener(_ -> Toolkit.getDefaultToolkit().beep());
 
         var countdown = ApplicationConfiguration.getConfiguration().getInt(ApplicationConfiguration.DOWNLOAD_CONTINUATION_TIME, Konstanten.DOWNLOAD_CONTINUATION_DEFAULT_TIME);
         if (countdown < 1 || countdown > Konstanten.DOWNLOAD_CONTINUATION_DEFAULT_TIME) {
             countdown = Konstanten.DOWNLOAD_CONTINUATION_DEFAULT_TIME;
         }
         spDefaultDownloadContinuation.setValue(countdown);
-        spDefaultDownloadContinuation.addChangeListener(e -> {
+        spDefaultDownloadContinuation.addChangeListener(_ -> {
             int val = (int)spDefaultDownloadContinuation.getValue();
             config.setProperty(ApplicationConfiguration.DOWNLOAD_CONTINUATION_TIME, val);
         });
