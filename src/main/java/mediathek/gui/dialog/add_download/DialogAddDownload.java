@@ -81,7 +81,7 @@ public class DialogAddDownload extends JDialog {
     private ListenableFuture<String> hochFuture;
     private ListenableFuture<String> kleinFuture;
     private boolean restoreFetchSize;
-    private boolean highQualityMandated;
+    protected boolean highQualityMandated;
 
     public DialogAddDownload(@NotNull Frame parent, @NotNull DatenFilm film, @Nullable DatenPset pSet, @NotNull Optional<FilmResolution.Enum> requestedResolution) {
         super(parent, true);
@@ -439,12 +439,12 @@ public class DialogAddDownload extends JDialog {
         }
     }
 
-    private boolean isHighQualityRequested() {
+    protected boolean isHighQualityRequested() {
         return active_pSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG].equals(FilmResolution.Enum.HIGH_QUALITY.toString())
                 && film.isHighQuality();
     }
 
-    private boolean isLowQualityRequested() {
+    protected boolean isLowQualityRequested() {
         return active_pSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG].equals(FilmResolution.Enum.LOW.toString()) &&
                 !film.getLowQualityUrl().isEmpty();
     }
@@ -458,36 +458,6 @@ public class DialogAddDownload extends JDialog {
         }
         else
             jCheckBoxInfodatei.setSelected(false);
-    }
-
-    protected void prepareResolutionButtons() {
-        requestedResolution.ifPresent(it -> highQualityMandated = it == FilmResolution.Enum.HIGH_QUALITY);
-        if (highQualityMandated || isHighQualityRequested()) {
-            jRadioButtonAufloesungHd.setSelected(true);
-        }
-        else if (isLowQualityRequested()) {
-            jRadioButtonAufloesungKlein.setSelected(true);
-        }
-        else {
-            jRadioButtonAufloesungHoch.setSelected(true);
-        }
-    }
-
-    /**
-     * Return the resolution string based on selected {@link javax.swing.JRadioButton}.
-     *
-     * @return The resolution as a string.
-     */
-    protected FilmResolution.Enum getFilmResolution() {
-        if (jRadioButtonAufloesungHd.isSelected()) {
-            return FilmResolution.Enum.HIGH_QUALITY;
-        }
-        else if (jRadioButtonAufloesungKlein.isSelected()) {
-            return FilmResolution.Enum.LOW;
-        }
-        else {
-            return FilmResolution.Enum.NORMAL;
-        }
     }
 
     protected static class DialogPositionComponentListener extends ComponentAdapter {

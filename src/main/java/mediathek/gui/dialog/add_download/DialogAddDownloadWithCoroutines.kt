@@ -147,7 +147,7 @@ class DialogAddDownloadWithCoroutines(
             null,
             jTextFieldName.text,
             jComboBoxPfad.selectedItem?.toString() ?: "",
-            filmResolution.toString()
+            getFilmResolution().toString()
         ).apply {
             setGroesse(getFilmSize())
             arr[mediathek.daten.DatenDownload.DOWNLOAD_INFODATEI] = jCheckBoxInfodatei.isSelected.toString()
@@ -162,12 +162,33 @@ class DialogAddDownloadWithCoroutines(
      * Setup the resolution radio buttons based on available download URLs.
      */
     private fun setupResolutionButtons() {
-        active_pSet = listeSpeichern.get(jComboBoxPset.getSelectedIndex())
+        active_pSet = listeSpeichern[jComboBoxPset.getSelectedIndex()]
 
         prepareResolutionButtons()
 
         prepareSubtitleCheckbox()
         setNameFilm()
+    }
+
+    private fun prepareResolutionButtons() {
+        requestedResolution.ifPresent { highQualityMandated = it == mediathek.daten.FilmResolution.Enum.HIGH_QUALITY }
+
+        when {
+            highQualityMandated || isHighQualityRequested -> jRadioButtonAufloesungHd.isSelected = true
+            isLowQualityRequested -> jRadioButtonAufloesungKlein.isSelected = true
+            else -> jRadioButtonAufloesungHoch.isSelected = true
+        }
+    }
+
+    /**
+     * Return the resolution based on selected RadioButton.
+     */
+    private fun getFilmResolution(): mediathek.daten.FilmResolution.Enum {
+        return when {
+            jRadioButtonAufloesungHd.isSelected -> mediathek.daten.FilmResolution.Enum.HIGH_QUALITY
+            jRadioButtonAufloesungKlein.isSelected -> mediathek.daten.FilmResolution.Enum.LOW
+            else -> mediathek.daten.FilmResolution.Enum.NORMAL
+        }
     }
 
     private fun prepareSubtitleCheckbox() {
@@ -191,7 +212,7 @@ class DialogAddDownloadWithCoroutines(
                 null,
                 "",
                 "",
-                filmResolution.toString()
+                getFilmResolution().toString()
             )
 
             if (datenDownload.arr[mediathek.daten.DatenDownload.DOWNLOAD_ZIEL_DATEINAME].isEmpty()) {
@@ -396,7 +417,7 @@ class DialogAddDownloadWithCoroutines(
         lblAudioInfo.text = ""
 
         try {
-            val url = film.getUrlFuerAufloesung(filmResolution)
+            val url = film.getUrlFuerAufloesung(getFilmResolution())
 
             val result = withContext(Dispatchers.IO) {
                 FFprobe.atPath(ffprobePath)
