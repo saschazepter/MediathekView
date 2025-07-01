@@ -50,14 +50,10 @@ new FormModel {
 						"JavaCodeGenerator.variableLocal": true
 					}
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 1"
+					"value": "cell 0 1,aligny top,growy 0"
 				} )
 				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
 					name: "scrollPane1"
-					"verticalScrollBarPolicy": 21
-					auxiliary() {
-						"JavaCodeGenerator.variableLocal": true
-					}
 					add( new FormComponent( "com.jidesoft.swing.MultilineLabel" ) {
 						name: "jTextFieldSender"
 						"editable": false

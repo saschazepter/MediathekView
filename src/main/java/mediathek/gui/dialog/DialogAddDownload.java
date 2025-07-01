@@ -86,16 +86,19 @@ public class DialogAddDownload extends JDialog {
 
     public DialogAddDownload(@NotNull Frame parent, @NotNull DatenFilm film, @Nullable DatenPset pSet, @NotNull Optional<FilmResolution.Enum> requestedResolution) {
         super(parent, true);
+        this.requestedResolution = requestedResolution;
+        this.film = film;
+        this.active_pSet = pSet;
+
         initComponents();
 
         getRootPane().setDefaultButton(jButtonOk);
         EscapeKeyHandler.installHandler(this, this::dispose);
 
-        this.requestedResolution = requestedResolution;
-        this.film = film;
-        this.active_pSet = pSet;
 
+        setupSenderTextField();
         setupUI();
+        pack();
 
         restoreWindowSizeFromConfig();        //only install on windows and linux, macOS works...
         installMinResizePreventer();
@@ -181,14 +184,10 @@ public class DialogAddDownload extends JDialog {
         try {
             config.lock(LockMode.READ);
             var dims = getMinimumSize();
-            int MINIMUM_WIDTH = dims.width;
-            int MINIMUM_HEIGHT = dims.height;
-            int width = Math.max(config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH), MINIMUM_WIDTH);
-            int height = Math.max(config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT), MINIMUM_HEIGHT);
             int x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X);
             int y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y);
 
-            setBounds(x, y, width, height);
+            setBounds(x, y, dims.width, dims.height);
         }
         catch (NoSuchElementException ignored) {
             //do not restore anything
@@ -427,7 +426,6 @@ public class DialogAddDownload extends JDialog {
         jButtonAbbrechen.addActionListener(_ -> dispose());
 
         setupPSetComboBox();
-        setupSenderTextField();
         setupNameTextField();
         setupPathTextComponent();
 
@@ -963,7 +961,7 @@ public class DialogAddDownload extends JDialog {
         var label2 = new JLabel();
         lblSender = new JLabel();
         var label3 = new JLabel();
-        var scrollPane1 = new JScrollPane();
+        scrollPane1 = new JScrollPane();
         jTextFieldSender = new MultilineLabel();
         var buttonPanel = new JPanel();
         jCheckBoxStarten = new JCheckBox();
@@ -1044,11 +1042,10 @@ public class DialogAddDownload extends JDialog {
             label3.setText("Titel:");
             label3.setFont(label3.getFont().deriveFont(label3.getFont().getStyle() | Font.BOLD));
             label3.setHorizontalAlignment(SwingConstants.RIGHT);
-            panel2.add(label3, new CC().cell(0, 1));
+            panel2.add(label3, new CC().cell(0, 1).alignY("top").growY(0));
 
             //======== scrollPane1 ========
             {
-                scrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
                 //---- jTextFieldSender ----
                 jTextFieldSender.setEditable(false);
@@ -1262,6 +1259,7 @@ public class DialogAddDownload extends JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JLabel lblSender;
+    private JScrollPane scrollPane1;
     private MultilineLabel jTextFieldSender;
     private JCheckBox jCheckBoxStarten;
     private JButton jButtonOk;
