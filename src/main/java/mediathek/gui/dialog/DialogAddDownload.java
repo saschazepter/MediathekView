@@ -961,7 +961,7 @@ public class DialogAddDownload extends JDialog {
         var label2 = new JLabel();
         lblSender = new JLabel();
         var label3 = new JLabel();
-        scrollPane1 = new JScrollPane();
+        var scrollPane1 = new JScrollPane();
         jTextFieldSender = new MultilineLabel();
         var buttonPanel = new JPanel();
         jCheckBoxStarten = new JCheckBox();
@@ -1076,34 +1076,15 @@ public class DialogAddDownload extends JDialog {
 
             //======== panel1 ========
             {
+                panel1.setLayout(new FlowLayout());
 
                 //---- jButtonOk ----
                 jButtonOk.setText("Ok");
+                panel1.add(jButtonOk);
 
                 //---- jButtonAbbrechen ----
                 jButtonAbbrechen.setText("Abbrechen");
-
-                GroupLayout panel1Layout = new GroupLayout(panel1);
-                panel1.setLayout(panel1Layout);
-                panel1Layout.setHorizontalGroup(
-                    panel1Layout.createParallelGroup()
-                        .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
-                            .addComponent(jButtonOk, GroupLayout.PREFERRED_SIZE, 93, GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(jButtonAbbrechen)
-                            .addContainerGap())
-                );
-                panel1Layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {jButtonAbbrechen, jButtonOk});
-                panel1Layout.setVerticalGroup(
-                    panel1Layout.createParallelGroup()
-                        .addGroup(panel1Layout.createSequentialGroup()
-                            .addContainerGap()
-                            .addGroup(panel1Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(jButtonOk)
-                                .addComponent(jButtonAbbrechen))
-                            .addContainerGap())
-                );
+                panel1.add(jButtonAbbrechen);
             }
             buttonPanel.add(panel1, new CC().cell(1, 0));
         }
@@ -1259,7 +1240,6 @@ public class DialogAddDownload extends JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     private JLabel lblSender;
-    private JScrollPane scrollPane1;
     private MultilineLabel jTextFieldSender;
     private JCheckBox jCheckBoxStarten;
     private JButton jButtonOk;
