@@ -9,6 +9,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.JdkFutureAdapters;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.jidesoft.swing.MultilineLabel;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.config.MVColor;
@@ -962,7 +963,8 @@ public class DialogAddDownload extends JDialog {
         label2 = new JLabel();
         lblSender = new JLabel();
         label3 = new JLabel();
-        jTextFieldSender = new JTextField();
+        scrollPane1 = new JScrollPane();
+        jTextFieldSender = new MultilineLabel();
         var buttonPanel = new JPanel();
         jCheckBoxStarten = new JCheckBox();
         var panel1 = new JPanel();
@@ -1043,11 +1045,16 @@ public class DialogAddDownload extends JDialog {
             label3.setHorizontalAlignment(SwingConstants.RIGHT);
             panel2.add(label3, new CC().cell(0, 1));
 
-            //---- jTextFieldSender ----
-            jTextFieldSender.setEditable(false);
-            jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | Font.BOLD));
-            jTextFieldSender.setText("ARD: Tatort, ...");
-            panel2.add(jTextFieldSender, new CC().cell(1, 1));
+            //======== scrollPane1 ========
+            {
+
+                //---- jTextFieldSender ----
+                jTextFieldSender.setEditable(false);
+                jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | Font.BOLD));
+                jTextFieldSender.setText("ARD: Tatort, ...");
+                scrollPane1.setViewportView(jTextFieldSender);
+            }
+            panel2.add(scrollPane1, new CC().cell(1, 1));
         }
         contentPane.add(panel2, new CC().cell(0, 0));
 
@@ -1114,7 +1121,9 @@ public class DialogAddDownload extends JDialog {
                     .fill().gap()
                     .fill().gap()
                     .fill().gap()
-                    .grow().fill(),
+                    .grow().fill().gap()
+                    .fill().gap()
+                    .fill(),
                 // rows
                 new AC()
                     .gap()
@@ -1124,7 +1133,7 @@ public class DialogAddDownload extends JDialog {
             //---- jLabelSet ----
             jLabelSet.setText("Set:");
             jPanel1.add(jLabelSet, new CC().cell(0, 0));
-            jPanel1.add(jComboBoxPset, new CC().cell(1, 0, 4, 1));
+            jPanel1.add(jComboBoxPset, new CC().cell(1, 0, 6, 1));
 
             //---- jLabel1 ----
             jLabel1.setText("Zielpfad:");
@@ -1132,22 +1141,23 @@ public class DialogAddDownload extends JDialog {
 
             //---- jComboBoxPfad ----
             jComboBoxPfad.setEditable(true);
-            jPanel1.add(jComboBoxPfad, new CC().cell(1, 1));
+            jComboBoxPfad.setMaximumSize(new Dimension(520, 32767));
+            jPanel1.add(jComboBoxPfad, new CC().cell(1, 1, 4, 1).growX());
 
             //---- jButtonZiel ----
             jButtonZiel.setText("F");
             jButtonZiel.setToolTipText("Zielpfad ausw\u00e4hlen");
-            jPanel1.add(jButtonZiel, new CC().cell(2, 1));
+            jPanel1.add(jButtonZiel, new CC().cell(5, 1));
 
             //---- jButtonDelHistory ----
             jButtonDelHistory.setText("H");
             jButtonDelHistory.setToolTipText("History l\u00f6schen");
-            jPanel1.add(jButtonDelHistory, new CC().cell(3, 1));
+            jPanel1.add(jButtonDelHistory, new CC().cell(6, 1));
 
             //---- jLabel4 ----
             jLabel4.setText("Dateiname:");
             jPanel1.add(jLabel4, new CC().cell(0, 2));
-            jPanel1.add(jTextFieldName, new CC().cell(1, 2, 4, 1));
+            jPanel1.add(jTextFieldName, new CC().cell(1, 2, 6, 1));
         }
         contentPane.add(jPanel1, new CC().cell(0, 1));
 
@@ -1244,7 +1254,8 @@ public class DialogAddDownload extends JDialog {
     private JLabel label2;
     private JLabel lblSender;
     private JLabel label3;
-    private JTextField jTextFieldSender;
+    private JScrollPane scrollPane1;
+    private MultilineLabel jTextFieldSender;
     private JCheckBox jCheckBoxStarten;
     private JButton jButtonOk;
     private JButton jButtonAbbrechen;

@@ -43,11 +43,14 @@ new FormModel {
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 0 1"
 				} )
-				add( new FormComponent( "javax.swing.JTextField" ) {
-					name: "jTextFieldSender"
-					"editable": false
-					"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
-					"text": "ARD: Tatort, ..."
+				add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
+					name: "scrollPane1"
+					add( new FormComponent( "com.jidesoft.swing.MultilineLabel" ) {
+						name: "jTextFieldSender"
+						"editable": false
+						"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
+						"text": "ARD: Tatort, ..."
+					} )
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 1 1"
 				} )
@@ -94,7 +97,7 @@ new FormModel {
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$layoutConstraints": "insets 5,hidemode 3"
-				"$columnConstraints": "[fill][fill][fill][fill][grow,fill]"
+				"$columnConstraints": "[fill][fill][fill][fill][grow,fill][fill][fill]"
 				"$rowConstraints": "[][][]"
 			} ) {
 				name: "jPanel1"
@@ -118,7 +121,7 @@ new FormModel {
 						"JavaCodeGenerator.typeParameters": "String"
 					}
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 1 0 4 1"
+					"value": "cell 1 0 6 1"
 				} )
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "jLabel1"
@@ -132,26 +135,27 @@ new FormModel {
 				add( new FormComponent( "javax.swing.JComboBox" ) {
 					name: "jComboBoxPfad"
 					"editable": true
+					"maximumSize": new java.awt.Dimension( 520, 32767 )
 					auxiliary() {
 						"JavaCodeGenerator.customCreateCode": "new javax.swing.JComboBox<>();"
 						"JavaCodeGenerator.typeParameters": "String"
 					}
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 1 1"
+					"value": "cell 1 1 4 1,growx"
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "jButtonZiel"
 					"text": "F"
 					"toolTipText": "Zielpfad auswählen"
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 2 1"
+					"value": "cell 5 1"
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "jButtonDelHistory"
 					"text": "H"
 					"toolTipText": "History löschen"
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 3 1"
+					"value": "cell 6 1"
 				} )
 				add( new FormComponent( "javax.swing.JLabel" ) {
 					name: "jLabel4"
@@ -165,7 +169,7 @@ new FormModel {
 				add( new FormComponent( "javax.swing.JTextField" ) {
 					name: "jTextFieldName"
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 1 2 4 1"
+					"value": "cell 1 2 6 1"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 1"
