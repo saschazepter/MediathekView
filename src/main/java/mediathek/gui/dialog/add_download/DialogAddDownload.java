@@ -1,4 +1,22 @@
-package mediathek.gui.dialog;
+/*
+ * Copyright (c) 2025 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package mediathek.gui.dialog.add_download;
 
 import com.github.kokorin.jaffree.StreamType;
 import com.github.kokorin.jaffree.ffprobe.FFprobe;
@@ -52,13 +70,13 @@ import java.util.stream.Collectors;
 
 public class DialogAddDownload extends JDialog {
     private static final Logger logger = LogManager.getLogger();
-    private static final String NO_DATA_AVAILABLE = "Keine Daten verfügbar.";
-    private static final String KEY_LABEL_FOREGROUND = "Label.foreground";
-    private static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
+    protected static final String NO_DATA_AVAILABLE = "Keine Daten verfügbar.";
+    protected static final String KEY_LABEL_FOREGROUND = "Label.foreground";
+    protected static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
     private static final String TITLED_BORDER_STRING = "Download-Qualität";
     private static int MINIMUM_WIDTH = 720;
     private static int MINIMUM_HEIGHT = 430;
-    private final DatenFilm film;
+    protected final DatenFilm film;
     private final Optional<FilmResolution.Enum> requestedResolution;
     private final ListePset listeSpeichern = Daten.listePset.getListeSpeichern();
     /**
@@ -73,7 +91,7 @@ public class DialogAddDownload extends JDialog {
     private boolean nameGeaendert;
     private boolean stopBeob;
     private JTextComponent cbPathTextComponent;
-    private Path ffprobePath;
+    protected Path ffprobePath;
     private ListenableFuture<FFprobeResult> resultListenableFuture;
     private ListenableFuture<String> hqFuture;
     private ListenableFuture<String> hochFuture;
@@ -226,8 +244,6 @@ public class DialogAddDownload extends JDialog {
 
         jRadioButtonAufloesungHoch.addActionListener(listener);
         jRadioButtonAufloesungHoch.setSelected(true);
-
-        btnRequestLiveInfo.addActionListener(_ -> handleRequestLiveFilmInfo());
     }
 
     /**
@@ -383,7 +399,7 @@ public class DialogAddDownload extends JDialog {
         }, Daten.getInstance().getDecoratedPool());
     }
 
-    private void resetBusyLabelAndButton() {
+    protected void resetBusyLabelAndButton() {
         lblBusyIndicator.setBusy(false);
         lblBusyIndicator.setVisible(false);
         btnRequestLiveInfo.setEnabled(true);
@@ -877,7 +893,7 @@ public class DialogAddDownload extends JDialog {
      *
      * @return The resolution as a string.
      */
-    private FilmResolution.Enum getFilmResolution() {
+    protected FilmResolution.Enum getFilmResolution() {
         if (jRadioButtonAufloesungHd.isSelected()) {
             return FilmResolution.Enum.HIGH_QUALITY;
         }
@@ -1262,7 +1278,7 @@ public class DialogAddDownload extends JDialog {
                         .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(9, Short.MAX_VALUE))
+                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             );
         }
 
@@ -1324,10 +1340,10 @@ public class DialogAddDownload extends JDialog {
     private JButton jButtonZiel;
     private JButton jButtonDelHistory;
     private JPanel jPanelSize;
-    private JButton btnRequestLiveInfo;
-    private JXBusyLabel lblBusyIndicator;
-    private JLabel lblStatus;
-    private JLabel lblAudioInfo;
+    protected JButton btnRequestLiveInfo;
+    protected JXBusyLabel lblBusyIndicator;
+    protected JLabel lblStatus;
+    protected JLabel lblAudioInfo;
     private JRadioButton jRadioButtonAufloesungHd;
     private JRadioButton jRadioButtonAufloesungHoch;
     private JRadioButton jRadioButtonAufloesungKlein;

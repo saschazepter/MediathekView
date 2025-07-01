@@ -135,7 +135,7 @@ new FormModel {
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::644:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
-				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space ::9:x}}"
+				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space :::x}}"
 			} ) {
 				name: "jPanelSize"
 				"border": new javax.swing.border.TitledBorder( "Download-Qualität" )
@@ -149,9 +149,15 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "btnRequestLiveInfo"
 						"text": "Codec-Details abrufen..."
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 					add( new FormComponent( "org.jdesktop.swingx.JXBusyLabel" ) {
 						name: "lblBusyIndicator"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridLayout ) {
 						"columns": 1
@@ -164,10 +170,16 @@ new FormModel {
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "lblStatus"
 							"text": "status"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 						} )
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "lblAudioInfo"
 							"text": "audio"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 						} )
 					} )
 				} )
