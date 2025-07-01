@@ -24,12 +24,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.text.JTextComponent;
 import java.awt.*;
 
 public class DialogAddDownload extends JDialog {
     protected DatenDownload datenDownload;
-    protected JTextComponent cbPathTextComponent;
 
     public DialogAddDownload(@NotNull Frame parent) {
         super(parent, true);

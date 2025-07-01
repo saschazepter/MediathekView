@@ -81,6 +81,7 @@ class DialogAddDownloadWithCoroutines(
     private var dateiGroesseHighQuality: String = ""
     private var dateiGroesseNormalQuality: String = ""
     private var dateiGroesseLowQuality: String = ""
+    private lateinit var cbPathTextComponent : JTextComponent
 
     companion object {
         private val logger = LogManager.getLogger()
@@ -702,7 +703,7 @@ class DialogAddDownloadWithCoroutines(
 
             private fun fileNameCheck(filePath: String) {
                 val editor = jComboBoxPfad.editor.editorComponent
-                if (filePath != FilenameUtils.checkDateiname(filePath, true)) {
+                if (filePath != FilenameUtils.checkFilenameForIllegalCharacters(filePath, true)) {
                     editor.background = MVColor.DOWNLOAD_FEHLER.color
                 } else {
                     editor.background = UIManager.getColor(KEY_TEXTFIELD_BACKGROUND)
@@ -713,7 +714,7 @@ class DialogAddDownloadWithCoroutines(
                 if (!stopBeob) {
                     nameGeaendert = true
                     // do not perform check on Windows
-                    if (SystemUtils.IS_OS_WINDOWS) {
+                    if (!SystemUtils.IS_OS_WINDOWS) {
                         (jComboBoxPfad.selectedItem as? String)?.let { fileNameCheck(it) }
                     }
                     calculateAndCheckDiskSpace()
@@ -733,7 +734,7 @@ class DialogAddDownloadWithCoroutines(
             private fun tus() {
                 if (!stopBeob) {
                     nameGeaendert = true
-                    if (jTextFieldName.text != FilenameUtils.checkDateiname(jTextFieldName.text, false)) {
+                    if (jTextFieldName.text != FilenameUtils.checkFilenameForIllegalCharacters(jTextFieldName.text, false)) {
                         jTextFieldName.background = MVColor.DOWNLOAD_FEHLER.color
                     } else {
                         jTextFieldName.background = UIManager.getDefaults().getColor(KEY_TEXTFIELD_BACKGROUND)
