@@ -63,7 +63,6 @@ import java.util.stream.Collectors;
 
 public class DialogAddDownload extends JDialog {
     private static final Logger logger = LogManager.getLogger();
-    protected static final String NO_DATA_AVAILABLE = "Keine Daten verfügbar.";
     protected static final String KEY_LABEL_FOREGROUND = "Label.foreground";
     protected static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
     private static final String TITLED_BORDER_STRING = "Download-Qualität";
@@ -237,12 +236,6 @@ public class DialogAddDownload extends JDialog {
 
         jRadioButtonAufloesungHoch.addActionListener(listener);
         jRadioButtonAufloesungHoch.setSelected(true);
-    }
-
-    protected void resetBusyLabelAndButton() {
-        lblBusyIndicator.setBusy(false);
-        lblBusyIndicator.setVisible(false);
-        btnRequestLiveInfo.setEnabled(true);
     }
 
     private void detectFfprobeExecutable() {

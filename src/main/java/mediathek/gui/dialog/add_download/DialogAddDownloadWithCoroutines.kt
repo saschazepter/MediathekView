@@ -41,6 +41,8 @@ class DialogAddDownloadWithCoroutines(
 
     companion object {
         private val logger = LogManager.getLogger()
+        private const val NO_DATA_AVAILABLE: String = "Keine Daten verfügbar."
+
     }
     init {
         btnRequestLiveInfo.addActionListener { fetchLiveFilmInfoCoroutine() }
@@ -96,6 +98,12 @@ class DialogAddDownloadWithCoroutines(
             val codecName = getVideoCodecName(it)
             getVideoInfoString(it, frameRate, codecName)
         } ?: NO_DATA_AVAILABLE
+    }
+
+    fun resetBusyLabelAndButton() {
+        lblBusyIndicator.setBusy(false)
+        lblBusyIndicator.setVisible(false)
+        btnRequestLiveInfo.setEnabled(true)
     }
 
     private fun clearInfo() {
