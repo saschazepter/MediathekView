@@ -180,6 +180,14 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
+    private fun setupInfoFileCreationCheckBox() {
+        //disable for Livestreams as they do not contain useful data, even if pset wants it...
+        jCheckBoxInfodatei.setEnabled(!film.isLivestream)
+        if (!film.isLivestream) {
+            jCheckBoxInfodatei.setSelected(active_pSet.shouldCreateInfofile())
+        } else jCheckBoxInfodatei.setSelected(false)
+    }
+
     /**
      * Return the resolution based on selected RadioButton.
      */

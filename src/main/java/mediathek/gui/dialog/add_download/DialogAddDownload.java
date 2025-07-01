@@ -449,17 +449,6 @@ public class DialogAddDownload extends JDialog {
                 !film.getLowQualityUrl().isEmpty();
     }
 
-    protected void setupInfoFileCreationCheckBox() {
-        //disable for Livestreams as they do not contain useful data, even if pset wants it...
-        final boolean isLivestream = film.isLivestream();
-        jCheckBoxInfodatei.setEnabled(!isLivestream);
-        if (!isLivestream) {
-            jCheckBoxInfodatei.setSelected(active_pSet.shouldCreateInfofile());
-        }
-        else
-            jCheckBoxInfodatei.setSelected(false);
-    }
-
     protected static class DialogPositionComponentListener extends ComponentAdapter {
         @Override
         public void componentResized(ComponentEvent e) {
