@@ -761,55 +761,54 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun setupZielButton() {
-        jButtonZiel.icon = SVGIconUtilities.createSVGIcon("icons/fontawesome/folder-open.svg")
-        jButtonZiel.text = ""
-
-        jButtonZiel.addActionListener {
-            val initialDirectory = (jComboBoxPfad.selectedItem as? String).orEmpty()
-
-            FileDialogs.chooseDirectoryLocation(
-                MediathekGui.ui(),
-                "Film speichern",
-                initialDirectory
-            )?.let { directory ->
-                val selectedDirectory = directory.absolutePath
-                SwingUtilities.invokeLater {
-                    jComboBoxPfad.addItem(selectedDirectory)
-                    jComboBoxPfad.selectedItem = selectedDirectory
+        jButtonZiel.apply {
+            icon = SVGIconUtilities.createSVGIcon("icons/fontawesome/folder-open.svg")
+            text = ""
+            addActionListener {
+                val initialDirectory = (jComboBoxPfad.selectedItem as? String).orEmpty()
+                FileDialogs.chooseDirectoryLocation(
+                    MediathekGui.ui(),
+                    "Film speichern",
+                    initialDirectory
+                )?.absolutePath?.let { selectedDirectory ->
+                    SwingUtilities.invokeLater {
+                        jComboBoxPfad.apply {
+                            addItem(selectedDirectory)
+                            selectedItem = selectedDirectory
+                        }
+                    }
                 }
             }
         }
     }
+}
 
-    private class DialogPositionComponentListener : ComponentAdapter() {
+private class DialogPositionComponentListener : ComponentAdapter() {
 
-        override fun componentResized(e: ComponentEvent) {
-            storeWindowPosition(e)
-        }
-
-        override fun componentMoved(e: ComponentEvent) {
-            storeWindowPosition(e)
-        }
-
-        private fun storeWindowPosition(e: ComponentEvent) {
-            val config = ApplicationConfiguration.getConfiguration()
-            val component = e.component
-
-            val dims = component.size
-            val loc = component.location
-
-            try {
-                config.lock(LockMode.WRITE)
-                config.setProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH, dims.width)
-                config.setProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT, dims.height)
-                config.setProperty(ApplicationConfiguration.AddDownloadDialog.X, loc.x)
-                config.setProperty(ApplicationConfiguration.AddDownloadDialog.Y, loc.y)
-            } finally {
-                config.unlock(LockMode.WRITE)
-            }
-        }
-
+    override fun componentResized(e: ComponentEvent) {
+        storeWindowPosition(e)
     }
 
+    override fun componentMoved(e: ComponentEvent) {
+        storeWindowPosition(e)
+    }
+
+    private fun storeWindowPosition(e: ComponentEvent) {
+        val config = ApplicationConfiguration.getConfiguration()
+        val component = e.component
+
+        val dims = component.size
+        val loc = component.location
+
+        try {
+            config.lock(LockMode.WRITE)
+            config.setProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH, dims.width)
+            config.setProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT, dims.height)
+            config.setProperty(ApplicationConfiguration.AddDownloadDialog.X, loc.x)
+            config.setProperty(ApplicationConfiguration.AddDownloadDialog.Y, loc.y)
+        } finally {
+            config.unlock(LockMode.WRITE)
+        }
+    }
 
 }
