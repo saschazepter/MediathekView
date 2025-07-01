@@ -522,6 +522,9 @@ class DialogAddDownloadWithCoroutines(
         else if (SystemUtils.IS_OS_LINUX) {
             minimumDialogHeight -= 50
         }
+        else if (SystemUtils.IS_OS_MAC_OSX) {
+            minimumDialogHeight -= 150
+        }
         minimumSize = Dimension(minimumDialogWidth, minimumDialogHeight)
     }
 
