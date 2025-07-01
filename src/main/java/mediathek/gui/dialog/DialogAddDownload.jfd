@@ -4,7 +4,7 @@ new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-			"$layoutConstraints": "insets 0,hidemode 3,gap 5 5"
+			"$layoutConstraints": "insets 5,hidemode 3,gap 5 5"
 			"$columnConstraints": "[grow,fill]"
 			"$rowConstraints": "[fill][fill][fill][fill][fill]"
 		} ) {
@@ -61,7 +61,7 @@ new FormModel {
 					"JavaCodeGenerator.variableLocal": true
 				}
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-					"$horizontalGroup": "par l {seq {space :::p, par l {seq l {par l {comp jLabelSet::l:p::p, comp jLabel1::l:p::p}, space :p:20:p, par l {comp jPanel4::::585:x, comp jComboBoxPset:::::x}}, seq l {comp jLabel4:::p::p, space :::p, comp jTextFieldName:::::x:2}}, space :::p}}"
+					"$horizontalGroup": "par l {seq {space :::p, par l {seq l {par l {comp jLabelSet::l:p::p, comp jLabel1::l:p::p}, space :p:20:p, par l {comp jPanel4::::590:x, comp jComboBoxPset:::::x}}, seq l {comp jLabel4:::p::p, space :::p, comp jTextFieldName:::::x:2}}, space :::p}}"
 					"$verticalGroup": "par l {seq {space :::p, par b {comp jLabelSet::b:p::p, comp jComboBoxPset::b:p::p}, space u:p::p, par t {comp jPanel4:::p::p, comp jLabel1:::p::p}, space :::p, par c {comp jLabel4::c:p::p, comp jTextFieldName::c:p::p}, space :::p}}"
 				} ) {
 					name: "jPanel7"
@@ -129,7 +129,7 @@ new FormModel {
 				"value": "cell 0 1"
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::661:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
+				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::666:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
 				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space :::x}}"
 			} ) {
 				name: "jPanelSize"

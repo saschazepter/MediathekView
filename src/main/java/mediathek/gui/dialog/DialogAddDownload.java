@@ -179,9 +179,10 @@ public class DialogAddDownload extends JDialog {
         var config = ApplicationConfiguration.getConfiguration();
         try {
             config.lock(LockMode.READ);
-            int MINIMUM_WIDTH = 690;
+            var dims = getMinimumSize();
+            int MINIMUM_WIDTH = dims.width;
+            int MINIMUM_HEIGHT = dims.height;
             int width = Math.max(config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH), MINIMUM_WIDTH);
-            int MINIMUM_HEIGHT = 450;
             int height = Math.max(config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT), MINIMUM_HEIGHT);
             int x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X);
             int y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y);
@@ -997,7 +998,7 @@ public class DialogAddDownload extends JDialog {
         setMaximumSize(new Dimension(1024, 800));
         var contentPane = getContentPane();
         contentPane.setLayout(new MigLayout(
-            new LC().insets("0").hideMode(3).gridGap("5", "5"),
+            new LC().insets("5").hideMode(3).gridGap("5", "5"),
             // columns
             new AC()
                 .grow().fill(),
@@ -1109,7 +1110,7 @@ public class DialogAddDownload extends JDialog {
                                         .addComponent(jLabel1))
                                     .addGap(20, 20, 20)
                                     .addGroup(jPanel7Layout.createParallelGroup()
-                                        .addComponent(jPanel4, GroupLayout.DEFAULT_SIZE, 585, Short.MAX_VALUE)
+                                        .addComponent(jPanel4, GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE)
                                         .addComponent(jComboBoxPset)))
                                 .addGroup(jPanel7Layout.createSequentialGroup()
                                     .addComponent(jLabel4)
@@ -1207,7 +1208,7 @@ public class DialogAddDownload extends JDialog {
                     .addGroup(jPanelSizeLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanelSizeLayout.createParallelGroup()
-                            .addComponent(jPanel3, GroupLayout.DEFAULT_SIZE, 661, Short.MAX_VALUE)
+                            .addComponent(jPanel3, GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
                             .addGroup(jPanelSizeLayout.createSequentialGroup()
                                 .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE)))
