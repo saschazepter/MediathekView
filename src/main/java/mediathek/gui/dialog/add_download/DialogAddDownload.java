@@ -19,7 +19,6 @@
 package mediathek.gui.dialog.add_download;
 
 import mediathek.daten.DatenDownload;
-import mediathek.daten.DatenFilm;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,18 +28,11 @@ import javax.swing.text.JTextComponent;
 import java.awt.*;
 
 public class DialogAddDownload extends JDialog {
-    protected static final String KEY_LABEL_FOREGROUND = "Label.foreground";
-    protected static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
-    protected final DatenFilm film;
     protected DatenDownload datenDownload;
-    protected String dateiGroesse_HQ = "";
-    protected String dateiGroesse_Hoch = "";
-    protected String dateiGroesse_Klein = "";
     protected JTextComponent cbPathTextComponent;
 
-    public DialogAddDownload(@NotNull Frame parent, @NotNull DatenFilm film) {
+    public DialogAddDownload(@NotNull Frame parent) {
         super(parent, true);
-        this.film = film;
         initComponents();
     }
 

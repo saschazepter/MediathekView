@@ -60,13 +60,13 @@ import kotlin.math.max
 
 class DialogAddDownloadWithCoroutines(
     parent: Frame,
-    film: DatenFilm,
+    private val film: DatenFilm,
     /**
      * The currently selected pSet or null when no selection.
      */
     private var activeProgramSet: DatenPset,
     private val requestedResolution: Optional<FilmResolution.Enum>
-) : DialogAddDownload(parent, film) {
+) : DialogAddDownload(parent) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private var liveInfoJob: Job? = null
     private var highQualityMandated: Boolean = false
@@ -78,11 +78,16 @@ class DialogAddDownloadWithCoroutines(
     private var minimumDialogHeight: Int = 430
     private val listeSpeichern: ListePset = Daten.listePset.listeSpeichern
     private var fileSizeJob: Job? = null
+    private var dateiGroesseHighQuality: String = ""
+    private var dateiGroesseNormalQuality: String = ""
+    private var dateiGroesseLowQuality: String = ""
 
     companion object {
         private val logger = LogManager.getLogger()
         private const val NO_DATA_AVAILABLE = "Keine Daten verfügbar."
         private const val TITLED_BORDER_STRING = "Download-Qualität"
+        private const val KEY_LABEL_FOREGROUND: String = "Label.foreground"
+        private const val KEY_TEXTFIELD_BACKGROUND: String = "TextField.background"
 
         @JvmStatic
         fun saveComboPfad(jcb: JComboBox<String>, orgPath: String) {
@@ -346,9 +351,9 @@ class DialogAddDownloadWithCoroutines(
 
     private fun getFilmSize(): String {
         return when {
-            jRadioButtonAufloesungHd.isSelected -> dateiGroesse_HQ
-            jRadioButtonAufloesungKlein.isSelected -> dateiGroesse_Klein
-            else -> dateiGroesse_Hoch
+            jRadioButtonAufloesungHd.isSelected -> dateiGroesseHighQuality
+            jRadioButtonAufloesungKlein.isSelected -> dateiGroesseLowQuality
+            else -> dateiGroesseNormalQuality
         }
     }
 
@@ -650,20 +655,20 @@ class DialogAddDownloadWithCoroutines(
             // jetzt noch prüfen, obs auf die Platte passt
             usableSpace /= FileSize.ONE_MiB
             if (usableSpace > 0) {
-                if (dateiGroesse_HQ.isNotEmpty()) {
-                    val size = dateiGroesse_HQ.toIntOrNull() ?: 0
+                if (dateiGroesseHighQuality.isNotEmpty()) {
+                    val size = dateiGroesseHighQuality.toIntOrNull() ?: 0
                     if (size > usableSpace) {
                         jRadioButtonAufloesungHd.foreground = Color.RED
                     }
                 }
-                if (dateiGroesse_Hoch.isNotEmpty()) {
-                    val size = dateiGroesse_Hoch.toIntOrNull() ?: 0
+                if (dateiGroesseNormalQuality.isNotEmpty()) {
+                    val size = dateiGroesseNormalQuality.toIntOrNull() ?: 0
                     if (size > usableSpace) {
                         jRadioButtonAufloesungHoch.foreground = Color.RED
                     }
                 }
-                if (dateiGroesse_Klein.isNotEmpty()) {
-                    val size = dateiGroesse_Klein.toIntOrNull() ?: 0
+                if (dateiGroesseLowQuality.isNotEmpty()) {
+                    val size = dateiGroesseLowQuality.toIntOrNull() ?: 0
                     if (size > usableSpace) {
                         jRadioButtonAufloesungKlein.foreground = Color.RED
                     }
@@ -817,21 +822,21 @@ class DialogAddDownloadWithCoroutines(
 
             withContext(Dispatchers.Swing) {
                 if (jRadioButtonAufloesungHd.isEnabled) {
-                    dateiGroesse_HQ = hqSize
-                    if (dateiGroesse_HQ.isNotEmpty()) {
-                        jRadioButtonAufloesungHd.text += "   [ $dateiGroesse_HQ MB ]"
+                    dateiGroesseHighQuality = hqSize
+                    if (dateiGroesseHighQuality.isNotEmpty()) {
+                        jRadioButtonAufloesungHd.text += "   [ $dateiGroesseHighQuality MB ]"
                     }
                 }
 
-                dateiGroesse_Hoch = hochSize
-                if (dateiGroesse_Hoch.isNotEmpty()) {
-                    jRadioButtonAufloesungHoch.text += "   [ $dateiGroesse_Hoch MB ]"
+                dateiGroesseNormalQuality = hochSize
+                if (dateiGroesseNormalQuality.isNotEmpty()) {
+                    jRadioButtonAufloesungHoch.text += "   [ $dateiGroesseNormalQuality MB ]"
                 }
 
                 if (jRadioButtonAufloesungKlein.isEnabled) {
-                    dateiGroesse_Klein = kleinSize
-                    if (dateiGroesse_Klein.isNotEmpty()) {
-                        jRadioButtonAufloesungKlein.text += "   [ $dateiGroesse_Klein MB ]"
+                    dateiGroesseLowQuality = kleinSize
+                    if (dateiGroesseLowQuality.isNotEmpty()) {
+                        jRadioButtonAufloesungKlein.text += "   [ $dateiGroesseLowQuality MB ]"
                     }
                 }
             }
