@@ -38,7 +38,7 @@ new FormModel {
 				} )
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel2::::636:x, comp jPanel7:::::x}, space :::p}}"
+				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel2::::654:x, comp jPanel7:::::x}, space :::p}}"
 				"$verticalGroup": "par l {seq l {space :::p, comp jPanel7:::p::p, space :p:12:p, comp jPanel2:::p::p, space :::x}}"
 			} ) {
 				name: "jPanel1"
@@ -134,8 +134,8 @@ new FormModel {
 				} )
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::626:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
-				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space ::8:x}}"
+				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::644:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
+				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space ::9:x}}"
 			} ) {
 				name: "jPanelSize"
 				"border": new javax.swing.border.TitledBorder( "Download-Qualität" )
@@ -202,7 +202,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 662, 430 )
+			"size": new java.awt.Dimension( 680, 430 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
 			name: "buttonGroup1"

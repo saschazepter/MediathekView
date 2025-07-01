@@ -56,8 +56,8 @@ public class DialogAddDownload extends JDialog {
     private static final String KEY_LABEL_FOREGROUND = "Label.foreground";
     private static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
     private static final String TITLED_BORDER_STRING = "Download-Qualität";
-    private static int MINIMUM_WIDTH = 660;
-    private static int MINIMUM_HEIGHT = 420;
+    private static int MINIMUM_WIDTH = 720;
+    private static int MINIMUM_HEIGHT = 430;
     private final DatenFilm film;
     private final Optional<FilmResolution.Enum> requestedResolution;
     private final ListePset listeSpeichern = Daten.listePset.getListeSpeichern();
@@ -601,6 +601,9 @@ public class DialogAddDownload extends JDialog {
         cbPathTextComponent.setOpaque(true);
         cbPathTextComponent.getDocument().addDocumentListener(new DocumentListener() {
 
+            /// Sichtbare Begrenzung im Textfeld der ComboBox
+            private static final int MAX_PATH_LENGTH = 50;
+
             @Override
             public void insertUpdate(DocumentEvent e) {
                 tus();
@@ -616,23 +619,38 @@ public class DialogAddDownload extends JDialog {
                 tus();
             }
 
+            private void truncate() {
+                String text = cbPathTextComponent.getText();
+                if (text.length() > MAX_PATH_LENGTH) {
+                    String shortText = "..." + text.substring(text.length() - MAX_PATH_LENGTH);
+                    SwingUtilities.invokeLater(() -> cbPathTextComponent.setText(shortText));
+                }
+            }
+
+            private void fileNameCheck(@NotNull String filePath) {
+                //do not perform check on Windows
+                if (SystemUtils.IS_OS_WINDOWS)
+                    return;
+
+                final var editor = jComboBoxPfad.getEditor().getEditorComponent();
+                if (!filePath.equals(FilenameUtils.checkDateiname(filePath, true))) {
+                    editor.setBackground(MVColor.DOWNLOAD_FEHLER.color);
+                }
+                else {
+                    editor.setBackground(UIManager.getColor(KEY_TEXTFIELD_BACKGROUND));
+                }
+            }
+
             private void tus() {
                 if (!stopBeob) {
                     nameGeaendert = true;
-                    //perform checks only when OS is not windows
-                    if (!SystemUtils.IS_OS_WINDOWS) {
-                        String s = cbPathTextComponent.getText();
-                        final var editor = jComboBoxPfad.getEditor().getEditorComponent();
-                        if (!s.equals(FilenameUtils.checkDateiname(s, true))) {
-                            editor.setBackground(MVColor.DOWNLOAD_FEHLER.color);
-                        }
-                        else {
-                            editor.setBackground(UIManager.getColor(KEY_TEXTFIELD_BACKGROUND));
-                        }
+                    var s = (String) jComboBoxPfad.getSelectedItem();
+                    if (s != null) {
+                        fileNameCheck(s);
                     }
                     calculateAndCheckDiskSpace();
                 }
-
+                truncate();
             }
         });
     }
@@ -1164,7 +1182,7 @@ public class DialogAddDownload extends JDialog {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanel1Layout.createParallelGroup()
-                            .addComponent(jPanel2, GroupLayout.DEFAULT_SIZE, 636, Short.MAX_VALUE)
+                            .addComponent(jPanel2, GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE)
                             .addComponent(jPanel7, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                         .addContainerGap())
             );
@@ -1231,7 +1249,7 @@ public class DialogAddDownload extends JDialog {
                     .addGroup(jPanelSizeLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(jPanelSizeLayout.createParallelGroup()
-                            .addComponent(jPanel3, GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
+                            .addComponent(jPanel3, GroupLayout.DEFAULT_SIZE, 644, Short.MAX_VALUE)
                             .addGroup(jPanelSizeLayout.createSequentialGroup()
                                 .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addGap(0, 0, Short.MAX_VALUE)))
@@ -1244,7 +1262,7 @@ public class DialogAddDownload extends JDialog {
                         .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(8, Short.MAX_VALUE))
+                        .addContainerGap(9, Short.MAX_VALUE))
             );
         }
 
