@@ -18,16 +18,8 @@
 
 package mediathek.gui.dialog.add_download;
 
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import mediathek.config.Daten;
 import mediathek.daten.DatenDownload;
 import mediathek.daten.DatenFilm;
-import mediathek.daten.FilmResolution;
-import mediathek.tool.ApplicationConfiguration;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.jetbrains.annotations.NotNull;
 
@@ -35,25 +27,16 @@ import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.util.concurrent.ExecutionException;
 
 public class DialogAddDownload extends JDialog {
     protected static final String KEY_LABEL_FOREGROUND = "Label.foreground";
     protected static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
-    private static final Logger logger = LogManager.getLogger();
     protected final DatenFilm film;
     protected DatenDownload datenDownload;
     protected String dateiGroesse_HQ = "";
     protected String dateiGroesse_Hoch = "";
     protected String dateiGroesse_Klein = "";
     protected JTextComponent cbPathTextComponent;
-    private ListenableFuture<String> hqFuture;
-    private ListenableFuture<String> hochFuture;
-    private ListenableFuture<String> kleinFuture;
-    /**
-     * Temporary storage of config var is we need to activate it for this dialog no matter what
-     */
-    private boolean restoreFetchSize;
 
     public DialogAddDownload(@NotNull Frame parent, @NotNull DatenFilm film) {
         super(parent, true);
@@ -61,108 +44,7 @@ public class DialogAddDownload extends JDialog {
         initComponents();
     }
 
-    protected void launchResolutionFutures() {
-        // always fetch file size during dialog ops...
-        restoreFetchSize = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true);
-        ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true);
 
-        var decoratedPool = Daten.getInstance().getDecoratedPool();
-        hqFuture = decoratedPool.submit(() -> {
-            var url = film.getUrlFuerAufloesung(FilmResolution.Enum.HIGH_QUALITY);
-            return film.getFileSizeForUrl(url);
-        });
-
-        Futures.addCallback(hqFuture, new FutureCallback<>() {
-            @Override
-            public void onSuccess(String result) {
-                SwingUtilities.invokeLater(() -> {
-                    if (jRadioButtonAufloesungHd.isEnabled()) {
-                        dateiGroesse_HQ = result;
-                        if (!dateiGroesse_HQ.isEmpty()) {
-                            var text = jRadioButtonAufloesungHd.getText();
-                            jRadioButtonAufloesungHd.setText(text + "   [ " + dateiGroesse_HQ + " MB ]");
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(@NotNull Throwable t) {
-                SwingUtilities.invokeLater(() -> {
-                    dateiGroesse_HQ = "";
-                    logger.error("Failed to retrieve HD resolution", t);
-                });
-            }
-        }, decoratedPool);
-
-        hochFuture = decoratedPool.submit(() -> {
-            var url = film.getUrlNormalQuality();
-            return film.getFileSizeForUrl(url);
-        });
-        Futures.addCallback(hochFuture, new FutureCallback<>() {
-            @Override
-            public void onSuccess(String result) {
-                SwingUtilities.invokeLater(() -> {
-                    dateiGroesse_Hoch = result;
-                    if (!dateiGroesse_Hoch.isEmpty()) {
-                        var text = jRadioButtonAufloesungHoch.getText();
-                        jRadioButtonAufloesungHoch.setText(text + "   [ " + dateiGroesse_Hoch + " MB ]");
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(@NotNull Throwable t) {
-                SwingUtilities.invokeLater(() -> {
-                    dateiGroesse_Hoch = "";
-                    logger.error("Failed to retrieve Hoch resolution", t);
-                });
-            }
-        }, decoratedPool);
-
-        kleinFuture = decoratedPool.submit(() -> {
-            var url = film.getUrlFuerAufloesung(FilmResolution.Enum.LOW);
-            return film.getFileSizeForUrl(url);
-        });
-        Futures.addCallback(kleinFuture, new FutureCallback<>() {
-            @Override
-            public void onSuccess(String result) {
-                SwingUtilities.invokeLater(() -> {
-                    if (jRadioButtonAufloesungKlein.isEnabled()) {
-                        dateiGroesse_Klein = result;
-                        if (!dateiGroesse_Klein.isEmpty()) {
-                            var text = jRadioButtonAufloesungKlein.getText();
-                            jRadioButtonAufloesungKlein.setText(text + "   [ " + dateiGroesse_Klein + " MB ]");
-                        }
-                    }
-                });
-            }
-
-            @Override
-            public void onFailure(@NotNull Throwable t) {
-                SwingUtilities.invokeLater(() -> {
-                    dateiGroesse_Klein = "";
-                    logger.error("Failed to retrieve Klein resolution", t);
-                });
-            }
-        }, decoratedPool);
-    }
-
-    protected void waitForFileSizeFutures() {
-        // for safety wait for all futures here...
-        try {
-            hqFuture.get();
-            hochFuture.get();
-            kleinFuture.get();
-        }
-        catch (InterruptedException | ExecutionException e) {
-            logger.error("Error occured while waiting for file size futures", e);
-        }
-        finally {
-            //reset fetch size state to previous value
-            ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, restoreFetchSize);
-        }
-    }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     // Generated using JFormDesigner non-commercial license

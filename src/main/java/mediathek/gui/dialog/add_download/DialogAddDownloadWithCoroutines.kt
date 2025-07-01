@@ -77,6 +77,7 @@ class DialogAddDownloadWithCoroutines(
     private var minimumDialogWidth: Int = 720
     private var minimumDialogHeight: Int = 430
     private val listeSpeichern: ListePset = Daten.listePset.listeSpeichern
+    private var fileSizeJob: Job? = null
 
     companion object {
         private val logger = LogManager.getLogger()
@@ -174,8 +175,13 @@ class DialogAddDownloadWithCoroutines(
         setupBusyIndicator()
         detectFfprobeExecutable()
 
-        // launch async tasks first
-        launchResolutionFutures()
+        fileSizeJob = launchResolutionFutures()
+
+        coroutineScope.launch {
+            waitForFileSizeJob()
+            calculateAndCheckDiskSpace()
+        }
+
 
         jCheckBoxStarten.setSelected(MVConfig.get(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN).toBoolean())
         jCheckBoxStarten.addActionListener { _: ActionEvent? ->
@@ -206,12 +212,9 @@ class DialogAddDownloadWithCoroutines(
         setupDeleteHistoryButton()
         setupPfadSpeichernCheckBox()
 
-        waitForFileSizeFutures()
-
         setupResolutionButtons()
         setupInfoFileCreationCheckBox()
 
-        calculateAndCheckDiskSpace()
         nameGeaendert = false
     }
 
@@ -781,6 +784,75 @@ class DialogAddDownloadWithCoroutines(
             }
         }
     }
+
+    private fun fetchFileSizeForQuality(resolution: FilmResolution.Enum): String {
+        return runCatching {
+            val url = film.getUrlFuerAufloesung(resolution)
+            film.getFileSizeForUrl(url)
+        }.onFailure { logger.error("Failed to retrieve file size for $resolution", it) }
+            .getOrDefault("")
+    }
+
+    private fun fetchFileSizeForNormalQuality(): String {
+        return runCatching {
+            film.getFileSizeForUrl(film.urlNormalQuality)
+        }.onFailure { logger.error("Failed to retrieve normal quality size", it) }
+            .getOrDefault("")
+    }
+
+    private fun launchResolutionFutures(): Job = coroutineScope.launch {
+        val fetchSizeBackup = ApplicationConfiguration.getConfiguration()
+            .getBoolean(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true)
+        ApplicationConfiguration.getConfiguration()
+            .setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true)
+
+        try {
+            val hqDeferred = async(Dispatchers.IO) { fetchFileSizeForQuality(FilmResolution.Enum.HIGH_QUALITY) }
+            val hochDeferred = async(Dispatchers.IO) { fetchFileSizeForNormalQuality() }
+            val kleinDeferred = async(Dispatchers.IO) { fetchFileSizeForQuality(FilmResolution.Enum.LOW) }
+
+            val hqSize = hqDeferred.await()
+            val hochSize = hochDeferred.await()
+            val kleinSize = kleinDeferred.await()
+
+            withContext(Dispatchers.Swing) {
+                if (jRadioButtonAufloesungHd.isEnabled) {
+                    dateiGroesse_HQ = hqSize
+                    if (dateiGroesse_HQ.isNotEmpty()) {
+                        jRadioButtonAufloesungHd.text += "   [ $dateiGroesse_HQ MB ]"
+                    }
+                }
+
+                dateiGroesse_Hoch = hochSize
+                if (dateiGroesse_Hoch.isNotEmpty()) {
+                    jRadioButtonAufloesungHoch.text += "   [ $dateiGroesse_Hoch MB ]"
+                }
+
+                if (jRadioButtonAufloesungKlein.isEnabled) {
+                    dateiGroesse_Klein = kleinSize
+                    if (dateiGroesse_Klein.isNotEmpty()) {
+                        jRadioButtonAufloesungKlein.text += "   [ $dateiGroesse_Klein MB ]"
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            logger.error("Error occurred while fetching file sizes", ex)
+        } finally {
+            ApplicationConfiguration.getConfiguration()
+                .setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, fetchSizeBackup)
+        }
+    }
+
+    private suspend fun waitForFileSizeJob() {
+        try {
+            fileSizeJob?.join()
+        } catch (ex: CancellationException) {
+            logger.warn("File size calculation was cancelled", ex)
+        } catch (ex: Exception) {
+            logger.error("Error while waiting for file size calculation", ex)
+        }
+    }
+
 }
 
 private class DialogPositionComponentListener : ComponentAdapter() {
