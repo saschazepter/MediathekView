@@ -4,8 +4,8 @@ new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-			"$horizontalGroup": "par l {seq l {space :::p, par l {comp panel2:::::x, comp jPanel1::t:::x, comp jTextFieldSender::l:::x, comp jPanelSize::l:::x}, space :::p}}"
-			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanelSize:::p:113:p, space :::p, comp panel2:::p::p, space :::x}}"
+			"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel1::t:::x, comp jTextFieldSender::l:::x, comp panel2::l:::x, comp jPanelSize::l:::x}, space :::p}}"
+			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanelSize:::::x, space :::p, comp panel2:::p::p, space :::p}}"
 		} ) {
 			name: "this"
 			"defaultCloseOperation": 2
@@ -30,7 +30,7 @@ new FormModel {
 					}
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "jButtonOk"
-						"text": "Ok"
+						"text": "Speichern"
 						auxiliary() {
 							"JavaCodeGenerator.variableModifiers": 4
 						}
@@ -53,7 +53,7 @@ new FormModel {
 				} )
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel2::::654:x, comp jPanel7:::::x}, space :::p}}"
+				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel2::::824:x, comp jPanel7:::::x}, space :::p}}"
 				"$verticalGroup": "par l {seq l {space :::p, comp jPanel7:::p::p, space :p:12:p, comp jPanel2:::p::p, space :::x}}"
 			} ) {
 				name: "jPanel1"
@@ -169,8 +169,8 @@ new FormModel {
 				} )
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::644:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
-				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space :::x}}"
+				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::814:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
+				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space ::9:x}}"
 			} ) {
 				name: "jPanelSize"
 				"border": new javax.swing.border.TitledBorder( "Download-Qualität" )
@@ -264,7 +264,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 680, 430 )
+			"size": new java.awt.Dimension( 680, 480 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
 			name: "buttonGroup1"

@@ -72,7 +72,7 @@ class DialogAddDownloadWithCoroutines(
     private var ffprobePath: Path? = null
     private var orgPfad = ""
     private var minimumDialogWidth: Int = 720
-    private var minimumDialogHeight: Int = 430
+    private var minimumDialogHeight: Int = 600
     private val listeSpeichern: ListePset = Daten.listePset.listeSpeichern
     private var fileSizeJob: Job? = null
     private var dateiGroesseHighQuality: String = ""
@@ -517,10 +517,10 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun setupMinimumSizeForOs() {
-        if (SystemUtils.IS_OS_WINDOWS) minimumDialogHeight -= 10
+        if (SystemUtils.IS_OS_WINDOWS)
+            minimumDialogHeight -= 10
         else if (SystemUtils.IS_OS_LINUX) {
-            minimumDialogHeight = 520
-            minimumDialogWidth = 800
+            minimumDialogHeight -= 50
         }
         minimumSize = Dimension(minimumDialogWidth, minimumDialogHeight)
     }
