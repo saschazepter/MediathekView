@@ -959,11 +959,11 @@ public class DialogAddDownload extends JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     // Generated using JFormDesigner non-commercial license
     private void initComponents() {
-        panel2 = new JPanel();
-        label2 = new JLabel();
+        var panel2 = new JPanel();
+        var label2 = new JLabel();
         lblSender = new JLabel();
-        label3 = new JLabel();
-        scrollPane1 = new JScrollPane();
+        var label3 = new JLabel();
+        var scrollPane1 = new JScrollPane();
         jTextFieldSender = new MultilineLabel();
         var buttonPanel = new JPanel();
         jCheckBoxStarten = new JCheckBox();
@@ -974,6 +974,7 @@ public class DialogAddDownload extends JDialog {
         var jLabelSet = new JLabel();
         jComboBoxPset = new javax.swing.JComboBox<>();
         var jLabel1 = new JLabel();
+        var panel3 = new JPanel();
         jComboBoxPfad = new javax.swing.JComboBox<>();
         jButtonZiel = new JButton();
         jButtonDelHistory = new JButton();
@@ -1047,6 +1048,7 @@ public class DialogAddDownload extends JDialog {
 
             //======== scrollPane1 ========
             {
+                scrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 
                 //---- jTextFieldSender ----
                 jTextFieldSender.setEditable(false);
@@ -1118,12 +1120,7 @@ public class DialogAddDownload extends JDialog {
                 // columns
                 new AC()
                     .fill().gap()
-                    .fill().gap()
-                    .fill().gap()
-                    .fill().gap()
-                    .grow().fill().gap()
-                    .fill().gap()
-                    .fill(),
+                    .grow().fill(),
                 // rows
                 new AC()
                     .gap()
@@ -1133,31 +1130,45 @@ public class DialogAddDownload extends JDialog {
             //---- jLabelSet ----
             jLabelSet.setText("Set:");
             jPanel1.add(jLabelSet, new CC().cell(0, 0));
-            jPanel1.add(jComboBoxPset, new CC().cell(1, 0, 6, 1));
+            jPanel1.add(jComboBoxPset, new CC().cell(1, 0));
 
             //---- jLabel1 ----
             jLabel1.setText("Zielpfad:");
             jPanel1.add(jLabel1, new CC().cell(0, 1));
 
-            //---- jComboBoxPfad ----
-            jComboBoxPfad.setEditable(true);
-            jComboBoxPfad.setMaximumSize(new Dimension(520, 32767));
-            jPanel1.add(jComboBoxPfad, new CC().cell(1, 1, 4, 1).growX());
+            //======== panel3 ========
+            {
+                panel3.setLayout(new MigLayout(
+                    new LC().insets("0").hideMode(3),
+                    // columns
+                    new AC()
+                        .size("::530").grow().fill().gap()
+                        .fill().gap()
+                        .fill(),
+                    // rows
+                    new AC()
+                        ));
 
-            //---- jButtonZiel ----
-            jButtonZiel.setText("F");
-            jButtonZiel.setToolTipText("Zielpfad ausw\u00e4hlen");
-            jPanel1.add(jButtonZiel, new CC().cell(5, 1));
+                //---- jComboBoxPfad ----
+                jComboBoxPfad.setEditable(true);
+                panel3.add(jComboBoxPfad, new CC().cell(0, 0).growX());
 
-            //---- jButtonDelHistory ----
-            jButtonDelHistory.setText("H");
-            jButtonDelHistory.setToolTipText("History l\u00f6schen");
-            jPanel1.add(jButtonDelHistory, new CC().cell(6, 1));
+                //---- jButtonZiel ----
+                jButtonZiel.setText("F");
+                jButtonZiel.setToolTipText("Zielpfad ausw\u00e4hlen");
+                panel3.add(jButtonZiel, new CC().cell(1, 0));
+
+                //---- jButtonDelHistory ----
+                jButtonDelHistory.setText("H");
+                jButtonDelHistory.setToolTipText("History l\u00f6schen");
+                panel3.add(jButtonDelHistory, new CC().cell(2, 0));
+            }
+            jPanel1.add(panel3, new CC().cell(1, 1));
 
             //---- jLabel4 ----
             jLabel4.setText("Dateiname:");
             jPanel1.add(jLabel4, new CC().cell(0, 2));
-            jPanel1.add(jTextFieldName, new CC().cell(1, 2, 6, 1));
+            jPanel1.add(jTextFieldName, new CC().cell(1, 2));
         }
         contentPane.add(jPanel1, new CC().cell(0, 1));
 
@@ -1250,11 +1261,7 @@ public class DialogAddDownload extends JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JPanel panel2;
-    private JLabel label2;
     private JLabel lblSender;
-    private JLabel label3;
-    private JScrollPane scrollPane1;
     private MultilineLabel jTextFieldSender;
     private JCheckBox jCheckBoxStarten;
     private JButton jButtonOk;
