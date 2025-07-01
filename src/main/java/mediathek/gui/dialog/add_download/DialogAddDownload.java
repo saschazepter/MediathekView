@@ -69,12 +69,12 @@ public class DialogAddDownload extends JDialog {
     private static int MINIMUM_WIDTH = 720;
     private static int MINIMUM_HEIGHT = 430;
     protected final DatenFilm film;
-    private final Optional<FilmResolution.Enum> requestedResolution;
+    protected final Optional<FilmResolution.Enum> requestedResolution;
     private final ListePset listeSpeichern = Daten.listePset.getListeSpeichern();
     /**
      * The currently selected pSet or null when no selection.
      */
-    private DatenPset active_pSet;
+    protected DatenPset active_pSet;
     private DatenDownload datenDownload;
     private String orgPfad = "";
     private String dateiGroesse_HQ = "";
@@ -93,27 +93,13 @@ public class DialogAddDownload extends JDialog {
 
     public DialogAddDownload(@NotNull Frame parent, @NotNull DatenFilm film, @Nullable DatenPset pSet, @NotNull Optional<FilmResolution.Enum> requestedResolution) {
         super(parent, true);
-        initComponents();
-
-        getRootPane().setDefaultButton(jButtonOk);
-        EscapeKeyHandler.installHandler(this, this::dispose);
-
-        this.requestedResolution = requestedResolution;
         this.film = film;
         this.active_pSet = pSet;
-
-        setupUI();
-
-        setupMinimumSizeForOs();
-        restoreWindowSizeFromConfig();        //only install on windows and linux, macOS works...
-        installMinResizePreventer();
-
-        setLocationRelativeTo(parent);
-
-        addComponentListener(new DialogPositionComponentListener());
+        this.requestedResolution = requestedResolution;
+        initComponents();
     }
 
-    private void setupMinimumSizeForOs() {
+    protected void setupMinimumSizeForOs() {
         if (SystemUtils.IS_OS_WINDOWS)
             MINIMUM_HEIGHT -= 10;
         else if (SystemUtils.IS_OS_LINUX) {
@@ -126,7 +112,7 @@ public class DialogAddDownload extends JDialog {
 
     /// Prevents that a dialog can be resized smaller than its minimum dimensions.
     /// Needed on Windows, but not macOS and Linux.
-    private void installMinResizePreventer() {
+    protected void installMinResizePreventer() {
         if (!SystemUtils.IS_OS_WINDOWS)
             return;
 
@@ -193,7 +179,7 @@ public class DialogAddDownload extends JDialog {
         MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, s);
     }
 
-    private void restoreWindowSizeFromConfig() {
+    protected void restoreWindowSizeFromConfig() {
         var config = ApplicationConfiguration.getConfiguration();
         try {
             config.lock(LockMode.READ);
@@ -258,7 +244,7 @@ public class DialogAddDownload extends JDialog {
         lblAudioInfo.setText("");
     }
 
-    private void setupUI() {
+    protected void setupUI() {
         setupBusyIndicator();
         detectFfprobeExecutable();
 
@@ -797,7 +783,7 @@ public class DialogAddDownload extends JDialog {
         dispose();
     }
 
-    private static class DialogPositionComponentListener extends ComponentAdapter {
+    protected static class DialogPositionComponentListener extends ComponentAdapter {
         @Override
         public void componentResized(ComponentEvent e) {
             storeWindowPosition(e);
@@ -1142,7 +1128,7 @@ public class DialogAddDownload extends JDialog {
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(jPanelSize, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jPanelSize, GroupLayout.PREFERRED_SIZE, 113, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(panel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -1161,7 +1147,7 @@ public class DialogAddDownload extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private JPanel panel2;
     private JPanel panel1;
-    private JButton jButtonOk;
+    protected JButton jButtonOk;
     private JButton jButtonAbbrechen;
     private JCheckBox jCheckBoxStarten;
     private JCheckBox jCheckBoxInfodatei;

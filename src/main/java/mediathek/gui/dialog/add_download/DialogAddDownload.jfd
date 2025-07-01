@@ -5,7 +5,7 @@ new FormModel {
 	root: new FormRoot {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 			"$horizontalGroup": "par l {seq l {space :::p, par l {comp panel2:::::x, comp jPanel1::t:::x, comp jTextFieldSender::l:::x, comp jPanelSize::l:::x}, space :::p}}"
-			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanelSize:::p::p, space :::p, comp panel2:::p::p, space :::x}}"
+			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanelSize:::p:113:p, space :::p, comp panel2:::p::p, space :::x}}"
 		} ) {
 			name: "this"
 			"defaultCloseOperation": 2
@@ -25,6 +25,9 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "jButtonOk"
 						"text": "Ok"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "jButtonAbbrechen"

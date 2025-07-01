@@ -25,6 +25,7 @@ import com.github.kokorin.jaffree.ffprobe.Stream
 import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import mediathek.tool.EscapeKeyHandler
 import org.apache.logging.log4j.LogManager
 import java.awt.Color
 import java.awt.Frame
@@ -44,7 +45,21 @@ class DialogAddDownloadWithCoroutines(
         private const val NO_DATA_AVAILABLE: String = "Keine Daten verfügbar."
 
     }
+
     init {
+        getRootPane().setDefaultButton(jButtonOk)
+        EscapeKeyHandler.installHandler(this, java.lang.Runnable { this.dispose() })
+
+        setupUI()
+
+        setupMinimumSizeForOs()
+        restoreWindowSizeFromConfig() //only install on windows and linux, macOS works...
+        installMinResizePreventer()
+
+        setLocationRelativeTo(parent)
+
+        addComponentListener(DialogPositionComponentListener())
+
         btnRequestLiveInfo.addActionListener { fetchLiveFilmInfoCoroutine() }
     }
 
@@ -102,7 +117,7 @@ class DialogAddDownloadWithCoroutines(
 
     private fun resetBusyLabelAndButton() {
         lblBusyIndicator.setBusy(false)
-        lblBusyIndicator.setVisible(false)
+        lblBusyIndicator.isVisible = false
         btnRequestLiveInfo.setEnabled(true)
     }
 
@@ -166,7 +181,7 @@ class DialogAddDownloadWithCoroutines(
             } else {
                 "Unbekannter Fehler aufgetreten."
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             "Unbekannter Fehler aufgetreten."
         }
     }
