@@ -45,8 +45,6 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
@@ -62,12 +60,12 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 public class DialogAddDownload extends JDialog {
-    private static final Logger logger = LogManager.getLogger();
     protected static final String KEY_LABEL_FOREGROUND = "Label.foreground";
     protected static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
+    private static final Logger logger = LogManager.getLogger();
     private static final String TITLED_BORDER_STRING = "Download-Qualität";
-    private static int MINIMUM_WIDTH = 720;
-    private static int MINIMUM_HEIGHT = 430;
+    protected static int MINIMUM_WIDTH = 720;
+    protected static int MINIMUM_HEIGHT = 430;
     protected final DatenFilm film;
     protected final Optional<FilmResolution.Enum> requestedResolution;
     private final ListePset listeSpeichern = Daten.listePset.getListeSpeichern();
@@ -75,16 +73,16 @@ public class DialogAddDownload extends JDialog {
      * The currently selected pSet or null when no selection.
      */
     protected DatenPset active_pSet;
+    protected Path ffprobePath;
+    protected ListenableFuture<FFprobeResult> resultListenableFuture;
     private DatenDownload datenDownload;
-    private String orgPfad = "";
+    protected String orgPfad = "";
     private String dateiGroesse_HQ = "";
     private String dateiGroesse_Hoch = "";
     private String dateiGroesse_Klein = "";
-    private boolean nameGeaendert;
+    protected boolean nameGeaendert;
     private boolean stopBeob;
     private JTextComponent cbPathTextComponent;
-    protected Path ffprobePath;
-    protected ListenableFuture<FFprobeResult> resultListenableFuture;
     private ListenableFuture<String> hqFuture;
     private ListenableFuture<String> hochFuture;
     private ListenableFuture<String> kleinFuture;
@@ -97,17 +95,6 @@ public class DialogAddDownload extends JDialog {
         this.active_pSet = pSet;
         this.requestedResolution = requestedResolution;
         initComponents();
-    }
-
-    protected void setupMinimumSizeForOs() {
-        if (SystemUtils.IS_OS_WINDOWS)
-            MINIMUM_HEIGHT -= 10;
-        else if (SystemUtils.IS_OS_LINUX) {
-            MINIMUM_HEIGHT = 520;
-            MINIMUM_WIDTH = 800;
-        }
-        var minDim = new Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT);
-        setMinimumSize(minDim);
     }
 
     /// Prevents that a dialog can be resized smaller than its minimum dimensions.
@@ -199,32 +186,7 @@ public class DialogAddDownload extends JDialog {
 
     }
 
-    private void setupFilmQualityRadioButtons() {
-        var listener = new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                setNameFilm();
-                lblStatus.setText("");
-                lblAudioInfo.setText("");
-                lblBusyIndicator.setBusy(false);
-                lblBusyIndicator.setVisible(false);
-                if (resultListenableFuture != null) {
-                    resultListenableFuture.cancel(true);
-                    resultListenableFuture = null;
-                }
-            }
-        };
-        jRadioButtonAufloesungHd.addActionListener(listener);
-        jRadioButtonAufloesungHd.setEnabled(!film.getHighQualityUrl().isEmpty());
-
-        jRadioButtonAufloesungKlein.addActionListener(listener);
-        jRadioButtonAufloesungKlein.setEnabled(!film.getLowQualityUrl().isEmpty());
-
-        jRadioButtonAufloesungHoch.addActionListener(listener);
-        jRadioButtonAufloesungHoch.setSelected(true);
-    }
-
-    private void detectFfprobeExecutable() {
+    protected void detectFfprobeExecutable() {
         try {
             ffprobePath = GuiFunktionenProgramme.findExecutableOnPath("ffprobe").getParent();
         }
@@ -236,7 +198,7 @@ public class DialogAddDownload extends JDialog {
         }
     }
 
-    private void setupBusyIndicator() {
+    protected void setupBusyIndicator() {
         lblBusyIndicator.setText("");
         lblBusyIndicator.setBusy(false);
         lblBusyIndicator.setVisible(false);
@@ -244,47 +206,7 @@ public class DialogAddDownload extends JDialog {
         lblAudioInfo.setText("");
     }
 
-    protected void setupUI() {
-        setupBusyIndicator();
-        detectFfprobeExecutable();
-
-        // launch async tasks first
-        launchResolutionFutures();
-
-        jCheckBoxStarten.setSelected(Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN)));
-        jCheckBoxStarten.addActionListener(_ -> MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN, String.valueOf(jCheckBoxStarten.isSelected())));
-
-        setupZielButton();
-
-        jButtonOk.addActionListener(_ -> {
-            if (check()) {
-                saveComboPfad(jComboBoxPfad, orgPfad);
-                saveDownload();
-            }
-        });
-
-        jButtonAbbrechen.addActionListener(_ -> dispose());
-
-        setupPSetComboBox();
-        setupSenderTextField();
-        setupNameTextField();
-        setupPathTextComponent();
-
-        setupFilmQualityRadioButtons();
-
-        setupDeleteHistoryButton();
-        setupPfadSpeichernCheckBox();
-
-        waitForFileSizeFutures();
-
-        setupResolutionButtons();
-        setupInfoFileCreationCheckBox();
-
-        calculateAndCheckDiskSpace();
-        nameGeaendert = false;
-    }
-
-    private void launchResolutionFutures() {
+    protected void launchResolutionFutures() {
         // always fetch file size during dialog ops...
         restoreFetchSize = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true);
         ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true);
@@ -375,7 +297,7 @@ public class DialogAddDownload extends JDialog {
         return new DefaultComboBoxModel<>(listeSpeichern.getObjectDataCombo());
     }
 
-    private void setupPSetComboBox() {
+    protected void setupPSetComboBox() {
         // disable when only one entry...
         if (listeSpeichern.size() == 1) {
             jComboBoxPset.setEnabled(false);
@@ -393,12 +315,12 @@ public class DialogAddDownload extends JDialog {
         jComboBoxPset.addActionListener(_ -> setupResolutionButtons());
     }
 
-    private void setupSenderTextField() {
+    protected void setupSenderTextField() {
         jTextFieldSender.setText(' ' + film.getSender() + ":   " + film.getTitle());
         jTextFieldSender.setBackground(UIManager.getColor("Label.background"));
     }
 
-    private void setupNameTextField() {
+    protected void setupNameTextField() {
         jTextFieldName.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
@@ -431,7 +353,7 @@ public class DialogAddDownload extends JDialog {
         });
     }
 
-    private void setupPathTextComponent() {
+    protected void setupPathTextComponent() {
         cbPathTextComponent = ((JTextComponent) jComboBoxPfad.getEditor().getEditorComponent());
         cbPathTextComponent.setOpaque(true);
         cbPathTextComponent.getDocument().addDocumentListener(new DocumentListener() {
@@ -490,7 +412,7 @@ public class DialogAddDownload extends JDialog {
         });
     }
 
-    private void setupZielButton() {
+    protected void setupZielButton() {
         jButtonZiel.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/folder-open.svg"));
         jButtonZiel.setText("");
         jButtonZiel.addActionListener(_ -> {
@@ -509,7 +431,7 @@ public class DialogAddDownload extends JDialog {
         });
     }
 
-    private void setupDeleteHistoryButton() {
+    protected void setupDeleteHistoryButton() {
         jButtonDelHistory.setText("");
         jButtonDelHistory.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
         jButtonDelHistory.addActionListener(_ -> {
@@ -518,7 +440,7 @@ public class DialogAddDownload extends JDialog {
         });
     }
 
-    private void waitForFileSizeFutures() {
+    protected void waitForFileSizeFutures() {
         // for safety wait for all futures here...
         try {
             hqFuture.get();
@@ -534,14 +456,14 @@ public class DialogAddDownload extends JDialog {
         }
     }
 
-    private void setupPfadSpeichernCheckBox() {
+    protected void setupPfadSpeichernCheckBox() {
         final Configuration config = ApplicationConfiguration.getConfiguration();
         jCheckBoxPfadSpeichern.setSelected(config.getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true));
         jCheckBoxPfadSpeichern.addActionListener(_ ->
                 config.setProperty(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, jCheckBoxPfadSpeichern.isSelected()));
     }
 
-    private void setNameFilm() {
+    protected void setNameFilm() {
         // beim ersten mal werden die Standardpfade gesucht
         if (!nameGeaendert) {
             // nur wenn vom Benutzer noch nicht geändert!
@@ -603,7 +525,7 @@ public class DialogAddDownload extends JDialog {
     /**
      * Calculate free disk space on volume and check if the movies can be safely downloaded.
      */
-    private void calculateAndCheckDiskSpace() {
+    protected void calculateAndCheckDiskSpace() {
         var fgColor = UIManager.getColor(KEY_LABEL_FOREGROUND);
         if (fgColor != null) {
             jRadioButtonAufloesungHd.setForeground(fgColor);
@@ -665,7 +587,7 @@ public class DialogAddDownload extends JDialog {
     /**
      * Setup the resolution radio buttons based on available download URLs.
      */
-    private void setupResolutionButtons() {
+    protected void setupResolutionButtons() {
         active_pSet = listeSpeichern.get(jComboBoxPset.getSelectedIndex());
 
         prepareResolutionButtons();
@@ -674,7 +596,7 @@ public class DialogAddDownload extends JDialog {
         setNameFilm();
     }
 
-    private void setupInfoFileCreationCheckBox() {
+    protected void setupInfoFileCreationCheckBox() {
         //disable for Livestreams as they do not contain useful data, even if pset wants it...
         final boolean isLivestream = film.isLivestream();
         jCheckBoxInfodatei.setEnabled(!isLivestream);
@@ -685,7 +607,7 @@ public class DialogAddDownload extends JDialog {
             jCheckBoxInfodatei.setSelected(false);
     }
 
-    private void prepareResolutionButtons() {
+    protected void prepareResolutionButtons() {
         requestedResolution.ifPresent(it -> highQualityMandated = it == FilmResolution.Enum.HIGH_QUALITY);
         if (highQualityMandated || isHighQualityRequested()) {
             jRadioButtonAufloesungHd.setSelected(true);
@@ -736,7 +658,7 @@ public class DialogAddDownload extends JDialog {
         }
     }
 
-    private boolean check() {
+    protected boolean check() {
         var ok = false;
         String pfad = Objects.requireNonNull(jComboBoxPfad.getSelectedItem()).toString();
         String name = jTextFieldName.getText();
@@ -771,7 +693,7 @@ public class DialogAddDownload extends JDialog {
     /**
      * Store download in list and start immediately if requested.
      */
-    private void saveDownload() {
+    protected void saveDownload() {
         // jetzt wird mit den angegebenen Pfaden gearbeitet
         datenDownload = new DatenDownload(active_pSet, film, DatenDownload.QUELLE_DOWNLOAD, null, jTextFieldName.getText(), Objects.requireNonNull(jComboBoxPfad.getSelectedItem()).toString(), getFilmResolution().toString());
         datenDownload.setGroesse(getFilmSize());
@@ -1148,14 +1070,14 @@ public class DialogAddDownload extends JDialog {
     private JPanel panel2;
     private JPanel panel1;
     protected JButton jButtonOk;
-    private JButton jButtonAbbrechen;
-    private JCheckBox jCheckBoxStarten;
+    protected JButton jButtonAbbrechen;
+    protected JCheckBox jCheckBoxStarten;
     private JCheckBox jCheckBoxInfodatei;
     private JCheckBox jCheckBoxPfadSpeichern;
     private JCheckBox jCheckBoxSubtitle;
     private JTextField jTextFieldName;
     private JComboBox<String> jComboBoxPset;
-    private JComboBox<String> jComboBoxPfad;
+    protected JComboBox<String> jComboBoxPfad;
     private JButton jButtonZiel;
     private JButton jButtonDelHistory;
     private JPanel jPanelSize;
@@ -1163,9 +1085,9 @@ public class DialogAddDownload extends JDialog {
     protected JXBusyLabel lblBusyIndicator;
     protected JLabel lblStatus;
     protected JLabel lblAudioInfo;
-    private JRadioButton jRadioButtonAufloesungHd;
-    private JRadioButton jRadioButtonAufloesungHoch;
-    private JRadioButton jRadioButtonAufloesungKlein;
+    protected JRadioButton jRadioButtonAufloesungHd;
+    protected JRadioButton jRadioButtonAufloesungHoch;
+    protected JRadioButton jRadioButtonAufloesungKlein;
     private JTextField jTextFieldSender;
     // End of variables declaration//GEN-END:variables
 }

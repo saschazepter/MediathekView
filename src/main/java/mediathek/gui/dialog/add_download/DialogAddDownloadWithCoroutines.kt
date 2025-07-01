@@ -25,10 +25,15 @@ import com.github.kokorin.jaffree.ffprobe.Stream
 import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import mediathek.config.MVConfig
 import mediathek.tool.EscapeKeyHandler
+import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
 import java.awt.Color
+import java.awt.Dimension
 import java.awt.Frame
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
 import javax.swing.UIManager
 import kotlin.coroutines.cancellation.CancellationException
 
@@ -48,7 +53,7 @@ class DialogAddDownloadWithCoroutines(
 
     init {
         getRootPane().setDefaultButton(jButtonOk)
-        EscapeKeyHandler.installHandler(this, java.lang.Runnable { this.dispose() })
+        EscapeKeyHandler.installHandler(this) { this.dispose() }
 
         setupUI()
 
@@ -61,12 +66,86 @@ class DialogAddDownloadWithCoroutines(
         addComponentListener(DialogPositionComponentListener())
 
         btnRequestLiveInfo.addActionListener { fetchLiveFilmInfoCoroutine() }
-    }
 
+        jButtonOk.requestFocus()
+    }
 
     override fun dispose() {
         coroutineScope.cancel()
         super.dispose()
+    }
+
+    private fun setupUI() {
+        setupBusyIndicator()
+        detectFfprobeExecutable()
+
+        // launch async tasks first
+        launchResolutionFutures()
+
+        jCheckBoxStarten.setSelected(MVConfig.get(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN).toBoolean())
+        jCheckBoxStarten.addActionListener { _: ActionEvent? ->
+            MVConfig.add(
+                MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD_D_STARTEN,
+                jCheckBoxStarten.isSelected.toString()
+            )
+        }
+
+        setupZielButton()
+
+        jButtonOk.addActionListener { _: ActionEvent? ->
+            if (check()) {
+                saveComboPfad(jComboBoxPfad, orgPfad)
+                saveDownload()
+            }
+        }
+
+        jButtonAbbrechen.addActionListener { _: ActionEvent? -> dispose() }
+
+        setupPSetComboBox()
+        setupSenderTextField()
+        setupNameTextField()
+        setupPathTextComponent()
+
+        setupFilmQualityRadioButtons()
+
+        setupDeleteHistoryButton()
+        setupPfadSpeichernCheckBox()
+
+        waitForFileSizeFutures()
+
+        setupResolutionButtons()
+        setupInfoFileCreationCheckBox()
+
+        calculateAndCheckDiskSpace()
+        nameGeaendert = false
+    }
+
+    private fun setupFilmQualityRadioButtons() {
+        val listener: ActionListener? = ActionListener {
+            setNameFilm()
+            lblStatus.setText("")
+            lblAudioInfo.setText("")
+            lblBusyIndicator.setBusy(false)
+            lblBusyIndicator.isVisible = false
+            coroutineScope.cancel()
+        }
+        jRadioButtonAufloesungHd.addActionListener(listener)
+        jRadioButtonAufloesungHd.setEnabled(!film.highQualityUrl.isEmpty())
+
+        jRadioButtonAufloesungKlein.addActionListener(listener)
+        jRadioButtonAufloesungKlein.setEnabled(!film.lowQualityUrl.isEmpty())
+
+        jRadioButtonAufloesungHoch.addActionListener(listener)
+        jRadioButtonAufloesungHoch.setSelected(true)
+    }
+
+    private fun setupMinimumSizeForOs() {
+        if (SystemUtils.IS_OS_WINDOWS) MINIMUM_HEIGHT -= 10
+        else if (SystemUtils.IS_OS_LINUX) {
+            MINIMUM_HEIGHT = 520
+            MINIMUM_WIDTH = 800
+        }
+        minimumSize = Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT)
     }
 
     private fun fetchLiveFilmInfoCoroutine() {

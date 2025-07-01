@@ -32,12 +32,18 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "jButtonAbbrechen"
 						"text": "Abbrechen"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 				} )
 				add( new FormComponent( "javax.swing.JCheckBox" ) {
 					name: "jCheckBoxStarten"
 					"selected": true
 					"text": "Download sofort starten"
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 4
+					}
 				} )
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
@@ -121,6 +127,7 @@ new FormModel {
 							auxiliary() {
 								"JavaCodeGenerator.customCreateCode": "new javax.swing.JComboBox<>();"
 								"JavaCodeGenerator.typeParameters": "String"
+								"JavaCodeGenerator.variableModifiers": 4
 							}
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
@@ -195,16 +202,25 @@ new FormModel {
 						name: "jRadioButtonAufloesungHd"
 						"$buttonGroup": new FormReference( "buttonGroup1" )
 						"text": "Höchste/Hoch"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 					add( new FormComponent( "javax.swing.JRadioButton" ) {
 						name: "jRadioButtonAufloesungHoch"
 						"$buttonGroup": new FormReference( "buttonGroup1" )
 						"text": "Mittel"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 					add( new FormComponent( "javax.swing.JRadioButton" ) {
 						name: "jRadioButtonAufloesungKlein"
 						"$buttonGroup": new FormReference( "buttonGroup1" )
 						"text": "Niedrig"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 				} )
 			} )
