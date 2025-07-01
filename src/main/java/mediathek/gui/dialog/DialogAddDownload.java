@@ -1110,7 +1110,7 @@ public class DialogAddDownload extends JDialog {
                                         .addComponent(jLabel1))
                                     .addGap(20, 20, 20)
                                     .addGroup(jPanel7Layout.createParallelGroup()
-                                        .addComponent(jPanel4, GroupLayout.DEFAULT_SIZE, 590, Short.MAX_VALUE)
+                                        .addComponent(jPanel4, GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
                                         .addComponent(jComboBoxPset)))
                                 .addGroup(jPanel7Layout.createSequentialGroup()
                                     .addComponent(jLabel4)
@@ -1159,6 +1159,15 @@ public class DialogAddDownload extends JDialog {
         //======== jPanelSize ========
         {
             jPanelSize.setBorder(new TitledBorder("Download-Qualit\u00e4t"));
+            jPanelSize.setLayout(new MigLayout(
+                new LC().insets("0").hideMode(3).gridGap("5", "5"),
+                // columns
+                new AC()
+                    .grow().fill(),
+                // rows
+                new AC()
+                    .fill().gap()
+                    .fill()));
 
             //======== jPanel3 ========
             {
@@ -1183,6 +1192,7 @@ public class DialogAddDownload extends JDialog {
                 }
                 jPanel3.add(jPanel5);
             }
+            jPanelSize.add(jPanel3, new CC().cell(0, 1));
 
             //======== jPanel6 ========
             {
@@ -1200,29 +1210,7 @@ public class DialogAddDownload extends JDialog {
                 jRadioButtonAufloesungKlein.setText("Niedrig");
                 jPanel6.add(jRadioButtonAufloesungKlein);
             }
-
-            GroupLayout jPanelSizeLayout = new GroupLayout(jPanelSize);
-            jPanelSize.setLayout(jPanelSizeLayout);
-            jPanelSizeLayout.setHorizontalGroup(
-                jPanelSizeLayout.createParallelGroup()
-                    .addGroup(jPanelSizeLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanelSizeLayout.createParallelGroup()
-                            .addComponent(jPanel3, GroupLayout.DEFAULT_SIZE, 666, Short.MAX_VALUE)
-                            .addGroup(jPanelSizeLayout.createSequentialGroup()
-                                .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap())
-            );
-            jPanelSizeLayout.setVerticalGroup(
-                jPanelSizeLayout.createParallelGroup()
-                    .addGroup(jPanelSizeLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            );
+            jPanelSize.add(jPanel6, new CC().cell(0, 0).alignX("left").growX(0));
         }
         contentPane.add(jPanelSize, new CC().cell(0, 3));
 
