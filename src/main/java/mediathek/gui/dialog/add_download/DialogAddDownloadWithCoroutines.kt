@@ -408,56 +408,54 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun setupPSetComboBox() {
-        // disable when only one entry...
-        if (listeSpeichern.size == 1) {
-            jComboBoxPset.setEnabled(false)
-        }
-
         val model = DefaultComboBoxModel(listeSpeichern.getObjectDataCombo())
-        jComboBoxPset.setModel(model)
-
-        if (activeProgramSet != null) {
-            jComboBoxPset.setSelectedItem(activeProgramSet.name)
-        } else {
-            activeProgramSet = listeSpeichern[jComboBoxPset.getSelectedIndex()]
+        jComboBoxPset.apply {
+            // disable when only one entry...
+            setEnabled(listeSpeichern.size > 1)
+            setModel(model)
+            setSelectedItem(activeProgramSet.name)
+            addActionListener { setupResolutionButtons() }
         }
-        jComboBoxPset.addActionListener { _: ActionEvent? -> setupResolutionButtons() }
     }
 
     private fun setupSenderTextField() {
-        jTextFieldSender.text = "${film.sender}: ${film.title}"
-        jTextFieldSender.setBackground(UIManager.getColor("Label.background"))
+        jTextFieldSender.apply {
+            text = "${film.sender}: ${film.title}"
+            setBackground(UIManager.getColor("Label.background"))
+        }
     }
 
     private fun setupDeleteHistoryButton() {
-        jButtonDelHistory.setText("")
-        jButtonDelHistory.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"))
-        jButtonDelHistory.addActionListener { _: ActionEvent? ->
-            MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, "")
-            jComboBoxPfad.setModel(DefaultComboBoxModel(arrayOf<String?>(orgPfad)))
+        jButtonDelHistory.apply {
+            setText("")
+            setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"))
+            addActionListener {
+                MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, "")
+                jComboBoxPfad.setModel(DefaultComboBoxModel(arrayOf<String?>(orgPfad)))
+            }
         }
     }
 
     private fun setupPfadSpeichernCheckBox() {
         val config = ApplicationConfiguration.getConfiguration()
-        jCheckBoxPfadSpeichern.setSelected(
-            config.getBoolean(
-                ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH,
-                true
-            )
-        )
-        jCheckBoxPfadSpeichern.addActionListener { _: ActionEvent? ->
-            config.setProperty(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, jCheckBoxPfadSpeichern.isSelected)
-        }
+        jCheckBoxPfadSpeichern.apply {
+            setSelected(config.getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true))
+            addActionListener {
+                config.setProperty(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, jCheckBoxPfadSpeichern.isSelected)
+            }}
     }
 
     private fun detectFfprobeExecutable() {
         try {
             ffprobePath = GuiFunktionenProgramme.findExecutableOnPath("ffprobe").parent
-        } catch (ex: java.lang.Exception) {
-            logger.error("ffprobe not found", ex)
-            lblBusyIndicator.setText("Hilfsprogramm nicht gefunden!")
-            lblBusyIndicator.setForeground(Color.RED)
+        } catch (_: Exception) {
+            logger.error("ffprobe not found on system.")
+            lblBusyIndicator.apply {
+                isVisible = true
+                isBusy = false
+                setText("Hilfsprogramm nicht gefunden!")
+                setForeground(Color.RED)
+            }
             btnRequestLiveInfo.setEnabled(false)
         }
     }
@@ -497,9 +495,11 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun setupBusyIndicator() {
-        lblBusyIndicator.setText("")
-        lblBusyIndicator.setBusy(false)
-        lblBusyIndicator.isVisible = false
+        lblBusyIndicator.apply {
+            setText("")
+            isBusy = false
+            isVisible = false
+        }
         lblStatus.setText("")
         lblAudioInfo.setText("")
     }
@@ -515,8 +515,10 @@ class DialogAddDownloadWithCoroutines(
 
     private suspend fun fetchLiveFilmInfo() {
         btnRequestLiveInfo.isEnabled = false
-        lblBusyIndicator.isVisible = true
-        lblBusyIndicator.isBusy = true
+        lblBusyIndicator.apply {
+            isVisible = true
+            isBusy = true
+        }
         lblStatus.text = ""
         lblAudioInfo.text = ""
 
@@ -558,8 +560,10 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun resetBusyLabelAndButton() {
-        lblBusyIndicator.setBusy(false)
-        lblBusyIndicator.isVisible = false
+        lblBusyIndicator.apply {
+            isVisible = false
+            isBusy = false
+        }
         btnRequestLiveInfo.setEnabled(true)
     }
 
@@ -568,9 +572,11 @@ class DialogAddDownloadWithCoroutines(
         lblAudioInfo.text = ""
     }
 
-    private fun setupLabels(text: String) {
-        lblStatus.text = text
-        lblStatus.foreground = Color.RED
+    private fun setupLabels(inText: String) {
+        lblStatus.apply {
+            text = inText
+            foreground = Color.RED
+        }
         lblAudioInfo.text = ""
     }
 
