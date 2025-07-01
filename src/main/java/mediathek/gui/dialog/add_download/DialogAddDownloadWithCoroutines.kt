@@ -28,10 +28,7 @@ import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.config.MVColor
 import mediathek.config.MVConfig
-import mediathek.daten.DatenFilm
-import mediathek.daten.DatenPset
-import mediathek.daten.FilmResolution
-import mediathek.daten.ListePset
+import mediathek.daten.*
 import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.*
@@ -82,6 +79,7 @@ class DialogAddDownloadWithCoroutines(
     private var dateiGroesseNormalQuality: String = ""
     private var dateiGroesseLowQuality: String = ""
     private lateinit var cbPathTextComponent : JTextComponent
+    private lateinit var datenDownload: DatenDownload
 
     companion object {
         private val logger = LogManager.getLogger()
@@ -228,18 +226,18 @@ class DialogAddDownloadWithCoroutines(
      * Store download in list and start immediately if requested.
      */
     private fun saveDownload() {
-        datenDownload = mediathek.daten.DatenDownload(
+        datenDownload = DatenDownload(
             activeProgramSet,
             film,
-            mediathek.daten.DatenDownload.QUELLE_DOWNLOAD,
+            DatenDownload.QUELLE_DOWNLOAD,
             null,
             jTextFieldName.text,
             jComboBoxPfad.selectedItem?.toString() ?: "",
             getFilmResolution().toString()
         ).apply {
             setGroesse(getFilmSize())
-            arr[mediathek.daten.DatenDownload.DOWNLOAD_INFODATEI] = jCheckBoxInfodatei.isSelected.toString()
-            arr[mediathek.daten.DatenDownload.DOWNLOAD_SUBTITLE] = jCheckBoxSubtitle.isSelected.toString()
+            arr[DatenDownload.DOWNLOAD_INFODATEI] = jCheckBoxInfodatei.isSelected.toString()
+            arr[DatenDownload.DOWNLOAD_SUBTITLE] = jCheckBoxSubtitle.isSelected.toString()
         }
 
         addDownloadToQueue()
@@ -311,17 +309,17 @@ class DialogAddDownloadWithCoroutines(
             // nur wenn vom Benutzer noch nicht geändert!
             stopBeob = true
 
-            datenDownload = mediathek.daten.DatenDownload(
+            datenDownload = DatenDownload(
                 activeProgramSet,
                 film,
-                mediathek.daten.DatenDownload.QUELLE_DOWNLOAD,
+                DatenDownload.QUELLE_DOWNLOAD,
                 null,
                 "",
                 "",
                 getFilmResolution().toString()
             )
 
-            if (datenDownload.arr[mediathek.daten.DatenDownload.DOWNLOAD_ZIEL_DATEINAME].isEmpty()) {
+            if (datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME].isEmpty()) {
                 // dann wird nicht gespeichert → eigentlich falsche Seteinstellungen?
                 jTextFieldName.isEnabled = false
                 jComboBoxPfad.isEnabled = false
@@ -332,9 +330,9 @@ class DialogAddDownloadWithCoroutines(
                 jTextFieldName.isEnabled = true
                 jComboBoxPfad.isEnabled = true
                 jButtonZiel.isEnabled = true
-                jTextFieldName.text = datenDownload.arr[mediathek.daten.DatenDownload.DOWNLOAD_ZIEL_DATEINAME]
-                setModelPfad(datenDownload.arr[mediathek.daten.DatenDownload.DOWNLOAD_ZIEL_PFAD], jComboBoxPfad)
-                orgPfad = datenDownload.arr[mediathek.daten.DatenDownload.DOWNLOAD_ZIEL_PFAD]
+                jTextFieldName.text = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME]
+                setModelPfad(datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD], jComboBoxPfad)
+                orgPfad = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD]
             }
 
             stopBeob = false
@@ -363,7 +361,7 @@ class DialogAddDownloadWithCoroutines(
         val pfadRaw = jComboBoxPfad.selectedItem?.toString() ?: return false
         val name = jTextFieldName.text
 
-        if (datenDownload == null) return false
+        //if (datenDownload == null) return false
 
         if (pfadRaw.isEmpty() || name.isEmpty()) {
             MVMessageDialog.showMessageDialog(

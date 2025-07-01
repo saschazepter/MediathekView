@@ -18,7 +18,6 @@
 
 package mediathek.gui.dialog.add_download;
 
-import mediathek.daten.DatenDownload;
 import org.jdesktop.swingx.JXBusyLabel;
 import org.jetbrains.annotations.NotNull;
 
@@ -27,7 +26,7 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 public class DialogAddDownload extends JDialog {
-    protected DatenDownload datenDownload;
+    //protected DatenDownload datenDownload;
 
     public DialogAddDownload(@NotNull Frame parent) {
         super(parent, true);
