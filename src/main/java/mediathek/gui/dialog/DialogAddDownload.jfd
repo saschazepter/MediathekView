@@ -11,9 +11,49 @@ new FormModel {
 			name: "this"
 			"defaultCloseOperation": 2
 			"title": "Film speichern"
-			"minimumSize": new java.awt.Dimension( 690, 450 )
-			"preferredSize": new java.awt.Dimension( 690, 450 )
+			"minimumSize": new java.awt.Dimension( 690, 470 )
+			"preferredSize": new java.awt.Dimension( 690, 470 )
 			"maximumSize": new java.awt.Dimension( 1024, 800 )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$columnConstraints": "[fill][grow,fill]"
+				"$rowConstraints": "[][fill]"
+				"$layoutConstraints": "insets 5,hidemode 3,gap 5 5"
+			} ) {
+				name: "panel2"
+				"border": new javax.swing.border.TitledBorder( "Film:" )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label2"
+					"text": "Sender:"
+					"font": &SwingDerivedFont0 new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "lblSender"
+					"text": "text"
+					"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 0"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "label3"
+					"text": "Titel:"
+					"font": #SwingDerivedFont0
+					"horizontalAlignment": 4
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 1"
+				} )
+				add( new FormComponent( "javax.swing.JTextField" ) {
+					name: "jTextFieldSender"
+					"editable": false
+					"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
+					"text": "ARD: Tatort, ..."
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 1"
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0"
+			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$layoutConstraints": "insets 5,hidemode 3,gap 5 5"
 				"$columnConstraints": "[fill][grow,right]"
@@ -197,15 +237,6 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 3"
 			} )
-			add( new FormComponent( "javax.swing.JTextField" ) {
-				name: "jTextFieldSender"
-				"editable": false
-				"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
-				"text": " ARD: Tatort, ..."
-				"border": new javax.swing.border.TitledBorder( "Film" )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 0"
-			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridLayout ) {
 				"columns": 2
 				"rows": 2
@@ -233,7 +264,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 690, 420 )
+			"size": new java.awt.Dimension( 690, 470 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
 			name: "buttonGroup1"

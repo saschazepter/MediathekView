@@ -554,7 +554,8 @@ public class DialogAddDownload extends JDialog {
     }
 
     private void setupSenderTextField() {
-        jTextFieldSender.setText(' ' + film.getSender() + ":   " + film.getTitle());
+        lblSender.setText(film.getSender());
+        jTextFieldSender.setText(film.getTitle());
         jTextFieldSender.setBackground(UIManager.getColor("Label.background"));
     }
 
@@ -957,6 +958,11 @@ public class DialogAddDownload extends JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     // Generated using JFormDesigner non-commercial license
     private void initComponents() {
+        panel2 = new JPanel();
+        label2 = new JLabel();
+        lblSender = new JLabel();
+        label3 = new JLabel();
+        jTextFieldSender = new JTextField();
         var buttonPanel = new JPanel();
         jCheckBoxStarten = new JCheckBox();
         var panel1 = new JPanel();
@@ -982,7 +988,6 @@ public class DialogAddDownload extends JDialog {
         jRadioButtonAufloesungHd = new JRadioButton();
         jRadioButtonAufloesungHoch = new JRadioButton();
         jRadioButtonAufloesungKlein = new JRadioButton();
-        jTextFieldSender = new JTextField();
         var jPanel2 = new JPanel();
         jCheckBoxInfodatei = new JCheckBox();
         jCheckBoxPfadSpeichern = new JCheckBox();
@@ -991,8 +996,8 @@ public class DialogAddDownload extends JDialog {
         //======== this ========
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Film speichern");
-        setMinimumSize(new Dimension(690, 450));
-        setPreferredSize(new Dimension(690, 450));
+        setMinimumSize(new Dimension(690, 470));
+        setPreferredSize(new Dimension(690, 470));
         setMaximumSize(new Dimension(1024, 800));
         var contentPane = getContentPane();
         contentPane.setLayout(new MigLayout(
@@ -1007,6 +1012,44 @@ public class DialogAddDownload extends JDialog {
                 .fill().gap()
                 .fill().gap()
                 .fill()));
+
+        //======== panel2 ========
+        {
+            panel2.setBorder(new TitledBorder("Film:"));
+            panel2.setLayout(new MigLayout(
+                new LC().insets("5").hideMode(3).gridGap("5", "5"),
+                // columns
+                new AC()
+                    .fill().gap()
+                    .grow().fill(),
+                // rows
+                new AC()
+                    .gap()
+                    .fill()));
+
+            //---- label2 ----
+            label2.setText("Sender:");
+            label2.setFont(label2.getFont().deriveFont(label2.getFont().getStyle() | Font.BOLD));
+            panel2.add(label2, new CC().cell(0, 0));
+
+            //---- lblSender ----
+            lblSender.setText("text");
+            lblSender.setFont(lblSender.getFont().deriveFont(lblSender.getFont().getStyle() | Font.BOLD));
+            panel2.add(lblSender, new CC().cell(1, 0));
+
+            //---- label3 ----
+            label3.setText("Titel:");
+            label3.setFont(label3.getFont().deriveFont(label3.getFont().getStyle() | Font.BOLD));
+            label3.setHorizontalAlignment(SwingConstants.RIGHT);
+            panel2.add(label3, new CC().cell(0, 1));
+
+            //---- jTextFieldSender ----
+            jTextFieldSender.setEditable(false);
+            jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | Font.BOLD));
+            jTextFieldSender.setText("ARD: Tatort, ...");
+            panel2.add(jTextFieldSender, new CC().cell(1, 1));
+        }
+        contentPane.add(panel2, new CC().cell(0, 0));
 
         //======== buttonPanel ========
         {
@@ -1166,13 +1209,6 @@ public class DialogAddDownload extends JDialog {
         }
         contentPane.add(jPanelSize, new CC().cell(0, 3));
 
-        //---- jTextFieldSender ----
-        jTextFieldSender.setEditable(false);
-        jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | Font.BOLD));
-        jTextFieldSender.setText(" ARD: Tatort, ...");
-        jTextFieldSender.setBorder(new TitledBorder("Film"));
-        contentPane.add(jTextFieldSender, new CC().cell(0, 0));
-
         //======== jPanel2 ========
         {
             jPanel2.setBorder(new TitledBorder("Optionen"));
@@ -1204,6 +1240,11 @@ public class DialogAddDownload extends JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
+    private JPanel panel2;
+    private JLabel label2;
+    private JLabel lblSender;
+    private JLabel label3;
+    private JTextField jTextFieldSender;
     private JCheckBox jCheckBoxStarten;
     private JButton jButtonOk;
     private JButton jButtonAbbrechen;
@@ -1220,7 +1261,6 @@ public class DialogAddDownload extends JDialog {
     private JRadioButton jRadioButtonAufloesungHd;
     private JRadioButton jRadioButtonAufloesungHoch;
     private JRadioButton jRadioButtonAufloesungKlein;
-    private JTextField jTextFieldSender;
     private JCheckBox jCheckBoxInfodatei;
     private JCheckBox jCheckBoxPfadSpeichern;
     private JCheckBox jCheckBoxSubtitle;
