@@ -168,6 +168,9 @@ new FormModel {
 			} ) {
 				name: "jPanelSize"
 				"border": new javax.swing.border.TitledBorder( "Download-Qualität" )
+				auxiliary() {
+					"JavaCodeGenerator.variableModifiers": 4
+				}
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
 					"alignment": 0
 				} ) {

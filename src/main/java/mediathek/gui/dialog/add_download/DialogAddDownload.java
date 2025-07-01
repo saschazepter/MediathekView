@@ -58,7 +58,7 @@ public class DialogAddDownload extends JDialog {
     protected static final String KEY_LABEL_FOREGROUND = "Label.foreground";
     protected static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
     private static final Logger logger = LogManager.getLogger();
-    private static final String TITLED_BORDER_STRING = "Download-Qualität";
+    protected static final String TITLED_BORDER_STRING = "Download-Qualität";
     protected static int MINIMUM_WIDTH = 720;
     protected static int MINIMUM_HEIGHT = 430;
     protected final DatenFilm film;
@@ -76,7 +76,7 @@ public class DialogAddDownload extends JDialog {
     protected String dateiGroesse_Klein = "";
     protected boolean nameGeaendert;
     protected boolean stopBeob;
-    private JTextComponent cbPathTextComponent;
+    protected JTextComponent cbPathTextComponent;
     private ListenableFuture<String> hqFuture;
     private ListenableFuture<String> hochFuture;
     private ListenableFuture<String> kleinFuture;
@@ -359,7 +359,7 @@ public class DialogAddDownload extends JDialog {
      *
      * @return Free disk space in bytes.
      */
-    private long getFreeDiskSpace(final String strPath) {
+    protected long getFreeDiskSpace(final String strPath) {
         long usableSpace = 0;
         if (!strPath.isEmpty()) {
             try {
@@ -437,16 +437,6 @@ public class DialogAddDownload extends JDialog {
         catch (Exception ex) {
             logger.error("calculateAndCheckDiskSpace()", ex);
         }
-    }
-
-    protected boolean isHighQualityRequested() {
-        return active_pSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG].equals(FilmResolution.Enum.HIGH_QUALITY.toString())
-                && film.isHighQuality();
-    }
-
-    protected boolean isLowQualityRequested() {
-        return active_pSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG].equals(FilmResolution.Enum.LOW.toString()) &&
-                !film.getLowQualityUrl().isEmpty();
     }
 
     protected static class DialogPositionComponentListener extends ComponentAdapter {
@@ -824,7 +814,7 @@ public class DialogAddDownload extends JDialog {
     protected JComboBox<String> jComboBoxPfad;
     protected JButton jButtonZiel;
     protected JButton jButtonDelHistory;
-    private JPanel jPanelSize;
+    protected JPanel jPanelSize;
     protected JButton btnRequestLiveInfo;
     protected JXBusyLabel lblBusyIndicator;
     protected JLabel lblStatus;

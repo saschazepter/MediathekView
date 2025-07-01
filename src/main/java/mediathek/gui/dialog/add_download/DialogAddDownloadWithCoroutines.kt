@@ -27,6 +27,8 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.config.MVConfig
+import mediathek.daten.DatenPset
+import mediathek.daten.FilmResolution
 import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.tool.*
 import mediathek.tool.MessageBus.messageBus
@@ -50,8 +52,8 @@ import kotlin.math.max
 class DialogAddDownloadWithCoroutines(
     parent: Frame,
     film: mediathek.daten.DatenFilm,
-    pSet: mediathek.daten.DatenPset?,
-    requestedResolution: java.util.Optional<mediathek.daten.FilmResolution.Enum>
+    pSet: DatenPset?,
+    requestedResolution: java.util.Optional<FilmResolution.Enum>
 ) : DialogAddDownload(parent, film, pSet, requestedResolution) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private var liveInfoJob: Job? = null
@@ -171,11 +173,11 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun prepareResolutionButtons() {
-        requestedResolution.ifPresent { highQualityMandated = it == mediathek.daten.FilmResolution.Enum.HIGH_QUALITY }
+        requestedResolution.ifPresent { highQualityMandated = it == FilmResolution.Enum.HIGH_QUALITY }
 
         when {
-            highQualityMandated || isHighQualityRequested -> jRadioButtonAufloesungHd.isSelected = true
-            isLowQualityRequested -> jRadioButtonAufloesungKlein.isSelected = true
+            highQualityMandated || isHighQualityRequested() -> jRadioButtonAufloesungHd.isSelected = true
+            isLowQualityRequested() -> jRadioButtonAufloesungKlein.isSelected = true
             else -> jRadioButtonAufloesungHoch.isSelected = true
         }
     }
@@ -188,14 +190,24 @@ class DialogAddDownloadWithCoroutines(
         } else jCheckBoxInfodatei.setSelected(false)
     }
 
+    private fun isLowQualityRequested(): Boolean {
+        return active_pSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] == FilmResolution.Enum.LOW.toString() &&
+                !film.lowQualityUrl.isEmpty()
+    }
+
+    private fun isHighQualityRequested(): Boolean {
+        return active_pSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] == FilmResolution.Enum.HIGH_QUALITY.toString()
+                && film.isHighQuality
+    }
+
     /**
      * Return the resolution based on selected RadioButton.
      */
-    private fun getFilmResolution(): mediathek.daten.FilmResolution.Enum {
+    private fun getFilmResolution(): FilmResolution.Enum {
         return when {
-            jRadioButtonAufloesungHd.isSelected -> mediathek.daten.FilmResolution.Enum.HIGH_QUALITY
-            jRadioButtonAufloesungKlein.isSelected -> mediathek.daten.FilmResolution.Enum.LOW
-            else -> mediathek.daten.FilmResolution.Enum.NORMAL
+            jRadioButtonAufloesungHd.isSelected -> FilmResolution.Enum.HIGH_QUALITY
+            jRadioButtonAufloesungKlein.isSelected -> FilmResolution.Enum.LOW
+            else -> FilmResolution.Enum.NORMAL
         }
     }
 
@@ -531,4 +543,55 @@ class DialogAddDownloadWithCoroutines(
             "Unbekannter Fehler aufgetreten."
         }
     }
+
+    /**
+     * Calculate free disk space on volume and check if the movies can be safely downloaded.
+     */
+    override fun calculateAndCheckDiskSpace() {
+        UIManager.getColor(KEY_LABEL_FOREGROUND)?.let { fgColor ->
+            jRadioButtonAufloesungHd.foreground = fgColor
+            jRadioButtonAufloesungHoch.foreground = fgColor
+            jRadioButtonAufloesungKlein.foreground = fgColor
+        }
+
+        try {
+            val filmBorder = jPanelSize.border as? javax.swing.border.TitledBorder ?: return
+            var usableSpace = getFreeDiskSpace(cbPathTextComponent.text)
+
+            filmBorder.title = if (usableSpace > 0) {
+                "$TITLED_BORDER_STRING [ Freier Speicherplatz: ${FileUtils.humanReadableByteCountBinary(usableSpace)} ]"
+            } else {
+                TITLED_BORDER_STRING
+            }
+
+            // Border needs to be repainted after update...
+            jPanelSize.repaint()
+
+            // jetzt noch prüfen, obs auf die Platte passt
+            usableSpace /= FileSize.ONE_MiB
+            if (usableSpace > 0) {
+                if (dateiGroesse_HQ.isNotEmpty()) {
+                    val size = dateiGroesse_HQ.toIntOrNull() ?: 0
+                    if (size > usableSpace) {
+                        jRadioButtonAufloesungHd.foreground = Color.RED
+                    }
+                }
+                if (dateiGroesse_Hoch.isNotEmpty()) {
+                    val size = dateiGroesse_Hoch.toIntOrNull() ?: 0
+                    if (size > usableSpace) {
+                        jRadioButtonAufloesungHoch.foreground = Color.RED
+                    }
+                }
+                if (dateiGroesse_Klein.isNotEmpty()) {
+                    val size = dateiGroesse_Klein.toIntOrNull() ?: 0
+                    if (size > usableSpace) {
+                        jRadioButtonAufloesungKlein.foreground = Color.RED
+                    }
+                }
+            }
+        } catch (ex: Exception) {
+            logger.error("calculateAndCheckDiskSpace()", ex)
+        }
+    }
+
 }
