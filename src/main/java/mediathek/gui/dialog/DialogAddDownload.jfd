@@ -3,24 +3,33 @@ JFDML JFormDesigner: "8.2.4.0.393" Java: "21.0.7" encoding: "UTF-8"
 new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
-		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-			"$horizontalGroup": "par l {seq {space :::p, par l {comp jTextFieldSender::l:::x, comp jPanel1::t:::x, comp jPanel2::t::656:x, comp jPanelSize::l:::x, comp buttonPanel::l:::x}, space :::p}}"
-			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanel2:::p::p, space :::p, comp jPanelSize:::p::p, space :::p, comp buttonPanel:::p::p, space :::x}}"
+		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+			"$layoutConstraints": "insets 0,hidemode 3,gap 5 5"
+			"$columnConstraints": "[grow,fill]"
+			"$rowConstraints": "[fill][fill][fill][fill][fill]"
 		} ) {
 			name: "this"
 			"defaultCloseOperation": 2
 			"title": "Film speichern"
-			"minimumSize": new java.awt.Dimension( 660, 450 )
-			"preferredSize": new java.awt.Dimension( 660, 450 )
+			"minimumSize": new java.awt.Dimension( 690, 450 )
+			"preferredSize": new java.awt.Dimension( 690, 450 )
 			"maximumSize": new java.awt.Dimension( 1024, 800 )
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, comp jCheckBoxStarten:::p::p, space :::x, comp panel1:::p::p, space :::p}}"
-				"$verticalGroup": "par l {seq {space :::p, par l {comp jCheckBoxStarten:::p::p, comp panel1:::p::p}, space :::p}}"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "insets 5,hidemode 3,gap 5 5"
+				"$columnConstraints": "[fill][grow,right]"
+				"$rowConstraints": "[fill]"
 			} ) {
 				name: "buttonPanel"
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "jCheckBoxStarten"
+					"selected": true
+					"text": "Download sofort starten"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0"
+				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 					"$horizontalGroup": "par l {seq {space :::p, comp jButtonOk:1::p:93:p, space :::p, comp jButtonAbbrechen:1::p::p, space :::p}}"
 					"$verticalGroup": "par l {seq {space :::p, par b {comp jButtonOk::b:p::p, comp jButtonAbbrechen::b:p::p}, space :::p}}"
@@ -37,12 +46,11 @@ new FormModel {
 						name: "jButtonAbbrechen"
 						"text": "Abbrechen"
 					} )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 0"
 				} )
-				add( new FormComponent( "javax.swing.JCheckBox" ) {
-					name: "jCheckBoxStarten"
-					"selected": true
-					"text": "Download sofort starten"
-				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 4"
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
 				"$horizontalGroup": "par l {seq {space :::p, comp jPanel7:::::x, space :::p}}"
@@ -53,7 +61,7 @@ new FormModel {
 					"JavaCodeGenerator.variableLocal": true
 				}
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-					"$horizontalGroup": "par l {seq {space :::p, par l {seq l {par l {comp jLabelSet::l:p::p, comp jLabel1::l:p::p}, space :p:20:p, par l {comp jPanel4::::558:x, comp jComboBoxPset:::::x}}, seq l {comp jLabel4:::p::p, space :::p, comp jTextFieldName:::::x:2}}, space :::p}}"
+					"$horizontalGroup": "par l {seq {space :::p, par l {seq l {par l {comp jLabelSet::l:p::p, comp jLabel1::l:p::p}, space :p:20:p, par l {comp jPanel4::::585:x, comp jComboBoxPset:::::x}}, seq l {comp jLabel4:::p::p, space :::p, comp jTextFieldName:::::x:2}}, space :::p}}"
 					"$verticalGroup": "par l {seq {space :::p, par b {comp jLabelSet::b:p::p, comp jComboBoxPset::b:p::p}, space u:p::p, par t {comp jPanel4:::p::p, comp jLabel1:::p::p}, space :::p, par c {comp jLabel4::c:p::p, comp jTextFieldName::c:p::p}, space :::p}}"
 				} ) {
 					name: "jPanel7"
@@ -117,10 +125,12 @@ new FormModel {
 						} )
 					} )
 				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 1"
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::634:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
-				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space ::8:x}}"
+				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::661:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
+				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space :::x}}"
 			} ) {
 				name: "jPanelSize"
 				"border": new javax.swing.border.TitledBorder( "Download-Qualität" )
@@ -177,6 +187,8 @@ new FormModel {
 						"text": "Niedrig"
 					} )
 				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 3"
 			} )
 			add( new FormComponent( "javax.swing.JTextField" ) {
 				name: "jTextFieldSender"
@@ -184,6 +196,8 @@ new FormModel {
 				"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
 				"text": " ARD: Tatort, ..."
 				"border": new javax.swing.border.TitledBorder( "Film" )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0"
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridLayout ) {
 				"columns": 2
@@ -207,10 +221,12 @@ new FormModel {
 					name: "jCheckBoxSubtitle"
 					"text": "Untertitel speichern: \"Filmname.xxx\""
 				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 2"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 670, 455 )
+			"size": new java.awt.Dimension( 690, 445 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
 			name: "buttonGroup1"
