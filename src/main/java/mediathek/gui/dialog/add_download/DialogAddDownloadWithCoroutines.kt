@@ -518,7 +518,7 @@ class DialogAddDownloadWithCoroutines(
 
     private fun setupMinimumSizeForOs() {
         if (SystemUtils.IS_OS_WINDOWS)
-            minimumDialogHeight -= 10
+            minimumDialogHeight -= 150
         else if (SystemUtils.IS_OS_LINUX) {
             minimumDialogHeight -= 50
         }
