@@ -84,7 +84,7 @@ public class DialogAddDownload extends JDialog {
     private boolean stopBeob;
     private JTextComponent cbPathTextComponent;
     protected Path ffprobePath;
-    private ListenableFuture<FFprobeResult> resultListenableFuture;
+    protected ListenableFuture<FFprobeResult> resultListenableFuture;
     private ListenableFuture<String> hqFuture;
     private ListenableFuture<String> hochFuture;
     private ListenableFuture<String> kleinFuture;

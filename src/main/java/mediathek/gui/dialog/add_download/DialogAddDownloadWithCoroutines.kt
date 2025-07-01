@@ -100,7 +100,7 @@ class DialogAddDownloadWithCoroutines(
         } ?: NO_DATA_AVAILABLE
     }
 
-    fun resetBusyLabelAndButton() {
+    private fun resetBusyLabelAndButton() {
         lblBusyIndicator.setBusy(false)
         lblBusyIndicator.setVisible(false)
         btnRequestLiveInfo.setEnabled(true)
@@ -124,13 +124,11 @@ class DialogAddDownloadWithCoroutines(
      * @return First entry of long codec name.
      */
     private fun getVideoCodecName(stream: Stream): String {
-        logger.trace("video codec long name: {}", stream.codecLongName)
-        try {
-            val splitName: Array<String?> = stream.codecLongName.split("/".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-            return splitName[0]!!.trim { it <= ' ' }
-        } catch (_: java.lang.Exception) {
-            return stream.codecLongName
-        }
+        logger.trace("video codec long name: ${stream.codecLongName}")
+        return stream.codecLongName.split("/")
+            .firstOrNull()
+            ?.trim()
+            ?: stream.codecLongName
     }
 
     private fun getAudioInfo(stream: Stream, sampleRate: Int?): String {
