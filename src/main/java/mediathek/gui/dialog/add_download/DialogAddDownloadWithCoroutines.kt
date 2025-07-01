@@ -163,7 +163,7 @@ class DialogAddDownloadWithCoroutines(
         btnRequestLiveInfo.addActionListener {
             liveInfoJob?.cancel()
             liveInfoJob = coroutineScope.launch {
-                fetchLiveFilmInfoCoroutine()
+                fetchLiveFilmInfo()
             }
         }
 
@@ -513,7 +513,7 @@ class DialogAddDownloadWithCoroutines(
         minimumSize = Dimension(minimumDialogWidth, minimumDialogHeight)
     }
 
-    private suspend fun fetchLiveFilmInfoCoroutine() {
+    private suspend fun fetchLiveFilmInfo() {
         btnRequestLiveInfo.isEnabled = false
         lblBusyIndicator.isVisible = true
         lblBusyIndicator.isBusy = true

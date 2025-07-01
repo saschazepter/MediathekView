@@ -19,21 +19,20 @@
 package mediathek.gui.dialog.add_download;
 
 import org.jdesktop.swingx.JXBusyLabel;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 
+/**
+ * Base class for UI Designer.
+ * Subclass uses kotlin coroutines for concurrent work.
+ */
 public class DialogAddDownload extends JDialog {
-    //protected DatenDownload datenDownload;
-
-    public DialogAddDownload(@NotNull Frame parent) {
+    public DialogAddDownload(Frame parent) {
         super(parent, true);
         initComponents();
     }
-
-
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     // Generated using JFormDesigner non-commercial license
