@@ -37,8 +37,8 @@ public class DialogAddDownload extends JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     // Generated using JFormDesigner non-commercial license
     private void initComponents() {
-        panel2 = new JPanel();
-        panel1 = new JPanel();
+        var panel2 = new JPanel();
+        var panel1 = new JPanel();
         jButtonOk = new JButton();
         jButtonAbbrechen = new JButton();
         jCheckBoxStarten = new JCheckBox();
@@ -366,8 +366,6 @@ public class DialogAddDownload extends JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JPanel panel2;
-    private JPanel panel1;
     protected JButton jButtonOk;
     protected JButton jButtonAbbrechen;
     protected JCheckBox jCheckBoxStarten;
