@@ -56,8 +56,6 @@ public class DialogAddDownload extends JDialog {
     private static final String KEY_LABEL_FOREGROUND = "Label.foreground";
     private static final String KEY_TEXTFIELD_BACKGROUND = "TextField.background";
     private static final String TITLED_BORDER_STRING = "Download-Qualität";
-    private static int MINIMUM_WIDTH = 660;
-    private static int MINIMUM_HEIGHT = 430;
     private final DatenFilm film;
     private final Optional<FilmResolution.Enum> requestedResolution;
     private final ListePset listeSpeichern = Daten.listePset.getListeSpeichern();
@@ -94,7 +92,6 @@ public class DialogAddDownload extends JDialog {
 
         setupUI();
 
-        setupMinimumSizeForOs();
         restoreWindowSizeFromConfig();        //only install on windows and linux, macOS works...
         installMinResizePreventer();
 
@@ -103,17 +100,6 @@ public class DialogAddDownload extends JDialog {
         addComponentListener(new DialogPositionComponentListener());
 
         SwingUtilities.invokeLater(() -> jButtonOk.requestFocus());
-    }
-
-    private void setupMinimumSizeForOs() {
-        if (SystemUtils.IS_OS_MAC_OSX)
-            MINIMUM_HEIGHT += 20;
-        else if (SystemUtils.IS_OS_LINUX) {
-            MINIMUM_HEIGHT += 120;
-            MINIMUM_WIDTH = 800;
-        }
-        var minDim = new Dimension(MINIMUM_WIDTH, MINIMUM_HEIGHT);
-        setMinimumSize(minDim);
     }
 
     /// Prevents that a dialog can be resized smaller than its minimum dimensions.
@@ -189,7 +175,9 @@ public class DialogAddDownload extends JDialog {
         var config = ApplicationConfiguration.getConfiguration();
         try {
             config.lock(LockMode.READ);
+            int MINIMUM_WIDTH = 660;
             int width = Math.max(config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH), MINIMUM_WIDTH);
+            int MINIMUM_HEIGHT = 430;
             int height = Math.max(config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT), MINIMUM_HEIGHT);
             int x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X);
             int y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y);
@@ -965,7 +953,7 @@ public class DialogAddDownload extends JDialog {
     // Generated using JFormDesigner non-commercial license
     private void initComponents() {
         var buttonPanel = new JPanel();
-        panel1 = new JPanel();
+        var panel1 = new JPanel();
         jButtonOk = new JButton();
         jButtonAbbrechen = new JButton();
         jCheckBoxStarten = new JCheckBox();
@@ -1114,7 +1102,7 @@ public class DialogAddDownload extends JDialog {
                                         .addComponent(jLabel1))
                                     .addGap(20, 20, 20)
                                     .addGroup(jPanel7Layout.createParallelGroup()
-                                        .addComponent(jPanel4, GroupLayout.DEFAULT_SIZE, 566, Short.MAX_VALUE)
+                                        .addComponent(jPanel4, GroupLayout.DEFAULT_SIZE, 558, Short.MAX_VALUE)
                                         .addComponent(jComboBoxPset)))
                                 .addGroup(jPanel7Layout.createSequentialGroup()
                                     .addComponent(jLabel4)
@@ -1224,7 +1212,7 @@ public class DialogAddDownload extends JDialog {
                         .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(7, Short.MAX_VALUE))
+                        .addContainerGap(8, Short.MAX_VALUE))
             );
         }
 
@@ -1294,7 +1282,6 @@ public class DialogAddDownload extends JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JPanel panel1;
     private JButton jButtonOk;
     private JButton jButtonAbbrechen;
     private JCheckBox jCheckBoxStarten;
