@@ -600,7 +600,7 @@ public class DatenDownload implements Comparable<DatenDownload> {
         // start.bandbreite -->> bytes per second
         if (start != null) {
             if (start.status >= Start.STATUS_RUN) {
-                return BandwidthFormatter.INSTANCE.format(start.bandbreite);
+                return BandwidthFormatter.format(start.bandbreite);
             }
         }
         return "";

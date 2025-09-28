@@ -159,7 +159,7 @@ public class StarterClass {
         if (datenDownload.art == DatenDownload.ART_DOWNLOAD) {
             if (start.mVBandwidthCountingInputStream != null) {
                 text.add("Bytes gelesen: " + FileUtils.humanReadableByteCountBinary(start.mVBandwidthCountingInputStream.getSumByte()));
-                text.add("Bandbreite: " + BandwidthFormatter.INSTANCE.format(start.mVBandwidthCountingInputStream.getSumBandwidth()));
+                text.add("Bandbreite: " + BandwidthFormatter.format(start.mVBandwidthCountingInputStream.getSumBandwidth()));
             }
         }
         text.add("URL: " + datenDownload.arr[DatenDownload.DOWNLOAD_URL]);

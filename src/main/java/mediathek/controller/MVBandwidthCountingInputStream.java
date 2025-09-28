@@ -84,7 +84,7 @@ public class MVBandwidthCountingInputStream extends InputStream {
         final long b = getSumBandwidth();
 
         String s = FileUtils.humanReadableByteCountBinary(bytesRead);
-        return "Download: Bytes gelesen: " + s + "  Bandbreite: " + BandwidthFormatter.INSTANCE.format(b);
+        return "Download: Bytes gelesen: " + s + "  Bandbreite: " + BandwidthFormatter.format(b);
     }
 
     /**
