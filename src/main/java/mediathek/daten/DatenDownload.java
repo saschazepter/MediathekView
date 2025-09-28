@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.stream.Collectors;
 
-public final class DatenDownload implements Comparable<DatenDownload> {
+public class DatenDownload implements Comparable<DatenDownload> {
 
     // Quelle - start über einen Button - Download - Abo
     public static final byte QUELLE_ALLE = -1;
@@ -268,10 +268,10 @@ public final class DatenDownload implements Comparable<DatenDownload> {
         return ret;
     }
 
-    private static String datumDatumZeitReinigen(String datum) {
-        String ret = StringUtils.replace(datum, ":", "");
-        ret = StringUtils.replace(ret, ".", "");
-        return ret;
+    /// Remove `.` and `:` from input string.
+    /// @return the cleanup result.
+    protected String stripDotsAndColons(String datum) {
+        return datum.replace(":", "").replace(".", "");
     }
 
     /**
@@ -838,8 +838,8 @@ public final class DatenDownload implements Comparable<DatenDownload> {
             replStr = StringUtils.replace(replStr, "%N", getField(GuiFunktionen.getDateiName(downloadUrl), laenge));
 
         //Felder mit fester Länge werden immer ganz geschrieben
-        replStr = StringUtils.replace(replStr, "%D", film.getSendeDatum().isEmpty() ? getHeute_yyyyMMdd() : datumDatumZeitReinigen(datumDrehen(film.getSendeDatum())));
-        replStr = StringUtils.replace(replStr, "%d", film.getSendeZeit().isEmpty() ? getJetzt_HHMMSS() : datumDatumZeitReinigen(film.getSendeZeit()));
+        replStr = StringUtils.replace(replStr, "%D", film.getSendeDatum().isEmpty() ? getHeute_yyyyMMdd() : stripDotsAndColons(datumDrehen(film.getSendeDatum())));
+        replStr = StringUtils.replace(replStr, "%d", film.getSendeZeit().isEmpty() ? getJetzt_HHMMSS() : stripDotsAndColons(film.getSendeZeit()));
         replStr = StringUtils.replace(replStr, "%H", getHeute_yyyyMMdd());
         replStr = StringUtils.replace(replStr, "%h", getJetzt_HHMMSS());
 
