@@ -35,4 +35,44 @@ class DatenDownloadTest {
         res = dd.stripDotsAndColons(str);
         assertEquals("201500", res);
     }
+
+    @Test
+    void formatTimeRemaining() {
+        long restSekunden = 360;
+        var dd = new DatenDownload();
+        var res =  dd.formatTimeRemaining(restSekunden);
+        assertEquals("6 Min.", res);
+
+        restSekunden = 240;
+        res =  dd.formatTimeRemaining(restSekunden);
+        assertEquals("5 Min.", res);
+
+        restSekunden = 180;
+        res =  dd.formatTimeRemaining(restSekunden);
+        assertEquals("4 Min.", res);
+
+        restSekunden = 120;
+        res =  dd.formatTimeRemaining(restSekunden);
+        assertEquals("3 Min.", res);
+
+        restSekunden = 70;
+        res =  dd.formatTimeRemaining(restSekunden);
+        assertEquals("2 Min.", res);
+
+        restSekunden = 40;
+        res =  dd.formatTimeRemaining(restSekunden);
+        assertEquals("1 Min.", res);
+
+        restSekunden = 25;
+        res =  dd.formatTimeRemaining(restSekunden);
+        assertEquals("30 s", res);
+
+        restSekunden = 15;
+        res =  dd.formatTimeRemaining(restSekunden);
+        assertEquals("20 s", res);
+
+        restSekunden = 8;
+        res =  dd.formatTimeRemaining(restSekunden);
+        assertEquals("10 s", res);
+    }
 }

@@ -574,29 +574,33 @@ public class DatenDownload implements Comparable<DatenDownload> {
         return Boolean.parseBoolean(arr[DOWNLOAD_SPOTLIGHT]);
     }
 
+    /**
+     * Return number of minutes based on input seconds.
+      * @param sekunden remaining time in seconds
+     * @return string for minutes remaining
+     */
+    protected String formatTimeRemaining(long sekunden) {
+        if (sekunden > 300) {
+            return Math.round(sekunden / 60.0) + " Min.";
+        }
+
+        // geordnete Schwellenwerte (von hoch nach niedrig)
+        int[] limits =    {230, 170, 110,  60,  30,  20,  10};
+        String[] labels = {"5 Min.", "4 Min.", "3 Min.", "2 Min.", "1 Min.", "30 s", "20 s"};
+
+        for (int i = 0; i < limits.length; i++) {
+            if (sekunden > limits[i]) {
+                return labels[i];
+            }
+        }
+
+        return "10 s";
+    }
+
     public String getTextRestzeit() {
         if (start != null) {
             if (start.status < Start.STATUS_FERTIG && start.status >= Start.STATUS_RUN && start.restSekunden > 0) {
-
-                if (start.restSekunden > 300) {
-                    return Math.round(start.restSekunden / 60.0) + " Min.";
-                } else if (start.restSekunden > 230) {
-                    return "5 Min.";
-                } else if (start.restSekunden > 170) {
-                    return "4 Min.";
-                } else if (start.restSekunden > 110) {
-                    return "3 Min.";
-                } else if (start.restSekunden > 60) {
-                    return "2 Min.";
-                } else if (start.restSekunden > 30) {
-                    return "1 Min.";
-                } else if (start.restSekunden > 20) {
-                    return "30 s";
-                } else if (start.restSekunden > 10) {
-                    return "20 s";
-                } else {
-                    return "10 s";
-                }
+                return formatTimeRemaining(start.restSekunden);
             }
         }
         return "";
