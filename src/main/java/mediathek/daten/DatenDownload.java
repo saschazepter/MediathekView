@@ -24,9 +24,11 @@ import javax.xml.stream.XMLStreamWriter;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.stream.Collectors;
 
 public class DatenDownload implements Comparable<DatenDownload> {
@@ -102,6 +104,10 @@ public class DatenDownload implements Comparable<DatenDownload> {
     private static final Logger logger = LogManager.getLogger(DatenDownload.class);
     private static final String TWO_LETTER_YEAR_PARAMETER = "%3_2";
     private static final String FOUR_LETTER_YEAR_PARAMETER = "%3";
+    private static final DateTimeFormatter HHMMSS = DateTimeFormatter.ofPattern("HHmmss");
+    private static final DateTimeFormatter HH_MM_SS = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final DateTimeFormatter YYYYMMDD = DateTimeFormatter.ofPattern("yyyyMMdd");
+    private static final DateTimeFormatter DATUM_FORMAT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     public String[] arr;
     public Datum datumFilm = new Datum(0);
     public DatenFilm film;
@@ -233,22 +239,6 @@ public class DatenDownload implements Comparable<DatenDownload> {
             }
         }
         MessageBus.getMessageBus().publishAsync(new StartEvent());
-    }
-
-    public static String getTextBandbreite(long b) {
-        if (b > 1000 * 1000) {
-            String s = String.valueOf(b / 1000);
-            if (s.length() >= 4) {
-                s = s.substring(0, s.length() - 3) + ',' + s.substring(s.length() - 3);
-            }
-            return s + " MB/s";
-        } else if (b > 1000) {
-            return (b / 1000) + " kB/s";
-        } else if (b > 1) {
-            return b + " B/s";
-        } else {
-            return "";
-        }
     }
 
     private static String datumDrehen(String datum) {
@@ -609,8 +599,8 @@ public class DatenDownload implements Comparable<DatenDownload> {
     public String getTextBandbreite() {
         // start.bandbreite -->> bytes per second
         if (start != null) {
-            if (/*start.status < Start.STATUS_FERTIG &&*/start.status >= Start.STATUS_RUN) {
-                return getTextBandbreite(start.bandbreite);
+            if (start.status >= Start.STATUS_RUN) {
+                return BandwidthFormatter.INSTANCE.format(start.bandbreite);
             }
         }
         return "";
@@ -847,8 +837,8 @@ public class DatenDownload implements Comparable<DatenDownload> {
         replStr = StringUtils.replace(replStr, "%H", getHeute_yyyyMMdd());
         replStr = StringUtils.replace(replStr, "%h", getJetzt_HHMMSS());
 
-        replStr = StringUtils.replace(replStr, "%1", getDMY(DMYTag.DAY, film.getSendeDatum().isEmpty() ? getHeute_yyyy_MM_dd() : film.getSendeDatum()));
-        replStr = StringUtils.replace(replStr, "%2", getDMY(DMYTag.MONTH, film.getSendeDatum().isEmpty() ? getHeute_yyyy_MM_dd() : film.getSendeDatum()));
+        replStr = StringUtils.replace(replStr, "%1", getDMY(DMYTag.DAY, film.getSendeDatum().isEmpty() ? getHeute_dd_MM_yyy() : film.getSendeDatum()));
+        replStr = StringUtils.replace(replStr, "%2", getDMY(DMYTag.MONTH, film.getSendeDatum().isEmpty() ? getHeute_dd_MM_yyy() : film.getSendeDatum()));
         replStr = replaceYearParameter(replStr, film);
         replStr = StringUtils.replace(replStr, "%4", getHMS(HMSTag.HOUR, film.getSendeZeit().isEmpty() ? getJetzt_HH_MM_SS() : film.getSendeZeit()));
         replStr = StringUtils.replace(replStr, "%5", getHMS(HMSTag.MINUTE, film.getSendeZeit().isEmpty() ? getJetzt_HH_MM_SS() : film.getSendeZeit()));
@@ -882,7 +872,7 @@ public class DatenDownload implements Comparable<DatenDownload> {
      * @return the processed string
      */
     private String replaceYearParameter(String replStr, DatenFilm film) {
-        var datum = film.getSendeDatum().isEmpty() ? getHeute_yyyy_MM_dd() : film.getSendeDatum();
+        var datum = film.getSendeDatum().isEmpty() ? getHeute_dd_MM_yyy() : film.getSendeDatum();
         var year = getDMY(DMYTag.YEAR, datum);
         if (replStr.contains(TWO_LETTER_YEAR_PARAMETER)) {
             // two-digit year
@@ -918,19 +908,19 @@ public class DatenDownload implements Comparable<DatenDownload> {
     }
 
     private String getJetzt_HHMMSS() {
-        return FastDateFormat.getInstance("HHmmss").format(new Date());
+        return LocalTime.now().format(HHMMSS);
     }
 
     private String getJetzt_HH_MM_SS() {
-        return FastDateFormat.getInstance("HH:mm:ss").format(new Date());
+        return LocalTime.now().format(HH_MM_SS);
     }
 
     private String getHeute_yyyyMMdd() {
-        return FastDateFormat.getInstance("yyyyMMdd").format(new Date());
+        return LocalDate.now().format(YYYYMMDD);
     }
 
-    private String getHeute_yyyy_MM_dd() {
-        return sdf_datum.format(new Date());
+    protected String getHeute_dd_MM_yyy() {
+        return LocalDate.now().format(DATUM_FORMAT);
     }
 
     private void initialize() {
