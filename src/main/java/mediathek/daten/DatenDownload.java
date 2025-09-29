@@ -620,14 +620,14 @@ public class DatenDownload implements Comparable<DatenDownload> {
             DatenProg programm = pSet.getProgUrl(arr[DOWNLOAD_URL]);
             // ##############################################
             // für die alten Versionen:
-            pSet.arr[DatenPset.PROGRAMMSET_ZIEL_DATEINAME] = StringUtils.replace(pSet.arr[DatenPset.PROGRAMMSET_ZIEL_DATEINAME], "%n", "");
-            pSet.arr[DatenPset.PROGRAMMSET_ZIEL_DATEINAME] = StringUtils.replace(pSet.arr[DatenPset.PROGRAMMSET_ZIEL_DATEINAME], "%p", "");
-            pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD] = StringUtils.replace(pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD], "%n", "");
-            pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD] = StringUtils.replace(pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD], "%p", "");
+            pSet.arr[DatenPset.PROGRAMMSET_ZIEL_DATEINAME] = pSet.arr[DatenPset.PROGRAMMSET_ZIEL_DATEINAME].replace("%n", "")
+                    .replace("%p", "");
+            pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD] = pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD].replace("%n", "")
+                    .replace("%p", "");
 
             for (DatenProg prog : pSet.getListeProg()) {
-                prog.arr[DatenProg.PROGRAMM_ZIEL_DATEINAME] = StringUtils.replace(prog.arr[DatenProg.PROGRAMM_ZIEL_DATEINAME], "%n", "");
-                prog.arr[DatenProg.PROGRAMM_ZIEL_DATEINAME] = StringUtils.replace(prog.arr[DatenProg.PROGRAMM_ZIEL_DATEINAME], "%p", "");
+                prog.arr[DatenProg.PROGRAMM_ZIEL_DATEINAME] = prog.arr[DatenProg.PROGRAMM_ZIEL_DATEINAME].replace("%n", "")
+                        .replace("%p", "");
             }
 
             // ##############################################
@@ -672,7 +672,6 @@ public class DatenDownload implements Comparable<DatenDownload> {
     private String replaceExec(String befehlsString) {
         befehlsString = StringUtils.replace(befehlsString, "**", arr[DatenDownload.DOWNLOAD_ZIEL_PFAD_DATEINAME]);
         befehlsString = StringUtils.replace(befehlsString, "%f", arr[DOWNLOAD_URL]);
-        //FIXME %F needs to be removed as we no longer use flvstreamer
         befehlsString = StringUtils.replace(befehlsString, "%F", arr[DOWNLOAD_URL_RTMP]);
         befehlsString = StringUtils.replace(befehlsString, "%a", arr[DOWNLOAD_ZIEL_PFAD]);
         befehlsString = StringUtils.replace(befehlsString, "%b", arr[DOWNLOAD_ZIEL_DATEINAME]);
