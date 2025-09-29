@@ -846,15 +846,7 @@ public class DatenDownload implements Comparable<DatenDownload> {
 
         replStr = StringUtils.replace(replStr, "%i", String.valueOf(System.currentTimeMillis()));
 
-        String res = "";
-        if (arr[DOWNLOAD_URL].equals(film.getUrlFuerAufloesung(FilmResolution.Enum.NORMAL))) {
-            res = "H";
-        } else if (arr[DOWNLOAD_URL].equals(film.getUrlFuerAufloesung(FilmResolution.Enum.HIGH_QUALITY))) {
-            res = "HD";
-        } else if (arr[DOWNLOAD_URL].equals(film.getUrlFuerAufloesung(FilmResolution.Enum.LOW))) {
-            res = "L";
-        }
-        replStr = StringUtils.replace(replStr, "%q", res);
+        replStr = replaceResolutionParameter(replStr, film);
 
         replStr = StringUtils.replace(replStr, "%S", GuiFunktionen.getSuffixFromUrl(downloadUrl));
         replStr = StringUtils.replace(replStr, "%Z", getHash(downloadUrl));
@@ -863,6 +855,18 @@ public class DatenDownload implements Comparable<DatenDownload> {
                 + '.' + GuiFunktionen.getSuffixFromUrl(downloadUrl));
 
         return replStr;
+    }
+
+    protected String replaceResolutionParameter(@NotNull String replStr, @NotNull DatenFilm film) {
+        String res = "";
+        if (arr[DOWNLOAD_URL].equals(film.getUrlFuerAufloesung(FilmResolution.Enum.NORMAL))) {
+            res = "H";
+        } else if (arr[DOWNLOAD_URL].equals(film.getUrlFuerAufloesung(FilmResolution.Enum.HIGH_QUALITY))) {
+            res = "HD";
+        } else if (arr[DOWNLOAD_URL].equals(film.getUrlFuerAufloesung(FilmResolution.Enum.LOW))) {
+            res = "L";
+        }
+        return replStr.replace("%q", res);
     }
 
     /**
@@ -877,9 +881,10 @@ public class DatenDownload implements Comparable<DatenDownload> {
         if (replStr.contains(TWO_LETTER_YEAR_PARAMETER)) {
             // two-digit year
             year = year.substring(2);
-            return StringUtils.replace(replStr, TWO_LETTER_YEAR_PARAMETER, year);
-        } else
-            return StringUtils.replace(replStr, FOUR_LETTER_YEAR_PARAMETER, year);
+            return replStr.replace(TWO_LETTER_YEAR_PARAMETER, year);
+        } else {
+            return replStr.replace(FOUR_LETTER_YEAR_PARAMETER, year);
+        }
     }
 
     private String getHash(String pfad) {
