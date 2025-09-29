@@ -871,7 +871,7 @@ public class DatenDownload implements Comparable<DatenDownload> {
      * @param film the film object
      * @return the processed string
      */
-    private String replaceYearParameter(String replStr, DatenFilm film) {
+    protected String replaceYearParameter(String replStr, DatenFilm film) {
         var datum = film.getSendeDatum().isEmpty() ? getHeute_dd_MM_yyy() : film.getSendeDatum();
         var year = getDMY(DMYTag.YEAR, datum);
         if (replStr.contains(TWO_LETTER_YEAR_PARAMETER)) {

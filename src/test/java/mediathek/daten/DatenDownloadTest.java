@@ -20,6 +20,8 @@ package mediathek.daten;
 
 import org.junit.jupiter.api.Test;
 
+import java.time.LocalDateTime;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DatenDownloadTest {
@@ -74,5 +76,21 @@ class DatenDownloadTest {
         restSekunden = 8;
         res =  dd.formatTimeRemaining(restSekunden);
         assertEquals("10 s", res);
+    }
+
+    @Test
+    void replaceYearParameter() {
+        var film = new DatenFilm();
+        var dd = new DatenDownload();
+
+        //four character test
+        var res = dd.replaceYearParameter("%3", film);
+        LocalDateTime now = LocalDateTime.now();
+        var strYear = String.valueOf(now.getYear());
+        assertEquals(strYear, res);
+
+        //two character test
+        res = dd.replaceYearParameter("%3_2", film);
+        assertEquals(strYear.substring(strYear.length() - 2), res);
     }
 }
