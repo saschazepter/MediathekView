@@ -30,7 +30,7 @@ object BandwidthFormatter {
         bytesPerSecond <= 1 -> ""
         bytesPerSecond >= GB -> String.format(Locale.GERMANY, "%.1f GB/s", bytesPerSecond.toDouble() / GB)
         bytesPerSecond >= MB -> String.format(Locale.GERMANY, "%.1f MB/s", bytesPerSecond.toDouble() / MB)
-        bytesPerSecond >= KB -> String.format(Locale.GERMANY, "%,d kB/s", bytesPerSecond / KB)
+        bytesPerSecond >= KB -> String.format(Locale.GERMANY, "%,d KB/s", bytesPerSecond / KB)
         else -> String.format(Locale.GERMANY, "%,d B/s", bytesPerSecond)
     }
 }
