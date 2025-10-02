@@ -11,7 +11,6 @@ import mediathek.gui.messages.StartEvent;
 import mediathek.tool.*;
 import mediathek.tool.datum.Datum;
 import okhttp3.HttpUrl;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -670,14 +669,12 @@ public class DatenDownload implements Comparable<DatenDownload> {
     }
 
     private String replaceExec(String befehlsString) {
-        befehlsString = StringUtils.replace(befehlsString, "**", arr[DatenDownload.DOWNLOAD_ZIEL_PFAD_DATEINAME]);
-        befehlsString = StringUtils.replace(befehlsString, "%f", arr[DOWNLOAD_URL]);
-        befehlsString = StringUtils.replace(befehlsString, "%F", arr[DOWNLOAD_URL_RTMP]);
-        befehlsString = StringUtils.replace(befehlsString, "%a", arr[DOWNLOAD_ZIEL_PFAD]);
-        befehlsString = StringUtils.replace(befehlsString, "%b", arr[DOWNLOAD_ZIEL_DATEINAME]);
-        befehlsString = StringUtils.replace(befehlsString, "%w", websiteUrl);
-
-        return befehlsString;
+        return befehlsString.replace("**", arr[DatenDownload.DOWNLOAD_ZIEL_PFAD_DATEINAME])
+                .replace("%f", arr[DOWNLOAD_URL])
+                .replace("%F", arr[DOWNLOAD_URL_RTMP])
+                .replace("%a", arr[DOWNLOAD_ZIEL_PFAD])
+                .replace("%b", arr[DOWNLOAD_ZIEL_DATEINAME])
+                .replace("%w", websiteUrl);
     }
 
     private void dateinamePfadBauen(DatenPset pSet, DatenFilm film, DatenAbo abo, String nname, String ppfad) {
@@ -808,9 +805,9 @@ public class DatenDownload implements Comparable<DatenDownload> {
             }
         }
 
-        replStr = StringUtils.replace(replStr, "%t", getField(film.getThema(), laenge));
-        replStr = StringUtils.replace(replStr, "%T", getField(film.getTitle(), laenge));
-        replStr = StringUtils.replace(replStr, "%s", getField(film.getSender(), laenge));
+        replStr = replStr.replace("%t", getField(film.getThema(), laenge))
+                .replace("%T", getField(film.getTitle(), laenge))
+                .replace("%s", getField(film.getSender(), laenge));
 
         final String downloadUrl = this.arr[DatenDownload.DOWNLOAD_URL];
         //special case only for austrian ORF and m3u8 files
@@ -826,32 +823,30 @@ public class DatenDownload implements Comparable<DatenDownload> {
                 field = FileUtils.removeExtension(field);
             }
 
-            replStr = StringUtils.replace(replStr, "%N", field);
+            replStr = replStr.replace("%N", field);
         } else
-            replStr = StringUtils.replace(replStr, "%N", getField(GuiFunktionen.getDateiName(downloadUrl), laenge));
+            replStr = replStr.replace("%N", getField(GuiFunktionen.getDateiName(downloadUrl), laenge));
 
         //Felder mit fester Länge werden immer ganz geschrieben
-        replStr = StringUtils.replace(replStr, "%D", film.getSendeDatum().isEmpty() ? getHeute_yyyyMMdd() : stripDotsAndColons(datumDrehen(film.getSendeDatum())));
-        replStr = StringUtils.replace(replStr, "%d", film.getSendeZeit().isEmpty() ? getJetzt_HHMMSS() : stripDotsAndColons(film.getSendeZeit()));
-        replStr = StringUtils.replace(replStr, "%H", getHeute_yyyyMMdd());
-        replStr = StringUtils.replace(replStr, "%h", getJetzt_HHMMSS());
+        replStr = replStr.replace("%D", film.getSendeDatum().isEmpty() ? getHeute_yyyyMMdd() : stripDotsAndColons(datumDrehen(film.getSendeDatum())))
+                .replace("%d", film.getSendeZeit().isEmpty() ? getJetzt_HHMMSS() : stripDotsAndColons(film.getSendeZeit()))
+                .replace("%H", getHeute_yyyyMMdd())
+                .replace("%h", getJetzt_HHMMSS())
+                .replace("%1", getDMY(DMYTag.DAY, film.getSendeDatum().isEmpty() ? getHeute_dd_MM_yyy() : film.getSendeDatum()))
+                .replace("%2", getDMY(DMYTag.MONTH, film.getSendeDatum().isEmpty() ? getHeute_dd_MM_yyy() : film.getSendeDatum()));
 
-        replStr = StringUtils.replace(replStr, "%1", getDMY(DMYTag.DAY, film.getSendeDatum().isEmpty() ? getHeute_dd_MM_yyy() : film.getSendeDatum()));
-        replStr = StringUtils.replace(replStr, "%2", getDMY(DMYTag.MONTH, film.getSendeDatum().isEmpty() ? getHeute_dd_MM_yyy() : film.getSendeDatum()));
         replStr = replaceYearParameter(replStr, film);
-        replStr = StringUtils.replace(replStr, "%4", getHMS(HMSTag.HOUR, film.getSendeZeit().isEmpty() ? getJetzt_HH_MM_SS() : film.getSendeZeit()));
-        replStr = StringUtils.replace(replStr, "%5", getHMS(HMSTag.MINUTE, film.getSendeZeit().isEmpty() ? getJetzt_HH_MM_SS() : film.getSendeZeit()));
-        replStr = StringUtils.replace(replStr, "%6", getHMS(HMSTag.SECOND, film.getSendeZeit().isEmpty() ? getJetzt_HH_MM_SS() : film.getSendeZeit()));
 
-        replStr = StringUtils.replace(replStr, "%i", String.valueOf(System.currentTimeMillis()));
+        replStr = replStr.replace("%4", getHMS(HMSTag.HOUR, film.getSendeZeit().isEmpty() ? getJetzt_HH_MM_SS() : film.getSendeZeit()))
+                .replace("%5", getHMS(HMSTag.MINUTE, film.getSendeZeit().isEmpty() ? getJetzt_HH_MM_SS() : film.getSendeZeit()))
+                .replace("%6", getHMS(HMSTag.SECOND, film.getSendeZeit().isEmpty() ? getJetzt_HH_MM_SS() : film.getSendeZeit()))
+                .replace("%i", String.valueOf(System.currentTimeMillis()));
 
         replStr = replaceResolutionParameter(replStr, film);
 
-        replStr = StringUtils.replace(replStr, "%S", GuiFunktionen.getSuffixFromUrl(downloadUrl));
-        replStr = StringUtils.replace(replStr, "%Z", getHash(downloadUrl));
-
-        replStr = StringUtils.replace(replStr, "%z", getHash(downloadUrl)
-                + '.' + GuiFunktionen.getSuffixFromUrl(downloadUrl));
+        replStr = replStr.replace("%S", GuiFunktionen.getSuffixFromUrl(downloadUrl))
+                .replace("%Z", getHash(downloadUrl))
+                .replace("%z", getHash(downloadUrl) + '.' + GuiFunktionen.getSuffixFromUrl(downloadUrl));
 
         return replStr;
     }
