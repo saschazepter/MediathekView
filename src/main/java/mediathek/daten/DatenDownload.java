@@ -588,7 +588,7 @@ public class DatenDownload implements Comparable<DatenDownload> {
 
     public String getTextRestzeit() {
         if (start != null) {
-            if (start.status < Start.STATUS_FERTIG && start.status >= Start.STATUS_RUN && start.restSekunden > 0) {
+            if (start.status < Start.STATUS_FERTIG && start.status == Start.STATUS_RUN && start.restSekunden > 0) {
                 return formatTimeRemaining(start.restSekunden);
             }
         }
