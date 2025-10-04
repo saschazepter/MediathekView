@@ -391,7 +391,7 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun setupFilmQualityRadioButtons() {
-        val listener: ActionListener? = ActionListener {
+        val listener = ActionListener {
             setNameFilm()
             lblStatus.setText("")
             lblAudioInfo.setText("")
