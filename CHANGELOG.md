@@ -1,3 +1,5 @@
+# **14.5.0**
+- **BUGFIX(Linux):** Tray-Icon Funktion wird für KDE deaktiviert, das sie hier nicht richtig funktioniert.
 # **14.4.0**
 - Das Programm verwendet nun kein JavaFX mehr.
 - Java JDK 25 wird mitgeliefert.
