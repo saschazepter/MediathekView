@@ -1,5 +1,7 @@
 package mediathek.x11;
 
+import org.apache.commons.lang3.SystemUtils;
+
 import java.io.IOException;
 import java.util.Locale;
 import java.util.Map;
@@ -11,6 +13,13 @@ public final class DesktopEnvDetector {
     }
 
     private DesktopEnvDetector() {
+    }
+
+    public static boolean trayIconSupported() {
+        if (!SystemUtils.IS_OS_LINUX)
+            return true;
+
+        return (detect() != DesktopEnvironment.KDE);
     }
 
     public static DesktopEnvironment detect() {
