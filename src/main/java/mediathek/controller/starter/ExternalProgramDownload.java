@@ -12,6 +12,7 @@ import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.MVInfoFile;
 import mediathek.tool.MVSubtitle;
 import mediathek.tool.MessageBus;
+import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -52,7 +53,14 @@ public class ExternalProgramDownload extends Thread {
         datenDownload = d;
         start = datenDownload.start;
         start.status = Start.STATUS_RUN;
-        file = new File(datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD_DATEINAME]);
+        var fileName = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD_DATEINAME];
+        if (!SystemUtils.IS_JAVA_24) {
+            //JDK 25+ workaround
+            //F*CK YOU ORACLE for JDK-8024695
+            if (fileName.isEmpty())
+                fileName = "ORACLE/DO/NOT/FUCK/AROUND/WITH/CORE/JAVA/CLASSES/WITHOUT/COMPATIBILITY/SWITCH";
+        }
+        file = new File(fileName);
         StarterClass.notifyStartEvent(datenDownload);
 
         try {
