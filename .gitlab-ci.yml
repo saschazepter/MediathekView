@@ -4,7 +4,7 @@ variables:
   MAVEN_OPTS: "-Djava.awt.headless=true"
   MAVEN_CLI_OPTS: "-B -Dorg.slf4j.simpleLogger.log.org.apache.maven.cli.transfer.Slf4jMavenTransferListener=warn"
 
-image: maven:3.9.11-eclipse-temurin-25
+image: maven:3.9.11-eclipse-temurin-24
 
 
 cache:
@@ -25,7 +25,7 @@ default:
     - ssh-keyscan -p 60002 dw2.mvorg.de >> ~/.ssh/known_hosts
     - ssh-keyscan -p 60002 116.202.81.23 >> ~/.ssh/known_hosts
     - chmod 644 ~/.ssh/known_hosts
-    - wget -q https://download-gcdn.ej-technologies.com/install4j/install4j_unix_11_0_4.tar.gz -O install4j.tar.gz
+    - wget -q https://download-gcdn.ej-technologies.com/install4j/install4j_unix_11_0_5.tar.gz -O install4j.tar.gz
     - tar -zxf install4j.tar.gz
     - java -version
     - ${INSTALL4J_JAVA_HOME}/bin/java -version
@@ -41,13 +41,14 @@ stages:
   - deploy-nightly-linarm
   - deploy-lin
   - deploy-linarm
-  - deploy-win
+  # - deploy-win
 
 Build and Deploy nightly Linux:
   stage: deploy-nightly-lin
   script:
     - mvn -B package -Plinux_64bit,install4j $MAVEN_CLI_OPTS
     - echo "Baue AppImage"
+    - /skripte/gpg.sh
     - scripte/appimage.sh nightly
     - /skripte/deploy.sh nightly linux $CI_COMMIT_SHA
   rules:
@@ -66,6 +67,7 @@ Build and Deploy Linux:
   script:
     - mvn -B package -Plinux_64bit,install4j $MAVEN_CLI_OPTS
     - echo "Baue AppImage"
+    - /skripte/gpg.sh
     - scripte/appimage.sh release
     - /skripte/deploy.sh release linux
   rules:
@@ -79,10 +81,10 @@ Build and Deploy Linux ARM:
   rules:
     - if: $CI_COMMIT_TAG
 
-Build and Deploy Windows:
-  stage: deploy-win
-  script:
-    - mvn -B package -P!linux_64bit,windows_64bit,install4j $MAVEN_CLI_OPTS
-    - /skripte/deploy.sh release win
-  rules:
-    - if: $CI_COMMIT_TAG
+# Build and Deploy Windows:
+#   stage: deploy-win
+#   script:
+#     - mvn -B package -P!linux_64bit,windows_64bit,install4j $MAVEN_CLI_OPTS
+#     - /skripte/deploy.sh release win
+#   rules:
+#     - if: $CI_COMMIT_TAG
