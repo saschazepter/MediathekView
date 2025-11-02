@@ -1,5 +1,6 @@
 # **14.5.0**
 - **BUGFIX(Linux):** Tray-Icon Funktion wird für KDE deaktiviert, das sie hier nicht richtig funktioniert.
+- **BUGFIX:** Workaround für Oracle JDK-8024695 eingebaut. Dies verhinderte das korrekte Abspielen von Filmen.
 
 # **14.4.2**
 - **BUGFIX(macOS):** Es wird keine exception mehr beim schreiben nicht-existenter Finder-Comments geworfen. 

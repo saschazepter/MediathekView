@@ -93,7 +93,7 @@
         <annotations.version>26.0.2</annotations.version>
         <commons-configuration2.version>2.12.0</commons-configuration2.version>
         <commons-io.version>2.20.0</commons-io.version>
-        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <commons-lang3.version>3.19.0</commons-lang3.version>
         <coroutines.version>1.10.2</coroutines.version>
         <dd-plist.version>1.28</dd-plist.version>
         <flatlaf.version>3.6.1</flatlaf.version>
