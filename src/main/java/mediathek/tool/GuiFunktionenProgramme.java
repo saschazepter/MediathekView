@@ -346,16 +346,25 @@ public class GuiFunktionenProgramme {
     }
 
     public static boolean checkPrefix(@NotNull String str, @NotNull String uurl) {
-        return praefixTesten(str, uurl, true);
+        boolean praefix = true;
+
+        return praefixTesten(str, uurl, praefix);
     }
 
     public static boolean checkSuffix(@NotNull String str, @NotNull String uurl) {
-        return praefixTesten(str, uurl, false);
+        boolean praefix = false;
+
+        return praefixTesten(str, uurl, praefix);
     }
 
-    private static boolean praefixTesten(String str, String uurl, boolean praefix) {
-        //prüfen ob url beginnt/endet mit einem Argument in str
-        //wenn str leer dann true
+    /**
+     * Check if starts/ends with a specific string.
+     * @param str the search string.
+     * @param uurl the url to check.
+     * @param praefix check prefix or suffix.
+     * @return true if found.
+     */
+    protected static boolean praefixTesten(String str, String uurl, boolean praefix) {
         if (str.isEmpty())
             return true;
 
