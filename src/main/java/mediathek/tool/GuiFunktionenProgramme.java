@@ -216,22 +216,22 @@ public class GuiFunktionenProgramme {
      */
     public static Path findExecutableOnPath(String name) {
         var exeString = name;
-        if (SystemUtils.IS_OS_WINDOWS)
-            exeString += ".exe";
 
         var path = System.getenv("PATH");
         path = path + File.pathSeparatorChar + getBinaryPath().toAbsolutePath();
+
         if (SystemUtils.IS_OS_WINDOWS) {
+            exeString += ".exe";
+
             // add VLC "standard" path to path logic on windows
             path += File.pathSeparatorChar + "C:\\Program Files\\VideoLAN\\VLC";
-        }
-        // on windows (mostly during coding) binaries do only exist in res\bin directory :(
-        if (SystemUtils.IS_OS_WINDOWS)
+            // on windows (mostly during coding) binaries do only exist in res\bin directory :(
             path = path + File.pathSeparatorChar +  getResBinaryPath().toAbsolutePath();
+        }
 
         for (String dirname : path.split(File.pathSeparator)) {
             File file = new File(dirname, exeString);
-            if (file.isFile() /*&& file.canExecute()*/) {
+            if (file.isFile()) {
                 return file.toPath();
             }
         }
