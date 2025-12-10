@@ -415,7 +415,7 @@ public class GuiFunktionenProgramme {
      * @param uurl the url to check.
      * @return true if found.
      */
-    public static boolean checkSuffix(@NotNull String str, @NotNull String uurl) {
+    protected static boolean checkSuffixOld(@NotNull String str, @NotNull String uurl) {
         if (str.isEmpty())
             return true;
 
@@ -437,41 +437,37 @@ public class GuiFunktionenProgramme {
         return ret;
     }
 
-    /**
-     * Check if starts/ends with a specific string.
-     * @param str the search string.
-     * @param uurl the url to check.
-     * @param praefix check prefix or suffix.
-     * @return true if found.
-     */
-    protected static boolean praefixTesten(String str, String uurl, boolean praefix) {
-        if (str.isEmpty())
+    public static boolean checkSuffix(@NotNull String suffixes, @NotNull String url) {
+        if (suffixes.isEmpty()) {
             return true;
+        }
 
-        boolean ret = false;
-        String url = uurl.toLowerCase();
-        String s1 = "";
-        for (int i = 0; i < str.length(); ++i) {
-            if (str.charAt(i) != ',') {
-                s1 += str.charAt(i);
-            }
-            if (str.charAt(i) == ',' || i >= str.length() - 1) {
-                if (praefix) {
-                    //Präfix prüfen
-                    if (url.startsWith(s1.toLowerCase())) {
-                        ret = true;
-                        break;
+        final String lowerUrl = url.toLowerCase();
+        final String lowerSuffixes = suffixes.toLowerCase();
+
+        final int urlLen = lowerUrl.length();
+        final int suffixesLen = lowerSuffixes.length();
+
+        int tokenStart = 0;
+
+        for (int i = 0; i <= suffixesLen; i++) {
+            if (i == suffixesLen || lowerSuffixes.charAt(i) == ',') {
+                int tokenLen = i - tokenStart;
+
+                if (tokenLen > 0) {
+                    if (tokenLen <= urlLen) {
+                        int urlStart = urlLen - tokenLen;
+                        if (lowerUrl.regionMatches(urlStart, lowerSuffixes, tokenStart, tokenLen)) {
+                            return true;
+                        }
                     }
                 }
-                else //Suffix prüfen
-                    if (url.endsWith(s1.toLowerCase())) {
-                        ret = true;
-                        break;
-                    }
-                s1 = "";
+
+                tokenStart = i + 1;
             }
         }
-        return ret;
+
+        return false;
     }
 
     /**

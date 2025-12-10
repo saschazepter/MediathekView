@@ -46,9 +46,20 @@ class GuiFunktionenProgrammeTest {
 
     @Test
     void checkSuffix() {
+        assertTrue(GuiFunktionenProgramme.checkSuffixOld("mp4", URL));
+        assertFalse(GuiFunktionenProgramme.checkSuffixOld("m4a", URL));
+        assertTrue(GuiFunktionenProgramme.checkSuffixOld("mp4,mp3,m4v,flv,m4a", URL));
+        assertFalse(GuiFunktionenProgramme.checkSuffixOld("hurz,json,dat", URL));
+
         assertTrue(GuiFunktionenProgramme.checkSuffix("mp4", URL));
         assertFalse(GuiFunktionenProgramme.checkSuffix("m4a", URL));
         assertTrue(GuiFunktionenProgramme.checkSuffix("mp4,mp3,m4v,flv,m4a", URL));
         assertFalse(GuiFunktionenProgramme.checkSuffix("hurz,json,dat", URL));
+
+        assertEquals(GuiFunktionenProgramme.checkSuffixOld("mp4", URL), GuiFunktionenProgramme.checkSuffix("mp4", URL));
+        assertEquals(GuiFunktionenProgramme.checkSuffixOld("m4a", URL), GuiFunktionenProgramme.checkSuffix("m4a", URL));
+        assertEquals(GuiFunktionenProgramme.checkSuffixOld("mp4,mp3,m4v,flv,m4a", URL), GuiFunktionenProgramme.checkSuffix("mp4,mp3,m4v,flv,m4a", URL));
+        assertEquals(GuiFunktionenProgramme.checkSuffixOld("hurz,json,dat", URL), GuiFunktionenProgramme.checkSuffix("hurz,json,dat", URL));
+
     }
 }
