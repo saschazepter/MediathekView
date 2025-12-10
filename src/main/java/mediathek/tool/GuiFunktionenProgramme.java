@@ -346,8 +346,38 @@ public class GuiFunktionenProgramme {
     }
 
     /**
+     * Check if starts with a specific string.
+     * @param str the search string.
+     * @param uurl the url to check.
+     * @return true if found.
+     */
+    protected static boolean checkPrefixOld(@NotNull String str, @NotNull String uurl) {
+        if (str.isEmpty())
+            return true;
+
+        boolean ret = false;
+        String url = uurl.toLowerCase();
+        String s1 = "";
+        for (int i = 0; i < str.length(); ++i) {
+            if (str.charAt(i) != ',') {
+                s1 += str.charAt(i);
+            }
+            if (str.charAt(i) == ',' || i >= str.length() - 1) {
+                //Präfix prüfen
+                if (url.startsWith(s1.toLowerCase())) {
+                    ret = true;
+                    break;
+                }
+                s1 = "";
+            }
+        }
+        return ret;
+    }
+
+    /**
      * Check if {@code url} starts with any of the comma-separated prefixes in {@code prefixes}.
      * Matching is case-insensitive.
+     *
      * Semantics:
      * - Empty {@code prefixes} -> returns true.
      * - Otherwise: return true if {@code url} starts with at least one prefix.
@@ -357,17 +387,21 @@ public class GuiFunktionenProgramme {
             return true;
         }
 
-        final String lowerUrl = url.toLowerCase();
-        final String lowerPrefixes = prefixes.toLowerCase();
+        final String lowerUrl       = url.toLowerCase();
+        final String lowerPrefixes  = prefixes.toLowerCase();
 
         final int prefixesLen = lowerPrefixes.length();
         int tokenStart = 0;
 
+        // Single pass over the comma-separated list.
         for (int i = 0; i <= prefixesLen; i++) {
+            // Treat end-of-string like a comma separator.
             if (i == prefixesLen || lowerPrefixes.charAt(i) == ',') {
-                if (i > tokenStart) {
+                // [tokenStart, i) is the current prefix token (may be empty).
+                if (i > tokenStart) {  // ignore empty segments such as ",," or leading/trailing commas
                     final int tokenLen = i - tokenStart;
 
+                    // Quick length check to avoid unnecessary regionMatches if prefix is longer than url.
                     if (tokenLen <= lowerUrl.length()
                             && lowerUrl.regionMatches(0, lowerPrefixes, tokenStart, tokenLen)) {
                         return true;
