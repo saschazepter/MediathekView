@@ -28,7 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
-public final class MacVlcLocator {
+public final class MacMultimediaPlayerLocator {
 
     private static final Linker LINKER = Linker.nativeLinker();
     private static final int kCFStringEncodingUTF8 = 0x08000100;
@@ -45,15 +45,11 @@ public final class MacVlcLocator {
     static {
         Arena global = Arena.global();
 
-        SymbolLookup coreFoundation =
-                SymbolLookup.libraryLookup(
-                        "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
-                        global);
+        var coreFoundation =
+                SymbolLookup.libraryLookup("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation", global);
 
-        SymbolLookup coreServices =
-                SymbolLookup.libraryLookup(
-                        "/System/Library/Frameworks/CoreServices.framework/CoreServices",
-                        global);
+        var coreServices =
+                SymbolLookup.libraryLookup("/System/Library/Frameworks/CoreServices.framework/CoreServices", global);
 
         try {
             CFStringCreateWithCString = LINKER.downcallHandle(
@@ -65,8 +61,7 @@ public final class MacVlcLocator {
                             ValueLayout.JAVA_INT
                     ));
 
-            CFStringGetCString = LINKER.downcallHandle(
-                    coreFoundation.find("CFStringGetCString").orElseThrow(),
+            CFStringGetCString = LINKER.downcallHandle(coreFoundation.find("CFStringGetCString").orElseThrow(),
                     FunctionDescriptor.of(
                             ValueLayout.JAVA_INT,
                             ValueLayout.ADDRESS,
@@ -75,8 +70,7 @@ public final class MacVlcLocator {
                             ValueLayout.JAVA_INT
                     ));
 
-            CFRelease = LINKER.downcallHandle(
-                    coreFoundation.find("CFRelease").orElseThrow(),
+            CFRelease = LINKER.downcallHandle(coreFoundation.find("CFRelease").orElseThrow(),
                     FunctionDescriptor.ofVoid(ValueLayout.ADDRESS));
 
             LSCopyApplicationURLsForBundleIdentifier = LINKER.downcallHandle(
@@ -87,15 +81,13 @@ public final class MacVlcLocator {
                             ValueLayout.ADDRESS
                     ));
 
-            CFArrayGetCount = LINKER.downcallHandle(
-                    coreFoundation.find("CFArrayGetCount").orElseThrow(),
+            CFArrayGetCount = LINKER.downcallHandle(coreFoundation.find("CFArrayGetCount").orElseThrow(),
                     FunctionDescriptor.of(
                             ValueLayout.JAVA_LONG,
                             ValueLayout.ADDRESS
                     ));
 
-            CFArrayGetValueAtIndex = LINKER.downcallHandle(
-                    coreFoundation.find("CFArrayGetValueAtIndex").orElseThrow(),
+            CFArrayGetValueAtIndex = LINKER.downcallHandle(coreFoundation.find("CFArrayGetValueAtIndex").orElseThrow(),
                     FunctionDescriptor.of(
                             ValueLayout.ADDRESS,
                             ValueLayout.ADDRESS,
@@ -115,7 +107,15 @@ public final class MacVlcLocator {
         }
     }
 
-    private MacVlcLocator() {
+    private MacMultimediaPlayerLocator() {
+    }
+
+    public static Optional<Path> findIinaPlayer() {
+        return findAppBundle("com.colliderli.iina").map(p -> p.resolve("Contents/MacOS/iina"));
+    }
+
+    public static Optional<Path> findVlcPlayer() {
+        return findAppBundle("org.videolan.vlc").map(p -> p.resolve("Contents/MacOS/VLC"));
     }
 
     /**
@@ -123,13 +123,13 @@ public final class MacVlcLocator {
      *
      * @return Optional<Path> to the VLC.app bundle.
      */
-    public static Optional<Path> findVlcAppBundle() {
+    private static Optional<Path> findAppBundle(String bundleId) {
         if (!SystemUtils.IS_OS_MAC_OSX) {
             return Optional.empty();
         }
 
         try (Arena arena = Arena.ofConfined()) {
-            MemorySegment cBundleId = arena.allocateFrom("org.videolan.vlc");
+            var cBundleId = arena.allocateFrom(bundleId);
             var cfBundleId = (MemorySegment) CFStringCreateWithCString.invoke(
                     MemorySegment.NULL, cBundleId, kCFStringEncodingUTF8);
             if (cfBundleId.equals(MemorySegment.NULL)) {
