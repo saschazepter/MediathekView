@@ -377,7 +377,6 @@ public class GuiFunktionenProgramme {
     /**
      * Check if {@code url} starts with any of the comma-separated prefixes in {@code prefixes}.
      * Matching is case-insensitive.
-     *
      * Semantics:
      * - Empty {@code prefixes} -> returns true.
      * - Otherwise: return true if {@code url} starts with at least one prefix.
@@ -387,21 +386,17 @@ public class GuiFunktionenProgramme {
             return true;
         }
 
-        final String lowerUrl       = url.toLowerCase();
-        final String lowerPrefixes  = prefixes.toLowerCase();
+        final String lowerUrl = url.toLowerCase();
+        final String lowerPrefixes = prefixes.toLowerCase();
 
         final int prefixesLen = lowerPrefixes.length();
         int tokenStart = 0;
 
-        // Single pass over the comma-separated list.
         for (int i = 0; i <= prefixesLen; i++) {
-            // Treat end-of-string like a comma separator.
             if (i == prefixesLen || lowerPrefixes.charAt(i) == ',') {
-                // [tokenStart, i) is the current prefix token (may be empty).
-                if (i > tokenStart) {  // ignore empty segments such as ",," or leading/trailing commas
+                if (i > tokenStart) {
                     final int tokenLen = i - tokenStart;
 
-                    // Quick length check to avoid unnecessary regionMatches if prefix is longer than url.
                     if (tokenLen <= lowerUrl.length()
                             && lowerUrl.regionMatches(0, lowerPrefixes, tokenStart, tokenLen)) {
                         return true;
