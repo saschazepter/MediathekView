@@ -345,33 +345,41 @@ public class GuiFunktionenProgramme {
         return new File(destDir, internalPathToEntry);
     }
 
-    public static boolean praefixTesten(String str, String uurl, boolean praefix) {
+    public static boolean checkPrefix(@NotNull String str, @NotNull String uurl) {
+        return praefixTesten(str, uurl, true);
+    }
+
+    public static boolean checkSuffix(@NotNull String str, @NotNull String uurl) {
+        return praefixTesten(str, uurl, false);
+    }
+
+    private static boolean praefixTesten(String str, String uurl, boolean praefix) {
         //prüfen ob url beginnt/endet mit einem Argument in str
         //wenn str leer dann true
+        if (str.isEmpty())
+            return true;
+
         boolean ret = false;
         String url = uurl.toLowerCase();
         String s1 = "";
-        if (str.isEmpty()) {
-            ret = true;
-        } else {
-            for (int i = 0; i < str.length(); ++i) {
-                if (str.charAt(i) != ',') {
-                    s1 += str.charAt(i);
+        for (int i = 0; i < str.length(); ++i) {
+            if (str.charAt(i) != ',') {
+                s1 += str.charAt(i);
+            }
+            if (str.charAt(i) == ',' || i >= str.length() - 1) {
+                if (praefix) {
+                    //Präfix prüfen
+                    if (url.startsWith(s1.toLowerCase())) {
+                        ret = true;
+                        break;
+                    }
                 }
-                if (str.charAt(i) == ',' || i >= str.length() - 1) {
-                    if (praefix) {
-                        //Präfix prüfen
-                        if (url.startsWith(s1.toLowerCase())) {
-                            ret = true;
-                            break;
-                        }
-                    } else //Suffix prüfen
-                        if (url.endsWith(s1.toLowerCase())) {
-                            ret = true;
-                            break;
-                        }
-                    s1 = "";
-                }
+                else //Suffix prüfen
+                    if (url.endsWith(s1.toLowerCase())) {
+                        ret = true;
+                        break;
+                    }
+                s1 = "";
             }
         }
         return ret;
