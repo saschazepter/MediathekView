@@ -31,20 +31,14 @@ class GuiFunktionenProgrammeTest {
     void checkPrefix() {
         assertTrue(GuiFunktionenProgramme.checkPrefix("http", URL));
         assertFalse(GuiFunktionenProgramme.checkPrefix("hurz", URL));
+
+        assertTrue(GuiFunktionenProgramme.checkPrefix2("http", URL));
+        assertFalse(GuiFunktionenProgramme.checkPrefix2("hurz", URL));
     }
 
     @Test
     void checkSuffix() {
         assertTrue(GuiFunktionenProgramme.checkSuffix("mp4,mp3,m4v,flv,m4a", URL));
         assertTrue(GuiFunktionenProgramme.checkSuffix("hurz,mp4,mp3,m4v,flv,m4a", URL));
-    }
-
-    @Test
-    void praefixTesten() {
-        assertTrue(GuiFunktionenProgramme.praefixTesten("http", URL, true));
-        assertFalse(GuiFunktionenProgramme.praefixTesten("hurz", URL, true));
-
-        assertTrue(GuiFunktionenProgramme.praefixTesten("mp4,mp3,m4v,flv,m4a", URL, false));
-        assertTrue(GuiFunktionenProgramme.praefixTesten("hurz,mp4,mp3,m4v,flv,m4a", URL, false));
     }
 }
