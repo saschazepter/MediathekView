@@ -42,7 +42,9 @@ class GuiFunktionenProgrammeTest {
 
     @Test
     void checkSuffix() {
+        assertTrue(GuiFunktionenProgramme.checkSuffix("mp4", URL));
+        assertFalse(GuiFunktionenProgramme.checkSuffix("m4a", URL));
         assertTrue(GuiFunktionenProgramme.checkSuffix("mp4,mp3,m4v,flv,m4a", URL));
-        assertTrue(GuiFunktionenProgramme.checkSuffix("hurz,mp4,mp3,m4v,flv,m4a", URL));
+        assertFalse(GuiFunktionenProgramme.checkSuffix("hurz,json,dat", URL));
     }
 }
