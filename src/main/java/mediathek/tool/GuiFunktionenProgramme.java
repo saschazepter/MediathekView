@@ -351,7 +351,7 @@ public class GuiFunktionenProgramme {
      * @param uurl the url to check.
      * @return true if found.
      */
-    public static boolean checkPrefix(@NotNull String str, @NotNull String uurl) {
+    protected static boolean checkPrefixOld(@NotNull String str, @NotNull String uurl) {
         if (str.isEmpty())
             return true;
 
@@ -382,7 +382,7 @@ public class GuiFunktionenProgramme {
      * - Empty {@code prefixes} -> returns true.
      * - Otherwise: return true if {@code url} starts with at least one prefix.
      */
-    public static boolean checkPrefix2(@NotNull String prefixes, @NotNull String url) {
+    public static boolean checkPrefix(@NotNull String prefixes, @NotNull String url) {
         if (prefixes.isEmpty()) {
             return true;
         }

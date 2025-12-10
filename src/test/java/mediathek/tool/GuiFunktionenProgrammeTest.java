@@ -29,15 +29,15 @@ class GuiFunktionenProgrammeTest {
 
     @Test
     void checkPrefix() {
+        assertTrue(GuiFunktionenProgramme.checkPrefixOld("http", URL));
+        assertFalse(GuiFunktionenProgramme.checkPrefixOld("hurz", URL));
+        assertTrue(GuiFunktionenProgramme.checkPrefixOld("http, https", URL));
+        assertFalse(GuiFunktionenProgramme.checkPrefixOld("hurz, hurzs", URL));
+
         assertTrue(GuiFunktionenProgramme.checkPrefix("http", URL));
         assertFalse(GuiFunktionenProgramme.checkPrefix("hurz", URL));
         assertTrue(GuiFunktionenProgramme.checkPrefix("http, https", URL));
         assertFalse(GuiFunktionenProgramme.checkPrefix("hurz, hurzs", URL));
-
-        assertTrue(GuiFunktionenProgramme.checkPrefix2("http", URL));
-        assertFalse(GuiFunktionenProgramme.checkPrefix2("hurz", URL));
-        assertTrue(GuiFunktionenProgramme.checkPrefix2("http, https", URL));
-        assertFalse(GuiFunktionenProgramme.checkPrefix2("hurz, hurzs", URL));
     }
 
     @Test
