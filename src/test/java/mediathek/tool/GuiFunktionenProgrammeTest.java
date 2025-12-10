@@ -20,7 +20,8 @@ package mediathek.tool;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class GuiFunktionenProgrammeTest {
 
@@ -28,38 +29,17 @@ class GuiFunktionenProgrammeTest {
 
     @Test
     void checkPrefix() {
-        assertTrue(GuiFunktionenProgramme.checkPrefixOld("http", URL));
-        assertFalse(GuiFunktionenProgramme.checkPrefixOld("hurz", URL));
-        assertTrue(GuiFunktionenProgramme.checkPrefixOld("http, https", URL));
-        assertFalse(GuiFunktionenProgramme.checkPrefixOld("hurz, hurzs", URL));
-
         assertTrue(GuiFunktionenProgramme.checkPrefix("http", URL));
         assertFalse(GuiFunktionenProgramme.checkPrefix("hurz", URL));
         assertTrue(GuiFunktionenProgramme.checkPrefix("http, https", URL));
         assertFalse(GuiFunktionenProgramme.checkPrefix("hurz, hurzs", URL));
-
-        assertEquals(GuiFunktionenProgramme.checkPrefixOld("http", URL), GuiFunktionenProgramme.checkPrefix("http", URL));
-        assertEquals(GuiFunktionenProgramme.checkPrefixOld("hurz", URL), GuiFunktionenProgramme.checkPrefix("hurz", URL));
-        assertEquals(GuiFunktionenProgramme.checkPrefixOld("http, https", URL), GuiFunktionenProgramme.checkPrefix("http, https", URL));
-        assertEquals(GuiFunktionenProgramme.checkPrefixOld("hurz, hurzs", URL), GuiFunktionenProgramme.checkPrefix("hurz, hurzs", URL));
     }
 
     @Test
     void checkSuffix() {
-        assertTrue(GuiFunktionenProgramme.checkSuffixOld("mp4", URL));
-        assertFalse(GuiFunktionenProgramme.checkSuffixOld("m4a", URL));
-        assertTrue(GuiFunktionenProgramme.checkSuffixOld("mp4,mp3,m4v,flv,m4a", URL));
-        assertFalse(GuiFunktionenProgramme.checkSuffixOld("hurz,json,dat", URL));
-
         assertTrue(GuiFunktionenProgramme.checkSuffix("mp4", URL));
         assertFalse(GuiFunktionenProgramme.checkSuffix("m4a", URL));
         assertTrue(GuiFunktionenProgramme.checkSuffix("mp4,mp3,m4v,flv,m4a", URL));
         assertFalse(GuiFunktionenProgramme.checkSuffix("hurz,json,dat", URL));
-
-        assertEquals(GuiFunktionenProgramme.checkSuffixOld("mp4", URL), GuiFunktionenProgramme.checkSuffix("mp4", URL));
-        assertEquals(GuiFunktionenProgramme.checkSuffixOld("m4a", URL), GuiFunktionenProgramme.checkSuffix("m4a", URL));
-        assertEquals(GuiFunktionenProgramme.checkSuffixOld("mp4,mp3,m4v,flv,m4a", URL), GuiFunktionenProgramme.checkSuffix("mp4,mp3,m4v,flv,m4a", URL));
-        assertEquals(GuiFunktionenProgramme.checkSuffixOld("hurz,json,dat", URL), GuiFunktionenProgramme.checkSuffix("hurz,json,dat", URL));
-
     }
 }

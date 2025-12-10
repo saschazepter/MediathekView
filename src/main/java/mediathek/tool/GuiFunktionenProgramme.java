@@ -346,35 +346,6 @@ public class GuiFunktionenProgramme {
     }
 
     /**
-     * Check if starts with a specific string.
-     * @param str the search string.
-     * @param uurl the url to check.
-     * @return true if found.
-     */
-    protected static boolean checkPrefixOld(@NotNull String str, @NotNull String uurl) {
-        if (str.isEmpty())
-            return true;
-
-        boolean ret = false;
-        String url = uurl.toLowerCase();
-        String s1 = "";
-        for (int i = 0; i < str.length(); ++i) {
-            if (str.charAt(i) != ',') {
-                s1 += str.charAt(i);
-            }
-            if (str.charAt(i) == ',' || i >= str.length() - 1) {
-                //Präfix prüfen
-                if (url.startsWith(s1.toLowerCase())) {
-                    ret = true;
-                    break;
-                }
-                s1 = "";
-            }
-        }
-        return ret;
-    }
-
-    /**
      * Check if {@code url} starts with any of the comma-separated prefixes in {@code prefixes}.
      * Matching is case-insensitive.
      * Semantics:
@@ -407,34 +378,6 @@ public class GuiFunktionenProgramme {
         }
 
         return false;
-    }
-
-    /**
-     * Check if ends with a specific string.
-     * @param str the search string.
-     * @param uurl the url to check.
-     * @return true if found.
-     */
-    protected static boolean checkSuffixOld(@NotNull String str, @NotNull String uurl) {
-        if (str.isEmpty())
-            return true;
-
-        boolean ret = false;
-        String url = uurl.toLowerCase();
-        String s1 = "";
-        for (int i = 0; i < str.length(); ++i) {
-            if (str.charAt(i) != ',') {
-                s1 += str.charAt(i);
-            }
-            if (str.charAt(i) == ',' || i >= str.length() - 1) {
-                if (url.endsWith(s1.toLowerCase())) {
-                    ret = true;
-                    break;
-                }
-                s1 = "";
-            }
-        }
-        return ret;
     }
 
     public static boolean checkSuffix(@NotNull String suffixes, @NotNull String url) {
