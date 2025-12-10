@@ -20,8 +20,7 @@ package mediathek.tool;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class GuiFunktionenProgrammeTest {
 
@@ -38,6 +37,11 @@ class GuiFunktionenProgrammeTest {
         assertFalse(GuiFunktionenProgramme.checkPrefix("hurz", URL));
         assertTrue(GuiFunktionenProgramme.checkPrefix("http, https", URL));
         assertFalse(GuiFunktionenProgramme.checkPrefix("hurz, hurzs", URL));
+
+        assertEquals(GuiFunktionenProgramme.checkPrefixOld("http", URL), GuiFunktionenProgramme.checkPrefix("http", URL));
+        assertEquals(GuiFunktionenProgramme.checkPrefixOld("hurz", URL), GuiFunktionenProgramme.checkPrefix("hurz", URL));
+        assertEquals(GuiFunktionenProgramme.checkPrefixOld("http, https", URL), GuiFunktionenProgramme.checkPrefix("http, https", URL));
+        assertEquals(GuiFunktionenProgramme.checkPrefixOld("hurz, hurzs", URL), GuiFunktionenProgramme.checkPrefix("hurz, hurzs", URL));
     }
 
     @Test
