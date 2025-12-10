@@ -30,6 +30,16 @@ public class GuiFunktionenProgramme {
 
     private static final ArrayList<String> winPfade = new ArrayList<>();
     private static final Logger logger = LogManager.getLogger();
+    private static final String PFAD_LINUX_VLC = "/usr/bin/vlc";
+    private static final String PFAD_MAC_VLC = "/Applications/VLC.app/Contents/MacOS/VLC";
+    private static final String PFAD_WIN = "\\VideoLAN\\VLC\\vlc.exe";
+    /**
+     * Use another path var for VLC on windows. Introduced in Version 10.
+     */
+    private static final String ENV_WINDOWS_PATH_VLC = "PATH_VLC";
+    private static final String PFAD_LINUX_FFMPEG = "/usr/bin/ffmpeg";
+    private static final String PFAD_MAC_FFMPEG = "bin/ffmpeg";
+    private static final String PFAD_WINDOWS_FFMPEG = "bin\\ffmpeg.exe";
 
     private static void setWinProgPfade() {
         String pfad;
@@ -68,7 +78,8 @@ public class GuiFunktionenProgramme {
                 final var jarFile = new File(cS.getLocation().toURI().getPath());
                 final var jarDir = jarFile.getParentFile().getPath();
                 propFile = new File(jarDir + File.separator + pFilePath);
-            } catch (Exception ignored) {
+            }
+            catch (Exception ignored) {
             }
         }
 
@@ -78,10 +89,6 @@ public class GuiFunktionenProgramme {
         }
         return s;
     }
-
-    private static final String PFAD_LINUX_VLC = "/usr/bin/vlc";
-    private static final String PFAD_MAC_VLC = "/Applications/VLC.app/Contents/MacOS/VLC";
-    private static final String PFAD_WIN = "\\VideoLAN\\VLC\\vlc.exe";
 
     /**
      * Liefert den Standardpfad für das entsprechende BS.
@@ -93,7 +100,7 @@ public class GuiFunktionenProgramme {
         String pfad = "";
         try {
             if (SystemUtils.IS_OS_LINUX) {
-                    pfad = PFAD_LINUX_VLC;
+                pfad = PFAD_LINUX_VLC;
             }
             else if (SystemUtils.IS_OS_MAC_OSX) {
                 pfad = PFAD_MAC_VLC;
@@ -108,20 +115,17 @@ public class GuiFunktionenProgramme {
                 }
             }
 
-            if (!new File(pfad).exists() && System.getenv("PATH_VLC") != null) {
-                pfad = System.getenv("PATH_VLC");
+            if (!new File(pfad).exists() && System.getenv(ENV_WINDOWS_PATH_VLC) != null) {
+                pfad = System.getenv(ENV_WINDOWS_PATH_VLC);
             }
             if (!new File(pfad).exists()) {
                 pfad = "";
             }
-        } catch (Exception ignore) {
+        }
+        catch (Exception ignore) {
         }
         return pfad;
     }
-
-    private static final String PFAD_LINUX_FFMPEG = "/usr/bin/ffmpeg";
-    private static final String PFAD_MAC_FFMPEG = "bin/ffmpeg";
-    private static final String PFAD_WINDOWS_FFMPEG = "bin\\ffmpeg.exe";
 
     /**
      * Liefert den Standardpfad für das entsprechende BS.
@@ -147,7 +151,8 @@ public class GuiFunktionenProgramme {
             if (!new File(pfad).exists()) {
                 pfad = "";
             }
-        } catch (Exception ignore) {
+        }
+        catch (Exception ignore) {
         }
         return pfad;
     }
@@ -185,7 +190,8 @@ public class GuiFunktionenProgramme {
                 MVMessageDialog.showMessageDialog(null, pSet.size() + " Programmset importiert!",
                         "Ok", JOptionPane.INFORMATION_MESSAGE);
 
-            } else {
+            }
+            else {
                 MVMessageDialog.showMessageDialog(null, "Die Datei wurde nicht importiert!",
                         "Fehler", JOptionPane.ERROR_MESSAGE);
 
@@ -195,6 +201,7 @@ public class GuiFunktionenProgramme {
 
     /**
      * Return the path to our binary directory.
+     *
      * @return the path to the bin directory.
      */
     public static Path getBinaryPath() {
@@ -203,6 +210,7 @@ public class GuiFunktionenProgramme {
 
     /**
      * On Windows exe files can also be located at res\bin...
+     *
      * @return return the path to res\bin directory.
      */
     public static Path getResBinaryPath() {
@@ -211,6 +219,7 @@ public class GuiFunktionenProgramme {
 
     /**
      * Search for an executable on PATH plus our bin directory.
+     *
      * @param name the executable name
      * @return the path INCLUDING the binary name.
      */
@@ -226,7 +235,13 @@ public class GuiFunktionenProgramme {
             // add VLC "standard" path to path logic on windows
             path += File.pathSeparatorChar + "C:\\Program Files\\VideoLAN\\VLC";
             // on windows (mostly during coding) binaries do only exist in res\bin directory :(
-            path = path + File.pathSeparatorChar +  getResBinaryPath().toAbsolutePath();
+            path = path + File.pathSeparatorChar + getResBinaryPath().toAbsolutePath();
+
+            // also check Version 10 MV path var
+            var vlcExtPathEnv = System.getenv(ENV_WINDOWS_PATH_VLC);
+            if (vlcExtPathEnv != null) {
+                path += File.pathSeparatorChar + vlcExtPathEnv;
+            }
         }
 
         for (String dirname : path.split(File.pathSeparator)) {
@@ -255,7 +270,8 @@ public class GuiFunktionenProgramme {
                         // und Tschüss
                         return false;
                     }
-                } else {
+                }
+                else {
                     try (FileInputStream in = new FileInputStream(datei);
                          FileOutputStream fOut = new FileOutputStream(GuiFunktionen.addsPfad(zielPfad, datei))) {
                         final byte[] buffer = new byte[64 * 1024];
@@ -264,7 +280,8 @@ public class GuiFunktionenProgramme {
                         }
                     }
                 }
-            } else {
+            }
+            else {
                 final Request request = new Request.Builder().url(datei).get()
                         .header("User-Agent", ApplicationConfiguration.getConfiguration().getString(ApplicationConfiguration.APPLICATION_USER_AGENT))
                         .get().build();
@@ -286,7 +303,8 @@ public class GuiFunktionenProgramme {
                                     // und Tschüss
                                     return false;
                                 }
-                            } else {
+                            }
+                            else {
                                 String file = GuiFunktionen.getDateiName(datei);
                                 File f = new File(GuiFunktionen.addsPfad(zielPfad, file));
                                 try (FileOutputStream fOut = new FileOutputStream(f)) {
@@ -299,7 +317,8 @@ public class GuiFunktionenProgramme {
                     }
                 }
             }
-        } catch (Exception ignored) {
+        }
+        catch (Exception ignored) {
         }
         return true;
     }
@@ -439,7 +458,8 @@ public class GuiFunktionenProgramme {
 //                    ret = true;
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             logger.error("checkPathWriteable()", e);
         }
 
