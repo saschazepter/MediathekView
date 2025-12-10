@@ -236,7 +236,9 @@ public class GuiFunktionenProgramme {
             path += File.pathSeparatorChar + "C:\\Program Files\\VideoLAN\\VLC";
             // on windows (mostly during coding) binaries do only exist in res\bin directory :(
             path = path + File.pathSeparatorChar + getResBinaryPath().toAbsolutePath();
+        }
 
+        if (SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_WINDOWS) {
             // also check Version 10 MV path var
             var vlcExtPathEnv = System.getenv(ENV_WINDOWS_PATH_VLC);
             if (vlcExtPathEnv != null) {
