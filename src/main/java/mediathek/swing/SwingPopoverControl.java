@@ -18,8 +18,6 @@
 
 package mediathek.swing;
 
-import org.apache.commons.lang3.SystemUtils;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -44,6 +42,7 @@ public final class SwingPopoverControl {
      * Distance between anchor and ARROW TIP (px).
      */
     private int gap = 3;
+    private int marginToScreen = 8;
 
     private Component currentAnchor;
     private Placement requestedPlacement = Placement.AUTO;
@@ -63,10 +62,6 @@ public final class SwingPopoverControl {
         contentHost.setBorder(new EmptyBorder(12, 14, 12, 14));
 
         bubble.add(contentHost, BorderLayout.CENTER);
-
-        if (!SystemUtils.IS_OS_WINDOWS) {
-            setDismissOnFocusLost(true); // wichtig für Wayland / macOS
-        }
     }
 
     // --- Window lifecycle -----------------------------------------------------
@@ -109,6 +104,11 @@ public final class SwingPopoverControl {
         });
     }
 
+    private static Rectangle getDefaultScreenBounds() {
+        return GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice().getDefaultConfiguration().getBounds();
+    }
+
     private static Rectangle getScreenBounds(Component c) {
         Point p = c.getLocationOnScreen(); // kann IllegalComponentStateException werfen, wenn nicht showing
         return new Rectangle(p.x, p.y, c.getWidth(), c.getHeight());
@@ -149,6 +149,10 @@ public final class SwingPopoverControl {
 
     public void setGap(int px) {
         this.gap = Math.max(0, px);
+    }
+
+    public void setMarginToScreen(int px) {
+        this.marginToScreen = Math.max(0, px);
     }
 
     public boolean isShowing() {
@@ -196,6 +200,10 @@ public final class SwingPopoverControl {
         window.requestFocusInWindow();
 
         SwingUtilities.invokeLater(() -> focusFirstComponent(contentHost));
+    }
+
+    public void toggle(Component anchor, JComponent content) {
+        toggle(anchor, content, Placement.BOTTOM);
     }
 
     public void toggle(Component anchor, JComponent content, Placement placement) {
@@ -260,7 +268,6 @@ public final class SwingPopoverControl {
         Rectangle screen = gc.getBounds();
         Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
 
-        final int marginToScreen = 8;
         Rectangle usable = new Rectangle(
                 screen.x + screenInsets.left + marginToScreen,
                 screen.y + screenInsets.top + marginToScreen,
@@ -336,6 +343,10 @@ public final class SwingPopoverControl {
         int x, y;
 
         switch (p) {
+            case BOTTOM -> {
+                y = anchor.y + anchor.height + gap - in.top;
+                x = (int) Math.round(anchor.getCenterX() - pop.width / 2.0);
+            }
             case TOP -> {
                 y = anchor.y - gap - (pop.height - in.bottom);
                 x = (int) Math.round(anchor.getCenterX() - pop.width / 2.0);
@@ -639,7 +650,7 @@ public final class SwingPopoverControl {
         }
     }
 
-    static void main() {
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
             try {
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -653,6 +664,7 @@ public final class SwingPopoverControl {
             frame.setLocationRelativeTo(null);
 
             SwingPopoverControl popover = new SwingPopoverControl();
+            popover.setDismissOnFocusLost(true); // wichtig für Wayland / macOS
 
             JButton btnAuto = new JButton("Popover AUTO");
             JButton btnRight = new JButton("Popover RIGHT");
