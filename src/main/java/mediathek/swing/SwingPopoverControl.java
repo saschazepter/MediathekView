@@ -22,38 +22,26 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.RoundRectangle2D;
-import java.awt.image.BufferedImage;
-import java.awt.image.ConvolveOp;
-import java.awt.image.Kernel;
 import java.util.Objects;
 
 public final class SwingPopoverControl {
 
-    public enum Placement {TOP, BOTTOM, LEFT, RIGHT, AUTO}
-
     private final JWindow window;
     private final Bubble bubble;
     private final JPanel contentHost;
-
     private AWTEventListener outsideClickListener;
     private KeyEventDispatcher escDispatcher;
-
-    private boolean dismissOnFocusLost = false;
-
+    private boolean dismissOnFocusLost;
     /**
      * Distance between anchor and ARROW TIP (px).
      */
     private int gap = 3;
-
     private int marginToScreen = 8;
-
     private Component currentAnchor;
     private Placement requestedPlacement = Placement.AUTO;
-
     private Window anchorTopLevelWindow;
     private ComponentListener topLevelMoveResizeListener;
     private HierarchyBoundsListener anchorHierarchyBoundsListener;
@@ -86,16 +74,134 @@ public final class SwingPopoverControl {
         });
     }
 
+    private static Rectangle getDefaultScreenBounds() {
+        return GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice().getDefaultConfiguration().getBounds();
+    }
+
+    private static Rectangle getScreenBounds(Component c) {
+        Point p = c.getLocationOnScreen();
+        return new Rectangle(p.x, p.y, c.getWidth(), c.getHeight());
+    }
+
+    private static Rectangle clamp(Rectangle r, Rectangle bounds) {
+        final int x = Math.clamp(r.x, bounds.x, bounds.x + bounds.width - r.width);
+        final int y = Math.clamp(r.y, bounds.y, bounds.y + bounds.height - r.height);
+        return new Rectangle(x, y, r.width, r.height);
+    }
+
+    private static void focusFirstComponent(Container root) {
+        Component focus = findFocusable(root);
+        if (focus != null)
+            focus.requestFocusInWindow();
+    }
+
+    private static Component findFocusable(Container c) {
+        for (Component child : c.getComponents()) {
+            if (child.isFocusable() && child.isEnabled() && child.isShowing())
+                return child;
+            if (child instanceof Container cc) {
+                Component nested = findFocusable(cc);
+                if (nested != null)
+                    return nested;
+            }
+        }
+        return null;
+    }
+
+    static void main() {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                //FlatDarkLaf.setup();
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
+            catch (Exception ignored) {
+            }
+
+            JFrame f = new JFrame("Popover Demo");
+            f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            f.setSize(640, 480);
+            f.setLocationRelativeTo(null);
+
+            SwingPopoverControl pop = new SwingPopoverControl();
+            //pop.setDismissOnFocusLost(true);
+
+            JButton btnAuto = new JButton("Toggle (AUTO)");
+            JButton btnRight = new JButton("Toggle (RIGHT)");
+            JButton btnNoShadow = new JButton("Toggle (no shadow)");
+
+            JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+            top.add(btnAuto);
+            top.add(btnRight);
+            top.add(btnNoShadow);
+
+            /*JTextArea info = new JTextArea(
+                    """
+                            Click the same button repeatedly: no hide->show flicker.
+                            Popover follows the anchor when moving the window.
+                            ESC or click outside closes it."""
+            );
+            info.setEditable(false);
+            info.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));*/
+
+            JPanel root = new JPanel(new BorderLayout());
+            root.add(top, BorderLayout.NORTH);
+            //root.add(new JScrollPane(info), BorderLayout.CENTER);
+
+            ActionListener show = e -> {
+                JPanel content = new JPanel(new BorderLayout(10, 10));
+                content.setOpaque(false);
+                content.add(new JLabel("Toggle behavior without flicker."),
+                        BorderLayout.NORTH);
+
+                JPanel form = new JPanel(new GridLayout(2, 2, 8, 8));
+                form.setOpaque(false);
+                form.add(new JLabel("Name:"));
+                form.add(new JTextField(14));
+                form.add(new JLabel("Tag:"));
+                form.add(new JTextField(14));
+                content.add(form, BorderLayout.CENTER);
+
+                /*JButton ok = new JButton("OK");
+                ok.addActionListener(x -> pop.hide());
+                JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
+                actions.setOpaque(false);
+                actions.add(ok);
+                content.add(actions, BorderLayout.SOUTH);*/
+
+                var source = (Component) e.getSource();
+                if (source == btnNoShadow) {
+                    pop.toggle(source, content);
+                }
+                else {
+                    Placement p;
+                    if (source == btnRight)
+                        p = Placement.RIGHT;
+                    else
+                        p = Placement.AUTO;
+                    pop.toggle(source, content, p);
+                }
+            };
+
+            btnAuto.addActionListener(show);
+            btnRight.addActionListener(show);
+            btnNoShadow.addActionListener(show);
+
+            f.setContentPane(root);
+            f.setVisible(true);
+        });
+    }
+
     public void setDismissOnFocusLost(boolean v) {
         this.dismissOnFocusLost = v;
     }
 
-    public void setGap(int px) {
-        this.gap = Math.max(0, px);
-    }
-
     public int getGap() {
         return gap;
+    }
+
+    public void setGap(int px) {
+        this.gap = Math.max(0, px);
     }
 
     public void setMarginToScreen(int px) {
@@ -104,41 +210,6 @@ public final class SwingPopoverControl {
 
     public boolean isShowing() {
         return window.isVisible();
-    }
-
-    public void setShadowEnabled(boolean enabled) {
-        bubble.setShadowEnabled(enabled);
-        if (window.isVisible()) {
-            window.pack();
-            reposition();
-        }
-        window.repaint();
-    }
-
-    public boolean isShadowEnabled() {
-        return bubble.isShadowEnabled();
-    }
-
-    public void setShadowRadius(int radiusPx) {
-        bubble.setShadowRadius(radiusPx);
-        if (window.isVisible()) {
-            window.pack();
-            reposition();
-        }
-        window.repaint();
-    }
-
-    public int getShadowRadius() {
-        return bubble.getShadowRadius();
-    }
-
-    public void setShadowAlpha(float alpha) {
-        bubble.setShadowAlpha(alpha);
-        window.repaint();
-    }
-
-    public float getShadowAlpha() {
-        return bubble.getShadowAlpha();
     }
 
     public void show(Component anchor, JComponent content, Placement placement) {
@@ -194,7 +265,8 @@ public final class SwingPopoverControl {
 
         if (isShowing() && currentAnchor == anchor) {
             hide();
-        } else {
+        }
+        else {
             show(anchor, content, placement);
         }
     }
@@ -284,7 +356,8 @@ public final class SwingPopoverControl {
         int reqV = pop.height + gap;
         int reqH = pop.width + gap;
 
-        record Cand(Placement p, int score, boolean fits) {}
+        record Cand(Placement p, int score, boolean fits) {
+        }
 
         Cand top = new Cand(Placement.TOP, spaceAbove - reqV, spaceAbove >= reqV);
         Cand bottom = new Cand(Placement.BOTTOM, spaceBelow - reqV, spaceBelow >= reqV);
@@ -349,42 +422,6 @@ public final class SwingPopoverControl {
             case RIGHT -> new Point2D.Double(0, ay - popoverBounds.y);
             default -> new Point2D.Double(ax - popoverBounds.x, 0);
         };
-    }
-
-    private static Rectangle getDefaultScreenBounds() {
-        return GraphicsEnvironment.getLocalGraphicsEnvironment()
-                .getDefaultScreenDevice().getDefaultConfiguration().getBounds();
-    }
-
-    private static Rectangle getScreenBounds(Component c) {
-        Point p = c.getLocationOnScreen();
-        return new Rectangle(p.x, p.y, c.getWidth(), c.getHeight());
-    }
-
-    private static Rectangle clamp(Rectangle r, Rectangle bounds) {
-        final int x = Math.clamp(r.x, bounds.x, bounds.x + bounds.width - r.width);
-        final int y = Math.clamp(r.y, bounds.y, bounds.y + bounds.height - r.height);
-        return new Rectangle(x, y, r.width, r.height);
-    }
-
-
-    private static void focusFirstComponent(Container root) {
-        Component focus = findFocusable(root);
-        if (focus != null)
-            focus.requestFocusInWindow();
-    }
-
-    private static Component findFocusable(Container c) {
-        for (Component child : c.getComponents()) {
-            if (child.isFocusable() && child.isEnabled() && child.isShowing())
-                return child;
-            if (child instanceof Container cc) {
-                Component nested = findFocusable(cc);
-                if (nested != null)
-                    return nested;
-            }
-        }
-        return null;
     }
 
     // tracking handlers (window move/resize, layout changes)
@@ -520,71 +557,27 @@ public final class SwingPopoverControl {
         }
     }
 
+    public enum Placement {TOP, BOTTOM, LEFT, RIGHT, AUTO}
+
     // Rendering
     private static final class Bubble extends JComponent {
-        private Placement placement = Placement.BOTTOM;
-
         private final int arrowH = 10;
-
-        private boolean shadowEnabled = false;
-        private int shadowRadius = 10;
-        private float shadowAlpha = 0.22f;
-
+        private Placement placement = Placement.BOTTOM;
         private Point2D arrowTarget = new Point2D.Double(60, 0);
 
-        private BufferedImage shadowImg;
-        private Dimension shadowForSize;
-        private Placement shadowForPlacement;
-        private Point2D shadowForArrowTarget;
-        private int shadowForRadius;
-        private float shadowForAlpha;
-        private boolean shadowForEnabled;
-
-        boolean isShadowEnabled() {
-            return shadowEnabled;
-        }
-
-        void setShadowEnabled(boolean enabled) {
-            if (this.shadowEnabled != enabled) {
-                this.shadowEnabled = enabled;
-                invalidateShadow();
-                revalidate();
-                repaint();
-            }
-        }
-
-        int getShadowRadius() {
-            return shadowRadius;
-        }
-
-        void setShadowRadius(int radiusPx) {
-            int r = Math.max(0, radiusPx);
-            if (this.shadowRadius != r) {
-                this.shadowRadius = r;
-                invalidateShadow();
-                revalidate();
-                repaint();
-            }
-        }
-
-        float getShadowAlpha() {
-            return shadowAlpha;
-        }
-
-        void setShadowAlpha(float alpha) {
-            float a = Math.max(0f, Math.min(1f, alpha));
-            if (this.shadowAlpha != a) {
-                this.shadowAlpha = a;
-                invalidateShadow();
-                repaint();
-            }
+        private static void appendArrow(Path2D path, Point2D a, Point2D tip, Point2D b) {
+            Path2D tri = new Path2D.Double();
+            tri.moveTo(a.getX(), a.getY());
+            tri.lineTo(tip.getX(), tip.getY());
+            tri.lineTo(b.getX(), b.getY());
+            tri.closePath();
+            path.append(tri, false);
         }
 
         void setPlacement(Placement p) {
             Placement np = (p == null) ? Placement.BOTTOM : p;
             if (np != placement) {
                 placement = np;
-                invalidateShadow();
             }
             revalidate();
             repaint();
@@ -593,28 +586,13 @@ public final class SwingPopoverControl {
         void setArrowTarget(Point2D p) {
             if (p != null) {
                 arrowTarget = p;
-                invalidateShadow();
                 repaint();
             }
         }
 
-        private int shadowPad() {
-            if (!shadowEnabled || shadowRadius <= 0 || shadowAlpha <= 0f)
-                return 0;
-            return shadowRadius + 2;
-        }
-
-        private void invalidateShadow() {
-            shadowImg = null;
-            shadowForSize = null;
-            shadowForPlacement = null;
-            shadowForArrowTarget = null;
-        }
-
         @Override
         public Insets getInsets() {
-            int sp = shadowPad();
-            int top = sp, left = sp, bottom = sp, right = sp;
+            int top = 0, left = 0, bottom = 0, right = 0;
             switch (placement) {
                 case TOP -> bottom += arrowH;
                 case BOTTOM -> top += arrowH;
@@ -656,10 +634,6 @@ public final class SwingPopoverControl {
 
                 Shape bubbleShape = makeBubbleShape(bubbleRect);
 
-                if (shadowEnabled && shadowRadius > 0 && shadowAlpha > 0f) {
-                    paintBlurShadow(g2, bubbleShape);
-                }
-
                 g2.setComposite(AlphaComposite.SrcOver);
                 g2.setColor(new Color(252, 252, 252, 245));
                 g2.fill(bubbleShape);
@@ -667,73 +641,10 @@ public final class SwingPopoverControl {
                 g2.setColor(new Color(0, 0, 0, 55));
                 g2.setStroke(new BasicStroke(1f));
                 g2.draw(bubbleShape);
-            } finally {
+            }
+            finally {
                 g2.dispose();
             }
-        }
-
-        private void paintBlurShadow(Graphics2D g2, Shape bubbleShape) {
-            Dimension sz = getSize();
-
-            boolean cacheOk =
-                    shadowImg != null
-                            && shadowForSize != null
-                            && shadowForSize.equals(sz)
-                            && shadowForPlacement == placement
-                            && shadowForArrowTarget != null
-                            && shadowForArrowTarget.getX() == arrowTarget.getX()
-                            && shadowForArrowTarget.getY() == arrowTarget.getY()
-                            && shadowForRadius == shadowRadius
-                            && shadowForAlpha == shadowAlpha
-                            && shadowForEnabled == shadowEnabled;
-
-            if (!cacheOk) {
-                shadowImg = renderShadowImage(sz.width, sz.height, bubbleShape);
-                shadowForSize = sz;
-                shadowForPlacement = placement;
-                shadowForArrowTarget = new Point2D.Double(arrowTarget.getX(), arrowTarget.getY());
-                shadowForRadius = shadowRadius;
-                shadowForAlpha = shadowAlpha;
-                shadowForEnabled = shadowEnabled;
-            }
-
-            g2.drawImage(shadowImg, 0, 0, null);
-        }
-
-        private BufferedImage renderShadowImage(int w, int h, Shape bubbleShape) {
-            BufferedImage mask = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D mg = mask.createGraphics();
-            try {
-                mg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                mg.setComposite(AlphaComposite.Src);
-                mg.setColor(new Color(0, 0, 0, Math.round(255 * shadowAlpha)));
-
-                // subtle down offset like macOS
-                AffineTransform at = AffineTransform.getTranslateInstance(0, 1.0);
-                mg.fill(at.createTransformedShape(bubbleShape));
-            } finally {
-                mg.dispose();
-            }
-
-            Kernel k = gaussianKernel(shadowRadius);
-            ConvolveOp blur = new ConvolveOp(k, ConvolveOp.EDGE_NO_OP, null);
-            BufferedImage blurred = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
-            blur.filter(mask, blurred);
-
-            // Cut out interior so shadow stays outside
-            Graphics2D bg = blurred.createGraphics();
-            try {
-                bg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-                bg.setComposite(AlphaComposite.DstOut);
-                Shape cutoutStroke = new BasicStroke(2f, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND)
-                        .createStrokedShape(bubbleShape);
-                bg.fill(bubbleShape);
-                bg.fill(cutoutStroke);
-            } finally {
-                bg.dispose();
-            }
-
-            return blurred;
         }
 
         private Shape makeBubbleShape(Rectangle r) {
@@ -786,125 +697,5 @@ public final class SwingPopoverControl {
             }
             return path;
         }
-
-        private static void appendArrow(Path2D path, Point2D a, Point2D tip, Point2D b) {
-            Path2D tri = new Path2D.Double();
-            tri.moveTo(a.getX(), a.getY());
-            tri.lineTo(tip.getX(), tip.getY());
-            tri.lineTo(b.getX(), b.getY());
-            tri.closePath();
-            path.append(tri, false);
-        }
-
-        private static Kernel gaussianKernel(int radius) {
-            int r = Math.max(1, radius);
-            int size = r * 2 + 1;
-
-            float sigma = r / 2.2f;
-            float twoSigma2 = 2f * sigma * sigma;
-
-            float[] w1 = new float[size];
-            float sum = 0f;
-            for (int i = -r; i <= r; i++) {
-                float v = (float) Math.exp(-(i * i) / twoSigma2);
-                w1[i + r] = v;
-                sum += v;
-            }
-            for (int i = 0; i < size; i++)
-                w1[i] /= sum;
-
-            float[] w2 = new float[size * size];
-            int k = 0;
-            for (int y = 0; y < size; y++) {
-                for (int x = 0; x < size; x++) {
-                    w2[k++] = w1[x] * w1[y];
-                }
-            }
-            return new Kernel(size, size, w2);
-        }
-    }
-
-    static void main() {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (Exception ignored) {
-            }
-
-            JFrame f = new JFrame("Popover Demo");
-            f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            f.setSize(640, 480);
-            f.setLocationRelativeTo(null);
-
-            SwingPopoverControl pop = new SwingPopoverControl();
-            //pop.setGap(3);
-            pop.setShadowRadius(10);
-            pop.setShadowAlpha(0.22f);
-            pop.setDismissOnFocusLost(true);
-
-            JButton btnAuto = new JButton("Toggle (AUTO)");
-            JButton btnRight = new JButton("Toggle (RIGHT)");
-            JButton btnNoShadow = new JButton("Toggle (no shadow)");
-
-            JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-            top.add(btnAuto);
-            top.add(btnRight);
-            top.add(btnNoShadow);
-
-            /*JTextArea info = new JTextArea(
-                    """
-                            Click the same button repeatedly: no hide->show flicker.
-                            Popover follows the anchor when moving the window.
-                            ESC or click outside closes it."""
-            );
-            info.setEditable(false);
-            info.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));*/
-
-            JPanel root = new JPanel(new BorderLayout());
-            root.add(top, BorderLayout.NORTH);
-            //root.add(new JScrollPane(info), BorderLayout.CENTER);
-
-            ActionListener show = e -> {
-                JPanel content = new JPanel(new BorderLayout(10, 10));
-                content.setOpaque(false);
-                content.add(new JLabel("Toggle behavior without flicker."),
-                        BorderLayout.NORTH);
-
-                JPanel form = new JPanel(new GridLayout(2, 2, 8, 8));
-                form.setOpaque(false);
-                form.add(new JLabel("Name:"));
-                form.add(new JTextField(14));
-                form.add(new JLabel("Tag:"));
-                form.add(new JTextField(14));
-                content.add(form, BorderLayout.CENTER);
-
-                /*JButton ok = new JButton("OK");
-                ok.addActionListener(x -> pop.hide());
-                JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-                actions.setOpaque(false);
-                actions.add(ok);
-                content.add(actions, BorderLayout.SOUTH);*/
-
-                var source = (Component)e.getSource();
-                if (source == btnNoShadow) {
-                    pop.toggle(source, content);
-                }
-                else {
-                    Placement p;
-                    if (source == btnRight)
-                        p = Placement.RIGHT;
-                    else
-                        p = Placement.AUTO;
-                    pop.toggle(source, content, p);
-                }
-            };
-
-            btnAuto.addActionListener(show);
-            btnRight.addActionListener(show);
-            btnNoShadow.addActionListener(show);
-
-            f.setContentPane(root);
-            f.setVisible(true);
-        });
     }
 }
