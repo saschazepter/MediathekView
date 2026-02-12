@@ -19,6 +19,8 @@
 package mediathek.swing;
 
 import com.formdev.flatlaf.FlatLaf;
+import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import org.apache.commons.lang3.SystemUtils;
 
 import javax.swing.*;
@@ -76,8 +78,7 @@ public final class SwingPopoverControl {
         if (window != null) {
             try {
                 window.setVisible(false);
-            }
-            catch (Exception ignored) {
+            } catch (Exception ignored) {
             }
             window.dispose();
             window = null;
@@ -211,8 +212,7 @@ public final class SwingPopoverControl {
 
         if (isShowing() && currentAnchor == anchor) {
             hide();
-        }
-        else {
+        } else {
             show(anchor, content, placement);
         }
     }
@@ -272,8 +272,7 @@ public final class SwingPopoverControl {
         Rectangle anchorOnScreen;
         try {
             anchorOnScreen = getScreenBounds(currentAnchor);
-        }
-        catch (IllegalComponentStateException ex) {
+        } catch (IllegalComponentStateException ex) {
             hide();
             return;
         }
@@ -579,26 +578,16 @@ public final class SwingPopoverControl {
                 Shape bubbleShape = makeBubbleShape(bubbleRect);
 
                 g2.setComposite(AlphaComposite.SrcOver);
-                if (UIManager.getLookAndFeel() instanceof FlatLaf) {
-                    g2.setColor(UIManager.getColor("RootPane.background"));
-                }
-                else {
-                    //normal LAF
-                    g2.setColor(new Color(252, 252, 252, 245));
-                }
+                g2.setColor(UIManager.getColor("RootPane.background"));
                 g2.fill(bubbleShape);
 
-                if (UIManager.getLookAndFeel() instanceof FlatLaf) {
-                    g2.setColor(UIManager.getColor("Button.background"));
-                }
-                else {
-                    //normal LAF
+                if (FlatLaf.isLafDark())
+                    g2.setColor(UIManager.getColor("Button.hoverBackground"));
+                else
                     g2.setColor(new Color(0, 0, 0, 55));
-                }
                 g2.setStroke(new BasicStroke(1f));
                 g2.draw(bubbleShape);
-            }
-            finally {
+            } finally {
                 g2.dispose();
             }
         }
@@ -659,10 +648,11 @@ public final class SwingPopoverControl {
     static void main() {
         SwingUtilities.invokeLater(() -> {
             try {
-                //FlatMacLightLaf.setup();
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            }
-            catch (Exception ignored) {
+                if (SystemUtils.IS_OS_MAC_OSX)
+                    FlatMacLightLaf.setup();
+                else
+                    FlatLightLaf.setup();
+            } catch (Exception ignored) {
             }
 
             JFrame frame = new JFrame("SwingPopoverControl Demo");
@@ -671,8 +661,8 @@ public final class SwingPopoverControl {
             frame.setLocationRelativeTo(null);
 
             SwingPopoverControl popover = new SwingPopoverControl();
-            if (SystemUtils.IS_OS_WINDOWS)
-                popover.setDismissOnFocusLost(true);
+            /*if (SystemUtils.IS_OS_WINDOWS)
+                popover.setDismissOnFocusLost(true);*/
 
             JButton btnAuto = new JButton("Popover AUTO");
             JButton btnRight = new JButton("Popover RIGHT");
