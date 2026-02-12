@@ -29,31 +29,30 @@ import java.util.Objects;
 
 public final class SwingPopoverControl {
 
-    private final JWindow window;
+    private JDialog window;                    // <-- was JWindow, jetzt JDialog (pro show neu)
     private final Bubble bubble;
     private final JPanel contentHost;
+
     private AWTEventListener outsideClickListener;
     private KeyEventDispatcher escDispatcher;
+
     private boolean dismissOnFocusLost;
+
     /**
      * Distance between anchor and ARROW TIP (px).
      */
     private int gap = 3;
     private int marginToScreen = 8;
+
     private Component currentAnchor;
     private Placement requestedPlacement = Placement.AUTO;
+
     private Window anchorTopLevelWindow;
     private ComponentListener topLevelMoveResizeListener;
     private HierarchyBoundsListener anchorHierarchyBoundsListener;
     private HierarchyListener anchorHierarchyListener;
 
     public SwingPopoverControl() {
-        window = new JWindow();
-        window.setType(Window.Type.POPUP);
-        window.setAlwaysOnTop(true);
-        window.setFocusableWindowState(true);
-        window.setBackground(new Color(0, 0, 0, 0));
-
         bubble = new Bubble();
         bubble.setOpaque(false);
         bubble.setLayout(new BorderLayout());
@@ -63,6 +62,37 @@ public final class SwingPopoverControl {
         contentHost.setBorder(new EmptyBorder(12, 14, 12, 14));
 
         bubble.add(contentHost, BorderLayout.CENTER);
+    }
+
+    // --- Window lifecycle -----------------------------------------------------
+
+    private void ensureWindowFor(Component anchor) {
+        Window owner = SwingUtilities.getWindowAncestor(anchor);
+
+        // Owner kann bei JDialog nicht sauber "umgehängt" werden -> pro show neu bauen
+        if (window != null) {
+            try {
+                window.setVisible(false);
+            }
+            catch (Exception ignored) {
+            }
+            window.dispose();
+            window = null;
+        }
+
+        window = new JDialog(owner);
+        window.setModalityType(Dialog.ModalityType.MODELESS);
+        window.setUndecorated(true);
+
+        // POPUP vermeiden -> kann unter macOS/Wayland Keyboard-Input blocken
+        window.setType(Window.Type.UTILITY);
+
+        window.setAlwaysOnTop(true);
+        window.setFocusableWindowState(true);
+        window.setAutoRequestFocus(true);
+        window.setBackground(new Color(0, 0, 0, 0));
+
+        // bubble als ContentPane verwenden
         window.setContentPane(bubble);
 
         window.addWindowFocusListener(new WindowAdapter() {
@@ -80,7 +110,7 @@ public final class SwingPopoverControl {
     }
 
     private static Rectangle getScreenBounds(Component c) {
-        Point p = c.getLocationOnScreen();
+        Point p = c.getLocationOnScreen(); // kann IllegalComponentStateException werfen, wenn nicht showing
         return new Rectangle(p.x, p.y, c.getWidth(), c.getHeight());
     }
 
@@ -109,89 +139,6 @@ public final class SwingPopoverControl {
         return null;
     }
 
-    static void main() {
-        SwingUtilities.invokeLater(() -> {
-            try {
-                //FlatDarkLaf.setup();
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            }
-            catch (Exception ignored) {
-            }
-
-            JFrame f = new JFrame("Popover Demo");
-            f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-            f.setSize(640, 480);
-            f.setLocationRelativeTo(null);
-
-            SwingPopoverControl pop = new SwingPopoverControl();
-            //pop.setDismissOnFocusLost(true);
-
-            JButton btnAuto = new JButton("Toggle (AUTO)");
-            JButton btnRight = new JButton("Toggle (RIGHT)");
-            JButton btnNoShadow = new JButton("Toggle (no shadow)");
-
-            JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
-            top.add(btnAuto);
-            top.add(btnRight);
-            top.add(btnNoShadow);
-
-            /*JTextArea info = new JTextArea(
-                    """
-                            Click the same button repeatedly: no hide->show flicker.
-                            Popover follows the anchor when moving the window.
-                            ESC or click outside closes it."""
-            );
-            info.setEditable(false);
-            info.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));*/
-
-            JPanel root = new JPanel(new BorderLayout());
-            root.add(top, BorderLayout.NORTH);
-            //root.add(new JScrollPane(info), BorderLayout.CENTER);
-
-            ActionListener show = e -> {
-                JPanel content = new JPanel(new BorderLayout(10, 10));
-                content.setOpaque(false);
-                content.add(new JLabel("Toggle behavior without flicker."),
-                        BorderLayout.NORTH);
-
-                JPanel form = new JPanel(new GridLayout(2, 2, 8, 8));
-                form.setOpaque(false);
-                form.add(new JLabel("Name:"));
-                form.add(new JTextField(14));
-                form.add(new JLabel("Tag:"));
-                form.add(new JTextField(14));
-                content.add(form, BorderLayout.CENTER);
-
-                /*JButton ok = new JButton("OK");
-                ok.addActionListener(x -> pop.hide());
-                JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 0, 0));
-                actions.setOpaque(false);
-                actions.add(ok);
-                content.add(actions, BorderLayout.SOUTH);*/
-
-                var source = (Component) e.getSource();
-                if (source == btnNoShadow) {
-                    pop.toggle(source, content);
-                }
-                else {
-                    Placement p;
-                    if (source == btnRight)
-                        p = Placement.RIGHT;
-                    else
-                        p = Placement.AUTO;
-                    pop.toggle(source, content, p);
-                }
-            };
-
-            btnAuto.addActionListener(show);
-            btnRight.addActionListener(show);
-            btnNoShadow.addActionListener(show);
-
-            f.setContentPane(root);
-            f.setVisible(true);
-        });
-    }
-
     public void setDismissOnFocusLost(boolean v) {
         this.dismissOnFocusLost = v;
     }
@@ -209,7 +156,7 @@ public final class SwingPopoverControl {
     }
 
     public boolean isShowing() {
-        return window.isVisible();
+        return window != null && window.isVisible();
     }
 
     public void show(Component anchor, JComponent content, Placement placement) {
@@ -221,6 +168,18 @@ public final class SwingPopoverControl {
             return;
         }
 
+        // Ohne showing kein getLocationOnScreen()
+        if (!anchor.isShowing()) {
+            // in vielen Fällen reicht "später nochmal" (z.B. direkt nach Layout)
+            SwingUtilities.invokeLater(() -> {
+                if (anchor.isShowing())
+                    show(anchor, content, placement);
+            });
+            return;
+        }
+
+        ensureWindowFor(anchor);
+
         // Replace content
         contentHost.removeAll();
         contentHost.add(content, BorderLayout.CENTER);
@@ -229,10 +188,8 @@ public final class SwingPopoverControl {
         currentAnchor = anchor;
         requestedPlacement = (placement == null) ? Placement.AUTO : placement;
 
-        // pack to get accurate preferred size
         window.pack();
 
-        // Recompute placement & position
         recomputePlacementAndBounds();
 
         installDismissHandlers();
@@ -240,20 +197,15 @@ public final class SwingPopoverControl {
 
         window.setVisible(true);
         window.toFront();
-        window.requestFocus();
+        window.requestFocusInWindow();
 
-        SwingUtilities.invokeLater(() -> focusFirstComponent(content));
+        SwingUtilities.invokeLater(() -> focusFirstComponent(contentHost));
     }
 
     public void toggle(Component anchor, JComponent content) {
         toggle(anchor, content, Placement.BOTTOM);
     }
 
-    /**
-     * Toggle popover for the same anchor without flicker:
-     * - If showing and the same anchor triggers again -> hides.
-     * - Else shows anchored to the given component.
-     */
     public void toggle(Component anchor, JComponent content, Placement placement) {
         Objects.requireNonNull(anchor, "anchor");
         Objects.requireNonNull(content, "content");
@@ -276,42 +228,46 @@ public final class SwingPopoverControl {
             SwingUtilities.invokeLater(this::hide);
             return;
         }
-        if (!window.isVisible())
+        if (window == null || !window.isVisible())
             return;
 
         uninstallTrackingHandlers();
         uninstallDismissHandlers();
 
         currentAnchor = null;
+
         window.setVisible(false);
+        window.dispose();
+        window = null;
     }
 
-    /**
-     * Repositions the popover to follow the anchor (safe to call often).
-     */
     public void reposition() {
         if (!SwingUtilities.isEventDispatchThread()) {
             SwingUtilities.invokeLater(this::reposition);
             return;
         }
-        if (!window.isVisible() || currentAnchor == null)
+        if (!isShowing() || currentAnchor == null)
             return;
         if (!currentAnchor.isShowing()) {
             hide();
             return;
         }
-
-        // placement AUTO must re-evaluate when window moves
         recomputePlacementAndBounds();
     }
 
     private void recomputePlacementAndBounds() {
-        if (currentAnchor == null)
+        if (currentAnchor == null || window == null)
             return;
 
         GraphicsConfiguration gc = currentAnchor.getGraphicsConfiguration();
-        Rectangle screen = (gc != null) ? gc.getBounds() : getDefaultScreenBounds();
+        if (gc == null) {
+            gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                    .getDefaultScreenDevice().getDefaultConfiguration();
+        }
+
+        Rectangle screen = gc.getBounds();
         Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+
         Rectangle usable = new Rectangle(
                 screen.x + screenInsets.left + marginToScreen,
                 screen.y + screenInsets.top + marginToScreen,
@@ -319,21 +275,27 @@ public final class SwingPopoverControl {
                 screen.height - screenInsets.top - screenInsets.bottom - marginToScreen * 2
         );
 
-        Rectangle anchorOnScreen = getScreenBounds(currentAnchor);
+        Rectangle anchorOnScreen;
+        try {
+            anchorOnScreen = getScreenBounds(currentAnchor);
+        }
+        catch (IllegalComponentStateException ex) {
+            hide();
+            return;
+        }
 
-        // Use current preferred size (depends on placement because insets change)
-        Dimension popSize = window.getPreferredSize();
+        // Erstgröße holen
+        Dimension popSize = window.getSize();
 
-        // Resolve placement
         Placement resolvedPlacement = (requestedPlacement == Placement.AUTO)
                 ? pickAutoPlacement(anchorOnScreen, popSize, usable)
                 : requestedPlacement;
 
         bubble.setPlacement(resolvedPlacement);
 
-        // placement changes insets -> repack & re-get size
+        // Insets können sich ändern -> pack und Größe neu holen
         window.pack();
-        popSize = window.getPreferredSize();
+        popSize = window.getSize();
 
         Insets bubbleInsets = bubble.getInsets();
         Point loc = computeLocationByArrowTip(anchorOnScreen, popSize, resolvedPlacement, bubbleInsets);
@@ -343,7 +305,6 @@ public final class SwingPopoverControl {
 
         bubble.setArrowTarget(anchorCenterFor(resolvedPlacement, anchorOnScreen, clamped));
 
-        // IMPORTANT: do not call setVisible here; just move/resize
         window.setBounds(clamped);
     }
 
@@ -364,8 +325,7 @@ public final class SwingPopoverControl {
         Cand left = new Cand(Placement.LEFT, spaceLeft - reqH, spaceLeft >= reqH);
         Cand right = new Cand(Placement.RIGHT, spaceRight - reqH, spaceRight >= reqH);
 
-        // Bias: bottom, top, right, left
-        Cand[] cands = new Cand[]{bottom, top, right, left};
+        Cand[] cands = new Cand[]{bottom, top, right, left}; // Bias
         Cand best = cands[0];
 
         for (Cand c : cands) {
@@ -384,22 +344,18 @@ public final class SwingPopoverControl {
 
         switch (p) {
             case BOTTOM -> {
-                // Arrow tip at y = windowY + in.top
                 y = anchor.y + anchor.height + gap - in.top;
                 x = (int) Math.round(anchor.getCenterX() - pop.width / 2.0);
             }
             case TOP -> {
-                // Tip at y = windowY + (pop.height - in.bottom)
                 y = anchor.y - gap - (pop.height - in.bottom);
                 x = (int) Math.round(anchor.getCenterX() - pop.width / 2.0);
             }
             case RIGHT -> {
-                // Tip at x = windowX + in.left
                 x = anchor.x + anchor.width + gap - in.left;
                 y = (int) Math.round(anchor.getCenterY() - pop.height / 2.0);
             }
             case LEFT -> {
-                // Tip at x = windowX + (pop.width - in.right)
                 x = anchor.x - gap - (pop.width - in.right);
                 y = (int) Math.round(anchor.getCenterY() - pop.height / 2.0);
             }
@@ -417,14 +373,13 @@ public final class SwingPopoverControl {
 
         return switch (p) {
             case TOP -> new Point2D.Double(ax - popoverBounds.x, popoverBounds.height);
-            //case BOTTOM -> new Point2D.Double(ax - popoverBounds.x, 0);
             case LEFT -> new Point2D.Double(popoverBounds.width, ay - popoverBounds.y);
             case RIGHT -> new Point2D.Double(0, ay - popoverBounds.y);
             default -> new Point2D.Double(ax - popoverBounds.x, 0);
         };
     }
 
-    // tracking handlers (window move/resize, layout changes)
+    // --- tracking handlers ----------------------------------------------------
 
     private void installTrackingHandlers() {
         uninstallTrackingHandlers();
@@ -432,7 +387,6 @@ public final class SwingPopoverControl {
         if (currentAnchor == null)
             return;
 
-        // Track top-level window moves/resizes
         anchorTopLevelWindow = SwingUtilities.getWindowAncestor(currentAnchor);
         if (anchorTopLevelWindow != null) {
             topLevelMoveResizeListener = new ComponentAdapter() {
@@ -449,7 +403,6 @@ public final class SwingPopoverControl {
             anchorTopLevelWindow.addComponentListener(topLevelMoveResizeListener);
         }
 
-        // Track ancestor moved/resized (layout changes)
         anchorHierarchyBoundsListener = new HierarchyBoundsAdapter() {
             @Override
             public void ancestorMoved(HierarchyEvent e) {
@@ -463,7 +416,6 @@ public final class SwingPopoverControl {
         };
         currentAnchor.addHierarchyBoundsListener(anchorHierarchyBoundsListener);
 
-        // Track showing changes (e.g., anchor removed, parent switched)
         anchorHierarchyListener = e -> {
             if ((e.getChangeFlags() & HierarchyEvent.SHOWING_CHANGED) != 0) {
                 if (currentAnchor != null && !currentAnchor.isShowing())
@@ -472,7 +424,6 @@ public final class SwingPopoverControl {
                     reposition();
             }
             if ((e.getChangeFlags() & HierarchyEvent.PARENT_CHANGED) != 0) {
-                // Window ancestor might change -> rebind listener
                 installTrackingHandlers();
                 reposition();
             }
@@ -498,13 +449,12 @@ public final class SwingPopoverControl {
         anchorHierarchyListener = null;
     }
 
-    // dismiss handlers
+    // --- dismiss handlers -----------------------------------------------------
 
     private boolean isEventFromAnchor(MouseEvent me) {
         Component src = me.getComponent();
         if (src == null || currentAnchor == null)
             return false;
-        // Treat the anchor (and its children) as "inside" to avoid hide->show flicker.
         return SwingUtilities.isDescendingFrom(src, currentAnchor);
     }
 
@@ -515,7 +465,7 @@ public final class SwingPopoverControl {
                     return;
                 if (me.getID() != MouseEvent.MOUSE_PRESSED)
                     return;
-                if (!window.isVisible())
+                if (!isShowing())
                     return;
 
                 // Click inside popover -> ignore
@@ -523,7 +473,7 @@ public final class SwingPopoverControl {
                 if (window.getBounds().contains(p))
                     return;
 
-                // Click on anchor -> ignore (prevents flicker, toggle decides)
+                // Click on anchor -> ignore (toggle entscheidet)
                 if (isEventFromAnchor(me))
                     return;
 
@@ -534,7 +484,7 @@ public final class SwingPopoverControl {
 
         if (escDispatcher == null) {
             escDispatcher = e -> {
-                if (!window.isVisible())
+                if (!isShowing())
                     return false;
                 if (e.getID() == KeyEvent.KEY_PRESSED && e.getKeyCode() == KeyEvent.VK_ESCAPE) {
                     hide();
@@ -559,7 +509,8 @@ public final class SwingPopoverControl {
 
     public enum Placement {TOP, BOTTOM, LEFT, RIGHT, AUTO}
 
-    // Rendering
+    // --- Rendering ------------------------------------------------------------
+
     private static final class Bubble extends JComponent {
         private final int arrowH = 10;
         private Placement placement = Placement.BOTTOM;
@@ -576,9 +527,8 @@ public final class SwingPopoverControl {
 
         void setPlacement(Placement p) {
             Placement np = (p == null) ? Placement.BOTTOM : p;
-            if (np != placement) {
+            if (np != placement)
                 placement = np;
-            }
             revalidate();
             repaint();
         }
@@ -657,6 +607,7 @@ public final class SwingPopoverControl {
             double ty = arrowTarget.getY();
 
             int arrowW = 18;
+
             switch (placement) {
                 case BOTTOM -> {
                     double baseY = r.y;
@@ -698,4 +649,73 @@ public final class SwingPopoverControl {
             return path;
         }
     }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            }
+            catch (Exception ignored) {
+            }
+
+            JFrame frame = new JFrame("SwingPopoverControl Demo");
+            frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+            frame.setSize(640, 400);
+            frame.setLocationRelativeTo(null);
+
+            SwingPopoverControl popover = new SwingPopoverControl();
+            popover.setDismissOnFocusLost(true); // wichtig für Wayland / macOS
+
+            JButton btnAuto = new JButton("Popover AUTO");
+            JButton btnRight = new JButton("Popover RIGHT");
+
+            JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+            top.add(btnAuto);
+            top.add(btnRight);
+
+            ActionListener show = e -> {
+                JPanel content = new JPanel(new GridBagLayout());
+                content.setOpaque(false);
+
+                GridBagConstraints gc = new GridBagConstraints();
+                gc.insets = new Insets(4, 4, 4, 4);
+                gc.anchor = GridBagConstraints.WEST;
+
+                gc.gridx = 0;
+                gc.gridy = 0;
+                content.add(new JLabel("Name:"), gc);
+
+                gc.gridx = 1;
+                JTextField tfName = new JTextField(14);
+                content.add(tfName, gc);
+
+                gc.gridx = 0;
+                gc.gridy = 1;
+                content.add(new JLabel("Tag:"), gc);
+
+                gc.gridx = 1;
+                JTextField tfTag = new JTextField(14);
+                content.add(tfTag, gc);
+
+                Component src = (Component) e.getSource();
+                SwingPopoverControl.Placement p =
+                        (src == btnRight)
+                                ? SwingPopoverControl.Placement.RIGHT
+                                : Placement.BOTTOM;
+
+                popover.toggle(src, content, p);
+            };
+
+            btnAuto.addActionListener(show);
+            btnRight.addActionListener(show);
+
+            frame.setLayout(new BorderLayout());
+            frame.add(top, BorderLayout.NORTH);
+            frame.add(new JLabel("Klicke einen Button und tippe in die Felder ✍️",
+                    SwingConstants.CENTER), BorderLayout.CENTER);
+
+            frame.setVisible(true);
+        });
+    }
+
 }
