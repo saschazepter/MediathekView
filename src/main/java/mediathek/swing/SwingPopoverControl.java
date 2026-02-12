@@ -31,7 +31,7 @@ import java.awt.image.ConvolveOp;
 import java.awt.image.Kernel;
 import java.util.Objects;
 
-public final class MacPopover {
+public final class SwingPopoverControl {
 
     public enum Placement {TOP, BOTTOM, LEFT, RIGHT, AUTO}
 
@@ -59,7 +59,7 @@ public final class MacPopover {
     private HierarchyBoundsListener anchorHierarchyBoundsListener;
     private HierarchyListener anchorHierarchyListener;
 
-    public MacPopover() {
+    public SwingPopoverControl() {
         window = new JWindow();
         window.setType(Window.Type.POPUP);
         window.setAlwaysOnTop(true);
@@ -836,7 +836,7 @@ public final class MacPopover {
             f.setSize(900, 520);
             f.setLocationRelativeTo(null);
 
-            MacPopover pop = new MacPopover();
+            SwingPopoverControl pop = new SwingPopoverControl();
             //pop.setGap(3);
             pop.setShadowRadius(10);
             pop.setShadowAlpha(0.22f);
