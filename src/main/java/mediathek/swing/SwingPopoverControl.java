@@ -18,6 +18,9 @@
 
 package mediathek.swing;
 
+import com.formdev.flatlaf.FlatLaf;
+import org.apache.commons.lang3.SystemUtils;
+
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
@@ -102,11 +105,6 @@ public final class SwingPopoverControl {
                     hide();
             }
         });
-    }
-
-    private static Rectangle getDefaultScreenBounds() {
-        return GraphicsEnvironment.getLocalGraphicsEnvironment()
-                .getDefaultScreenDevice().getDefaultConfiguration().getBounds();
     }
 
     private static Rectangle getScreenBounds(Component c) {
@@ -200,10 +198,6 @@ public final class SwingPopoverControl {
         window.requestFocusInWindow();
 
         SwingUtilities.invokeLater(() -> focusFirstComponent(contentHost));
-    }
-
-    public void toggle(Component anchor, JComponent content) {
-        toggle(anchor, content, Placement.BOTTOM);
     }
 
     public void toggle(Component anchor, JComponent content, Placement placement) {
@@ -585,10 +579,22 @@ public final class SwingPopoverControl {
                 Shape bubbleShape = makeBubbleShape(bubbleRect);
 
                 g2.setComposite(AlphaComposite.SrcOver);
-                g2.setColor(new Color(252, 252, 252, 245));
+                if (UIManager.getLookAndFeel() instanceof FlatLaf) {
+                    g2.setColor(UIManager.getColor("RootPane.background"));
+                }
+                else {
+                    //normal LAF
+                    g2.setColor(new Color(252, 252, 252, 245));
+                }
                 g2.fill(bubbleShape);
 
-                g2.setColor(new Color(0, 0, 0, 55));
+                if (UIManager.getLookAndFeel() instanceof FlatLaf) {
+                    g2.setColor(UIManager.getColor("Button.background"));
+                }
+                else {
+                    //normal LAF
+                    g2.setColor(new Color(0, 0, 0, 55));
+                }
                 g2.setStroke(new BasicStroke(1f));
                 g2.draw(bubbleShape);
             }
@@ -650,9 +656,10 @@ public final class SwingPopoverControl {
         }
     }
 
-    public static void main(String[] args) {
+    static void main() {
         SwingUtilities.invokeLater(() -> {
             try {
+                //FlatMacLightLaf.setup();
                 UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
             }
             catch (Exception ignored) {
@@ -664,7 +671,8 @@ public final class SwingPopoverControl {
             frame.setLocationRelativeTo(null);
 
             SwingPopoverControl popover = new SwingPopoverControl();
-            popover.setDismissOnFocusLost(true); // wichtig für Wayland / macOS
+            if (SystemUtils.IS_OS_WINDOWS)
+                popover.setDismissOnFocusLost(true);
 
             JButton btnAuto = new JButton("Popover AUTO");
             JButton btnRight = new JButton("Popover RIGHT");
