@@ -885,16 +885,6 @@ public final class MacPopover {
                 actions.add(ok);
                 content.add(actions, BorderLayout.SOUTH);*/
 
-                if (e.getSource() == btnNoShadow) {
-                    pop.setShadowEnabled(false);
-                }
-                else {
-                    // Optional: enable shadow if you want it
-                    pop.setShadowEnabled(true);
-                    pop.setShadowRadius(10);
-                    pop.setShadowAlpha(0.22f);
-                }
-
                 var source = (Component)e.getSource();
                 if (source == btnNoShadow) {
                     pop.toggle(source, content);
