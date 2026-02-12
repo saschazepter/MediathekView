@@ -336,10 +336,6 @@ public final class SwingPopoverControl {
         int x, y;
 
         switch (p) {
-            case BOTTOM -> {
-                y = anchor.y + anchor.height + gap - in.top;
-                x = (int) Math.round(anchor.getCenterX() - pop.width / 2.0);
-            }
             case TOP -> {
                 y = anchor.y - gap - (pop.height - in.bottom);
                 x = (int) Math.round(anchor.getCenterX() - pop.width / 2.0);
@@ -660,10 +656,6 @@ public final class SwingPopoverControl {
             frame.setSize(640, 400);
             frame.setLocationRelativeTo(null);
 
-            SwingPopoverControl popover = new SwingPopoverControl();
-            /*if (SystemUtils.IS_OS_WINDOWS)
-                popover.setDismissOnFocusLost(true);*/
-
             JButton btnAuto = new JButton("Popover AUTO");
             JButton btnRight = new JButton("Popover RIGHT");
 
@@ -701,6 +693,7 @@ public final class SwingPopoverControl {
                                 ? SwingPopoverControl.Placement.RIGHT
                                 : Placement.BOTTOM;
 
+                var popover = new SwingPopoverControl();
                 popover.toggle(src, content, p);
             };
 
