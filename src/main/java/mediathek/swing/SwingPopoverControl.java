@@ -831,7 +831,7 @@ public final class SwingPopoverControl {
             } catch (Exception ignored) {
             }
 
-            JFrame f = new JFrame("MacPopover Demo (toggle, no flicker)");
+            JFrame f = new JFrame("Popover Demo");
             f.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
             f.setSize(640, 480);
             f.setLocationRelativeTo(null);
