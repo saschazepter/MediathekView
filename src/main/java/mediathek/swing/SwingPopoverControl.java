@@ -198,23 +198,8 @@ public final class SwingPopoverControl {
         window.toFront();
         window.requestFocusInWindow();
 
+        SwingUtilities.invokeLater(() -> anchor.setEnabled(false));
         SwingUtilities.invokeLater(() -> focusFirstComponent(contentHost));
-    }
-
-    public void toggle(Component anchor, JComponent content, Placement placement) {
-        Objects.requireNonNull(anchor, "anchor");
-        Objects.requireNonNull(content, "content");
-
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(() -> toggle(anchor, content, placement));
-            return;
-        }
-
-        if (isShowing() && currentAnchor == anchor) {
-            hide();
-        } else {
-            show(anchor, content, placement);
-        }
     }
 
     public void hide() {
@@ -228,6 +213,8 @@ public final class SwingPopoverControl {
         uninstallTrackingHandlers();
         uninstallDismissHandlers();
 
+        if (currentAnchor != null)
+            currentAnchor.setEnabled(true);
         currentAnchor = null;
 
         window.setVisible(false);
@@ -656,7 +643,7 @@ public final class SwingPopoverControl {
             frame.setSize(640, 400);
             frame.setLocationRelativeTo(null);
 
-            JButton btnAuto = new JButton("Popover AUTO");
+            JButton btnAuto = new JButton("Popover BOTTOM");
             JButton btnRight = new JButton("Popover RIGHT");
 
             JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
@@ -694,7 +681,7 @@ public final class SwingPopoverControl {
                                 : Placement.BOTTOM;
 
                 var popover = new SwingPopoverControl();
-                popover.toggle(src, content, p);
+                popover.show((Component)e.getSource(),content,p);
             };
 
             btnAuto.addActionListener(show);
