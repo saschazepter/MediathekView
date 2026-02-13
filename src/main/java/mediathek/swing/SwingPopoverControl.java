@@ -51,6 +51,7 @@ public final class SwingPopoverControl {
 
     private Component currentAnchor;
     private Placement requestedPlacement = Placement.AUTO;
+    private boolean anchorWasEnabled;
 
     private Window anchorTopLevelWindow;
     private ComponentListener topLevelMoveResizeListener;
@@ -198,6 +199,7 @@ public final class SwingPopoverControl {
         window.toFront();
         window.requestFocusInWindow();
 
+        anchorWasEnabled = anchor.isEnabled();
         SwingUtilities.invokeLater(() -> anchor.setEnabled(false));
         SwingUtilities.invokeLater(() -> focusFirstComponent(contentHost));
     }
@@ -214,7 +216,7 @@ public final class SwingPopoverControl {
         uninstallDismissHandlers();
 
         if (currentAnchor != null)
-            currentAnchor.setEnabled(true);
+            currentAnchor.setEnabled(anchorWasEnabled);
         currentAnchor = null;
 
         window.setVisible(false);
