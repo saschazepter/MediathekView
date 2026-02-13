@@ -91,7 +91,7 @@ public final class SwingPopoverControl {
         // POPUP vermeiden -> kann unter macOS/Wayland Keyboard-Input blocken
         window.setType(Window.Type.UTILITY);
 
-        window.setAlwaysOnTop(true);
+        //window.setAlwaysOnTop(true);
         window.setFocusableWindowState(true);
         window.setAutoRequestFocus(true);
         window.setBackground(new Color(0, 0, 0, 0));
