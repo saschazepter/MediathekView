@@ -37,6 +37,7 @@ public final class SwingPopoverControl {
     private JDialog window;                    // <-- was JWindow, jetzt JDialog (pro show neu)
     private final Bubble bubble;
     private final JPanel contentHost;
+    private boolean perPixelTransparencyEnabled = true;
 
     private AWTEventListener outsideClickListener;
     private KeyEventDispatcher escDispatcher;
@@ -95,7 +96,19 @@ public final class SwingPopoverControl {
         //window.setAlwaysOnTop(true);
         window.setFocusableWindowState(true);
         window.setAutoRequestFocus(true);
-        window.setBackground(new Color(0, 0, 0, 0));
+        perPixelTransparencyEnabled = supportsPerPixelTransparency(anchor);
+        bubble.setPerPixelTransparencyEnabled(perPixelTransparencyEnabled);
+
+        if (perPixelTransparencyEnabled) {
+            window.setBackground(new Color(0, 0, 0, 0));
+        } else {
+            Color fallbackBg = UIManager.getColor("RootPane.background");
+            if (fallbackBg == null)
+                fallbackBg = UIManager.getColor("Panel.background");
+            if (fallbackBg == null)
+                fallbackBg = Color.WHITE;
+            window.setBackground(fallbackBg);
+        }
 
         // bubble als ContentPane verwenden
         window.setContentPane(bubble);
@@ -107,6 +120,28 @@ public final class SwingPopoverControl {
                     hide();
             }
         });
+    }
+
+    private static boolean supportsPerPixelTransparency(Component anchor) {
+        if (isWaylandSession())
+            return false;
+
+        GraphicsConfiguration gc = (anchor != null) ? anchor.getGraphicsConfiguration() : null;
+        GraphicsDevice device = (gc != null) ? gc.getDevice() : null;
+        if (device == null) {
+            device = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+        }
+        return device != null
+                && device.isWindowTranslucencySupported(GraphicsDevice.WindowTranslucency.PERPIXEL_TRANSLUCENT);
+    }
+
+    private static boolean isWaylandSession() {
+        if (!SystemUtils.IS_OS_LINUX)
+            return false;
+        String sessionType = System.getenv("XDG_SESSION_TYPE");
+        if (sessionType != null && "wayland".equalsIgnoreCase(sessionType.trim()))
+            return true;
+        return System.getenv("WAYLAND_DISPLAY") != null;
     }
 
     private static Rectangle getScreenBounds(Component c) {
@@ -493,6 +528,7 @@ public final class SwingPopoverControl {
         private final int arrowH = 10;
         private Placement placement = Placement.BOTTOM;
         private Point2D arrowTarget = new Point2D.Double(60, 0);
+        private boolean perPixelTransparencyEnabled = true;
 
         private static void appendArrow(Path2D path, Point2D a, Point2D tip, Point2D b) {
             Path2D tri = new Path2D.Double();
@@ -514,6 +550,13 @@ public final class SwingPopoverControl {
         void setArrowTarget(Point2D p) {
             if (p != null) {
                 arrowTarget = p;
+                repaint();
+            }
+        }
+
+        void setPerPixelTransparencyEnabled(boolean enabled) {
+            if (perPixelTransparencyEnabled != enabled) {
+                perPixelTransparencyEnabled = enabled;
                 repaint();
             }
         }
@@ -546,6 +589,20 @@ public final class SwingPopoverControl {
                 int bw = w - in.left - in.right;
                 int bh = h - in.top - in.bottom;
 
+                Color bubbleBackground = UIManager.getColor("RootPane.background");
+                if (bubbleBackground == null)
+                    bubbleBackground = UIManager.getColor("Panel.background");
+                if (bubbleBackground == null)
+                    bubbleBackground = Color.WHITE;
+
+                if (!perPixelTransparencyEnabled) {
+                    // Wayland fallback: avoid transparent pixels in undecorated dialog.
+                    g2.setComposite(AlphaComposite.Src);
+                    g2.setColor(bubbleBackground);
+                    g2.fillRect(0, 0, w, h);
+                    g2.setComposite(AlphaComposite.SrcOver);
+                }
+
                 Rectangle bubbleRect = new Rectangle(bx, by, bw, bh);
                 switch (placement) {
                     case TOP -> bubbleRect.height -= arrowH;
@@ -563,7 +620,7 @@ public final class SwingPopoverControl {
                 Shape bubbleShape = makeBubbleShape(bubbleRect);
 
                 g2.setComposite(AlphaComposite.SrcOver);
-                g2.setColor(UIManager.getColor("RootPane.background"));
+                g2.setColor(bubbleBackground);
                 g2.fill(bubbleShape);
 
                 if (FlatLaf.isLafDark())
