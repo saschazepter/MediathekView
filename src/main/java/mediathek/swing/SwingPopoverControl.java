@@ -563,6 +563,9 @@ public final class SwingPopoverControl {
 
         @Override
         public Insets getInsets() {
+            if (!perPixelTransparencyEnabled) {
+                return new Insets(0, 0, 0, 0);
+            }
             int top = 0, left = 0, bottom = 0, right = 0;
             switch (placement) {
                 case TOP -> bottom += arrowH;
@@ -596,11 +599,19 @@ public final class SwingPopoverControl {
                     bubbleBackground = Color.WHITE;
 
                 if (!perPixelTransparencyEnabled) {
-                    // Wayland fallback: avoid transparent pixels in undecorated dialog.
+                    // Wayland fallback: render a plain rectangular popover style.
                     g2.setComposite(AlphaComposite.Src);
                     g2.setColor(bubbleBackground);
                     g2.fillRect(0, 0, w, h);
                     g2.setComposite(AlphaComposite.SrcOver);
+
+                    if (FlatLaf.isLafDark())
+                        g2.setColor(UIManager.getColor("Button.hoverBackground"));
+                    else
+                        g2.setColor(new Color(0, 0, 0, 55));
+                    g2.setStroke(new BasicStroke(1f));
+                    g2.drawRect(0, 0, w - 1, h - 1);
+                    return;
                 }
 
                 Rectangle bubbleRect = new Rectangle(bx, by, bw, bh);
