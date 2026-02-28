@@ -572,13 +572,13 @@ public class PanelPsetLang extends PanelVorlage {
         jButtonAbspielen.setBackground(null);
         if (pSet != null) {
             jTabbedPane.setTitleAt(0, "Set Name: " + pSet.getName());
-            if (pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE].equals("")) {
+            if (pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE].isEmpty()) {
                 jSpinnerLaenge.setValue(Konstanten.LAENGE_DATEINAME);
                 pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE] = String.valueOf(Konstanten.LAENGE_DATEINAME);
             } else {
                 jSpinnerLaenge.setValue(Integer.parseInt(pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE]));
             }
-            if (pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD].equals("")) {
+            if (pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD].isEmpty()) {
                 jSpinnerField.setValue(Konstanten.LAENGE_FELD);
                 pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD] = String.valueOf(Konstanten.LAENGE_FELD);
             } else {
@@ -1008,12 +1008,12 @@ public class PanelPsetLang extends PanelVorlage {
         //======== this ========
 
         //---- jButtonHilfe ----
-        jButtonHilfe.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-help.png"))); //NON-NLS
-        jButtonHilfe.setToolTipText("Hilfe anzeigen"); //NON-NLS
+        jButtonHilfe.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-help.png")));
+        jButtonHilfe.setToolTipText("Hilfe anzeigen");
 
         //---- jButtonPruefen ----
-        jButtonPruefen.setText("Pr\u00fcfen"); //NON-NLS
-        jButtonPruefen.setToolTipText("Programmpfade pr\u00fcfen"); //NON-NLS
+        jButtonPruefen.setText("Pr\u00fcfen");
+        jButtonPruefen.setToolTipText("Programmpfade pr\u00fcfen");
 
         //======== jSplitPane1 ========
         {
@@ -1031,11 +1031,11 @@ public class PanelPsetLang extends PanelVorlage {
                         jPanel7.setBorder(new EtchedBorder());
 
                         //---- jLabel6 ----
-                        jLabel6.setText("Set Name:"); //NON-NLS
+                        jLabel6.setText("Set Name:");
 
                         //======== jPanel4 ========
                         {
-                            jPanel4.setBorder(new TitledBorder("Beschreibung")); //NON-NLS
+                            jPanel4.setBorder(new TitledBorder("Beschreibung"));
 
                             //======== jScrollPane2 ========
                             {
@@ -1060,26 +1060,26 @@ public class PanelPsetLang extends PanelVorlage {
                             jPanel4Layout.setVerticalGroup(
                                 jPanel4Layout.createParallelGroup()
                                     .addGroup(jPanel4Layout.createSequentialGroup()
-                                        .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                                        .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
                                         .addContainerGap())
                             );
                         }
 
                         //======== jPanel6 ========
                         {
-                            jPanel6.setBorder(new TitledBorder("Funktion")); //NON-NLS
+                            jPanel6.setBorder(new TitledBorder("Funktion"));
 
                             //---- jCheckBoxSpeichern ----
-                            jCheckBoxSpeichern.setText("Speichern"); //NON-NLS
+                            jCheckBoxSpeichern.setText("Speichern");
 
                             //---- jCheckBoxButton ----
-                            jCheckBoxButton.setText("Button"); //NON-NLS
+                            jCheckBoxButton.setText("Button");
 
                             //---- jCheckBoxAbo ----
-                            jCheckBoxAbo.setText("Abo"); //NON-NLS
+                            jCheckBoxAbo.setText("Abo");
 
                             //---- jButtonAbspielen ----
-                            jButtonAbspielen.setText("Abspielen via schwarzem Play-Button"); //NON-NLS
+                            jButtonAbspielen.setText("Abspielen via schwarzem Play-Button");
 
                             GroupLayout jPanel6Layout = new GroupLayout(jPanel6);
                             jPanel6.setLayout(jPanel6Layout);
@@ -1094,7 +1094,7 @@ public class PanelPsetLang extends PanelVorlage {
                                         .addComponent(jCheckBoxButton)
                                         .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(jCheckBoxAbo)
-                                        .addContainerGap(81, Short.MAX_VALUE))
+                                        .addContainerGap(59, Short.MAX_VALUE))
                             );
                             jPanel6Layout.setVerticalGroup(
                                 jPanel6Layout.createParallelGroup()
@@ -1110,10 +1110,10 @@ public class PanelPsetLang extends PanelVorlage {
                         }
 
                         //---- jLabelMeldungAbspielen ----
-                        jLabelMeldungAbspielen.setText("kein Set zum Abspielen ausgew\u00e4hlt!"); //NON-NLS
+                        jLabelMeldungAbspielen.setText("kein Set zum Abspielen ausgew\u00e4hlt!");
 
                         //---- jLabelMeldungSeichern ----
-                        jLabelMeldungSeichern.setText("kein Set zum Speichern ausgew\u00e4hlt!"); //NON-NLS
+                        jLabelMeldungSeichern.setText("kein Set zum Speichern ausgew\u00e4hlt!");
 
                         GroupLayout jPanel7Layout = new GroupLayout(jPanel7);
                         jPanel7.setLayout(jPanel7Layout);
@@ -1171,7 +1171,7 @@ public class PanelPsetLang extends PanelVorlage {
                                 .addGap(21, 21, 21))
                     );
                 }
-                jTabbedPane.addTab("Einstellungen", jPanelDetails); //NON-NLS
+                jTabbedPane.addTab("Einstellungen", jPanelDetails);
 
                 //======== jPanel10 ========
                 {
@@ -1181,18 +1181,18 @@ public class PanelPsetLang extends PanelVorlage {
                         jPanel5.setBorder(new EtchedBorder());
 
                         //---- jButtonGruppeFarbe ----
-                        jButtonGruppeFarbe.setText("Farbe"); //NON-NLS
-                        jButtonGruppeFarbe.setToolTipText("Farbauswahldialog anzeigen"); //NON-NLS
+                        jButtonGruppeFarbe.setText("Farbe");
+                        jButtonGruppeFarbe.setToolTipText("Farbauswahldialog anzeigen");
 
                         //---- jButtonGruppeStandardfarbe ----
-                        jButtonGruppeStandardfarbe.setText("Standardfarbe"); //NON-NLS
-                        jButtonGruppeStandardfarbe.setToolTipText("Farbe zur\u00fccksetzen"); //NON-NLS
+                        jButtonGruppeStandardfarbe.setText("Standardfarbe");
+                        jButtonGruppeStandardfarbe.setToolTipText("Farbe zur\u00fccksetzen");
 
                         //---- jLabel11 ----
-                        jLabel11.setText("Wird das Set als Button verwendet,"); //NON-NLS
+                        jLabel11.setText("Wird das Set als Button verwendet,");
 
                         //---- jLabel13 ----
-                        jLabel13.setText("kann damit die Schriftfarbe ver\u00e4ndert werden."); //NON-NLS
+                        jLabel13.setText("kann damit die Schriftfarbe ver\u00e4ndert werden.");
 
                         GroupLayout jPanel5Layout = new GroupLayout(jPanel5);
                         jPanel5.setLayout(jPanel5Layout);
@@ -1207,7 +1207,7 @@ public class PanelPsetLang extends PanelVorlage {
                                             .addComponent(jButtonGruppeStandardfarbe))
                                         .addComponent(jLabel11)
                                         .addComponent(jLabel13))
-                                    .addContainerGap(325, Short.MAX_VALUE))
+                                    .addContainerGap(319, Short.MAX_VALUE))
                         );
                         jPanel5Layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {jButtonGruppeFarbe, jButtonGruppeStandardfarbe});
                         jPanel5Layout.setVerticalGroup(
@@ -1239,10 +1239,10 @@ public class PanelPsetLang extends PanelVorlage {
                             .addGroup(jPanel10Layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addComponent(jPanel5, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(402, Short.MAX_VALUE))
+                                .addContainerGap(431, Short.MAX_VALUE))
                     );
                 }
-                jTabbedPane.addTab("Aussehen", jPanel10); //NON-NLS
+                jTabbedPane.addTab("Aussehen", jPanel10);
 
                 //======== jPanel9 ========
                 {
@@ -1252,40 +1252,40 @@ public class PanelPsetLang extends PanelVorlage {
                         jPanel1.setBorder(new EtchedBorder());
 
                         //---- jLabel7 ----
-                        jLabel7.setText("Zielpfad:"); //NON-NLS
+                        jLabel7.setText("Zielpfad:");
 
                         //---- jButtonGruppePfad ----
-                        jButtonGruppePfad.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-file-open.png"))); //NON-NLS
-                        jButtonGruppePfad.setToolTipText("Pfad ausw\u00e4hlen"); //NON-NLS
+                        jButtonGruppePfad.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-file-open.png")));
+                        jButtonGruppePfad.setToolTipText("Pfad ausw\u00e4hlen");
 
                         //---- jCheckBoxThema ----
-                        jCheckBoxThema.setText("einen Unterordner mit dem Thema / Abo-Zielpfad anlegen"); //NON-NLS
-                        jCheckBoxThema.setToolTipText("im Zielverzeichnis wird ein Unterordner mit dem Namen des Themas zum Speichern der Filme angelegt"); //NON-NLS
+                        jCheckBoxThema.setText("Einen Unterordner mit dem Thema / Abo-Zielpfad anlegen");
+                        jCheckBoxThema.setToolTipText("im Zielverzeichnis wird ein Unterordner mit dem Namen des Themas zum Speichern der Filme angelegt");
 
                         //---- jLabel8 ----
-                        jLabel8.setText("Zieldateiname:"); //NON-NLS
+                        jLabel8.setText("Zieldateiname:");
 
                         //---- jCheckBoxLaenge ----
-                        jCheckBoxLaenge.setText("ganzen Dateiname beschr\u00e4nken auf:"); //NON-NLS
-                        jCheckBoxLaenge.setToolTipText("die L\u00e4nge des Dateinamens wird auf die Anzahl Zeichen beschr\u00e4nkt"); //NON-NLS
+                        jCheckBoxLaenge.setText("Ganzen Dateinamen beschr\u00e4nken auf:");
+                        jCheckBoxLaenge.setToolTipText("die L\u00e4nge des Dateinamens wird auf die Anzahl Zeichen beschr\u00e4nkt");
 
                         //---- jSpinnerLaenge ----
                         jSpinnerLaenge.setModel(new SpinnerNumberModel(25, 10, 200, 1));
 
                         //---- jLabel12 ----
-                        jLabel12.setText("Zeichen"); //NON-NLS
+                        jLabel12.setText("Zeichen");
 
                         //---- jLabel15 ----
-                        jLabel15.setText("(ist der Abo-Zielpfad leer, wird das Thema verwendet)"); //NON-NLS
+                        jLabel15.setText("(ist der Abo-Zielpfad leer, wird das Thema verwendet)");
 
                         //---- jCheckBoxField ----
-                        jCheckBoxField.setText("einzelne Felder beschr\u00e4nken auf:"); //NON-NLS
+                        jCheckBoxField.setText("Einzelne Felder beschr\u00e4nken auf:");
 
                         //---- jSpinnerField ----
                         jSpinnerField.setModel(new SpinnerNumberModel(10, 3, 100, 1));
 
                         //---- jLabel16 ----
-                        jLabel16.setText("Zeichen"); //NON-NLS
+                        jLabel16.setText("Zeichen");
 
                         GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
                         jPanel1.setLayout(jPanel1Layout);
@@ -1308,7 +1308,7 @@ public class PanelPsetLang extends PanelVorlage {
                                                     .addComponent(jButtonGruppePfad))
                                                 .addGroup(jPanel1Layout.createSequentialGroup()
                                                     .addComponent(jCheckBoxThema)
-                                                    .addGap(0, 215, Short.MAX_VALUE)))
+                                                    .addGap(0, 203, Short.MAX_VALUE)))
                                             .addGap(16, 16, 16))
                                         .addGroup(jPanel1Layout.createSequentialGroup()
                                             .addComponent(jLabel8)
@@ -1377,23 +1377,23 @@ public class PanelPsetLang extends PanelVorlage {
                             .addGroup(jPanel9Layout.createSequentialGroup()
                                 .addContainerGap()
                                 .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addContainerGap(271, Short.MAX_VALUE))
+                                .addContainerGap(285, Short.MAX_VALUE))
                     );
                 }
-                jTabbedPane.addTab("Speicherziel", jPanel9); //NON-NLS
+                jTabbedPane.addTab("Speicherziel", jPanel9);
 
                 //======== jPanel11 ========
                 {
 
                     //======== jPanel8 ========
                     {
-                        jPanel8.setBorder(new TitledBorder("direkt speichern")); //NON-NLS
+                        jPanel8.setBorder(new TitledBorder("Direkt speichern"));
 
                         //---- jLabel10 ----
-                        jLabel10.setText("direkter Download, Pr\u00e4fix ( z.B. http ):"); //NON-NLS
+                        jLabel10.setText("Direkter Download, Pr\u00e4fix ( z.B. http ):");
 
                         //---- jLabel5 ----
-                        jLabel5.setText("Suffix ( z.B. mp4,mp3):"); //NON-NLS
+                        jLabel5.setText("Suffix ( z.B. mp4,mp3):");
 
                         GroupLayout jPanel8Layout = new GroupLayout(jPanel8);
                         jPanel8.setLayout(jPanel8Layout);
@@ -1428,25 +1428,25 @@ public class PanelPsetLang extends PanelVorlage {
                     jTextArea1.setBackground(new Color(0xeeeeee));
                     jTextArea1.setColumns(20);
                     jTextArea1.setRows(4);
-                    jTextArea1.setText("Filme, deren URL mit \"Pr\u00e4fix\" beginnt und mit \"Suffix\" endet, werden nicht\nmit einem Hilfsprogramm gespeichert, sondern direkt geladen.\n\nEine geringere Aufl\u00f6sung ist nicht bei jedem Sender m\u00f6glich, es wird dann in der gleichen\nAufl\u00f6sung geladen."); //NON-NLS
+                    jTextArea1.setText("Filme, deren URL mit \"Pr\u00e4fix\" beginnt und mit \"Suffix\" endet, werden nicht\nmit einem Hilfsprogramm gespeichert, sondern direkt geladen.\n\nEine geringere Aufl\u00f6sung ist nicht bei jedem Sender m\u00f6glich, es wird dann in der gleichen\nAufl\u00f6sung geladen.");
                     jTextArea1.setBorder(null);
 
                     //======== jPanel12 ========
                     {
-                        jPanel12.setBorder(new TitledBorder("Film downloaden in")); //NON-NLS
+                        jPanel12.setBorder(new TitledBorder("Film downloaden in"));
 
                         //---- jRadioButtonAufloesungNormal ----
                         jRadioButtonAufloesungNormal.setSelected(true);
-                        jRadioButtonAufloesungNormal.setText("Mittlere Qualit\u00e4t"); //NON-NLS
+                        jRadioButtonAufloesungNormal.setText("Mittlere Qualit\u00e4t");
 
                         //---- jRadioButtonAufloesungKlein ----
-                        jRadioButtonAufloesungKlein.setText("Niedrige Qualit\u00e4t"); //NON-NLS
+                        jRadioButtonAufloesungKlein.setText("Niedrige Qualit\u00e4t");
 
                         //---- jRadioButtonAufloesungHD ----
-                        jRadioButtonAufloesungHD.setText("H\u00f6chste/Hohe Qualit\u00e4t"); //NON-NLS
+                        jRadioButtonAufloesungHD.setText("H\u00f6chste/Hohe Qualit\u00e4t");
 
                         //---- jLabel14 ----
-                        jLabel14.setText("Wenn es die Qualit\u00e4tstufe im Angebot nicht gibt, wird die n\u00e4chstkleinere genommen."); //NON-NLS
+                        jLabel14.setText("Wenn es die Qualit\u00e4tstufe im Angebot nicht gibt, wird die n\u00e4chstkleinere genommen.");
 
                         GroupLayout jPanel12Layout = new GroupLayout(jPanel12);
                         jPanel12.setLayout(jPanel12Layout);
@@ -1478,16 +1478,16 @@ public class PanelPsetLang extends PanelVorlage {
 
                     //======== jPanel13 ========
                     {
-                        jPanel13.setBorder(new TitledBorder("nach dem Speichern")); //NON-NLS
+                        jPanel13.setBorder(new TitledBorder("Nach dem Speichern"));
 
                         //---- jCheckBoxInfodatei ----
-                        jCheckBoxInfodatei.setText("Infodatei anlegen: \"Filmname.txt\""); //NON-NLS
+                        jCheckBoxInfodatei.setText("Infodatei anlegen: \"Filmname.txt\"");
 
                         //---- jCheckBoxSpotlight ----
-                        jCheckBoxSpotlight.setText("Filmbeschreibung als Finder-Kommentar f\u00fcr Spotlight speichern (nur OS X)"); //NON-NLS
+                        jCheckBoxSpotlight.setText("Filmbeschreibung als Finder-Kommentar f\u00fcr Spotlight speichern (nur OS X)");
 
                         //---- jCheckBoxSubtitle ----
-                        jCheckBoxSubtitle.setText("Untertitel speichern: \"Filmname.xxx\""); //NON-NLS
+                        jCheckBoxSubtitle.setText("Untertitel speichern: \"Filmname.xxx\"");
 
                         GroupLayout jPanel13Layout = new GroupLayout(jPanel13);
                         jPanel13.setLayout(jPanel13Layout);
@@ -1540,14 +1540,14 @@ public class PanelPsetLang extends PanelVorlage {
                                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     );
                 }
-                jTabbedPane.addTab("Download", jPanel11); //NON-NLS
+                jTabbedPane.addTab("Download", jPanel11);
 
                 //======== jPanelProgramme ========
                 {
 
                     //======== jScrollPane1 ========
                     {
-                        jScrollPane1.setBorder(new TitledBorder(null, "Titel", TitledBorder.LEFT, TitledBorder.TOP)); //NON-NLS
+                        jScrollPane1.setBorder(new TitledBorder(null, "Titel", TitledBorder.LEFT, TitledBorder.TOP));
 
                         //---- jTableProgramme ----
                         jTableProgramme.setModel(new NonEditableTableModel());
@@ -1560,24 +1560,24 @@ public class PanelPsetLang extends PanelVorlage {
                         jPanel2.setBorder(new EtchedBorder());
 
                         //---- jButtonProgPlus ----
-                        jButtonProgPlus.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-add.png"))); //NON-NLS
-                        jButtonProgPlus.setToolTipText("neues Programm anlegen"); //NON-NLS
+                        jButtonProgPlus.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-add.png")));
+                        jButtonProgPlus.setToolTipText("neues Programm anlegen");
 
                         //---- jButtonProgMinus ----
-                        jButtonProgMinus.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-remove.png"))); //NON-NLS
-                        jButtonProgMinus.setToolTipText("markiertes Programm l\u00f6schen"); //NON-NLS
+                        jButtonProgMinus.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-remove.png")));
+                        jButtonProgMinus.setToolTipText("markiertes Programm l\u00f6schen");
 
                         //---- jButtonProgDuplizieren ----
-                        jButtonProgDuplizieren.setText("Duplizieren"); //NON-NLS
-                        jButtonProgDuplizieren.setToolTipText("markierte Zeile duplizieren"); //NON-NLS
+                        jButtonProgDuplizieren.setText("Duplizieren");
+                        jButtonProgDuplizieren.setToolTipText("markierte Zeile duplizieren");
 
                         //---- jButtonProgAuf ----
-                        jButtonProgAuf.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-up.png"))); //NON-NLS
-                        jButtonProgAuf.setToolTipText("markierte Zeile eins nach oben"); //NON-NLS
+                        jButtonProgAuf.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-up.png")));
+                        jButtonProgAuf.setToolTipText("markierte Zeile eins nach oben");
 
                         //---- jButtonProgAb ----
-                        jButtonProgAb.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-down.png"))); //NON-NLS
-                        jButtonProgAb.setToolTipText("markierte Zeile eins nach unten"); //NON-NLS
+                        jButtonProgAb.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-down.png")));
+                        jButtonProgAb.setToolTipText("markierte Zeile eins nach unten");
 
                         GroupLayout jPanel2Layout = new GroupLayout(jPanel2);
                         jPanel2.setLayout(jPanel2Layout);
@@ -1616,32 +1616,32 @@ public class PanelPsetLang extends PanelVorlage {
                         jPanelProgrammDetails.setBorder(new EtchedBorder());
 
                         //---- jLabel ----
-                        jLabel.setText("Programm:"); //NON-NLS
+                        jLabel.setText("Programm:");
 
                         //---- jButtonProgPfad ----
-                        jButtonProgPfad.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-file-open.png"))); //NON-NLS
-                        jButtonProgPfad.setToolTipText("Programm ausw\u00e4hlen"); //NON-NLS
+                        jButtonProgPfad.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-file-open.png")));
+                        jButtonProgPfad.setToolTipText("Programm ausw\u00e4hlen");
 
                         //---- jLabel1 ----
-                        jLabel1.setText("Schalter:"); //NON-NLS
+                        jLabel1.setText("Schalter:");
 
                         //---- jLabel2 ----
-                        jLabel2.setText("Beschreibung:"); //NON-NLS
+                        jLabel2.setText("Beschreibung:");
 
                         //---- jLabel3 ----
-                        jLabel3.setText("Pr\u00e4fix (z.B. http):"); //NON-NLS
+                        jLabel3.setText("Pr\u00e4fix (z.B. http):");
 
                         //---- jLabel4 ----
-                        jLabel4.setText("Suffix ( z.B. mp4,mp3):"); //NON-NLS
+                        jLabel4.setText("Suffix ( z.B. mp4,mp3):");
 
                         //---- jCheckBoxRestart ----
-                        jCheckBoxRestart.setText("fehlgeschlagene Downloads wieder starten"); //NON-NLS
+                        jCheckBoxRestart.setText("Fehlgeschlagene Downloads wieder starten");
 
                         //---- jLabel9 ----
-                        jLabel9.setText("Zieldateiname:"); //NON-NLS
+                        jLabel9.setText("Zieldateiname:");
 
                         //---- jCheckBoxRemoteDownload ----
-                        jCheckBoxRemoteDownload.setText("externer Downloadmanager"); //NON-NLS
+                        jCheckBoxRemoteDownload.setText("Externer Downloadmanager");
 
                         GroupLayout jPanelProgrammDetailsLayout = new GroupLayout(jPanelProgrammDetails);
                         jPanelProgrammDetails.setLayout(jPanelProgrammDetailsLayout);
@@ -1675,12 +1675,12 @@ public class PanelPsetLang extends PanelVorlage {
                                                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                     .addComponent(jLabel4)
                                                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(jTextFieldProgSuffix, GroupLayout.DEFAULT_SIZE, 191, Short.MAX_VALUE))
+                                                    .addComponent(jTextFieldProgSuffix, GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE))
                                                 .addGroup(jPanelProgrammDetailsLayout.createSequentialGroup()
                                                     .addGroup(jPanelProgrammDetailsLayout.createParallelGroup()
                                                         .addComponent(jCheckBoxRemoteDownload)
                                                         .addComponent(jCheckBoxRestart))
-                                                    .addGap(0, 206, Short.MAX_VALUE)))))
+                                                    .addGap(0, 194, Short.MAX_VALUE)))))
                                     .addContainerGap())
                         );
                         jPanelProgrammDetailsLayout.setVerticalGroup(
@@ -1734,21 +1734,21 @@ public class PanelPsetLang extends PanelVorlage {
                         jPanelProgrammeLayout.createParallelGroup()
                             .addGroup(GroupLayout.Alignment.TRAILING, jPanelProgrammeLayout.createSequentialGroup()
                                 .addContainerGap()
-                                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
+                                .addComponent(jScrollPane1, GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jPanelProgrammDetails, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                     );
                 }
-                jTabbedPane.addTab("Hilfsprogramme", jPanelProgramme); //NON-NLS
+                jTabbedPane.addTab("Hilfsprogramme", jPanelProgramme);
             }
             jSplitPane1.setRightComponent(jTabbedPane);
 
             //======== jPanel3 ========
             {
                 jPanel3.setLayout(new MigLayout(
-                    new LC().insets("0").hideMode(3).gridGap("5", "5"), //NON-NLS
+                    new LC().insets("0").hideMode(3).gridGap("5", "5"),
                     // columns
                     new AC()
                         .fill().gap()
@@ -1772,7 +1772,7 @@ public class PanelPsetLang extends PanelVorlage {
                             {null, null, null},
                         },
                         new String[] {
-                            "Title 1", "Title 2", "Title 3" //NON-NLS
+                            "Title 1", "Title 2", "Title 3"
                         }
                     ));
                     jTablePset.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -1783,35 +1783,35 @@ public class PanelPsetLang extends PanelVorlage {
                 jPanel3.add(jScrollPane3, new CC().cell(0, 0, 3, 1));
 
                 //---- jButtonGruppeDuplizieren ----
-                jButtonGruppeDuplizieren.setText("Duplizieren"); //NON-NLS
-                jButtonGruppeDuplizieren.setToolTipText("Programmgruppe kopieren"); //NON-NLS
+                jButtonGruppeDuplizieren.setText("Duplizieren");
+                jButtonGruppeDuplizieren.setToolTipText("Programmgruppe kopieren");
                 jPanel3.add(jButtonGruppeDuplizieren, new CC().cell(0, 3, 3, 1));
 
                 //---- jButtonExport ----
-                jButtonExport.setText("Export"); //NON-NLS
-                jButtonExport.setToolTipText("Programmgruppe in Datei exportieren"); //NON-NLS
+                jButtonExport.setText("Export");
+                jButtonExport.setToolTipText("Programmgruppe in Datei exportieren");
                 jPanel3.add(jButtonExport, new CC().cell(0, 4, 3, 1));
 
                 //---- jButtonGruppeNeu ----
-                jButtonGruppeNeu.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-add.png"))); //NON-NLS
-                jButtonGruppeNeu.setToolTipText("neue Programmgruppe anlegen"); //NON-NLS
-                jPanel3.add(jButtonGruppeNeu, new CC().cell(0, 2).alignX("center").growX(0)); //NON-NLS
+                jButtonGruppeNeu.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-add.png")));
+                jButtonGruppeNeu.setToolTipText("neue Programmgruppe anlegen");
+                jPanel3.add(jButtonGruppeNeu, new CC().cell(0, 2).alignX("center").growX(0));
 
                 //---- jButtonGruppeLoeschen ----
-                jButtonGruppeLoeschen.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-remove.png"))); //NON-NLS
-                jButtonGruppeLoeschen.setToolTipText("Programmgruppe l\u00f6schen"); //NON-NLS
-                jPanel3.add(jButtonGruppeLoeschen, new CC().cell(2, 2).alignX("center").growX(0)); //NON-NLS
+                jButtonGruppeLoeschen.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-remove.png")));
+                jButtonGruppeLoeschen.setToolTipText("Programmgruppe l\u00f6schen");
+                jPanel3.add(jButtonGruppeLoeschen, new CC().cell(2, 2).alignX("center").growX(0));
 
                 //---- jButtonGruppeAuf ----
-                jButtonGruppeAuf.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-up.png"))); //NON-NLS
-                jButtonGruppeAuf.setToolTipText("Programmgruppe nach oben schieben"); //NON-NLS
-                jPanel3.add(jButtonGruppeAuf, new CC().cell(0, 1).alignX("center").growX(0)); //NON-NLS
+                jButtonGruppeAuf.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-up.png")));
+                jButtonGruppeAuf.setToolTipText("Programmgruppe nach oben schieben");
+                jPanel3.add(jButtonGruppeAuf, new CC().cell(0, 1).alignX("center").growX(0));
                 jPanel3.add(hSpacer1, new CC().cell(1, 1));
 
                 //---- jButtonGruppeAb ----
-                jButtonGruppeAb.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-down.png"))); //NON-NLS
-                jButtonGruppeAb.setToolTipText("Programmgruppe nach unten schieben"); //NON-NLS
-                jPanel3.add(jButtonGruppeAb, new CC().cell(2, 1).alignX("center").growX(0)); //NON-NLS
+                jButtonGruppeAb.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-down.png")));
+                jButtonGruppeAb.setToolTipText("Programmgruppe nach unten schieben");
+                jPanel3.add(jButtonGruppeAb, new CC().cell(2, 1).alignX("center").growX(0));
             }
             jSplitPane1.setLeftComponent(jPanel3);
         }
@@ -1902,6 +1902,5 @@ public class PanelPsetLang extends PanelVorlage {
     private JButton jButtonGruppeLoeschen;
     private JButton jButtonGruppeAuf;
     private JButton jButtonGruppeAb;
-
     // End of variables declaration//GEN-END:variables
 }

@@ -65,17 +65,17 @@ public class AboutDialog extends JDialog {
         hyperlinkEjTechnologies = new JXHyperlink();
 
         //======== this ========
-        setTitle("\u00dcber dieses Programm"); //NON-NLS
+        setTitle("\u00dcber dieses Programm");
         setModal(true);
         setMinimumSize(new Dimension(725, 470));
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setResizable(false);
         var contentPane = getContentPane();
         contentPane.setLayout(new MigLayout(
-            new LC().fill().insets("5").hideMode(3).gridGap("5", "5"), //NON-NLS
+            new LC().fill().insets("5").hideMode(3).gridGap("5", "5"),
             // columns
             new AC()
-                .size("316").fill().gap() //NON-NLS
+                .size("316").fill().gap()
                 .fill(),
             // rows
             new AC()
@@ -84,29 +84,29 @@ public class AboutDialog extends JDialog {
                 .fill()));
 
         //---- label1 ----
-        label1.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/MediathekView.png"))); //NON-NLS
+        label1.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/MediathekView.png")));
         contentPane.add(label1, new CC().cell(0, 0));
 
         //======== panel1 ========
         {
             panel1.setLayout(new MigLayout(
-                new LC().insets("0").hideMode(3).gridGap("0", "0"), //NON-NLS
+                new LC().insets("0").hideMode(3).gridGap("0", "0"),
                 // columns
                 new AC()
-                    .grow().align("left"), //NON-NLS
+                    .grow().align("left"),
                 // rows
                 new AC()
                     .fill().gap()
-                    .fill().gap("rel") //NON-NLS
+                    .fill().gap("rel")
                     .grow().fill()));
 
             //---- label2 ----
-            label2.setText("MediathekView"); //NON-NLS
+            label2.setText("MediathekView");
             label2.setFont(label2.getFont().deriveFont(label2.getFont().getStyle() | Font.BOLD, label2.getFont().getSize() + 35f));
             panel1.add(label2, new CC().cell(0, 0));
 
             //---- lblVersion ----
-            lblVersion.setText("Version"); //NON-NLS
+            lblVersion.setText("Version");
             panel1.add(lblVersion, new CC().cell(0, 1));
 
             //======== tabbedPane1 ========
@@ -124,13 +124,13 @@ public class AboutDialog extends JDialog {
                         scrollPane3.setMinimumSize(new Dimension(196, 162));
 
                         //---- textPane1 ----
-                        textPane1.setText("MediathekView-Client:\nChristian Franzke (derreisende77)\n\nMediathekView-Server:\nNicklas Wiegandt (nicklas2751)\nPeter W. (pidoubleyou)\nSascha Wiegandt (thesasch)\n\nServer-Administration:\nAlexander Finkh\u00e4user (alex1702)"); //NON-NLS
+                        textPane1.setText("MediathekView-Client:\nChristian Franzke (derreisende77)\n\nMediathekView-Server:\nNicklas Wiegandt (nicklas2751)\nPeter W. (pidoubleyou)\nSascha Wiegandt (thesasch)\n\nServer-Administration:\nAlexander Finkh\u00e4user (alex1702)");
                         textPane1.setEditable(false);
                         scrollPane3.setViewportView(textPane1);
                     }
                     panel2.add(scrollPane3, BorderLayout.CENTER);
                 }
-                tabbedPane1.addTab("aktive Entwickler", panel2); //NON-NLS
+                tabbedPane1.addTab("Aktive Entwickler", panel2);
 
                 //======== panel3 ========
                 {
@@ -140,13 +140,13 @@ public class AboutDialog extends JDialog {
                     {
 
                         //---- textPane2 ----
-                        textPane2.setText("Gr\u00fcnder des Programms:\nXaver W. (xaverW)\n\nWeitere Beteiligte:\nsiedlerchr\nstyrol\nzxsd\napoleon\nhostis\npmshell\nclel\nthausherr\nklauswich"); //NON-NLS
+                        textPane2.setText("Gr\u00fcnder des Programms:\nXaver W. (xaverW)\n\nWeitere Beteiligte:\nsiedlerchr\nstyrol\nzxsd\napoleon\nhostis\npmshell\nclel\nthausherr\nklauswich");
                         textPane2.setEditable(false);
                         scrollPane1.setViewportView(textPane2);
                     }
                     panel3.add(scrollPane1, BorderLayout.CENTER);
                 }
-                tabbedPane1.addTab("ehemalige Mitwirkende", panel3); //NON-NLS
+                tabbedPane1.addTab("Ehemalige Mitwirkende", panel3);
             }
             panel1.add(tabbedPane1, new CC().cell(0, 2).grow());
         }
@@ -155,10 +155,10 @@ public class AboutDialog extends JDialog {
         //======== panel5 ========
         {
             panel5.setLayout(new MigLayout(
-                new LC().fillX().insets("5").hideMode(3).gridGap("5", "5"), //NON-NLS
+                new LC().fillX().insets("5").hideMode(3).gridGap("5", "5"),
                 // columns
                 new AC()
-                    .size("316").fill(), //NON-NLS
+                    .size("316").fill(),
                 // rows
                 new AC()
                     .fill().gap()
@@ -169,27 +169,27 @@ public class AboutDialog extends JDialog {
                     ));
 
             //---- hyperlinkHomepage ----
-            hyperlinkHomepage.setText("Homepage"); //NON-NLS
+            hyperlinkHomepage.setText("Homepage");
             panel5.add(hyperlinkHomepage, new CC().cell(0, 0));
 
             //---- hyperlinkGuiDonation ----
-            hyperlinkGuiDonation.setText("Spende an den Entwickler des Programms"); //NON-NLS
+            hyperlinkGuiDonation.setText("Spende an den Entwickler des Programms");
             panel5.add(hyperlinkGuiDonation, new CC().cell(0, 1));
 
             //---- hyperlinkServerDonation ----
-            hyperlinkServerDonation.setText("Spende f\u00fcr den Server-Betrieb"); //NON-NLS
+            hyperlinkServerDonation.setText("Spende f\u00fcr den Server-Betrieb");
             panel5.add(hyperlinkServerDonation, new CC().cell(0, 2));
 
             //---- hyperlinkForum ----
-            hyperlinkForum.setText("Hilfe-Forum"); //NON-NLS
+            hyperlinkForum.setText("Hilfe-Forum");
             panel5.add(hyperlinkForum, new CC().cell(0, 3));
 
             //---- hyperlinkOnlineHelp ----
-            hyperlinkOnlineHelp.setText("Online-Anleitung"); //NON-NLS
+            hyperlinkOnlineHelp.setText("Online-Anleitung");
             panel5.add(hyperlinkOnlineHelp, new CC().cell(0, 4));
 
             //---- hyperlinkFaq ----
-            hyperlinkFaq.setText("Frequently Asked Questions (FAQ)"); //NON-NLS
+            hyperlinkFaq.setText("Frequently Asked Questions (FAQ)");
             panel5.add(hyperlinkFaq, new CC().cell(0, 5));
         }
         contentPane.add(panel5, new CC().cell(0, 1).growX());
@@ -197,16 +197,16 @@ public class AboutDialog extends JDialog {
         //======== panel6 ========
         {
             panel6.setLayout(new MigLayout(
-                new LC().fill().insets("0 5 5 5").hideMode(3).gridGap("5", "5"), //NON-NLS
+                new LC().fill().insets("0 5 5 5").hideMode(3).gridGap("5", "5"),
                 // columns
                 new AC()
-                    .size("316").fill(), //NON-NLS
+                    .size("316").fill(),
                 // rows
                 new AC()
-                    .align("top"))); //NON-NLS
+                    .align("top")));
 
             //---- label4 ----
-            label4.setText("Die Entwicklung wird unterst\u00fctzt von:"); //NON-NLS
+            label4.setText("Die Entwicklung wird unterst\u00fctzt von:");
             label4.setVerticalAlignment(SwingConstants.TOP);
             panel6.add(label4, new CC().cell(0, 0));
         }
@@ -215,22 +215,22 @@ public class AboutDialog extends JDialog {
         //======== panel4 ========
         {
             panel4.setLayout(new MigLayout(
-                new LC().insets("0").hideMode(3).gridGap("0", "0"), //NON-NLS
+                new LC().insets("0").hideMode(3).gridGap("0", "0"),
                 // columns
                 new AC()
-                    .grow().align("left"), //NON-NLS
+                    .grow().align("left"),
                 // rows
                 new AC()
                     .fill().gap()
                     .fill()));
 
             //---- hyperlinkJetBrains ----
-            hyperlinkJetBrains.setText("JetBrains IntelliJ"); //NON-NLS
+            hyperlinkJetBrains.setText("JetBrains IntelliJ");
             hyperlinkJetBrains.setVerticalAlignment(SwingConstants.TOP);
             panel4.add(hyperlinkJetBrains, new CC().cell(0, 0).growX());
 
             //---- hyperlinkEjTechnologies ----
-            hyperlinkEjTechnologies.setText("ej-technologies install4j & JProfiler"); //NON-NLS
+            hyperlinkEjTechnologies.setText("ej-technologies install4j & JProfiler");
             panel4.add(hyperlinkEjTechnologies, new CC().cell(0, 1).growX());
         }
         contentPane.add(panel4, new CC().cell(1, 2));

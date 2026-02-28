@@ -424,7 +424,7 @@ public class SwingFilterDialog extends JDialog {
         @Override
         public void actionPerformed(ActionEvent e) {
             var result = JOptionPane.showConfirmDialog(MediathekGui.ui(),
-                    "Sind Sie sicher dass Sie den Filter zurücksetzen möchten?", "Filter zurücksetzen",
+                    "Sind Sie sicher, dass Sie den Filter zurücksetzen möchten?", "Filter zurücksetzen",
                     JOptionPane.YES_NO_OPTION);
             if (result == JOptionPane.YES_OPTION) {
                 filterConfig.clearCurrentFilter();
@@ -828,7 +828,7 @@ public class SwingFilterDialog extends JDialog {
             pnlShowOnly.add(cbShowBookMarkedOnly);
 
             //---- cbShowOnlyHq ----
-            cbShowOnlyHq.setText("Nur High Quality(HQ) Filme anzeigen");
+            cbShowOnlyHq.setText("Nur High-Quality-Filme (HQ) anzeigen");
             pnlShowOnly.add(cbShowOnlyHq);
 
             //---- cbShowSubtitlesOnly ----

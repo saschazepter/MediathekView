@@ -1303,7 +1303,7 @@ public class MediathekGui extends JFrame {
 
     public class ToggleZappLivestreamsTabAction extends AbstractAction {
         private final LivestreamPanel livestreamPanel;
-        private static final String TAB_TITLE = "Zapp Livestream Tab ein-/ausblenden";
+        private static final String TAB_TITLE = "Zapp Livestreams Tab ein-/ausblenden";
 
         public ToggleZappLivestreamsTabAction(LivestreamPanel livestreamPanel) {
             this.livestreamPanel = livestreamPanel;
