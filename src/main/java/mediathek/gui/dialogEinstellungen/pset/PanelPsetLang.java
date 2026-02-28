@@ -28,7 +28,6 @@ import mediathek.daten.DatenPset;
 import mediathek.daten.FilmResolution;
 import mediathek.daten.ListePset;
 import mediathek.gui.PanelVorlage;
-import mediathek.gui.dialog.DialogHilfe;
 import mediathek.gui.messages.ProgramSetChangedEvent;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
@@ -58,6 +57,7 @@ import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PanelPsetLang extends PanelVorlage {
     private int neuZaehler;
@@ -444,72 +444,83 @@ public class PanelPsetLang extends PanelVorlage {
         final String PIPE = "| ";
         final String LEER = "      ";
         final String PFEIL = " -> ";
-        boolean ret;
+        List<Boolean> checkResultList = new ArrayList<>();
         StringBuilder text = new StringBuilder();
 
-        for (DatenPset datenPset : Daten.listePset) {
-            ret = true;
-            if (!datenPset.isFreeLine() && !datenPset.isLabel()) {
-                // nur wenn kein Label oder freeline
-                text.append("++++++++++++++++++++++++++++++++++++++++++++" + '\n');
-                text.append(PIPE + "Programmgruppe: ").append(datenPset.getName()).append('\n');
-                String zielPfad = datenPset.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD];
-                if (datenPset.progsContainPath()) {
-                    // beim nur Abspielen wird er nicht gebraucht
-                    if (zielPfad.isEmpty()) {
-                        ret = false;
-                        text.append(PIPE + LEER + "Zielpfad fehlt!\n");
-                    } else // Pfad beschreibbar?
-                        if (!GuiFunktionenProgramme.checkPathWriteable(zielPfad)) {
-                            //da Pfad-leer und "kein" Pfad schon abgeprüft
+        //check only pset which are not label or free line
+        Daten.listePset.stream()
+                .filter(pset -> !pset.isFreeLine())
+                .filter(pset -> !pset.isLabel())
+                .forEach(datenPset -> {
+                    boolean ret = true;
+                    text.append("++++++++++++++++++++++++++++++++++++++++++++" + '\n');
+                    text.append(PIPE + "Programmgruppe: ").append(datenPset.getName()).append('\n');
+                    var zielPfad = datenPset.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD];
+                    if (datenPset.progsContainPath()) {
+                        // beim nur Abspielen wird er nicht gebraucht
+                        if (zielPfad.isEmpty()) {
                             ret = false;
-                            text.append(PIPE + LEER + "Falscher Zielpfad!\n");
-                            text.append(PIPE + LEER + PFEIL + "Zielpfad \"").append(zielPfad).append("\" nicht beschreibbar!").append('\n');
+                            text.append(PIPE + LEER + "Zielpfad fehlt!\n");
                         }
-                }
+                        else // Pfad beschreibbar?
+                            if (!GuiFunktionenProgramme.checkPathWriteable(zielPfad)) {
+                                //da Pfad-leer und "kein" Pfad schon abgeprüft
+                                ret = false;
+                                text.append(PIPE + LEER + "Falscher Zielpfad!\n");
+                                text.append(PIPE + LEER + PFEIL + "Zielpfad \"").append(zielPfad).append("\" nicht beschreibbar!").append('\n');
+                            }
+                    }
 
-                for (DatenProg datenProg : datenPset.getListeProg()) {
-                    // Programmpfad prüfen
-                    final var progPfad = datenProg.arr[DatenProg.PROGRAMM_PROGRAMMPFAD];
-                    final var progName = datenProg.arr[DatenProg.PROGRAMM_NAME];
-                    if (progPfad.isEmpty()) {
-                        ret = false;
-                        text.append(PIPE + LEER + "Kein Programm angegeben!\n");
-                        text.append(PIPE + LEER + PFEIL + "Programmname: ").append(progName).append('\n');
-                        text.append(PIPE + LEER + LEER + "Pfad: ").append(progPfad).append('\n');
-                    } else if (!Files.isExecutable(Paths.get(progPfad))) {
-                        // dann noch mit RuntimeExec versuchen
-                        RuntimeExec r = new RuntimeExec(progPfad);
-                        Process pr = r.exec(false);
-                        if (pr == null) {
-                            // läßt sich nicht starten
+                    for (var datenProg : datenPset.getListeProg()) {
+                        // Programmpfad prüfen
+                        final var progPfad = datenProg.arr[DatenProg.PROGRAMM_PROGRAMMPFAD];
+                        final var progName = datenProg.arr[DatenProg.PROGRAMM_NAME];
+                        if (progPfad.isEmpty()) {
                             ret = false;
-                            text.append(PIPE + LEER + "Falscher Programmpfad!\n");
+                            text.append(PIPE + LEER + "Kein Programm angegeben!\n");
                             text.append(PIPE + LEER + PFEIL + "Programmname: ").append(progName).append('\n');
                             text.append(PIPE + LEER + LEER + "Pfad: ").append(progPfad).append('\n');
-                            if (!progPfad.contains(File.separator)) {
-                                text.append(PIPE + LEER + PFEIL + "Wenn das Programm nicht im Systempfad liegt, " + '\n');
-                                text.append(PIPE + LEER + LEER + "wird der Start nicht klappen!" + '\n');
-                            }
                         }
-                        else
-                            pr.destroy();
+                        else if (!Files.isExecutable(Paths.get(progPfad))) {
+                            // dann noch mit RuntimeExec versuchen
+                            RuntimeExec r = new RuntimeExec(progPfad);
+                            Process pr = r.exec(false);
+                            if (pr == null) {
+                                // läßt sich nicht starten
+                                ret = false;
+                                text.append(PIPE + LEER + "Falscher Programmpfad!\n");
+                                text.append(PIPE + LEER + PFEIL + "Programmname: ").append(progName).append('\n');
+                                text.append(PIPE + LEER + LEER + "Pfad: ").append(progPfad).append('\n');
+                                if (!progPfad.contains(File.separator)) {
+                                    text.append(PIPE + LEER + PFEIL + "Wenn das Programm nicht im Systempfad liegt, " + '\n');
+                                    text.append(PIPE + LEER + LEER + "wird der Start nicht klappen!" + '\n');
+                                }
+                            }
+                            else
+                                pr.destroy();
+                        }
                     }
-                }
-                if (ret) {
-                    //sollte alles passen
-                    text.append(PIPE + PFEIL + "Ok!" + '\n');
-                }
-                text.append("""
-                        ++++++++++++++++++++++++++++++++++++++++++++
 
+                    //store the result of each check
+                    checkResultList.add(ret);
 
-                        """);
-            }
+                    if (ret) {
+                        //sollte alles passen
+                        text.append(PIPE + PFEIL + "Ok!" + '\n');
+                    }
+                    text.append("""
+                            ++++++++++++++++++++++++++++++++++++++++++++
+                            
+                            
+                            """);
+                });
+
+        boolean allTrue = checkResultList.stream().allMatch(Boolean::booleanValue);
+        if (allTrue) {
+            JOptionPane.showMessageDialog(this, "Alle Programm-Sets sind in Ordnung.", Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
         }
-
-        var dlg = new DialogHilfe(parentComponent, true, text.toString());
-        dlg.setVisible(true);
+        else
+            JOptionPane.showMessageDialog(this, text.toString(), Konstanten.PROGRAMMNAME, JOptionPane.WARNING_MESSAGE);
     }
 
     private void setAufloesung() {
