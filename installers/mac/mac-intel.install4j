@@ -24,12 +24,12 @@
         <entry>sqlite-jdbc*</entry>
       </macSearchedJars>
     </codeSigning>
-    <jreBundles jdkProviderId="Liberica" release="25/25.0.1+11">
-          <modules>
-            <defaultModules set="jre" />
-            <module name="jdk.incubator.vector" />
-          </modules>
-        </jreBundles>
+    <jreBundles jdkProviderId="JBR" release="25/25.0.2-b329.66">
+      <modules>
+        <defaultModules set="jre" />
+        <module name="jdk.incubator.vector" />
+      </modules>
+    </jreBundles>
   </application>
   <files keepModificationTimes="true">
     <mountPoints>
