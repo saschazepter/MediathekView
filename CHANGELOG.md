@@ -3,6 +3,7 @@
 - **BUGFIX:** Workaround für Oracle JDK-8024695 eingebaut. Dies verhinderte das korrekte Abspielen von Filmen.
 - **BUGFIX:** Veraltetes Sendericon wird nicht mehr im Filminfo-Dialog dargestellt.
 - **BUGFIX:** Zielpfad im "Film Speichern"-Dialog wird nicht mehr abgeschnitten angezeigt.
+- **BUGFUX(macOS):** MV sucht nun bei zapp Livestreams in folgender Reihenfolge nach passenden Playern: IINA -> VLC -> Browserauswahl
 - **FEATURE:** Unterstützung für WebVTT-Untertitel bei Sendern.
 - Große Datenbank-Maintenance der Filmhistorie wird nur noch alle 30 Tage ausgeführt, nicht bei jedem Beenden. Kann manuell über das Hilfe-Menü gestartet werden.
 - Untertitel-Format-Support wurde vollständig neu implementiert und unterstützt nun auch TTML2-Standard.
