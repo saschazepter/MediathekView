@@ -64,12 +64,10 @@ public class PanelPsetLang extends PanelVorlage {
     private final ListePset listePset;
     private final MVTable tabellePset;
     private final MVTable tabelleProgramme;
-    private final boolean modalHilfe;
 
     public PanelPsetLang(Daten d, JFrame parentComponent, ListePset llistePset) {
         super(d, parentComponent);
         initComponents();
-        modalHilfe = true;
         tabellePset = new MVPsetTable();
         jScrollPane3.setViewportView(tabellePset);
         tabelleProgramme = new MVProgTable();
@@ -391,7 +389,16 @@ public class PanelPsetLang extends PanelVorlage {
         handler = new TextCopyPasteHandler<>(tfGruppeZielPfad);
         tfGruppeZielPfad.setComponentPopupMenu(handler.getPopupMenu());
 
-        jButtonHilfe.addActionListener(_ -> new DialogHilfe(parentComponent, modalHilfe, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_PRGRAMME)).setVisible(true));
+        jButtonHilfe.addActionListener(_ -> {
+            var str = GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_PRGRAMME).trim();
+            JTextArea area = new JTextArea(str);
+            area.setRows(20);
+            area.setColumns(60);
+            area.setLineWrap(true);
+            area.setEditable(false);
+            JScrollPane pane = new JScrollPane(area);
+            JOptionPane.showMessageDialog(this,pane,"Hilfe", JOptionPane.INFORMATION_MESSAGE);
+        });
         jRadioButtonAufloesungKlein.addActionListener(_ -> setAufloesung());
         jRadioButtonAufloesungNormal.addActionListener(_ -> setAufloesung());
         jRadioButtonAufloesungHD.addActionListener(_ -> setAufloesung());
