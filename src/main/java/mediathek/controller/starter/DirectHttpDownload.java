@@ -13,6 +13,7 @@ import mediathek.gui.messages.*;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import mediathek.tool.http.MVHttpClient;
+import mediathek.tool.subtitles.MVSubtitle;
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.listener.Handler;
 import okhttp3.*;

@@ -10,8 +10,8 @@ import mediathek.gui.messages.DownloadListChangedEvent;
 import mediathek.gui.messages.DownloadStartEvent;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.MVInfoFile;
-import mediathek.tool.MVSubtitle;
 import mediathek.tool.MessageBus;
+import mediathek.tool.subtitles.MVSubtitle;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

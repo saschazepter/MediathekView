@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 derreisende77.
+ * Copyright (c) 2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,10 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.tool.ttml;
+package mediathek.tool.subtitles.ttml2;
 
-import java.nio.file.Path;
+public record Rgba(int r, int g, int b, int a) {
+    public Rgba {
+        if (r < 0 || r > 255 || g < 0 || g > 255 || b < 0 || b > 255 || a < 0 || a > 255) {
+            throw new IllegalArgumentException("RGBA components must be in [0,255]");
+        }
+    }
 
-public interface ITtmlParser {
-    boolean parse(Path ttmlFilePath);
+    public boolean isOpaque() {
+        return a == 255;
+    }
+
+    public boolean isTransparent() {
+        return a == 0;
+    }
 }
