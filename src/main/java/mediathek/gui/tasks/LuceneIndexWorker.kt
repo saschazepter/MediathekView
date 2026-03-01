@@ -132,6 +132,35 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         return IndexWriter(liste.luceneDirectory, indexWriterConfig)
     }
 
+    private fun updateProgress(processedCount: Int, totalCount: Int, oldProgress: AtomicInteger) {
+        val progress = if (totalCount == 0) 100 else (processedCount * 100) / totalCount
+        var previous = oldProgress.get()
+        while (progress > previous) {
+            if (oldProgress.compareAndSet(previous, progress)) {
+                SwingUtilities.invokeLater { progressBar.value = progress }
+                break
+            }
+            previous = oldProgress.get()
+        }
+    }
+
+    private fun flushBatch(
+        writer: IndexWriter,
+        batch: MutableList<Document>,
+        counter: AtomicInteger,
+        totalCount: Int,
+        oldProgress: AtomicInteger
+    ) {
+        if (batch.isEmpty()) {
+            return
+        }
+
+        writer.addDocuments(batch)
+        val processedCount = counter.addAndGet(batch.size)
+        updateProgress(processedCount, totalCount, oldProgress)
+        batch.clear()
+    }
+
     override fun doInBackground(): Void? {
         try {
             SwingUtilities.invokeLater {
@@ -152,6 +181,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
 
                 val indexingThreads = (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(1)
                 val queueCapacity = (indexingThreads * 256).coerceAtLeast(512)
+                val writeBatchSize = 256
                 val indexingDispatcher = Executors.newFixedThreadPool(indexingThreads).asCoroutineDispatcher()
                 try {
                     runBlocking {
@@ -169,23 +199,22 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
 
                         val consumers = List(indexingThreads) {
                             launch(indexingDispatcher) {
+                                val batch = ArrayList<Document>(writeBatchSize)
                                 for (film in filmChannel) {
                                     try {
-                                        val doc = createIndexDocument(film)
-                                        writer.addDocument(doc)
-                                        val progress =
-                                            if (totalCount == 0) 100 else (counter.incrementAndGet() * 100) / totalCount
-                                        var previous = oldProgress.get()
-                                        while (progress > previous) {
-                                            if (oldProgress.compareAndSet(previous, progress)) {
-                                                SwingUtilities.invokeLater { progressBar.value = progress }
-                                                break
-                                            }
-                                            previous = oldProgress.get()
+                                        batch.add(createIndexDocument(film))
+                                        if (batch.size >= writeBatchSize) {
+                                            flushBatch(writer, batch, counter, totalCount, oldProgress)
                                         }
                                     } catch (ex: IOException) {
                                         LOG.error("Lucene indexing failed for a film entry", ex)
                                     }
+                                }
+
+                                try {
+                                    flushBatch(writer, batch, counter, totalCount, oldProgress)
+                                } catch (ex: IOException) {
+                                    LOG.error("Lucene indexing failed while flushing a document batch", ex)
                                 }
                             }
                         }
