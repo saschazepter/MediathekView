@@ -36,6 +36,7 @@ import mediathek.gui.tabs.tab_livestreams.LivestreamPanel;
 import mediathek.gui.tasks.BlacklistFilterWorker;
 import mediathek.gui.tasks.LuceneIndexWorker;
 import mediathek.gui.tasks.RefreshAboWorker;
+import mediathek.logging.LogDialog;
 import mediathek.res.GetIcon;
 import mediathek.swing.IconOnlyButton;
 import mediathek.tool.*;
@@ -138,6 +139,7 @@ public class MediathekGui extends JFrame {
     private final ShowDuplicateStatisticsAction showDuplicateStatisticsAction = new ShowDuplicateStatisticsAction(this);
     private final LivestreamPanel tabLivestreams = new LivestreamPanel();
     private final ToggleZappLivestreamsTabAction toggleZappLivestreamsTabAction = new ToggleZappLivestreamsTabAction(tabLivestreams);
+    private final LogDialog logWindow = new LogDialog(this);
     public FixedRedrawStatusBar swingStatusBar;
     public GuiFilme tabFilme;
     public GuiDownloads tabDownloads;
@@ -1052,6 +1054,8 @@ public class MediathekGui extends JFrame {
         jMenuHilfe.add(new ShowOnlineHelpAction());
         jMenuHilfe.add(new ShowOnlineFaqAction(this));
         jMenuHilfe.addSeparator();
+        jMenuHilfe.add(new ShowLogWindowAction());
+        jMenuHilfe.addSeparator();
         jMenuHilfe.add(new ResetSettingsAction(this, daten));
         jMenuHilfe.add(new ResetDownloadHistoryAction(this));
         jMenuHilfe.add(new ResetAboHistoryAction(this));
@@ -1301,9 +1305,22 @@ public class MediathekGui extends JFrame {
         }
     }
 
+    class ShowLogWindowAction extends AbstractAction {
+        public ShowLogWindowAction() {
+            super("Live Programm-Log anzeigen");
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            if (!logWindow.isVisible())
+                logWindow.setVisible(true);
+            logWindow.toFront();
+        }
+    }
+
     public class ToggleZappLivestreamsTabAction extends AbstractAction {
-        private final LivestreamPanel livestreamPanel;
         private static final String TAB_TITLE = "Zapp Livestreams Tab ein-/ausblenden";
+        private final LivestreamPanel livestreamPanel;
 
         public ToggleZappLivestreamsTabAction(LivestreamPanel livestreamPanel) {
             this.livestreamPanel = livestreamPanel;

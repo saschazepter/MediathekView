@@ -26,6 +26,7 @@ import mediathek.controller.history.SeenHistoryMigrator;
 import mediathek.daten.IndexedFilmList;
 import mediathek.gui.dialog.DialogStarteinstellungen;
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider;
+import mediathek.logging.SwingAppender;
 import mediathek.mac.MediathekGuiMac;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
@@ -120,6 +121,28 @@ public class Main {
         for (String argument : aArguments) {
             logger.info("Startparameter: {}", argument);
         }
+    }
+
+    private static void registerSwingAppender(Level minLevel) {
+        final String APPENDER_NAME = "SwingAppender";
+
+        var ctx = (LoggerContext) LogManager.getContext(false);
+        var config = ctx.getConfiguration();
+
+        if (config.getAppender(APPENDER_NAME) != null) {
+            return;
+        }
+
+        var appender = SwingAppender.createAppender(APPENDER_NAME, null);
+
+        appender.start();
+        config.addAppender(appender);
+
+        // Attach to root logger
+        var rootLogger = config.getRootLogger();
+        rootLogger.addAppender(appender, minLevel, null);
+
+        ctx.updateLoggers();
     }
 
     private static void setupLogging() {
@@ -446,6 +469,7 @@ public class Main {
                 }
 
                 setupLogging();
+                registerSwingAppender(Level.TRACE);
                 printPortableModeInfo();
 
                 configureDnsPreferenceMode(parseResult);
