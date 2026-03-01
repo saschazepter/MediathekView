@@ -4,6 +4,7 @@
 - **BUGFIX:** Veraltetes Sendericon wird nicht mehr im Filminfo-Dialog dargestellt.
 - **BUGFIX:** Zielpfad im "Film Speichern"-Dialog wird nicht mehr abgeschnitten angezeigt.
 - **BUGFIX(macOS):** MV sucht nun bei zapp Livestreams in folgender Reihenfolge nach passenden Playern: IINA -> VLC -> Browserauswahl
+- **BUGFIX:** Im *Abo Verwalten*-Dialog werden nun Sender als Text korrekt dargestellt.
 - **FEATURE:** Unterstützung für WebVTT-Untertitel bei Sendern.
 - **FEATURE:** Via *Hilfe/Live Programm-Log anzeigen* kann nun die Log-Datei in Echtzeit eingesehen werden.
 - Große Datenbank-Maintenance der Filmhistorie wird nur noch alle 30 Tage ausgeführt, nicht bei jedem Beenden. Kann manuell über das Hilfe-Menü gestartet werden.
