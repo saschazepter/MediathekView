@@ -146,7 +146,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
                 val watch = Stopwatch.createStarted()
                 val counter = AtomicInteger(0)
                 val totalCount = filmListe.size
-                var oldProgress = 0
+                val oldProgress = AtomicInteger(0)
 
                 val indexingThreads = (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(1)
                 val executor = Executors.newFixedThreadPool(indexingThreads)
@@ -156,18 +156,22 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
                             val doc = createIndexDocument(film)
                             writer.addDocument(doc)
                             val progress = (counter.incrementAndGet() * 100) / totalCount
-                            if (progress > oldProgress) {
-                                SwingUtilities.invokeLater { progressBar.value = progress }
-                                oldProgress = progress
+                            var previous = oldProgress.get()
+                            while (progress > previous) {
+                                if (oldProgress.compareAndSet(previous, progress)) {
+                                    SwingUtilities.invokeLater { progressBar.value = progress }
+                                    break
+                                }
+                                previous = oldProgress.get()
                             }
                         } catch (ex: IOException) {
                             ex.printStackTrace()
                         }
                     }
                 }
-                SwingUtilities.invokeLater { progressBar.value = 100 }
                 executor.shutdown()
                 executor.awaitTermination(5, TimeUnit.MINUTES)
+                SwingUtilities.invokeLater { progressBar.value = 100 }
 
                 SwingUtilities.invokeLater {
                     progressBar.isIndeterminate = true
