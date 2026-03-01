@@ -34,6 +34,7 @@ import org.apache.lucene.document.*
 import org.apache.lucene.index.DirectoryReader
 import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
+import org.apache.lucene.index.IndexWriterConfig.OpenMode
 import java.io.IOException
 import java.nio.file.Files
 import java.time.format.DateTimeFormatter
@@ -122,12 +123,9 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
 
     private fun createIndexWriter(liste: IndexedFilmList): IndexWriter {
         val indexWriterConfig = IndexWriterConfig(LuceneDefaultAnalyzer.buildPerFieldAnalyzer())
+        indexWriterConfig.openMode = OpenMode.CREATE
         indexWriterConfig.ramBufferSizeMB = 256.0
-        val writer = IndexWriter(liste.luceneDirectory, indexWriterConfig)
-        //for safety delete all entries
-        writer.deleteAll()
-        writer.commit()
-        return writer
+        return IndexWriter(liste.luceneDirectory, indexWriterConfig)
     }
 
     override fun doInBackground(): Void? {
