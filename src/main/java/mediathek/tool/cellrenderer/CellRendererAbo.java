@@ -66,6 +66,11 @@ public class CellRendererAbo extends CellRendererBase {
                             Dimension targetDim = getSenderCellDimension(table, row,columnModelIndex);
                             setSenderIcon(abo.getSender(), targetDim);
                         }
+                        else {
+                            setHorizontalAlignment(SwingConstants.CENTER);
+                            setText(abo.getSender());
+                            setIcon(null);
+                        }
                         break;
 
                     case THEMA_TITEL:
