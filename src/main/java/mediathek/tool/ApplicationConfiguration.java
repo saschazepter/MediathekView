@@ -71,6 +71,7 @@ public class ApplicationConfiguration {
     public static final String DOWNLOAD_CONTINUATION_TIME = "download.continuation.time";
     public static final String SEARCH_USE_FILM_DESCRIPTIONS =
             "searchfield.film.search_through_description";
+    public static final String LUCENE_DIRECTORY_MODE = "lucene.directory.mode";
     public static final String FILM_SHOW_DESCRIPTION = "film.show_description";
     public static final String FILM_EVALUATE_DUPLICATES = "film.evaluate_duplicates";
     public static final String CONFIG_AUTOMATIC_UPDATE_CHECK = "application.automatic_update_check";
@@ -196,6 +197,7 @@ public class ApplicationConfiguration {
     private void createDefaultConfigSettings() {
         try {
             config.setProperty(APPLICATION_USER_AGENT, Konstanten.PROGRAMMNAME);
+            config.setProperty(LUCENE_DIRECTORY_MODE, "auto");
             setGeographicLocation(Country.DE);
 
             handler.save();
@@ -215,6 +217,9 @@ public class ApplicationConfiguration {
         }
         if (!config.containsKey(APPLICATION_INSTALL_TAB_SWITCH_LISTENER)) {
             config.setProperty(APPLICATION_INSTALL_TAB_SWITCH_LISTENER, !SystemUtils.IS_OS_MAC_OSX);
+        }
+        if (!config.containsKey(LUCENE_DIRECTORY_MODE)) {
+            config.setProperty(LUCENE_DIRECTORY_MODE, "auto");
         }
     }
 
