@@ -8,7 +8,7 @@
 - **BUGFIX(Windows):** Das Programm stürzt nicht mehr bei Nutzung über Remote Desktop ab.
 - **FEATURE:** Unterstützung für WebVTT-Untertitel bei Sendern.
 - **FEATURE:** Via *Hilfe/Live Programm-Log anzeigen* kann nun die Log-Datei in Echtzeit eingesehen werden.
-- **FEATURE:** Lucene Directory-Provider kann via *Einstellungen/Lucene-Tuning* konfiguriert werden. Das kann die Performance verbessern.
+- **FEATURE:** Lucene Directory-Provider kann via *Einstellungen/Lucene-Tuning* konfiguriert werden. Je nach OS kann dies die Performance verbessern.
 - Große Datenbank-Maintenance der Filmhistorie wird nur noch alle 30 Tage ausgeführt, nicht bei jedem Beenden. Kann manuell über das Hilfe-Menü gestartet werden.
 - Untertitel-Format-Support wurde vollständig neu implementiert und unterstützt nun auch TTML2-Standard.
 - Lucene-Index-Erstellung wurde für multi-core-Systeme optimiert.
