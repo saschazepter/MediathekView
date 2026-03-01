@@ -469,7 +469,14 @@ public class Main {
                 }
 
                 setupLogging();
-                registerSwingAppender(Level.TRACE);
+
+                Level level;
+                if (Config.isEnhancedLoggingEnabled())
+                    level = Level.TRACE;
+                else
+                    level = Level.DEBUG;
+                registerSwingAppender(level);
+
                 printPortableModeInfo();
 
                 configureDnsPreferenceMode(parseResult);
