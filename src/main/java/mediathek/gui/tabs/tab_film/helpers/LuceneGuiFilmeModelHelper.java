@@ -35,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.DateTools;
+import org.apache.lucene.index.LeafReaderContext;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -73,10 +74,11 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
 
     private TModelFilm performTableFiltering() {
         var listeFilme = (IndexedFilmList) Daten.getInstance().getListeFilmeNachBlackList();
+        var useUnseenCache = filterConfiguration.isShowUnseenOnly();
         try {
             calculateFilmLengthSliderValues();
 
-            if (filterConfiguration.isShowUnseenOnly())
+            if (useUnseenCache)
                 historyController.prepareMemoryCache();
 
             String searchText = searchFieldData.searchFieldText();
@@ -139,16 +141,16 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
 
                 //SEARCH
                 final var searcher = new IndexSearcher(listeFilme.getReader());
-                final var docs = searcher.search(finalQuery, listeFilme.size());
-                final var hit_length = docs.scoreDocs.length;
+                final var matchingDocIds = new ArrayList<Integer>();
+                searcher.search(finalQuery, new NonScoringCollector(matchingDocIds));
+                final var hit_length = matchingDocIds.size();
 
                 Set<Integer> filmNrSet = HashSet.newHashSet(hit_length);
 
                 logger.trace("Hit size: {}", hit_length);
                 var watch2 = Stopwatch.createStarted();
                 var storedFields = searcher.storedFields();
-                for (final var hit : docs.scoreDocs) {
-                    var docId = hit.doc;
+                for (final var docId : matchingDocIds) {
                     var d = storedFields.document(docId, INTEREST_SET);
                     filmNrSet.add(Integer.parseInt(d.get(LuceneIndexKeys.ID)));
                 }
@@ -174,15 +176,16 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
             var filmModel = new TModelFilm(resultList.size());
             filmModel.addAll(resultList);
 
-            if (filterConfiguration.isShowUnseenOnly())
-                historyController.emptyMemoryCache();
-
             return filmModel;
         } catch (Exception ex) {
             logger.error("Lucene filtering failed!", ex);
             SwingUtilities.invokeLater(() -> SwingErrorDialog.showExceptionMessage(MediathekGui.ui(),
                     "Die Lucene Abfrage ist inkorrekt und führt zu keinen Ergebnissen.", ex));
             return new TModelFilm();
+        } finally {
+            if (useUnseenCache) {
+                historyController.emptyMemoryCache();
+            }
         }
     }
 
@@ -273,5 +276,29 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
             return new TModelFilm();
 
         return filmModel;
+    }
+
+    private static class NonScoringCollector extends org.apache.lucene.search.SimpleCollector {
+        private final ArrayList<Integer> matchingDocIds;
+        private int docBase;
+
+        public NonScoringCollector(ArrayList<Integer> matchingDocIds) {
+            this.matchingDocIds = matchingDocIds;
+        }
+
+        @Override
+        protected void doSetNextReader(LeafReaderContext context) {
+            docBase = context.docBase;
+        }
+
+        @Override
+        public void collect(int doc) {
+            matchingDocIds.add(docBase + doc);
+        }
+
+        @Override
+        public ScoreMode scoreMode() {
+            return ScoreMode.COMPLETE_NO_SCORES;
+        }
     }
 }
