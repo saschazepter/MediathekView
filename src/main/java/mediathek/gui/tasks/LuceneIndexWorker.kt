@@ -148,7 +148,8 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
                 val totalCount = filmListe.size
                 var oldProgress = 0
 
-                val executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())
+                val indexingThreads = (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(1)
+                val executor = Executors.newFixedThreadPool(indexingThreads)
                 for (film in filmListe) {
                     executor.submit {
                         try {
