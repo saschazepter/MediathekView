@@ -107,10 +107,10 @@
         <javax.transaction-api.version>1.3</javax.transaction-api.version>
         <jfreechart.version>1.5.6</jfreechart.version>
         <jide-oss.version>3.7.15</jide-oss.version>
-        <jlibnotify.version>1.2.1</jlibnotify.version>
+        <jlibnotify.version>1.2.3</jlibnotify.version>
         <jna.version>5.18.1</jna.version>
         <jsoup.version>1.22.1</jsoup.version>
-        <junit.jupiter.version>5.10.3</junit.jupiter.version>
+        <junit.jupiter.version>6.0.3</junit.jupiter.version>
         <lucene.version>10.3.2</lucene.version>
         <lgooddatepicker.version>11.2.1</lgooddatepicker.version>
         <log4j2.version>2.25.3</log4j2.version>
@@ -147,9 +147,9 @@
 
         <!-- @formatter:off -->
         <!-- VM Parameters Windows x64 and aarch64 -->
-        <install4j.vmparameters.win.64>-XX:+UseShenandoahGC -XX:ShenandoahGCHeuristics=compact -XX:MaxRAMPercentage=50.0 -XX:+UseStringDeduplication --enable-native-access=ALL-UNNAMED --add-modules jdk.incubator.vector --add-exports=java.desktop/sun.swing=ALL-UNNAMED -DexternalUpdateCheck</install4j.vmparameters.win.64>
+        <install4j.vmparameters.win.64>-XX:+UseShenandoahGC -XX:ShenandoahGCHeuristics=compact -XX:MaxRAMPercentage=50.0 -XX:+UseStringDeduplication --enable-native-access=ALL-UNNAMED --add-modules jdk.incubator.vector --add-exports=java.desktop/sun.swing=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED -DexternalUpdateCheck</install4j.vmparameters.win.64>
         <!-- VM Parameters Linux 64bit Intel and ARM -->
-        <install4j.vmparameters.linux.64>-XX:+UseShenandoahGC -XX:ShenandoahGCHeuristics=compact -XX:MaxRAMPercentage=50.0 -XX:+UseStringDeduplication --enable-native-access=ALL-UNNAMED --add-modules jdk.incubator.vector --add-exports=java.desktop/sun.swing=ALL-UNNAMED --add-opens java.desktop/sun.awt.X11=ALL-UNNAMED -DexternalUpdateCheck</install4j.vmparameters.linux.64>
+        <install4j.vmparameters.linux.64>-XX:+UseShenandoahGC -XX:ShenandoahGCHeuristics=compact -XX:MaxRAMPercentage=50.0 -XX:+UseStringDeduplication --enable-native-access=ALL-UNNAMED --add-modules jdk.incubator.vector --add-exports=java.desktop/sun.swing=ALL-UNNAMED --add-opens java.desktop/sun.awt.X11=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED -DexternalUpdateCheck</install4j.vmparameters.linux.64>
         <!-- @formatter:on -->
     </properties>
 
