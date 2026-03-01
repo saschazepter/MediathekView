@@ -471,10 +471,12 @@ public class Main {
                 setupLogging();
 
                 Level level;
-                if (Config.isEnhancedLoggingEnabled())
+                if (Config.isEnhancedLoggingEnabled() && Config.isDebugModeEnabled())
                     level = Level.TRACE;
-                else
+                else if (Config.isEnhancedLoggingEnabled())
                     level = Level.DEBUG;
+                else
+                    level = Level.INFO;
                 registerSwingAppender(level);
 
                 printPortableModeInfo();
@@ -815,7 +817,7 @@ public class Main {
         if (Config.isDebugModeEnabled() || Config.isInstallThreadCheckingRepaintManager()) {
             // use for debugging EDT violations
             RepaintManager.setCurrentManager(new ThreadCheckingRepaintManager());
-            logger.info("Swing Thread checking repaint manager installed.");
+            logger.debug("Swing Thread checking repaint manager installed.");
         }
 
         splashScreen.ifPresent(s -> s.update(UIProgressState.START_UI));
