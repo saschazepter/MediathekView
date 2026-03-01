@@ -128,8 +128,16 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
     private fun createIndexWriter(liste: IndexedFilmList): IndexWriter {
         val indexWriterConfig = IndexWriterConfig(LuceneDefaultAnalyzer.buildPerFieldAnalyzer())
         indexWriterConfig.openMode = OpenMode.CREATE
-        indexWriterConfig.ramBufferSizeMB = 256.0
+        val ramBufferSizeMb = calculateRamBufferSizeMb()
+        indexWriterConfig.ramBufferSizeMB = ramBufferSizeMb
+        LOG.trace("Using Lucene RAM buffer size: {} MB", ramBufferSizeMb)
         return IndexWriter(liste.luceneDirectory, indexWriterConfig)
+    }
+
+    private fun calculateRamBufferSizeMb(): Double {
+        val heapMb = Runtime.getRuntime().maxMemory().toDouble() / (1024.0 * 1024.0)
+        val suggested = heapMb * 0.05
+        return suggested.coerceIn(128.0, 2048.0)
     }
 
     private fun updateProgress(processedCount: Int, totalCount: Int, oldProgress: AtomicInteger) {
