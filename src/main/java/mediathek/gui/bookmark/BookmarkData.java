@@ -53,7 +53,7 @@ public class BookmarkData {
     /// The SHA256 hashcode from the film object used to create the bookmark.
     /// This is the *correct* way to store film object info as it will be unique.
     ///
-    /// Must be converted back to [com.google.common.hash.HashCode].
+    /// Stored as lower-case hex string.
     /// Will erase [BookmarkData#url] as it is unneeded then.
     private String filmHashCode;
     private String originalSender;

@@ -23,7 +23,6 @@ import ca.odell.glazedlists.EventList;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.json.JsonMapper;
-import com.google.common.hash.HashCode;
 import mediathek.config.Daten;
 import mediathek.config.StandardLocations;
 import mediathek.controller.history.SeenHistoryController;
@@ -125,7 +124,7 @@ public class BookmarkDataList {
                     BookmarkData bdata = new BookmarkData(movie);
                     movie.setBookmark(bdata); // Link backwards
                     bdata.setSeen(history.hasBeenSeen(movie));
-                    bdata.setFilmHashCode(movie.getSha256().toString());
+                    bdata.setFilmHashCode(movie.getSha256());
                     bdata.setBookmarkAdded(LocalDate.now());
                     bookmarks.add(bdata);
                 });
@@ -236,9 +235,8 @@ public class BookmarkDataList {
         for (var bookmark : bookmarks) {
             var hashCodeStr = bookmark.getFilmHashCode();
             if (hashCodeStr != null) {
-                var hashCode = HashCode.fromString(hashCodeStr);
                 var film = listefilme.parallelStream()
-                        .filter(df -> df.getSha256().equals(hashCode)).findFirst().orElse(null);
+                        .filter(df -> df.getSha256().equals(hashCodeStr)).findFirst().orElse(null);
                 assignData(bookmark, film);
             }
             else {
@@ -251,7 +249,7 @@ public class BookmarkDataList {
                     assignData(bookmark, film);
                     // if we didn't have hashCode, update to new format now if possible...
                     if (film != null) {
-                        bookmark.setFilmHashCode(film.getSha256().toString());
+                        bookmark.setFilmHashCode(film.getSha256());
                     }
                 }
             }

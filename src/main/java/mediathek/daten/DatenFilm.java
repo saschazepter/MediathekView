@@ -1,7 +1,5 @@
 package mediathek.daten;
 
-import com.google.common.hash.HashCode;
-import com.google.common.hash.Hashing;
 import mediathek.config.Config;
 import mediathek.daten.abo.DatenAbo;
 import mediathek.gui.bookmark.BookmarkData;
@@ -16,11 +14,11 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -444,13 +442,18 @@ public class DatenFilm implements Comparable<DatenFilm> {
      *
      * @return a unique hash
      */
-    public HashCode getSha256() {
-        return Hashing.sha256().newHasher()
-                .putUnencodedChars(getSender())
-                .putUnencodedChars(getThema())
-                .putUnencodedChars(getUrlNormalQuality())
-                .putUnencodedChars(getWebsiteUrl())
-                .hash();
+    public String getSha256() {
+        try {
+            var digest = MessageDigest.getInstance("SHA-256");
+            digest.update(getSender().getBytes(StandardCharsets.UTF_16LE));
+            digest.update(getThema().getBytes(StandardCharsets.UTF_16LE));
+            digest.update(getUrlNormalQuality().getBytes(StandardCharsets.UTF_16LE));
+            digest.update(getWebsiteUrl().getBytes(StandardCharsets.UTF_16LE));
+            return HexFormat.of().formatHex(digest.digest());
+        }
+        catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 algorithm is unavailable", e);
+        }
     }
 
     /**
