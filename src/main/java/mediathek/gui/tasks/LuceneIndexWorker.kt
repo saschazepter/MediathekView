@@ -18,6 +18,11 @@
 package mediathek.gui.tasks
 
 import com.google.common.base.Stopwatch
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import mediathek.config.Daten
 import mediathek.config.StandardLocations.getFilmIndexPath
 import mediathek.daten.DatenFilm
@@ -40,7 +45,6 @@ import java.nio.file.Files
 import java.time.format.DateTimeFormatter
 import java.util.*
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.JLabel
 import javax.swing.JProgressBar
@@ -147,28 +151,51 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
                 val oldProgress = AtomicInteger(0)
 
                 val indexingThreads = (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(1)
-                val executor = Executors.newFixedThreadPool(indexingThreads)
-                for (film in filmListe) {
-                    executor.submit {
-                        try {
-                            val doc = createIndexDocument(film)
-                            writer.addDocument(doc)
-                            val progress = (counter.incrementAndGet() * 100) / totalCount
-                            var previous = oldProgress.get()
-                            while (progress > previous) {
-                                if (oldProgress.compareAndSet(previous, progress)) {
-                                    SwingUtilities.invokeLater { progressBar.value = progress }
-                                    break
+                val queueCapacity = (indexingThreads * 256).coerceAtLeast(512)
+                val indexingDispatcher = Executors.newFixedThreadPool(indexingThreads).asCoroutineDispatcher()
+                try {
+                    runBlocking {
+                        val filmChannel = Channel<DatenFilm>(queueCapacity)
+
+                        val producer = launch(indexingDispatcher) {
+                            try {
+                                for (film in filmListe) {
+                                    filmChannel.send(film)
                                 }
-                                previous = oldProgress.get()
+                            } finally {
+                                filmChannel.close()
                             }
-                        } catch (ex: IOException) {
-                            ex.printStackTrace()
                         }
+
+                        val consumers = List(indexingThreads) {
+                            launch(indexingDispatcher) {
+                                for (film in filmChannel) {
+                                    try {
+                                        val doc = createIndexDocument(film)
+                                        writer.addDocument(doc)
+                                        val progress =
+                                            if (totalCount == 0) 100 else (counter.incrementAndGet() * 100) / totalCount
+                                        var previous = oldProgress.get()
+                                        while (progress > previous) {
+                                            if (oldProgress.compareAndSet(previous, progress)) {
+                                                SwingUtilities.invokeLater { progressBar.value = progress }
+                                                break
+                                            }
+                                            previous = oldProgress.get()
+                                        }
+                                    } catch (ex: IOException) {
+                                        LOG.error("Lucene indexing failed for a film entry", ex)
+                                    }
+                                }
+                            }
+                        }
+
+                        producer.join()
+                        consumers.joinAll()
                     }
+                } finally {
+                    indexingDispatcher.close()
                 }
-                executor.shutdown()
-                executor.awaitTermination(5, TimeUnit.MINUTES)
                 SwingUtilities.invokeLater { progressBar.value = 100 }
 
                 SwingUtilities.invokeLater {
