@@ -39,7 +39,8 @@ public class FilmDuplicateEvaluationTask implements Runnable {
                 tList.add(new FilmStatistics(sender, statisticsMap.get(sender)));
             }
             tList.commitEvent();
-        } finally {
+        }
+        finally {
             tList.getReadWriteLock().writeLock().unlock();
         }
         watch.stop();
@@ -53,7 +54,6 @@ public class FilmDuplicateEvaluationTask implements Runnable {
         final Set<Long> urlCache = new HashSet<>();
 
         var hf = Hashing.murmur3_128();
-        Stopwatch watch = Stopwatch.createStarted();
         listeFilme.stream()
                 .filter(f -> !f.isLivestream())
                 .sorted(new BigSenderPenaltyComparator())
@@ -69,8 +69,6 @@ public class FilmDuplicateEvaluationTask implements Runnable {
 
                     film.setDuplicate(!urlCache.add(hash));
                 });
-        watch.stop();
-        logger.trace("Duplicate URL search took: {}", watch);
         urlCache.clear();
     }
 
