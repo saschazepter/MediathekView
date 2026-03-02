@@ -141,8 +141,20 @@ public class FilmListReader implements AutoCloseable {
         if (geoStr.isEmpty())
             datenFilm.countrySet.clear();
         else {
-            var split = geoStr.split("-");
-            for (var geoItem : split) {
+            /*
+            This code is more performant than String.split as we do not allocate arrays on every call.
+             */
+            int start = 0;
+            int length = geoStr.length();
+            for (int i = 0; i <= length; i++) {
+                if (i < length && geoStr.charAt(i) != '-') {
+                    continue;
+                }
+                String geoItem = geoStr.substring(start, i);
+                start = i + 1;
+                if (geoItem.isEmpty()) {
+                    continue;
+                }
                 try {
                     datenFilm.countrySet.add(Country.valueOf(geoItem));
                 }
