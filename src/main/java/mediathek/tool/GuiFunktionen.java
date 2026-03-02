@@ -72,7 +72,7 @@ public class GuiFunktionen {
                                                      @MagicConstant(intValues = {JOptionPane.WARNING_MESSAGE, JOptionPane.QUESTION_MESSAGE, JOptionPane.INFORMATION_MESSAGE, JOptionPane.ERROR_MESSAGE}) int style) {
         var op = new JOptionPane(message, style, optionType, null, null);
         var dialog = op.createDialog(parentComponent, title);
-        new Timer((int)TimeUnit.MILLISECONDS.convert(defaultDelay,timeUnit), e -> op.setValue(defaultValue)).start();
+        new Timer((int)TimeUnit.MILLISECONDS.convert(defaultDelay,timeUnit), _ -> op.setValue(defaultValue)).start();
         dialog.setVisible(true);
         return (int)op.getValue();
     }
