@@ -433,7 +433,23 @@ public class FilmListReader implements AutoCloseable {
             logger.trace("Liste Filme lesen von: {}", source);
             listeFilme.clear();
 
-            filmSink = createFilmFilterSink(listeFilme, days);
+            if (days == 0)
+                filmSink = listeFilme::add;
+            else {
+                final LocalDate cutoffDate = LocalDate.now().minusDays(days);
+                filmSink = film -> {
+                    // do not filter livestreams
+                    if (film.isLivestream()) {
+                        listeFilme.add(film);
+                        return;
+                    }
+
+                    final LocalDate filmDate = DateUtil.convertToLocalDate(film.getDatumFilm());
+                    if (!cutoffDate.isAfter(filmDate)) {
+                        listeFilme.add(film);
+                    }
+                };
+            }
 
             notifyStart(source); // für die Progressanzeige
 
@@ -451,26 +467,6 @@ public class FilmListReader implements AutoCloseable {
         }
 
         notifyFertig(source, listeFilme);
-    }
-
-    private Consumer<DatenFilm> createFilmFilterSink(@NotNull ListeFilme listeFilme, int days) {
-        if (days == 0) {
-            return listeFilme::add;
-        }
-
-        final LocalDate cutoffDate = LocalDate.now().minusDays(days);
-        return film -> {
-            // do not filter livestreams
-            if (film.isLivestream()) {
-                listeFilme.add(film);
-                return;
-            }
-
-            final LocalDate filmDate = DateUtil.convertToLocalDate(film.getDatumFilm());
-            if (!cutoffDate.isAfter(filmDate)) {
-                listeFilme.add(film);
-            }
-        };
     }
 
     private void parseSeasonAndEpisode(@NotNull ListeFilme listeFilme) {
