@@ -20,9 +20,6 @@ package mediathek.gui.bookmark;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
-import com.fasterxml.jackson.annotation.JsonGetter;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.json.JsonMapper;
 import mediathek.config.Daten;
 import mediathek.config.StandardLocations;
 import mediathek.controller.history.SeenHistoryController;
@@ -34,7 +31,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,12 +43,9 @@ import java.util.List;
 public class BookmarkDataList {
     private static final Logger logger = LogManager.getLogger();
     private final BasicEventList<BookmarkData> bookmarks;
-    private final ObjectMapper objectMapper;
 
     public BookmarkDataList(@NotNull Daten daten) {
         bookmarks = new BasicEventList<>();
-
-        objectMapper = JsonMapper.builder().findAndAddModules().build();
 
         // Wait until film liste is ready and update references
         daten.getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
@@ -80,7 +73,6 @@ public class BookmarkDataList {
      *
      * @return observable List
      */
-    @JsonGetter("bookmarks")
     public EventList<BookmarkData> getEventList() {
         return bookmarks;
     }
@@ -155,8 +147,7 @@ public class BookmarkDataList {
         var filePath = StandardLocations.getBookmarkFilePath();
 
         try {
-            var wrapper = objectMapper.readValue(filePath.toFile(), BookmarksWrapper.class);
-            var bookmarkList = wrapper.getBookmarks();
+            var bookmarkList = BookmarkJsonStore.read(filePath);
             if (bookmarkList != null) {
                 bookmarks.addAll(bookmarkList);
                 bookmarkList.clear();
@@ -171,11 +162,10 @@ public class BookmarkDataList {
         var filePath = StandardLocations.getBookmarkFilePath();
 
         try {
-            var objectWriter = objectMapper.writerWithDefaultPrettyPrinter();
-            objectWriter.writeValue(filePath.toFile(), this);
+            BookmarkJsonStore.write(filePath, bookmarks);
             logger.trace("Bookmarks written");
         }
-        catch (IOException e) {
+        catch (Exception e) {
             logger.error("Could not save bookmarks to {}", filePath, e);
         }
     }
@@ -260,23 +250,6 @@ public class BookmarkDataList {
         bookmark.setDatenFilm(film);
         if (film != null) {
             film.setBookmark(bookmark);   // Link backwards
-        }
-    }
-
-
-    /**
-     * Internal wrapper for reading bookmarks with object mapper
-     */
-    private static class BookmarksWrapper {
-        private List<BookmarkData> bookmarks;
-
-        public List<BookmarkData> getBookmarks() {
-            return bookmarks;
-        }
-
-        @SuppressWarnings("unused")
-        public void setBookmarks(List<BookmarkData> bookmarks) {
-            this.bookmarks = bookmarks;
         }
     }
 }

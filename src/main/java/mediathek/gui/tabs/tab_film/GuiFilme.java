@@ -1,10 +1,25 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.gui.tabs.tab_film;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.icons.FlatSearchWithHistoryIcon;
@@ -54,6 +69,7 @@ import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignF;
 
 import javax.swing.*;
+import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
@@ -66,12 +82,12 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.EnumSet;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GuiFilme extends AGuiTabPanel {
 
@@ -789,6 +805,7 @@ public class GuiFilme extends AGuiTabPanel {
 
         public class SearchHistoryButton extends JButton {
             private static final Logger logger = LogManager.getLogger();
+            private static final Pattern JSON_STRING_PATTERN = Pattern.compile("\"((?:\\\\.|[^\"])*)\"");
             private final EventList<String> historyList = new BasicEventList<>();
             private final JMenuItem miClearHistory = new JMenuItem("Alles löschen");
             private final JMenuItem miEditHistory = new JMenuItem("Einträge bearbeiten");
@@ -850,41 +867,86 @@ public class GuiFilme extends AGuiTabPanel {
 
             private void loadHistory() {
                 try {
-                    ObjectMapper mapper = new ObjectMapper();
-                    var json = ApplicationConfiguration.getConfiguration().getString(SEARCH_HISTORY_CONFIG, "");
-                    if (!json.isEmpty()) {
-                        List<String> entries = mapper.readValue(json, new TypeReference<>() {
-                        });
-                        if (!entries.isEmpty()) {
-                            historyList.getReadWriteLock().writeLock().lock();
-                            try {
-                                historyList.addAll(entries);
-                            }
-                            finally {
-                                historyList.getReadWriteLock().writeLock().unlock();
-                            }
+                    List<String> entries = readHistoryEntries();
+                    if (!entries.isEmpty()) {
+                        historyList.getReadWriteLock().writeLock().lock();
+                        try {
+                            historyList.addAll(entries);
+                        }
+                        finally {
+                            historyList.getReadWriteLock().writeLock().unlock();
                         }
                     }
-                } catch (JsonProcessingException ex) {
+                }
+                catch (Exception ex) {
                     logger.error("Failed to load search history", ex);
                 }
             }
 
             private void saveHistory() {
-                ObjectMapper mapper = new ObjectMapper();
                 try {
                     historyList.getReadWriteLock().readLock().lock();
                     try {
-                        var json = mapper.writeValueAsString(historyList);
+                        String json = JsonStringUtils.toJsonStringArray(new ArrayList<>(historyList));
                         ApplicationConfiguration.getConfiguration().setProperty(SEARCH_HISTORY_CONFIG, json);
                     }
                     finally {
                         historyList.getReadWriteLock().readLock().unlock();
                     }
-                } catch (JsonProcessingException e) {
+                }
+                catch (Exception e) {
                     logger.error("Failed to write search history", e);
                 }
             }
+
+            private List<String> readHistoryEntries() {
+                var config = ApplicationConfiguration.getConfiguration();
+                Object rawValue = config.getProperty(SEARCH_HISTORY_CONFIG);
+                switch (rawValue) {
+                    case null -> {
+                        return List.of();
+                    }
+                    case Collection<?> collection -> {
+                        List<String> entries = new ArrayList<>();
+                        for (Object value : collection) {
+                            if (value != null) {
+                                entries.add(value.toString());
+                            }
+                        }
+                        // Normalize legacy key back to JSON string format for old-version compatibility.
+                        config.setProperty(SEARCH_HISTORY_CONFIG, JsonStringUtils.toJsonStringArray(entries));
+                        return entries;
+                    }
+                    case String json -> {
+                        var parsed = parseLegacyJsonArray(json);
+                        if (!parsed.isEmpty() || "[]".equals(json.trim())) {
+                            return new ArrayList<>(parsed);
+                        }
+                        if (!json.isBlank()) {
+                            return List.of(json);
+                        }
+                    }
+                    default -> {
+                    }
+                }
+
+                return List.of();
+            }
+
+            private List<String> parseLegacyJsonArray(String json) {
+                String trimmed = json == null ? "" : json.trim();
+                if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) {
+                    return List.of();
+                }
+
+                List<String> entries = new ArrayList<>();
+                Matcher matcher = JSON_STRING_PATTERN.matcher(trimmed);
+                while (matcher.find()) {
+                    entries.add(JsonStringUtils.unescapeJsonString(matcher.group(1)));
+                }
+                return entries;
+            }
+
         }
     }
 

@@ -1,8 +1,23 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.filmlisten.writer;
 
-import com.fasterxml.jackson.core.JsonEncoding;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerator;
 import mediathek.daten.Country;
 import mediathek.daten.DatenFilm;
 import mediathek.daten.ListeFilme;
@@ -14,6 +29,11 @@ import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import tools.jackson.core.JsonEncoding;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.ObjectWriteContext;
+import tools.jackson.core.json.JsonFactory;
+import tools.jackson.core.util.DefaultPrettyPrinter;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -42,13 +62,14 @@ public class FilmListWriter {
         this.readable = readable;
     }
 
-    private JsonGenerator getJsonGenerator(OutputStream os) throws IOException {
-        final JsonFactory jsonF = new JsonFactory();
-        JsonGenerator jg = jsonF.createGenerator(os, JsonEncoding.UTF8);
-        if (readable)
-            jg = jg.useDefaultPrettyPrinter();
+    private JsonGenerator getJsonGenerator(OutputStream os) {
+        ObjectWriteContext context = ObjectWriteContext.empty();
+        if (readable) {
+            context = new PrettyObjectWriteContext();
+        }
 
-        return jg;
+        final JsonFactory jsonF = new JsonFactory();
+        return jsonF.createGenerator(context, os, JsonEncoding.UTF8);
     }
 
     private void checkOsxCacheDirectory() {
@@ -62,10 +83,10 @@ public class FilmListWriter {
         }
     }
 
-    private void writeFormatHeader(JsonGenerator jg, ListeFilme listeFilme) throws IOException {
+    private void writeFormatHeader(JsonGenerator jg, ListeFilme listeFilme) {
         final var meta = listeFilme.getMetaData();
 
-        jg.writeArrayFieldStart(FILMLISTE);
+        jg.writeArrayPropertyStart(FILMLISTE);
         jg.writeString(""); //ListeFilme.FILMLISTE_DATUM_NR unused in newer versions
         jg.writeString(meta.getDatum());
         jg.writeString(meta.getVersion());
@@ -140,7 +161,7 @@ public class FilmListWriter {
         MessageBus.getMessageBus().publishAsync(new FilmListWriteStopEvent());
     }
 
-    private void writeDatumLong(DatenFilm datenFilm, JsonGenerator jg) throws IOException {
+    private void writeDatumLong(DatenFilm datenFilm, JsonGenerator jg) {
         var filmDate = datenFilm.getDatumFilm();
         if (filmDate.equals(DatumFilm.UNDEFINED_FILM_DATE)) {
             jg.writeString("");
@@ -152,12 +173,12 @@ public class FilmListWriter {
         }
     }
 
-    private void writeFilmLength(DatenFilm datenFilm, JsonGenerator jg) throws IOException {
+    private void writeFilmLength(DatenFilm datenFilm, JsonGenerator jg) {
         jg.writeString(datenFilm.getFilmLengthAsString());
     }
 
-    private void writeEntry(DatenFilm film, JsonGenerator jg) throws IOException {
-        jg.writeArrayFieldStart(TAG_JSON_LIST);
+    private void writeEntry(DatenFilm film, JsonGenerator jg) {
+        jg.writeArrayPropertyStart(TAG_JSON_LIST);
 
         writeSender(jg, film);
         writeThema(jg, film);
@@ -186,7 +207,7 @@ public class FilmListWriter {
         jg.writeEndArray();
     }
 
-    private void writeLowQualityUrl(@NotNull JsonGenerator jg, @NotNull DatenFilm datenFilm) throws IOException {
+    private void writeLowQualityUrl(@NotNull JsonGenerator jg, @NotNull DatenFilm datenFilm) {
         String url = datenFilm.getLowQualityUrl();
         if (decompressUrls) {
             if (DatenFilm.isCompressedUrl(url)) {
@@ -197,7 +218,7 @@ public class FilmListWriter {
         jg.writeString(url);
     }
 
-    private void writeHighQualityUrl(@NotNull JsonGenerator jg, @NotNull DatenFilm datenFilm) throws IOException {
+    private void writeHighQualityUrl(@NotNull JsonGenerator jg, @NotNull DatenFilm datenFilm) {
         String url = datenFilm.getHighQualityUrl();
         if (decompressUrls) {
             if (DatenFilm.isCompressedUrl(url)) {
@@ -212,15 +233,15 @@ public class FilmListWriter {
         this.decompressUrls = decompressUrls;
     }
 
-    private void skipEntry(JsonGenerator jg) throws IOException {
+    private void skipEntry(JsonGenerator jg) {
         jg.writeString("");
     }
 
-    private void writeTitel(JsonGenerator jg, DatenFilm datenFilm) throws IOException {
+    private void writeTitel(JsonGenerator jg, DatenFilm datenFilm) {
         jg.writeString(datenFilm.getTitle());
     }
 
-    private void writeSender(JsonGenerator jg, DatenFilm datenFilm) throws IOException {
+    private void writeSender(JsonGenerator jg, DatenFilm datenFilm) {
         String tempSender = datenFilm.getSender();
 
         if (compressSenderTag) {
@@ -243,7 +264,7 @@ public class FilmListWriter {
         compressSenderTag = compress;
     }
 
-    private void writeThema(JsonGenerator jg, DatenFilm datenFilm) throws IOException {
+    private void writeThema(JsonGenerator jg, DatenFilm datenFilm) {
         if (compressThemaTag) {
             if (datenFilm.getThema().equals(thema)) {
                 jg.writeString("");
@@ -256,7 +277,7 @@ public class FilmListWriter {
             jg.writeString(datenFilm.getThema());
     }
 
-    private void writeZeit(JsonGenerator jg, DatenFilm datenFilm) throws IOException {
+    private void writeZeit(JsonGenerator jg, DatenFilm datenFilm) {
         String strZeit = datenFilm.getSendeZeit();
         final int len = strZeit.length();
 
@@ -272,10 +293,22 @@ public class FilmListWriter {
      * Write a dummy field description array.
      * Is not used anywhere but necessary for compatibility
      */
-    private void writeFormatDescription(JsonGenerator jg) throws IOException {
-        jg.writeArrayFieldStart(FILMLISTE);
+    private void writeFormatDescription(JsonGenerator jg) {
+        jg.writeArrayPropertyStart(FILMLISTE);
         jg.writeString("");
         jg.writeEndArray();
+    }
+
+    private static class PrettyObjectWriteContext extends ObjectWriteContext.Base {
+        @Override
+        public boolean hasPrettyPrinter() {
+            return true;
+        }
+
+        @Override
+        public DefaultPrettyPrinter getPrettyPrinter() {
+            return new DefaultPrettyPrinter();
+        }
     }
 
     @FunctionalInterface

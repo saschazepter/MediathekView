@@ -1,6 +1,5 @@
 package mediathek.tool;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import mediathek.config.Konstanten;
 import mediathek.config.StandardLocations;
 import mediathek.daten.Country;
@@ -84,7 +83,6 @@ public class ApplicationConfiguration {
      * logger for {@link TimerTaskListener} inner class.
      */
     private static final Logger logger = LogManager.getLogger();
-    private static final ObjectMapper mapper = new ObjectMapper();
     private final TimerTaskListener timerTaskListener = new TimerTaskListener();
     private XMLConfiguration config;
     private FileHandler handler;
@@ -122,11 +120,8 @@ public class ApplicationConfiguration {
 
     public Country getGeographicLocation() {
         try {
-            var str = config.getString(GEO_LOCATION);
-            // str has no quotation marks if it was set before the update but object mapper now expects them...
-            if (!str.startsWith("\"") && !str.endsWith("\""))
-                str = "\"" + str + "\"";
-            return mapper.readValue(str, Country.class);
+            var rawValue = config.getString(GEO_LOCATION);
+            return parseCountry(rawValue);
         } catch (Exception ex) {
             logger.error("Unable to parse country, resetting to GERMANY", ex);
             setGeographicLocation(Country.DE);
@@ -135,13 +130,7 @@ public class ApplicationConfiguration {
     }
 
     public void setGeographicLocation(Country country) {
-        try {
-            var newValue = mapper.writeValueAsString(country);
-            config.setProperty(GEO_LOCATION, newValue);
-        } catch (Exception ex) {
-            logger.error("Error setting location, setting to GERMANY", ex);
-            setGeographicLocation(Country.DE);
-        }
+        config.setProperty(GEO_LOCATION, country.name());
     }
 
     public boolean getBlacklistDoNotShowGeoblockedFilms() {
@@ -212,8 +201,7 @@ public class ApplicationConfiguration {
 
     private void updateNewerDefaults() {
         if (!config.containsKey(GEO_LOCATION)) {
-            //object mapper expects quotation marks in the string!
-            config.setProperty(GEO_LOCATION, "\"DE\"");
+            config.setProperty(GEO_LOCATION, Country.DE.name());
         }
         if (!config.containsKey(APPLICATION_INSTALL_TAB_SWITCH_LISTENER)) {
             config.setProperty(APPLICATION_INSTALL_TAB_SWITCH_LISTENER, !SystemUtils.IS_OS_MAC_OSX);
@@ -221,6 +209,14 @@ public class ApplicationConfiguration {
         if (!config.containsKey(LUCENE_DIRECTORY_MODE)) {
             config.setProperty(LUCENE_DIRECTORY_MODE, "auto");
         }
+    }
+
+    private static Country parseCountry(String rawValue) {
+        var value = rawValue == null ? Country.DE.name() : rawValue.trim();
+        if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
+            value = value.substring(1, value.length() - 1);
+        }
+        return Country.valueOf(value);
     }
 
     public static class DownloadRateLimiter {

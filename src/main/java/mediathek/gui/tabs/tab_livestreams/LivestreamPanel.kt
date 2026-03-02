@@ -18,11 +18,9 @@
 
 package mediathek.gui.tabs.tab_livestreams
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.databind.SerializationFeature
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import kotlinx.serialization.json.Json
 import mediathek.config.Konstanten
 import mediathek.gui.actions.UrlHyperlinkAction
 import mediathek.gui.tabs.tab_livestreams.services.ShowService
@@ -37,8 +35,6 @@ import mediathek.tool.http.MVHttpClient
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
-import retrofit2.Retrofit
-import retrofit2.converter.jackson.JacksonConverterFactory
 import java.awt.BorderLayout
 import java.awt.Desktop
 import java.awt.Rectangle
@@ -81,25 +77,13 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
             }
         })
 
-        val mapper = ObjectMapper().apply {
-            registerModule(JavaTimeModule())
-            disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
+        val json = Json {
+            ignoreUnknownKeys = true
         }
 
         val client = MVHttpClient.getInstance().httpClient
-        streamService = Retrofit.Builder()
-            .baseUrl(Konstanten.ZAPP_API_URL)
-            .addConverterFactory(JacksonConverterFactory.create(mapper))
-            .client(client)
-            .build()
-            .create(StreamService::class.java)
-
-        showService = Retrofit.Builder()
-            .baseUrl(Konstanten.ZAPP_API_URL)
-            .addConverterFactory(JacksonConverterFactory.create(mapper))
-            .client(client)
-            .build()
-            .create(ShowService::class.java)
+        streamService = StreamService(client, json, Konstanten.ZAPP_API_URL)
+        showService = ShowService(client, json, Konstanten.ZAPP_API_URL)
 
         refreshTimer.start()
     }

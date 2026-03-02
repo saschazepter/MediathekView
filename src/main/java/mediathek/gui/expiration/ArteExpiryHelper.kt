@@ -16,122 +16,185 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.expiration;
+package mediathek.gui.expiration
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import mediathek.config.Konstanten;
-import mediathek.tool.datum.DateUtil;
-import mediathek.tool.http.MVHttpClient;
-import okhttp3.Request;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jsoup.Jsoup;
-import org.jsoup.select.Elements;
+import kotlinx.serialization.json.*
+import mediathek.config.Konstanten
+import mediathek.tool.datum.DateUtil
+import mediathek.tool.http.MVHttpClient
+import okhttp3.Request
+import org.apache.logging.log4j.LogManager
+import org.jsoup.Jsoup
+import java.io.IOException
+import java.net.URI
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.DateTimeParseException
+import java.util.*
+import java.util.regex.Pattern
 
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+object ArteExpiryHelper {
+    private val LOG = LogManager.getLogger()
+    private val JSON = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
 
-public class ArteExpiryHelper {
+    // Multilingual pattern for DE, EN, FR, ES, IT, PL
+    private val TEXT_DATE_PATTERN: Pattern = Pattern.compile(
+        "(Verfügbar bis zum|Available until|Disponible hasta el|Disponible jusqu'?au|Disponibile fino al|Dostępny do)\\s*(\\d{2}/\\d{2}/\\d{4})"
+    )
 
-    private static final ObjectMapper JSON = new ObjectMapper();
-    private static final Logger LOG = LogManager.getLogger();
+    @JvmStatic
+    fun getExpiryInfo(url: String): Optional<ExpiryInfo> {
+        val request = Request.Builder()
+            .url(url)
+            .get()
+            .header("User-Agent", Konstanten.JSOUP_USER_AGENT)
+            .build()
 
-    // Mehrsprachiges Pattern für DE, EN, FR, ES, IT, PL
-    private static final Pattern TEXT_DATE_PATTERN = Pattern.compile(
-            "(Verfügbar bis zum|Available until|Disponible hasta el|Disponible jusqu'?au|Disponibile fino al|Dostępny do)\\s*(\\d{2}/\\d{2}/\\d{4})"
-    );
+        try {
+            MVHttpClient.getInstance().httpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    LOG.error("Could not fetch expiry data from {}", url)
+                    return Optional.empty()
+                }
 
-    public static Optional<ExpiryInfo> getExpiryInfo(String url) {
-        final Request request = new Request.Builder().url(url).get()
-                .header("User-Agent", Konstanten.JSOUP_USER_AGENT)
-                .build();
+                val doc = Jsoup.parse(response.body.string(), url)
 
-        try (var response = MVHttpClient.getInstance().getHttpClient().newCall(request).execute()) {
-            if (response.isSuccessful()) {
-                var doc = Jsoup.parse(response.body().string());
-                // 1) JSON-LD durchsuchen
-                Elements scripts = doc.select("script[type=application/ld+json]");
-                for (var script : scripts) {
-                    JsonNode root = JSON.readTree(script.html());
-                    Optional<ExpiryInfo> info = searchRecursiveForDate(root);
-                    if (info.isPresent())
-                        return info;
+                // 1) Search JSON-LD scripts
+                for (script in doc.select("script[type=application/ld+json]")) {
+                    parseExpiryInfo(script.html())?.let { return Optional.of(it) }
                 }
 
                 // 2) API endpoint via data-configuration
-                var video = doc.selectFirst("video[data-configuration], video[data-href]");
+                val video = doc.selectFirst("video[data-configuration], video[data-href]")
                 if (video != null) {
-                    String cfgUrl = video.hasAttr("data-configuration")
-                            ? video.attr("data-configuration")
-                            : video.attr("data-href");
-                    if (!cfgUrl.isBlank()) {
-                        JsonNode root2 = JSON.readTree(
-                                Jsoup.connect(cfgUrl).ignoreContentType(true).execute().body()
-                        );
-                        JsonNode avail = root2.path("availability").path("availabilityEnds");
-                        if (!avail.isMissingNode() && !avail.asText().isBlank()) {
-                            Instant expiry = Instant.parse(avail.asText());
-                            return Optional.of(buildInfo(expiry));
+                    val cfgUrl = if (video.hasAttr("data-configuration")) {
+                        video.attr("data-configuration")
+                    } else {
+                        video.attr("data-href")
+                    }
+                    if (cfgUrl.isNotBlank()) {
+                        val resolvedCfgUrl = resolveConfigUrl(url, cfgUrl)
+                        if (resolvedCfgUrl == null) {
+                            LOG.debug("Ignoring invalid ARTE config URL '{}' (page '{}')", cfgUrl, url)
+                        } else {
+                            fetchJsonBody(resolvedCfgUrl)?.let { cfgBody ->
+                                parseAvailabilityEnds(cfgBody)?.let { return Optional.of(buildInfo(it)) }
+                            }
                         }
                     }
                 }
 
-                // 3) Sichtbarer Text-Hinweis mehrsprachig
-                String bodyText = doc.body().text();
-                Matcher m = TEXT_DATE_PATTERN.matcher(bodyText);
-                if (m.find()) {
-                    String rawDate = m.group(2); // DD/MM/YYYY
-                    LocalDate date = LocalDate.parse(rawDate, DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-                    ZonedDateTime z = date.atTime(23, 59).atZone(ZoneId.of("Europe/Paris"));
-                    Instant expiry = z.toInstant();
-                    return Optional.of(buildInfo(expiry));
+                // 3) Visible multilingual text hint
+                val bodyText = doc.body().text()
+                val matcher = TEXT_DATE_PATTERN.matcher(bodyText)
+                if (matcher.find()) {
+                    val rawDate = matcher.group(2) // DD/MM/YYYY
+                    try {
+                        val date = LocalDate.parse(rawDate, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                        val expiry = date.atTime(23, 59).atZone(ZoneId.of("Europe/Paris")).toInstant()
+                        return Optional.of(buildInfo(expiry))
+                    } catch (ex: DateTimeParseException) {
+                        LOG.debug("Unable to parse ARTE text expiry date '{}' from '{}'", rawDate, url, ex)
+                    }
                 }
             }
-            else {
-                LOG.error("Could not fetch expiry data from {}", url);
-            }
-        }
-        catch (Exception _) {
+        } catch (ex: IOException) {
+            LOG.debug("Failed to fetch ARTE expiry info from '{}'", url, ex)
+        } catch (ex: IllegalArgumentException) {
+            LOG.debug("Invalid ARTE URL '{}'", url, ex)
         }
 
-        return Optional.empty();
+        return Optional.empty()
     }
 
-    // Rekursive Suche nach "availabilityEnds" oder "expires"
-    private static Optional<ExpiryInfo> searchRecursiveForDate(JsonNode node) {
-        if (node == null)
-            return Optional.empty();
-
-        if (node.has("availabilityEnds")) {
-            String text = node.get("availabilityEnds").asText();
-            if (!text.isBlank()) {
-                return Optional.of(buildInfo(Instant.parse(text)));
-            }
-        }
-
-        if (node.has("expires")) {
-            String text = node.get("expires").asText();
-            if (!text.isBlank()) {
-                return Optional.of(buildInfo(Instant.parse(text)));
-            }
-        }
-
-        for (JsonNode child : node) {
-            Optional<ExpiryInfo> found = searchRecursiveForDate(child);
-            if (found.isPresent())
-                return found;
-        }
-        return Optional.empty();
+    private fun parseExpiryInfo(rawJson: String): ExpiryInfo? {
+        val root = runCatching { JSON.parseToJsonElement(rawJson) }.getOrNull() ?: return null
+        val expiry = findExpiryInstant(root) ?: return null
+        return buildInfo(expiry)
     }
 
-    private static ExpiryInfo buildInfo(Instant expiry) {
-        return new ExpiryInfo(LocalDate.ofInstant(expiry, DateUtil.MV_DEFAULT_TIMEZONE));
+    private fun parseAvailabilityEnds(rawJson: String): Instant? {
+        val root = runCatching { JSON.parseToJsonElement(rawJson) }.getOrNull() ?: return null
+        val availability = (root as? JsonObject)?.get("availability") as? JsonObject ?: return null
+        val value = asStringValue(availability["availabilityEnds"]) ?: return null
+        return parseInstantOrNull(value)
     }
+
+    private fun fetchJsonBody(url: String): String? {
+        val request = Request.Builder()
+            .url(url)
+            .get()
+            .header("User-Agent", Konstanten.JSOUP_USER_AGENT)
+            .build()
+
+        return try {
+            MVHttpClient.getInstance().httpClient.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    LOG.debug("Could not fetch ARTE config JSON from {}", url)
+                    null
+                } else {
+                    response.body.string()
+                }
+            }
+        } catch (ex: IOException) {
+            LOG.debug("Failed to fetch ARTE config JSON from '{}'", url, ex)
+            null
+        } catch (ex: IllegalArgumentException) {
+            LOG.debug("Invalid ARTE config URL '{}'", url, ex)
+            null
+        }
+    }
+
+    private fun resolveConfigUrl(pageUrl: String, cfgUrl: String): String? {
+        val resolved = runCatching { URI(pageUrl).resolve(cfgUrl).normalize() }.getOrNull() ?: return null
+        val scheme = resolved.scheme?.lowercase() ?: return null
+        if (scheme != "http" && scheme != "https") {
+            return null
+        }
+        if (resolved.host.isNullOrBlank()) {
+            return null
+        }
+        return resolved.toString()
+    }
+
+    // Recursively search for "availabilityEnds" or "expires" in arbitrary JSON-LD structures.
+    private fun findExpiryInstant(node: JsonElement): Instant? {
+        return when (node) {
+            is JsonObject -> {
+                parseInstantOrNull(asStringValue(node["availabilityEnds"]))
+                    ?: parseInstantOrNull(asStringValue(node["expires"]))
+                    ?: run {
+                        for (child in node.values) {
+                            val found = findExpiryInstant(child)
+                            if (found != null) return found
+                        }
+                        null
+                    }
+            }
+
+            is JsonArray -> {
+                for (child in node) {
+                    val found = findExpiryInstant(child)
+                    if (found != null) return found
+                }
+                null
+            }
+
+            else -> null
+        }
+    }
+
+    private fun parseInstantOrNull(value: String?): Instant? =
+        value?.let { runCatching { Instant.parse(it) }.getOrNull() }
+
+    private fun asStringValue(element: JsonElement?): String? =
+        (element as? JsonPrimitive)?.content
+
+    private fun buildInfo(expiry: Instant): ExpiryInfo =
+        ExpiryInfo(LocalDate.ofInstant(expiry, DateUtil.MV_DEFAULT_TIMEZONE))
 }

@@ -1,8 +1,23 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.filmlisten.reader;
 
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.base.Stopwatch;
 import mediathek.config.Config;
 import mediathek.config.Konstanten;
@@ -28,6 +43,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.tukaani.xz.XZInputStream;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.json.JsonFactory;
 
 import javax.swing.event.EventListenerList;
 import java.io.FileNotFoundException;
@@ -98,25 +117,25 @@ public class FilmListReader implements AutoCloseable {
         };
     }
 
-    private void parseNeu(JsonParser jp, DatenFilm datenFilm) throws IOException {
-        final String value = jp.nextTextValue();
+    private void parseNeu(JsonParser jp, DatenFilm datenFilm) {
+        final String value = nextTextValue(jp);
         datenFilm.setNew(Boolean.parseBoolean(value));
     }
 
-    protected void parseWebsiteLink(JsonParser jp, DatenFilm datenFilm) throws IOException {
-        final String value = jp.nextTextValue();
+    protected void parseWebsiteLink(JsonParser jp, DatenFilm datenFilm) {
+        final String value = nextTextValue(jp);
         if (value != null && !value.isEmpty()) {
             datenFilm.setWebsiteUrl(value);
         }
     }
 
-    private void parseDescription(JsonParser jp, DatenFilm datenFilm) throws IOException {
-        final String value = jp.nextTextValue();
+    private void parseDescription(JsonParser jp, DatenFilm datenFilm) {
+        final String value = nextTextValue(jp);
         if (value != null && !value.isEmpty())
             datenFilm.setDescription(value);
     }
 
-    protected void parseGeo(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    protected void parseGeo(JsonParser jp, DatenFilm datenFilm) {
         var geoStr = checkedString(jp);
 
         if (geoStr.isEmpty())
@@ -134,7 +153,7 @@ public class FilmListReader implements AutoCloseable {
         }
     }
 
-    private void parseSender(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseSender(JsonParser jp, DatenFilm datenFilm) {
         String parsedSender = checkedString(jp);
         if (parsedSender.isEmpty())
             datenFilm.setSender(sender);
@@ -149,7 +168,7 @@ public class FilmListReader implements AutoCloseable {
         }
     }
 
-    private void parseThema(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseThema(JsonParser jp, DatenFilm datenFilm) {
         String value = checkedString(jp);
         if (value.isEmpty())
             datenFilm.setThema(thema);
@@ -163,8 +182,8 @@ public class FilmListReader implements AutoCloseable {
             datenFilm.setTrailerTeaser(true);
     }
 
-    private String checkedString(JsonParser jp) throws IOException {
-        String value = jp.nextTextValue();
+    private String checkedString(JsonParser jp) {
+        String value = nextTextValue(jp);
         //only check for null and replace for the default rows...
         if (value == null)
             value = "";
@@ -172,7 +191,14 @@ public class FilmListReader implements AutoCloseable {
         return value;
     }
 
-    private void parseMetaData(JsonParser jp, ListeFilme listeFilme) throws IOException {
+    private String nextTextValue(JsonParser jp) {
+        JsonToken token = jp.nextToken();
+        if (token == null || token == JsonToken.VALUE_NULL)
+            return null;
+        return jp.getValueAsString();
+    }
+
+    private void parseMetaData(JsonParser jp, ListeFilme listeFilme) {
         JsonToken jsonToken;
         while ((jsonToken = jp.nextToken()) != null) {
             if (jsonToken == JsonToken.END_OBJECT) {
@@ -180,11 +206,11 @@ public class FilmListReader implements AutoCloseable {
             }
             if (jp.isExpectedStartArrayToken()) {
                 var meta = listeFilme.getMetaData();
-                jp.nextTextValue();
-                meta.setDatum(jp.nextTextValue());
-                jp.nextTextValue();
-                jp.nextTextValue();
-                meta.setId(jp.nextTextValue());
+                nextTextValue(jp);
+                meta.setDatum(nextTextValue(jp));
+                nextTextValue(jp);
+                nextTextValue(jp);
+                meta.setId(nextTextValue(jp));
                 //update to fire pcs
                 listeFilme.setMetaData(meta);
 
@@ -193,7 +219,7 @@ public class FilmListReader implements AutoCloseable {
         }
     }
 
-    private void skipFieldDescriptions(JsonParser jp) throws IOException {
+    private void skipFieldDescriptions(JsonParser jp) {
         JsonToken jsonToken;
         while ((jsonToken = jp.nextToken()) != null) {
             if (jsonToken == JsonToken.END_OBJECT) {
@@ -207,32 +233,32 @@ public class FilmListReader implements AutoCloseable {
         }
     }
 
-    private void parseUrlSubtitle(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseUrlSubtitle(JsonParser jp, DatenFilm datenFilm) {
         datenFilm.setSubtitleUrl(checkedString(jp));
     }
 
-    private void parseUrlKlein(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseUrlKlein(JsonParser jp, DatenFilm datenFilm) {
         datenFilm.setLowQualityUrl(checkedString(jp));
     }
 
-    private void parseUrlHd(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseUrlHd(JsonParser jp, DatenFilm datenFilm) {
         datenFilm.setHighQualityUrl(checkedString(jp));
     }
 
-    private void parseDatumLong(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseDatumLong(JsonParser jp, DatenFilm datenFilm) {
         var str = checkedString(jp);
         datenFilm.setDatumLong(str);
     }
 
-    private void parseSendedatum(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseSendedatum(JsonParser jp, DatenFilm datenFilm) {
         datenFilm.setSendeDatum(checkedString(jp));
     }
 
-    private void parseFilmLength(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseFilmLength(JsonParser jp, DatenFilm datenFilm) {
         datenFilm.setFilmLength(checkedString(jp));
     }
 
-    private void parseGroesse(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseGroesse(JsonParser jp, DatenFilm datenFilm) {
         String value = checkedString(jp);
         datenFilm.getFileSize().setSize(value);
     }
@@ -241,11 +267,11 @@ public class FilmListReader implements AutoCloseable {
      * Skip over file entry.
      * This is used when fields were deleted in DatenFilm but still exit in filmlist file.
      */
-    private void skipToken(JsonParser jp) throws IOException {
+    private void skipToken(JsonParser jp) {
         jp.nextToken();
     }
 
-    private void parseTime(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseTime(JsonParser jp, DatenFilm datenFilm) {
         String zeit = checkedString(jp);
         if (!zeit.isEmpty() && zeit.length() < 8) {
             zeit += ":00"; // add seconds
@@ -274,7 +300,7 @@ public class FilmListReader implements AutoCloseable {
             film.setTrailerTeaser(true);
     }
 
-    private void parseTitel(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseTitel(JsonParser jp, DatenFilm datenFilm) {
         final String title = checkedString(jp);
         datenFilm.setTitle(title);
         //check title if it is audio version
@@ -287,7 +313,7 @@ public class FilmListReader implements AutoCloseable {
             datenFilm.setBurnedInSubtitles(true);
     }
 
-    private void parseUrl(JsonParser jp, DatenFilm datenFilm) throws IOException {
+    private void parseUrl(JsonParser jp, DatenFilm datenFilm) {
         datenFilm.setNormalQualityUrl(checkedString(jp));
     }
 
@@ -296,7 +322,7 @@ public class FilmListReader implements AutoCloseable {
             datenFilm.setLivestream(true);
     }
 
-    private void readData(JsonParser jp, ListeFilme listeFilme) throws IOException {
+    private void readData(JsonParser jp, ListeFilme listeFilme) {
         JsonToken jsonToken;
 
         if (jp.nextToken() != JsonToken.START_OBJECT) {
@@ -455,7 +481,7 @@ public class FilmListReader implements AutoCloseable {
                  var is = bufferedSource.inputStream();
                  InputStream input = new ProgressMonitorInputStream(is, fileSize, monitor);
                  InputStream in = selectDecompressor(source, input);
-                 JsonParser jp = new JsonFactory().createParser(in)) {
+                 JsonParser jp = new JsonFactory().createParser(ObjectReadContext.empty(), in)) {
                 readData(jp, listeFilme);
             }
         }
@@ -499,7 +525,7 @@ public class FilmListReader implements AutoCloseable {
                 ProgressMonitor monitor = new ProgressMonitor(source.toString());
                 try (InputStream input = new ProgressMonitorInputStream(body.byteStream(), body.contentLength(), monitor);
                      InputStream is = selectDecompressor(source.toString(), input);
-                     JsonParser jp = new JsonFactory().createParser(is)) {
+                     JsonParser jp = new JsonFactory().createParser(ObjectReadContext.empty(), is)) {
                     readData(jp, listeFilme);
                 }
             }
