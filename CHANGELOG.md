@@ -10,6 +10,7 @@
 - **FEATURE:** Unterstützung für WebVTT-Untertitel bei Sendern.
 - **FEATURE:** Via *Hilfe/Live Programm-Log anzeigen* kann nun die Log-Datei in Echtzeit eingesehen werden.
 - **FEATURE:** Lucene Directory-Provider kann via *Einstellungen/Lucene-Tuning* konfiguriert werden. Je nach OS kann dies die Performance verbessern.
+- **FEATURE:** Zapp-Livestream-Icons zeigen nun das zugehörige Bundesland.
 - Große Datenbank-Maintenance der Filmhistorie wird nur noch alle 30 Tage ausgeführt, nicht bei jedem Beenden. Kann manuell über das Hilfe-Menü gestartet werden.
 - Untertitel-Format-Support wurde vollständig neu implementiert und unterstützt nun auch TTML2-Standard.
 - Lucene-Index-Erstellung wurde für multi-core-Systeme optimiert.
