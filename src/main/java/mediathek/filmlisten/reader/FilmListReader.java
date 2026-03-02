@@ -31,6 +31,7 @@ import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.InputStreamProgressMonitor;
 import mediathek.tool.ProgressMonitorInputStream;
 import mediathek.tool.TrailerTeaserChecker;
+import mediathek.tool.datum.DateUtil;
 import mediathek.tool.episodes.SeasonEpisode;
 import mediathek.tool.episodes.TitleParserManager;
 import mediathek.tool.http.MVHttpClient;
@@ -60,6 +61,7 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -67,6 +69,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class FilmListReader implements AutoCloseable {
@@ -86,7 +89,7 @@ public class FilmListReader implements AutoCloseable {
     private final TrailerTeaserChecker ttc = new TrailerTeaserChecker();
     private final TitleParserManager manager = new TitleParserManager();
     private int progress;
-    private IDateFilter dateFilter;
+    private Consumer<DatenFilm> filmSink;
     private String sender = "";
     private String thema = "";
 
@@ -141,8 +144,20 @@ public class FilmListReader implements AutoCloseable {
         if (geoStr.isEmpty())
             datenFilm.countrySet.clear();
         else {
-            var split = geoStr.split("-");
-            for (var geoItem : split) {
+            /*
+            This code is more performant than String.split as we do not allocate arrays on every call.
+             */
+            int start = 0;
+            int length = geoStr.length();
+            for (int i = 0; i <= length; i++) {
+                if (i < length && geoStr.charAt(i) != '-') {
+                    continue;
+                }
+                String geoItem = geoStr.substring(start, i);
+                start = i + 1;
+                if (geoItem.isEmpty()) {
+                    continue;
+                }
                 try {
                     datenFilm.countrySet.add(Country.valueOf(geoItem));
                 }
@@ -398,7 +413,7 @@ public class FilmListReader implements AutoCloseable {
                 datenFilm.init();
 
                 // this will add the film to the filmlist if it passes...
-                dateFilter.filter(datenFilm);
+                filmSink.accept(datenFilm);
             }
         }
     }
@@ -418,11 +433,22 @@ public class FilmListReader implements AutoCloseable {
             logger.trace("Liste Filme lesen von: {}", source);
             listeFilme.clear();
 
-            if (days == 0) {
-                dateFilter = new NoOpDateFilter(listeFilme);
-            }
+            if (days == 0)
+                filmSink = listeFilme::add;
             else {
-                dateFilter = new DateFilter(listeFilme, days);
+                final LocalDate cutoffDate = LocalDate.now().minusDays(days);
+                filmSink = film -> {
+                    // do not filter livestreams
+                    if (film.isLivestream()) {
+                        listeFilme.add(film);
+                        return;
+                    }
+
+                    final LocalDate filmDate = DateUtil.convertToLocalDate(film.getDatumFilm());
+                    if (!cutoffDate.isAfter(filmDate)) {
+                        listeFilme.add(film);
+                    }
+                };
             }
 
             notifyStart(source); // für die Progressanzeige
