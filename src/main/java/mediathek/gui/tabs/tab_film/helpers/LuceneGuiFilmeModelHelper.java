@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024-2025 derreisende77.
+ * Copyright (c) 2024-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -141,8 +141,7 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
 
                 //SEARCH
                 final var searcher = new IndexSearcher(listeFilme.getReader());
-                final var matchingDocIds = new ArrayList<Integer>();
-                searcher.search(finalQuery, new NonScoringCollector(matchingDocIds));
+                final var matchingDocIds = searcher.search(finalQuery, new NonScoringCollectorManager());
                 final var hit_length = matchingDocIds.size();
 
                 Set<Integer> filmNrSet = HashSet.newHashSet(hit_length);
@@ -279,11 +278,11 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
     }
 
     private static class NonScoringCollector extends org.apache.lucene.search.SimpleCollector {
-        private final ArrayList<Integer> matchingDocIds;
+        private final ArrayList<Integer> matchingDocIds = new ArrayList<>();
         private int docBase;
 
-        public NonScoringCollector(ArrayList<Integer> matchingDocIds) {
-            this.matchingDocIds = matchingDocIds;
+        public List<Integer> getMatchingDocIds() {
+            return matchingDocIds;
         }
 
         @Override
@@ -299,6 +298,23 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
         @Override
         public ScoreMode scoreMode() {
             return ScoreMode.COMPLETE_NO_SCORES;
+        }
+    }
+
+    private static class NonScoringCollectorManager implements CollectorManager<NonScoringCollector, ArrayList<Integer>> {
+        @Override
+        public NonScoringCollector newCollector() {
+            return new NonScoringCollector();
+        }
+
+        @Override
+        public ArrayList<Integer> reduce(Collection<NonScoringCollector> collectors) {
+            int totalSize = collectors.stream().mapToInt(c -> c.getMatchingDocIds().size()).sum();
+            ArrayList<Integer> merged = new ArrayList<>(totalSize);
+            for (var collector : collectors) {
+                merged.addAll(collector.getMatchingDocIds());
+            }
+            return merged;
         }
     }
 }

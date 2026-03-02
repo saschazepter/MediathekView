@@ -26,6 +26,7 @@ import mediathek.config.Config;
 import mediathek.gui.messages.DownloadProgressChangedEvent;
 import mediathek.tool.MVFilmSize;
 import mediathek.tool.MessageBus;
+import mediathek.tool.ProcessCommandUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -92,7 +93,7 @@ public class RuntimeExec {
                     logger.info(" -> {}", strProgCallArray);
                     logger.info("=====================");
                 }
-                process = Runtime.getRuntime().exec(arrProgCallArray);
+                process = new ProcessBuilder(arrProgCallArray).start();
             } else {
                 if (log) {
                     logger.info("=====================");
@@ -100,7 +101,7 @@ public class RuntimeExec {
                     logger.info(" -> {}", strProgCall);
                     logger.info("=====================");
                 }
-                process = Runtime.getRuntime().exec(strProgCall);
+                process = new ProcessBuilder(ProcessCommandUtils.tokenizeCommand(strProgCall)).start();
             }
 
             Thread clearIn = new Thread(new ClearInOut(IoType.INPUT, process));
