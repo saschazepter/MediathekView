@@ -192,8 +192,8 @@ public class DirectHttpDownload extends Thread {
             fileSink = Okio.sink(file);
         try (fileSink;
              var bufferedSink = Okio.buffer(fileSink);
-             ThrottlingInputStream tis = new ThrottlingInputStream(inputStream, rateLimiter);
-             MVBandwidthCountingInputStream mvis = new MVBandwidthCountingInputStream(tis)) {
+             var tis = new ThrottlingInputStream(inputStream, rateLimiter);
+             var mvis = new MVBandwidthCountingInputStream(tis)) {
             start.mVBandwidthCountingInputStream = mvis;
             datenDownload.mVFilmSize.addAktSize(alreadyDownloaded);
             final byte[] buffer = new byte[1024];
