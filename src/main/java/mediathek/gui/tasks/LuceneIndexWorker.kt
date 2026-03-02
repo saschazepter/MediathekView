@@ -191,7 +191,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
                 val queueCapacity = (indexingThreads * 256).coerceAtLeast(512)
                 val writeBatchSize = 256
                 val indexingDispatcher = Executors.newFixedThreadPool(indexingThreads).asCoroutineDispatcher()
-                try {
+                indexingDispatcher.use { indexingDispatcher ->
                     runBlocking {
                         val filmChannel = Channel<DatenFilm>(queueCapacity)
 
@@ -230,8 +230,6 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
                         producer.join()
                         consumers.joinAll()
                     }
-                } finally {
-                    indexingDispatcher.close()
                 }
                 SwingUtilities.invokeLater { progressBar.value = 100 }
 
