@@ -337,7 +337,10 @@ public class StarterClass {
                     daten.getListeDownloadsButton().buttonStartsPutzen(); // Button Starts aus der Liste löschen
                     TimeUnit.SECONDS.sleep(DOWNLOAD_DELAY);
                 }
-                catch (InterruptedException ignored) {
+                catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    logger.trace("StarterThread interrupted, stopping.");
+                    return;
                 }
                 catch (Exception ex) {
                     logger.error("Fehler in Starten Thread:", ex);
