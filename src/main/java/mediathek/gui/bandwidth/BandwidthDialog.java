@@ -1,5 +1,19 @@
 /*
- * Created by JFormDesigner on Tue Jan 03 13:11:50 CET 2023
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package mediathek.gui.bandwidth;
@@ -40,9 +54,6 @@ import java.text.SimpleDateFormat;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-/**
- * @author christianfranzke
- */
 public class BandwidthDialog extends JDialog {
     protected static final String CONFIG_X = "bandwidth_monitor.x";
     protected static final String CONFIG_Y = "bandwidth_monitor.y";
@@ -63,6 +74,8 @@ public class BandwidthDialog extends JDialog {
 
         initComponents();
         setupChart();
+
+        setLabelColors();
 
         restoreSizeFromConfig();
         addComponentListener(new WriteConfigComponentListener(config, this));
@@ -116,17 +129,32 @@ public class BandwidthDialog extends JDialog {
     }
 
     private void setLabelColors() {
-        var color = UIManager.getColor("Label.foreground");
+        var labelColor = UIManager.getColor("Label.foreground");
+        var panelColor = UIManager.getColor("Panel.background");
+        if (labelColor == null) {
+            labelColor = Color.LIGHT_GRAY;
+        }
+        if (panelColor == null) {
+            panelColor = Color.DARK_GRAY;
+        }
 
-        dateAxis.setLabelPaint(color);
-        dateAxis.setTickLabelPaint(color);
-        dateAxis.setTickMarkPaint(color);
+
+        dateAxis.setLabelPaint(labelColor);
+        dateAxis.setTickLabelPaint(labelColor);
+        dateAxis.setTickMarkPaint(labelColor);
         //prevent display of date x-axis labels
         dateAxis.setDateFormatOverride(new SimpleDateFormat(""));
 
-        bandwidthAxis.setLabelPaint(color);
-        bandwidthAxis.setTickLabelPaint(color);
-        bandwidthAxis.setTickMarkPaint(color);
+        bandwidthAxis.setLabelPaint(labelColor);
+        bandwidthAxis.setTickLabelPaint(labelColor);
+        bandwidthAxis.setTickMarkPaint(labelColor);
+
+        chartPanel1.getChart().setBackgroundPaint(panelColor);
+        XYPlot plot = (XYPlot) chartPanel1.getChart().getPlot();
+        plot.setBackgroundPaint(panelColor);
+        plot.setOutlinePaint(labelColor);
+        plot.setDomainGridlinePaint(labelColor);
+        plot.setRangeGridlinePaint(labelColor);
     }
 
     private void setupChart() {
@@ -136,8 +164,6 @@ public class BandwidthDialog extends JDialog {
         dataset.addSeries(total);
 
         bandwidthAxis.setAutoRange(true);
-
-        setLabelColors();
 
         var renderer = new XYSplineRenderer();
         renderer.setDefaultShapesVisible(false);
@@ -163,8 +189,12 @@ public class BandwidthDialog extends JDialog {
         var chart = new JFreeChart(plot);
         chart.removeLegend();
 
-        chartPanel1.setPopupMenu(null);
         chartPanel1.setChart(chart);
+        chartPanel1.setPopupMenu(null);
+        chartPanel1.setMouseZoomable(false);
+        chartPanel1.setDomainZoomable(false);
+        chartPanel1.setRangeZoomable(false);
+        chartPanel1.setMouseWheelEnabled(false);
 
         //reset counters first as there will be spikes otherwise...
         MVHttpClient.getInstance().getByteCounter().resetCounters();
