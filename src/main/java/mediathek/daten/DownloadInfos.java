@@ -66,11 +66,11 @@ public class DownloadInfos {
         // Liste gestarteter Downloads
         for (DatenDownload download : aktivDownloads) {
             anzDownloadsRun++;
-            byteAlleDownloads += (download.mVFilmSize.getSize() > 0 ? download.mVFilmSize.getSize() : 0);
             if (download.start != null && download.start.status == Start.STATUS_RUN) {
                 // die Downlaods laufen gerade
                 bandwidth += download.start.bandbreite; // bytes per second
                 byteAktDownloads += (download.mVFilmSize.getAktSize() > 0 ? download.mVFilmSize.getAktSize() : 0);
+                byteAlleDownloads += (download.mVFilmSize.getSize() > 0 ? download.mVFilmSize.getSize() : 0);
                 if (download.start.restSekunden > timeRestAktDownloads) {
                     // der längeste gibt die aktuelle Restzeit vor
                     timeRestAktDownloads = download.start.restSekunden;
