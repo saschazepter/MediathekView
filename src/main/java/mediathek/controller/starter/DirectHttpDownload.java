@@ -1,8 +1,8 @@
 package mediathek.controller.starter;
 
-import com.google.common.util.concurrent.RateLimiter;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
+import mediathek.controller.ByteRateLimiter;
 import mediathek.controller.MVBandwidthCountingInputStream;
 import mediathek.controller.ThrottlingInputStream;
 import mediathek.controller.history.SeenHistoryController;
@@ -46,7 +46,7 @@ public class DirectHttpDownload extends Thread {
     /**
      * Instance which will limit the download speed
      */
-    private final RateLimiter rateLimiter;
+    private final ByteRateLimiter rateLimiter;
     private final MBassador<BaseEvent> messageBus;
     private final OkHttpClient httpClient;
     private HttpDownloadState state = HttpDownloadState.DOWNLOAD;
@@ -65,7 +65,7 @@ public class DirectHttpDownload extends Thread {
         super();
 
         httpClient = MVHttpClient.getInstance().getHttpClient();
-        rateLimiter = RateLimiter.create(getDownloadLimit());
+        rateLimiter = new ByteRateLimiter(getDownloadLimit());
         messageBus = MessageBus.getMessageBus();
         messageBus.subscribe(this);
 
@@ -192,8 +192,8 @@ public class DirectHttpDownload extends Thread {
             fileSink = Okio.sink(file);
         try (fileSink;
              var bufferedSink = Okio.buffer(fileSink);
-             ThrottlingInputStream tis = new ThrottlingInputStream(inputStream, rateLimiter);
-             MVBandwidthCountingInputStream mvis = new MVBandwidthCountingInputStream(tis)) {
+             var tis = new ThrottlingInputStream(inputStream, rateLimiter);
+             var mvis = new MVBandwidthCountingInputStream(tis)) {
             start.mVBandwidthCountingInputStream = mvis;
             datenDownload.mVFilmSize.addAktSize(alreadyDownloaded);
             final byte[] buffer = new byte[1024];

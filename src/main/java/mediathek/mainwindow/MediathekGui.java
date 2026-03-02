@@ -1188,7 +1188,7 @@ public class MediathekGui extends JFrame {
 
         // stop the download thread
         logger.trace("Stop Starter Thread.");
-        daten.getStarterClass().getStarterThread().interrupt();
+        daten.getStarterClass().shutdown();
 
         logger.trace("Close Notification center.");
         closeNotificationCenter();
