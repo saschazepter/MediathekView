@@ -1,15 +1,13 @@
 package mediathek.gui.duplicates;
 
 import ca.odell.glazedlists.TransactionList;
-import com.google.common.base.Stopwatch;
-import com.google.common.hash.Hashing;
 import mediathek.config.Daten;
 import mediathek.daten.DatenFilm;
 import mediathek.daten.ListeFilme;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -24,7 +22,6 @@ public class FilmDuplicateEvaluationTask implements Runnable {
     }
 
     private void printDuplicateStatistics() {
-        Stopwatch watch = Stopwatch.createStarted();
         var statisticsEventList = Daten.getInstance().getDuplicateStatistics();
         Map<String, Long> statisticsMap = listeFilme.parallelStream()
                 .filter(DatenFilm::isDuplicate)
@@ -43,31 +40,24 @@ public class FilmDuplicateEvaluationTask implements Runnable {
         finally {
             tList.getReadWriteLock().writeLock().unlock();
         }
-        watch.stop();
-
-        logger.trace("Duplicate stream filter took: {}", watch);
         logger.trace("Number of duplicates: {}", duplicateCount);
     }
 
     private void checkDuplicates() {
         logger.trace("Start Duplicate URL search");
-        final Set<Long> urlCache = new HashSet<>();
-
-        var hf = Hashing.murmur3_128();
+        final Map<String, Map<String, Set<String>>> urlCache = new HashMap<>();
         listeFilme.stream()
                 .filter(f -> !f.isLivestream())
                 .sorted(new BigSenderPenaltyComparator())
                 .forEach(film -> {
-                    var hasher = hf.newHasher()
-                            .putString(film.getUrlNormalQuality(), StandardCharsets.UTF_8);
-                    if (film.isHighQuality())
-                        hasher = hasher.putString(film.getHighQualityUrl(), StandardCharsets.UTF_8);
-                    if (film.hasLowQuality())
-                        hasher = hasher.putString(film.getLowQualityUrl(), StandardCharsets.UTF_8);
-                    final var hc = hasher.hash();
-                    final var hash = hc.padToLong();
+                    final String normalUrl = film.getUrlNormalQuality();
+                    final String highQualityUrl = film.isHighQuality() ? film.getHighQualityUrl() : "";
+                    final String lowQualityUrl = film.hasLowQuality() ? film.getLowQualityUrl() : "";
 
-                    film.setDuplicate(!urlCache.add(hash));
+                    Map<String, Set<String>> byHighQualityUrl = urlCache.computeIfAbsent(normalUrl, _ -> new HashMap<>());
+                    Set<String> seenLowQualityUrls = byHighQualityUrl.computeIfAbsent(highQualityUrl, _ -> new HashSet<>());
+
+                    film.setDuplicate(!seenLowQualityUrls.add(lowQualityUrl));
                 });
         urlCache.clear();
     }
