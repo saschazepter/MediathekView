@@ -422,7 +422,7 @@
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
             <version>${annotations.version}</version>
-            <scope>compile</scope>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -722,8 +722,9 @@
                         </goals>
                         <configuration>
                             <!-- configure the plugin here -->
+                            <excludeGroupIds>org.jetbrains</excludeGroupIds>
                             <excludeArtifactIds>
-                                sqlite-jdbc,mockito-core,mockito-junit-jupiter,junit-jupiter-api,junit-jupiter-params,junit-jupiter-engine,kotlin-test-junit,byte-buddy,byte-buddy-agent,junit-platform-commons,junit-platform-engine,kotlin-test
+                                annotations,sqlite-jdbc,mockito-core,mockito-junit-jupiter,junit-jupiter-api,junit-jupiter-params,junit-jupiter-engine,kotlin-test-junit,byte-buddy,byte-buddy-agent,junit-platform-commons,junit-platform-engine,kotlin-test
                             </excludeArtifactIds>
                         </configuration>
                     </execution>
