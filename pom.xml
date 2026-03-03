@@ -100,7 +100,6 @@
         <flatlaf.version>3.7</flatlaf.version>
         <glazedlists.version>1.11.0</glazedlists.version>
         <guava.version>33.5.0-jre</guava.version>
-        <icu4j.version>78.1</icu4j.version>
         <ikonli.version>12.4.0</ikonli.version>
         <jackson.version>3.0.1</jackson.version>
         <jaffree.version>2024.08.29</jaffree.version>
@@ -198,12 +197,6 @@
             <artifactId>ikonli-materialdesign2-pack</artifactId>
             <version>${ikonli.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.ibm.icu</groupId>
-            <artifactId>icu4j</artifactId>
-            <version>${icu4j.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>com.github.lgooddatepicker</groupId>
             <artifactId>LGoodDatePicker</artifactId>
