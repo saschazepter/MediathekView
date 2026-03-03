@@ -18,7 +18,6 @@
 
 package mediathek.filmlisten.writer;
 
-import mediathek.daten.Country;
 import mediathek.daten.DatenFilm;
 import mediathek.daten.ListeFilme;
 import mediathek.gui.messages.FilmListWriteStartEvent;
@@ -44,7 +43,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class FilmListWriter {
 
@@ -132,16 +130,19 @@ public class FilmListWriter {
                 writeFormatDescription(jg);
 
                 final long filmEntries = listeFilme.size();
-                float curEntry = 0f;
+                long curEntry = 0;
+                final long progressStep = Math.max(1L, filmEntries / 500L);
 
                 if (compressSenderTag)
                     listeFilme.sort(Comparator.comparing(DatenFilm::getSender).thenComparing(DatenFilm::getThema));
 
                 for (DatenFilm datenFilm : listeFilme) {
                     writeEntry(datenFilm, jg);
+                    curEntry++;
                     if (progressListener != null) {
-                        progressListener.progress(curEntry / filmEntries);
-                        curEntry++;
+                        if (curEntry % progressStep == 0 || curEntry == filmEntries) {
+                            progressListener.progress(curEntry / (double) filmEntries);
+                        }
                     }
                 }
                 jg.writeEndObject();
@@ -201,10 +202,20 @@ public class FilmListWriter {
         if (film.countrySet.isEmpty())
             jg.writeString("");
         else
-            jg.writeString(film.countrySet.stream().map(Country::toString).collect(Collectors.joining("-")));
+            jg.writeString(joinCountries(film));
         jg.writeString(Boolean.toString(film.isNew()));
 
         jg.writeEndArray();
+    }
+
+    private String joinCountries(@NotNull DatenFilm film) {
+        StringBuilder sb = new StringBuilder();
+        var iterator = film.countrySet.iterator();
+        sb.append(iterator.next());
+        while (iterator.hasNext()) {
+            sb.append('-').append(iterator.next());
+        }
+        return sb.toString();
     }
 
     private void writeLowQualityUrl(@NotNull JsonGenerator jg, @NotNull DatenFilm datenFilm) {
