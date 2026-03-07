@@ -46,8 +46,19 @@ object MVSenderIconCache {
      */
     @JvmStatic
     operator fun get(sender: String): Optional<ImageIcon> {
+        if (sender.isBlank()) {
+            return Optional.empty()
+        }
+
         return try {
-            senderCache[sender]
+            val cached = senderCache[sender]
+            if (!useLocalIcons.get() && cached.isEmpty) {
+                // In wiki mode, transient network failures should not stay cached for hours.
+                senderCache.invalidate(sender)
+                senderCache[sender]
+            } else {
+                cached
+            }
         } catch (_: RuntimeException) {
             Optional.empty()
         }
