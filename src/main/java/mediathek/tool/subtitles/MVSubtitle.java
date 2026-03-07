@@ -153,7 +153,7 @@ public class MVSubtitle {
         try {
             downloadAndConvertSubtitleFile(urlSubtitle, destinationPath);
         } catch (Exception e) {
-            LogManager.getLogger().error("Error writing subtitle: {}", e.getMessage());
+            LogManager.getLogger().error("Error writing subtitle.", e);
         }
     }
 }
