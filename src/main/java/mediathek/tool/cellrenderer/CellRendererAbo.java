@@ -64,7 +64,7 @@ public class CellRendererAbo extends CellRendererBase {
                         if (((MVTable) table).showSenderIcons()) {
                             final int columnModelIndex = table.convertColumnIndexToModel(column);
                             Dimension targetDim = getSenderCellDimension(table, row,columnModelIndex);
-                            setSenderIcon(abo.getSender(), targetDim);
+                            setSenderIcon(abo.getSender(), targetDim, isSelected);
                         }
                         else {
                             setHorizontalAlignment(SwingConstants.CENTER);
