@@ -1,9 +1,24 @@
 /*
- * Created by JFormDesigner on Sun Apr 28 11:14:19 CEST 2024
+ * Copyright (c) 2024-2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 package mediathek.gui.filmInformation;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.util.ScaledImageIcon;
 import mediathek.config.Konstanten;
 import mediathek.daten.Country;
@@ -16,6 +31,7 @@ import mediathek.tool.GuiFunktionen;
 import mediathek.tool.SwingErrorDialog;
 import mediathek.tool.datum.DateUtil;
 import mediathek.tool.sender_icon_cache.MVSenderIconCache;
+import mediathek.tool.sender_icon_cache.SenderIconRenderUtil;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.configuration2.sync.LockMode;
 import org.jdesktop.swingx.JXHyperlink;
@@ -207,9 +223,19 @@ public class FilmInfoDialog extends JDialog {
         currentFilmOptional.ifPresentOrElse(currentFilm -> {
             MVSenderIconCache.get(currentFilm.getSender()).ifPresentOrElse(icon -> {
                 lblSender.setText("");
-                var imageDim = new Dimension(icon.getIconWidth(), icon.getIconHeight());
-                var destDim = GuiFunktionen.calculateFittedDimension(imageDim, DEFAULT_SENDER_DIMENSION);
-                lblSender.setIcon(new ScaledImageIcon(icon, destDim.width, destDim.height));
+                Icon renderedIcon;
+                if (icon instanceof FlatSVGIcon svg) {
+                    var destDim = SenderIconRenderUtil.calculateFittedDimensionAllowUpscale(
+                            new Dimension(svg.getIconWidth(), svg.getIconHeight()),
+                            DEFAULT_SENDER_DIMENSION
+                    );
+                    renderedIcon = svg.derive(destDim.width, destDim.height);
+                } else {
+                    var imageDim = new Dimension(icon.getIconWidth(), icon.getIconHeight());
+                    var destDim = SenderIconRenderUtil.calculateFittedDimensionAllowUpscale(imageDim, DEFAULT_SENDER_DIMENSION);
+                    renderedIcon = new ScaledImageIcon(icon, destDim.width, destDim.height);
+                }
+                lblSender.setIcon(renderedIcon);
             }, () -> {
                 lblSender.setText(currentFilm.getSender());
                 lblSender.setIcon(null);

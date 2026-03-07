@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.tool.sender_icon_cache;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
@@ -7,8 +25,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -92,57 +108,10 @@ class SenderIconCacheLoader {
         }
 
         if (resource.endsWith(".svg")) {
-            return renderSvgIcon(url);
+            return new FlatSVGIcon(url);
         }
 
         return new ImageIcon(url);
-    }
-
-    private static @NotNull ImageIcon renderSvgIcon(@NotNull java.net.URL url) {
-        FlatSVGIcon svgIcon = new FlatSVGIcon(url).derive(256, 256);
-        BufferedImage rendered = new BufferedImage(svgIcon.getIconWidth(), svgIcon.getIconHeight(), BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = rendered.createGraphics();
-        try {
-            svgIcon.paintIcon(null, g2, 0, 0);
-        } finally {
-            g2.dispose();
-        }
-
-        return new ImageIcon(trimTransparentBorder(rendered));
-    }
-
-    private static @NotNull BufferedImage trimTransparentBorder(@NotNull BufferedImage image) {
-        int minX = image.getWidth();
-        int minY = image.getHeight();
-        int maxX = -1;
-        int maxY = -1;
-
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                int alpha = (image.getRGB(x, y) >>> 24) & 0xFF;
-                if (alpha != 0) {
-                    if (x < minX) minX = x;
-                    if (y < minY) minY = y;
-                    if (x > maxX) maxX = x;
-                    if (y > maxY) maxY = y;
-                }
-            }
-        }
-
-        if (maxX < minX || maxY < minY) {
-            return image;
-        }
-
-        int width = (maxX - minX) + 1;
-        int height = (maxY - minY) + 1;
-        BufferedImage cropped = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D g2 = cropped.createGraphics();
-        try {
-            g2.drawImage(image, 0, 0, width, height, minX, minY, maxX + 1, maxY + 1, null);
-        } finally {
-            g2.dispose();
-        }
-        return cropped;
     }
 
     public @NotNull Optional<ImageIcon> load(@NotNull String sender) {

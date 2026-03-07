@@ -1,15 +1,35 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.tool.cellrenderer;
 
+import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.util.ScaledImageIcon;
 import mediathek.tool.ApplicationConfiguration;
-import mediathek.tool.GuiFunktionen;
 import mediathek.tool.sender_icon_cache.MVSenderIconCache;
+import mediathek.tool.sender_icon_cache.SenderIconRenderUtil;
 import org.apache.commons.lang3.SystemUtils;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -41,9 +61,24 @@ public class CellRendererBase extends DefaultTableCellRenderer {
         cachedIcon.set(senderCellIconCache.getOrDefault(key, null));
         if (cachedIcon.get() == null) {
             MVSenderIconCache.get(sender).ifPresentOrElse(icon -> {
-                var imageDim = new Dimension(icon.getIconWidth(), icon.getIconHeight());
-                var destDim = GuiFunktionen.calculateFittedDimension(imageDim, targetDim);
-                cachedIcon.set(new ScaledImageIcon(icon, destDim.width, destDim.height));
+                Icon renderedIcon;
+                if (icon instanceof FlatSVGIcon svg) {
+                    Icon autoFitted = SenderIconRenderUtil.deriveSvgFittedToOpaqueBounds(svg, targetDim);
+                    if (requiresExtraSvgBoost(sender)) {
+                        int boostedWidth = Math.max(1, (int) Math.round(autoFitted.getIconWidth() * 1.35d));
+                        int boostedHeight = Math.max(1, (int) Math.round(autoFitted.getIconHeight() * 1.35d));
+                        renderedIcon = svg.derive(boostedWidth, boostedHeight);
+                    } else {
+                        renderedIcon = autoFitted;
+                    }
+                } else {
+                    var destDim = SenderIconRenderUtil.calculateFittedDimensionAllowUpscale(
+                            new Dimension(icon.getIconWidth(), icon.getIconHeight()),
+                            targetDim
+                    );
+                    renderedIcon = new ScaledImageIcon(icon, destDim.width, destDim.height);
+                }
+                cachedIcon.set(renderedIcon);
                 senderCellIconCache.put(key, cachedIcon.get());
             }, () -> cachedIcon.set(null));
         }
@@ -54,6 +89,13 @@ public class CellRendererBase extends DefaultTableCellRenderer {
         }
         setVerticalAlignment(SwingConstants.CENTER);
         setHorizontalAlignment(SwingConstants.CENTER);
+    }
+
+    private static boolean requiresExtraSvgBoost(@NotNull String sender) {
+        String normalized = sender.toLowerCase(Locale.ROOT);
+        return normalized.equals("tagesschau24")
+                || normalized.equals("radio bremen")
+                || normalized.equals("radio bremen tv");
     }
 
     /**
