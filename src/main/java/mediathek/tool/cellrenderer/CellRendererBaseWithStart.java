@@ -16,6 +16,8 @@ import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 import org.kordamp.ikonli.swing.FontIcon;
 
 import javax.swing.*;
+import javax.swing.event.TableColumnModelEvent;
+import javax.swing.event.TableColumnModelListener;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -27,6 +29,7 @@ import java.util.stream.Collectors;
  */
 public class CellRendererBaseWithStart extends CellRendererBase {
     public static final String ICON_POSITION_RIGHT = "ui.list.iconposition_right";
+    private static final String INDICATOR_VISIBILITY_CACHE_KEY = "mv.renderer.indicatorVisibilityCache";
     private static final EnumSet<Country> euCountryList = EnumSet.of(Country.DE, Country.AT, Country.FR);
     protected final Configuration config = ApplicationConfiguration.getConfiguration();
     protected final FontIcon lockedIcon;
@@ -67,6 +70,15 @@ public class CellRendererBaseWithStart extends CellRendererBase {
 
         audioDescription = IconUtils.of(FontAwesomeSolid.AUDIO_DESCRIPTION);
         audioDescriptionSelected = FontIcon.of(FontAwesomeSolid.AUDIO_DESCRIPTION, IconUtils.DEFAULT_SIZE, Color.WHITE);
+    }
+
+    private static boolean isColumnHidden(@NotNull JTable table, @NotNull String identifier) {
+        try {
+            return table.getColumn(identifier).getWidth() == 0;
+        } catch (IllegalArgumentException ignored) {
+            // If column does not exist in this table model, treat as hidden.
+            return true;
+        }
     }
 
     protected void drawGeolocationIcons(@NotNull DatenFilm film, boolean isSelected) {
@@ -158,6 +170,11 @@ public class CellRendererBaseWithStart extends CellRendererBase {
      * @param isSelected is row selected.
      */
     protected void setIndicatorIcons(@NotNull JTable table, @NotNull DatenFilm datenFilm, boolean isSelected) {
+        var visibility = getIndicatorColumnVisibility(table);
+        setIndicatorIcons(datenFilm, isSelected, visibility.hqColumnHidden, visibility.utColumnHidden);
+    }
+
+    protected void setIndicatorIcons(@NotNull DatenFilm datenFilm, boolean isSelected, boolean hqColumnHidden, boolean utColumnHidden) {
         if (!datenFilm.countrySet.isEmpty()) {
             if (!filmIsCountryUnlocked(datenFilm)) {
                 //locked
@@ -168,9 +185,8 @@ public class CellRendererBaseWithStart extends CellRendererBase {
             }
         }
 
-        var tc = table.getColumn("HQ");
         // if HQ column is NOT visible add icon
-        if (tc.getWidth() == 0) {
+        if (hqColumnHidden) {
             if (datenFilm.isHighQuality()) {
                 if (isSelected)
                     iconList.add(highQualityIconSelected);
@@ -186,9 +202,8 @@ public class CellRendererBaseWithStart extends CellRendererBase {
                 iconList.add(audioDescription);
         }
 
-        tc = table.getColumn("UT");
         //if UT column is NOT visible
-        if (tc.getWidth() == 0) {
+        if (utColumnHidden) {
             if (datenFilm.hasSubtitle()) {
                 if (isSelected)
                     iconList.add(subtitleIconSelected);
@@ -216,5 +231,70 @@ public class CellRendererBaseWithStart extends CellRendererBase {
         setHorizontalTextPosition(position);
         //always clear at the end
         iconList.clear();
+    }
+
+    private IndicatorColumnVisibility getIndicatorColumnVisibility(@NotNull JTable table) {
+        var cache = (IndicatorVisibilityCache) table.getClientProperty(INDICATOR_VISIBILITY_CACHE_KEY);
+        if (cache == null || cache.columnModel != table.getColumnModel()) {
+            cache = new IndicatorVisibilityCache(table);
+            table.putClientProperty(INDICATOR_VISIBILITY_CACHE_KEY, cache);
+        }
+        return cache.get();
+    }
+
+    private record IndicatorColumnVisibility(boolean hqColumnHidden, boolean utColumnHidden) {
+    }
+
+    private static final class IndicatorVisibilityCache implements TableColumnModelListener {
+        private final JTable table;
+        private final javax.swing.table.TableColumnModel columnModel;
+        private boolean dirty = true;
+        private IndicatorColumnVisibility visibility = new IndicatorColumnVisibility(true, true);
+
+        private IndicatorVisibilityCache(@NotNull JTable table) {
+            this.table = table;
+            this.columnModel = table.getColumnModel();
+            this.columnModel.addColumnModelListener(this);
+        }
+
+        private IndicatorColumnVisibility get() {
+            if (dirty) {
+                visibility = new IndicatorColumnVisibility(
+                        isColumnHidden(table, "HQ"),
+                        isColumnHidden(table, "UT")
+                );
+                dirty = false;
+            }
+            return visibility;
+        }
+
+        private void invalidate() {
+            dirty = true;
+        }
+
+        @Override
+        public void columnAdded(TableColumnModelEvent e) {
+            invalidate();
+        }
+
+        @Override
+        public void columnRemoved(TableColumnModelEvent e) {
+            invalidate();
+        }
+
+        @Override
+        public void columnMoved(TableColumnModelEvent e) {
+            invalidate();
+        }
+
+        @Override
+        public void columnMarginChanged(javax.swing.event.ChangeEvent e) {
+            invalidate();
+        }
+
+        @Override
+        public void columnSelectionChanged(javax.swing.event.ListSelectionEvent e) {
+            // selection does not affect visibility
+        }
     }
 }
