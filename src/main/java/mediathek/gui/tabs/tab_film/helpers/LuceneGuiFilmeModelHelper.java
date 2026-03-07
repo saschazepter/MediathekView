@@ -18,7 +18,6 @@
 
 package mediathek.gui.tabs.tab_film.helpers;
 
-import com.google.common.base.Stopwatch;
 import mediathek.config.Daten;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.DatenFilm;
@@ -31,6 +30,7 @@ import mediathek.tool.FilterConfiguration;
 import mediathek.tool.LuceneDefaultAnalyzer;
 import mediathek.tool.SwingErrorDialog;
 import mediathek.tool.models.TModelFilm;
+import mediathek.tool.time.Stopwatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;

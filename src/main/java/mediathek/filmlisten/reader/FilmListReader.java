@@ -18,7 +18,6 @@
 
 package mediathek.filmlisten.reader;
 
-import com.google.common.base.Stopwatch;
 import mediathek.config.Config;
 import mediathek.config.Konstanten;
 import mediathek.controller.SenderFilmlistLoadApprover;
@@ -35,6 +34,7 @@ import mediathek.tool.datum.DateUtil;
 import mediathek.tool.episodes.SeasonEpisode;
 import mediathek.tool.episodes.TitleParserManager;
 import mediathek.tool.http.MVHttpClient;
+import mediathek.tool.time.Stopwatch;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;

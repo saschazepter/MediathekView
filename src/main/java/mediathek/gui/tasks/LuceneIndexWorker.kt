@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 derreisende77.
+ * Copyright (c) 2024-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,6 @@
  */
 package mediathek.gui.tasks
 
-import com.google.common.base.Stopwatch
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.joinAll
@@ -33,6 +32,7 @@ import mediathek.tool.LuceneDefaultAnalyzer
 import mediathek.tool.SwingErrorDialog
 import mediathek.tool.datum.DateUtil
 import mediathek.tool.datum.DatumFilm
+import mediathek.tool.time.Stopwatch
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.lucene.document.*
