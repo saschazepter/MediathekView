@@ -2,7 +2,7 @@
 - **BUGFIX(Linux):** Tray-Icon Funktion wird für KDE deaktiviert, das sie hier nicht richtig funktioniert.
 - **BUGFIX:** Workaround für Oracle JDK-8024695 eingebaut. Dies verhinderte das korrekte Abspielen von Filmen.
 - **BUGFIX:** Veraltetes Sendericon wird nicht mehr im Filminfo-Dialog dargestellt.
-- **BUGFIX:** Zielpfad im "Film Speichern"-Dialog wird nicht mehr abgeschnitten angezeigt.
+- **BUGFIX:** Zielpfad im "Film Speichern"-Dialog wird nicht mehr abgeschnitten.
 - **BUGFIX(macOS):** MV sucht nun bei zapp Livestreams in folgender Reihenfolge nach passenden Playern: IINA -> VLC -> Browserauswahl
 - **BUGFIX:** Im *Abo Verwalten*-Dialog werden nun Sender als Text korrekt dargestellt.
 - **BUGFIX(Windows):** Das Programm stürzt nicht mehr bei Nutzung über Remote Desktop ab.
