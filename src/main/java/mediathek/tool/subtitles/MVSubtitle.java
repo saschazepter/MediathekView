@@ -30,22 +30,66 @@ import org.apache.logging.log4j.LogManager;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
+import java.nio.file.*;
 
 public class MVSubtitle {
+    private static void moveWithFallback(@NotNull Path source, @NotNull Path target) throws IOException {
+        try {
+            // Atomic move is preferred but may fail across filesystems.
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            return;
+        } catch (AtomicMoveNotSupportedException ignored) {
+            // Retry below without atomic semantics.
+        }
+
+        //fall back to copy/delete...
+        moveNonAtomicOrCopyDelete(source, target);
+    }
+
+    private static void moveNonAtomicOrCopyDelete(@NotNull Path source, @NotNull Path target) throws IOException {
+        try {
+            Files.move(source, target, StandardCopyOption.REPLACE_EXISTING);
+        } catch (FileSystemException e) {
+            if (isCrossDeviceMoveError(source, target, e)) {
+                Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+                Files.delete(source);
+            } else {
+                throw e;
+            }
+        }
+    }
+
+    private static boolean isCrossDeviceMoveError(@NotNull Path source, @NotNull Path target, @NotNull FileSystemException e) {
+        try {
+            final Path targetProbe = Files.exists(target) ? target : target.getParent();
+            if (targetProbe != null && !Files.getFileStore(source).equals(Files.getFileStore(targetProbe))) {
+                return true;
+            }
+        } catch (IOException ignored) {
+            // Fall back to reason parsing below.
+        }
+
+        final String reason = e.getReason();
+        if (reason == null) {
+            return false;
+        }
+
+        final String normalized = reason.toLowerCase();
+        return normalized.contains("cross-device")
+                || normalized.contains("exdev")
+                || (normalized.contains("link") && normalized.contains("device"));
+    }
+
     public static Path addFileExtension(@NotNull Path selectedFilePath, @NotNull TimedTextFormatDetector.Format format) throws IOException {
         Path path;
         switch (format) {
             case WEBVTT -> {
                 path = PathExtensions.withExtension(selectedFilePath, ".vtt");
-                Files.move(selectedFilePath, path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                moveWithFallback(selectedFilePath, path);
             }
             case TTML1, TTML2 -> {
                 path = PathExtensions.withExtension(selectedFilePath, ".ttml");
-                Files.move(selectedFilePath, path, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                moveWithFallback(selectedFilePath, path);
             }
             default -> throw new IOException("Unknown subtitle format: " + format);
         }
@@ -56,13 +100,12 @@ public class MVSubtitle {
         Path tempSubtitleFile = null;
         try {
             tempSubtitleFile = FileUtils.downloadToTempFile(subtitleUrl);
-            Files.move(tempSubtitleFile, selectedFilePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+            moveWithFallback(tempSubtitleFile, selectedFilePath);
 
             var res = TimedTextFormatDetector.detect(selectedFilePath, true);
             if (!res.valid()) {
                 throw new IOException("Invalid subtitle format: " + res.format());
-            }
-            else {
+            } else {
                 //valid result
                 if (res.format() == TimedTextFormatDetector.Format.UNKNOWN) {
                     throw new IOException("Unknown subtitle format: " + res.format());
@@ -92,13 +135,11 @@ public class MVSubtitle {
                 var assStr = new AssExporter(assOptions).export(ttmlDoc);
                 Files.writeString(assPath, assStr);
             }
-        }
-        finally {
+        } finally {
             try {
                 if (tempSubtitleFile != null)
                     Files.deleteIfExists(tempSubtitleFile);
-            }
-            catch (IOException ignored) {
+            } catch (IOException ignored) {
             }
         }
     }
@@ -111,8 +152,7 @@ public class MVSubtitle {
         Path destinationPath = Paths.get(datenDownload.getFileNameWithoutSuffix());
         try {
             downloadAndConvertSubtitleFile(urlSubtitle, destinationPath);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             LogManager.getLogger().error("Error writing subtitle: {}", e.getMessage());
         }
     }
