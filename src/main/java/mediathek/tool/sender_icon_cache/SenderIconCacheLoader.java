@@ -58,6 +58,7 @@ class SenderIconCacheLoader {
             case "tagesschau24" -> "/icons/sender/tagesschau24.svg";
             case "wdr" -> "/icons/sender/wdr.svg";
             case "zdf" -> "/icons/sender/zdf.svg";
+            case "zdf-tivi" -> "/icons/sender/ZDFtivi.svg";
             case "zdfinfo" -> "/icons/sender/ZDFinfo.svg";
             case "zdfneo" -> "/icons/sender/ZDFneo.svg";
             case "deutscher bundestag", "parlamentsfernsehen kanal 1", "parlamentsfernsehen kanal 2" -> "/icons/sender/Deutscher_Bundestag.svg";
