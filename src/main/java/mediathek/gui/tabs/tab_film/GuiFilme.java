@@ -23,9 +23,6 @@ import ca.odell.glazedlists.EventList;
 import com.formdev.flatlaf.FlatClientProperties;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.icons.FlatSearchWithHistoryIcon;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 import mediathek.config.*;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.controller.starter.Start;
@@ -84,6 +81,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.IntConsumer;
 import java.util.regex.Matcher;
@@ -135,7 +133,7 @@ public class GuiFilme extends AGuiTabPanel {
     /**
      * We perform model filtering in the background the keep UI thread alive.
      */
-    private ListenableFuture<TableModel> modelFuture;
+    private CompletableFuture<TableModel> modelFuture;
 
     public GuiFilme(Daten aDaten, MediathekGui mediathekGui) {
         daten = aDaten;
@@ -664,40 +662,36 @@ public class GuiFilme extends AGuiTabPanel {
         tabelle.setEnabled(false);
 
         var decoratedPool = daten.getDecoratedPool();
-        modelFuture = decoratedPool.submit(() -> {
+        modelFuture = CompletableFuture.supplyAsync(() -> {
             var searchFieldData = new SearchFieldData(searchField.getText(), searchField.getSearchMode());
             GuiModelHelper helper = GuiModelHelperFactory.createGuiModelHelper(
                     historyController, searchFieldData, filterConfiguration);
             return helper.getFilteredTableModel();
-        });
-        Futures.addCallback(modelFuture,
-                new FutureCallback<>() {
-                    public void onSuccess(TableModel model) {
-                        SwingUtilities.invokeLater(() -> {
-                            tabelle.setModel(model);
-                            tabelle.setEnabled(true);
-                            updateStartInfoProperty();
-                            tabelle.setSpalten();
-                            updateFilmData();
-                            stopBeob = false;
-                            tabelle.scrollToSelection();
-                            messageBus.publish(new TableModelChangeEvent(false, from_search_field));
-                        });
-                    }
-
-                    public void onFailure(@NotNull Throwable thrown) {
-                        logger.error("Model filtering failed!", thrown);
-                        SwingUtilities.invokeLater(() -> {
-                            tabelle.setEnabled(true);
-                            updateStartInfoProperty();
-                            tabelle.setSpalten();
-                            updateFilmData();
-                            stopBeob = false;
-                            messageBus.publish(new TableModelChangeEvent(false, from_search_field));
-                        });
-                    }
-                },
-                decoratedPool);
+        }, decoratedPool);
+        modelFuture.whenCompleteAsync((model, thrown) -> {
+            if (thrown == null) {
+                SwingUtilities.invokeLater(() -> {
+                    tabelle.setModel(model);
+                    tabelle.setEnabled(true);
+                    updateStartInfoProperty();
+                    tabelle.setSpalten();
+                    updateFilmData();
+                    stopBeob = false;
+                    tabelle.scrollToSelection();
+                    messageBus.publish(new TableModelChangeEvent(false, from_search_field));
+                });
+            } else {
+                logger.error("Model filtering failed!", thrown);
+                SwingUtilities.invokeLater(() -> {
+                    tabelle.setEnabled(true);
+                    updateStartInfoProperty();
+                    tabelle.setSpalten();
+                    updateFilmData();
+                    stopBeob = false;
+                    messageBus.publish(new TableModelChangeEvent(false, from_search_field));
+                });
+            }
+        }, decoratedPool);
     }
 
     static class GuiModelHelperFactory {

@@ -1,8 +1,6 @@
 package mediathek.mainwindow;
 
 import com.formdev.flatlaf.extras.components.FlatButton;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
 import mediathek.Main;
 import mediathek.config.*;
 import mediathek.controller.history.SeenHistoryController;
@@ -241,7 +239,7 @@ public class MediathekGui extends JFrame {
         mapFilmUrlCopyCommands();
 
         if (Config.shouldDownloadAndQuit()) {
-            var future = Daten.getInstance().getDecoratedPool().submit(() -> {
+            var future = CompletableFuture.supplyAsync(() -> {
                 try {
                     TimeUnit.SECONDS.sleep(10);
                     logger.info("Auto DL and Quit: Updating filmlist...");
@@ -263,22 +261,17 @@ public class MediathekGui extends JFrame {
                     logger.error("Auto DL and Quit: error starting downloads", e);
                     return false;
                 }
-            });
-            Futures.addCallback(future, new FutureCallback<>() {
-                @Override
-                public void onSuccess(Boolean result) {
+            }, Daten.getInstance().getDecoratedPool());
+            future.whenCompleteAsync((result, throwable) -> {
+                if (throwable == null) {
                     try {
                         SwingUtilities.invokeAndWait(() -> quitApplication(true));
                     }
                     catch (Exception e) {
                         logger.error("Auto DL and Quit: Error in callback...", e);
                     }
-                }
-
-                @Override
-                public void onFailure(@NotNull Throwable t) {
-
-                    logger.error("Auto DL and Quit: Error in callback...", t);
+                } else {
+                    logger.error("Auto DL and Quit: Error in callback...", throwable);
                 }
             }, Daten.getInstance().getDecoratedPool());
         }
