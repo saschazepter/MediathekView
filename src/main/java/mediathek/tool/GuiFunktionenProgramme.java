@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import java.awt.*;
 import java.io.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -446,30 +447,25 @@ public class GuiFunktionenProgramme {
      * @return true if we can write a file there, false if not.
      */
     public static boolean checkPathWriteable(@NotNull String path) {
-        boolean ret = false;
-
         if (path.isEmpty())
             return false;
 
-        File testFile = new File(path);
+        final Path directory = Paths.get(path);
         try {
-            if (!testFile.exists()) {
-                if (!testFile.mkdirs())
-                    logger.error("checkPathWriteable(): Could not create directory {}", path);
+            if (Files.notExists(directory)) {
+                Files.createDirectories(directory);
             }
 
-            if (testFile.isDirectory()) {
-                if (testFile.canWrite()) {
-                    File tmpFile = File.createTempFile("mediathek", "tmp", testFile);
-                    ret = tmpFile.delete();
-//                    ret = true;
-                }
+            if (!Files.isDirectory(directory)) {
+                return false;
             }
+
+            final Path tmpFile = Files.createTempFile(directory, "mediathek", ".tmp");
+            return Files.deleteIfExists(tmpFile);
         }
         catch (Exception e) {
             logger.error("checkPathWriteable()", e);
+            return false;
         }
-
-        return ret;
     }
 }
