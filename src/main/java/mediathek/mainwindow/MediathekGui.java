@@ -575,10 +575,7 @@ public class MediathekGui extends JFrame {
     private void createMemoryMonitor() {
         boolean visible = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.MemoryMonitorDialog.VISIBLE, false);
         if (visible) {
-            if (!SystemUtils.IS_OS_MAC_OSX) {
-                //FIXME macOS Sonoma 14.1 causes freeze when showing on startup...
-                showMemoryMonitorAction.showMemoryMonitor();
-            }
+            showMemoryMonitorAction.showMemoryMonitor();
         }
     }
 
