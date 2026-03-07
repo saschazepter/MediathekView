@@ -1,6 +1,4 @@
 package mediathek.tool.sender_icon_cache;
-
-import com.google.common.cache.CacheLoader;
 import mediathek.config.Konstanten;
 import mediathek.tool.http.MVHttpClient;
 import okhttp3.Request;
@@ -17,7 +15,7 @@ import java.awt.image.BufferedImage;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-class SenderIconCacheLoader extends CacheLoader<@NotNull String, @NotNull Optional<ImageIcon>> {
+class SenderIconCacheLoader {
     private static final String WIKI_BASE_URL = "https://upload.wikimedia.org/wikipedia/commons/thumb";
     private static final Logger logger = LogManager.getLogger();
     private final AtomicBoolean useLocalIcons;
@@ -77,7 +75,6 @@ class SenderIconCacheLoader extends CacheLoader<@NotNull String, @NotNull Option
         return icon;
     }
 
-    @Override
     public @NotNull Optional<ImageIcon> load(@NotNull String sender) {
         ImageIcon icon = switch (sender) {
             case "3Sat" -> getIcon(WIKI_BASE_URL + "/f/f2/3sat-Logo.svg/775px-3sat-Logo.svg.png", "/mediathek/res/sender/3sat.png");

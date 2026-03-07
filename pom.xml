@@ -95,6 +95,7 @@
         <commons-io.version>2.21.0</commons-io.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
         <coroutines.version>1.10.2</coroutines.version>
+        <caffeine.version>3.2.3</caffeine.version>
         <kotlinx-serialization.version>1.9.0</kotlinx-serialization.version>
         <dd-plist.version>1.28</dd-plist.version>
         <flatlaf.version>3.7</flatlaf.version>
@@ -331,6 +332,12 @@
             <groupId>org.tukaani</groupId>
             <artifactId>xz</artifactId>
             <version>${xz.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.ben-manes.caffeine</groupId>
+            <artifactId>caffeine</artifactId>
+            <version>${caffeine.version}</version>
         </dependency>
 
         <dependency>
