@@ -85,7 +85,6 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
             final int rowModelIndex = table.convertRowIndexToModel(row);
             final int columnModelIndex = table.convertColumnIndexToModel(column);
             final DatenFilm datenFilm = (DatenFilm) table.getModel().getValueAt(rowModelIndex, DatenFilm.FILM_REF);
-            final DatenDownload datenDownload = Daten.getInstance().getListeDownloadsButton().getDownloadUrlFilm(datenFilm.getUrlNormalQuality());
             final boolean isBookMarked = datenFilm.isBookmarked();
             final var mvTable = (MVTable) table;
 
@@ -110,7 +109,10 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
             //here comes the content...
             switch (columnModelIndex) {
                 case DatenFilm.FILM_DAUER -> setText(datenFilm.getFilmLengthAsString());
-                case DatenFilm.FILM_ABSPIELEN -> handleButtonStartColumn(datenDownload, isSelected);
+                case DatenFilm.FILM_ABSPIELEN -> {
+                    final DatenDownload datenDownload = Daten.getInstance().getListeDownloadsButton().getDownloadUrlFilm(datenFilm.getUrlNormalQuality());
+                    handleButtonStartColumn(datenDownload, isSelected);
+                }
                 case DatenFilm.FILM_AUFZEICHNEN -> handleButtonDownloadColumn(isSelected);
                 case DatenFilm.FILM_MERKEN ->
                         handleButtonBookmarkColumn(isBookMarked, isSelected, datenFilm.isLivestream());
