@@ -1,6 +1,5 @@
 package mediathek.controller.history
 
-import com.google.common.collect.Sets
 import mediathek.config.Daten
 import mediathek.daten.DatenFilm
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
@@ -14,6 +13,7 @@ import java.nio.file.Path
 import java.sql.*
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.ConcurrentHashMap
 import kotlin.system.exitProcess
 
 
@@ -157,7 +157,7 @@ class SeenHistoryController : AutoCloseable {
     /**
      * thread-safe store for all database contained URLs.
      */
-    private val urlCache = Sets.newConcurrentHashSet<String>()
+    private val urlCache = ConcurrentHashMap.newKeySet<String>()
 
     /**
      * Indicate whether the mem cache is ready or not
