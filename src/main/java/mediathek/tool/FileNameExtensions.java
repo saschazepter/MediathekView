@@ -23,19 +23,40 @@ public final class FileNameExtensions {
     }
 
     public static int getLikelyExtensionDotIndex(String fileName) {
-        final int lastSeparator = getLastPathSeparator(fileName);
-        final int lastDot = fileName.lastIndexOf('.');
+        final int suffixEnd = getSuffixEnd(fileName);
+        final int lastSeparator = getLastPathSeparator(fileName, suffixEnd);
+        final int lastDot = fileName.lastIndexOf('.', suffixEnd - 1);
         if (lastDot < 0 || lastDot <= lastSeparator) {
             return -1;
         }
 
-        return looksLikeExtension(fileName.substring(lastDot + 1))
+        return looksLikeExtension(fileName.substring(lastDot + 1, suffixEnd))
                 ? lastDot
                 : -1;
     }
 
     public static int getLastPathSeparator(String fileName) {
-        return Math.max(fileName.lastIndexOf('/'), fileName.lastIndexOf('\\'));
+        return getLastPathSeparator(fileName, fileName.length());
+    }
+
+    private static int getLastPathSeparator(String fileName, int upperBoundExclusive) {
+        return Math.max(
+                fileName.lastIndexOf('/', upperBoundExclusive - 1),
+                fileName.lastIndexOf('\\', upperBoundExclusive - 1)
+        );
+    }
+
+    private static int getSuffixEnd(String fileName) {
+        final int queryIndex = fileName.indexOf('?');
+        final int fragmentIndex = fileName.indexOf('#');
+        int suffixEnd = fileName.length();
+        if (queryIndex >= 0) {
+            suffixEnd = Math.min(suffixEnd, queryIndex);
+        }
+        if (fragmentIndex >= 0) {
+            suffixEnd = Math.min(suffixEnd, fragmentIndex);
+        }
+        return suffixEnd;
     }
 
     public static boolean looksLikeExtension(String suffix) {
