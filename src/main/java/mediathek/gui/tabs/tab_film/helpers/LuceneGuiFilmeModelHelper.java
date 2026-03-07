@@ -55,7 +55,7 @@ import java.util.stream.Stream;
 public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
     private static final Logger logger = LogManager.getLogger();
     private static final Map<String, PointsConfig> PARSER_CONFIG_MAP = new HashMap<>();
-    private static final HashSet<String> INTEREST_SET = new HashSet<>(List.of(LuceneIndexKeys.ID));
+    private static final Set<String> INTEREST_SET = Set.of(LuceneIndexKeys.ID);
     static {
         //INFO IntPoints MUST be registered here
         PARSER_CONFIG_MAP.put(LuceneIndexKeys.FILM_SIZE, new PointsConfig(new DecimalFormat(), Integer.class));
