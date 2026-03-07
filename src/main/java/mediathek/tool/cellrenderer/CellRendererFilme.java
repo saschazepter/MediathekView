@@ -227,10 +227,7 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
             // Button Merken
             setToolTipText(isBookMarked ? "Film aus Merkliste entfernen" : "Film merken");
             if (isBookMarked) {
-                if (isSelected) {
-                    setIcon(selectedBookmarkIconHighlighted);
-                } else
-                    setIcon(selectedBookmarkIconHighlighted);
+                setIcon(selectedBookmarkIconHighlighted);
             } else {
                 if (isSelected) {
                     setIcon(selectedBookmarkIcon);
