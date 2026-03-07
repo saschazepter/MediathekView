@@ -33,7 +33,11 @@ import java.io.IOException;
 import java.nio.file.*;
 
 public class MVSubtitle {
-    private static void moveWithFallback(@NotNull Path source, @NotNull Path target) throws IOException {
+    /**
+     * Move {@code source} to {@code target}, preferring ATOMIC_MOVE and falling back to non-atomic move/copy-delete.
+     * This is intended for files that may cross filesystems or be stored on network shares.
+     */
+    public static void moveWithFallback(@NotNull Path source, @NotNull Path target) throws IOException {
         try {
             // Atomic move is preferred but may fail across filesystems.
             Files.move(source, target, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
