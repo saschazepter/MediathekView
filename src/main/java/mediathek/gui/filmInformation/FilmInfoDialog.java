@@ -42,6 +42,7 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -51,7 +52,8 @@ import java.util.stream.Collectors;
  * @author christianfranzke
  */
 public class FilmInfoDialog extends JDialog {
-    private static final Dimension DEFAULT_SENDER_DIMENSION = new Dimension(64, 64);
+    private static final Dimension DEFAULT_SENDER_DIMENSION = new Dimension(48, 48);
+    private static final Dimension DEFAULT_SENDER_HEIGHT_BOUNDARY = new Dimension(4096, DEFAULT_SENDER_DIMENSION.height);
     private final JPopupMenu popupMenu = new JPopupMenu();
     private Optional<DatenFilm> currentFilmOptional = Optional.empty();
     private FilmAvailableUntilWorker currentWorker;
@@ -225,14 +227,10 @@ public class FilmInfoDialog extends JDialog {
                 lblSender.setText("");
                 Icon renderedIcon;
                 if (icon instanceof FlatSVGIcon svg) {
-                    var destDim = SenderIconRenderUtil.calculateFittedDimensionAllowUpscale(
-                            new Dimension(svg.getIconWidth(), svg.getIconHeight()),
-                            DEFAULT_SENDER_DIMENSION
-                    );
-                    renderedIcon = svg.derive(destDim.width, destDim.height);
+                    renderedIcon = createSvgIconCroppedToHeight(svg, DEFAULT_SENDER_DIMENSION.height);
                 } else {
                     var imageDim = new Dimension(icon.getIconWidth(), icon.getIconHeight());
-                    var destDim = SenderIconRenderUtil.calculateFittedDimensionAllowUpscale(imageDim, DEFAULT_SENDER_DIMENSION);
+                    var destDim = SenderIconRenderUtil.calculateFittedDimensionAllowUpscale(imageDim, DEFAULT_SENDER_HEIGHT_BOUNDARY);
                     renderedIcon = new ScaledImageIcon(icon, destDim.width, destDim.height);
                 }
                 lblSender.setIcon(renderedIcon);
@@ -289,6 +287,110 @@ public class FilmInfoDialog extends JDialog {
                 lblAvailableUntil.setText(DateUtil.FORMATTER.format(availableUntil));
             }
         }, this::clearControls);
+    }
+
+    private static Icon createSvgIconCroppedToHeight(FlatSVGIcon svg, int targetHeight) {
+        int baseWidth = Math.max(1, svg.getIconWidth());
+        int baseHeight = Math.max(1, svg.getIconHeight());
+        int outHeight = Math.max(1, targetHeight);
+
+        // Keep probe image bounded by target height to avoid large temporary allocations
+        // for oversized source SVG canvases (e.g. mm-based exports).
+        final float scaleToTarget = outHeight / (float) baseHeight;
+        final float probeScale = Math.max(scaleToTarget * 4.0f, 0.05f);
+        FlatSVGIcon probe = svg.derive(probeScale);
+        BufferedImage probeImage = new BufferedImage(
+                Math.max(1, probe.getIconWidth()),
+                Math.max(1, probe.getIconHeight()),
+                BufferedImage.TYPE_INT_ARGB
+        );
+        Graphics2D pg = probeImage.createGraphics();
+        try {
+            probe.paintIcon(null, pg, 0, 0);
+        } finally {
+            pg.dispose();
+        }
+
+        Rectangle bounds = opaqueBounds(probeImage);
+        if (bounds == null) {
+            var fallbackDim = SenderIconRenderUtil.calculateFittedDimensionAllowUpscale(
+                    new Dimension(baseWidth, baseHeight),
+                    new Dimension(DEFAULT_SENDER_HEIGHT_BOUNDARY.width, outHeight)
+            );
+            return svg.derive(fallbackDim.width, fallbackDim.height);
+        }
+
+        double invScale = 1.0d / probeScale;
+        double cropX = bounds.x * invScale;
+        double cropY = bounds.y * invScale;
+        double cropW = Math.max(1.0d, bounds.width * invScale);
+        double cropH = Math.max(1.0d, bounds.height * invScale);
+
+        double scale = outHeight / cropH;
+        int derivedWidth = Math.max(1, (int) Math.round(baseWidth * scale));
+        int derivedHeight = Math.max(1, (int) Math.round(baseHeight * scale));
+        FlatSVGIcon derived = svg.derive(derivedWidth, derivedHeight);
+
+        int offsetX = Math.max(0, (int) Math.round(cropX * scale));
+        int offsetY = Math.max(0, (int) Math.round(cropY * scale));
+        int outWidth = Math.max(1, (int) Math.round(cropW * scale));
+
+        return new CroppedDelegateIcon(derived, offsetX, offsetY, outWidth, outHeight);
+    }
+
+    private static Rectangle opaqueBounds(BufferedImage image) {
+        int minX = image.getWidth();
+        int minY = image.getHeight();
+        int maxX = -1;
+        int maxY = -1;
+
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
+                int alpha = (image.getRGB(x, y) >>> 24) & 0xFF;
+                if (alpha != 0) {
+                    if (x < minX) minX = x;
+                    if (y < minY) minY = y;
+                    if (x > maxX) maxX = x;
+                    if (y > maxY) maxY = y;
+                }
+            }
+        }
+
+        if (maxX < minX || maxY < minY) {
+            return null;
+        }
+        return new Rectangle(minX, minY, (maxX - minX) + 1, (maxY - minY) + 1);
+    }
+
+    private static final class CroppedDelegateIcon implements Icon {
+        private final Icon delegate;
+        private final int offsetX;
+        private final int offsetY;
+        private final int width;
+        private final int height;
+
+        private CroppedDelegateIcon(Icon delegate, int offsetX, int offsetY, int width, int height) {
+            this.delegate = delegate;
+            this.offsetX = offsetX;
+            this.offsetY = offsetY;
+            this.width = width;
+            this.height = height;
+        }
+
+        @Override
+        public void paintIcon(Component c, Graphics g, int x, int y) {
+            delegate.paintIcon(c, g, x - offsetX, y - offsetY);
+        }
+
+        @Override
+        public int getIconWidth() {
+            return width;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return height;
+        }
     }
 
     private void prepareHyperlink(String url) {

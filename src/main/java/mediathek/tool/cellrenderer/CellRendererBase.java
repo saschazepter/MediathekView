@@ -42,7 +42,7 @@ public class CellRendererBase extends DefaultTableCellRenderer {
             "tagesschau24", "radio bremen", "radio bremen tv"
     );
     private static final Set<String> SELECTION_CONTRAST_EXCLUDE_SENDERS = Set.of(
-            "orf", "one", "srf", "srf.podcast", "zdf", "zdf-tivi", "3sat", "ard-alpha", "ard alpha"
+            "orf", "one", "srf", "srf.podcast", "zdf", "zdf-tivi", "3sat", "ard-alpha", "ard alpha", "funk.net", "funk"
     );
 
     /**
