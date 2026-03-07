@@ -18,7 +18,6 @@ import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 
 public class DownloadSubtitleAction extends AbstractAction {
     private final GuiFilme guiFilme;
@@ -38,8 +37,7 @@ public class DownloadSubtitleAction extends AbstractAction {
 
                 try {
                     tempSubtitleFile = FileUtils.downloadToTempFile(film.getSubtitleUrl());
-                    //System.out.println("File path: " + Objects.requireNonNull(tempSubtitleFile).toAbsolutePath());
-                    Files.move(tempSubtitleFile, selectedFilePath, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                    MVSubtitle.moveWithFallback(tempSubtitleFile, selectedFilePath);
 
                     var res = TimedTextFormatDetector.detect(selectedFilePath, true);
                     if (!res.valid()) {
@@ -49,8 +47,6 @@ public class DownloadSubtitleAction extends AbstractAction {
                     }
                     else {
                         //valid result
-                        //System.out.println("Format: " + res.format());
-                        //System.out.println(res.details());
                         if (res.format() == TimedTextFormatDetector.Format.UNKNOWN) {
                             JOptionPane.showMessageDialog(MediathekGui.ui(), "Untertitelformat wird nicht unterstützt.",
                                     Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE);
