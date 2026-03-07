@@ -43,11 +43,11 @@ public final class PathExtensions {
         }
 
         String name = fileName.toString();
-        int lastDot = name.lastIndexOf('.');
+        int lastDot = FileNameExtensions.getLikelyExtensionDotIndex(name);
 
         String baseName;
         if (lastDot > 0) {
-            // Replace existing extension
+            // Replace existing extension only if the suffix looks like one.
             baseName = name.substring(0, lastDot);
         }
         else {
