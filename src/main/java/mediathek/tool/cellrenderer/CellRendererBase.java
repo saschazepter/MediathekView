@@ -1,6 +1,7 @@
 package mediathek.tool.cellrenderer;
 
 import com.formdev.flatlaf.util.ScaledImageIcon;
+import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.GuiFunktionen;
 import mediathek.tool.sender_icon_cache.MVSenderIconCache;
 import org.apache.commons.lang3.SystemUtils;
@@ -33,7 +34,9 @@ public class CellRendererBase extends DefaultTableCellRenderer {
             targetDim.height -= 4;
         }
 
-        var key = new SenderCacheKey(sender, targetDim);
+        boolean useLocalSenderIcons = ApplicationConfiguration.getConfiguration()
+                .getBoolean(MVSenderIconCache.CONFIG_USE_LOCAL_SENDER_ICONS, false);
+        var key = new SenderCacheKey(sender, targetDim, useLocalSenderIcons);
         final AtomicReference<Icon> cachedIcon = new AtomicReference<>();
         cachedIcon.set(senderCellIconCache.getOrDefault(key, null));
         if (cachedIcon.get() == null) {

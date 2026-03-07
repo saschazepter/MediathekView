@@ -50,7 +50,8 @@ public class PanelEinstellungen extends JPanel {
 
     private void cbUseWikipediaSenderLogosActionPerformed(ActionEvent evt) {
         ApplicationConfiguration.getConfiguration().setProperty(MVSenderIconCache.CONFIG_USE_LOCAL_SENDER_ICONS,!cbUseWikipediaSenderLogos.isSelected());
-        MessageBus.getMessageBus().publishAsync(new SenderIconStyleChangedEvent());
+        MessageBus.getMessageBus().publish(new SenderIconStyleChangedEvent());
+        MessageBus.getMessageBus().publish(new ReloadTableDataEvent());
     }
     
     private void cbAutomaticUpdateChecksActionPerformed(ActionEvent evt) {
