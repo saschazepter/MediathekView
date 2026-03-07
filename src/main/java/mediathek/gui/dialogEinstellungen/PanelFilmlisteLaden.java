@@ -78,7 +78,7 @@ public class PanelFilmlisteLaden extends JPanel {
         btnReloadFilmlist.setIcon(IconUtils.of(FontAwesomeSolid.REDO_ALT));
         btnReloadFilmlist.addActionListener(_ -> {
             final var daten = Daten.getInstance();
-            daten.getListeFilme().clear(); // sonst wird evtl. nur eine Diff geladen
+            daten.getListeFilme().clearThreadSafe(); // sonst wird evtl. nur eine Diff geladen
             daten.getFilmeLaden().loadFilmlist("", hasSenderSelectionChanged());
         });
     }

@@ -27,11 +27,13 @@ import java.util.List;
 public class FilmDuplicateOverviewDialog extends JDialog {
 
     private final EventList<DatenFilm> filmList = new BasicEventList<>();
+    private final List<DatenFilm> filmSnapshot;
 
     public FilmDuplicateOverviewDialog(Window owner) {
         super(owner);
         initComponents();
         EscapeKeyHandler.installHandler(this, this::dispose);
+        filmSnapshot = Daten.getInstance().getListeFilme().snapshot();
 
         okButton.addActionListener(e -> dispose());
         //must be called for tooltips working
@@ -60,8 +62,7 @@ public class FilmDuplicateOverviewDialog extends JDialog {
             if (node == null)
                 return;
             if (node.getUserObject() instanceof DatenFilm f) {
-                var list = Daten.getInstance().getListeFilme()
-                        .parallelStream()
+                var list = filmSnapshot.parallelStream()
                         .filter(item -> !item.isLivestream())
                         .filter(item -> item.getUrlNormalQuality().equals(f.getUrlNormalQuality())
                                         && item.getHighQualityUrl().equals(f.getHighQualityUrl()))
@@ -119,7 +120,7 @@ public class FilmDuplicateOverviewDialog extends JDialog {
     {
         var root = new DefaultMutableTreeNode(sender);
 
-        var list = Daten.getInstance().getListeFilme().parallelStream()
+        var list = filmSnapshot.parallelStream()
                 .filter(DatenFilm::isDuplicate)
                 .filter(f -> f.getSender().equals(sender))
                 .sorted(Comparator.comparing(DatenFilm::getTitle))
@@ -137,7 +138,7 @@ public class FilmDuplicateOverviewDialog extends JDialog {
         // "ARD" und "ZDF" immer am Ende um die kleineren Mediatheken nicht zu benachteiligen
         // Alphabetisch sortieren für alle anderen
 
-        return Daten.getInstance().getListeFilme().parallelStream()
+        return filmSnapshot.parallelStream()
                 .map(DatenFilm::getSender)
                 .distinct()
                 .sorted((o1, o2) -> {

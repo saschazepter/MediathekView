@@ -245,7 +245,7 @@ public class MediathekGui extends JFrame {
                 try {
                     TimeUnit.SECONDS.sleep(10);
                     logger.info("Auto DL and Quit: Updating filmlist...");
-                    daten.getListeFilme().clear(); // sonst wird evtl. nur eine Diff geladen
+                    daten.getListeFilme().clearThreadSafe(); // sonst wird evtl. nur eine Diff geladen
                     daten.getFilmeLaden().loadFilmlist("", false);
                     logger.info("Auto DL and Quit: Filmlist update done.");
                     logger.info("Auto DL and Quit: Loading Abos...");

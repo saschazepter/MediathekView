@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 public class CommonStatsEvaluationTask implements Runnable {
     @Override
     public void run() {
-        final var films = Daten.getInstance().getListeFilme().parallelStream()
+        final var films = Daten.getInstance().getListeFilme().snapshot().parallelStream()
                 .filter(f -> !f.isLivestream())
                 .toList();
 

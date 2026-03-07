@@ -53,7 +53,7 @@ public class DuplicateFilmDetailsDialog extends JDialog {
         table1.getColumnModel().getColumn(6).setPreferredWidth(400);
 
         var url = film.getUrlNormalQuality();
-        Daten.getInstance().getListeFilme().parallelStream()
+        Daten.getInstance().getListeFilme().snapshot().parallelStream()
                 .filter(f -> f.getUrlNormalQuality().equals(url))
                 .forEach(duplicateList::add);
 

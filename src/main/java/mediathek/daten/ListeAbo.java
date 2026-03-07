@@ -195,8 +195,9 @@ public class ListeAbo extends ArrayList<DatenAbo> {
      * @param aboLoeschen abo löschen?
      */
     public void setAboFuerFilm(ListeFilme listeFilme, boolean aboLoeschen) {
+        var filmSnapshot = listeFilme.snapshot();
         if (this.isEmpty() && aboLoeschen) {
-            listeFilme.forEach(this::deleteAboInFilm);
+            filmSnapshot.forEach(this::deleteAboInFilm);
             return;
         }
 
@@ -207,7 +208,7 @@ public class ListeAbo extends ArrayList<DatenAbo> {
         forEach(this::createAbo);
 
         // das kostet die Zeit!!
-        listeFilme.parallelStream().forEach(this::assignAboToFilm);
+        filmSnapshot.parallelStream().forEach(this::assignAboToFilm);
 
         // und jetzt wieder löschen
         forEach(datenAbo -> {

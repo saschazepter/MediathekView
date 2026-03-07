@@ -34,7 +34,7 @@ public class FilmSizeInfoLabel extends JLabel implements ActionListener {
 
     private void updateValues() {
         String textLinks;
-        final int gesamt = Daten.getInstance().getListeFilme().size();
+        final int gesamt = Daten.getInstance().getListeFilme().sizeThreadSafe();
         final int rowCount = mediathekGui.tabFilme.getTableRowCount();
 
         if (gesamt == oldGesamt && rowCount == oldRowCount)

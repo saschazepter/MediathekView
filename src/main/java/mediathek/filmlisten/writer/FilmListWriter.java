@@ -41,6 +41,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 
@@ -97,7 +98,8 @@ public class FilmListWriter {
         MessageBus.getMessageBus().publishAsync(new FilmListWriteStartEvent());
 
         try {
-            logger.info("Filme schreiben ({} Filme) :", listeFilme.size());
+            var filmsToWrite = new ArrayList<>(listeFilme.snapshot());
+            logger.info("Filme schreiben ({} Filme) :", filmsToWrite.size());
             logger.info("   --> Start Schreiben nach: {}", datei);
 
             sender = "";
@@ -129,14 +131,14 @@ public class FilmListWriter {
                 writeFormatHeader(jg, listeFilme);
                 writeFormatDescription(jg);
 
-                final long filmEntries = listeFilme.size();
+                final long filmEntries = filmsToWrite.size();
                 long curEntry = 0;
                 final long progressStep = Math.max(1L, filmEntries / 500L);
 
                 if (compressSenderTag)
-                    listeFilme.sort(Comparator.comparing(DatenFilm::getSender).thenComparing(DatenFilm::getThema));
+                    filmsToWrite.sort(Comparator.comparing(DatenFilm::getSender).thenComparing(DatenFilm::getThema));
 
-                for (DatenFilm datenFilm : listeFilme) {
+                for (DatenFilm datenFilm : filmsToWrite) {
                     writeEntry(datenFilm, jg);
                     curEntry++;
                     if (progressListener != null) {

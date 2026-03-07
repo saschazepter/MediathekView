@@ -349,8 +349,9 @@ public class ListeDownloads extends LinkedList<DatenDownload> {
         final var listeBlacklist = daten.getListeBlacklist();
         final var aboHistoryController = daten.getAboHistoryController();
         final var listeFilme = daten.getListeFilme();
+        final var filmSnapshot = listeFilme.snapshot();
 
-        for (DatenFilm film : listeFilme) {
+        for (DatenFilm film : filmSnapshot) {
             DatenAbo abo = listeAbo.getAboFuerFilm_schnell(film, true);
             if (abo == null) {
                 // dann gibts dafür kein Abo

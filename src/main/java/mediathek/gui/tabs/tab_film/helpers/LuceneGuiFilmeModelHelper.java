@@ -74,6 +74,7 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
 
     private TModelFilm performTableFiltering() {
         var listeFilme = (IndexedFilmList) Daten.getInstance().getListeFilmeNachBlackList();
+        var filmSnapshot = listeFilme.snapshot();
         var useUnseenCache = filterConfiguration.isShowUnseenOnly();
         try {
             calculateFilmLengthSliderValues();
@@ -82,7 +83,7 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                 historyController.prepareMemoryCache();
 
             String searchText = searchFieldData.searchFieldText();
-            Stream<DatenFilm> stream = listeFilme.parallelStream();
+            Stream<DatenFilm> stream = filmSnapshot.parallelStream();
 
             if (!noFiltersAreSet()) {
                 var parser = new StandardQueryParser(analyzer);
@@ -159,7 +160,7 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                 logger.trace("Populating filmlist took: {}", watch2);
                 logger.trace("Number of found Lucene index entries: {}", filmNrSet.size());
 
-                stream = listeFilme.parallelStream()
+                stream = filmSnapshot.parallelStream()
                         .filter(film -> filmNrSet.contains(film.getFilmNr()));
             }
 
@@ -261,13 +262,14 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
     @Override
     public TableModel getFilteredTableModel() {
         var listeFilme = (IndexedFilmList) Daten.getInstance().getListeFilmeNachBlackList();
+        var filmSnapshot = listeFilme.snapshot();
         TModelFilm filmModel;
 
-        if (!listeFilme.isEmpty()) {
+        if (!filmSnapshot.isEmpty()) {
             if (noFiltersAreSet()) {
                 //adjust initial capacity
-                filmModel = new TModelFilm(listeFilme.size());
-                filmModel.addAll(listeFilme);
+                filmModel = new TModelFilm(filmSnapshot.size());
+                filmModel.addAll(filmSnapshot);
             } else {
                 filmModel = performTableFiltering();
             }

@@ -137,7 +137,7 @@ public final class MVTray {
 
         strText += "Filmliste erstellt: " + filmList.getMetaData().getGenerationDateTimeAsString() + " Uhr  ";
         strText += "\n";
-        strText += "Anz. Filme: " + filmList.size();
+        strText += "Anz. Filme: " + filmList.sizeThreadSafe();
         strText += "\n";
         strText += getInfoTextDownloads();
 

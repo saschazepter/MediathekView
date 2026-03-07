@@ -1461,8 +1461,9 @@ public class GuiFilme extends AGuiTabPanel {
             var daten = Daten.getInstance();
             var completeFilmList = daten.getListeFilme();
             var filteredFilmList = daten.getListeBlacklist();
+            var filmSnapshot = completeFilmList.snapshot();
 
-            var duplicateList = new ArrayList<>(completeFilmList.parallelStream()
+            var duplicateList = new ArrayList<>(filmSnapshot.parallelStream()
                     .filter(f -> f.getSender().equalsIgnoreCase(film.getSender()))
                     .filter(f -> f.getThema().equalsIgnoreCase(film.getThema()))
                     .filter(f -> f.getTitle().equalsIgnoreCase(film.getTitle()))
@@ -1479,7 +1480,7 @@ public class GuiFilme extends AGuiTabPanel {
                     // selected film will survive
                     duplicateList.remove(film);
                     //remove from original filmlist and update balcklist filtering
-                    completeFilmList.removeAll(duplicateList);
+                    completeFilmList.removeFilms(duplicateList);
 
                     // we must manually write the modified filmlist
                     var writer = new FilmListWriter(false);

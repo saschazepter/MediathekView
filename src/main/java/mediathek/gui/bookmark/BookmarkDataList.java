@@ -221,11 +221,12 @@ public class BookmarkDataList {
             return;
 
         ListeFilme listefilme = Daten.getInstance().getListeFilme();
+        var filmsSnapshot = listefilme.snapshot();
 
         for (var bookmark : bookmarks) {
             var hashCodeStr = bookmark.getFilmHashCode();
             if (hashCodeStr != null) {
-                var film = listefilme.parallelStream()
+                var film = filmsSnapshot.parallelStream()
                         .filter(df -> df.getSha256().equals(hashCodeStr)).findFirst().orElse(null);
                 assignData(bookmark, film);
             }

@@ -206,6 +206,15 @@ public class ListeFilme extends ArrayList<DatenFilm> {
         }
     }
 
+    public void removeFilms(@NotNull Collection<? extends DatenFilm> films) {
+        rwLock.writeLock().lock();
+        try {
+            super.removeAll(films);
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+    }
+
     public int sizeThreadSafe() {
         rwLock.readLock().lock();
         try {
