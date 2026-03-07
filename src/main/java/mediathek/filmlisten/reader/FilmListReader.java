@@ -431,22 +431,22 @@ public class FilmListReader implements AutoCloseable {
     public void readFilmListe(String source, @NotNull ListeFilme listeFilme, int days) {
         try {
             logger.trace("Liste Filme lesen von: {}", source);
-            listeFilme.clear();
+            listeFilme.clearThreadSafe();
 
             if (days == 0)
-                filmSink = listeFilme::add;
+                filmSink = listeFilme::addFilm;
             else {
                 final LocalDate cutoffDate = LocalDate.now().minusDays(days);
                 filmSink = film -> {
                     // do not filter livestreams
                     if (film.isLivestream()) {
-                        listeFilme.add(film);
+                        listeFilme.addFilm(film);
                         return;
                     }
 
                     final LocalDate filmDate = DateUtil.convertToLocalDate(film.getDatumFilm());
                     if (!cutoffDate.isAfter(filmDate)) {
-                        listeFilme.add(film);
+                        listeFilme.addFilm(film);
                     }
                 };
             }
@@ -472,7 +472,7 @@ public class FilmListReader implements AutoCloseable {
     private void parseSeasonAndEpisode(@NotNull ListeFilme listeFilme) {
         AtomicInteger counter = new AtomicInteger(0);
         Stopwatch stopwatch = Stopwatch.createStarted();
-        listeFilme.parallelStream()
+        listeFilme.snapshot().parallelStream()
                 .forEach(film -> {
                     Optional<SeasonEpisode> result = manager.parse(film.getSender(), film.getTitle());
                     result.ifPresent(sea -> {
@@ -513,11 +513,11 @@ public class FilmListReader implements AutoCloseable {
         }
         catch (FileNotFoundException | NoSuchFileException ex) {
             logger.debug("FilmListe existiert nicht: {}", source);
-            listeFilme.clear();
+            listeFilme.clearThreadSafe();
         }
         catch (Exception ex) {
             logger.error("FilmListe: {}", source, ex);
-            listeFilme.clear();
+            listeFilme.clearThreadSafe();
         }
     }
 
@@ -561,7 +561,7 @@ public class FilmListReader implements AutoCloseable {
         }
         catch (Exception ex) {
             logger.error("FilmListe: {}", source, ex);
-            listeFilme.clear();
+            listeFilme.clearThreadSafe();
         }
     }
 

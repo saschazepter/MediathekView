@@ -6,11 +6,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
@@ -18,15 +16,27 @@ import java.util.stream.Stream;
 public class ListeFilme extends ArrayList<DatenFilm> {
     private static final String PCS_METADATA = "metaData";
     protected final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private FilmListMetaData metaData = new FilmListMetaData();
+    private final ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private volatile FilmListMetaData metaData = new FilmListMetaData();
 
     public FilmListMetaData getMetaData() {
-        return metaData;
+        rwLock.readLock().lock();
+        try {
+            return metaData;
+        } finally {
+            rwLock.readLock().unlock();
+        }
     }
 
     public void setMetaData(FilmListMetaData meta) {
-        var oldValue = metaData;
-        metaData = meta;
+        FilmListMetaData oldValue;
+        rwLock.writeLock().lock();
+        try {
+            oldValue = metaData;
+            metaData = meta;
+        } finally {
+            rwLock.writeLock().unlock();
+        }
         this.pcs.firePropertyChange(PCS_METADATA, oldValue, metaData);
     }
 
@@ -53,7 +63,7 @@ public class ListeFilme extends ArrayList<DatenFilm> {
      * @return IMMUTABLE List of themas as String.
      */
     public List<String> getThemen(String sender) {
-        Stream<DatenFilm> mystream = parallelStream();
+        Stream<DatenFilm> mystream = snapshot().parallelStream();
         //if sender is empty return all themas...
         if (!sender.isEmpty())
             mystream = mystream.filter(f -> f.getSender().equals(sender));
@@ -73,7 +83,7 @@ public class ListeFilme extends ArrayList<DatenFilm> {
      * @return IMMUTABLE List of themas as String.
      */
     public List<String> getThemenUnprocessed(String sender) {
-        Stream<DatenFilm> mystream = parallelStream();
+        Stream<DatenFilm> mystream = snapshot().parallelStream();
         //if sender is empty return all themas...
         if (!sender.isEmpty())
             mystream = mystream.filter(f -> f.getSender().equalsIgnoreCase(sender));
@@ -81,20 +91,25 @@ public class ListeFilme extends ArrayList<DatenFilm> {
         return mystream.map(DatenFilm::getThema).toList();
     }
 
-    public synchronized void updateFromFilmList(@NotNull ListeFilme newFilmsList) {
+    public void updateFromFilmList(@NotNull ListeFilme newFilmsList) {
         // In die vorhandene Liste soll eine andere Filmliste einsortiert werden
         // es werden nur Filme, die noch nicht vorhanden sind, einsortiert
-        var hashNewFilms = new HashSet<String>(newFilmsList.size() + 1, 1);
-        newFilmsList.forEach(newFilm -> hashNewFilms.add(newFilm.getSha256()));
+        var incomingFilms = newFilmsList.snapshot();
+        var hashNewFilms = new HashSet<String>(incomingFilms.size() + 1, 1);
+        incomingFilms.forEach(newFilm -> hashNewFilms.add(newFilm.getSha256()));
 
-        this.removeIf(currentFilm -> hashNewFilms.contains(currentFilm.getSha256()));
+        rwLock.writeLock().lock();
+        try {
+            this.removeIf(currentFilm -> hashNewFilms.contains(currentFilm.getSha256()));
+            hashNewFilms.clear();
 
-        hashNewFilms.clear();
-
-        newFilmsList.forEach(film -> {
-            film.init();
-            add(film);
-        });
+            incomingFilms.forEach(film -> {
+                film.init();
+                add(film);
+            });
+        } finally {
+            rwLock.writeLock().unlock();
+        }
     }
 
     /**
@@ -103,8 +118,8 @@ public class ListeFilme extends ArrayList<DatenFilm> {
      * @param sender String with sender name
      * @return DatenFilm object if found or null
      */
-    public synchronized DatenFilm getFilmByUrlAndSender(@NotNull String url, @NotNull String sender) {
-        return parallelStream()
+    public DatenFilm getFilmByUrlAndSender(@NotNull String url, @NotNull String sender) {
+        return snapshot().parallelStream()
                 .filter(f -> f.getSender().equalsIgnoreCase(sender))
                 .filter(f -> f.getUrlNormalQuality().equalsIgnoreCase(url))
                 .findAny()
@@ -116,18 +131,18 @@ public class ListeFilme extends ArrayList<DatenFilm> {
      * @param url    String wiht URL
      * @return DatenFilm object if found or null
      */
-    public synchronized DatenFilm getFilmByUrl(@NotNull String url) {
-        return parallelStream()
+    public DatenFilm getFilmByUrl(@NotNull String url) {
+        return snapshot().parallelStream()
                 .filter(f -> f.getUrlNormalQuality().equalsIgnoreCase(url))
                 .findAny()
                 .orElse(null);
     }
 
-    public synchronized DatenFilm getFilmByUrl_klein_hoch_hd(String url) {
+    public DatenFilm getFilmByUrl_klein_hoch_hd(String url) {
         // Problem wegen gleicher URLs
         // wird versucht, einen Film mit einer kleinen/Hoher/HD-URL zu finden
         DatenFilm ret = null;
-        for (DatenFilm f : this) {
+        for (DatenFilm f : snapshot()) {
             if (f.getUrlNormalQuality().equals(url)) {
                 ret = f;
                 break;
@@ -148,10 +163,64 @@ public class ListeFilme extends ArrayList<DatenFilm> {
      * @return true if we need an update.
      */
     public boolean needsUpdate() {
-        return (isEmpty()) || (getMetaData().isOlderThan(Konstanten.ALTER_FILMLISTE_SEKUNDEN_FUER_AUTOUPDATE));
+        return isEmptyThreadSafe() || getMetaData().isOlderThan(Konstanten.ALTER_FILMLISTE_SEKUNDEN_FUER_AUTOUPDATE);
     }
 
-    public synchronized long countNewFilms() {
-        return stream().filter(DatenFilm::isNew).count();
+    public long countNewFilms() {
+        return snapshot().stream().filter(DatenFilm::isNew).count();
+    }
+
+    public List<DatenFilm> snapshot() {
+        rwLock.readLock().lock();
+        try {
+            return List.copyOf(this);
+        } finally {
+            rwLock.readLock().unlock();
+        }
+    }
+
+    public void clearThreadSafe() {
+        rwLock.writeLock().lock();
+        try {
+            super.clear();
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+    }
+
+    public void addFilm(@NotNull DatenFilm film) {
+        rwLock.writeLock().lock();
+        try {
+            super.add(film);
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+    }
+
+    public void sortFilms(Comparator<? super DatenFilm> comparator) {
+        rwLock.writeLock().lock();
+        try {
+            super.sort(comparator);
+        } finally {
+            rwLock.writeLock().unlock();
+        }
+    }
+
+    public int sizeThreadSafe() {
+        rwLock.readLock().lock();
+        try {
+            return super.size();
+        } finally {
+            rwLock.readLock().unlock();
+        }
+    }
+
+    public boolean isEmptyThreadSafe() {
+        rwLock.readLock().lock();
+        try {
+            return super.isEmpty();
+        } finally {
+            rwLock.readLock().unlock();
+        }
     }
 }

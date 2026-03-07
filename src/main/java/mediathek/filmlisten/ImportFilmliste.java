@@ -86,7 +86,7 @@ public class ImportFilmliste {
             if (!dateiUrl.isEmpty()) {
                 logger.trace("Filmliste laden von: {}", dateiUrl);
                 msFilmListReader.readFilmListe(dateiUrl, listeFilme, days);
-                if (!listeFilme.isEmpty()) {
+                if (!listeFilme.isEmptyThreadSafe()) {
                     ret = true;
                 }
             }

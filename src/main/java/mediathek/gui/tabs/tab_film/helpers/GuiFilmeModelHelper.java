@@ -43,7 +43,8 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
         if (filterConfiguration.isShowUnseenOnly())
             historyController.prepareMemoryCache();
 
-        var stream = Daten.getInstance().getListeFilmeNachBlackList().parallelStream();
+        var filmsSnapshot = Daten.getInstance().getListeFilmeNachBlackList().snapshot();
+        var stream = filmsSnapshot.parallelStream();
         var selectedSenders = getSelectedSendersFromFilter();
         if (!selectedSenders.isEmpty()) {
             stream = stream.filter(f -> selectedSenders.contains(f.getSender()));
@@ -95,12 +96,13 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
     @Override
     public TableModel getFilteredTableModel() {
         final var listeFilme = Daten.getInstance().getListeFilmeNachBlackList();
+        final var filmsSnapshot = listeFilme.snapshot();
 
-        if (!listeFilme.isEmpty()) {
+        if (!filmsSnapshot.isEmpty()) {
             if (noFiltersAreSet()) {
                 //adjust initial capacity
-                filmModel = new TModelFilm(listeFilme.size());
-                filmModel.addAll(listeFilme);
+                filmModel = new TModelFilm(filmsSnapshot.size());
+                filmModel.addAll(filmsSnapshot);
             } else {
                 performTableFiltering();
             }

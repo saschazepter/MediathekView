@@ -27,17 +27,17 @@ class FilmeImportierenAutoThread extends Thread {
     @Override
     public void run() {
         boolean ret;
-        if (listeFilme.isEmpty() || !listeFilme.getMetaData().canUseDiffList()) {
+        if (listeFilme.isEmptyThreadSafe() || !listeFilme.getMetaData().canUseDiffList()) {
             // dann eine komplette Liste laden
-            listeFilme.clear();
+            listeFilme.clearThreadSafe();
             ret = downloadAction.performDownload(StandardLocations.getFilmListUrl(FilmListDownloadType.FULL), listeFilme, days);
         } else {
             // nur ein Update laden
             ret = downloadAction.performDownload(StandardLocations.getFilmListUrl(FilmListDownloadType.DIFF_ONLY), listeFilmeDiff, days);
-            if (!ret || listeFilmeDiff.isEmpty()) {
+            if (!ret || listeFilmeDiff.isEmptyThreadSafe()) {
                 // wenn diff, dann nochmal mit einer kompletten Liste versuchen
-                listeFilme.clear();
-                listeFilmeDiff.clear();
+                listeFilme.clearThreadSafe();
+                listeFilmeDiff.clearThreadSafe();
                 ret = downloadAction.performDownload(StandardLocations.getFilmListUrl(FilmListDownloadType.FULL), listeFilme, days);
             }
         }

@@ -36,10 +36,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FilmeLaden {
 
@@ -55,8 +55,8 @@ public class FilmeLaden {
     private final Daten daten;
     private final ImportFilmliste importFilmliste;
     private final EventListenerList listeners = new EventListenerList();
-    private boolean istAmLaufen;
-    private boolean onlyOne;
+    private final AtomicBoolean istAmLaufen = new AtomicBoolean(false);
+    private final AtomicBoolean onlyOne = new AtomicBoolean(false);
 
     public FilmeLaden(Daten aDaten) {
         daten = aDaten;
@@ -154,7 +154,7 @@ public class FilmeLaden {
         boolean result = true;
 
         //always perform update when list is empty
-        if (listeFilme.isEmpty()) {
+        if (listeFilme.isEmptyThreadSafe()) {
             return true;
         } else {
             //remote download is using an empty file name!...
@@ -179,7 +179,7 @@ public class FilmeLaden {
 
     private void displayLogInfo(@NotNull ListeFilme listeFilme) {
         logger.info("Alte Liste erstellt am: {}", listeFilme.getMetaData().getGenerationDateTimeAsString());
-        logger.info("  Anzahl Filme: {}", listeFilme.size());
+        logger.info("  Anzahl Filme: {}", listeFilme.sizeThreadSafe());
         logger.info("  Anzahl Neue: {}", listeFilme.countNewFilms());
     }
 
@@ -194,19 +194,17 @@ public class FilmeLaden {
         logger.info("");
         displayLogInfo(listeFilme);
 
-        if (!istAmLaufen) {
+        if (istAmLaufen.compareAndSet(false, true)) {
             // nicht doppelt starten
-            istAmLaufen = true;
-
             // Hash mit URLs füllen
             prepareHashTable();
 
             if (immerNeuLaden) {
                 // dann die alte löschen, damit immer komplett geladen wird, aber erst nach dem Hash!!
-                listeFilme.clear(); // sonst wird eine "zu kurze" Liste wieder nur mit einer Diff-Liste aufgefüllt, wenn das Alter noch passt
+                listeFilme.clearThreadSafe(); // sonst wird eine "zu kurze" Liste wieder nur mit einer Diff-Liste aufgefüllt, wenn das Alter noch passt
             }
 
-            daten.getListeFilmeNachBlackList().clear();
+            daten.getListeFilmeNachBlackList().clearThreadSafe();
 
             final int days = ApplicationConfiguration.getConfiguration().getInt(ApplicationConfiguration.FilmList.LOAD_NUM_DAYS, 0);
             if (dateiUrl.isEmpty()) {
@@ -216,7 +214,7 @@ public class FilmeLaden {
             } else {
                 // Filme als Liste importieren, feste URL/Datei
                 logger.info("Filmliste laden von: {}", dateiUrl);
-                listeFilme.clear();
+                listeFilme.clearThreadSafe();
                 importFilmliste.importFromFile(dateiUrl, listeFilme, days);
             }
         }
@@ -230,14 +228,12 @@ public class FilmeLaden {
         logger.info("");
         displayLogInfo(daten.getListeFilme());
 
-        if (!istAmLaufen) {
+        if (istAmLaufen.compareAndSet(false, true)) {
             // nicht doppelt starten
-            istAmLaufen = true;
-
             // Hash mit URLs füllen
             prepareHashTable();
 
-            daten.getListeFilmeNachBlackList().clear();
+            daten.getListeFilmeNachBlackList().clearThreadSafe();
             // Filme als Liste importieren, feste URL/Datei
             logger.info("Filmliste laden von: {}", dateiUrl);
             final int num_days = ApplicationConfiguration.getConfiguration().getInt(ApplicationConfiguration.FilmList.LOAD_NUM_DAYS, 0);
@@ -261,19 +257,19 @@ public class FilmeLaden {
         final var readDate = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm").format(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()));
 
         // wenn nur ein Update
-        if (!diffListe.isEmpty()) {
+        if (!diffListe.isEmptyThreadSafe()) {
             logger.info("Liste Diff gelesen am: {}", readDate);
             logger.info("  Liste Diff erstellt am: {}", diffListe.getMetaData().getGenerationDateTimeAsString());
-            logger.info("  Anzahl Filme: {}", diffListe.size());
+            logger.info("  Anzahl Filme: {}", diffListe.sizeThreadSafe());
 
             listeFilme.updateFromFilmList(diffListe);
             listeFilme.setMetaData(diffListe.getMetaData());
-            Collections.sort(listeFilme);
-            diffListe.clear();
+            listeFilme.sortFilms(null);
+            diffListe.clearThreadSafe();
         } else {
             logger.info("Liste Kompl. gelesen am: {}", readDate);
             logger.info("  Liste Kompl erstellt am: {}", listeFilme.getMetaData().getGenerationDateTimeAsString());
-            logger.info("  Anzahl Filme: {}", listeFilme.size());
+            logger.info("  Anzahl Filme: {}", listeFilme.sizeThreadSafe());
         }
 
         findAndMarkNewFilms(daten.getListeFilme());
@@ -281,7 +277,7 @@ public class FilmeLaden {
         final boolean writeFilmList;
         final var ui = MediathekGui.ui();
 
-        istAmLaufen = false;
+        istAmLaufen.set(false);
         if (event.fehler) {
             logger.info("");
             logger.info("Filmliste laden war fehlerhaft, alte Liste wird wieder geladen");
@@ -291,7 +287,7 @@ public class FilmeLaden {
                     JOptionPane.ERROR_MESSAGE));
 
             // dann die alte Liste wieder laden
-            listeFilme.clear();
+            listeFilme.clearThreadSafe();
 
             try (FilmListReader reader = new FilmListReader()) {
                 final int num_days = ApplicationConfiguration.getConfiguration().getInt(ApplicationConfiguration.FilmList.LOAD_NUM_DAYS, 0);
@@ -306,7 +302,7 @@ public class FilmeLaden {
 
         logger.info("");
         logger.info("Jetzige Liste erstellt am: {}", listeFilme.getMetaData().getGenerationDateTimeAsString());
-        logger.info("  Anzahl Filme: {}", listeFilme.size());
+        logger.info("  Anzahl Filme: {}", listeFilme.sizeThreadSafe());
         logger.info("  Anzahl Neue:  {}", listeFilme.countNewFilms());
         logger.info("");
 
@@ -352,7 +348,7 @@ public class FilmeLaden {
     }
 
     private void fillHash(ListeFilme listeFilme) {
-        hashSet.addAll(listeFilme.parallelStream().map(DatenFilm::getUrlNormalQuality).toList());
+        hashSet.addAll(listeFilme.snapshot().parallelStream().map(DatenFilm::getUrlNormalQuality).toList());
     }
 
     /**
@@ -360,11 +356,12 @@ public class FilmeLaden {
      */
     private void findAndMarkNewFilms(@NotNull ListeFilme listeFilme) {
         //reset all current new films to false
-        listeFilme.parallelStream()
+        var films = listeFilme.snapshot();
+        films.parallelStream()
                 .filter(DatenFilm::isNew)
                 .forEach(film -> film.setNew(false));
         // mark new entries
-        listeFilme.parallelStream()
+        films.parallelStream()
                 .filter(film -> !hashSet.contains(film.getUrlNormalQuality()))
                 .forEach(film -> film.setNew(true));
 
@@ -405,8 +402,7 @@ public class FilmeLaden {
                 }
             });
 
-            if (!onlyOne) {
-                onlyOne = true;
+            if (onlyOne.compareAndSet(false, true)) {
                 SwingUtilities.invokeLater(() -> {
                     for (ListenerFilmeLaden lst : listListeners) {
                         lst.fertigOnlyOne(e);

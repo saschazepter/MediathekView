@@ -95,11 +95,11 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
         final ListeFilme completeFilmList = daten.getListeFilme();
         final ListeFilme filteredList = daten.getListeFilmeNachBlackList();
 
-        filteredList.clear();
+        filteredList.clearThreadSafe();
 
         loadCurrentFilterSettings();
 
-        if (completeFilmList != null && !completeFilmList.isEmpty()) { // Check if there are any movies
+        if (completeFilmList != null && !completeFilmList.isEmptyThreadSafe()) { // Check if there are any movies
             filteredList.setMetaData(completeFilmList.getMetaData());
 
             this.parallelStream().forEach(entry -> {
@@ -108,7 +108,7 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
             });
 
 
-            var stream = completeFilmList.parallelStream();
+            var stream = completeFilmList.snapshot().parallelStream();
 
             //TODO add config dialog setting
             final var config = ApplicationConfiguration.getConfiguration();
@@ -121,7 +121,7 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
                 }
             }
 
-            stream.filter(createPredicate()).forEachOrdered(filteredList::add);
+            stream.filter(createPredicate()).forEachOrdered(filteredList::addFilm);
         }
     }
 

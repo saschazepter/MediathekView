@@ -41,7 +41,7 @@ public class FilmDuplicateEvaluationTask implements Runnable {
 
     private void printDuplicateStatistics() {
         var statisticsEventList = Daten.getInstance().getDuplicateStatistics();
-        Map<String, Long> statisticsMap = listeFilme.parallelStream()
+        Map<String, Long> statisticsMap = listeFilme.snapshot().parallelStream()
                 .filter(DatenFilm::isDuplicate)
                 .collect(Collectors.groupingBy(DatenFilm::getSender, Collectors.counting()));
         long duplicateCount = statisticsMap.values().stream().mapToLong(Long::longValue).sum();
@@ -64,7 +64,7 @@ public class FilmDuplicateEvaluationTask implements Runnable {
     private void checkDuplicates() {
         logger.trace("Start Duplicate URL search");
         final Map<String, Map<String, Set<String>>> urlCache = new HashMap<>();
-        listeFilme.stream()
+        listeFilme.snapshot().stream()
                 .filter(f -> !f.isLivestream())
                 .sorted(new BigSenderPenaltyComparator())
                 .forEach(film -> {
