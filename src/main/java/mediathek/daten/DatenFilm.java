@@ -54,7 +54,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     /**
      * List of countries which can view this film.
      */
-    private final EnumSet<Country> countrySet = EnumSet.noneOf(Country.class);
+    private EnumSet<Country> countrySet;
     private final EnumSet<DatenFilmFlags> flags = EnumSet.noneOf(DatenFilmFlags.class);
     /**
      * File size in MByte
@@ -95,7 +95,9 @@ public class DatenFilm implements Comparable<DatenFilm> {
         this.sender = other.sender;
         this.thema = other.thema;
         this.titel = other.titel;
-        this.countrySet.addAll(other.countrySet);
+        if (other.countrySet != null && !other.countrySet.isEmpty()) {
+            this.countrySet = EnumSet.copyOf(other.countrySet);
+        }
         this.dataMap.putAll(other.dataMap);
         this.datum = other.datum;
         this.sendeZeit = other.sendeZeit;
@@ -424,23 +426,26 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     public void clearCountries() {
-        countrySet.clear();
+        countrySet = null;
     }
 
     public void addCountry(@NotNull Country country) {
+        if (countrySet == null) {
+            countrySet = EnumSet.noneOf(Country.class);
+        }
         countrySet.add(country);
     }
 
     public boolean hasCountries() {
-        return !countrySet.isEmpty();
+        return countrySet != null && !countrySet.isEmpty();
     }
 
     public boolean hasCountry(@NotNull Country country) {
-        return countrySet.contains(country);
+        return countrySet != null && countrySet.contains(country);
     }
 
     public String getCountriesAsString() {
-        if (countrySet.isEmpty()) {
+        if (countrySet == null || countrySet.isEmpty()) {
             return "";
         }
 
