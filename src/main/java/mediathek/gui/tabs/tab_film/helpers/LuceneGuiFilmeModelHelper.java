@@ -48,6 +48,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
 
 public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
@@ -106,31 +107,7 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                         logger.error("Unable to add zeitraum filter", ex);
                     }
                 }
-                if (filterConfiguration.isShowLivestreamsOnly()) {
-                    addLivestreamQuery(qb);
-                }
-                if (filterConfiguration.isShowHighQualityOnly()) {
-                    addHighQualityOnlyQuery(qb);
-                }
-                if (filterConfiguration.isDontShowTrailers()) {
-                    addNoTrailerTeaserQuery(qb);
-                }
-                if (filterConfiguration.isDontShowAudioVersions()) {
-                    addNoAudioVersionQuery(qb);
-                }
-                if (filterConfiguration.isDontShowSignLanguage()) {
-                    addNoSignLanguageQuery(qb);
-                }
-                if (filterConfiguration.isDontShowDuplicates()) {
-                    addNoDuplicatesQuery(qb);
-                }
-
-                if (filterConfiguration.isShowSubtitlesOnly()) {
-                    addSubtitleOnlyQuery(qb);
-                }
-                if (filterConfiguration.isShowNewOnly()) {
-                    addNewOnlyQuery(qb);
-                }
+                applyConfiguredQueries(qb);
                 var selectedSenders = getSelectedSendersFromFilter();
                 if (!selectedSenders.isEmpty()) {
                     addSenderFilterQuery(qb, selectedSenders);
@@ -198,44 +175,28 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
         qb.add(booleanQuery.build(), BooleanClause.Occur.FILTER);
     }
 
-    private void addSubtitleOnlyQuery(@NotNull BooleanQuery.Builder qb) {
-        var q = new TermQuery(new Term(LuceneIndexKeys.SUBTITLE, "true"));
-        qb.add(q, BooleanClause.Occur.FILTER);
+    private void applyConfiguredQueries(@NotNull BooleanQuery.Builder queryBuilder) {
+        for (var querySpec : createQuerySpecs()) {
+            if (querySpec.enabled().getAsBoolean()) {
+                queryBuilder.add(querySpec.toQuery(), querySpec.occur());
+            }
+        }
     }
 
-    private void addNoDuplicatesQuery(@NotNull BooleanQuery.Builder qb) {
-        var q = new TermQuery(new Term(LuceneIndexKeys.DUPLICATE, "true"));
-        qb.add(q, BooleanClause.Occur.MUST_NOT);
+    private List<QuerySpec> createQuerySpecs() {
+        return List.of(
+                termQuerySpec(filterConfiguration::isShowLivestreamsOnly, LuceneIndexKeys.LIVESTREAM, BooleanClause.Occur.FILTER),
+                termQuerySpec(filterConfiguration::isShowHighQualityOnly, LuceneIndexKeys.HIGH_QUALITY, BooleanClause.Occur.FILTER),
+                termQuerySpec(filterConfiguration::isDontShowTrailers, LuceneIndexKeys.TRAILER_TEASER, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(filterConfiguration::isDontShowAudioVersions, LuceneIndexKeys.AUDIOVERSION, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(filterConfiguration::isDontShowSignLanguage, LuceneIndexKeys.SIGN_LANGUAGE, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(filterConfiguration::isDontShowDuplicates, LuceneIndexKeys.DUPLICATE, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(filterConfiguration::isShowSubtitlesOnly, LuceneIndexKeys.SUBTITLE, BooleanClause.Occur.FILTER),
+                termQuerySpec(filterConfiguration::isShowNewOnly, LuceneIndexKeys.NEW, BooleanClause.Occur.FILTER));
     }
 
-    private void addNoSignLanguageQuery(@NotNull BooleanQuery.Builder qb) {
-        var q = new TermQuery(new Term(LuceneIndexKeys.SIGN_LANGUAGE, "true"));
-        qb.add(q, BooleanClause.Occur.MUST_NOT);
-    }
-
-    private void addNoAudioVersionQuery(@NotNull BooleanQuery.Builder qb) {
-        var q = new TermQuery(new Term(LuceneIndexKeys.AUDIOVERSION, "true"));
-        qb.add(q, BooleanClause.Occur.MUST_NOT);
-    }
-
-    private void addNoTrailerTeaserQuery(@NotNull BooleanQuery.Builder qb) {
-        var q = new TermQuery(new Term(LuceneIndexKeys.TRAILER_TEASER, "true"));
-        qb.add(q, BooleanClause.Occur.MUST_NOT);
-    }
-
-    private void addNewOnlyQuery(@NotNull BooleanQuery.Builder qb) {
-        var q = new TermQuery(new Term(LuceneIndexKeys.NEW, "true"));
-        qb.add(q, BooleanClause.Occur.FILTER);
-    }
-
-    private void addLivestreamQuery(@NotNull BooleanQuery.Builder qb) {
-        var q = new TermQuery(new Term(LuceneIndexKeys.LIVESTREAM, "true"));
-        qb.add(q, BooleanClause.Occur.FILTER);
-    }
-
-    private void addHighQualityOnlyQuery(@NotNull BooleanQuery.Builder qb) {
-        var q = new TermQuery(new Term(LuceneIndexKeys.HIGH_QUALITY, "true"));
-        qb.add(q, BooleanClause.Occur.FILTER);
+    private QuerySpec termQuerySpec(@NotNull BooleanSupplier enabled, @NotNull String field, @NotNull BooleanClause.Occur occur) {
+        return new QuerySpec(enabled, field, "true", occur);
     }
 
     private Query createZeitraumQuery() throws ParseException {
@@ -291,6 +252,12 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                 merged.addAll(collector.getMatchingDocIds());
             }
             return merged;
+        }
+    }
+
+    private record QuerySpec(BooleanSupplier enabled, String field, String value, BooleanClause.Occur occur) {
+        private Query toQuery() {
+            return new TermQuery(new Term(field, value));
         }
     }
 }
