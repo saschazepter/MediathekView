@@ -53,7 +53,7 @@ import javax.swing.table.TableCellRenderer
 import javax.swing.table.TableColumnModel
 import kotlin.coroutines.CoroutineContext
 
-open class FilmStatisticsCoroutineDialog(
+class FilmStatisticsDialog(
     owner: Window,
     private val action: AbstractAction
 ) : JDialog(owner), CoroutineScope {
@@ -65,7 +65,7 @@ open class FilmStatisticsCoroutineDialog(
     private val senderTableModel = SenderStatisticsTableModel()
     private val intervalDataset = DefaultCategoryDataset()
     private val intervalChart: JFreeChart = ChartFactory.createBarChart(
-        null,
+        "Maximal verfügbare Filme-",
         "Zeitraum in Tagen",
         "Anzahl Filme",
         intervalDataset
@@ -401,7 +401,6 @@ open class FilmStatisticsCoroutineDialog(
             isMouseWheelEnabled = false
         }
         val chartPanel = JPanel(BorderLayout()).apply {
-            border = BorderFactory.createTitledBorder("Histogramm der Zeiträume")
             add(chartComponent, BorderLayout.CENTER)
         }
 
