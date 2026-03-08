@@ -32,6 +32,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 public abstract class GuiModelHelper {
@@ -97,13 +98,21 @@ public abstract class GuiModelHelper {
     }
 
     protected FilterExecutionContext createFilterExecutionContext() {
+        var selectedSenders = getSelectedSendersFromFilter();
+        var searchTerms = List.of(searchFieldData.evaluateThemaTitel());
         return new FilterExecutionContext(
                 createLengthFilterRange(),
-                getSelectedSendersFromFilter(),
+                selectedSenders,
                 filterConfiguration.getThema(),
                 searchFieldData.searchFieldText(),
                 searchFieldData.searchThroughDescriptions(),
-                List.of(searchFieldData.evaluateThemaTitel()));
+                searchTerms,
+                film -> selectedSenders.isEmpty() || selectedSenders.contains(film.getSender()),
+                searchTerms.isEmpty()
+                        ? film -> true
+                        : FinalStageFilterFactory.createFinalStageFilter(
+                                searchFieldData.searchThroughDescriptions(),
+                                searchTerms.toArray(String[]::new)));
     }
 
     protected Set<String> getSelectedSendersFromFilter() {
@@ -146,9 +155,15 @@ public abstract class GuiModelHelper {
                                             String filterThema,
                                             String searchFieldText,
                                             boolean searchThroughDescriptions,
-                                            List<String> searchTerms) {
+                                            List<String> searchTerms,
+                                            Predicate<DatenFilm> senderFilter,
+                                            Predicate<DatenFilm> finalStageFilter) {
         boolean hasSearchTerms() {
             return !searchTerms.isEmpty();
+        }
+
+        boolean hasSelectedSenders() {
+            return !selectedSenders.isEmpty();
         }
     }
 }

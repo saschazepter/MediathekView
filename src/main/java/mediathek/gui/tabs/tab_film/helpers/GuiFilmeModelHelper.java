@@ -52,19 +52,15 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
         }
 
         var stream = Daten.getInstance().getListeFilmeNachBlackList().parallelStream();
-        if (!filterContext.selectedSenders().isEmpty()) {
-            stream = stream.filter(f -> filterContext.selectedSenders().contains(f.getSender()));
+        if (filterContext.hasSelectedSenders()) {
+            stream = stream.filter(filterContext.senderFilter());
         }
         stream = applyConfiguredPredicates(stream);
 
         stream = applyCommonFilters(stream, filterContext.filterThema(), filterContext.lengthFilterRange());
 
-        //final stage filtering...
         if (filterContext.hasSearchTerms()) {
-            stream = stream.filter(FinalStageFilterFactory
-                    .createFinalStageFilter(
-                            filterContext.searchThroughDescriptions(),
-                            filterContext.searchTerms().toArray(String[]::new)));
+            stream = stream.filter(filterContext.finalStageFilter());
         }
 
         return stream.toList();
