@@ -29,7 +29,6 @@ import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.FilterConfiguration;
 import mediathek.tool.LuceneDefaultAnalyzer;
 import mediathek.tool.SwingErrorDialog;
-import mediathek.tool.models.TModelFilm;
 import mediathek.tool.time.Stopwatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +44,6 @@ import org.apache.lucene.search.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.table.TableModel;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -69,8 +67,14 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
         super(historyController, searchFieldData, filterConfiguration);
     }
 
-    private TModelFilm performTableFiltering() {
-        var listeFilme = (IndexedFilmList) Daten.getInstance().getListeFilmeNachBlackList();
+    @Override
+    protected Collection<DatenFilm> getAllFilms() {
+        return (IndexedFilmList) Daten.getInstance().getListeFilmeNachBlackList();
+    }
+
+    @Override
+    protected Collection<DatenFilm> filterFilms() {
+        var listeFilme = (IndexedFilmList) getAllFilms();
         try {
             var lengthFilterRange = createLengthFilterRange();
 
@@ -170,12 +174,12 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
             var resultList = applyCommonFilters(stream, filterConfiguration.getThema(), lengthFilterRange).toList();
             logger.trace("Resulting filmlist size after all filters applied: {}", resultList.size());
 
-            return createFilmTableModel(resultList);
+            return resultList;
         } catch (Exception ex) {
             logger.error("Lucene filtering failed!", ex);
             SwingUtilities.invokeLater(() -> SwingErrorDialog.showExceptionMessage(MediathekGui.ui(),
                     "Die Lucene Abfrage ist inkorrekt und führt zu keinen Ergebnissen.", ex));
-            return createEmptyFilmTableModel();
+            return List.of();
         }
     }
 
@@ -247,18 +251,6 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                 DateTools.Resolution.DAY);
         String zeitraum = String.format("[%s TO %s]", fromStr, toStr);
         return new QueryParser(LuceneIndexKeys.SENDE_DATUM, analyzer).parse(zeitraum);
-    }
-
-    @Override
-    public TableModel getFilteredTableModel() {
-        var listeFilme = (IndexedFilmList) Daten.getInstance().getListeFilmeNachBlackList();
-        if (!listeFilme.isEmpty()) {
-            if (noFiltersAreSet()) {
-                return createFilmTableModel(listeFilme);
-            }
-            return performTableFiltering();
-        } else
-            return createEmptyFilmTableModel();
     }
 
     private static class NonScoringCollector extends org.apache.lucene.search.SimpleCollector {

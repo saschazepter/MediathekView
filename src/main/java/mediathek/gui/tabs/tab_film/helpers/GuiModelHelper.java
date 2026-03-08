@@ -53,7 +53,20 @@ public abstract class GuiModelHelper {
      *
      * @return the filtered table model.
      */
-    public abstract TableModel getFilteredTableModel();
+    public final TableModel getFilteredTableModel() {
+        var allFilms = getAllFilms();
+        if (allFilms.isEmpty()) {
+            return createEmptyFilmTableModel();
+        }
+        if (noFiltersAreSet()) {
+            return createFilmTableModel(allFilms);
+        }
+        return createFilmTableModel(filterFilms());
+    }
+
+    protected abstract Collection<DatenFilm> getAllFilms();
+
+    protected abstract Collection<DatenFilm> filterFilms();
 
     protected boolean minLengthCheck(DatenFilm film, @NotNull LengthFilterRange lengthFilterRange) {
         var filmLength = film.getFilmLength();
@@ -104,7 +117,7 @@ public abstract class GuiModelHelper {
 
     protected TModelFilm createFilmTableModel(@NotNull Collection<DatenFilm> films) {
         var filmModel = new TModelFilm(films.size());
-        filmModel.addAll(List.copyOf(films));
+        filmModel.addAll(films instanceof List<DatenFilm> filmList ? filmList : List.copyOf(films));
         return filmModel;
     }
 

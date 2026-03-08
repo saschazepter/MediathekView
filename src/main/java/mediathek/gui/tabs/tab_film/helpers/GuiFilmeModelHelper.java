@@ -23,10 +23,9 @@ import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.tabs.tab_film.SearchFieldData;
 import mediathek.tool.FilterConfiguration;
-import mediathek.tool.models.TModelFilm;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.table.TableModel;
+import java.util.Collection;
 
 public class GuiFilmeModelHelper extends GuiModelHelper {
     public GuiFilmeModelHelper(@NotNull SeenHistoryController historyController,
@@ -35,7 +34,13 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
         super(historyController, searchFieldData, filterConfiguration);
     }
 
-    private TModelFilm performTableFiltering() {
+    @Override
+    protected Collection<DatenFilm> getAllFilms() {
+        return Daten.getInstance().getListeFilmeNachBlackList();
+    }
+
+    @Override
+    protected Collection<DatenFilm> filterFilms() {
         var lengthFilterRange = createLengthFilterRange();
 
         if (filterConfiguration.isShowUnseenOnly()) {
@@ -89,20 +94,6 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
         }
 
         var list = stream.toList();
-        return createFilmTableModel(list);
+        return list;
     }
-
-    @Override
-    public TableModel getFilteredTableModel() {
-        final var listeFilme = Daten.getInstance().getListeFilmeNachBlackList();
-
-        if (!listeFilme.isEmpty()) {
-            if (noFiltersAreSet()) {
-                return createFilmTableModel(listeFilme);
-            }
-            return performTableFiltering();
-        } else
-            return createEmptyFilmTableModel();
-    }
-
 }
