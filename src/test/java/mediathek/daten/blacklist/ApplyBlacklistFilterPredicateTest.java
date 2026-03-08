@@ -87,10 +87,18 @@ class ApplyBlacklistFilterPredicateTest {
         assertTrue(filter.test(film("zdf", "aspekte", "magazin")));
     }
 
+    @Test
+    void shouldPreserveRegexCaseForTitleRules() {
+        final var blacklist = createBlacklist(new BlacklistRule("", "", "#:(?-i:ABC)", ""));
+        final var filter = new ApplyBlacklistFilterPredicate(blacklist);
+
+        assertFalse(filter.test(film("ard", "tagesschau", "ABC")));
+        assertTrue(filter.test(film("ard", "tagesschau", "abc")));
+    }
+
     private ListeBlacklist createBlacklist(BlacklistRule... rules) {
         final var blacklist = new ListeBlacklist();
         for (BlacklistRule rule : rules) {
-            rule.convertToLowerCase();
             rule.checkPatterns();
             blacklist.addWithoutNotification(rule);
         }

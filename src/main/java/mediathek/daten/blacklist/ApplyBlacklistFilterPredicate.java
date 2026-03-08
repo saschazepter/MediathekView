@@ -26,8 +26,8 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
         for (BlacklistRule entry : listeBlacklist) {
             final var senderSuchen = entry.getSender().toLowerCase(Locale.getDefault());
             final var themaSuchen = entry.getThema().toLowerCase(Locale.getDefault());
-            final var titelSuchen = createPattern(entry.hasTitlePattern(), entry.getTitel().toLowerCase(Locale.getDefault()));
-            final var themaTitelSuchen = createPattern(entry.hasThemaPattern(), entry.getThema_titel().toLowerCase(Locale.getDefault()));
+            final var titelSuchen = createPattern(entry.hasTitlePattern(), normalizeRuleText(entry.getTitel(), entry.hasTitlePattern()));
+            final var themaTitelSuchen = createPattern(entry.hasThemaPattern(), normalizeRuleText(entry.getThema_titel(), entry.hasThemaPattern()));
             final var compiledRule = new CompiledBlacklistRule(
                     senderSuchen,
                     themaSuchen,
@@ -80,6 +80,14 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
             return new String[]{inputString};
         else
             return mySplit(inputString);
+    }
+
+    private String normalizeRuleText(final String inputString, final boolean isPattern) {
+        if (isPattern) {
+            return inputString;
+        }
+
+        return inputString.toLowerCase(Locale.getDefault());
     }
 
     private boolean hasTerms(final String[] terms) {
