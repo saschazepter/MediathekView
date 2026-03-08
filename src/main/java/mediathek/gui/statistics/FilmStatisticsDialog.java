@@ -57,12 +57,15 @@ public class FilmStatisticsDialog extends JDialog {
     private static final Logger logger = LogManager.getLogger();
     private static final int[] INTERVAL_DAYS = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 25, 30, 60, 90, 180, 365};
     private static final java.util.EnumSet<Country> EU_COUNTRY_LIST = java.util.EnumSet.of(Country.DE, Country.AT, Country.FR);
+    private static final String LOADING_TEXT = "Berechne Statistik aus der ungefilterten Filmliste...";
+    private static final String READY_TEXT = "Statistik basiert auf der ungefilterten Filmliste ohne Livestreams.";
+    private static final String ERROR_TEXT = "Statistik konnte nicht berechnet werden.";
 
     private final AbstractAction action;
     private final SenderStatisticsTableModel senderTableModel = new SenderStatisticsTableModel();
     private final DefaultCategoryDataset intervalDataset = new DefaultCategoryDataset();
     private final JFreeChart intervalChart = ChartFactory.createBarChart(
-            "Filme nach Zeitraum",
+            null,
             "Zeitraum in Tagen",
             "Anzahl Filme",
             intervalDataset
@@ -103,7 +106,7 @@ public class FilmStatisticsDialog extends JDialog {
     }
 
     private void loadStatistics() {
-        lblStatus.setText("Berechne Statistik aus der ungefilterten Filmliste...");
+        lblStatus.setText(LOADING_TEXT);
         progressBar.setVisible(true);
         progressBar.setIndeterminate(true);
 
@@ -120,11 +123,11 @@ public class FilmStatisticsDialog extends JDialog {
 
                 try {
                     applyStatistics(get());
-                    lblStatus.setText("Statistik basiert auf der ungefilterten Filmliste ohne Livestreams.");
+                    lblStatus.setText(READY_TEXT);
                 }
                 catch (Exception ex) {
                     logger.error("Failed to compute film statistics", ex);
-                    lblStatus.setText("Statistik konnte nicht berechnet werden.");
+                    lblStatus.setText(ERROR_TEXT);
                 }
             }
         };
@@ -140,28 +143,28 @@ public class FilmStatisticsDialog extends JDialog {
         List<DatenFilm> allEntries = Daten.getInstance().getListeFilme().parallelStream().toList();
         long livestreams = allEntries.parallelStream().filter(DatenFilm::isLivestream).count();
 
-        List<DatenFilm> films = allEntries.parallelStream()
+        List<DatenFilm> filmsWithoutLivestreams = allEntries.parallelStream()
                 .filter(film -> !film.isLivestream())
                 .toList();
 
-        long totalFilms = films.size();
-        long highQualityFilms = films.parallelStream().filter(DatenFilm::isHighQuality).count();
+        long totalFilms = filmsWithoutLivestreams.size();
+        long highQualityFilms = filmsWithoutLivestreams.parallelStream().filter(DatenFilm::isHighQuality).count();
         long regularQualityFilms = totalFilms - highQualityFilms;
-        long subtitleDownloads = films.parallelStream().filter(DatenFilm::hasSubtitle).count();
-        long burnedInSubtitles = films.parallelStream().filter(DatenFilm::hasBurnedInSubtitles).count();
-        long signLanguageFilms = films.parallelStream().filter(DatenFilm::isSignLanguage).count();
-        long trailerFilms = films.parallelStream().filter(DatenFilm::isTrailerTeaser).count();
-        long geoBlockedFilms = films.parallelStream()
+        long subtitleDownloads = filmsWithoutLivestreams.parallelStream().filter(DatenFilm::hasSubtitle).count();
+        long burnedInSubtitles = filmsWithoutLivestreams.parallelStream().filter(DatenFilm::hasBurnedInSubtitles).count();
+        long signLanguageFilms = filmsWithoutLivestreams.parallelStream().filter(DatenFilm::isSignLanguage).count();
+        long trailerFilms = filmsWithoutLivestreams.parallelStream().filter(DatenFilm::isTrailerTeaser).count();
+        long geoBlockedFilms = filmsWithoutLivestreams.parallelStream()
                 .filter(film -> isGeoBlockedForLocation(film, currentGeoLocation))
                 .count();
-        long themaCount = films.parallelStream()
+        long themaCount = filmsWithoutLivestreams.parallelStream()
                 .map(DatenFilm::getThema)
                 .map(String::trim)
                 .filter(thema -> !thema.isEmpty())
                 .collect(Collectors.toCollection(() -> new TreeSet<>(sorter)))
                 .size();
 
-        Map<String, Long> senderCounts = films.parallelStream()
+        Map<String, Long> senderCounts = filmsWithoutLivestreams.parallelStream()
                 .collect(Collectors.groupingBy(film -> normalizeLabel(film.getSender()), Collectors.counting()));
 
         List<SenderStatistic> sortedSenderStatistics = senderCounts.entrySet().stream()
@@ -170,7 +173,7 @@ public class FilmStatisticsDialog extends JDialog {
                         .thenComparing(SenderStatistic::sender, sorter))
                 .toList();
 
-        List<Long> filmAgesInDays = films.parallelStream()
+        List<Long> filmAgesInDays = filmsWithoutLivestreams.parallelStream()
                 .map(film -> getFilmAgeInDays(film, today, zoneId))
                 .filter(age -> age >= 0)
                 .toList();
@@ -263,8 +266,6 @@ public class FilmStatisticsDialog extends JDialog {
 
         intervalChart.setBackgroundPaint(panelColor);
         intervalChart.removeLegend();
-        intervalChart.setTitle((String) null);
-
         CategoryPlot plot = intervalChart.getCategoryPlot();
         plot.setBackgroundPaint(panelColor);
         plot.setOutlinePaint(labelColor);
@@ -422,7 +423,7 @@ public class FilmStatisticsDialog extends JDialog {
         chartComponent.setDomainZoomable(false);
         chartComponent.setRangeZoomable(false);
         chartComponent.setMouseWheelEnabled(false);
-        chartPanel.setBorder(BorderFactory.createTitledBorder("Maximale Anzahl verfügbarer Filme"));
+        chartPanel.setBorder(BorderFactory.createTitledBorder("Histogramm der Zeiträume"));
         chartPanel.setLayout(new BorderLayout());
         chartPanel.add(chartComponent, BorderLayout.CENTER);
 
