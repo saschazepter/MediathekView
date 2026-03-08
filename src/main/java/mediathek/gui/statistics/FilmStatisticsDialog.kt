@@ -40,8 +40,6 @@ import org.jfree.chart.ui.RectangleInsets
 import org.jfree.data.category.DefaultCategoryDataset
 import java.awt.*
 import java.awt.geom.Rectangle2D
-import java.lang.Class
-import java.lang.Math
 import java.lang.Runnable
 import java.time.LocalDate
 import java.time.ZoneId
@@ -135,7 +133,7 @@ open class FilmStatisticsCoroutineDialog(
         }
     }
 
-    private suspend fun computeStatistics(): ComputedStatistics = kotlinx.coroutines.withContext(workerDispatcher) {
+    private suspend fun computeStatistics(): ComputedStatistics = withContext(workerDispatcher) {
         val sorter = GermanStringSorter.getInstance()
         val today = LocalDate.now()
         val zoneId = ZoneId.systemDefault()
@@ -351,7 +349,7 @@ open class FilmStatisticsCoroutineDialog(
                 return value?.toLong()?.toString().orEmpty()
             }
         }
-        renderer.setDefaultItemLabelsVisible(true)
+        renderer.defaultItemLabelsVisible = true
         renderer.defaultItemLabelPaint = labelColor
     }
 
@@ -359,7 +357,7 @@ open class FilmStatisticsCoroutineDialog(
 
     private fun normalizeLabel(value: String?): String {
         val trimmed = value?.trim().orEmpty()
-        return if (trimmed.isEmpty()) "<Unbekannt>" else trimmed
+        return trimmed.ifEmpty { "<Unbekannt>" }
     }
 
     private fun createSummaryRow(description: String, valueLabel: JLabel): JPanel {
@@ -374,7 +372,7 @@ open class FilmStatisticsCoroutineDialog(
 
     private fun initComponents() {
         title = "Filmlisten-Statistik"
-        defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
+        defaultCloseOperation = DISPOSE_ON_CLOSE
         isModal = true
         preferredSize = Dimension(1220, 720)
 

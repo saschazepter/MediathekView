@@ -1,6 +1,6 @@
 package mediathek.gui.actions;
 
-import mediathek.gui.statistics.FilmStatisticsDialog;
+import mediathek.gui.statistics.FilmStatisticsCoroutineDialog;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
@@ -17,7 +17,7 @@ public class ShowFilmStatisticsAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        var dlg = new FilmStatisticsDialog(owner, this);
+        var dlg = new FilmStatisticsCoroutineDialog(owner, this);
         dlg.setVisible(true);
     }
 }
