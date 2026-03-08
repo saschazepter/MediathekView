@@ -25,7 +25,6 @@ import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.EscapeKeyHandler;
 import mediathek.tool.GermanStringSorter;
 import mediathek.tool.datum.DatumFilm;
-import org.apache.commons.configuration2.sync.LockMode;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -46,8 +45,6 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.geom.Rectangle2D;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -58,10 +55,6 @@ import java.util.stream.Collectors;
 
 public class FilmStatisticsDialog extends JDialog {
     private static final Logger logger = LogManager.getLogger();
-    private static final String CONFIG_X = "film_statistics_dialog.x";
-    private static final String CONFIG_Y = "film_statistics_dialog.y";
-    private static final String CONFIG_HEIGHT = "film_statistics_dialog.height";
-    private static final String CONFIG_WIDTH = "film_statistics_dialog.width";
     private static final int[] INTERVAL_DAYS = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 25, 30, 60, 90, 180, 365};
     private static final java.util.EnumSet<Country> EU_COUNTRY_LIST = java.util.EnumSet.of(Country.DE, Country.AT, Country.FR);
 
@@ -99,14 +92,6 @@ public class FilmStatisticsDialog extends JDialog {
         applyChartTheme();
 
         action.setEnabled(false);
-        restorePosition();
-
-        addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosed(WindowEvent e) {
-                savePosition();
-            }
-        });
 
         loadStatistics();
     }
@@ -266,46 +251,6 @@ public class FilmStatisticsDialog extends JDialog {
         columnModel.getColumn(1).setPreferredWidth(100);
     }
 
-    private void restorePosition() {
-        var config = ApplicationConfiguration.getConfiguration();
-        try {
-            config.lock(LockMode.READ);
-            int x = config.getInt(CONFIG_X);
-            int y = config.getInt(CONFIG_Y);
-            int width = config.getInt(CONFIG_WIDTH);
-            int height = config.getInt(CONFIG_HEIGHT);
-
-            setSize(width, height);
-            setLocation(x, y);
-        }
-        catch (NoSuchElementException e) {
-            pack();
-        }
-        catch (Exception ex) {
-            logger.error("Unhandled exception while restoring dialog position", ex);
-            pack();
-        }
-        finally {
-            config.unlock(LockMode.READ);
-        }
-    }
-
-    private void savePosition() {
-        var config = ApplicationConfiguration.getConfiguration();
-        try {
-            config.lock(LockMode.WRITE);
-            var size = getSize();
-            var location = getLocation();
-            config.setProperty(CONFIG_WIDTH, size.width);
-            config.setProperty(CONFIG_HEIGHT, size.height);
-            config.setProperty(CONFIG_X, location.x);
-            config.setProperty(CONFIG_Y, location.y);
-        }
-        finally {
-            config.unlock(LockMode.WRITE);
-        }
-    }
-
     private void applyChartTheme() {
         var labelColor = UIManager.getColor("Label.foreground");
         var panelColor = UIManager.getColor("Panel.background");
@@ -454,7 +399,7 @@ public class FilmStatisticsDialog extends JDialog {
         setTitle("Filmlisten-Statistik");
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setModal(true);
-        setPreferredSize(new Dimension(1100, 720));
+        setPreferredSize(new Dimension(1220, 720));
 
         closeButton.setText("Schließen");
         closeButton.addActionListener(_ -> dispose());
@@ -479,7 +424,7 @@ public class FilmStatisticsDialog extends JDialog {
         chartPanel.setLayout(new BorderLayout());
         chartPanel.add(chartComponent, BorderLayout.CENTER);
 
-        splitPane.setResizeWeight(0.35);
+        splitPane.setResizeWeight(0.28);
         splitPane.setLeftComponent(senderPanel);
         splitPane.setRightComponent(chartPanel);
 
@@ -517,7 +462,7 @@ public class FilmStatisticsDialog extends JDialog {
 
         setContentPane(dialogPane);
         pack();
-        setLocationRelativeTo(getOwner());
+        setLocationRelativeTo(null);
     }
 
     private record SenderStatistic(String sender, long count) {
