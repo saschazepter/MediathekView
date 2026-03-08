@@ -51,6 +51,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 public class FilmStatisticsDialog extends JDialog {
@@ -139,33 +140,59 @@ public class FilmStatisticsDialog extends JDialog {
         final var today = LocalDate.now();
         final var zoneId = ZoneId.systemDefault();
         final var currentGeoLocation = ApplicationConfiguration.getInstance().getGeographicLocation();
+        final var executor = Daten.getInstance().getDecoratedPool();
 
         List<DatenFilm> allEntries = Daten.getInstance().getListeFilme().parallelStream().toList();
-        long livestreams = allEntries.parallelStream().filter(DatenFilm::isLivestream).count();
+        long livestreams = allEntries.stream().filter(DatenFilm::isLivestream).count();
 
-        List<DatenFilm> filmsWithoutLivestreams = allEntries.parallelStream()
+        List<DatenFilm> filmsWithoutLivestreams = allEntries.stream()
                 .filter(film -> !film.isLivestream())
                 .toList();
 
         long totalFilms = filmsWithoutLivestreams.size();
-        long highQualityFilms = filmsWithoutLivestreams.parallelStream().filter(DatenFilm::isHighQuality).count();
-        long regularQualityFilms = totalFilms - highQualityFilms;
-        long subtitleDownloads = filmsWithoutLivestreams.parallelStream().filter(DatenFilm::hasSubtitle).count();
-        long burnedInSubtitles = filmsWithoutLivestreams.parallelStream().filter(DatenFilm::hasBurnedInSubtitles).count();
-        long signLanguageFilms = filmsWithoutLivestreams.parallelStream().filter(DatenFilm::isSignLanguage).count();
-        long trailerFilms = filmsWithoutLivestreams.parallelStream().filter(DatenFilm::isTrailerTeaser).count();
-        long geoBlockedFilms = filmsWithoutLivestreams.parallelStream()
-                .filter(film -> isGeoBlockedForLocation(film, currentGeoLocation))
-                .count();
-        long themaCount = filmsWithoutLivestreams.parallelStream()
-                .map(DatenFilm::getThema)
-                .map(String::trim)
-                .filter(thema -> !thema.isEmpty())
-                .collect(Collectors.toCollection(() -> new TreeSet<>(sorter)))
-                .size();
+        CompletableFuture<Long> highQualityFilmsFuture = CompletableFuture.supplyAsync(
+                () -> filmsWithoutLivestreams.stream().filter(DatenFilm::isHighQuality).count(), executor);
+        CompletableFuture<Long> subtitleDownloadsFuture = CompletableFuture.supplyAsync(
+                () -> filmsWithoutLivestreams.stream().filter(DatenFilm::hasSubtitle).count(), executor);
+        CompletableFuture<Long> burnedInSubtitlesFuture = CompletableFuture.supplyAsync(
+                () -> filmsWithoutLivestreams.stream().filter(DatenFilm::hasBurnedInSubtitles).count(), executor);
+        CompletableFuture<Long> signLanguageFilmsFuture = CompletableFuture.supplyAsync(
+                () -> filmsWithoutLivestreams.stream().filter(DatenFilm::isSignLanguage).count(), executor);
+        CompletableFuture<Long> trailerFilmsFuture = CompletableFuture.supplyAsync(
+                () -> filmsWithoutLivestreams.stream().filter(DatenFilm::isTrailerTeaser).count(), executor);
+        CompletableFuture<Long> geoBlockedFilmsFuture = CompletableFuture.supplyAsync(
+                () -> filmsWithoutLivestreams.stream()
+                        .filter(film -> isGeoBlockedForLocation(film, currentGeoLocation))
+                        .count(),
+                executor);
+        CompletableFuture<Long> themaCountFuture = CompletableFuture.supplyAsync(
+                () -> (long) filmsWithoutLivestreams.stream()
+                        .map(DatenFilm::getThema)
+                        .map(String::trim)
+                        .filter(thema -> !thema.isEmpty())
+                        .collect(Collectors.toCollection(() -> new TreeSet<>(sorter)))
+                        .size(),
+                executor);
+        CompletableFuture<Map<String, Long>> senderCountsFuture = CompletableFuture.supplyAsync(
+                () -> filmsWithoutLivestreams.stream()
+                        .collect(Collectors.groupingBy(film -> normalizeLabel(film.getSender()), Collectors.counting())),
+                executor);
+        CompletableFuture<List<Long>> filmAgesInDaysFuture = CompletableFuture.supplyAsync(
+                () -> filmsWithoutLivestreams.stream()
+                        .map(film -> getFilmAgeInDays(film, today, zoneId))
+                        .filter(age -> age >= 0)
+                        .toList(),
+                executor);
 
-        Map<String, Long> senderCounts = filmsWithoutLivestreams.parallelStream()
-                .collect(Collectors.groupingBy(film -> normalizeLabel(film.getSender()), Collectors.counting()));
+        long highQualityFilms = highQualityFilmsFuture.join();
+        long regularQualityFilms = totalFilms - highQualityFilms;
+        long subtitleDownloads = subtitleDownloadsFuture.join();
+        long burnedInSubtitles = burnedInSubtitlesFuture.join();
+        long signLanguageFilms = signLanguageFilmsFuture.join();
+        long trailerFilms = trailerFilmsFuture.join();
+        long geoBlockedFilms = geoBlockedFilmsFuture.join();
+        long themaCount = themaCountFuture.join();
+        Map<String, Long> senderCounts = senderCountsFuture.join();
 
         List<SenderStatistic> sortedSenderStatistics = senderCounts.entrySet().stream()
                 .map(entry -> new SenderStatistic(entry.getKey(), entry.getValue()))
@@ -173,10 +200,7 @@ public class FilmStatisticsDialog extends JDialog {
                         .thenComparing(SenderStatistic::sender, sorter))
                 .toList();
 
-        List<Long> filmAgesInDays = filmsWithoutLivestreams.parallelStream()
-                .map(film -> getFilmAgeInDays(film, today, zoneId))
-                .filter(age -> age >= 0)
-                .toList();
+        List<Long> filmAgesInDays = filmAgesInDaysFuture.join();
 
         Map<Integer, Long> intervalCounts = new LinkedHashMap<>();
         for (int intervalDay : INTERVAL_DAYS) {
