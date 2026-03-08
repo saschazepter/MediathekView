@@ -4,47 +4,58 @@ import mediathek.config.MVConfig;
 import mediathek.daten.DatenFilm;
 import mediathek.tool.Filter;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
     private static final String[] EMPTY_STRING = {""};
     private final boolean isWhitelist;
-    private final ListeBlacklist listeBlacklist;
-    private final Map<BlacklistRule,BlacklistPattern> rulePatternMap;
+    private final List<CompiledBlacklistRule> globalRules;
+    private final Map<String, List<CompiledBlacklistRule>> senderRuleIndex;
 
     public ApplyBlacklistFilterPredicate(ListeBlacklist listeBlacklist) {
         isWhitelist = Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_IST_WHITELIST));
-        this.listeBlacklist = listeBlacklist;
-
-        rulePatternMap = new ConcurrentHashMap<>(listeBlacklist.size());
-
-        //pre-create the patterns concurrently before use
-        createPatterns();
+        final var compiledRules = compileRules(listeBlacklist);
+        globalRules = List.copyOf(compiledRules.globalRules());
+        senderRuleIndex = Map.copyOf(compiledRules.senderRuleIndex());
     }
 
-    /**
-     * Create all needed patterns in parallel.
-     */
-    private void createPatterns() {
-        listeBlacklist.parallelStream().forEach(entry -> {
-            final String[] pTitel = createPattern(entry.hasTitlePattern(), entry.getTitel());
-            final String[] pThema = createPattern(entry.hasThemaPattern(), entry.getThema_titel());
-            var blPattern = new BlacklistPattern(pTitel, pThema);
-            rulePatternMap.putIfAbsent(entry, blPattern);
-        });
+    private CompiledRules compileRules(ListeBlacklist listeBlacklist) {
+        final var globalEntries = new ArrayList<CompiledBlacklistRule>(listeBlacklist.size());
+        final var indexedEntries = new HashMap<String, List<CompiledBlacklistRule>>(listeBlacklist.size());
+        for (BlacklistRule entry : listeBlacklist) {
+            final var compiledRule = new CompiledBlacklistRule(
+                    entry.getSender(),
+                    entry.getThema(),
+                    createPattern(entry.hasTitlePattern(), entry.getTitel()),
+                    createPattern(entry.hasThemaPattern(), entry.getThema_titel()));
+            if (compiledRule.matchesAnySender()) {
+                globalEntries.add(compiledRule);
+            } else {
+                indexedEntries.computeIfAbsent(compiledRule.senderSuchen(), _ -> new ArrayList<>()).add(compiledRule);
+            }
+        }
+        final var immutableIndex = new HashMap<String, List<CompiledBlacklistRule>>(indexedEntries.size());
+        indexedEntries.forEach((sender, rules) -> immutableIndex.put(sender, List.copyOf(rules)));
+        return new CompiledRules(List.copyOf(globalEntries), immutableIndex);
     }
 
     @Override
     public boolean test(DatenFilm film) {
+        final var sender = film.getSender();
+        final var thema = film.getThema();
+        final var title = film.getTitle();
 
-        for (BlacklistRule entry : listeBlacklist) {
-            var blPattern = rulePatternMap.get(entry);
+        if (matchesAnyRule(globalRules, sender, thema, title)) {
+            return isWhitelist;
+        }
 
-            if (performFiltering(entry, blPattern.pTitel, blPattern.pThema, film)) {
-                return isWhitelist;
-            }
+        final var senderRules = senderRuleIndex.get(sender);
+        if (senderRules != null && matchesAnyRule(senderRules, sender, thema, title)) {
+            return isWhitelist;
         }
 
         //found nothing
@@ -66,49 +77,68 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
             return mySplit(inputString);
     }
 
-    private boolean performFiltering(final BlacklistRule entry,
-                                     final String[] titelSuchen, final String[] themaTitelSuchen,
-                                     final DatenFilm film) {
+    private boolean matchesAnyRule(final List<CompiledBlacklistRule> rules,
+                                   final String sender,
+                                   final String thema,
+                                   final String title) {
+        for (CompiledBlacklistRule entry : rules) {
+            if (performFiltering(entry, sender, thema, title)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean performFiltering(final CompiledBlacklistRule entry,
+                                     final String sender,
+                                     final String thema,
+                                     final String title) {
         // prüfen ob xxxSuchen im String imXxx enthalten ist, themaTitelSuchen wird mit Thema u. Titel verglichen
         // senderSuchen exakt mit sender
         // themaSuchen exakt mit thema
         // titelSuchen muss im Titel nur enthalten sein
 
-        boolean result = false;
-        final String thema = film.getThema();
-        final String title = film.getTitle();
+        if (!entry.matchesAnySender() && !sender.equals(entry.senderSuchen())) {
+            return false;
+        }
+        if (!entry.matchesAnyThema() && !thema.equalsIgnoreCase(entry.themaSuchen())) {
+            return false;
+        }
+        if (entry.hasTitleTerms() && !Filter.pruefen(entry.titelSuchen(), title)) {
+            return false;
+        }
+        if (entry.hasThemaTitleTerms()
+                && !Filter.pruefen(entry.themaTitelSuchen(), thema)
+                && !Filter.pruefen(entry.themaTitelSuchen(), title)) {
+            return false;
+        }
+        return true;
+    }
 
-
-        final String senderSuchen = entry.getSender();
-        final String themaSuchen = entry.getThema();
-
-        if (senderSuchen.isEmpty() || film.getSender().compareTo(senderSuchen) == 0) {
-            if (themaSuchen.isEmpty() || thema.equalsIgnoreCase(themaSuchen)) {
-                if (titelSuchen.length == 0 || Filter.pruefen(titelSuchen, title)) {
-                    if (themaTitelSuchen.length == 0
-                            || Filter.pruefen(themaTitelSuchen, thema)
-                            || Filter.pruefen(themaTitelSuchen, title)) {
-                        // die Länge soll mit geprüft werden
-                        if (checkLengthWithMin(film.getFilmLength())) {
-                            result = true;
-                        }
-                    }
-                }
-            }
+    private record CompiledBlacklistRule(
+            String senderSuchen,
+            String themaSuchen,
+            String[] titelSuchen,
+            String[] themaTitelSuchen) {
+        private boolean matchesAnySender() {
+            return senderSuchen.isEmpty();
         }
 
-        return result;
+        private boolean matchesAnyThema() {
+            return themaSuchen.isEmpty();
+        }
+
+        private boolean hasTitleTerms() {
+            return titelSuchen.length > 0 && !titelSuchen[0].isEmpty();
+        }
+
+        private boolean hasThemaTitleTerms() {
+            return themaTitelSuchen.length > 0 && !themaTitelSuchen[0].isEmpty();
+        }
     }
 
-    public boolean lengthCheck(int filterLaengeInMinuten, long filmLaenge) {
-        return filterLaengeInMinuten == 0 || filmLaenge == 0;
-    }
-
-    private boolean checkLengthWithMin(long filmLaenge) {
-        return lengthCheck(0, filmLaenge) || filmLaenge > 0;
-    }
-
-    record BlacklistPattern(String[] pTitel, String[] pThema) {
-
+    private record CompiledRules(
+            List<CompiledBlacklistRule> globalRules,
+            Map<String, List<CompiledBlacklistRule>> senderRuleIndex) {
     }
 }
