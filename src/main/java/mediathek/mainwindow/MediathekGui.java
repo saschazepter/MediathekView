@@ -134,6 +134,7 @@ public class MediathekGui extends JFrame {
     private final FilmInfoDialog filmInfo;
     private final ManageAboAction manageAboAction = new ManageAboAction();
     private final ShowBandwidthUsageAction showBandwidthUsageAction = new ShowBandwidthUsageAction(this);
+    private final ShowFilmStatisticsAction showFilmStatisticsAction = new ShowFilmStatisticsAction(this);
     private final ShowDuplicateStatisticsAction showDuplicateStatisticsAction = new ShowDuplicateStatisticsAction(this);
     private final LivestreamPanel tabLivestreams = new LivestreamPanel();
     private final ToggleZappLivestreamsTabAction toggleZappLivestreamsTabAction = new ToggleZappLivestreamsTabAction(tabLivestreams);
@@ -1004,6 +1005,7 @@ public class MediathekGui extends JFrame {
         }
         jMenuAnsicht.add(showBandwidthUsageAction);
         jMenuAnsicht.addSeparator();
+        jMenuAnsicht.add(showFilmStatisticsAction);
         jMenuAnsicht.add(showDuplicateStatisticsAction);
         var mi = new JMenuItem("Übersicht aller Duplikate anzeigen...");
         mi.addActionListener(_ -> {
