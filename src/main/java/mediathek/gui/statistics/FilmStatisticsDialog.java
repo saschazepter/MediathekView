@@ -263,6 +263,7 @@ public class FilmStatisticsDialog extends JDialog {
 
         intervalChart.setBackgroundPaint(panelColor);
         intervalChart.removeLegend();
+        intervalChart.setTitle((String) null);
 
         CategoryPlot plot = intervalChart.getCategoryPlot();
         plot.setBackgroundPaint(panelColor);
@@ -403,6 +404,7 @@ public class FilmStatisticsDialog extends JDialog {
 
         closeButton.setText("Schließen");
         closeButton.addActionListener(_ -> dispose());
+        getRootPane().setDefaultButton(closeButton);
 
         tblSenderStats.setFillsViewportHeight(true);
         tblSenderStats.setAutoCreateRowSorter(true);
