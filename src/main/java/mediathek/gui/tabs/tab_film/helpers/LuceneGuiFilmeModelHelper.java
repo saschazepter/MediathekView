@@ -54,15 +54,12 @@ import java.util.stream.Stream;
 
 public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
     private static final Logger logger = LogManager.getLogger();
-    private static final Map<String, PointsConfig> PARSER_CONFIG_MAP = new HashMap<>();
+    private static final Map<String, PointsConfig> PARSER_CONFIG_MAP = Map.of(
+            LuceneIndexKeys.FILM_SIZE, new PointsConfig(new DecimalFormat(), Integer.class),
+            LuceneIndexKeys.FILM_LENGTH, new PointsConfig(new DecimalFormat(), Integer.class),
+            LuceneIndexKeys.EPISODE, new PointsConfig(new DecimalFormat(), Integer.class),
+            LuceneIndexKeys.SEASON, new PointsConfig(new DecimalFormat(), Integer.class));
     private static final Set<String> INTEREST_SET = Set.of(LuceneIndexKeys.ID);
-    static {
-        //INFO IntPoints MUST be registered here
-        PARSER_CONFIG_MAP.put(LuceneIndexKeys.FILM_SIZE, new PointsConfig(new DecimalFormat(), Integer.class));
-        PARSER_CONFIG_MAP.put(LuceneIndexKeys.FILM_LENGTH, new PointsConfig(new DecimalFormat(), Integer.class));
-        PARSER_CONFIG_MAP.put(LuceneIndexKeys.EPISODE, new PointsConfig(new DecimalFormat(), Integer.class));
-        PARSER_CONFIG_MAP.put(LuceneIndexKeys.SEASON, new PointsConfig(new DecimalFormat(), Integer.class));
-    }
 
     private final Analyzer analyzer = LuceneDefaultAnalyzer.buildPerFieldAnalyzer();
 
@@ -75,7 +72,7 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
     private TModelFilm performTableFiltering() {
         var listeFilme = (IndexedFilmList) Daten.getInstance().getListeFilmeNachBlackList();
         try {
-            calculateFilmLengthSliderValues();
+            var lengthFilterRange = createLengthFilterRange();
 
             if (filterConfiguration.isShowUnseenOnly()) {
                 historyController.prepareMemoryCache();
@@ -142,11 +139,11 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                 //SEARCH
                 final var searcher = new IndexSearcher(listeFilme.getReader());
                 final var matchingDocIds = searcher.search(finalQuery, new NonScoringCollectorManager());
-                final var hit_length = matchingDocIds.size();
+                final var hitLength = matchingDocIds.size();
 
-                Set<Integer> filmNrSet = HashSet.newHashSet(hit_length);
+                Set<Integer> filmNrSet = HashSet.newHashSet(hitLength);
 
-                logger.trace("Hit size: {}", hit_length);
+                logger.trace("Hit size: {}", hitLength);
                 var watch2 = Stopwatch.createStarted();
                 var storedFields = searcher.storedFields();
                 for (final var docId : matchingDocIds) {
@@ -163,24 +160,22 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                         .filter(film -> filmNrSet.contains(film.getFilmNr()));
             }
 
-            if (filterConfiguration.isShowBookMarkedOnly())
+            if (filterConfiguration.isShowBookMarkedOnly()) {
                 stream = stream.filter(DatenFilm::isBookmarked);
-            if (filterConfiguration.isDontShowAbos())
+            }
+            if (filterConfiguration.isDontShowAbos()) {
                 stream = stream.filter(film -> film.getAbo() == null);
+            }
 
-            var resultList = applyCommonFilters(stream, filterConfiguration.getThema()).toList();
+            var resultList = applyCommonFilters(stream, filterConfiguration.getThema(), lengthFilterRange).toList();
             logger.trace("Resulting filmlist size after all filters applied: {}", resultList.size());
 
-            //adjust initial capacity
-            var filmModel = new TModelFilm(resultList.size());
-            filmModel.addAll(resultList);
-
-            return filmModel;
+            return createFilmTableModel(resultList);
         } catch (Exception ex) {
             logger.error("Lucene filtering failed!", ex);
             SwingUtilities.invokeLater(() -> SwingErrorDialog.showExceptionMessage(MediathekGui.ui(),
                     "Die Lucene Abfrage ist inkorrekt und führt zu keinen Ergebnissen.", ex));
-            return new TModelFilm();
+            return createEmptyFilmTableModel();
         }
     }
 
@@ -257,20 +252,13 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
     @Override
     public TableModel getFilteredTableModel() {
         var listeFilme = (IndexedFilmList) Daten.getInstance().getListeFilmeNachBlackList();
-        TModelFilm filmModel;
-
         if (!listeFilme.isEmpty()) {
             if (noFiltersAreSet()) {
-                //adjust initial capacity
-                filmModel = new TModelFilm(listeFilme.size());
-                filmModel.addAll(listeFilme);
-            } else {
-                filmModel = performTableFiltering();
+                return createFilmTableModel(listeFilme);
             }
+            return performTableFiltering();
         } else
-            return new TModelFilm();
-
-        return filmModel;
+            return createEmptyFilmTableModel();
     }
 
     private static class NonScoringCollector extends org.apache.lucene.search.SimpleCollector {

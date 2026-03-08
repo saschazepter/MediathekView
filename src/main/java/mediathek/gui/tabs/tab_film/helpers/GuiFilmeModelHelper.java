@@ -29,41 +29,48 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.table.TableModel;
 
 public class GuiFilmeModelHelper extends GuiModelHelper {
-    private TModelFilm filmModel;
-
     public GuiFilmeModelHelper(@NotNull SeenHistoryController historyController,
                                @NotNull SearchFieldData searchFieldData,
                                @NotNull FilterConfiguration filterConfiguration) {
         super(historyController, searchFieldData, filterConfiguration);
     }
 
-    private void performTableFiltering() {
-        calculateFilmLengthSliderValues();
+    private TModelFilm performTableFiltering() {
+        var lengthFilterRange = createLengthFilterRange();
 
-        if (filterConfiguration.isShowUnseenOnly())
+        if (filterConfiguration.isShowUnseenOnly()) {
             historyController.prepareMemoryCache();
+        }
 
         var stream = Daten.getInstance().getListeFilmeNachBlackList().parallelStream();
         var selectedSenders = getSelectedSendersFromFilter();
         if (!selectedSenders.isEmpty()) {
             stream = stream.filter(f -> selectedSenders.contains(f.getSender()));
         }
-        if (filterConfiguration.isShowNewOnly())
+        if (filterConfiguration.isShowNewOnly()) {
             stream = stream.filter(DatenFilm::isNew);
-        if (filterConfiguration.isShowBookMarkedOnly())
+        }
+        if (filterConfiguration.isShowBookMarkedOnly()) {
             stream = stream.filter(DatenFilm::isBookmarked);
-        if (filterConfiguration.isShowLivestreamsOnly())
+        }
+        if (filterConfiguration.isShowLivestreamsOnly()) {
             stream = stream.filter(DatenFilm::isLivestream);
-        if (filterConfiguration.isShowHighQualityOnly())
+        }
+        if (filterConfiguration.isShowHighQualityOnly()) {
             stream = stream.filter(DatenFilm::isHighQuality);
-        if (filterConfiguration.isDontShowTrailers())
+        }
+        if (filterConfiguration.isDontShowTrailers()) {
             stream = stream.filter(film -> !film.isTrailerTeaser());
-        if (filterConfiguration.isDontShowSignLanguage())
+        }
+        if (filterConfiguration.isDontShowSignLanguage()) {
             stream = stream.filter(film -> !film.isSignLanguage());
-        if (filterConfiguration.isDontShowAudioVersions())
+        }
+        if (filterConfiguration.isDontShowAudioVersions()) {
             stream = stream.filter(film -> !film.isAudioVersion());
-        if (filterConfiguration.isDontShowAbos())
+        }
+        if (filterConfiguration.isDontShowAbos()) {
             stream = stream.filter(film -> film.getAbo() == null);
+        }
         if (filterConfiguration.isDontShowDuplicates()) {
             stream = stream.filter(film -> !film.isDuplicate());
         }
@@ -71,7 +78,7 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
             stream = stream.filter(DatenFilm::hasAnySubtitles);
         }
 
-        stream = applyCommonFilters(stream, filterConfiguration.getThema());
+        stream = applyCommonFilters(stream, filterConfiguration.getThema(), lengthFilterRange);
 
         //final stage filtering...
         String[] arrIrgendwo = searchFieldData.evaluateThemaTitel();
@@ -82,12 +89,7 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
         }
 
         var list = stream.toList();
-        stream.close();
-
-        //adjust initial capacity
-        filmModel = new TModelFilm(list.size());
-        filmModel.addAll(list);
-
+        return createFilmTableModel(list);
     }
 
     @Override
@@ -96,16 +98,11 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
 
         if (!listeFilme.isEmpty()) {
             if (noFiltersAreSet()) {
-                //adjust initial capacity
-                filmModel = new TModelFilm(listeFilme.size());
-                filmModel.addAll(listeFilme);
-            } else {
-                performTableFiltering();
+                return createFilmTableModel(listeFilme);
             }
+            return performTableFiltering();
         } else
-            return new TModelFilm();
-
-        return filmModel;
+            return createEmptyFilmTableModel();
     }
 
 }

@@ -24,10 +24,13 @@ import mediathek.daten.DatenFilm;
 import mediathek.gui.tabs.tab_film.SearchFieldData;
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider;
 import mediathek.tool.FilterConfiguration;
+import mediathek.tool.models.TModelFilm;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.table.TableModel;
+import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
@@ -36,8 +39,6 @@ public abstract class GuiModelHelper {
     protected final SeenHistoryController historyController;
     protected final SearchFieldData searchFieldData;
     protected final FilterConfiguration filterConfiguration;
-    private long minLengthInSeconds;
-    private long maxLengthInSeconds = UNLIMITED_LENGTH_IN_SECONDS;
 
     protected GuiModelHelper(@NotNull SeenHistoryController historyController,
                              @NotNull SearchFieldData searchFieldData,
@@ -54,38 +55,38 @@ public abstract class GuiModelHelper {
      */
     public abstract TableModel getFilteredTableModel();
 
-    protected boolean maxLengthCheck(DatenFilm film) {
-        return film.getFilmLength() < maxLengthInSeconds;
-    }
-
-    protected boolean minLengthCheck(DatenFilm film) {
+    protected boolean minLengthCheck(DatenFilm film, @NotNull LengthFilterRange lengthFilterRange) {
         var filmLength = film.getFilmLength();
-        if (filmLength == 0)
+        if (filmLength == 0) {
             return true; // always show entries with length 0, which are internally "no length"
-        else
-            return filmLength >= minLengthInSeconds;
+        }
+        return filmLength >= lengthFilterRange.minLengthInSeconds();
     }
 
-    public Stream<DatenFilm> applyCommonFilters(Stream<DatenFilm> stream, final String filterThema) {
+    public Stream<DatenFilm> applyCommonFilters(Stream<DatenFilm> stream,
+                                                final String filterThema,
+                                                @NotNull LengthFilterRange lengthFilterRange) {
         if (!filterThema.isEmpty()) {
             stream = stream.filter(film -> film.getThema().equalsIgnoreCase(filterThema));
         }
-        if (maxLengthInSeconds < UNLIMITED_LENGTH_IN_SECONDS) {
-            stream = stream.filter(this::maxLengthCheck);
+        if (lengthFilterRange.hasUpperLimit()) {
+            stream = stream.filter(film -> film.getFilmLength() < lengthFilterRange.maxLengthInSeconds());
         }
         if (filterConfiguration.isShowUnseenOnly()) {
             stream = stream.filter(this::seenCheck);
         }
         //perform min length filtering after all others may have reduced the available entries...
-        return stream.filter(this::minLengthCheck);
+        return stream.filter(film -> minLengthCheck(film, lengthFilterRange));
     }
 
     protected boolean noFiltersAreSet() {
         return filterConfiguration.noFiltersAreSet() && searchFieldData.isEmpty();
     }
 
-    protected List<String> getSelectedSendersFromFilter() {
-        return filterConfiguration.getCheckedChannels().stream().filter(SenderFilmlistLoadApprover::isApproved).toList();
+    protected Set<String> getSelectedSendersFromFilter() {
+        return filterConfiguration.getCheckedChannels().stream()
+                .filter(SenderFilmlistLoadApprover::isApproved)
+                .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
     protected boolean seenCheck(DatenFilm film) {
@@ -95,8 +96,25 @@ public abstract class GuiModelHelper {
     /**
      * Convert slider values for faster user later.
      */
-    protected void calculateFilmLengthSliderValues() {
-        minLengthInSeconds = TimeUnit.SECONDS.convert((long)filterConfiguration.getFilmLengthMin(), TimeUnit.MINUTES);
-        maxLengthInSeconds = TimeUnit.SECONDS.convert((long)filterConfiguration.getFilmLengthMax(), TimeUnit.MINUTES);
+    protected LengthFilterRange createLengthFilterRange() {
+        return new LengthFilterRange(
+                TimeUnit.SECONDS.convert((long) filterConfiguration.getFilmLengthMin(), TimeUnit.MINUTES),
+                TimeUnit.SECONDS.convert((long) filterConfiguration.getFilmLengthMax(), TimeUnit.MINUTES));
+    }
+
+    protected TModelFilm createFilmTableModel(@NotNull Collection<DatenFilm> films) {
+        var filmModel = new TModelFilm(films.size());
+        filmModel.addAll(List.copyOf(films));
+        return filmModel;
+    }
+
+    protected TModelFilm createEmptyFilmTableModel() {
+        return new TModelFilm();
+    }
+
+    protected record LengthFilterRange(long minLengthInSeconds, long maxLengthInSeconds) {
+        private boolean hasUpperLimit() {
+            return maxLengthInSeconds < UNLIMITED_LENGTH_IN_SECONDS;
+        }
     }
 }
