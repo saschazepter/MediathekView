@@ -65,7 +65,7 @@ class FilmStatisticsDialog(
     private val senderTableModel = SenderStatisticsTableModel()
     private val intervalDataset = DefaultCategoryDataset()
     private val intervalChart: JFreeChart = ChartFactory.createBarChart(
-        "Maximal verfügbare Filme-",
+        "Maximal verfügbare Filme",
         "Zeitraum in Tagen",
         "Anzahl Filme",
         intervalDataset
