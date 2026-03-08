@@ -389,7 +389,7 @@ public class FilmStatisticsDialog extends JDialog {
 
         setTitle("Filmlisten-Statistik");
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-        setType(Window.Type.UTILITY);
+        setModal(true);
         setPreferredSize(new Dimension(1100, 720));
 
         closeButton.setText("Schließen");
