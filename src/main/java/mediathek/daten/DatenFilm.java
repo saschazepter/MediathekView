@@ -80,6 +80,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
      * film duration or film length in seconds.
      */
     private int filmLength;
+    private String filmLengthAsString = "";
     private int season = 0;
     private int episode = 0;
 
@@ -99,6 +100,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
         this.datum = other.datum;
         this.sendeZeit = other.sendeZeit;
         this.filmLength = other.filmLength;
+        this.filmLengthAsString = other.filmLengthAsString;
         this.season = other.season;
         this.episode = other.episode;
         this.availableUntil = other.availableUntil;
@@ -139,9 +141,11 @@ public class DatenFilm implements Comparable<DatenFilm> {
      * @param dauer Input string in format "HH:MM:SS".
      */
     public void setFilmLength(String dauer) {
+        filmLength = 0;
+        filmLengthAsString = "";
         //bail out early if there is nothing to split...
         if (dauer == null || dauer.isEmpty()) {
-            filmLength = 0;
+            return;
         }
         else {
             final String[] split = dauer.split(":");
@@ -598,10 +602,11 @@ public class DatenFilm implements Comparable<DatenFilm> {
     public String getFilmLengthAsString() {
         if (filmLength == 0)
             return "";
-        else {
+        else if (filmLengthAsString.isEmpty()) {
             var duration = TimeUnit.MILLISECONDS.convert(filmLength, TimeUnit.SECONDS);
-            return DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
+            filmLengthAsString = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true);
         }
+        return filmLengthAsString;
     }
 
     public String getUrlNormalQuality() {
