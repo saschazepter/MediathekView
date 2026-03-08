@@ -74,12 +74,12 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
 
     private TModelFilm performTableFiltering() {
         var listeFilme = (IndexedFilmList) Daten.getInstance().getListeFilmeNachBlackList();
-        var useUnseenCache = filterConfiguration.isShowUnseenOnly();
         try {
             calculateFilmLengthSliderValues();
 
-            if (useUnseenCache)
+            if (filterConfiguration.isShowUnseenOnly()) {
                 historyController.prepareMemoryCache();
+            }
 
             String searchText = searchFieldData.searchFieldText();
             Stream<DatenFilm> stream = listeFilme.parallelStream();
@@ -181,10 +181,6 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
             SwingUtilities.invokeLater(() -> SwingErrorDialog.showExceptionMessage(MediathekGui.ui(),
                     "Die Lucene Abfrage ist inkorrekt und führt zu keinen Ergebnissen.", ex));
             return new TModelFilm();
-        } finally {
-            if (useUnseenCache) {
-                historyController.emptyMemoryCache();
-            }
         }
     }
 

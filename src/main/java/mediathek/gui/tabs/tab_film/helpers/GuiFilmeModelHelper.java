@@ -88,8 +88,6 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
         filmModel = new TModelFilm(list.size());
         filmModel.addAll(list);
 
-        if (filterConfiguration.isShowUnseenOnly())
-            historyController.emptyMemoryCache();
     }
 
     @Override
