@@ -24,12 +24,20 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
         final var globalEntries = new ArrayList<CompiledBlacklistRule>(listeBlacklist.size());
         final var indexedEntries = new HashMap<String, List<CompiledBlacklistRule>>(listeBlacklist.size());
         for (BlacklistRule entry : listeBlacklist) {
+            final var senderSuchen = entry.getSender();
+            final var themaSuchen = entry.getThema();
+            final var titelSuchen = createPattern(entry.hasTitlePattern(), entry.getTitel());
+            final var themaTitelSuchen = createPattern(entry.hasThemaPattern(), entry.getThema_titel());
             final var compiledRule = new CompiledBlacklistRule(
-                    entry.getSender(),
-                    entry.getThema(),
-                    createPattern(entry.hasTitlePattern(), entry.getTitel()),
-                    createPattern(entry.hasThemaPattern(), entry.getThema_titel()));
-            if (compiledRule.matchesAnySender()) {
+                    senderSuchen,
+                    themaSuchen,
+                    titelSuchen,
+                    themaTitelSuchen,
+                    senderSuchen.isEmpty(),
+                    themaSuchen.isEmpty(),
+                    hasTerms(titelSuchen),
+                    hasTerms(themaTitelSuchen));
+            if (compiledRule.matchesAnySender) {
                 globalEntries.add(compiledRule);
             } else {
                 indexedEntries.computeIfAbsent(compiledRule.senderSuchen(), _ -> new ArrayList<>()).add(compiledRule);
@@ -74,6 +82,10 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
             return mySplit(inputString);
     }
 
+    private boolean hasTerms(final String[] terms) {
+        return terms.length > 0 && !terms[0].isEmpty();
+    }
+
     private boolean matchesAnyRule(final List<CompiledBlacklistRule> rules,
                                    final String sender,
                                    final String thema,
@@ -95,16 +107,16 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
         // themaSuchen exakt mit thema
         // titelSuchen muss im Titel nur enthalten sein
 
-        if (!entry.matchesAnySender() && !sender.equals(entry.senderSuchen())) {
+        if (!entry.matchesAnySender && !sender.equals(entry.senderSuchen())) {
             return false;
         }
-        if (!entry.matchesAnyThema() && !thema.equals(entry.themaSuchen())) {
+        if (!entry.matchesAnyThema && !thema.equals(entry.themaSuchen())) {
             return false;
         }
-        if (entry.hasTitleTerms() && !Filter.pruefen(entry.titelSuchen(), title)) {
+        if (entry.hasTitleTerms && !Filter.pruefen(entry.titelSuchen(), title)) {
             return false;
         }
-        if (entry.hasThemaTitleTerms()
+        if (entry.hasThemaTitleTerms
                 && !Filter.pruefen(entry.themaTitelSuchen(), thema)
                 && !Filter.pruefen(entry.themaTitelSuchen(), title)) {
             return false;
@@ -116,22 +128,11 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
             String senderSuchen,
             String themaSuchen,
             String[] titelSuchen,
-            String[] themaTitelSuchen) {
-        private boolean matchesAnySender() {
-            return senderSuchen.isEmpty();
-        }
-
-        private boolean matchesAnyThema() {
-            return themaSuchen.isEmpty();
-        }
-
-        private boolean hasTitleTerms() {
-            return titelSuchen.length > 0 && !titelSuchen[0].isEmpty();
-        }
-
-        private boolean hasThemaTitleTerms() {
-            return themaTitelSuchen.length > 0 && !themaTitelSuchen[0].isEmpty();
-        }
+            String[] themaTitelSuchen,
+            boolean matchesAnySender,
+            boolean matchesAnyThema,
+            boolean hasTitleTerms,
+            boolean hasThemaTitleTerms) {
     }
 
     private record CompiledRules(

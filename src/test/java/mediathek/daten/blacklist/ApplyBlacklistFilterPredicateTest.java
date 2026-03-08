@@ -18,20 +18,94 @@
 
 package mediathek.daten.blacklist;
 
+import mediathek.config.MVConfig;
+import mediathek.daten.DatenFilm;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class ApplyBlacklistFilterPredicateTest {
+    @BeforeEach
+    void setUp() {
+        MVConfig.add(MVConfig.Configs.SYSTEM_BLACKLIST_IST_WHITELIST, Boolean.FALSE.toString());
+    }
 
     @Test
     void mySplit() {
-        String input = "a,b,c,d";
+        final String input = "a,b,c,d";
         var filter = new ApplyBlacklistFilterPredicate(new ListeBlacklist());
         var result = filter.mySplit(input);
         assertEquals("a", result[0]);
         assertEquals("b", result[1]);
         assertEquals("c", result[2]);
         assertEquals("d", result[3]);
+    }
+
+    @Test
+    void shouldRejectFilmWhenSenderSpecificRuleMatches() {
+        final var blacklist = createBlacklist(rule("ndr", "hamburg journal"));
+        final var filter = new ApplyBlacklistFilterPredicate(blacklist);
+
+        assertFalse(filter.test(film("ndr", "hamburg journal", "folge 1")));
+    }
+
+    @Test
+    void shouldKeepFilmWhenSenderSpecificRuleHasDifferentSender() {
+        final var blacklist = createBlacklist(rule("ndr", "hamburg journal"));
+        final var filter = new ApplyBlacklistFilterPredicate(blacklist);
+
+        assertTrue(filter.test(film("ard", "hamburg journal", "folge 1")));
+    }
+
+    @Test
+    void shouldRejectFilmWhenGlobalThemaRuleMatchesWithoutSender() {
+        final var blacklist = createBlacklist(rule("", "sachsenspiegel"));
+        final var filter = new ApplyBlacklistFilterPredicate(blacklist);
+
+        assertFalse(filter.test(film("mdr", "sachsenspiegel", "abend")));
+    }
+
+    @Test
+    void shouldRejectFilmWithMixedCaseFilmDataAgainstNormalizedRule() {
+        final var blacklist = createBlacklist(rule("ard", "tagesschau"));
+        final var filter = new ApplyBlacklistFilterPredicate(blacklist);
+
+        assertFalse(filter.test(film("ARD", "Tagesschau", "20 Uhr")));
+    }
+
+    @Test
+    void shouldRejectFilmWhenAnyOfMultipleRulesMatches() {
+        final var blacklist = createBlacklist(
+                rule("ndr", "hamburg journal"),
+                rule("zdf", "heute-show"),
+                rule("", "tierärztin dr. mertens"));
+        final var filter = new ApplyBlacklistFilterPredicate(blacklist);
+
+        assertFalse(filter.test(film("ZDF", "Heute-Show", "sendung")));
+        assertFalse(filter.test(film("ard", "tierärztin dr. mertens", "episode")));
+        assertTrue(filter.test(film("zdf", "aspekte", "magazin")));
+    }
+
+    private ListeBlacklist createBlacklist(BlacklistRule... rules) {
+        final var blacklist = new ListeBlacklist();
+        for (BlacklistRule rule : rules) {
+            rule.convertToLowerCase();
+            rule.checkPatterns();
+            blacklist.addWithoutNotification(rule);
+        }
+        return blacklist;
+    }
+
+    private BlacklistRule rule(String sender, String thema) {
+        return new BlacklistRule(sender, thema, "", "");
+    }
+
+    private DatenFilm film(String sender, String thema, String title) {
+        final var film = new DatenFilm();
+        film.setSender(sender);
+        film.setThema(thema);
+        film.setTitle(title);
+        return film;
     }
 }
