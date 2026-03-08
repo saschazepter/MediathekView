@@ -124,24 +124,26 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
                 final var searcher = new IndexSearcher(listeFilme.getReader());
                 final var matchingDocIds = searcher.search(finalQuery, new NonScoringCollectorManager());
                 final var hitLength = matchingDocIds.size();
-
-                Set<Integer> filmNrSet = HashSet.newHashSet(hitLength);
+                var matchingFilms = new ArrayList<DatenFilm>(hitLength);
 
                 logger.trace("Hit size: {}", hitLength);
                 var watch2 = Stopwatch.createStarted();
                 var storedFields = searcher.storedFields();
                 for (final var docId : matchingDocIds) {
                     var d = storedFields.document(docId, INTEREST_SET);
-                    filmNrSet.add(Integer.parseInt(d.get(LuceneIndexKeys.ID)));
+                    var filmNr = Integer.parseInt(d.get(LuceneIndexKeys.ID));
+                    var matchingFilm = listeFilme.getFilmByFilmNr(filmNr);
+                    if (matchingFilm != null) {
+                        matchingFilms.add(matchingFilm);
+                    }
                 }
 
                 //process
                 watch2.stop();
                 logger.trace("Populating filmlist took: {}", watch2);
-                logger.trace("Number of found Lucene index entries: {}", filmNrSet.size());
+                logger.trace("Number of found Lucene index entries: {}", matchingFilms.size());
 
-                stream = listeFilme.parallelStream()
-                        .filter(film -> filmNrSet.contains(film.getFilmNr()));
+                stream = matchingFilms.parallelStream();
             }
 
             if (support.filterConfiguration().isShowBookMarkedOnly()) {
