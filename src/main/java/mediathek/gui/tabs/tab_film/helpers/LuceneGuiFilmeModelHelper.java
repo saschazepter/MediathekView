@@ -29,7 +29,6 @@ import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.FilterConfiguration;
 import mediathek.tool.LuceneDefaultAnalyzer;
 import mediathek.tool.SwingErrorDialog;
-import mediathek.tool.time.Stopwatch;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.analysis.Analyzer;
@@ -127,7 +126,6 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
                 var matchingFilms = new ArrayList<DatenFilm>(hitLength);
 
                 logger.trace("Hit size: {}", hitLength);
-                var watch2 = Stopwatch.createStarted();
                 var storedFields = searcher.storedFields();
                 for (final var docId : matchingDocIds) {
                     var d = storedFields.document(docId, INTEREST_SET);
@@ -139,8 +137,6 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
                 }
 
                 //process
-                watch2.stop();
-                logger.trace("Populating filmlist took: {}", watch2);
                 logger.trace("Number of found Lucene index entries: {}", matchingFilms.size());
 
                 stream = matchingFilms.parallelStream();
