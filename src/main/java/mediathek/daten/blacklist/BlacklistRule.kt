@@ -19,6 +19,10 @@ data class BlacklistRule(
     private var patternTitle = true
     private var patternThema = true
 
+    init {
+        convertToLowerCase()
+    }
+
     fun hasTitlePattern(): Boolean {
         return patternTitle
     }
@@ -113,6 +117,8 @@ data class BlacklistRule(
                 }
             }
         }
+
+        convertToLowerCase()
     }
 
     companion object {

@@ -2,7 +2,9 @@ package mediathek.daten.blacklist
 
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Test
+import java.io.StringReader
 import java.io.StringWriter
+import javax.xml.stream.XMLInputFactory
 import javax.xml.stream.XMLOutputFactory
 import kotlin.test.assertTrue
 
@@ -51,6 +53,37 @@ internal class BlacklistRuleTest {
         assertFalse { rule1 == rule2 }
         assertFalse { rule2 == rule3 }
         assertTrue { rule1 == rule3 }
+    }
+
+    @Test
+    fun test_comparator_normalizes_case() {
+        val rule1 = BlacklistRule("ARD", "Thema1", "Titel1", "Thema_Titel1")
+        val rule2 = BlacklistRule("ard", "thema1", "titel1", "thema_titel1")
+
+        assertTrue { rule1 == rule2 }
+    }
+
+    @Test
+    fun test_read_from_config_normalizes_case() {
+        val xml = """
+            <Blacklist>
+                <black-sender>ARD</black-sender>
+                <black-thema>Tagesschau</black-thema>
+                <black-titel>Heute</black-titel>
+                <black-thema-titel>Breaking News</black-thema-titel>
+            </Blacklist>
+        """.trimIndent()
+        val parser = XMLInputFactory.newInstance().createXMLStreamReader(StringReader(xml))
+        val rule = BlacklistRule()
+
+        while (parser.hasNext()) {
+            if (parser.next() == javax.xml.stream.XMLStreamConstants.START_ELEMENT && parser.localName == BlacklistRule.TAG) {
+                rule.readFromConfig(parser)
+                break
+            }
+        }
+
+        assertTrue { rule == BlacklistRule("ard", "tagesschau", "heute", "breaking news") }
     }
 
     @Test
