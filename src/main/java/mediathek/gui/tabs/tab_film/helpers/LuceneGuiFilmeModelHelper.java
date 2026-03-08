@@ -77,13 +77,12 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
     protected Collection<DatenFilm> filterFilms() {
         var listeFilme = (IndexedFilmList) getAllFilms();
         try {
-            var lengthFilterRange = createLengthFilterRange();
+            var filterContext = createFilterExecutionContext();
 
             if (filterConfiguration.isShowUnseenOnly()) {
                 historyController.prepareMemoryCache();
             }
 
-            String searchText = searchFieldData.searchFieldText();
             Stream<DatenFilm> stream = listeFilme.parallelStream();
 
             if (!noFiltersAreSet()) {
@@ -91,10 +90,10 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                 parser.setPointsConfigMap(PARSER_CONFIG_MAP);
                 parser.setAllowLeadingWildcard(true);
                 Query initialQuery;
-                if (searchText.isEmpty())
+                if (filterContext.searchFieldText().isEmpty())
                     initialQuery = new MatchAllDocsQuery();
                 else
-                    initialQuery = parser.parse(searchText, LuceneIndexKeys.TITEL);
+                    initialQuery = parser.parse(filterContext.searchFieldText(), LuceneIndexKeys.TITEL);
 
                 BooleanQuery.Builder qb = new BooleanQuery.Builder();
                 qb.add(initialQuery, BooleanClause.Occur.MUST);
@@ -108,9 +107,8 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                     }
                 }
                 applyConfiguredQueries(qb);
-                var selectedSenders = getSelectedSendersFromFilter();
-                if (!selectedSenders.isEmpty()) {
-                    addSenderFilterQuery(qb, selectedSenders);
+                if (!filterContext.selectedSenders().isEmpty()) {
+                    addSenderFilterQuery(qb, filterContext.selectedSenders());
                 }
 
                 //the complete lucene query...
@@ -148,7 +146,7 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                 stream = stream.filter(film -> film.getAbo() == null);
             }
 
-            var resultList = applyCommonFilters(stream, filterConfiguration.getThema(), lengthFilterRange).toList();
+            var resultList = applyCommonFilters(stream, filterContext.filterThema(), filterContext.lengthFilterRange()).toList();
             logger.trace("Resulting filmlist size after all filters applied: {}", resultList.size());
 
             return resultList;

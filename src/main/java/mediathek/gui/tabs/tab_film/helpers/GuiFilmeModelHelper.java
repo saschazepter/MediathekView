@@ -45,31 +45,29 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
 
     @Override
     protected Collection<DatenFilm> filterFilms() {
-        var lengthFilterRange = createLengthFilterRange();
+        var filterContext = createFilterExecutionContext();
 
         if (filterConfiguration.isShowUnseenOnly()) {
             historyController.prepareMemoryCache();
         }
 
         var stream = Daten.getInstance().getListeFilmeNachBlackList().parallelStream();
-        var selectedSenders = getSelectedSendersFromFilter();
-        if (!selectedSenders.isEmpty()) {
-            stream = stream.filter(f -> selectedSenders.contains(f.getSender()));
+        if (!filterContext.selectedSenders().isEmpty()) {
+            stream = stream.filter(f -> filterContext.selectedSenders().contains(f.getSender()));
         }
         stream = applyConfiguredPredicates(stream);
 
-        stream = applyCommonFilters(stream, filterConfiguration.getThema(), lengthFilterRange);
+        stream = applyCommonFilters(stream, filterContext.filterThema(), filterContext.lengthFilterRange());
 
         //final stage filtering...
-        String[] arrIrgendwo = searchFieldData.evaluateThemaTitel();
-        final boolean searchFieldEmpty = arrIrgendwo.length == 0;
-        if (!searchFieldEmpty) {
+        if (filterContext.hasSearchTerms()) {
             stream = stream.filter(FinalStageFilterFactory
-                    .createFinalStageFilter(searchFieldData.searchThroughDescriptions(), arrIrgendwo));
+                    .createFinalStageFilter(
+                            filterContext.searchThroughDescriptions(),
+                            filterContext.searchTerms().toArray(String[]::new)));
         }
 
-        var list = stream.toList();
-        return list;
+        return stream.toList();
     }
 
     private Stream<DatenFilm> applyConfiguredPredicates(Stream<DatenFilm> stream) {

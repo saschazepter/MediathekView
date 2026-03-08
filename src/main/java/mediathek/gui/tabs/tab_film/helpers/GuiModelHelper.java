@@ -96,6 +96,16 @@ public abstract class GuiModelHelper {
         return filterConfiguration.noFiltersAreSet() && searchFieldData.isEmpty();
     }
 
+    protected FilterExecutionContext createFilterExecutionContext() {
+        return new FilterExecutionContext(
+                createLengthFilterRange(),
+                getSelectedSendersFromFilter(),
+                filterConfiguration.getThema(),
+                searchFieldData.searchFieldText(),
+                searchFieldData.searchThroughDescriptions(),
+                List.of(searchFieldData.evaluateThemaTitel()));
+    }
+
     protected Set<String> getSelectedSendersFromFilter() {
         return filterConfiguration.getCheckedChannels().stream()
                 .filter(SenderFilmlistLoadApprover::isApproved)
@@ -128,6 +138,17 @@ public abstract class GuiModelHelper {
     protected record LengthFilterRange(long minLengthInSeconds, long maxLengthInSeconds) {
         private boolean hasUpperLimit() {
             return maxLengthInSeconds < UNLIMITED_LENGTH_IN_SECONDS;
+        }
+    }
+
+    protected record FilterExecutionContext(LengthFilterRange lengthFilterRange,
+                                            Set<String> selectedSenders,
+                                            String filterThema,
+                                            String searchFieldText,
+                                            boolean searchThroughDescriptions,
+                                            List<String> searchTerms) {
+        boolean hasSearchTerms() {
+            return !searchTerms.isEmpty();
         }
     }
 }
