@@ -33,8 +33,10 @@ import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.labels.CategoryItemLabelGenerator;
 import org.jfree.chart.plot.CategoryPlot;
 import org.jfree.chart.renderer.category.BarRenderer;
+import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.category.DefaultCategoryDataset;
 
@@ -46,6 +48,7 @@ import javax.swing.table.TableColumnModel;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.geom.Rectangle2D;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
@@ -334,11 +337,72 @@ public class FilmStatisticsDialog extends JDialog {
         rangeAxis.setTickMarkPaint(labelColor);
         rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 
-        BarRenderer renderer = (BarRenderer) plot.getRenderer();
+        BarRenderer renderer = new BarRenderer() {
+            @Override
+            protected void drawItemLabel(Graphics2D g2, org.jfree.data.category.CategoryDataset data,
+                                         int row, int column, CategoryPlot plot,
+                                         CategoryItemLabelGenerator generator, Rectangle2D bar, boolean negative) {
+                if (generator == null) {
+                    return;
+                }
+
+                String label = generator.generateLabel(data, row, column);
+                if (label == null || label.isEmpty()) {
+                    return;
+                }
+
+                g2.setFont(getItemLabelFont(row, column));
+                g2.setPaint(getItemLabelPaint(row, column));
+
+                Rectangle2D bounds = g2.getFontMetrics().getStringBounds(label, g2);
+                double rotatedHeight = bounds.getWidth();
+                double centerX = bar.getCenterX();
+                double centerY;
+                double padding = 4.0;
+                boolean drawInsideBar;
+
+                if (rotatedHeight + padding <= bar.getHeight()) {
+                    centerY = bar.getCenterY();
+                    drawInsideBar = true;
+                }
+                else {
+                    centerY = bar.getMinY() - padding - rotatedHeight / 2.0;
+                    drawInsideBar = false;
+                }
+
+                g2.setPaint(drawInsideBar ? Color.WHITE : getItemLabelPaint(row, column));
+                var oldTransform = g2.getTransform();
+                g2.translate(centerX, centerY);
+                g2.rotate(-Math.PI / 2);
+                g2.drawString(label, (float) -bounds.getCenterX(), (float) -bounds.getCenterY());
+                g2.setTransform(oldTransform);
+            }
+        };
+        plot.setRenderer(renderer);
         renderer.setSeriesPaint(0, new Color(0x4C, 0x78, 0xA8));
         renderer.setShadowVisible(false);
+        renderer.setBarPainter(new StandardBarPainter());
         renderer.setDrawBarOutline(false);
         renderer.setMaximumBarWidth(0.08);
+        renderer.setDefaultItemLabelGenerator(new CategoryItemLabelGenerator() {
+            @Override
+            public String generateRowLabel(org.jfree.data.category.CategoryDataset dataset, int row) {
+                return dataset.getRowKey(row).toString();
+            }
+
+            @Override
+            public String generateColumnLabel(org.jfree.data.category.CategoryDataset dataset, int column) {
+                return dataset.getColumnKey(column).toString();
+            }
+
+            @Override
+            public String generateLabel(org.jfree.data.category.CategoryDataset dataset, int row, int column) {
+                Number value = dataset.getValue(row, column);
+                return value == null ? "" : Long.toString(value.longValue());
+            }
+        });
+        renderer.setDefaultItemLabelsVisible(true);
+        renderer.setDefaultItemLabelPaint(labelColor);
     }
 
     private String formatCount(long count) {
