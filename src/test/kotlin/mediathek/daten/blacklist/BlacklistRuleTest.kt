@@ -83,6 +83,10 @@ internal class BlacklistRuleTest {
             }
         }
 
+        assertTrue { rule.sender == "ARD" }
+        assertTrue { rule.thema == "Tagesschau" }
+        assertTrue { rule.titel == "Heute" }
+        assertTrue { rule.thema_titel == "Breaking News" }
         assertTrue { rule == BlacklistRule("ard", "tagesschau", "heute", "breaking news") }
     }
 
@@ -104,5 +108,24 @@ internal class BlacklistRuleTest {
         assertTrue { outStr.contains("<black-titel>") }
         assertTrue { outStr.contains("<black-thema-titel>") }
         assertTrue { outStr.contains("<black-sender>") }
+    }
+
+    @Test
+    fun test_config_writer_preserves_original_case() {
+        val stringWriter = StringWriter()
+        var outStr: String
+        stringWriter.use {
+            val xmlWriter = XMLOutputFactory.newInstance().createXMLStreamWriter(it)
+            val rule = BlacklistRule("ARD", "Tagesschau", "Heute", "Breaking News")
+            rule.writeToConfig(xmlWriter)
+            outStr = stringWriter.toString()
+
+            xmlWriter.close()
+        }
+
+        assertTrue { outStr.contains("<black-sender>ARD</black-sender>") }
+        assertTrue { outStr.contains("<black-thema>Tagesschau</black-thema>") }
+        assertTrue { outStr.contains("<black-titel>Heute</black-titel>") }
+        assertTrue { outStr.contains("<black-thema-titel>Breaking News</black-thema-titel>") }
     }
 }

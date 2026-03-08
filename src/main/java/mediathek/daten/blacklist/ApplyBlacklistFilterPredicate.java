@@ -24,10 +24,10 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
         final var globalEntries = new ArrayList<CompiledBlacklistRule>(listeBlacklist.size());
         final var indexedEntries = new HashMap<String, List<CompiledBlacklistRule>>(listeBlacklist.size());
         for (BlacklistRule entry : listeBlacklist) {
-            final var senderSuchen = entry.getSender();
-            final var themaSuchen = entry.getThema();
-            final var titelSuchen = createPattern(entry.hasTitlePattern(), entry.getTitel());
-            final var themaTitelSuchen = createPattern(entry.hasThemaPattern(), entry.getThema_titel());
+            final var senderSuchen = entry.getSender().toLowerCase(Locale.getDefault());
+            final var themaSuchen = entry.getThema().toLowerCase(Locale.getDefault());
+            final var titelSuchen = createPattern(entry.hasTitlePattern(), entry.getTitel().toLowerCase(Locale.getDefault()));
+            final var themaTitelSuchen = createPattern(entry.hasThemaPattern(), entry.getThema_titel().toLowerCase(Locale.getDefault()));
             final var compiledRule = new CompiledBlacklistRule(
                     senderSuchen,
                     themaSuchen,

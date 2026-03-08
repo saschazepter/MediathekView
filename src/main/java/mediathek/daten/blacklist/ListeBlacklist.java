@@ -121,7 +121,6 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
             filteredList.setMetaData(completeFilmList.getMetaData());
 
             this.parallelStream().forEach(entry -> {
-                entry.convertToLowerCase();
                 entry.checkPatterns();
             });
 
@@ -279,8 +278,8 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
 
         final boolean bl_is_whitelist = Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_IST_WHITELIST));
         for (BlacklistRule rule : this) {
-            if (Filter.filterAufFilmPruefenWithLength(rule.getSender(),
-                    rule.getThema(),
+            if (Filter.filterAufFilmPruefenWithLength(rule.getSender().toLowerCase(),
+                    rule.getThema().toLowerCase(),
                     makePattern(rule.getTitel()),
                     makePattern(rule.getThema_titel()),
                     EMPTY_STRING_ARRAY, 0, true, film, true)) {

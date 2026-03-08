@@ -19,10 +19,6 @@ data class BlacklistRule(
     private var patternTitle = true
     private var patternThema = true
 
-    init {
-        convertToLowerCase()
-    }
-
     fun hasTitlePattern(): Boolean {
         return patternTitle
     }
@@ -118,7 +114,24 @@ data class BlacklistRule(
             }
         }
 
-        convertToLowerCase()
+    }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (other !is BlacklistRule) return false
+
+        return sender.equals(other.sender, ignoreCase = true)
+                && thema.equals(other.thema, ignoreCase = true)
+                && titel.equals(other.titel, ignoreCase = true)
+                && thema_titel.equals(other.thema_titel, ignoreCase = true)
+    }
+
+    override fun hashCode(): Int {
+        var result = sender.lowercase(Locale.getDefault()).hashCode()
+        result = 31 * result + thema.lowercase(Locale.getDefault()).hashCode()
+        result = 31 * result + titel.lowercase(Locale.getDefault()).hashCode()
+        result = 31 * result + thema_titel.lowercase(Locale.getDefault()).hashCode()
+        return result
     }
 
     companion object {
