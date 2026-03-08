@@ -16,6 +16,7 @@
 - **FEATURE:** Lucene Directory-Provider kann via *Einstellungen/Lucene-Tuning* konfiguriert werden. Je nach OS kann dies die Performance verbessern.
 - **FEATURE:** Zapp-Livestream-Icons zeigen nun das zugehörige Bundesland.
 - **FEATURE:** Unter *Ansicht/Filmlisten-Statistik anzeigen...* werden statistische Informationen über die aktuell genutzte ungefilterte Filmliste dargestellt.
+- **FEATURE:** Bandbreitendialog skaliert nun bis GBit/s und ist darkmode-aware. Zusätzlich wird nun eine durchschnittliche Bandbreite dargestellt.
 - Große Datenbank-Maintenance der Filmhistorie wird nur noch alle 30 Tage ausgeführt, nicht bei jedem Beenden. Kann manuell über das Hilfe-Menü gestartet werden.
 - Untertitel-Format-Support wurde vollständig neu implementiert und unterstützt nun auch TTML2-Standard.
 - Lucene-Index-Erstellung wurde für multi-core-Systeme optimiert.
