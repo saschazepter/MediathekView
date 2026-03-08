@@ -28,6 +28,8 @@ data class BlacklistRule(
     }
 
     fun convertToLowerCase() {
+        sender = sender.lowercase(Locale.getDefault())
+        thema = thema.lowercase(Locale.getDefault())
         titel = titel.lowercase(Locale.getDefault())
         thema_titel = thema_titel.lowercase(Locale.getDefault())
     }

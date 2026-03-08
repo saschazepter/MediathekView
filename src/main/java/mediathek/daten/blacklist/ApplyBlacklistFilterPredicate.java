@@ -4,10 +4,7 @@ import mediathek.config.MVConfig;
 import mediathek.daten.DatenFilm;
 import mediathek.tool.Filter;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Predicate;
 
 class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
@@ -45,8 +42,8 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
 
     @Override
     public boolean test(DatenFilm film) {
-        final var sender = film.getSender();
-        final var thema = film.getThema();
+        final var sender = film.getSender().toLowerCase(Locale.getDefault());
+        final var thema = film.getThema().toLowerCase(Locale.getDefault());
         final var title = film.getTitle();
 
         if (matchesAnyRule(globalRules, sender, thema, title)) {
@@ -101,7 +98,7 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
         if (!entry.matchesAnySender() && !sender.equals(entry.senderSuchen())) {
             return false;
         }
-        if (!entry.matchesAnyThema() && !thema.equalsIgnoreCase(entry.themaSuchen())) {
+        if (!entry.matchesAnyThema() && !thema.equals(entry.themaSuchen())) {
             return false;
         }
         if (entry.hasTitleTerms() && !Filter.pruefen(entry.titelSuchen(), title)) {
