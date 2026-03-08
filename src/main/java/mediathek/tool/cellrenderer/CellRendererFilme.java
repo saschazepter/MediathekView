@@ -176,7 +176,7 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
 
         bgList.add(c.getBackground());
 
-        if (history.hasBeenSeen(datenFilm)) {
+        if (history.hasBeenSeenFromCache(datenFilm)) {
             bgList.add(MVColor.FILM_HISTORY.color);
         }
 

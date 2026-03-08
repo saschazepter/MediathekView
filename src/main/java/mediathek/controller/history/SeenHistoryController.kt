@@ -14,7 +14,6 @@ import java.sql.*
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.system.exitProcess
 
 
 /**
@@ -33,6 +32,7 @@ class SeenHistoryController : AutoCloseable {
     fun removeAll() {
         try {
             connection.createStatement().use { stmt -> stmt.executeUpdate("DELETE FROM seen_history") }
+            clearPreparedCache()
             sendChangeMessage()
         } catch (ex: SQLException) {
             logger.error("removeAll", ex)
@@ -43,6 +43,7 @@ class SeenHistoryController : AutoCloseable {
         try {
             deleteStatement.setString(1, film.urlNormalQuality)
             deleteStatement.executeUpdate()
+            removeFromPreparedCache(film.urlNormalQuality)
 
             Daten.getInstance().listeBookmarkList.updateSeen(false, film)
 
@@ -54,9 +55,22 @@ class SeenHistoryController : AutoCloseable {
 
     fun markUnseen(list: List<DatenFilm>) {
         try {
-            for (film in list) {
-                deleteStatement.setString(1, film.urlNormalQuality)
-                deleteStatement.executeUpdate()
+            val urls = list
+                .asSequence()
+                .map { it.urlNormalQuality }
+                .filter(String::isNotBlank)
+                .distinct()
+                .toList()
+
+            if (urls.isNotEmpty()) {
+                inTransaction {
+                    for (url in urls) {
+                        deleteStatement.setString(1, url)
+                        deleteStatement.addBatch()
+                    }
+                    deleteStatement.executeBatch()
+                }
+                removeFromPreparedCache(urls)
             }
 
             Daten.getInstance().listeBookmarkList.updateSeen(false, list)
@@ -77,6 +91,7 @@ class SeenHistoryController : AutoCloseable {
         if (hasBeenSeen(film)) return
         try {
             writeToDatabase(film)
+            addToPreparedCache(film.urlNormalQuality)
             Daten.getInstance().listeBookmarkList.updateSeen(true, film)
 
             sendChangeMessage()
@@ -87,11 +102,32 @@ class SeenHistoryController : AutoCloseable {
 
     fun markSeen(list: List<DatenFilm>) {
         try {
-            for (film in list) {
-                //skip livestreams
-                if (film.isLivestream) continue
-                if (hasBeenSeen(film)) continue
-                writeToDatabase(film)
+            val candidates = list
+                .asSequence()
+                .filterNot { it.isLivestream }
+                .filter { it.urlNormalQuality.isNotBlank() }
+                .distinctBy { it.urlNormalQuality }
+                .toList()
+
+            if (candidates.isNotEmpty()) {
+                val existingUrls = findExistingUrls(candidates.map { it.urlNormalQuality })
+                val insertedUrls = ArrayList<String>(candidates.size)
+
+                inTransaction {
+                    for (film in candidates) {
+                        if (film.urlNormalQuality in existingUrls) {
+                            continue
+                        }
+
+                        insertStatement.setString(1, film.thema)
+                        insertStatement.setString(2, film.title)
+                        insertStatement.setString(3, film.urlNormalQuality)
+                        insertStatement.addBatch()
+                        insertedUrls.add(film.urlNormalQuality)
+                    }
+                    insertStatement.executeBatch()
+                }
+                addToPreparedCache(insertedUrls)
             }
 
             // Update bookmarks with seen information
@@ -108,17 +144,24 @@ class SeenHistoryController : AutoCloseable {
      * Load all URLs from database and store in memory.
      */
     fun prepareMemoryCache() {
-        connection.createStatement().use { st ->
-            st.executeQuery("SELECT DISTINCT(url) as url FROM seen_history").use { rs ->
-                while (rs.next()) {
-                    val url = rs.getString(1)
-                    urlCache.add(url)
+        synchronized(CACHE_LOCK) {
+            if (memCachePrepared) {
+                return
+            }
+
+            urlCache.clear()
+            connection.createStatement().use { st ->
+                st.executeQuery("SELECT DISTINCT(url) as url FROM seen_history").use { rs ->
+                    while (rs.next()) {
+                        val url = rs.getString(1)
+                        urlCache.add(url)
+                    }
                 }
             }
-        }
 
-        logger.trace("cache size: {}", urlCache.size)
-        memCachePrepared = true
+            logger.trace("cache size: {}", urlCache.size)
+            memCachePrepared = true
+        }
     }
 
     fun performMaintenance() {
@@ -134,6 +177,7 @@ class SeenHistoryController : AutoCloseable {
         try {
             connection.createStatement().use {
                 it.executeUpdate("DELETE FROM seen_history WHERE thema = 'Livestream'")
+                clearPreparedCache()
                 if (shouldRunHeavyMaintenance) {
                     performDatabaseCompact()
                     config.setProperty(LASTRUN, now.toString())
@@ -155,21 +199,13 @@ class SeenHistoryController : AutoCloseable {
     }
 
     /**
-     * thread-safe store for all database contained URLs.
-     */
-    private val urlCache = ConcurrentHashMap.newKeySet<String>()
-
-    /**
-     * Indicate whether the mem cache is ready or not
-     */
-    private var memCachePrepared: Boolean = false
-
-    /**
      * Delete all data in memory cache
      */
     fun emptyMemoryCache() {
-        urlCache.clear()
-        memCachePrepared = false
+        synchronized(CACHE_LOCK) {
+            urlCache.clear()
+            memCachePrepared = false
+        }
     }
 
     /**
@@ -183,6 +219,10 @@ class SeenHistoryController : AutoCloseable {
     }
 
     fun hasBeenSeen(film: DatenFilm): Boolean {
+        if (memCachePrepared) {
+            return urlCache.contains(film.urlNormalQuality)
+        }
+
         var result: Boolean
 
         try {
@@ -242,6 +282,97 @@ class SeenHistoryController : AutoCloseable {
         insertStatement.executeUpdate()
     }
 
+    private fun addToPreparedCache(url: String) {
+        if (!memCachePrepared || url.isBlank()) {
+            return
+        }
+        synchronized(CACHE_LOCK) {
+            if (memCachePrepared) {
+                urlCache.add(url)
+            }
+        }
+    }
+
+    private fun addToPreparedCache(urls: Collection<String>) {
+        if (!memCachePrepared || urls.isEmpty()) {
+            return
+        }
+        synchronized(CACHE_LOCK) {
+            if (memCachePrepared) {
+                urls.asSequence().filter(String::isNotBlank).forEach(urlCache::add)
+            }
+        }
+    }
+
+    private fun removeFromPreparedCache(url: String) {
+        if (!memCachePrepared || url.isBlank()) {
+            return
+        }
+        synchronized(CACHE_LOCK) {
+            if (memCachePrepared) {
+                urlCache.remove(url)
+            }
+        }
+    }
+
+    private fun removeFromPreparedCache(urls: Collection<String>) {
+        if (!memCachePrepared || urls.isEmpty()) {
+            return
+        }
+        synchronized(CACHE_LOCK) {
+            if (memCachePrepared) {
+                urls.asSequence().filter(String::isNotBlank).forEach(urlCache::remove)
+            }
+        }
+    }
+
+    private fun clearPreparedCache() {
+        synchronized(CACHE_LOCK) {
+            if (memCachePrepared) {
+                urlCache.clear()
+                memCachePrepared = false
+            }
+        }
+    }
+
+    @Throws(SQLException::class)
+    private fun <T> inTransaction(block: () -> T): T {
+        val previousAutoCommit = connection.autoCommit
+        connection.autoCommit = false
+        try {
+            val result = block()
+            connection.commit()
+            return result
+        } catch (ex: SQLException) {
+            connection.rollback()
+            throw ex
+        } finally {
+            connection.autoCommit = previousAutoCommit
+        }
+    }
+
+    @Throws(SQLException::class)
+    private fun findExistingUrls(urls: List<String>): Set<String> {
+        if (urls.isEmpty()) {
+            return emptySet()
+        }
+
+        val existingUrls = HashSet<String>(urls.size)
+        for (chunk in urls.chunked(MAX_SQL_VARIABLES)) {
+            val placeholders = chunk.joinToString(",") { "?" }
+            val sql = "SELECT url FROM seen_history WHERE url IN ($placeholders)"
+            connection.prepareStatement(sql).use { statement ->
+                chunk.forEachIndexed { index, url -> statement.setString(index + 1, url) }
+                statement.executeQuery().use { rs ->
+                    while (rs.next()) {
+                        existingUrls.add(rs.getString(1))
+                    }
+                }
+            }
+        }
+        return existingUrls
+    }
+
     /**
      * Send notification that the number of entries in the history has been changed.
      */
@@ -250,8 +381,6 @@ class SeenHistoryController : AutoCloseable {
     }
 
     override fun close() {
-        urlCache.clear()
-
         try {
             insertStatement.close()
             deleteStatement.close()
@@ -268,11 +397,15 @@ class SeenHistoryController : AutoCloseable {
 
     companion object {
         private val logger = LogManager.getLogger()
-        private const val INSERT_SQL = "INSERT INTO seen_history(thema,titel,url) values (?,?,?)"
+        private const val INSERT_SQL = "INSERT OR IGNORE INTO seen_history(thema,titel,url) values (?,?,?)"
         private const val DELETE_SQL = "DELETE FROM seen_history WHERE url = ?"
         private const val SEEN_SQL = "SELECT COUNT(url) AS total FROM seen_history WHERE url = ?"
         private const val LASTRUN = "database.seen_history.maintenance.lastRun"
         private const val MAX_DAYS: Long = 30
+        private const val MAX_SQL_VARIABLES = 900
+        private val CACHE_LOCK = Any()
+        private val urlCache = ConcurrentHashMap.newKeySet<String>()
+        @Volatile private var memCachePrepared: Boolean = false
     }
 
     private fun performSqliteSetup() {
@@ -280,6 +413,26 @@ class SeenHistoryController : AutoCloseable {
             basicSqliteSettings(statement)
             val cpus = Runtime.getRuntime().availableProcessors() / 2
             statement.executeUpdate("PRAGMA threads=$cpus")
+        }
+    }
+
+    @Throws(SQLException::class)
+    private fun ensureUniqueUrlIndex() {
+        connection.createStatement().use { statement ->
+            statement.executeUpdate(SeenHistoryMigrator.DROP_INDEX_STMT)
+        }
+
+        try {
+            connection.createStatement().use { statement ->
+                statement.executeUpdate(SeenHistoryMigrator.CREATE_INDEX_STMT)
+            }
+        } catch (_: SQLException) {
+            logger.info("Removing duplicate seen history entries before creating unique URL index")
+            removeDuplicates()
+            connection.createStatement().use { statement ->
+                statement.executeUpdate(SeenHistoryMigrator.DROP_INDEX_STMT)
+                statement.executeUpdate(SeenHistoryMigrator.CREATE_INDEX_STMT)
+            }
         }
     }
 
@@ -293,9 +446,6 @@ class SeenHistoryController : AutoCloseable {
         shutdownThread = SeenHistoryShutdownHook(connection)
         Runtime.getRuntime().addShutdownHook(shutdownThread)
     }
-
-    @JvmRecord
-    data class DuplicateSearchResult(val total: Long, val distinct: Long)
 
     @Throws(SQLException::class)
     fun removeDuplicates() {
@@ -330,32 +480,13 @@ class SeenHistoryController : AutoCloseable {
                 statement.executeUpdate("DROP TABLE temp_history")
             }
             connection.commit()
+            emptyMemoryCache()
         }
         catch (e: SQLException) {
             connection.rollback()
             throw e
         }
         connection.autoCommit = prevAutoCommitState
-    }
-
-    @Throws(SQLException::class)
-    fun checkDuplicates(): DuplicateSearchResult {
-        var total: Long = 0
-        var distinct: Long = 0
-
-        connection.createStatement().use { statement ->
-            statement!!.executeQuery("SELECT COUNT(*) FROM seen_history").use {
-                it.next()
-                total = it.getLong(1)
-            }
-        }
-        connection.createStatement().use { statement ->
-            statement.executeQuery("SELECT COUNT(*) FROM (SELECT DISTINCT url FROM seen_history)").use {
-                it.next()
-                distinct = it.getLong(1)
-            }
-        }
-        return DuplicateSearchResult(total, distinct)
     }
 
     init {
@@ -369,6 +500,7 @@ class SeenHistoryController : AutoCloseable {
             connection = dataSource.connection
 
             performSqliteSetup()
+            ensureUniqueUrlIndex()
 
             insertStatement = connection.prepareStatement(INSERT_SQL)
             deleteStatement = connection.prepareStatement(DELETE_SQL)
@@ -377,7 +509,7 @@ class SeenHistoryController : AutoCloseable {
             installShutdownHook()
         } catch (ex: SQLException) {
             logger.error("ctor", ex)
-            exitProcess(99)
+            throw IllegalStateException("Could not initialize seen history controller", ex)
         }
     }
 }
