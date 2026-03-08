@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 derreisende77.
+ * Copyright (c) 2025-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -33,53 +33,42 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-public abstract class GuiModelHelper {
-    private final static long UNLIMITED_LENGTH_IN_SECONDS = TimeUnit.SECONDS.convert(FilmLengthSlider.UNLIMITED_VALUE, TimeUnit.MINUTES);
-    protected final SeenHistoryController historyController;
-    protected final SearchFieldData searchFieldData;
-    protected final FilterConfiguration filterConfiguration;
+public sealed interface GuiModelHelper permits GuiFilmeModelHelper, LuceneGuiFilmeModelHelper {
+    TableModel getFilteredTableModel();
+}
 
-    protected GuiModelHelper(@NotNull SeenHistoryController historyController,
-                             @NotNull SearchFieldData searchFieldData,
-                             @NotNull FilterConfiguration filterConfiguration) {
+final class GuiModelHelperSupport {
+    private static final long UNLIMITED_LENGTH_IN_SECONDS = TimeUnit.SECONDS.convert(FilmLengthSlider.UNLIMITED_VALUE, TimeUnit.MINUTES);
+
+    private final SeenHistoryController historyController;
+    private final SearchFieldData searchFieldData;
+    private final FilterConfiguration filterConfiguration;
+
+    GuiModelHelperSupport(@NotNull SeenHistoryController historyController,
+                          @NotNull SearchFieldData searchFieldData,
+                          @NotNull FilterConfiguration filterConfiguration) {
         this.historyController = historyController;
         this.searchFieldData = searchFieldData;
         this.filterConfiguration = filterConfiguration;
     }
 
-    /**
-     * Filter the filmlist.
-     *
-     * @return the filtered table model.
-     */
-    public final TableModel getFilteredTableModel() {
-        var allFilms = getAllFilms();
+    TableModel getFilteredTableModel(@NotNull Collection<DatenFilm> allFilms,
+                                     @NotNull Supplier<Collection<DatenFilm>> filteredFilmSupplier) {
         if (allFilms.isEmpty()) {
             return createEmptyFilmTableModel();
         }
         if (noFiltersAreSet()) {
             return createFilmTableModel(allFilms);
         }
-        return createFilmTableModel(filterFilms());
+        return createFilmTableModel(filteredFilmSupplier.get());
     }
 
-    protected abstract Collection<DatenFilm> getAllFilms();
-
-    protected abstract Collection<DatenFilm> filterFilms();
-
-    protected boolean minLengthCheck(DatenFilm film, @NotNull LengthFilterRange lengthFilterRange) {
-        var filmLength = film.getFilmLength();
-        if (filmLength == 0) {
-            return true; // always show entries with length 0, which are internally "no length"
-        }
-        return filmLength >= lengthFilterRange.minLengthInSeconds();
-    }
-
-    public Stream<DatenFilm> applyCommonFilters(Stream<DatenFilm> stream,
-                                                final String filterThema,
-                                                @NotNull LengthFilterRange lengthFilterRange) {
+    Stream<DatenFilm> applyCommonFilters(Stream<DatenFilm> stream,
+                                         final String filterThema,
+                                         @NotNull LengthFilterRange lengthFilterRange) {
         if (!filterThema.isEmpty()) {
             stream = stream.filter(film -> film.getThema().equalsIgnoreCase(filterThema));
         }
@@ -89,15 +78,14 @@ public abstract class GuiModelHelper {
         if (filterConfiguration.isShowUnseenOnly()) {
             stream = stream.filter(this::seenCheck);
         }
-        //perform min length filtering after all others may have reduced the available entries...
         return stream.filter(film -> minLengthCheck(film, lengthFilterRange));
     }
 
-    protected boolean noFiltersAreSet() {
+    boolean noFiltersAreSet() {
         return filterConfiguration.noFiltersAreSet() && searchFieldData.isEmpty();
     }
 
-    protected FilterExecutionContext createFilterExecutionContext() {
+    FilterExecutionContext createFilterExecutionContext() {
         var selectedSenders = getSelectedSendersFromFilter();
         var searchTerms = List.of(searchFieldData.evaluateThemaTitel());
         return new FilterExecutionContext(
@@ -115,49 +103,62 @@ public abstract class GuiModelHelper {
                                 searchTerms.toArray(String[]::new)));
     }
 
-    protected Set<String> getSelectedSendersFromFilter() {
+    FilterConfiguration filterConfiguration() {
+        return filterConfiguration;
+    }
+
+    void prepareHistoryMemoryCache() {
+        historyController.prepareMemoryCache();
+    }
+
+    private boolean minLengthCheck(DatenFilm film, @NotNull LengthFilterRange lengthFilterRange) {
+        var filmLength = film.getFilmLength();
+        if (filmLength == 0) {
+            return true;
+        }
+        return filmLength >= lengthFilterRange.minLengthInSeconds();
+    }
+
+    private Set<String> getSelectedSendersFromFilter() {
         return filterConfiguration.getCheckedChannels().stream()
                 .filter(SenderFilmlistLoadApprover::isApproved)
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
 
-    protected boolean seenCheck(DatenFilm film) {
+    private boolean seenCheck(DatenFilm film) {
         return !historyController.hasBeenSeenFromCache(film);
     }
 
-    /**
-     * Convert slider values for faster user later.
-     */
-    protected LengthFilterRange createLengthFilterRange() {
+    private LengthFilterRange createLengthFilterRange() {
         return new LengthFilterRange(
                 TimeUnit.SECONDS.convert((long) filterConfiguration.getFilmLengthMin(), TimeUnit.MINUTES),
                 TimeUnit.SECONDS.convert((long) filterConfiguration.getFilmLengthMax(), TimeUnit.MINUTES));
     }
 
-    protected TModelFilm createFilmTableModel(@NotNull Collection<DatenFilm> films) {
+    private TModelFilm createFilmTableModel(@NotNull Collection<DatenFilm> films) {
         var filmModel = new TModelFilm(films.size());
         filmModel.addAll(films instanceof List<DatenFilm> filmList ? filmList : List.copyOf(films));
         return filmModel;
     }
 
-    protected TModelFilm createEmptyFilmTableModel() {
+    private TModelFilm createEmptyFilmTableModel() {
         return new TModelFilm();
     }
 
-    protected record LengthFilterRange(long minLengthInSeconds, long maxLengthInSeconds) {
-        private boolean hasUpperLimit() {
+    record LengthFilterRange(long minLengthInSeconds, long maxLengthInSeconds) {
+        boolean hasUpperLimit() {
             return maxLengthInSeconds < UNLIMITED_LENGTH_IN_SECONDS;
         }
     }
 
-    protected record FilterExecutionContext(LengthFilterRange lengthFilterRange,
-                                            Set<String> selectedSenders,
-                                            String filterThema,
-                                            String searchFieldText,
-                                            boolean searchThroughDescriptions,
-                                            List<String> searchTerms,
-                                            Predicate<DatenFilm> senderFilter,
-                                            Predicate<DatenFilm> finalStageFilter) {
+    record FilterExecutionContext(LengthFilterRange lengthFilterRange,
+                                  Set<String> selectedSenders,
+                                  String filterThema,
+                                  String searchFieldText,
+                                  boolean searchThroughDescriptions,
+                                  List<String> searchTerms,
+                                  Predicate<DatenFilm> senderFilter,
+                                  Predicate<DatenFilm> finalStageFilter) {
         boolean hasSearchTerms() {
             return !searchTerms.isEmpty();
         }

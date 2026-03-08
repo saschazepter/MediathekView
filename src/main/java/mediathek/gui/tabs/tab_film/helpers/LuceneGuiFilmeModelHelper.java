@@ -44,6 +44,7 @@ import org.apache.lucene.search.*;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import javax.swing.table.TableModel;
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -51,7 +52,7 @@ import java.util.*;
 import java.util.function.BooleanSupplier;
 import java.util.stream.Stream;
 
-public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
+public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
     private static final Logger logger = LogManager.getLogger();
     private static final Map<String, PointsConfig> PARSER_CONFIG_MAP = Map.of(
             LuceneIndexKeys.FILM_SIZE, new PointsConfig(new DecimalFormat(), Integer.class),
@@ -60,32 +61,36 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
             LuceneIndexKeys.SEASON, new PointsConfig(new DecimalFormat(), Integer.class));
     private static final Set<String> INTEREST_SET = Set.of(LuceneIndexKeys.ID);
 
-    private final Analyzer analyzer = LuceneDefaultAnalyzer.buildPerFieldAnalyzer();
+    private final GuiModelHelperSupport support;
 
     public LuceneGuiFilmeModelHelper(@NotNull SeenHistoryController historyController,
                                      @NotNull SearchFieldData searchFieldData,
                                      @NotNull FilterConfiguration filterConfiguration) {
-        super(historyController, searchFieldData, filterConfiguration);
+        support = new GuiModelHelperSupport(historyController, searchFieldData, filterConfiguration);
     }
 
     @Override
-    protected Collection<DatenFilm> getAllFilms() {
+    public TableModel getFilteredTableModel() {
+        var allFilms = getAllFilms();
+        return support.getFilteredTableModel(allFilms, this::filterFilms);
+    }
+
+    private Collection<DatenFilm> getAllFilms() {
         return (IndexedFilmList) Daten.getInstance().getListeFilmeNachBlackList();
     }
 
-    @Override
-    protected Collection<DatenFilm> filterFilms() {
+    private Collection<DatenFilm> filterFilms() {
         var listeFilme = (IndexedFilmList) getAllFilms();
-        try {
-            var filterContext = createFilterExecutionContext();
+        try (Analyzer analyzer = LuceneDefaultAnalyzer.buildPerFieldAnalyzer()) {
+            var filterContext = support.createFilterExecutionContext();
 
-            if (filterConfiguration.isShowUnseenOnly()) {
-                historyController.prepareMemoryCache();
+            if (support.filterConfiguration().isShowUnseenOnly()) {
+                support.prepareHistoryMemoryCache();
             }
 
             Stream<DatenFilm> stream = listeFilme.parallelStream();
 
-            if (!noFiltersAreSet()) {
+            if (!support.noFiltersAreSet()) {
                 var parser = new StandardQueryParser(analyzer);
                 parser.setPointsConfigMap(PARSER_CONFIG_MAP);
                 parser.setAllowLeadingWildcard(true);
@@ -99,9 +104,9 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                 qb.add(initialQuery, BooleanClause.Occur.MUST);
 
                 //Zeitraum filter on demand …
-                if (!filterConfiguration.getZeitraum().equalsIgnoreCase(ZeitraumSpinnerFormatter.INFINITE_TEXT)) {
+                if (!support.filterConfiguration().getZeitraum().equalsIgnoreCase(ZeitraumSpinnerFormatter.INFINITE_TEXT)) {
                     try {
-                        qb.add(createZeitraumQuery(), BooleanClause.Occur.FILTER);
+                        qb.add(createZeitraumQuery(analyzer), BooleanClause.Occur.FILTER);
                     } catch (Exception ex) {
                         logger.error("Unable to add zeitraum filter", ex);
                     }
@@ -139,14 +144,14 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
                         .filter(film -> filmNrSet.contains(film.getFilmNr()));
             }
 
-            if (filterConfiguration.isShowBookMarkedOnly()) {
+            if (support.filterConfiguration().isShowBookMarkedOnly()) {
                 stream = stream.filter(DatenFilm::isBookmarked);
             }
-            if (filterConfiguration.isDontShowAbos()) {
+            if (support.filterConfiguration().isDontShowAbos()) {
                 stream = stream.filter(film -> film.getAbo() == null);
             }
 
-            var resultList = applyCommonFilters(stream, filterContext.filterThema(), filterContext.lengthFilterRange()).toList();
+            var resultList = support.applyCommonFilters(stream, filterContext.filterThema(), filterContext.lengthFilterRange()).toList();
             logger.trace("Resulting filmlist size after all filters applied: {}", resultList.size());
 
             return resultList;
@@ -183,23 +188,23 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
 
     private List<QuerySpec> createQuerySpecs() {
         return List.of(
-                termQuerySpec(filterConfiguration::isShowLivestreamsOnly, LuceneIndexKeys.LIVESTREAM, BooleanClause.Occur.FILTER),
-                termQuerySpec(filterConfiguration::isShowHighQualityOnly, LuceneIndexKeys.HIGH_QUALITY, BooleanClause.Occur.FILTER),
-                termQuerySpec(filterConfiguration::isDontShowTrailers, LuceneIndexKeys.TRAILER_TEASER, BooleanClause.Occur.MUST_NOT),
-                termQuerySpec(filterConfiguration::isDontShowAudioVersions, LuceneIndexKeys.AUDIOVERSION, BooleanClause.Occur.MUST_NOT),
-                termQuerySpec(filterConfiguration::isDontShowSignLanguage, LuceneIndexKeys.SIGN_LANGUAGE, BooleanClause.Occur.MUST_NOT),
-                termQuerySpec(filterConfiguration::isDontShowDuplicates, LuceneIndexKeys.DUPLICATE, BooleanClause.Occur.MUST_NOT),
-                termQuerySpec(filterConfiguration::isShowSubtitlesOnly, LuceneIndexKeys.SUBTITLE, BooleanClause.Occur.FILTER),
-                termQuerySpec(filterConfiguration::isShowNewOnly, LuceneIndexKeys.NEW, BooleanClause.Occur.FILTER));
+                termQuerySpec(support.filterConfiguration()::isShowLivestreamsOnly, LuceneIndexKeys.LIVESTREAM, BooleanClause.Occur.FILTER),
+                termQuerySpec(support.filterConfiguration()::isShowHighQualityOnly, LuceneIndexKeys.HIGH_QUALITY, BooleanClause.Occur.FILTER),
+                termQuerySpec(support.filterConfiguration()::isDontShowTrailers, LuceneIndexKeys.TRAILER_TEASER, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(support.filterConfiguration()::isDontShowAudioVersions, LuceneIndexKeys.AUDIOVERSION, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(support.filterConfiguration()::isDontShowSignLanguage, LuceneIndexKeys.SIGN_LANGUAGE, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(support.filterConfiguration()::isDontShowDuplicates, LuceneIndexKeys.DUPLICATE, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(support.filterConfiguration()::isShowSubtitlesOnly, LuceneIndexKeys.SUBTITLE, BooleanClause.Occur.FILTER),
+                termQuerySpec(support.filterConfiguration()::isShowNewOnly, LuceneIndexKeys.NEW, BooleanClause.Occur.FILTER));
     }
 
     private QuerySpec termQuerySpec(@NotNull BooleanSupplier enabled, @NotNull String field, @NotNull BooleanClause.Occur occur) {
         return new QuerySpec(enabled, field, "true", occur);
     }
 
-    private Query createZeitraumQuery() throws ParseException {
+    private Query createZeitraumQuery(@NotNull Analyzer analyzer) throws ParseException {
 
-        var numDays = Integer.parseInt(filterConfiguration.getZeitraum());
+        var numDays = Integer.parseInt(support.filterConfiguration().getZeitraum());
         var toDate = LocalDateTime.now();
         var fromDate = toDate.minusDays(numDays);
         var utcZone = ZoneId.of("UTC");
@@ -212,7 +217,7 @@ public class LuceneGuiFilmeModelHelper extends GuiModelHelper {
         return new QueryParser(LuceneIndexKeys.SENDE_DATUM, analyzer).parse(zeitraum);
     }
 
-    private static class NonScoringCollector extends org.apache.lucene.search.SimpleCollector {
+    private static class NonScoringCollector extends SimpleCollector {
         private final ArrayList<Integer> matchingDocIds = new ArrayList<>();
         private int docBase;
 

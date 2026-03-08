@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 derreisende77.
+ * Copyright (c) 2025-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -31,24 +31,30 @@ import java.util.function.BooleanSupplier;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-public class GuiFilmeModelHelper extends GuiModelHelper {
+public final class GuiFilmeModelHelper implements GuiModelHelper {
+    private final GuiModelHelperSupport support;
+
     public GuiFilmeModelHelper(@NotNull SeenHistoryController historyController,
                                @NotNull SearchFieldData searchFieldData,
                                @NotNull FilterConfiguration filterConfiguration) {
-        super(historyController, searchFieldData, filterConfiguration);
+        support = new GuiModelHelperSupport(historyController, searchFieldData, filterConfiguration);
     }
 
     @Override
-    protected Collection<DatenFilm> getAllFilms() {
+    public javax.swing.table.TableModel getFilteredTableModel() {
+        var allFilms = getAllFilms();
+        return support.getFilteredTableModel(allFilms, this::filterFilms);
+    }
+
+    private Collection<DatenFilm> getAllFilms() {
         return Daten.getInstance().getListeFilmeNachBlackList();
     }
 
-    @Override
-    protected Collection<DatenFilm> filterFilms() {
-        var filterContext = createFilterExecutionContext();
+    private Collection<DatenFilm> filterFilms() {
+        var filterContext = support.createFilterExecutionContext();
 
-        if (filterConfiguration.isShowUnseenOnly()) {
-            historyController.prepareMemoryCache();
+        if (support.filterConfiguration().isShowUnseenOnly()) {
+            support.prepareHistoryMemoryCache();
         }
 
         var stream = Daten.getInstance().getListeFilmeNachBlackList().parallelStream();
@@ -57,7 +63,7 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
         }
         stream = applyConfiguredPredicates(stream);
 
-        stream = applyCommonFilters(stream, filterContext.filterThema(), filterContext.lengthFilterRange());
+        stream = support.applyCommonFilters(stream, filterContext.filterThema(), filterContext.lengthFilterRange());
 
         if (filterContext.hasSearchTerms()) {
             stream = stream.filter(filterContext.finalStageFilter());
@@ -77,16 +83,16 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
 
     private List<PredicateSpec> createPredicateSpecs() {
         return List.of(
-                predicateSpec(filterConfiguration::isShowNewOnly, DatenFilm::isNew),
-                predicateSpec(filterConfiguration::isShowBookMarkedOnly, DatenFilm::isBookmarked),
-                predicateSpec(filterConfiguration::isShowLivestreamsOnly, DatenFilm::isLivestream),
-                predicateSpec(filterConfiguration::isShowHighQualityOnly, DatenFilm::isHighQuality),
-                predicateSpec(filterConfiguration::isDontShowTrailers, film -> !film.isTrailerTeaser()),
-                predicateSpec(filterConfiguration::isDontShowSignLanguage, film -> !film.isSignLanguage()),
-                predicateSpec(filterConfiguration::isDontShowAudioVersions, film -> !film.isAudioVersion()),
-                predicateSpec(filterConfiguration::isDontShowAbos, film -> film.getAbo() == null),
-                predicateSpec(filterConfiguration::isDontShowDuplicates, film -> !film.isDuplicate()),
-                predicateSpec(filterConfiguration::isShowSubtitlesOnly, DatenFilm::hasAnySubtitles));
+                predicateSpec(support.filterConfiguration()::isShowNewOnly, DatenFilm::isNew),
+                predicateSpec(support.filterConfiguration()::isShowBookMarkedOnly, DatenFilm::isBookmarked),
+                predicateSpec(support.filterConfiguration()::isShowLivestreamsOnly, DatenFilm::isLivestream),
+                predicateSpec(support.filterConfiguration()::isShowHighQualityOnly, DatenFilm::isHighQuality),
+                predicateSpec(support.filterConfiguration()::isDontShowTrailers, film -> !film.isTrailerTeaser()),
+                predicateSpec(support.filterConfiguration()::isDontShowSignLanguage, film -> !film.isSignLanguage()),
+                predicateSpec(support.filterConfiguration()::isDontShowAudioVersions, film -> !film.isAudioVersion()),
+                predicateSpec(support.filterConfiguration()::isDontShowAbos, film -> film.getAbo() == null),
+                predicateSpec(support.filterConfiguration()::isDontShowDuplicates, film -> !film.isDuplicate()),
+                predicateSpec(support.filterConfiguration()::isShowSubtitlesOnly, DatenFilm::hasAnySubtitles));
     }
 
     private PredicateSpec predicateSpec(@NotNull BooleanSupplier enabled, @NotNull Predicate<DatenFilm> predicate) {
