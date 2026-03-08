@@ -19,6 +19,8 @@
 - Untertitel-Format-Support wurde vollständig neu implementiert und unterstützt nun auch TTML2-Standard.
 - Lucene-Index-Erstellung wurde für multi-core-Systeme optimiert.
 - Reduzierter Netzwerkverkehr durch Caching bei der Abfrage der Filmverfügbarkeiten.
+- Optimierung der CPU- und Speichernutzung
+- verbesserte Darstellungsqualität der Sendericons
 
 # **14.4.2**
 - Downgrade JDK 25 zu 24 auch für macOS (Intel und Apple Silicon) Builds

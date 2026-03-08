@@ -22,7 +22,6 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * CellRenderer base class for all custom renderer associated with a Start.
@@ -84,7 +83,7 @@ public class CellRendererBaseWithStart extends CellRendererBase {
     protected void drawGeolocationIcons(@NotNull DatenFilm film, boolean isSelected) {
         setHorizontalAlignment(SwingConstants.CENTER);
         setText("");
-        if (film.countrySet.isEmpty()) {
+        if (!film.hasCountries()) {
             setToolTipText("Keine Geoinformationen vorhanden");
             if (isSelected)
                 setIcon(unlockedIconSelected);
@@ -92,8 +91,7 @@ public class CellRendererBaseWithStart extends CellRendererBase {
                 setIcon(unlockedIcon);
         }
         else {
-            var geoString = film.countrySet.stream().map(Country::toString).collect(Collectors.joining("-"));
-            setToolTipText(geoString);
+            setToolTipText(film.getCountriesAsString());
             if (filmIsCountryUnlocked(film)) {
                 //we are unlocked
                 if (isSelected)
@@ -114,11 +112,11 @@ public class CellRendererBaseWithStart extends CellRendererBase {
     private boolean filmIsCountryUnlocked(@NotNull DatenFilm film) {
         var curLocation = ApplicationConfiguration.getInstance().getGeographicLocation();
         //EU consists of many states therefore we have to extend the country test...
-        if (film.countrySet.contains(Country.EU)) {
-            return film.countrySet.contains(curLocation) || euCountryList.contains(curLocation);
+        if (film.hasCountry(Country.EU)) {
+            return film.hasCountry(curLocation) || euCountryList.contains(curLocation);
         }
         else {
-            return film.countrySet.contains(curLocation);
+            return film.hasCountry(curLocation);
         }
     }
 
@@ -175,7 +173,7 @@ public class CellRendererBaseWithStart extends CellRendererBase {
     }
 
     protected void setIndicatorIcons(@NotNull DatenFilm datenFilm, boolean isSelected, boolean hqColumnHidden, boolean utColumnHidden) {
-        if (!datenFilm.countrySet.isEmpty()) {
+        if (datenFilm.hasCountries()) {
             if (!filmIsCountryUnlocked(datenFilm)) {
                 //locked
                 if (isSelected)

@@ -21,7 +21,6 @@ package mediathek.gui.filmInformation;
 import com.formdev.flatlaf.extras.FlatSVGIcon;
 import com.formdev.flatlaf.util.ScaledImageIcon;
 import mediathek.config.Konstanten;
-import mediathek.daten.Country;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.actions.UrlHyperlinkAction;
 import mediathek.mainwindow.MediathekGui;
@@ -46,7 +45,6 @@ import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.util.NoSuchElementException;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * @author christianfranzke
@@ -245,12 +243,11 @@ public class FilmInfoDialog extends JDialog {
             lblUhrzeit.setText(currentFilm.getSendeZeit());
             lblDuration.setText(currentFilm.getFilmLengthAsString());
             lblSize.setText(currentFilm.getFileSize().toString());
-            if (currentFilm.countrySet.isEmpty()) {
+            if (!currentFilm.hasCountries()) {
                 lblGeo.setText("");
             }
             else {
-                var txt = currentFilm.countrySet.stream().map(Country::toString).collect(Collectors.joining("-"));
-                lblGeo.setText(txt);
+                lblGeo.setText(currentFilm.getCountriesAsString());
             }
             cbHq.setSelected(currentFilm.isHighQuality());
             cbSubtitle.setSelected(currentFilm.hasSubtitle());

@@ -199,23 +199,13 @@ public class FilmListWriter {
         skipEntry(jg); //DatenFilm.FILM_URL_RTMP_HD
         writeDatumLong(film, jg);
         skipEntry(jg); //DatenFilm.FILM_URL_HISTORY
-        if (film.countrySet.isEmpty())
+        if (!film.hasCountries())
             jg.writeString("");
         else
-            jg.writeString(joinCountries(film));
+            jg.writeString(film.getCountriesAsString());
         jg.writeString(Boolean.toString(film.isNew()));
 
         jg.writeEndArray();
-    }
-
-    private String joinCountries(@NotNull DatenFilm film) {
-        StringBuilder sb = new StringBuilder();
-        var iterator = film.countrySet.iterator();
-        sb.append(iterator.next());
-        while (iterator.hasNext()) {
-            sb.append('-').append(iterator.next());
-        }
-        return sb.toString();
     }
 
     private void writeLowQualityUrl(@NotNull JsonGenerator jg, @NotNull DatenFilm datenFilm) {

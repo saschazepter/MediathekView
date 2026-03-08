@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.daten;
 
 import mediathek.config.Config;
@@ -54,7 +72,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     /**
      * List of countries which can view this film.
      */
-    public final EnumSet<Country> countrySet = EnumSet.noneOf(Country.class);
+    private EnumSet<Country> countrySet;
     private final EnumSet<DatenFilmFlags> flags = EnumSet.noneOf(DatenFilmFlags.class);
     /**
      * File size in MByte
@@ -95,7 +113,9 @@ public class DatenFilm implements Comparable<DatenFilm> {
         this.sender = other.sender;
         this.thema = other.thema;
         this.titel = other.titel;
-        this.countrySet.addAll(other.countrySet);
+        if (other.countrySet != null && !other.countrySet.isEmpty()) {
+            this.countrySet = EnumSet.copyOf(other.countrySet);
+        }
         this.dataMap.putAll(other.dataMap);
         this.datum = other.datum;
         this.sendeZeit = other.sendeZeit;
@@ -421,6 +441,39 @@ public class DatenFilm implements Comparable<DatenFilm> {
      */
     public boolean hasAnySubtitles() {
         return hasSubtitle() || hasBurnedInSubtitles();
+    }
+
+    public void clearCountries() {
+        countrySet = null;
+    }
+
+    public void addCountry(@NotNull Country country) {
+        if (countrySet == null) {
+            countrySet = EnumSet.noneOf(Country.class);
+        }
+        countrySet.add(country);
+    }
+
+    public boolean hasCountries() {
+        return countrySet != null && !countrySet.isEmpty();
+    }
+
+    public boolean hasCountry(@NotNull Country country) {
+        return countrySet != null && countrySet.contains(country);
+    }
+
+    public String getCountriesAsString() {
+        if (countrySet == null || countrySet.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        var iterator = countrySet.iterator();
+        sb.append(iterator.next());
+        while (iterator.hasNext()) {
+            sb.append('-').append(iterator.next());
+        }
+        return sb.toString();
     }
 
     //TODO This function might not be necessary as getUrlNormalOrRequested does almost the same

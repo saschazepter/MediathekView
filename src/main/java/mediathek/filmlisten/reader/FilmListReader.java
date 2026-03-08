@@ -142,7 +142,7 @@ public class FilmListReader implements AutoCloseable {
         var geoStr = checkedString(jp);
 
         if (geoStr.isEmpty())
-            datenFilm.countrySet.clear();
+            datenFilm.clearCountries();
         else {
             /*
             This code is more performant than String.split as we do not allocate arrays on every call.
@@ -159,7 +159,7 @@ public class FilmListReader implements AutoCloseable {
                     continue;
                 }
                 try {
-                    datenFilm.countrySet.add(Country.valueOf(geoItem));
+                    datenFilm.addCountry(Country.valueOf(geoItem));
                 }
                 catch (IllegalArgumentException ex) {
                     logger.error("Unable to parse string {} to Country enum", geoItem);
