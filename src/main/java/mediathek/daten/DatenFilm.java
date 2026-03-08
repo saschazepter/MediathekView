@@ -54,7 +54,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     /**
      * List of countries which can view this film.
      */
-    public final EnumSet<Country> countrySet = EnumSet.noneOf(Country.class);
+    private final EnumSet<Country> countrySet = EnumSet.noneOf(Country.class);
     private final EnumSet<DatenFilmFlags> flags = EnumSet.noneOf(DatenFilmFlags.class);
     /**
      * File size in MByte
@@ -421,6 +421,36 @@ public class DatenFilm implements Comparable<DatenFilm> {
      */
     public boolean hasAnySubtitles() {
         return hasSubtitle() || hasBurnedInSubtitles();
+    }
+
+    public void clearCountries() {
+        countrySet.clear();
+    }
+
+    public void addCountry(@NotNull Country country) {
+        countrySet.add(country);
+    }
+
+    public boolean hasCountries() {
+        return !countrySet.isEmpty();
+    }
+
+    public boolean hasCountry(@NotNull Country country) {
+        return countrySet.contains(country);
+    }
+
+    public String getCountriesAsString() {
+        if (countrySet.isEmpty()) {
+            return "";
+        }
+
+        StringBuilder sb = new StringBuilder();
+        var iterator = countrySet.iterator();
+        sb.append(iterator.next());
+        while (iterator.hasNext()) {
+            sb.append('-').append(iterator.next());
+        }
+        return sb.toString();
     }
 
     //TODO This function might not be necessary as getUrlNormalOrRequested does almost the same

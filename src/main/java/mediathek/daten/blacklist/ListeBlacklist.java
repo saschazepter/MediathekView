@@ -337,10 +337,10 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
 
         @Override
         public boolean test(DatenFilm film) {
-            if (film.countrySet.isEmpty())
+            if (!film.hasCountries())
                 return true;
             else {
-                return film.countrySet.contains(geoLocation);
+                return film.hasCountry(geoLocation);
             }
         }
     }
