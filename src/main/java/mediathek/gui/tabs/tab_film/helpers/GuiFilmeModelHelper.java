@@ -26,6 +26,10 @@ import mediathek.tool.FilterConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class GuiFilmeModelHelper extends GuiModelHelper {
     public GuiFilmeModelHelper(@NotNull SeenHistoryController historyController,
@@ -52,36 +56,7 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
         if (!selectedSenders.isEmpty()) {
             stream = stream.filter(f -> selectedSenders.contains(f.getSender()));
         }
-        if (filterConfiguration.isShowNewOnly()) {
-            stream = stream.filter(DatenFilm::isNew);
-        }
-        if (filterConfiguration.isShowBookMarkedOnly()) {
-            stream = stream.filter(DatenFilm::isBookmarked);
-        }
-        if (filterConfiguration.isShowLivestreamsOnly()) {
-            stream = stream.filter(DatenFilm::isLivestream);
-        }
-        if (filterConfiguration.isShowHighQualityOnly()) {
-            stream = stream.filter(DatenFilm::isHighQuality);
-        }
-        if (filterConfiguration.isDontShowTrailers()) {
-            stream = stream.filter(film -> !film.isTrailerTeaser());
-        }
-        if (filterConfiguration.isDontShowSignLanguage()) {
-            stream = stream.filter(film -> !film.isSignLanguage());
-        }
-        if (filterConfiguration.isDontShowAudioVersions()) {
-            stream = stream.filter(film -> !film.isAudioVersion());
-        }
-        if (filterConfiguration.isDontShowAbos()) {
-            stream = stream.filter(film -> film.getAbo() == null);
-        }
-        if (filterConfiguration.isDontShowDuplicates()) {
-            stream = stream.filter(film -> !film.isDuplicate());
-        }
-        if (filterConfiguration.isShowSubtitlesOnly()) {
-            stream = stream.filter(DatenFilm::hasAnySubtitles);
-        }
+        stream = applyConfiguredPredicates(stream);
 
         stream = applyCommonFilters(stream, filterConfiguration.getThema(), lengthFilterRange);
 
@@ -96,4 +71,33 @@ public class GuiFilmeModelHelper extends GuiModelHelper {
         var list = stream.toList();
         return list;
     }
+
+    private Stream<DatenFilm> applyConfiguredPredicates(Stream<DatenFilm> stream) {
+        for (var predicateSpec : createPredicateSpecs()) {
+            if (predicateSpec.enabled().getAsBoolean()) {
+                stream = stream.filter(predicateSpec.predicate());
+            }
+        }
+        return stream;
+    }
+
+    private List<PredicateSpec> createPredicateSpecs() {
+        return List.of(
+                predicateSpec(filterConfiguration::isShowNewOnly, DatenFilm::isNew),
+                predicateSpec(filterConfiguration::isShowBookMarkedOnly, DatenFilm::isBookmarked),
+                predicateSpec(filterConfiguration::isShowLivestreamsOnly, DatenFilm::isLivestream),
+                predicateSpec(filterConfiguration::isShowHighQualityOnly, DatenFilm::isHighQuality),
+                predicateSpec(filterConfiguration::isDontShowTrailers, film -> !film.isTrailerTeaser()),
+                predicateSpec(filterConfiguration::isDontShowSignLanguage, film -> !film.isSignLanguage()),
+                predicateSpec(filterConfiguration::isDontShowAudioVersions, film -> !film.isAudioVersion()),
+                predicateSpec(filterConfiguration::isDontShowAbos, film -> film.getAbo() == null),
+                predicateSpec(filterConfiguration::isDontShowDuplicates, film -> !film.isDuplicate()),
+                predicateSpec(filterConfiguration::isShowSubtitlesOnly, DatenFilm::hasAnySubtitles));
+    }
+
+    private PredicateSpec predicateSpec(@NotNull BooleanSupplier enabled, @NotNull Predicate<DatenFilm> predicate) {
+        return new PredicateSpec(enabled, predicate);
+    }
+
+    private record PredicateSpec(BooleanSupplier enabled, Predicate<DatenFilm> predicate) {}
 }
