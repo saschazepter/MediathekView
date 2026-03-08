@@ -32,10 +32,10 @@ class ApplyBlacklistFilterPredicateTest {
     }
 
     @Test
-    void mySplit() {
+    void splitTerms() {
         final String input = "a,b,c,d";
         var filter = new ApplyBlacklistFilterPredicate(new ListeBlacklist());
-        var result = filter.mySplit(input);
+        var result = filter.splitTerms(input);
         assertEquals("a", result[0]);
         assertEquals("b", result[1]);
         assertEquals("c", result[2]);

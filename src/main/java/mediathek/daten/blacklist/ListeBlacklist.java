@@ -34,10 +34,13 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 public class ListeBlacklist extends ArrayList<BlacklistRule> {
+    private static final String[] EMPTY_STRING_ARRAY = {""};
+    private static final Locale NORMALIZATION_LOCALE = Locale.ROOT;
 
     private final GeoblockingPredicate geoblockingPredicate = new GeoblockingPredicate();
     /**
@@ -278,20 +281,23 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
 
         final boolean bl_is_whitelist = Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_IST_WHITELIST));
         for (BlacklistRule rule : this) {
-            if (Filter.filterAufFilmPruefenWithLength(rule.getSender().toLowerCase(),
-                    rule.getThema().toLowerCase(),
-                    makePattern(rule.getTitel()),
-                    makePattern(rule.getThema_titel()),
+            if (Filter.filterAufFilmPruefenWithLength(normalizePlainText(rule.getSender()),
+                    normalizePlainText(rule.getThema()),
+                    createTerms(rule.getTitel()),
+                    createTerms(rule.getThema_titel()),
                     EMPTY_STRING_ARRAY, 0, true, film, true)) {
                 return bl_is_whitelist;
             }
         }
         return !bl_is_whitelist;
     }
-    final static private String[] EMPTY_STRING_ARRAY = {""};
 
-    private String[] makePattern(String input) {
-        return Filter.isPattern(input) ? new String[]{input} : input.toLowerCase().split(",");
+    private String[] createTerms(String input) {
+        return Filter.isPattern(input) ? new String[]{input} : normalizePlainText(input).split(",");
+    }
+
+    private String normalizePlainText(String input) {
+        return input.toLowerCase(NORMALIZATION_LOCALE);
     }
 
     /**

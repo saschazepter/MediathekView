@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 
 class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
     private static final String[] EMPTY_STRING = {""};
+    private static final Locale NORMALIZATION_LOCALE = Locale.ROOT;
     private final boolean isWhitelist;
     private final List<CompiledBlacklistRule> globalRules;
     private final Map<String, List<CompiledBlacklistRule>> senderRuleIndex;
@@ -24,10 +25,10 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
         final var globalEntries = new ArrayList<CompiledBlacklistRule>(listeBlacklist.size());
         final var indexedEntries = new HashMap<String, List<CompiledBlacklistRule>>(listeBlacklist.size());
         for (BlacklistRule entry : listeBlacklist) {
-            final var senderSuchen = entry.getSender().toLowerCase(Locale.getDefault());
-            final var themaSuchen = entry.getThema().toLowerCase(Locale.getDefault());
-            final var titelSuchen = createPattern(entry.hasTitlePattern(), normalizeRuleText(entry.getTitel(), entry.hasTitlePattern()));
-            final var themaTitelSuchen = createPattern(entry.hasThemaPattern(), normalizeRuleText(entry.getThema_titel(), entry.hasThemaPattern()));
+            final var senderSuchen = normalizePlainText(entry.getSender());
+            final var themaSuchen = normalizePlainText(entry.getThema());
+            final var titelSuchen = compileTerms(entry.getTitel(), entry.hasTitlePattern());
+            final var themaTitelSuchen = compileTerms(entry.getThema_titel(), entry.hasThemaPattern());
             final var compiledRule = new CompiledBlacklistRule(
                     senderSuchen,
                     themaSuchen,
@@ -50,8 +51,8 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
 
     @Override
     public boolean test(DatenFilm film) {
-        final var sender = film.getSender().toLowerCase(Locale.getDefault());
-        final var thema = film.getThema().toLowerCase(Locale.getDefault());
+        final var sender = normalizePlainText(film.getSender());
+        final var thema = normalizePlainText(film.getThema());
         final var title = film.getTitle();
 
         if (matchesAnyRule(globalRules, sender, thema, title)) {
@@ -67,27 +68,25 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
         return !isWhitelist;
     }
 
-    protected String[] mySplit(final String inputString) {
-        final String[] pTitle = inputString.split(",");
-        if (pTitle.length == 0)
+    protected String[] splitTerms(final String inputString) {
+        final String[] terms = inputString.split(",");
+        if (terms.length == 0)
             return EMPTY_STRING;
-        else
-            return pTitle;
+        return terms;
     }
 
-    private String[] createPattern(final boolean isPattern, final String inputString) {
+    private String[] createPattern(final String inputString, final boolean isPattern) {
         if (isPattern)
             return new String[]{inputString};
-        else
-            return mySplit(inputString);
+        return splitTerms(inputString);
     }
 
-    private String normalizeRuleText(final String inputString, final boolean isPattern) {
-        if (isPattern) {
-            return inputString;
-        }
+    private String[] compileTerms(final String inputString, final boolean isPattern) {
+        return createPattern(isPattern ? inputString : normalizePlainText(inputString), isPattern);
+    }
 
-        return inputString.toLowerCase(Locale.getDefault());
+    private String normalizePlainText(final String inputString) {
+        return inputString.toLowerCase(NORMALIZATION_LOCALE);
     }
 
     private boolean hasTerms(final String[] terms) {

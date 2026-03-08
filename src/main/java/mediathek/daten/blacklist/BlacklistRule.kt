@@ -27,13 +27,6 @@ data class BlacklistRule(
         return patternThema
     }
 
-    fun convertToLowerCase() {
-        sender = sender.lowercase(Locale.getDefault())
-        thema = thema.lowercase(Locale.getDefault())
-        titel = titel.lowercase(Locale.getDefault())
-        thema_titel = thema_titel.lowercase(Locale.getDefault())
-    }
-
     /**
      * Determine if we have regexp patterns somewhere and also precompile the pattern into the cache to speed up
      * operations a bit.
@@ -127,15 +120,17 @@ data class BlacklistRule(
     }
 
     override fun hashCode(): Int {
-        var result = sender.lowercase(Locale.getDefault()).hashCode()
-        result = 31 * result + thema.lowercase(Locale.getDefault()).hashCode()
-        result = 31 * result + titel.lowercase(Locale.getDefault()).hashCode()
-        result = 31 * result + thema_titel.lowercase(Locale.getDefault()).hashCode()
+        var result = normalized(sender).hashCode()
+        result = 31 * result + normalized(thema).hashCode()
+        result = 31 * result + normalized(titel).hashCode()
+        result = 31 * result + normalized(thema_titel).hashCode()
         return result
     }
 
     companion object {
         const val TAG = "Blacklist"
         private val logger = LogManager.getLogger()
+
+        private fun normalized(value: String): String = value.lowercase(Locale.ROOT)
     }
 }
