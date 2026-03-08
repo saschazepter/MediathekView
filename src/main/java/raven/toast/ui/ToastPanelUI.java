@@ -223,16 +223,16 @@ public class ToastPanelUI extends BasicPanelUI implements StyleableUI, PropertyC
 
     protected void closeButtonClicked(JComponent c) {
         Object callback = c.getClientProperty(TOAST_CLOSE_CALLBACK);
-        if (callback instanceof Runnable) {
-            ((Runnable) callback).run();
-        }
-        else if (callback instanceof Consumer<?>) {
-            invokeCloseConsumer(callback, c);
+        switch (callback) {
+            case Runnable runnable -> runnable.run();
+            case Consumer<?> consumer -> invokeCloseConsumer(consumer, c);
+            case null, default -> {
+            }
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void invokeCloseConsumer(Object callback, JComponent component) {
+    private void invokeCloseConsumer(Consumer<?> callback, JComponent component) {
         ((Consumer<JComponent>) callback).accept(component);
     }
 

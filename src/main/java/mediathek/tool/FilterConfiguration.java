@@ -283,16 +283,20 @@ public class FilterConfiguration {
         String key = toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_CHECKED_CHANNELS.getKey());
         Object value = configuration.getProperty(key);
 
-        if (value instanceof Collection<?> collection) {
-            Set<String> result = new LinkedHashSet<>();
-            collection.forEach(item -> {
-                if (item != null) {
-                    result.add(item.toString());
-                }
-            });
-            // Normalize this key back to legacy JSON string format for old-version compatibility.
-            configuration.setProperty(key, JsonStringUtils.toJsonStringArray(result));
-            return result;
+        switch (value) {
+            case Collection<?> collection -> {
+                Set<String> result = new LinkedHashSet<>();
+                collection.forEach(item -> {
+                    if (item != null) {
+                        result.add(item.toString());
+                    }
+                });
+                // Normalize this key back to legacy JSON string format for old-version compatibility.
+                configuration.setProperty(key, JsonStringUtils.toJsonStringArray(result));
+                return result;
+            }
+            case null, default -> {
+            }
         }
 
         String raw = configuration.getString(key, "");
