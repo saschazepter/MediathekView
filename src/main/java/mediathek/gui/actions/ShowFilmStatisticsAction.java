@@ -12,7 +12,7 @@ public class ShowFilmStatisticsAction extends AbstractAction {
 
     public ShowFilmStatisticsAction(@NotNull Frame owner) {
         this.owner = owner;
-        putValue(Action.NAME, "Filmlisten-Statistik anzeigen");
+        putValue(Action.NAME, "Filmlisten-Statistik anzeigen...");
     }
 
     @Override

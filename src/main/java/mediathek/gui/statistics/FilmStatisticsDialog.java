@@ -422,7 +422,7 @@ public class FilmStatisticsDialog extends JDialog {
         chartComponent.setDomainZoomable(false);
         chartComponent.setRangeZoomable(false);
         chartComponent.setMouseWheelEnabled(false);
-        chartPanel.setBorder(BorderFactory.createTitledBorder("Histogramm der Zeiträume"));
+        chartPanel.setBorder(BorderFactory.createTitledBorder("Maximale Anzahl verfügbarer Filme"));
         chartPanel.setLayout(new BorderLayout());
         chartPanel.add(chartComponent, BorderLayout.CENTER);
 
@@ -430,7 +430,9 @@ public class FilmStatisticsDialog extends JDialog {
         splitPane.setLeftComponent(senderPanel);
         splitPane.setRightComponent(chartPanel);
 
-        summaryPanel.setBorder(BorderFactory.createTitledBorder("Übersicht"));
+        summaryPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Übersicht"),
+                new EmptyBorder(5, 5, 5, 5)));
         summaryPanel.setLayout(new GridLayout(0, 2, 18, 8));
         summaryPanel.add(createSummaryRow("Gesamtzahl Filme", lblTotalFilms));
         summaryPanel.add(createSummaryRow("Anzahl unterschiedlicher Themen", lblThemaCount));
