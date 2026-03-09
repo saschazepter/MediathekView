@@ -458,6 +458,11 @@ feld:wert                 -> sucht in einem bestimmten Feld
 (a OR b) AND c            -> Gruppierte Logik
 ```
 
+## Weiterführende Links
+
+- Offizielle Lucene-Dokumentation zur Suchsyntax:
+  [https://lucene.apache.org/core/10_4_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description](https://lucene.apache.org/core/10_4_0/queryparser/org/apache/lucene/queryparser/classic/package-summary.html#package.description)
+
 ## Fazit
 
 Die Lucene-Suche im Filme-Tab ist deutlich mächtiger als die klassische Suche:
