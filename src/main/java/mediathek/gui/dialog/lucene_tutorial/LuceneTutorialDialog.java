@@ -32,9 +32,14 @@ import java.nio.charset.StandardCharsets;
 
 public final class LuceneTutorialDialog extends JDialog {
     private static final Logger logger = LogManager.getLogger();
+    private static final String FALLBACK_HTML = """
+            <html><body>
+            <p>Die Lucene-Anleitung konnte nicht geladen werden.</p>
+            </body></html>
+            """;
 
     public LuceneTutorialDialog(Window owner) {
-        super(owner, "Lucene-Suchsyntax", ModalityType.APPLICATION_MODAL);
+        super(owner, "Lucene-Suchsyntax", ModalityType.MODELESS);
         initComponents();
         loadTutorial();
         EscapeKeyHandler.installHandler(this, this::dispose);
@@ -42,30 +47,34 @@ public final class LuceneTutorialDialog extends JDialog {
 
     private void loadTutorial() {
         try {
-            try (InputStream markdownStream = getClass().getResourceAsStream(Konstanten.PFAD_LUCENE_TUTORIAL_MARKDOWN)) {
-                if (markdownStream != null) {
-                    logger.trace("Rendering Lucene tutorial from Markdown resource {}", Konstanten.PFAD_LUCENE_TUTORIAL_MARKDOWN);
-                    var markdown = new String(markdownStream.readAllBytes(), StandardCharsets.UTF_8);
-                    tutorialPane.setHtml(LuceneTutorialRenderer.renderMarkdown(markdown));
-                    return;
-                }
+            var markdown = loadMarkdownResource();
+            if (markdown != null) {
+                logger.trace("Rendering Lucene tutorial from Markdown resource {}", Konstanten.PFAD_LUCENE_TUTORIAL_MARKDOWN);
+                tutorialPane.setHtml(LuceneTutorialRenderer.renderMarkdown(markdown));
+                return;
             }
+
             logger.error("Lucene tutorial Markdown resource could not be found");
             logger.trace("Showing inline fallback because no Lucene tutorial resource could be loaded");
-            tutorialPane.setHtml("""
-                    <html><body>
-                    <p>Die Lucene-Anleitung konnte nicht geladen werden.</p>
-                    </body></html>
-                    """);
+            showFallbackHtml();
         } catch (Exception ex) {
             logger.error("Failed to load Lucene tutorial resource", ex);
             logger.trace("Showing inline fallback because loading the Lucene tutorial resource failed");
-            tutorialPane.setHtml("""
-                    <html><body>
-                    <p>Die Lucene-Anleitung konnte nicht geladen werden.</p>
-                    </body></html>
-                    """);
+            showFallbackHtml();
         }
+    }
+
+    private String loadMarkdownResource() throws Exception {
+        try (InputStream markdownStream = getClass().getResourceAsStream(Konstanten.PFAD_LUCENE_TUTORIAL_MARKDOWN)) {
+            if (markdownStream == null) {
+                return null;
+            }
+            return new String(markdownStream.readAllBytes(), StandardCharsets.UTF_8);
+        }
+    }
+
+    private void showFallbackHtml() {
+        tutorialPane.setHtml(FALLBACK_HTML);
     }
 
     private void initComponents() {

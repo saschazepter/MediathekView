@@ -19,14 +19,20 @@
 package mediathek.gui.actions;
 
 import mediathek.gui.dialog.lucene_tutorial.LuceneTutorialDialog;
-import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.SVGIconUtilities;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
-public class ShowLuceneTutorialAction extends AbstractAction {
-    public ShowLuceneTutorialAction() {
+public final class ShowLuceneTutorialAction extends AbstractAction {
+    private final Window owner;
+
+    public ShowLuceneTutorialAction(@NotNull Window owner) {
+        this.owner = owner;
         putValue(NAME, "Lucene-Suchsyntax anzeigen...");
         putValue(SHORT_DESCRIPTION, "Lucene Query Syntax Hilfe");
         putValue(SMALL_ICON, SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg"));
@@ -34,6 +40,14 @@ public class ShowLuceneTutorialAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        new LuceneTutorialDialog(MediathekGui.ui()).setVisible(true);
+        var dialog = new LuceneTutorialDialog(owner);
+        dialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                setEnabled(true);
+            }
+        });
+        setEnabled(false);
+        dialog.setVisible(true);
     }
 }

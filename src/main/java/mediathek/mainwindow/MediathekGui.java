@@ -136,6 +136,7 @@ public class MediathekGui extends JFrame {
     private final ShowBandwidthUsageAction showBandwidthUsageAction = new ShowBandwidthUsageAction(this);
     private final ShowFilmStatisticsAction showFilmStatisticsAction = new ShowFilmStatisticsAction(this);
     private final ShowDuplicateStatisticsAction showDuplicateStatisticsAction = new ShowDuplicateStatisticsAction(this);
+    private final ShowLuceneTutorialAction showLuceneTutorialAction = new ShowLuceneTutorialAction(this);
     private final LivestreamPanel tabLivestreams = new LivestreamPanel();
     private final ToggleZappLivestreamsTabAction toggleZappLivestreamsTabAction = new ToggleZappLivestreamsTabAction(tabLivestreams);
     private final LogDialog logWindow = new LogDialog(this);
@@ -794,6 +795,10 @@ public class MediathekGui extends JFrame {
         return new GuiFilme(daten, this);
     }
 
+    public Action getShowLuceneTutorialAction() {
+        return showLuceneTutorialAction;
+    }
+
     protected JPanel createTabDownloads(@NotNull Daten daten) {
         return new GuiDownloads(daten, this);
     }
@@ -1044,7 +1049,7 @@ public class MediathekGui extends JFrame {
 
     private void createHelpMenu() {
         jMenuHilfe.add(new ShowOnlineHelpAction());
-        jMenuHilfe.add(new ShowLuceneTutorialAction());
+        jMenuHilfe.add(showLuceneTutorialAction);
         jMenuHilfe.add(new ShowOnlineFaqAction(this));
         jMenuHilfe.addSeparator();
         jMenuHilfe.add(new ShowLogWindowAction());
