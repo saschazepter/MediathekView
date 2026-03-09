@@ -65,6 +65,8 @@ public class FilterConfiguration {
         FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), "Alter Filter");
         if (migrateAll(() -> migrateOldFilterConfiguration(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_ABOS.getOldKey(), newFilter, Boolean.class, this::setDontShowAbos),
 
+                () -> migrateOldFilterConfiguration(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_GEOBLOCKED.getOldKey(), newFilter, Boolean.class, this::setDontShowGeoblocked),
+
                 () -> migrateOldFilterConfiguration(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_AUDIO_VERSIONS.getOldKey(), newFilter, Boolean.class, this::setDontShowAudioVersions),
 
                 () -> migrateOldFilterConfiguration(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_SIGN_LANGUAGE.getOldKey(), newFilter, Boolean.class, this::setDontShowSignLanguage),
@@ -141,6 +143,7 @@ public class FilterConfiguration {
                 && !isShowBookMarkedOnly()
                 && !isDontShowTrailers()
                 && !isDontShowSignLanguage()
+                && !isDontShowGeoblocked()
                 && !isDontShowAudioVersions()
                 && !isDontShowDuplicates()
                 && getZeitraum().equalsIgnoreCase(ZeitraumSpinnerFormatter.INFINITE_TEXT);
@@ -238,6 +241,15 @@ public class FilterConfiguration {
 
     public FilterConfiguration setDontShowSignLanguage(boolean dontShowSignLanguage) {
         configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_SIGN_LANGUAGE.getKey()), dontShowSignLanguage);
+        return this;
+    }
+
+    public boolean isDontShowGeoblocked() {
+        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_GEOBLOCKED.getKey()), false);
+    }
+
+    public FilterConfiguration setDontShowGeoblocked(boolean dontShowGeoblocked) {
+        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_GEOBLOCKED.getKey()), dontShowGeoblocked);
         return this;
     }
 
@@ -477,6 +489,7 @@ public class FilterConfiguration {
         FILTER_PANEL_SHOW_UNSEEN_ONLY("filter.filter_%s.show.unseen_only"),
         FILTER_PANEL_SHOW_LIVESTREAMS_ONLY("filter.filter_%s.show.livestreams_only"),
         FILTER_PANEL_DONT_SHOW_ABOS("filter.filter_%s.dont_show.abos"),
+        FILTER_PANEL_DONT_SHOW_GEOBLOCKED("filter.filter_%s.dont_show.geoblocked"),
         FILTER_PANEL_DONT_SHOW_TRAILERS("filter.filter_%s.dont_show.trailers"),
         FILTER_PANEL_DONT_SHOW_SIGN_LANGUAGE("filter.filter_%s.dont_show.sign_language"),
         FILTER_PANEL_DONT_SHOW_AUDIO_VERSIONS("filter.filter_%s.dont_show.audio_versions"),

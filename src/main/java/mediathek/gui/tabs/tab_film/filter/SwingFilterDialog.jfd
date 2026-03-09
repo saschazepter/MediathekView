@@ -113,6 +113,10 @@ new FormModel {
 					name: "cbDontShowDuplicates"
 					"text": "Duplikate nicht anzeigen"
 				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "cbDontShowGeoblocked"
+					"text": "Geo-blockierte Filme nicht anzeigen"
+				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 4,growx"
 			} )

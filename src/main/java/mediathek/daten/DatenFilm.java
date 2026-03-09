@@ -462,6 +462,16 @@ public class DatenFilm implements Comparable<DatenFilm> {
         return countrySet != null && countrySet.contains(country);
     }
 
+    public boolean isGeoBlockedForLocation(@NotNull Country location) {
+        if (!hasCountries()) {
+            return false;
+        }
+        if (hasCountry(Country.EU)) {
+            return !(hasCountry(location) || Country.EU_COUNTRIES.contains(location));
+        }
+        return !hasCountry(location);
+    }
+
     public String getCountriesAsString() {
         if (countrySet == null || countrySet.isEmpty()) {
             return "";
