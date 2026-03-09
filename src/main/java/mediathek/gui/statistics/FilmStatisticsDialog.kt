@@ -89,7 +89,6 @@ class FilmStatisticsDialog(
     companion object {
         private val logger = LogManager.getLogger()
         private val INTERVAL_DAYS = intArrayOf(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 14, 16, 18, 20, 25, 30, 60, 90, 180, 365)
-        private val EU_COUNTRY_LIST: EnumSet<Country> = EnumSet.of(Country.DE, Country.AT, Country.FR)
         private const val LOADING_TEXT = "Berechne Statistik aus der ungefilterten Filmliste..."
         private const val READY_TEXT = "Statistik basiert auf der ungefilterten Filmliste ohne Livestreams."
         private const val ERROR_TEXT = "Statistik konnte nicht berechnet werden."
@@ -213,7 +212,7 @@ class FilmStatisticsDialog(
             return false
         }
         if (film.hasCountry(Country.EU)) {
-            return !(film.hasCountry(currentGeoLocation) || EU_COUNTRY_LIST.contains(currentGeoLocation))
+            return !(film.hasCountry(currentGeoLocation) || Country.EU_COUNTRIES.contains(currentGeoLocation))
         }
         return !film.hasCountry(currentGeoLocation)
     }

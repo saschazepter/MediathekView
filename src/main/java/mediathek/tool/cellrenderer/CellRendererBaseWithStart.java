@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.tool.cellrenderer;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
@@ -20,7 +38,6 @@ import javax.swing.event.TableColumnModelEvent;
 import javax.swing.event.TableColumnModelListener;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -29,7 +46,6 @@ import java.util.List;
 public class CellRendererBaseWithStart extends CellRendererBase {
     public static final String ICON_POSITION_RIGHT = "ui.list.iconposition_right";
     private static final String INDICATOR_VISIBILITY_CACHE_KEY = "mv.renderer.indicatorVisibilityCache";
-    private static final EnumSet<Country> euCountryList = EnumSet.of(Country.DE, Country.AT, Country.FR);
     protected final Configuration config = ApplicationConfiguration.getConfiguration();
     protected final FontIcon lockedIcon;
     protected final FontIcon lockedIconSelected;
@@ -113,7 +129,7 @@ public class CellRendererBaseWithStart extends CellRendererBase {
         var curLocation = ApplicationConfiguration.getInstance().getGeographicLocation();
         //EU consists of many states therefore we have to extend the country test...
         if (film.hasCountry(Country.EU)) {
-            return film.hasCountry(curLocation) || euCountryList.contains(curLocation);
+            return film.hasCountry(curLocation) || Country.EU_COUNTRIES.contains(curLocation);
         }
         else {
             return film.hasCountry(curLocation);
