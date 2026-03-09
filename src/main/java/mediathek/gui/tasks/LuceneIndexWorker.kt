@@ -54,18 +54,6 @@ import javax.swing.SwingWorker
 class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: JProgressBar) :
     SwingWorker<Void?, Void?>() {
 
-    init {
-        SwingUtilities.invokeLater {
-            val ui = MediathekGui.ui()
-            ui.toggleBlacklistAction.setEnabled(false)
-            ui.editBlacklistAction.setEnabled(false)
-            ui.loadFilmListAction.setEnabled(false)
-
-            progLabel.setText("Blacklist anwenden")
-            progressBar.setIndeterminate(true)
-        }
-    }
-
     @Throws(IOException::class)
     private fun createIndexDocument(film: DatenFilm): Document {
         val doc = Document()
@@ -172,7 +160,12 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
     override fun doInBackground(): Void? {
         try {
             SwingUtilities.invokeLater {
-                progLabel.setText("Indiziere Filme")
+                val ui = MediathekGui.ui()
+                ui.toggleBlacklistAction.isEnabled = false
+                ui.editBlacklistAction.isEnabled = false
+                ui.loadFilmListAction.isEnabled = false
+
+                progLabel.text = "Indiziere Filme"
                 progressBar.isIndeterminate = false
                 progressBar.minimum = 0
                 progressBar.maximum = 100
@@ -232,10 +225,9 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
                     }
                 }
                 SwingUtilities.invokeLater { progressBar.value = 100 }
-
                 SwingUtilities.invokeLater {
+                    progLabel.text = "Schreibe Index"
                     progressBar.isIndeterminate = true
-                    progLabel.setText("Schreibe Index")
                 }
                 writer.commit()
                 watch.stop()
