@@ -30,13 +30,9 @@ import mediathek.daten.*;
 import mediathek.daten.abo.DatenAbo;
 import mediathek.daten.blacklist.BlacklistRule;
 import mediathek.filmlisten.writer.FilmListWriter;
-import mediathek.gui.actions.DeleteBookmarksAction;
-import mediathek.gui.actions.ManageBookmarkAction;
-import mediathek.gui.actions.PlayFilmAction;
-import mediathek.gui.actions.UrlHyperlinkAction;
+import mediathek.gui.actions.*;
 import mediathek.gui.bookmark.BookmarkDialog;
 import mediathek.gui.dialog.DialogAboNoSet;
-import mediathek.gui.dialog.LuceneTutorialDialog;
 import mediathek.gui.dialog.add_download.DialogAddDownloadWithCoroutines;
 import mediathek.gui.dialog.add_download.DialogAddMoreDownload;
 import mediathek.gui.duplicates.details.DuplicateFilmDetailsDialog;
@@ -962,10 +958,8 @@ public class GuiFilme extends AGuiTabPanel {
             JToolBar searchToolbar = new JToolBar();
             searchToolbar.addSeparator();
 
-            var luceneBtn = new JButton();
-            luceneBtn.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg"));
-            luceneBtn.setToolTipText("Lucene Query Syntax Hilfe");
-            luceneBtn.addActionListener(_ -> new LuceneTutorialDialog(MediathekGui.ui()).setVisible(true));
+            var luceneBtn = new JButton(new ShowLuceneTutorialAction());
+            luceneBtn.setText(null);
             searchToolbar.add(luceneBtn);
             putClientProperty(FlatClientProperties.TEXT_FIELD_TRAILING_COMPONENT, searchToolbar);
         }

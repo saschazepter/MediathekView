@@ -1044,6 +1044,7 @@ public class MediathekGui extends JFrame {
 
     private void createHelpMenu() {
         jMenuHilfe.add(new ShowOnlineHelpAction());
+        jMenuHilfe.add(new ShowLuceneTutorialAction());
         jMenuHilfe.add(new ShowOnlineFaqAction(this));
         jMenuHilfe.addSeparator();
         jMenuHilfe.add(new ShowLogWindowAction());
