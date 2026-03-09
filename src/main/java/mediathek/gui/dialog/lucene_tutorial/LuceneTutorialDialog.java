@@ -26,7 +26,6 @@ import org.apache.logging.log4j.Logger;
 import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import java.awt.*;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
@@ -52,15 +51,7 @@ public final class LuceneTutorialDialog extends JDialog {
                     return;
                 }
             }
-
-            logger.error("Lucene tutorial Markdown resource could not be found");
-            logger.trace("Showing inline fallback because no Lucene tutorial resource could be loaded");
-            tutorialPane.setText("""
-                    <html><body>
-                    <p>Die Lucene-Anleitung konnte nicht geladen werden.</p>
-                    </body></html>
-                    """);
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             logger.error("Failed to load Lucene tutorial resource", ex);
             logger.trace("Showing inline fallback because loading the Lucene tutorial resource failed");
             tutorialPane.setText("""

@@ -39,7 +39,7 @@ public final class LuceneTutorialRenderer {
                 <meta charset="UTF-8">
                 <style>
                 body {
-                  font-family: SansSerif;
+                  font-family: Arial, Helvetica, sans-serif;
                   font-size: 12pt;
                   margin: 14px;
                   line-height: 1.4;
