@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 derreisende77.
+ * Copyright (c) 2025-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -227,8 +227,10 @@ public class Main {
     }
 
     private static void printVersionInformation() {
+        var buildInfo = BuildInfo.current();
         logger.info("Programmstart: {}", DateTimeFormatter.ISO_LOCAL_DATE_TIME.format(RuntimeStatistics.startZeit));
         logger.info("Version: {}", Konstanten.MVVERSION);
+        logger.info("Build Git: {}", buildInfo.formatForDisplay());
 
         logger.info("=== Java Information ===");
 
