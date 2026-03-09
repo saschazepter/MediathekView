@@ -37,43 +37,6 @@ public final class LuceneTutorialRenderer {
                 <html>
                 <head>
                 <meta charset="UTF-8">
-                <style>
-                body {
-                  font-family: Arial, Helvetica, sans-serif;
-                  font-size: 12pt;
-                  margin: 14px;
-                  line-height: 1.4;
-                }
-                h1, h2, h3 {
-                  margin-top: 18px;
-                  margin-bottom: 8px;
-                }
-                p, ul, ol, table, pre {
-                  margin-top: 8px;
-                  margin-bottom: 8px;
-                }
-                table {
-                  border-collapse: collapse;
-                }
-                th, td {
-                  border: 1px solid #b8b8b8;
-                  padding: 6px 8px;
-                  text-align: left;
-                  vertical-align: top;
-                }
-                code, pre {
-                  font-family: Monospaced;
-                }
-                pre {
-                  background: #f5f5f5;
-                  border: 1px solid #d8d8d8;
-                  padding: 8px;
-                }
-                a {
-                  color: #0b57d0;
-                  text-decoration: underline;
-                }
-                </style>
                 </head>
                 <body>
                 %s

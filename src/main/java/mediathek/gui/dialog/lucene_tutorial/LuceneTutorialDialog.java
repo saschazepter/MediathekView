@@ -46,15 +46,21 @@ public final class LuceneTutorialDialog extends JDialog {
                 if (markdownStream != null) {
                     logger.trace("Rendering Lucene tutorial from Markdown resource {}", Konstanten.PFAD_LUCENE_TUTORIAL_MARKDOWN);
                     var markdown = new String(markdownStream.readAllBytes(), StandardCharsets.UTF_8);
-                    tutorialPane.setText(LuceneTutorialRenderer.renderMarkdown(markdown));
-                    tutorialPane.setCaretPosition(0);
+                    tutorialPane.setHtml(LuceneTutorialRenderer.renderMarkdown(markdown));
                     return;
                 }
             }
+            logger.error("Lucene tutorial Markdown resource could not be found");
+            logger.trace("Showing inline fallback because no Lucene tutorial resource could be loaded");
+            tutorialPane.setHtml("""
+                    <html><body>
+                    <p>Die Lucene-Anleitung konnte nicht geladen werden.</p>
+                    </body></html>
+                    """);
         } catch (Exception ex) {
             logger.error("Failed to load Lucene tutorial resource", ex);
             logger.trace("Showing inline fallback because loading the Lucene tutorial resource failed");
-            tutorialPane.setText("""
+            tutorialPane.setHtml("""
                     <html><body>
                     <p>Die Lucene-Anleitung konnte nicht geladen werden.</p>
                     </body></html>
@@ -64,15 +70,12 @@ public final class LuceneTutorialDialog extends JDialog {
 
     private void initComponents() {
         var scrollPane = new JScrollPane();
-        tutorialPane = new JEditorPane();
+        tutorialPane = new FlexmarkHtmlPane();
         var closeButton = new JButton("Schließen");
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setMinimumSize(new Dimension(840, 700));
 
-        tutorialPane.setEditable(false);
-        tutorialPane.setContentType("text/html");
-        tutorialPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         tutorialPane.addHyperlinkListener(e -> {
             if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED || e.getURL() == null) {
                 return;
@@ -104,5 +107,5 @@ public final class LuceneTutorialDialog extends JDialog {
         setLocationRelativeTo(getOwner());
     }
 
-    private JEditorPane tutorialPane;
+    private FlexmarkHtmlPane tutorialPane;
 }
