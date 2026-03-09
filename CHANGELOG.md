@@ -11,6 +11,7 @@
 - **BUGFIX:** Bestimmte HTTP/2-Downloadfehler werden nun abgefangen und Neustarts initiiert.
 - **BUGFIX:** Wikipedia-Sendericons werden nicht mehr über das Netzwerk geladen da sich die Adressen regelmäßig ändern.
 - **BUGFIX:** Bei Wikipedia-Icons wird nun der transparente Außenbereich soweit wie möglich entfernt damit sie größer dargestellt werden.
+- **BUGFIX(macOS):** Ein gestarteter IINA-Player behindert nicht mehr das Beenden von MediathekView.
 - **FEATURE:** Unterstützung für WebVTT-Untertitel bei Sendern.
 - **FEATURE:** Via *Hilfe/Live Programm-Log anzeigen* kann nun die Log-Datei in Echtzeit eingesehen werden.
 - **FEATURE:** Lucene Directory-Provider kann via *Einstellungen/Lucene-Tuning* konfiguriert werden. Je nach OS kann dies die Performance verbessern.
@@ -19,6 +20,8 @@
 - **FEATURE:** Bandbreitendialog skaliert nun bis GBit/s und ist darkmode-aware. Zusätzlich wird nun eine durchschnittliche Bandbreite dargestellt.
 - **FEATURE:** Neue Filteroption *"Geo-blockierte Filme nicht anzeigen"* im Filterdialog.
 - **FEATURE:** Neue integrierte Lucene-Hilfsdokumentation, die über den *?*-Button bzw. *Hilfe/Lucene-Suchsyntax anzeigen..* aufgerufen werden kann. Der Menüeintrag ist auch bei deaktivierter Lucene-Suche aufrufbar
+- **FEATURE(macOS):** Verbesserte Steuerung des IINA Players. Hierzu werden seitens macOS Berechtigungen zur Fernsteuerung benötigt.
+- **FEATURE:** zapp Livestream-Einträge haben nun auch ein Kontextmenü um das Abspielen der Einträge zu ermöglichen. Die Livestreams können weiterhin per Doppelklick gestartet werden.
 - Große Datenbank-Maintenance der Filmhistorie wird nur noch alle 30 Tage ausgeführt, nicht bei jedem Beenden. Kann manuell über das Hilfe-Menü gestartet werden.
 - Untertitel-Format-Support wurde vollständig neu implementiert und unterstützt nun auch TTML2-Standard.
 - Lucene-Index-Erstellung wurde für multi-core-Systeme optimiert.

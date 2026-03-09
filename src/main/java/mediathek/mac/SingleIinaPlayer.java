@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 derreisende77.
+ * Copyright (c) 2025-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,24 +18,78 @@
 
 package mediathek.mac;
 
+import mediathek.config.Konstanten;
+import mediathek.mainwindow.MediathekGui;
+import mediathek.tool.MVMessageDialog;
+
+import javax.swing.*;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class SingleIinaPlayer {
-    private Process current;
+    private static final AtomicBoolean ACCESSIBILITY_WARNING_SHOWN = new AtomicBoolean(false);
 
     public synchronized void play(String url) throws IOException {
-        if (current != null && current.isAlive()) {
-            current.destroy();
+        var escapedUrl = escapeAppleScriptString(url);
+        var hasAccessibilityPermission = MacAccessibilityPermission.isTrusted();
+        var script = hasAccessibilityPermission
+                ? "tell application id \"com.colliderli.iina\" to activate\n" +
+                "delay 0.1\n" +
+                "tell application \"System Events\"\n" +
+                "tell process \"IINA\"\n" +
+                "try\n" +
+                "keystroke \"w\" using command down\n" +
+                "end try\n" +
+                "end tell\n" +
+                "end tell\n" +
+                "delay 0.1\n" +
+                "tell application id \"com.colliderli.iina\" to open location \"" + escapedUrl + "\""
+                : "tell application id \"com.colliderli.iina\" to open location \"" + escapedUrl + "\"";
+
+        if (!hasAccessibilityPermission) {
+            maybeShowAccessibilityWarning();
         }
-        MacMultimediaPlayerLocator.findIinaPlayer().ifPresent(path -> {
-            ProcessBuilder pb = new ProcessBuilder(path.toAbsolutePath().toString(), url);
-            pb.inheritIO();
-            try {
-                current = pb.start();
+
+        try {
+            new ProcessBuilder("/usr/bin/osascript", "-e", script).start();
+        }
+        catch (IOException ex) {
+            MacMultimediaPlayerLocator.findIinaPlayer().ifPresent(path -> {
+                var appBundlePath = path.getParent().getParent().getParent().toAbsolutePath().toString();
+                var pb = new ProcessBuilder("open", "-a", appBundlePath, url);
+                try {
+                    pb.start();
+                }
+                catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            if (MacMultimediaPlayerLocator.findIinaPlayer().isEmpty()) {
+                throw ex;
             }
-            catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        }
+    }
+
+    private static String escapeAppleScriptString(String value) {
+        return value.replace("\\", "\\\\").replace("\"", "\\\"");
+    }
+
+    private static void maybeShowAccessibilityWarning() {
+        if (!ACCESSIBILITY_WARNING_SHOWN.compareAndSet(false, true)) {
+            return;
+        }
+
+        MVMessageDialog.showMessageDialog(
+                MediathekGui.ui(),
+                """
+                        MediathekView hat keine macOS-Bedienungshilfen-Berechtigung.
+                        Der Livestream kann trotzdem in IINA geoeffnet werden, aber das vorherige Fenster kann nicht automatisch geschlossen werden.
+
+                        Aktivieren Sie MediathekView unter:
+                        Systemeinstellungen -> Datenschutz und Sicherheit -> Bedienungshilfen
+                        """,
+                Konstanten.PROGRAMMNAME,
+                JOptionPane.INFORMATION_MESSAGE
+        );
     }
 }

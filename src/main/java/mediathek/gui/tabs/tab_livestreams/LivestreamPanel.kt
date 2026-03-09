@@ -95,35 +95,17 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
         list.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                if (e.clickCount == 2) {
-                    val selected = list.selectedValue ?: return
-                    if (!SystemUtils.IS_OS_MAC_OSX) {
-                        try {
-                            //windows, linux
-                            val vlcPath = GuiFunktionenProgramme.findExecutableOnPath("vlc")
-                            val pb = ProcessBuilder(vlcPath.toAbsolutePath().toString(), selected.streamUrl)
-                            pb.start()
-                        }
-                        catch (_: IllegalStateException) {
-                            JOptionPane.showMessageDialog(MediathekGui.ui(),
-                                "<html>Es konnte kein VLC auf dem System gefunden werden.<br/>" +
-                                        "Es wird versucht, den Stream über den Browser zu öffnen.</html>")
-                            UrlHyperlinkAction.openURL(selected.streamUrl)
-                        }
-                    }
-                    else {
-                        MacMultimediaPlayerLocator.findIinaPlayer().ifPresentOrElse({
-                            iinaPlayer.play(selected.streamUrl)
-                        }, {
-                            MacMultimediaPlayerLocator.findVlcPlayer().ifPresentOrElse({
-                                ProcessBuilder("open", "-a", "VLC", selected.streamUrl).start()
-                            },{
-                                // macOS can safely open it via java
-                                Desktop.getDesktop().browse(URI(selected.streamUrl))
-                            })
-                        })
-                    }
+                if (SwingUtilities.isLeftMouseButton(e) && e.clickCount == 2) {
+                    playSelectedStream()
                 }
+            }
+
+            override fun mousePressed(e: MouseEvent) {
+                showPopupMenu(e)
+            }
+
+            override fun mouseReleased(e: MouseEvent) {
+                showPopupMenu(e)
             }
         })
         list.addComponentListener(object : ComponentAdapter() {
@@ -165,6 +147,62 @@ class LivestreamPanel : JPanel(BorderLayout()), CoroutineScope by MainScope() {
             }
         })
 
+    }
+
+    private fun showPopupMenu(e: MouseEvent) {
+        if (!e.isPopupTrigger) {
+            return
+        }
+
+        val index = list.locationToIndex(e.point)
+        if (index < 0) {
+            return
+        }
+
+        val bounds = list.getCellBounds(index, index)
+        if (bounds == null || !bounds.contains(e.point)) {
+            return
+        }
+
+        list.selectedIndex = index
+
+        JPopupMenu().apply {
+            add(JMenuItem("Abspielen").apply {
+                addActionListener {
+                    playSelectedStream()
+                }
+            })
+            show(e.component, e.x, e.y)
+        }
+    }
+
+    private fun playSelectedStream() {
+        val selected = list.selectedValue ?: return
+        if (!SystemUtils.IS_OS_MAC_OSX) {
+            try {
+                // windows, linux
+                val vlcPath = GuiFunktionenProgramme.findExecutableOnPath("vlc")
+                ProcessBuilder(vlcPath.toAbsolutePath().toString(), selected.streamUrl).start()
+            }
+            catch (_: IllegalStateException) {
+                JOptionPane.showMessageDialog(MediathekGui.ui(),
+                    "<html>Es konnte kein VLC auf dem System gefunden werden.<br/>" +
+                            "Es wird versucht, den Stream über den Browser zu öffnen.</html>")
+                UrlHyperlinkAction.openURL(selected.streamUrl)
+            }
+        }
+        else {
+            MacMultimediaPlayerLocator.findIinaPlayer().ifPresentOrElse({
+                iinaPlayer.play(selected.streamUrl)
+            }, {
+                MacMultimediaPlayerLocator.findVlcPlayer().ifPresentOrElse({
+                    ProcessBuilder("open", "-a", "VLC", selected.streamUrl).start()
+                },{
+                    // macOS can safely open it via java
+                    Desktop.getDesktop().browse(URI(selected.streamUrl))
+                })
+            })
+        }
     }
 
     private fun loadLivestreams() {
