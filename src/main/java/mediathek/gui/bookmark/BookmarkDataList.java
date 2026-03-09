@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 derreisende77.
+ * Copyright (c) 2025-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -32,8 +32,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Stores a full list of bookmarked movies.
@@ -221,12 +220,25 @@ public class BookmarkDataList {
             return;
 
         ListeFilme listefilme = Daten.getInstance().getListeFilme();
+        List<DatenFilm> filmSnapshot;
+        synchronized (listefilme) {
+            filmSnapshot = new ArrayList<>(listefilme);
+        }
+        var filmsByHash = createFilmHashIndex(filmSnapshot);
+        var filmsByUrl = createFilmUrlIndex(filmSnapshot);
+        List<BookmarkData> bookmarkSnapshot;
+        bookmarks.getReadWriteLock().readLock().lock();
+        try {
+            bookmarkSnapshot = new ArrayList<>(bookmarks);
+        }
+        finally {
+            bookmarks.getReadWriteLock().readLock().unlock();
+        }
 
-        for (var bookmark : bookmarks) {
+        for (var bookmark : bookmarkSnapshot) {
             var hashCodeStr = bookmark.getFilmHashCode();
             if (hashCodeStr != null) {
-                var film = listefilme.parallelStream()
-                        .filter(df -> df.getSha256().equals(hashCodeStr)).findFirst().orElse(null);
+                var film = filmsByHash.get(hashCodeStr);
                 assignData(bookmark, film);
             }
             else {
@@ -235,7 +247,7 @@ public class BookmarkDataList {
                     logger.warn("Stored bookmark is invalid, url is null");
                 }
                 else {
-                    var film = listefilme.getFilmByUrl(bookmark.getUrl());
+                    var film = filmsByUrl.get(url.toLowerCase(Locale.ROOT));
                     assignData(bookmark, film);
                     // if we didn't have hashCode, update to new format now if possible...
                     if (film != null) {
@@ -251,5 +263,21 @@ public class BookmarkDataList {
         if (film != null) {
             film.setBookmark(bookmark);   // Link backwards
         }
+    }
+
+    private Map<String, DatenFilm> createFilmHashIndex(List<DatenFilm> films) {
+        Map<String, DatenFilm> filmsByHash = new HashMap<>(films.size());
+        for (var film : films) {
+            filmsByHash.putIfAbsent(film.getSha256(), film);
+        }
+        return filmsByHash;
+    }
+
+    private Map<String, DatenFilm> createFilmUrlIndex(List<DatenFilm> films) {
+        Map<String, DatenFilm> filmsByUrl = new HashMap<>(films.size());
+        for (var film : films) {
+            filmsByUrl.putIfAbsent(film.getUrlNormalQuality().toLowerCase(Locale.ROOT), film);
+        }
+        return filmsByUrl;
     }
 }
