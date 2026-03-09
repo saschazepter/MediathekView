@@ -1,0 +1,118 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package mediathek.gui.dialog;
+
+import mediathek.config.Konstanten;
+import mediathek.gui.actions.UrlHyperlinkAction;
+import mediathek.tool.EscapeKeyHandler;
+import mediathek.tool.LuceneTutorialRenderer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
+import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
+
+public final class LuceneTutorialDialog extends JDialog {
+    private static final Logger logger = LogManager.getLogger();
+
+    public LuceneTutorialDialog(Window owner) {
+        super(owner, "Lucene-Suchsyntax", ModalityType.APPLICATION_MODAL);
+        initComponents();
+        loadTutorial();
+        EscapeKeyHandler.installHandler(this, this::dispose);
+    }
+
+    private void loadTutorial() {
+        try {
+            try (InputStream markdownStream = getClass().getResourceAsStream(Konstanten.PFAD_LUCENE_TUTORIAL_MARKDOWN)) {
+                if (markdownStream != null) {
+                    logger.trace("Rendering Lucene tutorial from Markdown resource {}", Konstanten.PFAD_LUCENE_TUTORIAL_MARKDOWN);
+                    var markdown = new String(markdownStream.readAllBytes(), StandardCharsets.UTF_8);
+                    tutorialPane.setText(LuceneTutorialRenderer.renderMarkdown(markdown));
+                    tutorialPane.setCaretPosition(0);
+                    return;
+                }
+            }
+
+            logger.error("Lucene tutorial Markdown resource could not be found");
+            logger.trace("Showing inline fallback because no Lucene tutorial resource could be loaded");
+            tutorialPane.setText("""
+                    <html><body>
+                    <p>Die Lucene-Anleitung konnte nicht geladen werden.</p>
+                    </body></html>
+                    """);
+        } catch (IOException ex) {
+            logger.error("Failed to load Lucene tutorial resource", ex);
+            logger.trace("Showing inline fallback because loading the Lucene tutorial resource failed");
+            tutorialPane.setText("""
+                    <html><body>
+                    <p>Die Lucene-Anleitung konnte nicht geladen werden.</p>
+                    </body></html>
+                    """);
+        }
+    }
+
+    private void initComponents() {
+        var scrollPane = new JScrollPane();
+        tutorialPane = new JEditorPane();
+        var closeButton = new JButton("Schließen");
+
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setMinimumSize(new Dimension(840, 700));
+
+        tutorialPane.setEditable(false);
+        tutorialPane.setContentType("text/html");
+        tutorialPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        tutorialPane.addHyperlinkListener(e -> {
+            if (e.getEventType() != HyperlinkEvent.EventType.ACTIVATED || e.getURL() == null) {
+                return;
+            }
+
+            var protocol = e.getURL().getProtocol();
+            if ("http".equalsIgnoreCase(protocol) || "https".equalsIgnoreCase(protocol)) {
+                try {
+                    UrlHyperlinkAction.openURI(e.getURL().toURI());
+                } catch (URISyntaxException ex) {
+                    logger.error("Failed to open tutorial link {}", e.getURL(), ex);
+                }
+            }
+        });
+        scrollPane.setViewportView(tutorialPane);
+
+        closeButton.addActionListener(_ -> dispose());
+        getRootPane().setDefaultButton(closeButton);
+
+        var contentPane = getContentPane();
+        contentPane.setLayout(new BorderLayout(8, 8));
+        contentPane.add(scrollPane, BorderLayout.CENTER);
+
+        var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.add(closeButton);
+        contentPane.add(buttonPanel, BorderLayout.SOUTH);
+
+        pack();
+        setLocationRelativeTo(getOwner());
+    }
+
+    private JEditorPane tutorialPane;
+}

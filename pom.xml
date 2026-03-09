@@ -112,6 +112,7 @@
         <jsoup.version>1.22.1</jsoup.version>
         <junit.jupiter.version>6.0.3</junit.jupiter.version>
         <lucene.version>10.4.0</lucene.version>
+        <flexmark.version>0.64.8</flexmark.version>
         <lgooddatepicker.version>11.2.1</lgooddatepicker.version>
         <log4j2.version>2.25.3</log4j2.version>
         <maven-assembly-plugin.version>3.6.0</maven-assembly-plugin.version>
@@ -223,6 +224,16 @@
             <groupId>org.apache.lucene</groupId>
             <artifactId>lucene-queries</artifactId>
             <version>${lucene.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark</artifactId>
+            <version>${flexmark.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-ext-tables</artifactId>
+            <version>${flexmark.version}</version>
         </dependency>
 
         <dependency>
