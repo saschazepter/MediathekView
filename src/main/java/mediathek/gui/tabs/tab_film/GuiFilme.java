@@ -961,10 +961,8 @@ public class GuiFilme extends AGuiTabPanel {
             JToolBar searchToolbar = new JToolBar();
             searchToolbar.addSeparator();
 
-            var luceneBtn = new JButton();
-            luceneBtn.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg"));
-            luceneBtn.setToolTipText("Lucene Query Syntax Hilfe");
-            luceneBtn.addActionListener(_ -> UrlHyperlinkAction.openURI(Konstanten.LUCENE_CLIENT_HELP_URL.uri()));
+            var luceneBtn = new JButton(mediathekGui.getShowLuceneTutorialAction());
+            luceneBtn.setText(null);
             searchToolbar.add(luceneBtn);
             putClientProperty(FlatClientProperties.TEXT_FIELD_TRAILING_COMPONENT, searchToolbar);
         }
