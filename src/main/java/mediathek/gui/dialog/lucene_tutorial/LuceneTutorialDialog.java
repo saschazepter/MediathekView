@@ -80,9 +80,9 @@ public final class LuceneTutorialDialog extends JDialog {
     private void initComponents() {
         var scrollPane = new JScrollPane();
         tutorialPane = new FlexmarkHtmlPane();
-        var closeButton = new JButton("Schließen");
 
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+        setType(Type.UTILITY);
         setMinimumSize(new Dimension(840, 700));
 
         tutorialPane.addHyperlinkListener(e -> {
@@ -101,16 +101,9 @@ public final class LuceneTutorialDialog extends JDialog {
         });
         scrollPane.setViewportView(tutorialPane);
 
-        closeButton.addActionListener(_ -> dispose());
-        getRootPane().setDefaultButton(closeButton);
-
         var contentPane = getContentPane();
         contentPane.setLayout(new BorderLayout(8, 8));
         contentPane.add(scrollPane, BorderLayout.CENTER);
-
-        var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.add(closeButton);
-        contentPane.add(buttonPanel, BorderLayout.SOUTH);
 
         pack();
         setLocationRelativeTo(getOwner());
