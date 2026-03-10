@@ -6,6 +6,7 @@ import mediathek.swingaudiothek.model.AudioDataset
 import mediathek.tool.http.MVHttpClient
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.apache.logging.log4j.LogManager
 import org.tukaani.xz.XZInputStream
 import java.io.ByteArrayInputStream
 import java.io.InputStream
@@ -16,6 +17,8 @@ class AudioRepository(
     private val parser: AudioParser = AudioParser(),
     private val cache: AudioDownloadCache = AudioDownloadCache()
 ) {
+    private val logger = LogManager.getLogger(AudioRepository::class.java)
+
     suspend fun loadAudiothek(): AudioDataset = withContext(Dispatchers.IO) {
         val sourceUrl = resolver.resolveSourceUrl()
         val cachedMetadata = cache.readMetadata()
@@ -32,11 +35,17 @@ class AudioRepository(
                     if (!cache.hasCachedAudio()) {
                         error("Audiothek cache miss after HTTP 304 for $sourceUrl")
                     }
+                    logger.info("Audiothek unchanged, no new audio file downloaded for {}", sourceUrl)
                     return@withContext loadCachedDataset(sourceUrl)
                 }
 
                 !in 200..299 -> {
                     if (cache.hasCachedAudio()) {
+                        logger.warn(
+                            "Audiothek download skipped after HTTP {} for {}, using cached audio file",
+                            response.code,
+                            sourceUrl
+                        )
                         return@withContext loadCachedDataset(sourceUrl)
                     }
                 }
