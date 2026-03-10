@@ -24,6 +24,7 @@ import mediathek.config.Konstanten
 import mediathek.gui.actions.UrlHyperlinkAction
 import mediathek.mac.MacMultimediaPlayerLocator
 import mediathek.mac.SingleIinaPlayer
+import mediathek.swing.OverlayPanel
 import mediathek.swingaudiothek.data.AudioDownloadStatus
 import mediathek.swingaudiothek.data.AudioLoadResult
 import mediathek.swingaudiothek.data.AudioRepository
@@ -32,14 +33,13 @@ import mediathek.tool.GuiFunktionenProgramme
 import org.apache.commons.lang3.SystemUtils
 import java.awt.BorderLayout
 import java.awt.Desktop
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import javax.swing.JOptionPane
-import javax.swing.JPanel
-import javax.swing.JScrollPane
-import javax.swing.JSplitPane
+import javax.swing.*
 
 class AudiothekPanel(
     private val repository: AudioRepository
@@ -57,39 +57,32 @@ class AudiothekPanel(
     private val detailsPanel = AudiothekDetailsPanel()
     private val toolBar = AudiothekToolBar()
     private val tableScrollPane = JScrollPane(table)
-    private val tableMessagePanel = AudiothekTableMessagePanel()
+    private val errorOverlay = OverlayPanel("Audiothek konnte nicht geladen werden")
+    private val tableContainer = JLayeredPane().apply {
+        layout = OverlayLayout(this)
+        add(errorOverlay)
+        add(tableScrollPane)
+    }
 
     private var datasetTimestamp: LocalDateTime? = null
     private var manualReloadRunning = false
     private val iinaPlayer = SingleIinaPlayer()
 
     init {
-        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, detailsPanel)
+        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, tableContainer, detailsPanel)
         splitPane.resizeWeight = 0.72
 
         add(toolBar, BorderLayout.NORTH)
         add(splitPane, BorderLayout.CENTER)
         add(statusPanel, BorderLayout.SOUTH)
 
+        errorOverlay.isVisible = false
         setupListeners()
         triggerLoad(isManualReload = false)
     }
 
     fun disposePanel() {
         uiScope.coroutineContext[Job]?.cancel()
-    }
-
-    private fun showTable() {
-        if (tableScrollPane.viewport.view !== table) {
-            tableScrollPane.setViewportView(table)
-        }
-    }
-
-    private fun showTableMessage(message: String) {
-        tableMessagePanel.setMessage(message)
-        if (tableScrollPane.viewport.view !== tableMessagePanel) {
-            tableScrollPane.setViewportView(tableMessagePanel)
-        }
     }
 
     private fun setupListeners() {
@@ -100,15 +93,18 @@ class AudiothekPanel(
             }
         }
         toolBar.addFilterSubmitListener(::applyFilterNow)
+        table.addComponentListener(object : ComponentAdapter() {
+            override fun componentResized(event: ComponentEvent?) {
+                errorOverlay.setSize(table.width, table.height)
+            }
+        })
     }
 
     private fun triggerLoad(isManualReload: Boolean) {
         loadJob?.cancel()
         loadJob = uiScope.launch {
             setLoadingState(true)
-            if (shouldShowLoadingMessage(isManualReload)) {
-                showTableMessage("Audiothek wird geladen ...")
-            }
+            hideErrorOverlay()
             if (isManualReload) {
                 manualReloadRunning = true
                 statusPanel.setReloadEnabled(false)
@@ -117,7 +113,7 @@ class AudiothekPanel(
             try {
                 runCatching { repository.loadAudiothek() }
                     .onSuccess { handleLoadSuccess(it, isManualReload) }
-                    .onFailure(::handleLoadFailure)
+                    .onFailure { handleLoadFailure(it, isManualReload) }
             } finally {
                 if (isManualReload) {
                     manualReloadRunning = false
@@ -130,14 +126,14 @@ class AudiothekPanel(
 
     private fun handleLoadSuccess(result: AudioLoadResult, isManualReload: Boolean) {
         if (shouldSkipTableRefresh(result, isManualReload)) {
-            showTable()
+            hideErrorOverlay()
             showReloadMessage(result.downloadStatus)
             return
         }
 
+        hideErrorOverlay()
         datasetTimestamp = result.dataset.metaLocal
         table.setRows(result.dataset.entries)
-        showTable()
         applyFilterNow(toolBar.currentQuery())
         statusPanel.setStand("Stand: ${result.dataset.metaLocal?.format(DATASET_TIMESTAMP_FORMAT) ?: "-"}")
         startAgeTicker()
@@ -157,18 +153,31 @@ class AudiothekPanel(
         return datasetTimestamp != null
     }
 
-    private fun shouldShowLoadingMessage(isManualReload: Boolean): Boolean {
-        if (!isManualReload) {
-            return true
+    private fun handleLoadFailure(error: Throwable, isManualReload: Boolean) {
+        if (isManualReload && table.rowCount > 0) {
+            val errorMessage = error.message?.takeIf(String::isNotBlank)
+            val message = buildString {
+                append("<html>Das Laden ist fehlgeschlagen")
+                append(if (errorMessage == null) "." else ":")
+                errorMessage?.let {
+                    append("<br/>").append("<i>").append(it).append("</i>")
+                }
+                append("</html>")
+            }
+            hideErrorOverlay()
+            JOptionPane.showMessageDialog(
+                this,
+                message,
+                Konstanten.PROGRAMMNAME,
+                JOptionPane.ERROR_MESSAGE
+            )
+            return
         }
-        return datasetTimestamp == null || table.rowCount == 0
-    }
 
-    private fun handleLoadFailure(error: Throwable) {
         table.setRows(emptyList())
         datasetTimestamp = null
         stopAgeTicker()
-        showTableMessage(error.message ?: "Laden fehlgeschlagen")
+        showErrorOverlay()
         detailsPanel.showEntry(null)
         statusPanel.setStand(error.message ?: error::class.java.simpleName)
         statusPanel.setAge("")
@@ -214,6 +223,16 @@ class AudiothekPanel(
         if (!manualReloadRunning) {
             statusPanel.setReloadEnabled(true)
         }
+    }
+
+    private fun showErrorOverlay() {
+        errorOverlay.isVisible = true
+        tableContainer.repaint()
+    }
+
+    private fun hideErrorOverlay() {
+        errorOverlay.isVisible = false
+        tableContainer.repaint()
     }
 
     private fun applyFilterNow(query: String) {
