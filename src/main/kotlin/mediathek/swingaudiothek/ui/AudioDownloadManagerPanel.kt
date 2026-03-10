@@ -29,7 +29,7 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
     private val list = JList(listModel)
 
     init {
-        preferredSize = Dimension(620, 320)
+        preferredSize = Dimension(500, 320)
         list.cellRenderer = AudioDownloadListRenderer()
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
         list.fixedCellHeight = -1
@@ -207,7 +207,7 @@ private data class AudioDownloadItem(
 )
 
 private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownloadItem> {
-    private val maxTextWidth = 420
+    private val maxTextWidth = 300
     private val borderColor = UIManager.getColor("Component.borderColor") ?: Color.LIGHT_GRAY
     private val titleLabel = JLabel()
     private val pathLabel = JLabel()
