@@ -82,6 +82,7 @@ class AudiothekPanel(
     }
 
     private val downloadClient = MVHttpClient.getInstance().httpClient
+    private val downloadManagerDialog by lazy { AudioDownloadManagerDialog(MediathekGui.ui()) }
     private var datasetTimestamp: LocalDateTime? = null
     private val iinaPlayer = SingleIinaPlayer()
 
@@ -339,8 +340,7 @@ class AudiothekPanel(
         val cancelRequested = AtomicBoolean(false)
         val activeCall = AtomicReference<Call?>(null)
         val downloadJob = AtomicReference<Job?>(null)
-        val dialog = AudioDownloadProgressDialog(
-            parent = MediathekGui.ui(),
+        val downloadHandle = downloadManagerDialog.addDownload(
             audioName = entry.title.ifBlank { "(ohne Titel)" },
             saveTarget = targetFile
         ) {
@@ -348,6 +348,8 @@ class AudiothekPanel(
             activeCall.get()?.cancel()
             downloadJob.get()?.cancel()
         }
+        downloadHandle.setProgress(0L, null)
+
         downloadJob.set(uiScope.launch(Dispatchers.IO) {
             val parentDirectory = targetFile.parent ?: Path.of(".")
             Files.createDirectories(parentDirectory)
@@ -369,9 +371,7 @@ class AudiothekPanel(
                     val body = response.body ?: error("Download fehlgeschlagen: keine Antwortdaten")
                     val totalBytes = body.contentLength().takeIf { it >= 0L }
 
-                    withContext(Dispatchers.Swing) {
-                        dialog.setProgress(0L, totalBytes)
-                    }
+                    downloadHandle.setProgress(0L, totalBytes)
 
                     body.byteStream().use { input ->
                         Files.newOutputStream(tempFile).buffered().use { output ->
@@ -385,28 +385,21 @@ class AudiothekPanel(
                                 }
                                 output.write(buffer, 0, read)
                                 downloadedBytes += read
-                                withContext(Dispatchers.Swing) {
-                                    dialog.setProgress(downloadedBytes, totalBytes)
-                                }
+                                downloadHandle.setProgress(downloadedBytes, totalBytes)
                             }
                         }
                     }
                 }
 
                 moveDownloadedFile(tempFile, targetFile)
-
-                withContext(Dispatchers.Swing) {
-                    dialog.dispose()
-                }
+                downloadHandle.markCompleted()
             } catch (_: CancellationException) {
                 Files.deleteIfExists(tempFile)
-                withContext(Dispatchers.Swing) {
-                    dialog.dispose()
-                }
+                downloadHandle.markCancelled()
             } catch (ex: Exception) {
                 Files.deleteIfExists(tempFile)
+                downloadHandle.markFailed(ex.message ?: ex::class.java.simpleName)
                 withContext(Dispatchers.Swing) {
-                    dialog.dispose()
                     if (!cancelRequested.get()) {
                         JOptionPane.showMessageDialog(
                             this@AudiothekPanel,
@@ -420,8 +413,6 @@ class AudiothekPanel(
                 activeCall.set(null)
             }
         })
-
-        dialog.isVisible = true
     }
 
     private fun moveDownloadedFile(tempFile: Path, targetFile: Path) {
