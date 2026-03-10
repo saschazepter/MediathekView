@@ -165,6 +165,7 @@ class AudiothekTable(
 
     private fun installRowPopup() {
         addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(event: MouseEvent) = maybeOpenRow(event)
             override fun mousePressed(event: MouseEvent) = maybeShowRowPopup(event)
             override fun mouseReleased(event: MouseEvent) = maybeShowRowPopup(event)
         })
@@ -219,6 +220,20 @@ class AudiothekTable(
             add(createRowActionItem("Download", FontAwesomeSolid.CLOUD_DOWNLOAD_ALT, entry, onDownload))
             show(event.component, event.x, event.y)
         }
+    }
+
+    private fun maybeOpenRow(event: MouseEvent) {
+        if (!SwingUtilities.isLeftMouseButton(event) || event.clickCount != 2) {
+            return
+        }
+
+        val viewRow = rowAtPoint(event.point)
+        if (viewRow < 0) {
+            return
+        }
+
+        setRowSelectionInterval(viewRow, viewRow)
+        selectedEntry()?.let(onOpenAudio)
     }
 
     private fun createRowActionItem(
