@@ -25,7 +25,6 @@ import mediathek.tool.ApplicationConfiguration
 import org.apache.logging.log4j.LogManager
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import org.kordamp.ikonli.swing.FontIcon
-import java.awt.Font
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.time.LocalDate
@@ -71,7 +70,7 @@ class AudiothekTable(
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
         fillsViewportHeight = true
         rowHeight = 24
-        tableHeader.font = tableHeader.font.deriveFont(Font.BOLD)
+        setAutoResizeMode(AUTO_RESIZE_OFF)
 
         configureSorting()
         configureColumns()
