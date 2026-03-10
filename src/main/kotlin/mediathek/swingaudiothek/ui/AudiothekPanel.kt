@@ -21,11 +21,16 @@ package mediathek.swingaudiothek.ui
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Konstanten
+import mediathek.gui.actions.UrlHyperlinkAction
+import mediathek.mac.MacMultimediaPlayerLocator
+import mediathek.mac.SingleIinaPlayer
 import mediathek.swingaudiothek.data.AudioDownloadStatus
 import mediathek.swingaudiothek.data.AudioLoadResult
 import mediathek.swingaudiothek.data.AudioRepository
 import mediathek.swingaudiothek.model.AudioDataset
 import mediathek.swingaudiothek.model.AudioEntry
+import mediathek.tool.GuiFunktionenProgramme
+import org.apache.commons.lang3.SystemUtils
 import java.awt.BorderLayout
 import java.awt.Desktop
 import java.net.URI
@@ -57,6 +62,7 @@ class AudiothekPanel(
 
     private var datasetTimestamp: LocalDateTime? = null
     private var manualReloadRunning = false
+    private var iinaPlayer = SingleIinaPlayer()
 
     init {
         val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, detailsPanel)
@@ -242,15 +248,30 @@ class AudiothekPanel(
 
     private fun openExternal(url: URI) {
         runCatching {
-            if (Desktop.isDesktopSupported()) {
-                Desktop.getDesktop().browse(url)
+            if (!SystemUtils.IS_OS_MAC_OSX) {
+                try {
+                    val vlcPath = GuiFunktionenProgramme.findExecutableOnPath("vlc")
+                    ProcessBuilder(vlcPath.toAbsolutePath().toString(), url.toString()).start()
+                } catch (_: IllegalStateException) {
+                    JOptionPane.showMessageDialog(
+                        this,
+                        "<html>Es konnte kein VLC auf dem System gefunden werden.<br/>" +
+                            "Es wird versucht, die Datei über den Browser zu öffnen.</html>",
+                        Konstanten.PROGRAMMNAME,
+                        JOptionPane.INFORMATION_MESSAGE
+                    )
+                    UrlHyperlinkAction.openURI(url)
+                }
             } else {
-                JOptionPane.showMessageDialog(
-                    this,
-                    "Desktop-Integration ist nicht verfugbar.",
-                    Konstanten.PROGRAMMNAME,
-                    JOptionPane.ERROR_MESSAGE
-                )
+                MacMultimediaPlayerLocator.findIinaPlayer().ifPresentOrElse({
+                    iinaPlayer.play(url.toString())
+                }, {
+                    MacMultimediaPlayerLocator.findVlcPlayer().ifPresentOrElse({
+                        ProcessBuilder("open", "-a", "VLC", url.toString()).start()
+                    }, {
+                        Desktop.getDesktop().browse(url)
+                    })
+                })
             }
         }.onFailure {
             JOptionPane.showMessageDialog(
