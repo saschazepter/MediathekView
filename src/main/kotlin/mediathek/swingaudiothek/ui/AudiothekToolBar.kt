@@ -18,12 +18,14 @@
 
 package mediathek.swingaudiothek.ui
 
+import javax.swing.JButton
 import javax.swing.JLabel
 import javax.swing.JTextField
 import javax.swing.JToolBar
 
 class AudiothekToolBar : JToolBar() {
     private val searchField = JTextField(28)
+    private val downloadManagerButton = JButton("dlm")
 
     init {
         isFloatable = false
@@ -31,11 +33,19 @@ class AudiothekToolBar : JToolBar() {
         add(JLabel("Filter"))
         addSeparator()
         add(searchField)
+        addSeparator()
+        add(downloadManagerButton)
     }
 
     fun addFilterSubmitListener(action: (String) -> Unit) {
         searchField.addActionListener { action(searchField.text) }
     }
+
+    fun addDownloadManagerListener(action: () -> Unit) {
+        downloadManagerButton.addActionListener { action() }
+    }
+
+    fun downloadManagerAnchor(): JButton = downloadManagerButton
 
     fun setLoading(loading: Boolean) {
         searchField.isEnabled = !loading

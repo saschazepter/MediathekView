@@ -24,12 +24,12 @@ import java.awt.event.MouseEvent
 import java.nio.file.Path
 import javax.swing.*
 
-class AudioDownloadManagerDialog(parent: Frame) : JDialog(parent, "Audio-Downloads", false) {
+class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
     private val listModel = DefaultListModel<AudioDownloadItem>()
     private val list = JList(listModel)
 
     init {
-        defaultCloseOperation = HIDE_ON_CLOSE
+        preferredSize = Dimension(620, 320)
         list.cellRenderer = AudioDownloadListRenderer()
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
         list.fixedCellHeight = -1
@@ -41,11 +41,8 @@ class AudioDownloadManagerDialog(parent: Frame) : JDialog(parent, "Audio-Downloa
         })
 
         add(JScrollPane(list).apply {
-            preferredSize = Dimension(620, 320)
             border = BorderFactory.createEmptyBorder()
         }, BorderLayout.CENTER)
-        pack()
-        setLocationRelativeTo(parent)
     }
 
     fun addDownload(audioName: String, saveTarget: Path, onCancelRequested: () -> Unit): AudioDownloadHandle {
@@ -56,10 +53,6 @@ class AudioDownloadManagerDialog(parent: Frame) : JDialog(parent, "Audio-Downloa
             onRemoveRequested = { removeItem(it) }
         )
         listModel.addElement(item)
-        if (!isVisible) {
-            isVisible = true
-        }
-        toFront()
         list.ensureIndexIsVisible(listModel.size() - 1)
         return AudioDownloadHandleImpl(item) { repaintItem(it) }
     }
@@ -87,7 +80,7 @@ class AudioDownloadManagerDialog(parent: Frame) : JDialog(parent, "Audio-Downloa
         val result = JOptionPane.showConfirmDialog(
             this,
             "Soll der Download wirklich abgebrochen werden?\n${item.audioName}",
-            title,
+            "Audio-Downloads",
             JOptionPane.YES_NO_OPTION,
             JOptionPane.WARNING_MESSAGE
         )
@@ -327,13 +320,15 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
     }
 
     private fun paintButton(graphics: Graphics2D, bounds: Rectangle, text: String, enabled: Boolean) {
-        val bg = when {
-            enabled -> UIManager.getColor("Button.background") ?: Color(230, 230, 230)
-            else -> UIManager.getColor("Button.disabledBackground") ?: Color(245, 245, 245)
+        val bg = if (enabled) {
+            UIManager.getColor("Button.background") ?: Color(230, 230, 230)
+        } else {
+            UIManager.getColor("Button.disabledBackground") ?: Color(245, 245, 245)
         }
-        val fg = when {
-            enabled -> UIManager.getColor("Button.foreground") ?: Color.BLACK
-            else -> UIManager.getColor("Button.disabledText") ?: Color.GRAY
+        val fg = if (enabled) {
+            UIManager.getColor("Button.foreground") ?: Color.BLACK
+        } else {
+            UIManager.getColor("Button.disabledText") ?: Color.GRAY
         }
         graphics.color = bg
         graphics.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 8, 8)

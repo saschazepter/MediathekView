@@ -27,6 +27,7 @@ import mediathek.mac.MacMultimediaPlayerLocator
 import mediathek.mac.SingleIinaPlayer
 import mediathek.mainwindow.MediathekGui
 import mediathek.swing.OverlayPanel
+import mediathek.swing.SwingPopoverControl
 import mediathek.swingaudiothek.data.AudioDownloadStatus
 import mediathek.swingaudiothek.data.AudioLoadResult
 import mediathek.swingaudiothek.data.AudioRepository
@@ -83,7 +84,10 @@ class AudiothekPanel(
     }
 
     private val downloadClient = MVHttpClient.getInstance().httpClient
-    private val downloadManagerDialog by lazy { AudioDownloadManagerDialog(MediathekGui.ui()) }
+    private val downloadManagerPanel = AudioDownloadManagerPanel()
+    private val downloadManagerPopover = SwingPopoverControl().apply {
+        setDismissOnFocusLost(true)
+    }
     private var datasetTimestamp: LocalDateTime? = null
     private val iinaPlayer = SingleIinaPlayer()
 
@@ -96,6 +100,7 @@ class AudiothekPanel(
     }
 
     fun disposePanel() {
+        downloadManagerPopover.hide()
         table.saveState()
         uiScope.coroutineContext[Job]?.cancel()
     }
@@ -119,6 +124,7 @@ class AudiothekPanel(
             }
         }
         toolBar.addFilterSubmitListener(::applyFilterNow)
+        toolBar.addDownloadManagerListener(::toggleDownloadManager)
         table.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(event: ComponentEvent?) {
                 errorOverlay.setSize(table.width, table.height)
@@ -238,6 +244,18 @@ class AudiothekPanel(
         toolBar.setLoading(loading)
     }
 
+    private fun toggleDownloadManager() {
+        if (downloadManagerPopover.isShowing) {
+            downloadManagerPopover.hide()
+            return
+        }
+        downloadManagerPopover.show(
+            toolBar.downloadManagerAnchor(),
+            downloadManagerPanel,
+            SwingPopoverControl.Placement.BOTTOM
+        )
+    }
+
     private fun buildLoadFailureMessage(error: Throwable): String {
         val errorMessage = error.message?.takeIf(String::isNotBlank)
         return buildString {
@@ -322,7 +340,7 @@ class AudiothekPanel(
         val cancelRequested = AtomicBoolean(false)
         val activeCall = AtomicReference<Call?>(null)
         val downloadJob = AtomicReference<Job?>(null)
-        val downloadHandle = downloadManagerDialog.addDownload(
+        val downloadHandle = downloadManagerPanel.addDownload(
             audioName = entry.title.ifBlank { "(ohne Titel)" },
             saveTarget = targetFile
         ) {
