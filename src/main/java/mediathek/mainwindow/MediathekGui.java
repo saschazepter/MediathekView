@@ -143,6 +143,7 @@ public class MediathekGui extends JFrame {
     private final ToggleZappLivestreamsTabAction toggleZappLivestreamsTabAction = new ToggleZappLivestreamsTabAction(tabLivestreams);
     private final AudioRepository audiothekRepository = new AudioRepository();
     private final AudiothekPanel tabAudiothek = new AudiothekPanel(audiothekRepository);
+    private final ToggleAudiothekTabAction toggleAudiothekTabAction = new ToggleAudiothekTabAction(tabAudiothek);
     private final LogDialog logWindow = new LogDialog(this);
     public FixedRedrawStatusBar swingStatusBar;
     public GuiFilme tabFilme;
@@ -842,7 +843,12 @@ public class MediathekGui extends JFrame {
     }
 
     protected void installAudiothekTab() {
-        tabbedPane.addTab("Audiothek", tabAudiothek);
+        var show = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.APPLICATION_UI_SHOW_AUDIOTHEK, true);
+        tabAudiothek.putClientProperty("JTabbedPane.tabClosable", true);
+        tabAudiothek.putClientProperty("JTabbedPane.tabCloseCallback", (IntConsumer) _ -> toggleAudiothekTabAction.actionPerformed(null));
+        if (show) {
+            tabbedPane.addTab("Audiothek", tabAudiothek);
+        }
     }
 
     /**
@@ -1007,6 +1013,7 @@ public class MediathekGui extends JFrame {
     private void createViewMenu() {
         tabFilme.installViewMenuEntry(jMenuAnsicht);
         jMenuAnsicht.add(toggleZappLivestreamsTabAction);
+        jMenuAnsicht.add(toggleAudiothekTabAction);
         jMenuAnsicht.addSeparator();
         if (!SystemUtils.IS_OS_MAC_OSX) {
             jMenuAnsicht.add(showMemoryMonitorAction);
@@ -1347,6 +1354,35 @@ public class MediathekGui extends JFrame {
             else {
                 tabbedPane.remove(tabIndex);
                 ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.APPLICATION_UI_SHOW_ZAPP_LIVESTREAMS, false);
+            }
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            toggleTab();
+        }
+    }
+
+    public class ToggleAudiothekTabAction extends AbstractAction {
+        private static final String TAB_TITLE = "Audiothek Tab ein-/ausblenden";
+        private final AudiothekPanel audiothekPanel;
+
+        public ToggleAudiothekTabAction(AudiothekPanel audiothekPanel) {
+            this.audiothekPanel = audiothekPanel;
+            putValue(Action.NAME, TAB_TITLE);
+        }
+
+        private void toggleTab() {
+            var tabIndex = tabbedPane.indexOfComponent(audiothekPanel);
+            if (tabIndex == -1) {
+                audiothekPanel.putClientProperty("JTabbedPane.tabClosable", true);
+                audiothekPanel.putClientProperty("JTabbedPane.tabCloseCallback", (IntConsumer) _ -> actionPerformed(null));
+                tabbedPane.add("Audiothek", audiothekPanel);
+                ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.APPLICATION_UI_SHOW_AUDIOTHEK, true);
+            }
+            else {
+                tabbedPane.remove(tabIndex);
+                ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.APPLICATION_UI_SHOW_AUDIOTHEK, false);
             }
         }
 

@@ -52,6 +52,7 @@ public class ApplicationConfiguration {
     public static final String APPLICATION_UI_DOWNLOAD_TAB_DIVIDER_LOCATION =
             "application.ui.download_tab.divider.location";
     public static final String APPLICATION_UI_SHOW_ZAPP_LIVESTREAMS = "application.ui.zapp.show";
+    public static final String APPLICATION_UI_SHOW_AUDIOTHEK = "application.ui.audiothek.show";
     public static final String APPLICATION_SHOW_NOTIFICATIONS = "application.notifications.show";
     public static final String APPLICATION_SHOW_ORF_CONFIG_HELP = "application.orf.show_config_help";
     /**
