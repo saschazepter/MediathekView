@@ -71,7 +71,6 @@ class AudiothekPanel(
     }
 
     private var datasetTimestamp: LocalDateTime? = null
-    private var manualReloadRunning = false
     private val iinaPlayer = SingleIinaPlayer()
 
     init {
@@ -108,7 +107,6 @@ class AudiothekPanel(
             setLoadingState(true)
             hideErrorOverlay()
             if (isManualReload) {
-                manualReloadRunning = true
                 statusPanel.setReloadEnabled(false)
             }
 
@@ -118,7 +116,7 @@ class AudiothekPanel(
                     .onFailure { handleLoadFailure(it, isManualReload) }
             } finally {
                 if (isManualReload) {
-                    manualReloadRunning = false
+                    statusPanel.setReloadEnabled(true)
                 }
                 setLoadingState(false)
             }
@@ -154,18 +152,9 @@ class AudiothekPanel(
 
     private fun handleLoadFailure(error: Throwable, isManualReload: Boolean) {
         if (isManualReload && table.rowCount > 0) {
-            val errorMessage = error.message?.takeIf(String::isNotBlank)
-            val message = buildString {
-                append("<html>Das Laden ist fehlgeschlagen")
-                append(if (errorMessage == null) "." else ":")
-                errorMessage?.let {
-                append("<br/>").append("<i>").append(it).append("</i>")
-                }
-                append("</html>")
-            }
             JOptionPane.showMessageDialog(
                 this,
-                message,
+                buildLoadFailureMessage(error),
                 Konstanten.PROGRAMMNAME,
                 JOptionPane.ERROR_MESSAGE
             )
@@ -218,8 +207,17 @@ class AudiothekPanel(
 
     private fun setLoadingState(loading: Boolean) {
         toolBar.setLoading(loading)
-        if (!manualReloadRunning) {
-            statusPanel.setReloadEnabled(true)
+    }
+
+    private fun buildLoadFailureMessage(error: Throwable): String {
+        val errorMessage = error.message?.takeIf(String::isNotBlank)
+        return buildString {
+            append("<html>Das Laden ist fehlgeschlagen")
+            append(if (errorMessage == null) "." else ":")
+            errorMessage?.let {
+                append("<br/>").append("<i>").append(it).append("</i>")
+            }
+            append("</html>")
         }
     }
 
