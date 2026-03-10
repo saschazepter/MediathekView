@@ -35,7 +35,6 @@ class AudiothekPanel(
     private val tableMessagePanel = AudiothekTableMessagePanel()
 
     private var datasetTimestamp: LocalDateTime? = null
-    private var loading = false
 
     init {
         val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, detailsPanel)
@@ -131,7 +130,6 @@ class AudiothekPanel(
         val timestamp = datasetTimestamp
         val age = timestamp?.let { calculateDatasetAge(it) }
         statusPanel.setAge(age?.let { "Alter: ${formatAge(it)}" }.orEmpty())
-        updateReloadButtonState(age)
     }
 
     private fun calculateDatasetAge(timestamp: LocalDateTime): Duration {
@@ -147,13 +145,7 @@ class AudiothekPanel(
     }
 
     private fun setLoadingState(loading: Boolean) {
-        this.loading = loading
-        updateReloadButtonState(datasetTimestamp?.let { calculateDatasetAge(it) })
         toolBar.setLoading(loading)
-    }
-
-    private fun updateReloadButtonState(age: Duration?) {
-        statusPanel.setReloadEnabled(!loading && (age == null || age >= MINIMUM_RELOAD_AGE))
     }
 
     private fun applyFilterNow(query: String) {
@@ -197,7 +189,6 @@ class AudiothekPanel(
     }
 
     companion object {
-        private val MINIMUM_RELOAD_AGE: Duration = Duration.ofHours(2)
         private val DATASET_TIMESTAMP_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
     }
 }
