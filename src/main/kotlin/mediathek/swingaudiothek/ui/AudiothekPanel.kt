@@ -25,22 +25,33 @@ import mediathek.gui.actions.UrlHyperlinkAction
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel
 import mediathek.mac.MacMultimediaPlayerLocator
 import mediathek.mac.SingleIinaPlayer
+import mediathek.mainwindow.MediathekGui
 import mediathek.swing.OverlayPanel
 import mediathek.swingaudiothek.data.AudioDownloadStatus
 import mediathek.swingaudiothek.data.AudioLoadResult
 import mediathek.swingaudiothek.data.AudioRepository
 import mediathek.swingaudiothek.model.AudioEntry
 import mediathek.tool.GuiFunktionenProgramme
+import mediathek.tool.http.MVHttpClient
+import okhttp3.Call
+import okhttp3.Request
 import org.apache.commons.lang3.SystemUtils
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.BorderLayout
 import java.awt.Desktop
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import java.io.File
 import java.net.URI
+import java.nio.file.AtomicMoveNotSupportedException
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import javax.swing.*
 
 class AudiothekPanel(
@@ -52,7 +63,7 @@ class AudiothekPanel(
 
     private val table = AudiothekTable(
         onOpenAudio = ::openAudioEntry,
-        onDownload = ::showDownloadDialog
+        onDownload = ::downloadAudioEntry
     )
 
     private val statusPanel = AudiothekStatusPanel()
@@ -70,6 +81,7 @@ class AudiothekPanel(
         add(detailsPanel)
     }
 
+    private val downloadClient = MVHttpClient.getInstance().httpClient
     private var datasetTimestamp: LocalDateTime? = null
     private val iinaPlayer = SingleIinaPlayer()
 
@@ -264,14 +276,169 @@ class AudiothekPanel(
         entry.audioUrl?.let(::openExternal)
     }
 
-    private fun showDownloadDialog(entry: AudioEntry) {
-        val title = entry.title.ifBlank { "(ohne Titel)" }
-        JOptionPane.showMessageDialog(
-            this,
-            "Download:\n$title",
-            "Download",
-            JOptionPane.INFORMATION_MESSAGE
-        )
+    private fun downloadAudioEntry(entry: AudioEntry) {
+        val audioUrl = entry.audioUrl
+        if (audioUrl == null) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Für diesen Eintrag ist keine Download-URL vorhanden.",
+                Konstanten.PROGRAMMNAME,
+                JOptionPane.ERROR_MESSAGE
+            )
+            return
+        }
+
+        val targetFile = chooseDownloadTarget(entry) ?: return
+        if (targetFile.exists()) {
+            val overwrite = JOptionPane.showConfirmDialog(
+                this,
+                "Die Datei existiert bereits:\n${targetFile.absolutePath}\n\nSoll sie überschrieben werden?",
+                Konstanten.PROGRAMMNAME,
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE
+            )
+            if (overwrite != JOptionPane.YES_OPTION) {
+                return
+            }
+        }
+
+        startDownload(entry, audioUrl, targetFile.toPath())
+    }
+
+    private fun chooseDownloadTarget(entry: AudioEntry): File? {
+        val chooser = JFileChooser().apply {
+            dialogTitle = "Audio speichern"
+            fileSelectionMode = JFileChooser.FILES_ONLY
+            isFileHidingEnabled = true
+            selectedFile = File(suggestFileName(entry))
+        }
+        return if (chooser.showSaveDialog(MediathekGui.ui()) == JFileChooser.APPROVE_OPTION) {
+            chooser.selectedFile
+        } else {
+            null
+        }
+    }
+
+    private fun suggestFileName(entry: AudioEntry): String {
+        val fallbackName = entry.title.ifBlank { "audio" }
+        val sanitizedBaseName = fallbackName
+            .replace(Regex("""[\\/:*?"<>|]"""), "_")
+            .replace(Regex("""\s+"""), " ")
+            .trim()
+            .ifBlank { "audio" }
+        val path = entry.audioUrl?.path.orEmpty()
+        val extension = path.substringAfterLast('/', "")
+            .substringAfterLast('.', "")
+            .takeIf { it.isNotBlank() && it.length <= 8 }
+            ?.let { ".$it" }
+            .orEmpty()
+        return sanitizedBaseName + extension
+    }
+
+    private fun startDownload(entry: AudioEntry, audioUrl: URI, targetFile: Path) {
+        val cancelRequested = AtomicBoolean(false)
+        val activeCall = AtomicReference<Call?>(null)
+        val downloadJob = AtomicReference<Job?>(null)
+        val dialog = AudioDownloadProgressDialog(
+            parent = MediathekGui.ui(),
+            audioName = entry.title.ifBlank { "(ohne Titel)" },
+            saveTarget = targetFile
+        ) {
+            cancelRequested.set(true)
+            activeCall.get()?.cancel()
+            downloadJob.get()?.cancel()
+        }
+        downloadJob.set(uiScope.launch(Dispatchers.IO) {
+            val parentDirectory = targetFile.parent ?: Path.of(".")
+            Files.createDirectories(parentDirectory)
+            val tempFile = Files.createTempFile(parentDirectory, "audio-", ".part")
+
+            try {
+                val request = Request.Builder()
+                    .url(audioUrl.toString())
+                    .get()
+                    .build()
+                val call = downloadClient.newCall(request)
+                activeCall.set(call)
+
+                call.execute().use { response ->
+                    if (!response.isSuccessful) {
+                        error("Download fehlgeschlagen: HTTP ${response.code}")
+                    }
+
+                    val body = response.body ?: error("Download fehlgeschlagen: keine Antwortdaten")
+                    val totalBytes = body.contentLength().takeIf { it >= 0L }
+
+                    withContext(Dispatchers.Swing) {
+                        dialog.setProgress(0L, totalBytes)
+                    }
+
+                    body.byteStream().use { input ->
+                        Files.newOutputStream(tempFile).buffered().use { output ->
+                            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                            var downloadedBytes = 0L
+                            while (true) {
+                                ensureActive()
+                                val read = input.read(buffer)
+                                if (read < 0) {
+                                    break
+                                }
+                                output.write(buffer, 0, read)
+                                downloadedBytes += read
+                                withContext(Dispatchers.Swing) {
+                                    dialog.setProgress(downloadedBytes, totalBytes)
+                                }
+                            }
+                        }
+                    }
+                }
+
+                moveDownloadedFile(tempFile, targetFile)
+
+                withContext(Dispatchers.Swing) {
+                    dialog.dispose()
+                }
+            } catch (_: CancellationException) {
+                Files.deleteIfExists(tempFile)
+                withContext(Dispatchers.Swing) {
+                    dialog.dispose()
+                }
+            } catch (ex: Exception) {
+                Files.deleteIfExists(tempFile)
+                withContext(Dispatchers.Swing) {
+                    dialog.dispose()
+                    if (!cancelRequested.get()) {
+                        JOptionPane.showMessageDialog(
+                            this@AudiothekPanel,
+                            "Der Download ist fehlgeschlagen:\n${ex.message ?: ex::class.java.simpleName}",
+                            Konstanten.PROGRAMMNAME,
+                            JOptionPane.ERROR_MESSAGE
+                        )
+                    }
+                }
+            } finally {
+                activeCall.set(null)
+            }
+        })
+
+        dialog.isVisible = true
+    }
+
+    private fun moveDownloadedFile(tempFile: Path, targetFile: Path) {
+        try {
+            Files.move(
+                tempFile,
+                targetFile,
+                StandardCopyOption.REPLACE_EXISTING,
+                StandardCopyOption.ATOMIC_MOVE
+            )
+        } catch (_: AtomicMoveNotSupportedException) {
+            Files.move(
+                tempFile,
+                targetFile,
+                StandardCopyOption.REPLACE_EXISTING
+            )
+        }
     }
 
     private fun openExternal(url: URI) {
