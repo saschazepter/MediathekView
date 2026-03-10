@@ -28,7 +28,6 @@ import javax.swing.table.TableCellEditor
 import javax.swing.table.TableCellRenderer
 
 class TableButtonColumn(
-    private val table: JTable,
     private val label: String,
     private val icon: Icon? = null,
     private val onClick: (modelRow: Int) -> Unit

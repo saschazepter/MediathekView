@@ -96,18 +96,6 @@ class AudiothekTable(
         }
     }
 
-    fun setDataColumnWidth(modelIndex: Int, width: Int) {
-        val columnDefinition = AudioTableColumn.entries.getOrNull(modelIndex) ?: return
-        if (!columnDefinition.toggleable || width <= 0) {
-            return
-        }
-        customColumnWidths[modelIndex] = width
-        allColumns[modelIndex]?.let(::applyDataColumnWidth)
-        val viewIndex = (0 until columnModel.columnCount)
-            .firstOrNull { columnModel.getColumn(it).modelIndex == modelIndex } ?: return
-        applyDataColumnWidth(columnModel.getColumn(viewIndex))
-    }
-
     private fun configureColumns() {
         for (index in 0 until columnModel.columnCount) {
             val column = columnModel.getColumn(index)
@@ -135,7 +123,7 @@ class AudiothekTable(
     }
 
     private fun configureButtonColumn(columnDefinition: AudioTableColumn, icon: Icon? = null, onClick: (Int) -> Unit) {
-        val buttonColumn = TableButtonColumn(this, columnDefinition.name, icon, onClick)
+        val buttonColumn = TableButtonColumn(columnDefinition.name, icon, onClick)
         val column = columnModel.getColumn(columnDefinition.modelIndex)
         column.cellRenderer = buttonColumn
         column.cellEditor = buttonColumn

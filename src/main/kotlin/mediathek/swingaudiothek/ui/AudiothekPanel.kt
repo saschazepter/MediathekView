@@ -27,7 +27,6 @@ import mediathek.mac.SingleIinaPlayer
 import mediathek.swingaudiothek.data.AudioDownloadStatus
 import mediathek.swingaudiothek.data.AudioLoadResult
 import mediathek.swingaudiothek.data.AudioRepository
-import mediathek.swingaudiothek.model.AudioDataset
 import mediathek.swingaudiothek.model.AudioEntry
 import mediathek.tool.GuiFunktionenProgramme
 import org.apache.commons.lang3.SystemUtils
@@ -62,7 +61,7 @@ class AudiothekPanel(
 
     private var datasetTimestamp: LocalDateTime? = null
     private var manualReloadRunning = false
-    private var iinaPlayer = SingleIinaPlayer()
+    private val iinaPlayer = SingleIinaPlayer()
 
     init {
         val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, detailsPanel)
@@ -136,12 +135,11 @@ class AudiothekPanel(
             return
         }
 
-        val dataset: AudioDataset = result.dataset
-        datasetTimestamp = dataset.metaLocal
-        table.setRows(dataset.entries)
+        datasetTimestamp = result.dataset.metaLocal
+        table.setRows(result.dataset.entries)
         showTable()
         applyFilterNow(toolBar.currentQuery())
-        statusPanel.setStand("Stand: ${dataset.metaLocal?.format(DATASET_TIMESTAMP_FORMAT) ?: "-"}")
+        statusPanel.setStand("Stand: ${result.dataset.metaLocal?.format(DATASET_TIMESTAMP_FORMAT) ?: "-"}")
         startAgeTicker()
         refreshSelectionState()
         if (isManualReload) {
