@@ -32,9 +32,9 @@ import javax.swing.UIManager
 class AudiothekAgePanel : JPanel(FlowLayout(FlowLayout.LEFT, 4, 0)) {
     private val ageLabel = JLabel("")
     private val reloadLabel = JLabel()
-    private val reloadEnabledIcon = FontIcon.of(FontAwesomeSolid.DOWNLOAD, 14)
+    private val reloadEnabledIcon = FontIcon.of(FontAwesomeSolid.RECYCLE, 14)
     private val reloadDisabledIcon = FontIcon.of(
-        FontAwesomeSolid.DOWNLOAD,
+        FontAwesomeSolid.RECYCLE,
         14,
         UIManager.getColor("Button.disabledText") ?: Color.GRAY
     )
