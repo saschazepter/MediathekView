@@ -1,0 +1,203 @@
+package mediathek.swingaudiothek.ui
+
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
+import mediathek.swingaudiothek.data.AudioRepository
+import mediathek.swingaudiothek.model.AudioDataset
+import mediathek.swingaudiothek.model.AudioEntry
+import java.awt.BorderLayout
+import java.awt.Desktop
+import java.net.URI
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.JScrollPane
+import javax.swing.JSplitPane
+
+class AudiothekPanel(
+    private val repository: AudioRepository
+) : JPanel(BorderLayout(10, 10)) {
+    private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+    private var loadJob: Job? = null
+    private var ageTickerJob: Job? = null
+
+    private val table = AudiothekTable(
+        onOpenAudio = ::openAudioEntry,
+        onDownload = ::showDownloadDialog
+    )
+
+    private val statusPanel = AudiothekStatusPanel()
+    private val detailsPanel = AudiothekDetailsPanel()
+    private val toolBar = AudiothekToolBar()
+    private val tableScrollPane = JScrollPane(table)
+    private val tableMessagePanel = AudiothekTableMessagePanel()
+
+    private var datasetTimestamp: LocalDateTime? = null
+    private var loading = false
+
+    init {
+        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, detailsPanel)
+        splitPane.resizeWeight = 0.72
+
+        add(toolBar, BorderLayout.NORTH)
+        add(splitPane, BorderLayout.CENTER)
+        add(statusPanel, BorderLayout.SOUTH)
+
+        setupListeners()
+        triggerLoad()
+    }
+
+    fun disposePanel() {
+        uiScope.coroutineContext[Job]?.cancel()
+    }
+
+    private fun showTable() {
+        if (tableScrollPane.viewport.view !== table) {
+            tableScrollPane.setViewportView(table)
+        }
+    }
+
+    private fun showTableMessage(message: String) {
+        tableMessagePanel.setMessage(message)
+        if (tableScrollPane.viewport.view !== tableMessagePanel) {
+            tableScrollPane.setViewportView(tableMessagePanel)
+        }
+    }
+
+    private fun setupListeners() {
+        statusPanel.addReloadListener { triggerLoad() }
+        table.addEntrySelectionListener {
+            if (!it.valueIsAdjusting) {
+                detailsPanel.showEntry(table.selectedEntry())
+            }
+        }
+        toolBar.addFilterSubmitListener(::applyFilterNow)
+    }
+
+    private fun triggerLoad() {
+        loadJob?.cancel()
+        loadJob = uiScope.launch {
+            setLoadingState(true)
+            showTableMessage("Audiothek wird geladen ...")
+
+            runCatching { repository.loadAudiothek() }
+                .onSuccess(::handleLoadSuccess)
+                .onFailure(::handleLoadFailure)
+
+            setLoadingState(false)
+        }
+    }
+
+    private fun handleLoadSuccess(dataset: AudioDataset) {
+        datasetTimestamp = dataset.metaLocal
+        table.setRows(dataset.entries)
+        showTable()
+        applyFilterNow(toolBar.currentQuery())
+        statusPanel.setStand("Stand: ${dataset.metaLocal?.format(DATASET_TIMESTAMP_FORMAT) ?: "-"}")
+        startAgeTicker()
+        refreshSelectionState()
+    }
+
+    private fun handleLoadFailure(error: Throwable) {
+        table.setRows(emptyList())
+        datasetTimestamp = null
+        stopAgeTicker()
+        showTableMessage(error.message ?: "Laden fehlgeschlagen")
+        detailsPanel.showEntry(null)
+        statusPanel.setStand(error.message ?: error::class.java.simpleName)
+        statusPanel.setAge("")
+        statusPanel.setCount("0 Einträge")
+    }
+
+    private fun startAgeTicker() {
+        stopAgeTicker()
+        updateAgeLabel()
+        ageTickerJob = uiScope.launch {
+            while (true) {
+                delay(1_000)
+                updateAgeLabel()
+            }
+        }
+    }
+
+    private fun stopAgeTicker() {
+        ageTickerJob?.cancel()
+        ageTickerJob = null
+    }
+
+    private fun updateAgeLabel() {
+        val timestamp = datasetTimestamp
+        val age = timestamp?.let { calculateDatasetAge(it) }
+        statusPanel.setAge(age?.let { "Alter: ${formatAge(it)}" }.orEmpty())
+        updateReloadButtonState(age)
+    }
+
+    private fun calculateDatasetAge(timestamp: LocalDateTime): Duration {
+        return Duration.between(timestamp, LocalDateTime.now()).coerceAtLeast(Duration.ZERO)
+    }
+
+    private fun formatAge(duration: Duration): String {
+        val totalSeconds = duration.seconds.coerceAtLeast(0)
+        val hours = totalSeconds / 3600
+        val minutes = (totalSeconds % 3600) / 60
+        val seconds = totalSeconds % 60
+        return "%02d:%02d:%02d".format(hours, minutes, seconds)
+    }
+
+    private fun setLoadingState(loading: Boolean) {
+        this.loading = loading
+        updateReloadButtonState(datasetTimestamp?.let { calculateDatasetAge(it) })
+        toolBar.setLoading(loading)
+    }
+
+    private fun updateReloadButtonState(age: Duration?) {
+        statusPanel.setReloadEnabled(!loading && (age == null || age >= MINIMUM_RELOAD_AGE))
+    }
+
+    private fun applyFilterNow(query: String) {
+        table.applyFilter(query)
+        statusPanel.setCount("${table.rowCount} Treffer")
+        refreshSelectionState()
+    }
+
+    private fun refreshSelectionState() {
+        if (table.rowCount > 0) {
+            table.selectFirstRow()
+            return
+        }
+        detailsPanel.showEntry(null)
+    }
+
+    private fun openAudioEntry(entry: AudioEntry) {
+        entry.audioUrl?.let(::openExternal)
+    }
+
+    private fun showDownloadDialog(entry: AudioEntry) {
+        val title = entry.title.ifBlank { "(ohne Titel)" }
+        JOptionPane.showMessageDialog(
+            this,
+            "Download:\n$title",
+            "Download",
+            JOptionPane.INFORMATION_MESSAGE
+        )
+    }
+
+    private fun openExternal(url: URI) {
+        runCatching {
+            if (Desktop.isDesktopSupported()) {
+                Desktop.getDesktop().browse(url)
+            } else {
+                showTableMessage("Desktop-Integration ist nicht verfugbar")
+            }
+        }.onFailure {
+            showTableMessage("URL konnte nicht geöffnet werden: $url")
+        }
+    }
+
+    companion object {
+        private val MINIMUM_RELOAD_AGE: Duration = Duration.ofHours(2)
+        private val DATASET_TIMESTAMP_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
+    }
+}
