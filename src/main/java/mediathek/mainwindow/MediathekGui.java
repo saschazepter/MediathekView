@@ -268,7 +268,7 @@ public class MediathekGui extends JFrame {
                     return false;
                 }
             }, Daten.getInstance().getDecoratedPool());
-            future.whenCompleteAsync((result, throwable) -> {
+            future.whenCompleteAsync((_, throwable) -> {
                 if (throwable == null) {
                     try {
                         SwingUtilities.invokeAndWait(() -> quitApplication(true));
