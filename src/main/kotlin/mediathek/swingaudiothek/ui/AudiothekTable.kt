@@ -92,6 +92,8 @@ class AudiothekTable(
         return audioTableModel.getEntry(convertRowIndexToModel(viewRow))
     }
 
+    fun hasEntries(): Boolean = allEntries.isNotEmpty()
+
     fun addEntrySelectionListener(listener: ListSelectionListener) {
         selectionModel.addListSelectionListener(listener)
     }

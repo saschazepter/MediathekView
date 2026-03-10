@@ -79,7 +79,6 @@ class AudiothekPanel(
         add(southPanel, BorderLayout.SOUTH)
         errorOverlay.isVisible = false
         setupListeners()
-        triggerLoad(isManualReload = false)
     }
 
     fun disposePanel() {
@@ -87,6 +86,17 @@ class AudiothekPanel(
     }
 
     private fun setupListeners() {
+        addComponentListener(object : ComponentAdapter() {
+            override fun componentShown(event: ComponentEvent?) {
+                if (shouldLoadWhenShown()) {
+                    SwingUtilities.invokeLater {
+                        if (shouldLoadWhenShown()) {
+                            triggerLoad(isManualReload = false)
+                        }
+                    }
+                }
+            }
+        })
         statusPanel.addReloadListener { triggerLoad(isManualReload = true) }
         table.addEntrySelectionListener {
             if (!it.valueIsAdjusting) {
@@ -99,6 +109,10 @@ class AudiothekPanel(
                 errorOverlay.setSize(table.width, table.height)
             }
         })
+    }
+
+    private fun shouldLoadWhenShown(): Boolean {
+        return datasetTimestamp == null && !table.hasEntries() && loadJob?.isActive != true
     }
 
     private fun triggerLoad(isManualReload: Boolean) {
