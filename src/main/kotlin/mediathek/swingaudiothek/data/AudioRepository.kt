@@ -29,9 +29,14 @@ import org.tukaani.xz.XZInputStream
 import java.io.ByteArrayInputStream
 import java.io.InputStream
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class AudioRepository(
-    private val client: OkHttpClient = MVHttpClient.getInstance().httpClient,
+    private val client: OkHttpClient = MVHttpClient.getInstance().httpClient.newBuilder()
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(5, TimeUnit.SECONDS)
+        .writeTimeout(5, TimeUnit.SECONDS)
+        .build(),
     private val resolver: AudioSourceResolver = AudioSourceResolver(client),
     private val parser: AudioParser = AudioParser(),
     private val cache: AudioDownloadCache = AudioDownloadCache()
