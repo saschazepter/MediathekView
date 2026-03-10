@@ -20,6 +20,8 @@ package mediathek.swingaudiothek.ui
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import mediathek.swingaudiothek.data.AudioDownloadStatus
+import mediathek.swingaudiothek.data.AudioLoadResult
 import mediathek.swingaudiothek.data.AudioRepository
 import mediathek.swingaudiothek.model.AudioDataset
 import mediathek.swingaudiothek.model.AudioEntry
@@ -53,6 +55,7 @@ class AudiothekPanel(
     private val tableMessagePanel = AudiothekTableMessagePanel()
 
     private var datasetTimestamp: LocalDateTime? = null
+    private var manualReloadRunning = false
 
     init {
         val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, tableScrollPane, detailsPanel)
@@ -63,7 +66,7 @@ class AudiothekPanel(
         add(statusPanel, BorderLayout.SOUTH)
 
         setupListeners()
-        triggerLoad()
+        triggerLoad(isManualReload = false)
     }
 
     fun disposePanel() {
@@ -84,7 +87,7 @@ class AudiothekPanel(
     }
 
     private fun setupListeners() {
-        statusPanel.addReloadListener { triggerLoad() }
+        statusPanel.addReloadListener { triggerLoad(isManualReload = true) }
         table.addEntrySelectionListener {
             if (!it.valueIsAdjusting) {
                 detailsPanel.showEntry(table.selectedEntry())
@@ -93,21 +96,40 @@ class AudiothekPanel(
         toolBar.addFilterSubmitListener(::applyFilterNow)
     }
 
-    private fun triggerLoad() {
+    private fun triggerLoad(isManualReload: Boolean) {
         loadJob?.cancel()
         loadJob = uiScope.launch {
             setLoadingState(true)
-            showTableMessage("Audiothek wird geladen ...")
+            if (shouldShowLoadingMessage(isManualReload)) {
+                showTableMessage("Audiothek wird geladen ...")
+            }
+            if (isManualReload) {
+                manualReloadRunning = true
+                statusPanel.setReloadEnabled(false)
+            }
 
-            runCatching { repository.loadAudiothek() }
-                .onSuccess(::handleLoadSuccess)
-                .onFailure(::handleLoadFailure)
-
-            setLoadingState(false)
+            try {
+                runCatching { repository.loadAudiothek() }
+                    .onSuccess { handleLoadSuccess(it, isManualReload) }
+                    .onFailure(::handleLoadFailure)
+            } finally {
+                if (isManualReload) {
+                    manualReloadRunning = false
+                    statusPanel.setReloadEnabled(true)
+                }
+                setLoadingState(false)
+            }
         }
     }
 
-    private fun handleLoadSuccess(dataset: AudioDataset) {
+    private fun handleLoadSuccess(result: AudioLoadResult, isManualReload: Boolean) {
+        if (shouldSkipTableRefresh(result, isManualReload)) {
+            showTable()
+            showReloadMessage(result.downloadStatus)
+            return
+        }
+
+        val dataset: AudioDataset = result.dataset
         datasetTimestamp = dataset.metaLocal
         table.setRows(dataset.entries)
         showTable()
@@ -115,6 +137,26 @@ class AudiothekPanel(
         statusPanel.setStand("Stand: ${dataset.metaLocal?.format(DATASET_TIMESTAMP_FORMAT) ?: "-"}")
         startAgeTicker()
         refreshSelectionState()
+        if (isManualReload) {
+            showReloadMessage(result.downloadStatus)
+        }
+    }
+
+    private fun shouldSkipTableRefresh(result: AudioLoadResult, isManualReload: Boolean): Boolean {
+        if (!isManualReload) {
+            return false
+        }
+        if (result.downloadStatus == AudioDownloadStatus.DOWNLOADED) {
+            return false
+        }
+        return datasetTimestamp != null
+    }
+
+    private fun shouldShowLoadingMessage(isManualReload: Boolean): Boolean {
+        if (!isManualReload) {
+            return true
+        }
+        return datasetTimestamp == null || table.rowCount == 0
     }
 
     private fun handleLoadFailure(error: Throwable) {
@@ -164,6 +206,9 @@ class AudiothekPanel(
 
     private fun setLoadingState(loading: Boolean) {
         toolBar.setLoading(loading)
+        if (!manualReloadRunning) {
+            statusPanel.setReloadEnabled(true)
+        }
     }
 
     private fun applyFilterNow(query: String) {
@@ -204,6 +249,20 @@ class AudiothekPanel(
         }.onFailure {
             showTableMessage("URL konnte nicht geöffnet werden: $url")
         }
+    }
+
+    private fun showReloadMessage(downloadStatus: AudioDownloadStatus) {
+        val message = when (downloadStatus) {
+            AudioDownloadStatus.DOWNLOADED -> return
+            AudioDownloadStatus.NOT_MODIFIED -> "Es konnte keine neue Datei geladen werden.\nDie vorhandene ist bereits aktuell."
+            AudioDownloadStatus.USED_CACHE_AFTER_FAILURE -> "Es konnte keine neue Datei geladen werden.\nDie zwischengespeicherte wird weiter verwendet."
+        }
+        JOptionPane.showMessageDialog(
+            this,
+            message,
+            "Audiothek",
+            JOptionPane.INFORMATION_MESSAGE
+        )
     }
 
     companion object {

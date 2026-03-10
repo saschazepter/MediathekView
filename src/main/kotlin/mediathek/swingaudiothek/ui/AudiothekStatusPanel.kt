@@ -45,6 +45,10 @@ class AudiothekStatusPanel : JXStatusBar() {
         agePanel.addReloadListener(action)
     }
 
+    fun setReloadEnabled(enabled: Boolean) {
+        agePanel.setReloadEnabled(enabled)
+    }
+
     fun setCount(text: String) {
         countLabel.text = text
     }

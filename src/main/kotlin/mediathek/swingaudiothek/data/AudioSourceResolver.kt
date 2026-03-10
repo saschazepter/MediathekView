@@ -35,8 +35,13 @@ class AudioSourceResolver(
         .connectTimeout(Duration.ofSeconds(20))
         .build()
 ) {
-    suspend fun resolveSourceUrl(): String = withContext(Dispatchers.IO) {
+    suspend fun resolveSourceUrl(preferredUrl: String? = null): String = withContext(Dispatchers.IO) {
         val storedUrls = loadStoredUrls()
+        preferredUrl?.takeIf(String::isNotBlank)?.let { cachedUrl ->
+            if (storedUrls.isEmpty() || cachedUrl in storedUrls || cachedUrl in FALLBACK_URLS) {
+                return@withContext cachedUrl
+            }
+        }
         if (storedUrls.isNotEmpty()) {
             storedUrls.random()
         } else {

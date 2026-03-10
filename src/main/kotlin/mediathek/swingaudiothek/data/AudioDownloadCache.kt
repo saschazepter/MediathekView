@@ -61,6 +61,9 @@ class AudioDownloadCache(
 
     fun openCachedAudio(): InputStream = Files.newInputStream(audioFile)
 
+    fun readCachedAudioBytes(): ByteArray? =
+        if (Files.exists(audioFile)) Files.readAllBytes(audioFile) else null
+
     companion object {
         private const val KEY_SOURCE_URL = "sourceUrl"
         private const val KEY_ETAG = "etag"
