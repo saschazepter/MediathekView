@@ -36,6 +36,12 @@ class AudioRepository(
         .connectTimeout(5, TimeUnit.SECONDS)
         .readTimeout(5, TimeUnit.SECONDS)
         .writeTimeout(5, TimeUnit.SECONDS)
+        .addNetworkInterceptor { chain ->
+            val requestWithoutUserAgent = chain.request().newBuilder()
+                .removeHeader("User-Agent")
+                .build()
+            chain.proceed(requestWithoutUserAgent)
+        }
         .build(),
     private val resolver: AudioSourceResolver = AudioSourceResolver(client),
     private val parser: AudioParser = AudioParser(),
