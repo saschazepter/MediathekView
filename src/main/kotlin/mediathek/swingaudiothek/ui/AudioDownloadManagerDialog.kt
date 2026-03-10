@@ -78,8 +78,21 @@ class AudioDownloadManagerDialog(parent: Frame) : JDialog(parent, "Audio-Downloa
         val item = listModel.get(index)
         val relativePoint = Point(event.x - bounds.x, event.y - bounds.y)
         when {
-            item.cancelButtonBounds.contains(relativePoint) && item.cancelEnabled -> item.onCancelRequested()
+            item.cancelButtonBounds.contains(relativePoint) && item.cancelEnabled -> confirmCancel(item)
             item.removeButtonBounds.contains(relativePoint) && item.removeEnabled -> item.onRemoveRequested(item)
+        }
+    }
+
+    private fun confirmCancel(item: AudioDownloadItem) {
+        val result = JOptionPane.showConfirmDialog(
+            this,
+            "Soll der Download wirklich abgebrochen werden?\n${item.audioName}",
+            title,
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+        )
+        if (result == JOptionPane.YES_OPTION) {
+            item.onCancelRequested()
         }
     }
 
@@ -201,6 +214,7 @@ private data class AudioDownloadItem(
 )
 
 private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownloadItem> {
+    private val maxTextWidth = 420
     private val borderColor = UIManager.getColor("Component.borderColor") ?: Color.LIGHT_GRAY
     private val titleLabel = JLabel()
     private val pathLabel = JLabel()
@@ -267,9 +281,9 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
         cellHasFocus: Boolean
     ): Component {
         item = value
-        titleLabel.text = value.audioName
-        pathLabel.text = value.saveTarget.toAbsolutePath().toString()
-        statusLabel.text = value.status
+        titleLabel.text = ellipsize(value.audioName)
+        pathLabel.text = ellipsize(value.saveTarget.toAbsolutePath().toString())
+        statusLabel.text = ellipsize(value.status)
         progressBar.isIndeterminate = value.progressIndeterminate
         progressBar.value = value.progressPercent
         progressBar.string = value.progressText
@@ -338,6 +352,28 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
 
     override fun doLayout() {
         super.doLayout()
-        getComponent(0).setBounds(8, 8, width - 124, height - 16)
+        getComponent(0).setBounds(8, 8, minOf(width - 124, maxTextWidth), height - 16)
+    }
+
+    private fun ellipsize(text: String): String {
+        val fm = getFontMetrics(font ?: UIManager.getFont("Label.font"))
+        if (fm.stringWidth(text) <= maxTextWidth) {
+            return text
+        }
+
+        val ellipsis = "..."
+        val targetWidth = maxTextWidth - fm.stringWidth(ellipsis)
+        if (targetWidth <= 0) {
+            return ellipsis
+        }
+
+        val builder = StringBuilder()
+        for (char in text) {
+            if (fm.stringWidth(builder.toString() + char) > targetWidth) {
+                break
+            }
+            builder.append(char)
+        }
+        return builder.append(ellipsis).toString()
     }
 }
