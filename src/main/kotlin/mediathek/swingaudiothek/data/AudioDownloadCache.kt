@@ -1,15 +1,16 @@
 package mediathek.swingaudiothek.data
 
+import mediathek.config.StandardLocations
 import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.*
 
 class AudioDownloadCache(
-    private val cacheDir: Path = Path.of("example-audio-data")
+    private val cacheDir: Path = StandardLocations.getSettingsDirectory().resolve("audiothek-cache")
 ) {
     private val audioFile: Path = cacheDir.resolve("audios.xz")
-    private val metadataFile: Path = cacheDir.resolve("audiolist-cache.properties")
+    private val metadataFile: Path = cacheDir.resolve("cache.properties")
 
     fun readMetadata(): AudioCacheMetadata? {
         if (!Files.exists(metadataFile)) {
@@ -35,7 +36,7 @@ class AudioDownloadCache(
             eTag?.let { setProperty(KEY_ETAG, it) }
             lastModified?.let { setProperty(KEY_LAST_MODIFIED, it) }
         }
-        Files.newOutputStream(metadataFile).use { properties.store(it, "Audio download cache") }
+        Files.newOutputStream(metadataFile).use { properties.store(it, "Audiothek download cache") }
     }
 
     fun hasCachedAudio(): Boolean = Files.exists(audioFile)
