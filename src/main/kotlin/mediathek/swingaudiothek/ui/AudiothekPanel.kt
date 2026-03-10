@@ -20,6 +20,7 @@ package mediathek.swingaudiothek.ui
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import mediathek.config.Konstanten
 import mediathek.swingaudiothek.data.AudioDownloadStatus
 import mediathek.swingaudiothek.data.AudioLoadResult
 import mediathek.swingaudiothek.data.AudioRepository
@@ -244,10 +245,20 @@ class AudiothekPanel(
             if (Desktop.isDesktopSupported()) {
                 Desktop.getDesktop().browse(url)
             } else {
-                showTableMessage("Desktop-Integration ist nicht verfugbar")
+                JOptionPane.showMessageDialog(
+                    this,
+                    "Desktop-Integration ist nicht verfugbar.",
+                    Konstanten.PROGRAMMNAME,
+                    JOptionPane.ERROR_MESSAGE
+                )
             }
         }.onFailure {
-            showTableMessage("URL konnte nicht geöffnet werden: $url")
+            JOptionPane.showMessageDialog(
+                this,
+                "URL konnte nicht geöffnet werden:\n$url",
+                Konstanten.PROGRAMMNAME,
+                JOptionPane.ERROR_MESSAGE
+            )
         }
     }
 
