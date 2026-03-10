@@ -31,6 +31,7 @@ import javax.swing.*
 import javax.swing.event.ListSelectionListener
 import javax.swing.event.TableColumnModelEvent
 import javax.swing.event.TableColumnModelListener
+import javax.swing.table.TableCellRenderer
 import javax.swing.table.TableColumn
 
 class AudiothekTable(
@@ -42,6 +43,17 @@ class AudiothekTable(
     private val allColumns = linkedMapOf<Int, TableColumn>()
     private val lastKnownViewIndexes = mutableMapOf<Int, Int>()
     private val centeredTextCellRenderer = CenteredTextCellRenderer()
+    private val buttonHeaderRenderer = TableCellRenderer { table, _, _, _, _, column ->
+        val component = table.tableHeader.defaultRenderer
+            .getTableCellRendererComponent(table, "", false, false, -1, column)
+        if (component is JLabel) {
+            component.text = ""
+            component.icon = null
+            component.disabledIcon = null
+            component.horizontalAlignment = SwingConstants.CENTER
+        }
+        component
+    }
     private val luceneIndex = AudiothekLuceneIndex()
     private val customColumnWidths = buildMap {
         AudioTableColumn.searchableColumns.forEach { definition ->
@@ -101,6 +113,8 @@ class AudiothekTable(
     }
 
     private fun configureSorting() {
+        sorter.setSortable(AudioTableColumn.PLAY.modelIndex, false)
+        sorter.setSortable(AudioTableColumn.DOWNLOAD.modelIndex, false)
         sorter.setComparator(AudioTableColumn.DATE.modelIndex) { left, right ->
             compareNullable(parseDate(left), parseDate(right))
         }
@@ -146,6 +160,7 @@ class AudiothekTable(
         val column = columnModel.getColumn(columnDefinition.modelIndex)
         column.cellRenderer = buttonColumn
         column.cellEditor = buttonColumn
+        column.headerRenderer = buttonHeaderRenderer
         val width = columnDefinition.preferredWidth ?: if (icon == null) 52 else 32
         applyFixedWidth(column, width)
     }
