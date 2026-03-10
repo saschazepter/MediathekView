@@ -31,6 +31,7 @@ import mediathek.swingaudiothek.data.AudioDownloadStatus
 import mediathek.swingaudiothek.data.AudioLoadResult
 import mediathek.swingaudiothek.data.AudioRepository
 import mediathek.swingaudiothek.model.AudioEntry
+import mediathek.tool.FileDialogs
 import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.http.MVHttpClient
 import okhttp3.Call
@@ -290,34 +291,15 @@ class AudiothekPanel(
         }
 
         val targetFile = chooseDownloadTarget(entry) ?: return
-        if (targetFile.exists()) {
-            val overwrite = JOptionPane.showConfirmDialog(
-                this,
-                "Die Datei existiert bereits:\n${targetFile.absolutePath}\n\nSoll sie überschrieben werden?",
-                Konstanten.PROGRAMMNAME,
-                JOptionPane.YES_NO_OPTION,
-                JOptionPane.WARNING_MESSAGE
-            )
-            if (overwrite != JOptionPane.YES_OPTION) {
-                return
-            }
-        }
-
         startDownload(entry, audioUrl, targetFile.toPath())
     }
 
     private fun chooseDownloadTarget(entry: AudioEntry): File? {
-        val chooser = JFileChooser().apply {
-            dialogTitle = "Audio speichern"
-            fileSelectionMode = JFileChooser.FILES_ONLY
-            isFileHidingEnabled = true
-            selectedFile = File(suggestFileName(entry))
-        }
-        return if (chooser.showSaveDialog(MediathekGui.ui()) == JFileChooser.APPROVE_OPTION) {
-            chooser.selectedFile
-        } else {
-            null
-        }
+        return FileDialogs.chooseSaveFileLocation(
+            MediathekGui.ui(),
+            "Audio speichern",
+            suggestFileName(entry)
+        )
     }
 
     private fun suggestFileName(entry: AudioEntry): String {
