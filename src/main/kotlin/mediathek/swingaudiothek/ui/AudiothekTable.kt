@@ -24,6 +24,9 @@ import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Font
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import javax.swing.*
 import javax.swing.event.ListSelectionListener
 import javax.swing.event.TableColumnModelEvent
@@ -56,6 +59,7 @@ class AudiothekTable(
         rowHeight = 24
         tableHeader.font = tableHeader.font.deriveFont(Font.BOLD)
 
+        configureSorting()
         configureColumns()
         installHeaderPopup()
         installRowPopup()
@@ -93,6 +97,21 @@ class AudiothekTable(
     fun selectFirstRow() {
         if (rowCount > 0) {
             setRowSelectionInterval(0, 0)
+        }
+    }
+
+    private fun configureSorting() {
+        sorter.setComparator(AudioTableColumn.DATE.modelIndex) { left, right ->
+            compareNullable(parseDate(left), parseDate(right))
+        }
+        sorter.setComparator(AudioTableColumn.TIME.modelIndex) { left, right ->
+            compareNullable(parseTime(left), parseTime(right))
+        }
+        sorter.setComparator(AudioTableColumn.DURATION.modelIndex) { left, right ->
+            compareNullable(parseInt(left), parseInt(right))
+        }
+        sorter.setComparator(AudioTableColumn.SIZE.modelIndex) { left, right ->
+            compareNullable(parseInt(left), parseInt(right))
         }
     }
 
@@ -283,5 +302,32 @@ class AudiothekTable(
         return (0 until columnModel.columnCount)
             .map { columnModel.getColumn(it).modelIndex }
             .mapNotNull { AudioTableColumn.entries[it].searchField }
+    }
+
+    private fun parseDate(value: Any?): LocalDate? =
+        value?.toString()
+            ?.takeIf(String::isNotBlank)
+            ?.let { LocalDate.parse(it, DATE_FORMAT) }
+
+    private fun parseTime(value: Any?): LocalTime? =
+        value?.toString()
+            ?.takeIf(String::isNotBlank)
+            ?.let { LocalTime.parse(it, TIME_FORMAT) }
+
+    private fun parseInt(value: Any?): Int? =
+        value?.toString()
+            ?.takeIf(String::isNotBlank)
+            ?.toIntOrNull()
+
+    private fun <T : Comparable<T>> compareNullable(left: T?, right: T?): Int = when {
+        left == null && right == null -> 0
+        left == null -> 1
+        right == null -> -1
+        else -> left.compareTo(right)
+    }
+
+    companion object {
+        private val DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+        private val TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     }
 }
