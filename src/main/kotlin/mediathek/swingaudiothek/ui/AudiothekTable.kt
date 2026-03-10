@@ -18,7 +18,11 @@
 
 package mediathek.swingaudiothek.ui
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import mediathek.swingaudiothek.model.AudioEntry
+import mediathek.tool.ApplicationConfiguration
+import org.apache.logging.log4j.LogManager
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Font
@@ -38,6 +42,7 @@ class AudiothekTable(
     private val onOpenAudio: (AudioEntry) -> Unit,
     private val onDownload: (AudioEntry) -> Unit
 ) : JTable(AudioTableModel()) {
+    private val logger = LogManager.getLogger(AudiothekTable::class.java)
     private val audioTableModel = model as AudioTableModel
     private val sorter = TriStateTableRowSorter(audioTableModel)
     private val allColumns = linkedMapOf<Int, TableColumn>()
@@ -55,13 +60,10 @@ class AudiothekTable(
         component
     }
     private val luceneIndex = AudiothekLuceneIndex()
-    private val customColumnWidths = buildMap {
-        AudioTableColumn.searchableColumns.forEach { definition ->
-            definition.preferredWidth?.let { put(definition.modelIndex, it) }
-        }
-    }.toMutableMap()
+    private val customColumnWidths = mutableMapOf<Int, Int>()
     private var allEntries: List<AudioEntry> = emptyList()
     private var currentFilterQuery = ""
+    private var restoringState = false
 
     init {
         autoCreateRowSorter = false
@@ -73,9 +75,11 @@ class AudiothekTable(
 
         configureSorting()
         configureColumns()
+        restoreState()
         installHeaderPopup()
         installRowPopup()
         installColumnTracking()
+        installStatePersistence()
     }
 
     fun setRows(entries: List<AudioEntry>) {
@@ -93,6 +97,10 @@ class AudiothekTable(
     }
 
     fun hasEntries(): Boolean = allEntries.isNotEmpty()
+
+    fun saveState() {
+        writeState()
+    }
 
     fun addEntrySelectionListener(listener: ListSelectionListener) {
         selectionModel.addListSelectionListener(listener)
@@ -134,6 +142,7 @@ class AudiothekTable(
     private fun configureColumns() {
         for (index in 0 until columnModel.columnCount) {
             val column = columnModel.getColumn(index)
+            column.identifier = AudioTableColumn.entries[column.modelIndex].name
             allColumns[column.modelIndex] = column
             val definition = AudioTableColumn.entries[column.modelIndex]
             if (definition.toggleable) {
@@ -200,14 +209,24 @@ class AudiothekTable(
             override fun columnAdded(e: TableColumnModelEvent?) = Unit
             override fun columnRemoved(e: TableColumnModelEvent?) = Unit
             override fun columnSelectionChanged(e: javax.swing.event.ListSelectionEvent?) = Unit
-            override fun columnMarginChanged(e: javax.swing.event.ChangeEvent?) = Unit
+            override fun columnMarginChanged(e: javax.swing.event.ChangeEvent?) {
+                syncVisibleColumnWidths()
+                writeState()
+            }
 
             override fun columnMoved(e: TableColumnModelEvent?) {
                 if (e != null && e.fromIndex != e.toIndex) {
                     updateVisibleColumnPositions()
+                    writeState()
                 }
             }
         })
+    }
+
+    private fun installStatePersistence() {
+        rowSorter.addRowSorterListener {
+            writeState()
+        }
     }
 
     private fun maybeShowHeaderPopup(event: MouseEvent) {
@@ -304,6 +323,7 @@ class AudiothekTable(
         }
         updateVisibleColumnPositions()
         applyFilter(currentFilterQuery)
+        writeState()
     }
 
     private fun updateVisibleColumnPositions() {
@@ -313,6 +333,156 @@ class AudiothekTable(
                 lastKnownViewIndexes[modelIndex] = viewIndex
             }
         }
+    }
+
+    private fun syncVisibleColumnWidths() {
+        for (viewIndex in 0 until columnModel.columnCount) {
+            val column = columnModel.getColumn(viewIndex)
+            val definition = AudioTableColumn.entries[column.modelIndex]
+            if (definition.isFixedWidth()) {
+                continue
+            }
+            customColumnWidths[definition.modelIndex] = column.width
+        }
+    }
+
+    private fun restoreState() {
+        val rawState = ApplicationConfiguration.getConfiguration()
+            .getString(ApplicationConfiguration.APPLICATION_UI_AUDIOTHEK_TABLE_STATE, "")
+            .takeIf(String::isNotBlank)
+            ?: return
+
+        val state = runCatching { TABLE_STATE_JSON.decodeFromString<AudiothekTableState>(rawState) }
+            .onFailure { logger.warn("Failed to restore Audiothek table state", it) }
+            .getOrNull()
+            ?: return
+
+        restoringState = true
+        try {
+            applyState(state)
+        } finally {
+            restoringState = false
+        }
+    }
+
+    private fun applyState(state: AudiothekTableState) {
+        val mergedColumns = AudioTableColumn.entries.associateWith { definition ->
+            val saved = state.columns.firstOrNull { it.id == definition.name }
+            RestoredColumnState(
+                definition = definition,
+                visible = if (definition.toggleable) saved?.visible ?: true else true,
+                width = saved?.width?.takeIf { it > 0 } ?: defaultWidth(definition),
+                position = saved?.position ?: definition.modelIndex
+            )
+        }
+
+        while (columnModel.columnCount > 0) {
+            columnModel.removeColumn(columnModel.getColumn(0))
+        }
+
+        mergedColumns.values
+            .filter { it.visible || !it.definition.toggleable }
+            .sortedWith(compareBy<RestoredColumnState> { it.position }.thenBy { it.definition.modelIndex })
+            .forEach { stateColumn ->
+                val definition = stateColumn.definition
+                val column = allColumns[definition.modelIndex] ?: return@forEach
+                columnModel.addColumn(column)
+                applyRestoredWidth(column, definition, stateColumn.width)
+            }
+
+        updateVisibleColumnPositions()
+        restoreSort(state.sort)
+    }
+
+    private fun restoreSort(sortState: AudiothekSortState?) {
+        val sortDefinition = AudioTableColumn.entries.firstOrNull { it.name == sortState?.id }
+            ?: run {
+                sorter.sortKeys = emptyList()
+                return
+            }
+        if (!isColumnVisible(sortDefinition.modelIndex) || sortDefinition.isFixedWidth()) {
+            sorter.sortKeys = emptyList()
+            return
+        }
+
+        val sortOrder = sortState?.order
+            ?.let { runCatching { SortOrder.valueOf(it) }.getOrNull() }
+            ?.takeIf { it == SortOrder.ASCENDING || it == SortOrder.DESCENDING }
+            ?: return
+
+        sorter.sortKeys = listOf(RowSorter.SortKey(sortDefinition.modelIndex, sortOrder))
+    }
+
+    private fun applyRestoredWidth(column: TableColumn, definition: AudioTableColumn, width: Int) {
+        if (definition.isFixedWidth()) {
+            applyFixedWidth(column, defaultWidth(definition))
+            return
+        }
+        customColumnWidths[definition.modelIndex] = width
+        applyDataColumnWidth(column)
+    }
+
+    private fun defaultWidth(definition: AudioTableColumn): Int {
+        return definition.preferredWidth ?: allColumns[definition.modelIndex]?.preferredWidth ?: 75
+    }
+
+    private fun writeState() {
+        if (restoringState) {
+            return
+        }
+
+        syncVisibleColumnWidths()
+        val state = AudiothekTableState(
+            version = TABLE_STATE_VERSION,
+            columns = AudioTableColumn.entries.map { definition ->
+                val viewIndex = currentViewIndex(definition.modelIndex)
+                RestoredColumnState(
+                    definition = definition,
+                    visible = viewIndex >= 0,
+                    width = currentWidth(definition),
+                    position = if (viewIndex >= 0) viewIndex else lastKnownViewIndexes[definition.modelIndex] ?: definition.modelIndex
+                ).toSerializable()
+            },
+            sort = currentSortState()
+        )
+
+        runCatching {
+            ApplicationConfiguration.getConfiguration().setProperty(
+                ApplicationConfiguration.APPLICATION_UI_AUDIOTHEK_TABLE_STATE,
+                TABLE_STATE_JSON.encodeToString(AudiothekTableState.serializer(), state)
+            )
+        }.onFailure {
+            logger.warn("Failed to save Audiothek table state", it)
+        }
+    }
+
+    private fun currentSortState(): AudiothekSortState? {
+        val sortKey = sorter.sortKeys.firstOrNull() ?: return null
+        val definition = AudioTableColumn.entries.getOrNull(sortKey.column) ?: return null
+        if (definition.isFixedWidth()) {
+            return null
+        }
+        val order = sortKey.sortOrder
+        if (order != SortOrder.ASCENDING && order != SortOrder.DESCENDING) {
+            return null
+        }
+        return AudiothekSortState(definition.name, order.name)
+    }
+
+    private fun currentWidth(definition: AudioTableColumn): Int {
+        val visibleWidth = currentViewIndex(definition.modelIndex)
+            .takeIf { it >= 0 }
+            ?.let { columnModel.getColumn(it).width }
+        return visibleWidth
+            ?: customColumnWidths[definition.modelIndex]
+            ?: allColumns[definition.modelIndex]?.width
+            ?: defaultWidth(definition)
+    }
+
+    private fun currentViewIndex(modelIndex: Int): Int {
+        return (0 until columnModel.columnCount)
+            .firstOrNull { columnModel.getColumn(it).modelIndex == modelIndex }
+            ?: -1
     }
 
     private fun visibleSearchFields(): List<String> {
@@ -343,8 +513,54 @@ class AudiothekTable(
         else -> left.compareTo(right)
     }
 
+    private fun AudioTableColumn.isFixedWidth(): Boolean {
+        return this == AudioTableColumn.PLAY || this == AudioTableColumn.DOWNLOAD
+    }
+
     companion object {
+        private const val TABLE_STATE_VERSION = 1
         private val DATE_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
         private val TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+        private val TABLE_STATE_JSON = Json {
+            ignoreUnknownKeys = true
+            encodeDefaults = true
+        }
+    }
+
+    @Serializable
+    private data class AudiothekTableState(
+        val version: Int = TABLE_STATE_VERSION,
+        val columns: List<AudiothekColumnState> = emptyList(),
+        val sort: AudiothekSortState? = null
+    )
+
+    @Serializable
+    private data class AudiothekColumnState(
+        val id: String,
+        val visible: Boolean = true,
+        val width: Int? = null,
+        val position: Int? = null
+    )
+
+    @Serializable
+    private data class AudiothekSortState(
+        val id: String,
+        val order: String? = null
+    )
+
+    private data class RestoredColumnState(
+        val definition: AudioTableColumn,
+        val visible: Boolean,
+        val width: Int,
+        val position: Int
+    ) {
+        fun toSerializable(): AudiothekColumnState {
+            return AudiothekColumnState(
+                id = definition.name,
+                visible = visible,
+                width = width,
+                position = position
+            )
+        }
     }
 }

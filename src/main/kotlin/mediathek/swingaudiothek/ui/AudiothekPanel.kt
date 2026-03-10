@@ -82,6 +82,7 @@ class AudiothekPanel(
     }
 
     fun disposePanel() {
+        table.saveState()
         uiScope.coroutineContext[Job]?.cancel()
     }
 
