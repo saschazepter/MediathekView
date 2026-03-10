@@ -32,6 +32,7 @@ import mediathek.swingaudiothek.data.AudioRepository
 import mediathek.swingaudiothek.model.AudioEntry
 import mediathek.tool.GuiFunktionenProgramme
 import org.apache.commons.lang3.SystemUtils
+import org.jdesktop.swingx.VerticalLayout
 import java.awt.BorderLayout
 import java.awt.Desktop
 import java.awt.event.ComponentAdapter
@@ -64,19 +65,19 @@ class AudiothekPanel(
         add(errorOverlay)
         add(tableScrollPane)
     }
+    private val southPanel = JPanel(VerticalLayout()).apply {
+        add(statusPanel)
+        add(detailsPanel)
+    }
 
     private var datasetTimestamp: LocalDateTime? = null
     private var manualReloadRunning = false
     private val iinaPlayer = SingleIinaPlayer()
 
     init {
-        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, tableContainer, detailsPanel)
-        splitPane.resizeWeight = 0.72
-
         add(toolBar, BorderLayout.NORTH)
-        add(splitPane, BorderLayout.CENTER)
-        add(statusPanel, BorderLayout.SOUTH)
-
+        add(tableContainer, BorderLayout.CENTER)
+        add(southPanel, BorderLayout.SOUTH)
         errorOverlay.isVisible = false
         setupListeners()
         triggerLoad(isManualReload = false)
