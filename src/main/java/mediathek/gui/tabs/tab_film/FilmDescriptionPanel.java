@@ -23,6 +23,7 @@ import mediathek.daten.DatenFilm;
 import mediathek.gui.actions.UrlHyperlinkAction;
 import mediathek.gui.dialog.DialogFilmBeschreibung;
 import mediathek.mainwindow.MediathekGui;
+import mediathek.swingaudiothek.model.AudioEntry;
 import mediathek.tool.CopyToClipboardAction;
 import mediathek.tool.GuiFunktionen;
 import mediathek.tool.SwingErrorDialog;
@@ -48,7 +49,11 @@ public class FilmDescriptionPanel extends JPanel {
     private final JLabel lblTitel = new JLabel();
     private final JTextArea textArea = new JTextArea();
     private final JXHyperlink hyperlink = new JXHyperlink();
+    private final JMenuItem editDescriptionItem = new JMenuItem("Beschreibung ändern...");
+    private final JMenuItem copyDescriptionItem = new JMenuItem("Beschreibung in Zwischenablage kopieren");
+    private final JMenuItem copyBaseInfoItem = new JMenuItem("Filmbasisinformationen in Zwischenablage kopieren");
     private DatenFilm currentFilm;
+    private AudioEntry currentAudioEntry;
 
     public FilmDescriptionPanel() {
 
@@ -87,32 +92,24 @@ public class FilmDescriptionPanel extends JPanel {
     }
 
     private void createPopupMenu() {
-        var item = new JMenuItem("Beschreibung ändern...");
-        item.addActionListener(_ -> {
+        editDescriptionItem.addActionListener(_ -> {
+            if (currentFilm == null) {
+                return;
+            }
             DialogFilmBeschreibung dialog = new DialogFilmBeschreibung(MediathekGui.ui(), currentFilm);
             dialog.setVisible(true);
         });
-        popupMenu.add(item);
+        popupMenu.add(editDescriptionItem);
         popupMenu.addSeparator();
 
-        item = new JMenuItem("Beschreibung in Zwischenablage kopieren");
-        item.addActionListener(_ -> GuiFunktionen.copyToClipboard(currentFilm.getDescription()));
-        popupMenu.add(item);
+        copyDescriptionItem.addActionListener(_ -> GuiFunktionen.copyToClipboard(getCurrentDescription()));
+        popupMenu.add(copyDescriptionItem);
 
-        item = new JMenuItem("Filmbasisinformationen in Zwischenablage kopieren");
-        item.addActionListener(_ -> {
-            String sb = currentFilm.getSender() +
-                    " - " +
-                    currentFilm.getThema() +
-                    " - " +
-                    currentFilm.getTitle();
-
-            GuiFunktionen.copyToClipboard(sb);
-        });
-        popupMenu.add(item);
+        copyBaseInfoItem.addActionListener(_ -> GuiFunktionen.copyToClipboard(getCurrentBaseInfo()));
+        popupMenu.add(copyBaseInfoItem);
 
         popupMenu.addSeparator();
-        item = new JMenuItem("Auswahl kopieren");
+        var item = new JMenuItem("Auswahl kopieren");
         item.addActionListener(_ -> {
             final var selected = (textArea.getSelectionEnd() - textArea.getSelectionStart()) > 0;
             if (!selected) {
@@ -127,6 +124,7 @@ public class FilmDescriptionPanel extends JPanel {
 
         setComponentPopupMenu(popupMenu);
         textArea.setComponentPopupMenu(popupMenu);
+        updatePopupMenuState();
     }
 
     private void initComponents() {
@@ -174,6 +172,19 @@ public class FilmDescriptionPanel extends JPanel {
             showFilmDescription(film);
         }
         currentFilm = film;
+        currentAudioEntry = null;
+        updatePopupMenuState();
+    }
+
+    public void setCurrentAudioEntry(@Nullable AudioEntry entry) {
+        if (entry == null) {
+            setAllFieldsEmpty();
+        } else {
+            showAudioDescription(entry);
+        }
+        currentAudioEntry = entry;
+        currentFilm = null;
+        updatePopupMenuState();
     }
 
     public void install(@NotNull JTabbedPane tabbedPane, @NotNull JTable tabelle, @NotNull Supplier<Optional<DatenFilm>> filmSupplier) {
@@ -192,6 +203,42 @@ public class FilmDescriptionPanel extends JPanel {
         lblIcon.setIcon(null);
         lblThema.setText("");
         lblTitel.setText("");
+    }
+
+    private void updatePopupMenuState() {
+        var hasFilm = currentFilm != null;
+        var hasEntry = hasFilm || currentAudioEntry != null;
+        editDescriptionItem.setEnabled(hasFilm);
+        copyDescriptionItem.setEnabled(hasEntry);
+        copyBaseInfoItem.setEnabled(hasEntry);
+    }
+
+    private String getCurrentDescription() {
+        if (currentFilm != null) {
+            return currentFilm.getDescription();
+        }
+        if (currentAudioEntry != null) {
+            return currentAudioEntry.getDescription();
+        }
+        return "";
+    }
+
+    private String getCurrentBaseInfo() {
+        if (currentFilm != null) {
+            return currentFilm.getSender() +
+                    " - " +
+                    currentFilm.getThema() +
+                    " - " +
+                    currentFilm.getTitle();
+        }
+        if (currentAudioEntry != null) {
+            return currentAudioEntry.getChannel() +
+                    " - " +
+                    currentAudioEntry.getTheme() +
+                    " - " +
+                    currentAudioEntry.getTitle();
+        }
+        return "";
     }
 
     private void openUrl(String url) {
@@ -218,6 +265,30 @@ public class FilmDescriptionPanel extends JPanel {
         textArea.setText(film.getDescription());
         SwingUtilities.invokeLater(() -> scrollPane1.getVerticalScrollBar().setValue(0));
         lblIcon.setSender(film.getSender());
+    }
+
+    private void showAudioDescription(@NotNull AudioEntry entry) {
+        lblThema.setText(entry.getTheme());
+        lblTitel.setText(entry.getTitle().isBlank() ? "(ohne Titel)" : entry.getTitle());
+
+        var websiteUrl = entry.getWebsiteUrl();
+        hyperlink.setVisible(websiteUrl != null);
+        if (websiteUrl != null) {
+            hyperlink.setText("Link zur Webseite");
+            hyperlink.setClicked(false);
+            JPopupMenu popup = new JPopupMenu();
+            popup.add(new CopyToClipboardAction(websiteUrl.toString()));
+            hyperlink.setComponentPopupMenu(popup);
+            hyperlink.setToolTipText(websiteUrl.toString());
+        } else {
+            hyperlink.setText("");
+            hyperlink.setToolTipText("");
+            hyperlink.setComponentPopupMenu(null);
+        }
+
+        textArea.setText(entry.getDescription().isBlank() ? "Keine Beschreibung vorhanden." : entry.getDescription());
+        SwingUtilities.invokeLater(() -> scrollPane1.getVerticalScrollBar().setValue(0));
+        lblIcon.setSender(entry.getChannel());
     }
 
 }

@@ -22,6 +22,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Konstanten
 import mediathek.gui.actions.UrlHyperlinkAction
+import mediathek.gui.tabs.tab_film.FilmDescriptionPanel
 import mediathek.mac.MacMultimediaPlayerLocator
 import mediathek.mac.SingleIinaPlayer
 import mediathek.swing.OverlayPanel
@@ -54,7 +55,7 @@ class AudiothekPanel(
     )
 
     private val statusPanel = AudiothekStatusPanel()
-    private val detailsPanel = AudiothekDetailsPanel()
+    private val detailsPanel = FilmDescriptionPanel()
     private val toolBar = AudiothekToolBar()
     private val tableScrollPane = JScrollPane(table)
     private val errorOverlay = OverlayPanel("Audiothek konnte nicht geladen werden")
@@ -89,7 +90,7 @@ class AudiothekPanel(
         statusPanel.addReloadListener { triggerLoad(isManualReload = true) }
         table.addEntrySelectionListener {
             if (!it.valueIsAdjusting) {
-                detailsPanel.showEntry(table.selectedEntry())
+                detailsPanel.setCurrentAudioEntry(table.selectedEntry())
             }
         }
         toolBar.addFilterSubmitListener(::applyFilterNow)
@@ -174,7 +175,7 @@ class AudiothekPanel(
         datasetTimestamp = null
         stopAgeTicker()
         showErrorOverlay()
-        detailsPanel.showEntry(null)
+        detailsPanel.setCurrentAudioEntry(null)
         statusPanel.setStand(error.message ?: error::class.java.simpleName)
         statusPanel.setAge("")
         statusPanel.setCount("0 Einträge")
@@ -242,7 +243,7 @@ class AudiothekPanel(
             table.selectFirstRow()
             return
         }
-        detailsPanel.showEntry(null)
+        detailsPanel.setCurrentAudioEntry(null)
     }
 
     private fun openAudioEntry(entry: AudioEntry) {
