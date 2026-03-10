@@ -51,14 +51,13 @@ class AudioParser {
             while (parser.nextToken() != JsonToken.END_OBJECT) {
                 val fieldName = parser.currentName() ?: continue
                 val token = parser.nextToken()
-                when {
-                    fieldName == AUDIO_META_TAG && token == JsonToken.START_ARRAY -> {
+                when (fieldName) {
+                    AUDIO_META_TAG if token == JsonToken.START_ARRAY -> {
                         parser.nextStringValue().orEmpty()
                         metaLocal = parseDatasetTimestamp(parser.nextStringValue().orEmpty())
                         skipUntilArrayEnd(parser)
                     }
-
-                    fieldName == AUDIO_ROWS_TAG && token == JsonToken.START_ARRAY -> {
+                    AUDIO_ROWS_TAG if token == JsonToken.START_ARRAY -> {
                         val row = parseAudioRow(parser)
                         if (!skippedHeaderRow && row == AUDIO_HEADER_ROW) {
                             skippedHeaderRow = true
@@ -66,7 +65,6 @@ class AudioParser {
                             entries += mapRowToEntry(row)
                         }
                     }
-
                     else -> parser.skipChildren()
                 }
             }
