@@ -37,6 +37,8 @@ import mediathek.gui.tasks.RefreshAboWorker;
 import mediathek.logging.LogDialog;
 import mediathek.res.GetIcon;
 import mediathek.swing.IconOnlyButton;
+import mediathek.swingaudiothek.data.AudioRepository;
+import mediathek.swingaudiothek.ui.AudiothekPanel;
 import mediathek.tool.*;
 import mediathek.tool.notification.GenericNotificationCenter;
 import mediathek.tool.notification.INotificationCenter;
@@ -139,6 +141,8 @@ public class MediathekGui extends JFrame {
     private final ShowLuceneTutorialAction showLuceneTutorialAction = new ShowLuceneTutorialAction(this);
     private final LivestreamPanel tabLivestreams = new LivestreamPanel();
     private final ToggleZappLivestreamsTabAction toggleZappLivestreamsTabAction = new ToggleZappLivestreamsTabAction(tabLivestreams);
+    private final AudioRepository audiothekRepository = new AudioRepository();
+    private final AudiothekPanel tabAudiothek = new AudiothekPanel(audiothekRepository);
     private final LogDialog logWindow = new LogDialog(this);
     public FixedRedrawStatusBar swingStatusBar;
     public GuiFilme tabFilme;
@@ -817,6 +821,7 @@ public class MediathekGui extends JFrame {
         tabbedPane.addTab(GuiFilme.NAME, tabFilme);
         tabbedPane.addTab(GuiDownloads.NAME, tabDownloads);
         installLivestreamsTab();
+        installAudiothekTab();
 
         if (ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.APPLICATION_RESTORE_SELECTED_TAB, false))
             tabbedPane.restoreSavedTabPosition();
@@ -834,6 +839,10 @@ public class MediathekGui extends JFrame {
         if (show) {
             tabbedPane.addTab("zapp Livestreams", tabLivestreams);
         }
+    }
+
+    protected void installAudiothekTab() {
+        tabbedPane.addTab("Audiothek", tabAudiothek);
     }
 
     /**
@@ -1198,6 +1207,9 @@ public class MediathekGui extends JFrame {
 
         logger.trace("Save Tab Download data.");
         tabDownloads.tabelleSpeichern();
+
+        logger.trace("Disposing Tab Audiothek");
+        tabAudiothek.disposePanel();
 
         logger.trace("Stop all downloads.");
         stopDownloads();
