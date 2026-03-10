@@ -44,7 +44,7 @@ class SenderIconCacheLoader {
             case "ard-alpha" -> "/icons/sender/ard-alpha.svg";
             case "arte.de", "arte.en", "arte.es", "arte.fr", "arte.it", "arte.pl", "arte" -> "/icons/sender/arte.svg";
             case "br" -> "/icons/sender/br.svg";
-            case "funk.net" -> "/icons/sender/funk.svg";
+            case "funk.net", "funk" -> "/icons/sender/funk.svg";
             case "hr" -> "/icons/sender/hr.svg";
             case "kika" -> "/icons/sender/kika.svg";
             case "mdr" -> "/icons/sender/mdr.svg";
@@ -78,7 +78,7 @@ class SenderIconCacheLoader {
             case "arte.pl" -> "/mediathek/res/sender/arte-pl.png";
             case "br" -> "/mediathek/res/sender/br.png";
             case "dw" -> "/mediathek/res/sender/dw.png";
-            case "funk.net" -> "/mediathek/res/sender/funk_net.png";
+            case "funk.net", "funk" -> "/mediathek/res/sender/funk_net.png";
             case "hr" -> "/mediathek/res/sender/hr.png";
             case "kika" -> "/mediathek/res/sender/kika.png";
             case "mdr" -> "/mediathek/res/sender/mdr.png";
