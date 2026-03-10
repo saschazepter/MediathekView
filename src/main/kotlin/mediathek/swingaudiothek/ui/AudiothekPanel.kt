@@ -53,6 +53,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.*
 
@@ -88,6 +89,7 @@ class AudiothekPanel(
     private val downloadManagerPopover = SwingPopoverControl().apply {
         setDismissOnFocusLost(true)
     }
+    private val activeDownloadCount = AtomicInteger(0)
     private var datasetTimestamp: LocalDateTime? = null
     private val iinaPlayer = SingleIinaPlayer()
 
@@ -104,6 +106,8 @@ class AudiothekPanel(
         table.saveState()
         uiScope.coroutineContext[Job]?.cancel()
     }
+
+    fun activeDownloadCount(): Int = activeDownloadCount.get()
 
     private fun setupListeners() {
         addComponentListener(object : ComponentAdapter() {
@@ -340,6 +344,7 @@ class AudiothekPanel(
         val cancelRequested = AtomicBoolean(false)
         val activeCall = AtomicReference<Call?>(null)
         val downloadJob = AtomicReference<Job?>(null)
+        activeDownloadCount.incrementAndGet()
         val downloadHandle = downloadManagerPanel.addDownload(
             audioName = entry.title.ifBlank { "(ohne Titel)" },
             saveTarget = targetFile
@@ -411,6 +416,7 @@ class AudiothekPanel(
                 }
             } finally {
                 activeCall.set(null)
+                activeDownloadCount.updateAndGet { current -> (current - 1).coerceAtLeast(0) }
             }
         })
     }

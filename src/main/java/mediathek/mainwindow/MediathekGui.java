@@ -1175,6 +1175,22 @@ public class MediathekGui extends JFrame {
             setShutdownRequested(dialogBeenden.isShutdownRequested());
         }
 
+        if (tabAudiothek.activeDownloadCount() > 0) {
+            var activeAudiothekDownloads = tabAudiothek.activeDownloadCount();
+            var result = JOptionPane.showConfirmDialog(
+                    this,
+                    activeAudiothekDownloads == 1
+                            ? "Es ist noch ein Audiothek-Download aktiv.\nTrotzdem beenden?"
+                            : "Es sind noch " + activeAudiothekDownloads + " Audiothek-Downloads aktiv.\nTrotzdem beenden?",
+                    Konstanten.PROGRAMMNAME,
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+            if (result != JOptionPane.YES_OPTION) {
+                return false;
+            }
+        }
+
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         if (automaticFilmlistUpdate != null)
