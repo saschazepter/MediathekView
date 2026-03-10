@@ -18,6 +18,7 @@
 
 package mediathek.swingaudiothek.ui
 
+import mediathek.mainwindow.MediathekGui
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -30,10 +31,15 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
 
     init {
         preferredSize = Dimension(500, 320)
+        val popoverBackground = UIManager.getColor("Panel.background") ?: background
+        background = popoverBackground
+        isOpaque = true
         list.cellRenderer = AudioDownloadListRenderer()
         list.selectionMode = ListSelectionModel.SINGLE_SELECTION
         list.fixedCellHeight = -1
         list.visibleRowCount = 8
+        list.background = popoverBackground
+        list.isOpaque = true
         list.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(event: MouseEvent) {
                 handleClick(event)
@@ -42,6 +48,7 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
 
         add(JScrollPane(list).apply {
             border = BorderFactory.createEmptyBorder()
+            viewport.background = popoverBackground
         }, BorderLayout.CENTER)
     }
 
@@ -70,15 +77,17 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
 
         val item = listModel.get(index)
         val relativePoint = Point(event.x - bounds.x, event.y - bounds.y)
+        val cancelBounds = buttonBounds(bounds.width, true)
+        val removeBounds = buttonBounds(bounds.width, false)
         when {
-            item.cancelButtonBounds.contains(relativePoint) && item.cancelEnabled -> confirmCancel(item)
-            item.removeButtonBounds.contains(relativePoint) && item.removeEnabled -> item.onRemoveRequested(item)
+            cancelBounds.contains(relativePoint) && item.cancelEnabled -> confirmCancel(item)
+            removeBounds.contains(relativePoint) && item.removeEnabled -> item.onRemoveRequested(item)
         }
     }
 
     private fun confirmCancel(item: AudioDownloadItem) {
         val result = JOptionPane.showConfirmDialog(
-            this,
+            MediathekGui.ui(),
             "Soll der Download wirklich abgebrochen werden?\n${item.audioName}",
             "Audio-Downloads",
             JOptionPane.YES_NO_OPTION,
@@ -98,6 +107,18 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
         if (index >= 0) {
             list.repaint(list.getCellBounds(index, index))
         }
+    }
+
+    private fun buttonBounds(rowWidth: Int, cancelButton: Boolean): Rectangle {
+        val x = rowWidth - BUTTON_WIDTH - 6
+        val y = if (cancelButton) 14 else 14 + BUTTON_HEIGHT + BUTTON_GAP
+        return Rectangle(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
+    }
+
+    companion object {
+        private const val BUTTON_WIDTH = 90
+        private const val BUTTON_HEIGHT = 28
+        private const val BUTTON_GAP = 8
     }
 }
 
@@ -210,7 +231,6 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
     private val maxTextWidth = 300
     private val borderColor = UIManager.getColor("Component.borderColor") ?: Color.LIGHT_GRAY
     private val titleLabel = JLabel()
-    private val pathLabel = JLabel()
     private val statusLabel = JLabel()
     private val progressBar = JProgressBar(0, 100).apply {
         isStringPainted = true
@@ -219,7 +239,7 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
 
     init {
         layout = BorderLayout(8, 8)
-        border = BorderFactory.createEmptyBorder(6, 6, 6, 6)
+        border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
 
         val content = JPanel(GridBagLayout()).apply {
             isOpaque = false
@@ -242,15 +262,6 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
         gbc.gridx = 0
         gbc.gridy = 1
         gbc.weightx = 0.0
-        content.add(JLabel("Speicherort:"), gbc)
-
-        gbc.gridx = 1
-        gbc.weightx = 1.0
-        content.add(pathLabel, gbc)
-
-        gbc.gridx = 0
-        gbc.gridy = 2
-        gbc.weightx = 0.0
         content.add(JLabel("Status:"), gbc)
 
         gbc.gridx = 1
@@ -258,7 +269,7 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
         content.add(statusLabel, gbc)
 
         gbc.gridx = 0
-        gbc.gridy = 3
+        gbc.gridy = 2
         gbc.gridwidth = 2
         gbc.weightx = 1.0
         content.add(progressBar, gbc)
@@ -275,7 +286,6 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
     ): Component {
         item = value
         titleLabel.text = ellipsize(value.audioName)
-        pathLabel.text = ellipsize(value.saveTarget.toAbsolutePath().toString())
         statusLabel.text = ellipsize(value.status)
         progressBar.isIndeterminate = value.progressIndeterminate
         progressBar.value = value.progressPercent
@@ -284,7 +294,6 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
         background = if (isSelected) list.selectionBackground else list.background
         foreground = if (isSelected) list.selectionForeground else list.foreground
         titleLabel.foreground = foreground
-        pathLabel.foreground = foreground
         statusLabel.foreground = foreground
         progressBar.foreground = UIManager.getColor("ProgressBar.foreground")
         isOpaque = true
@@ -305,15 +314,8 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
     }
 
     private fun paintButtons(graphics: Graphics2D, item: AudioDownloadItem) {
-        val buttonWidth = 90
-        val buttonHeight = 28
-        val gap = 8
-        val x = width - buttonWidth - 12
-        val cancelY = 18
-        val removeY = cancelY + buttonHeight + gap
-
-        item.cancelButtonBounds = Rectangle(x, cancelY, buttonWidth, buttonHeight)
-        item.removeButtonBounds = Rectangle(x, removeY, buttonWidth, buttonHeight)
+        item.cancelButtonBounds = Rectangle(width - 90 - 6, 14, 90, 28)
+        item.removeButtonBounds = Rectangle(width - 90 - 6, 14 + 28 + 8, 90, 28)
 
         paintButton(graphics, item.cancelButtonBounds, "Abbrechen", item.cancelEnabled)
         paintButton(graphics, item.removeButtonBounds, "Entfernen", item.removeEnabled)
@@ -342,12 +344,12 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
     }
 
     override fun getPreferredSize(): Dimension {
-        return Dimension(super.getPreferredSize().width, 118)
+        return Dimension(super.getPreferredSize().width, 96)
     }
 
     override fun doLayout() {
         super.doLayout()
-        getComponent(0).setBounds(8, 8, minOf(width - 124, maxTextWidth), height - 16)
+        getComponent(0).setBounds(4, 4, minOf(width - 104, maxTextWidth), height - 8)
     }
 
     private fun ellipsize(text: String): String {
