@@ -50,6 +50,7 @@ public class FilmDescriptionPanel extends JPanel {
     private final JTextArea textArea = new JTextArea();
     private final JXHyperlink hyperlink = new JXHyperlink();
     private final JMenuItem editDescriptionItem = new JMenuItem("Beschreibung ändern...");
+    private final JPopupMenu.Separator editSeparator = new JPopupMenu.Separator();
     private final JMenuItem copyDescriptionItem = new JMenuItem("Beschreibung in Zwischenablage kopieren");
     private final JMenuItem copyBaseInfoItem = new JMenuItem("Filmbasisinformationen in Zwischenablage kopieren");
     private DatenFilm currentFilm;
@@ -100,7 +101,7 @@ public class FilmDescriptionPanel extends JPanel {
             dialog.setVisible(true);
         });
         popupMenu.add(editDescriptionItem);
-        popupMenu.addSeparator();
+        popupMenu.add(editSeparator);
 
         copyDescriptionItem.addActionListener(_ -> GuiFunktionen.copyToClipboard(getCurrentDescription()));
         popupMenu.add(copyDescriptionItem);
@@ -194,6 +195,8 @@ public class FilmDescriptionPanel extends JPanel {
     }
 
     private void setAllFieldsEmpty() {
+        setComponentPopupMenu(popupMenu);
+        textArea.setComponentPopupMenu(popupMenu);
         hyperlink.setVisible(false);
         hyperlink.setText("");
         hyperlink.setToolTipText("");
@@ -208,6 +211,8 @@ public class FilmDescriptionPanel extends JPanel {
     private void updatePopupMenuState() {
         var hasFilm = currentFilm != null;
         var hasEntry = hasFilm || currentAudioEntry != null;
+        editDescriptionItem.setVisible(hasFilm);
+        editSeparator.setVisible(hasFilm);
         editDescriptionItem.setEnabled(hasFilm);
         copyDescriptionItem.setEnabled(hasEntry);
         copyBaseInfoItem.setEnabled(hasEntry);
@@ -246,6 +251,8 @@ public class FilmDescriptionPanel extends JPanel {
     }
 
     private void showFilmDescription(@NotNull DatenFilm film) {
+        setComponentPopupMenu(popupMenu);
+        textArea.setComponentPopupMenu(popupMenu);
         lblThema.setText(film.getThema());
         lblTitel.setText(film.getTitle());
 
@@ -268,6 +275,8 @@ public class FilmDescriptionPanel extends JPanel {
     }
 
     private void showAudioDescription(@NotNull AudioEntry entry) {
+        setComponentPopupMenu(null);
+        textArea.setComponentPopupMenu(null);
         lblThema.setText(entry.getTheme());
         lblTitel.setText(entry.getTitle().isBlank() ? "(ohne Titel)" : entry.getTitle());
 
