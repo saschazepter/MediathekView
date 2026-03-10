@@ -117,7 +117,6 @@ class AudiothekPanel(
             } finally {
                 if (isManualReload) {
                     manualReloadRunning = false
-                    statusPanel.setReloadEnabled(true)
                 }
                 setLoadingState(false)
             }
@@ -126,12 +125,10 @@ class AudiothekPanel(
 
     private fun handleLoadSuccess(result: AudioLoadResult, isManualReload: Boolean) {
         if (shouldSkipTableRefresh(result, isManualReload)) {
-            hideErrorOverlay()
             showReloadMessage(result.downloadStatus)
             return
         }
 
-        hideErrorOverlay()
         datasetTimestamp = result.dataset.metaLocal
         table.setRows(result.dataset.entries)
         applyFilterNow(toolBar.currentQuery())
@@ -160,11 +157,10 @@ class AudiothekPanel(
                 append("<html>Das Laden ist fehlgeschlagen")
                 append(if (errorMessage == null) "." else ":")
                 errorMessage?.let {
-                    append("<br/>").append("<i>").append(it).append("</i>")
+                append("<br/>").append("<i>").append(it).append("</i>")
                 }
                 append("</html>")
             }
-            hideErrorOverlay()
             JOptionPane.showMessageDialog(
                 this,
                 message,
