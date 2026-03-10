@@ -3,18 +3,15 @@ package mediathek.swingaudiothek.data
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mediathek.swingaudiothek.model.AudioDataset
+import mediathek.tool.http.MVHttpClient
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.tukaani.xz.XZInputStream
 import java.io.ByteArrayInputStream
 import java.io.InputStream
-import java.time.Duration
 
 class AudioRepository(
-    private val client: OkHttpClient = OkHttpClient.Builder()
-        .followRedirects(true)
-        .connectTimeout(Duration.ofSeconds(20))
-        .build(),
+    private val client: OkHttpClient = MVHttpClient.getInstance().httpClient,
     private val resolver: AudioSourceResolver = AudioSourceResolver(client),
     private val parser: AudioParser = AudioParser(),
     private val cache: AudioDownloadCache = AudioDownloadCache()
