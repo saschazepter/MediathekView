@@ -44,6 +44,7 @@ class SenderIconCacheLoader {
             case "ard-alpha" -> "/icons/sender/ard-alpha.svg";
             case "arte.de", "arte.en", "arte.es", "arte.fr", "arte.it", "arte.pl", "arte" -> "/icons/sender/arte.svg";
             case "br" -> "/icons/sender/br.svg";
+            case "deutschlandradio" -> "/icons/sender/Deutschlandradio_Logo_2017.svg";
             case "funk.net", "funk" -> "/icons/sender/funk.svg";
             case "hr" -> "/icons/sender/hr.svg";
             case "kika" -> "/icons/sender/kika.svg";
