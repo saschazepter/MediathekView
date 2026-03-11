@@ -27,6 +27,7 @@ class AudiothekToolBar : JToolBar() {
     private val searchField = JTextField(28)
     private val clearSearchButton = JButton("x")
     private val downloadManagerButton = JButton("dlm")
+    private val downloadProgressIcon = CircularProgressIcon()
 
     init {
         isFloatable = false
@@ -34,6 +35,9 @@ class AudiothekToolBar : JToolBar() {
         clearSearchButton.isFocusable = false
         clearSearchButton.toolTipText = "Filter löschen"
         clearSearchButton.isEnabled = false
+        downloadManagerButton.isFocusable = false
+        downloadManagerButton.horizontalTextPosition = SwingConstants.RIGHT
+        downloadManagerButton.iconTextGap = 6
         searchField.document.addDocumentListener(object : DocumentListener {
             override fun insertUpdate(e: DocumentEvent?) = updateClearButtonState()
             override fun removeUpdate(e: DocumentEvent?) = updateClearButtonState()
@@ -69,6 +73,21 @@ class AudiothekToolBar : JToolBar() {
     }
 
     fun downloadManagerAnchor(): JButton = downloadManagerButton
+
+    fun setDownloadProgress(summary: DownloadSummary) {
+        if (summary.activeCount <= 0) {
+            downloadManagerButton.icon = null
+            downloadManagerButton.text = "dlm"
+            downloadManagerButton.toolTipText = null
+            return
+        }
+
+        downloadProgressIcon.progress = summary.progress
+        downloadManagerButton.icon = downloadProgressIcon
+        downloadManagerButton.text = "dlm"
+        downloadManagerButton.toolTipText = "${(summary.progress * 100).toInt()} %"
+        downloadManagerButton.repaint()
+    }
 
     fun setLoading(loading: Boolean) {
         searchField.isEnabled = !loading

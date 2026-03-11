@@ -31,6 +31,7 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
         override fun getScrollableTracksViewportWidth(): Boolean = true
     }
     private var emptyListener: (() -> Unit)? = null
+    private var progressListener: ((DownloadSummary) -> Unit)? = null
 
     init {
         preferredSize = Dimension(500, 320)
@@ -64,7 +65,11 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
         )
         listModel.addElement(item)
         list.ensureIndexIsVisible(listModel.size() - 1)
-        return AudioDownloadHandleImpl(item) { repaintItem(it) }
+        notifyProgressChanged()
+        return AudioDownloadHandleImpl(item) {
+            repaintItem(it)
+            notifyProgressChanged()
+        }
     }
 
     private fun handleClick(event: MouseEvent) {
@@ -103,6 +108,7 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
 
     private fun removeItem(item: AudioDownloadItem) {
         listModel.removeElement(item)
+        notifyProgressChanged()
         if (listModel.isEmpty) {
             emptyListener?.invoke()
         }
@@ -110,6 +116,11 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
 
     fun addEmptyListener(listener: () -> Unit) {
         emptyListener = listener
+    }
+
+    fun addProgressListener(listener: (DownloadSummary) -> Unit) {
+        progressListener = listener
+        notifyProgressChanged()
     }
 
     private fun repaintItem(item: AudioDownloadItem) {
@@ -130,7 +141,41 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
         private const val BUTTON_HEIGHT = 28
         private const val BUTTON_GAP = 8
     }
+
+    private fun notifyProgressChanged() {
+        progressListener?.invoke(
+            DownloadSummary(
+                activeCount = (0 until listModel.size())
+                    .map { listModel.getElementAt(it) }
+                    .count { it.isActive() },
+                progress = calculateAggregateProgress()
+            )
+        )
+    }
+
+    private fun calculateAggregateProgress(): Double {
+        val activeItems = (0 until listModel.size())
+            .map { listModel.getElementAt(it) }
+            .filter { it.isActive() && !it.progressIndeterminate && (it.totalBytes ?: 0L) > 0L }
+
+        if (activeItems.isEmpty()) {
+            return 0.0
+        }
+
+        val totalBytes = activeItems.sumOf { it.totalBytes ?: 0L }
+        if (totalBytes <= 0L) {
+            return 0.0
+        }
+
+        val downloadedBytes = activeItems.sumOf { it.downloadedBytes.coerceAtMost(it.totalBytes ?: 0L) }
+        return downloadedBytes.toDouble() / totalBytes.toDouble()
+    }
 }
+
+data class DownloadSummary(
+    val activeCount: Int,
+    val progress: Double
+)
 
 interface AudioDownloadHandle {
     fun setProgress(downloadedBytes: Long, totalBytes: Long?)
@@ -235,7 +280,9 @@ private data class AudioDownloadItem(
     var totalBytes: Long? = null,
     var cancelButtonBounds: Rectangle = Rectangle(),
     var removeButtonBounds: Rectangle = Rectangle()
-)
+) {
+    fun isActive(): Boolean = cancelEnabled && !removeEnabled
+}
 
 private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownloadItem> {
     private val maxTextWidth = 300

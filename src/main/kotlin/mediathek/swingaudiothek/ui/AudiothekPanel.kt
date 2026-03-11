@@ -140,6 +140,7 @@ class AudiothekPanel(
         toolBar.addFilterSubmitListener(::applyFilterNow)
         toolBar.addClearSearchListener { applyFilterNow("") }
         toolBar.addDownloadManagerListener(::toggleDownloadManager)
+        downloadManagerPanel.addProgressListener(toolBar::setDownloadProgress)
         downloadManagerPanel.addEmptyListener {
             if (downloadManagerPopup.isPopupVisible) {
                 downloadManagerPopup.hidePopup()
