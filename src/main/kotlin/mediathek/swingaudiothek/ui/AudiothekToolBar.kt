@@ -18,6 +18,7 @@
 
 package mediathek.swingaudiothek.ui
 
+import java.awt.Dimension
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -29,6 +30,7 @@ class AudiothekToolBar : JToolBar() {
 
     init {
         isFloatable = false
+        searchField.maximumSize = Dimension(500, searchField.preferredSize.height)
         clearSearchButton.isFocusable = false
         clearSearchButton.toolTipText = "Filter löschen"
         clearSearchButton.isEnabled = false
