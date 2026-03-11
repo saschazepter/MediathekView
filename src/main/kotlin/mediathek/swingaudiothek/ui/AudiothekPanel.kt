@@ -140,6 +140,11 @@ class AudiothekPanel(
         toolBar.addFilterSubmitListener(::applyFilterNow)
         toolBar.addClearSearchListener { applyFilterNow("") }
         toolBar.addDownloadManagerListener(::toggleDownloadManager)
+        downloadManagerPanel.addEmptyListener {
+            if (downloadManagerPopup.isPopupVisible) {
+                downloadManagerPopup.hidePopup()
+            }
+        }
         tableScrollPane.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(event: ComponentEvent?) {
                 syncErrorOverlayBounds()

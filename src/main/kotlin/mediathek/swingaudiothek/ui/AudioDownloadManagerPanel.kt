@@ -30,6 +30,7 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
     private val list = object : JList<AudioDownloadItem>(listModel) {
         override fun getScrollableTracksViewportWidth(): Boolean = true
     }
+    private var emptyListener: (() -> Unit)? = null
 
     init {
         preferredSize = Dimension(500, 320)
@@ -102,6 +103,13 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
 
     private fun removeItem(item: AudioDownloadItem) {
         listModel.removeElement(item)
+        if (listModel.isEmpty) {
+            emptyListener?.invoke()
+        }
+    }
+
+    fun addEmptyListener(listener: () -> Unit) {
+        emptyListener = listener
     }
 
     private fun repaintItem(item: AudioDownloadItem) {
