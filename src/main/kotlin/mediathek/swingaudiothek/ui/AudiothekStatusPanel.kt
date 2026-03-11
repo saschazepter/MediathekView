@@ -19,18 +19,27 @@
 package mediathek.swingaudiothek.ui
 
 import org.jdesktop.swingx.JXStatusBar
+import java.awt.FlowLayout
 import javax.swing.JLabel
+import javax.swing.JPanel
 import javax.swing.SwingConstants
 
 class AudiothekStatusPanel : JXStatusBar() {
     private val sourceLabel = JLabel("Stand: -")
     private val agePanel = AudiothekAgePanel()
+    private val activeDownloadsLabel = JLabel("")
     private val countLabel = JLabel("0 Einträge", SwingConstants.RIGHT)
+    private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
+        isOpaque = false
+        add(sourceLabel)
+        add(activeDownloadsLabel)
+    }
 
     init {
-        add(sourceLabel, Constraint(Constraint.ResizeBehavior.FILL))
+        add(leftPanel, Constraint(Constraint.ResizeBehavior.FILL))
         add(agePanel)
         add(countLabel)
+        activeDownloadsLabel.isVisible = false
     }
 
     fun setStand(text: String) {
@@ -55,5 +64,20 @@ class AudiothekStatusPanel : JXStatusBar() {
 
     fun setCount(text: String) {
         countLabel.text = text
+    }
+
+    fun setActiveDownloads(count: Int) {
+        if (count <= 0) {
+            activeDownloadsLabel.text = ""
+            activeDownloadsLabel.isVisible = false
+            return
+        }
+
+        activeDownloadsLabel.text = if (count == 1) {
+            "1 aktiver Download"
+        } else {
+            "$count aktive Downloads"
+        }
+        activeDownloadsLabel.isVisible = true
     }
 }
