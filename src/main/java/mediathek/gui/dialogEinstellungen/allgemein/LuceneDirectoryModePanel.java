@@ -30,7 +30,8 @@ import java.util.Locale;
 
 public class LuceneDirectoryModePanel extends JPanel {
     private final Configuration config = ApplicationConfiguration.getConfiguration();
-    private final JComboBox<String> modeComboBox = new JComboBox<>(new String[]{"auto", "mmap", "niofs", "in-memory"});
+    private static final String[] LUCENE_DIRECTORY_MODES = new String[]{"auto", "mmap", "niofs", "in-memory"};
+    private final JComboBox<String> modeComboBox = new JComboBox<>(LUCENE_DIRECTORY_MODES);
     private final JLabel descriptionLabel = new JLabel();
     private final JLabel restartWarningIconLabel = new JLabel(UIManager.getIcon("OptionPane.warningIcon"));
     private final JLabel restartWarningTextLabel = new JLabel("<html><b>Neustart notwendig</b></html>");
@@ -68,7 +69,7 @@ public class LuceneDirectoryModePanel extends JPanel {
         }
 
         var normalizedMode = mode.trim().toLowerCase(Locale.ROOT);
-        var isKnown = Arrays.asList(new String[]{"auto", "mmap", "niofs", "in-memory"}).contains(normalizedMode);
+        var isKnown = Arrays.asList(LUCENE_DIRECTORY_MODES).contains(normalizedMode);
         modeComboBox.setSelectedItem(isKnown ? normalizedMode : "auto");
     }
 
@@ -109,7 +110,7 @@ public class LuceneDirectoryModePanel extends JPanel {
         var text = switch (mode) {
             case "mmap" -> "mmap: Oft schnell bei Suchzugriffen, kann aber auf einigen Systemen Dateihandling beim Neuaufbau erschweren.";
             case "niofs" -> "niofs: Robustes Datei-I/O ohne Memory Mapping, meist stabiler beim Austausch/Löschen von Indexdateien.";
-            case "in-memory" -> "in-memory: Beste Performance, aber aber mehr Speicherverbrauch.";
+            case "in-memory" -> "in-memory: Beste Performance, aber höherer Speicherverbrauch.";
             default -> "auto: Lucene wählt automatisch die passende Directory-Implementierung für das Betriebssystem.";
         };
         descriptionLabel.setText("<html>" + text + "</html>");

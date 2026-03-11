@@ -12,6 +12,7 @@
 - **BUGFIX:** Wikipedia-Sendericons werden nicht mehr über das Netzwerk geladen da sich die Adressen regelmäßig ändern.
 - **BUGFIX:** Bei Wikipedia-Icons wird nun der transparente Außenbereich soweit wie möglich entfernt damit sie größer dargestellt werden.
 - **BUGFIX(macOS):** Ein gestarteter IINA-Player behindert nicht mehr das Beenden von MediathekView.
+- **BUGFIX(macOS):** Datei speichern-Dialog zeigt nun den vorgegebenen Dateinamen anstatt "Untitled" an.
 - **FEATURE:** Unterstützung für WebVTT-Untertitel bei Sendern.
 - **FEATURE:** Via *Hilfe/Live Programm-Log anzeigen* kann nun die Log-Datei in Echtzeit eingesehen werden.
 - **FEATURE:** Lucene Directory-Provider kann via *Einstellungen/Lucene-Tuning* konfiguriert werden. Je nach OS kann dies die Performance verbessern.
