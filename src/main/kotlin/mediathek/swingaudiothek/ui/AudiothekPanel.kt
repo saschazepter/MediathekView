@@ -100,6 +100,7 @@ class AudiothekPanel(
         add(tableContainer, BorderLayout.CENTER)
         add(southPanel, BorderLayout.SOUTH)
         errorOverlay.isVisible = false
+        syncErrorOverlayBounds()
         setupListeners()
     }
 
@@ -131,9 +132,9 @@ class AudiothekPanel(
         }
         toolBar.addFilterSubmitListener(::applyFilterNow)
         toolBar.addDownloadManagerListener(::toggleDownloadManager)
-        table.addComponentListener(object : ComponentAdapter() {
+        tableScrollPane.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(event: ComponentEvent?) {
-                errorOverlay.setSize(table.width, table.height)
+                syncErrorOverlayBounds()
             }
         })
     }
@@ -279,6 +280,7 @@ class AudiothekPanel(
     }
 
     private fun showErrorOverlay() {
+        syncErrorOverlayBounds()
         errorOverlay.isVisible = true
         tableContainer.repaint()
     }
@@ -286,6 +288,11 @@ class AudiothekPanel(
     private fun hideErrorOverlay() {
         errorOverlay.isVisible = false
         tableContainer.repaint()
+    }
+
+    private fun syncErrorOverlayBounds() {
+        errorOverlay.setSize(tableScrollPane.size)
+        errorOverlay.revalidate()
     }
 
     private fun applyFilterNow(query: String) {
