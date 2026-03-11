@@ -22,6 +22,7 @@ import com.jidesoft.popup.JidePopup
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Konstanten
+import mediathek.controller.history.SeenHistoryController
 import mediathek.gui.actions.UrlHyperlinkAction
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel
 import mediathek.mac.MacMultimediaPlayerLocator
@@ -113,6 +114,7 @@ class AudiothekPanel(
 
     fun disposePanel() {
         downloadManagerPopup.hidePopupImmediately()
+        table.dispose()
         table.saveState()
         uiScope.coroutineContext[Job]?.cancel()
     }
@@ -424,6 +426,7 @@ class AudiothekPanel(
                 }
 
                 moveDownloadedFile(tempFile, targetFile)
+                markAudioAsSeen(entry)
                 downloadHandle.markCompleted()
             } catch (_: CancellationException) {
                 Files.deleteIfExists(tempFile)
@@ -462,6 +465,17 @@ class AudiothekPanel(
                 targetFile,
                 StandardCopyOption.REPLACE_EXISTING
             )
+        }
+    }
+
+    private fun markAudioAsSeen(entry: AudioEntry) {
+        try {
+            SeenHistoryController().use {
+                it.markSeen(entry)
+            }
+            SwingUtilities.invokeLater { table.refreshSeenState() }
+        } catch (ex: Exception) {
+            logger.warn("Failed to mark downloaded audio as seen: {}", entry.audioUrl, ex)
         }
     }
 

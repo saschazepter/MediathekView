@@ -20,11 +20,14 @@ package mediathek.swingaudiothek.ui
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import mediathek.config.MVColor
+import mediathek.controller.history.SeenHistoryController
 import mediathek.swingaudiothek.model.AudioEntry
 import mediathek.tool.ApplicationConfiguration
 import org.apache.logging.log4j.LogManager
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import org.kordamp.ikonli.swing.FontIcon
+import java.awt.Component
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.time.LocalDate
@@ -34,6 +37,7 @@ import javax.swing.*
 import javax.swing.event.ListSelectionListener
 import javax.swing.event.TableColumnModelEvent
 import javax.swing.event.TableColumnModelListener
+import javax.swing.plaf.UIResource
 import javax.swing.table.TableCellRenderer
 import javax.swing.table.TableColumn
 
@@ -43,6 +47,7 @@ class AudiothekTable(
 ) : JTable(AudioTableModel()) {
     private val logger = LogManager.getLogger(AudiothekTable::class.java)
     private val audioTableModel = model as AudioTableModel
+    private val seenHistoryController = SeenHistoryController().apply { prepareMemoryCache() }
     private val sorter = TriStateTableRowSorter(audioTableModel)
     private val allColumns = linkedMapOf<Int, TableColumn>()
     private val lastKnownViewIndexes = mutableMapOf<Int, Int>()
@@ -101,6 +106,10 @@ class AudiothekTable(
         writeState()
     }
 
+    fun dispose() {
+        seenHistoryController.close()
+    }
+
     fun addEntrySelectionListener(listener: ListSelectionListener) {
         selectionModel.addListSelectionListener(listener)
     }
@@ -119,6 +128,31 @@ class AudiothekTable(
         if (rowCount > 0) {
             setRowSelectionInterval(0, 0)
         }
+    }
+
+    fun refreshSeenState() {
+        repaint()
+    }
+
+    override fun prepareRenderer(renderer: TableCellRenderer, row: Int, column: Int): Component {
+        val component = super.prepareRenderer(renderer, row, column)
+        if (!isRowSelected(row)) {
+            component.background = defaultRowBackground(row)
+            val entry = audioTableModel.getEntry(convertRowIndexToModel(row))
+            if (entry != null && seenHistoryController.hasBeenSeenFromCache(entry)) {
+                component.background = MVColor.FILM_HISTORY.color
+            }
+        }
+        return component
+    }
+
+    private fun defaultRowBackground(row: Int): java.awt.Color {
+        if (row % 2 != 0) {
+            UIManager.getColor("Table.alternateRowColor")?.let { return it }
+        }
+        return background.takeUnless { it is UIResource }
+            ?: UIManager.getColor("Table.background")
+            ?: background
     }
 
     private fun configureSorting() {

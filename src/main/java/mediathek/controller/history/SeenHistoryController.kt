@@ -3,6 +3,7 @@ package mediathek.controller.history
 import mediathek.config.Daten
 import mediathek.daten.DatenFilm
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
+import mediathek.swingaudiothek.model.AudioEntry
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.MessageBus
 import mediathek.tool.sql.SqlDatabaseConfig
@@ -87,11 +88,11 @@ class SeenHistoryController : AutoCloseable {
             return
         }
 
-        if (film.isLivestream) return
-        if (hasBeenSeen(film)) return
+        val entry = film.toSeenHistoryEntry() ?: return
+        if (hasBeenSeenUrl(entry.url)) return
         try {
-            writeToDatabase(film)
-            addToPreparedCache(film.urlNormalQuality)
+            writeToDatabase(entry)
+            addToPreparedCache(entry.url)
             Daten.getInstance().listeBookmarkList.updateSeen(true, film)
 
             sendChangeMessage()
@@ -104,26 +105,25 @@ class SeenHistoryController : AutoCloseable {
         try {
             val candidates = list
                 .asSequence()
-                .filterNot { it.isLivestream }
-                .filter { it.urlNormalQuality.isNotBlank() }
-                .distinctBy { it.urlNormalQuality }
+                .mapNotNull { film -> film.toSeenHistoryEntry()?.let { film to it } }
+                .distinctBy { (_, entry) -> entry.url }
                 .toList()
 
             if (candidates.isNotEmpty()) {
-                val existingUrls = findExistingUrls(candidates.map { it.urlNormalQuality })
+                val existingUrls = findExistingUrls(candidates.map { (_, entry) -> entry.url })
                 val insertedUrls = ArrayList<String>(candidates.size)
 
                 inTransaction {
-                    for (film in candidates) {
-                        if (film.urlNormalQuality in existingUrls) {
+                    for ((_, entry) in candidates) {
+                        if (entry.url in existingUrls) {
                             continue
                         }
 
-                        insertStatement.setString(1, film.thema)
-                        insertStatement.setString(2, film.title)
-                        insertStatement.setString(3, film.urlNormalQuality)
+                        insertStatement.setString(1, entry.theme)
+                        insertStatement.setString(2, entry.title)
+                        insertStatement.setString(3, entry.url)
                         insertStatement.addBatch()
-                        insertedUrls.add(film.urlNormalQuality)
+                        insertedUrls.add(entry.url)
                     }
                     insertStatement.executeBatch()
                 }
@@ -137,6 +137,23 @@ class SeenHistoryController : AutoCloseable {
             sendChangeMessage()
         } catch (ex: SQLException) {
             logger.error("markSeen", ex)
+        }
+    }
+
+    fun markSeen(entry: AudioEntry?) {
+        if (entry == null) {
+            logger.warn("markSeen: no audio entry found")
+            return
+        }
+
+        val historyEntry = entry.toSeenHistoryEntry() ?: return
+        if (hasBeenSeenUrl(historyEntry.url)) return
+        try {
+            writeToDatabase(historyEntry)
+            addToPreparedCache(historyEntry.url)
+            sendChangeMessage()
+        } catch (ex: SQLException) {
+            logger.error("markSeen audio", ex)
         }
     }
 
@@ -218,15 +235,44 @@ class SeenHistoryController : AutoCloseable {
         return urlCache.contains(film.urlNormalQuality)
     }
 
+    fun hasBeenSeenFromCache(entry: AudioEntry): Boolean {
+        if (!memCachePrepared)
+            prepareMemoryCache()
+
+        val url = entry.audioUrl?.toString().orEmpty()
+        return url.isNotBlank() && urlCache.contains(url)
+    }
+
     fun hasBeenSeen(film: DatenFilm): Boolean {
         if (memCachePrepared) {
             return urlCache.contains(film.urlNormalQuality)
         }
 
+        return hasBeenSeenUrl(film.urlNormalQuality)
+    }
+
+    fun hasBeenSeen(entry: AudioEntry): Boolean {
+        val url = entry.audioUrl?.toString().orEmpty()
+        if (url.isBlank()) {
+            return false
+        }
+
+        if (memCachePrepared) {
+            return urlCache.contains(url)
+        }
+
+        return hasBeenSeenUrl(url)
+    }
+
+    private fun hasBeenSeenUrl(url: String): Boolean {
+        if (url.isBlank()) {
+            return false
+        }
+
         var result: Boolean
 
         try {
-            seenStatement.setString(1, film.urlNormalQuality)
+            seenStatement.setString(1, url)
             seenStatement.executeQuery().use {
                 it.next()
                 val total = it.getInt(1)
@@ -270,14 +316,14 @@ class SeenHistoryController : AutoCloseable {
     /**
      * Write an entry to the database.
      *
-     * @param film the film data to be written.
+     * @param entry the history data to be written.
      * @throws SQLException .
      */
     @Throws(SQLException::class)
-    private fun writeToDatabase(film: DatenFilm) {
-        insertStatement.setString(1, film.thema)
-        insertStatement.setString(2, film.title)
-        insertStatement.setString(3, film.urlNormalQuality)
+    private fun writeToDatabase(entry: SeenHistoryEntry) {
+        insertStatement.setString(1, entry.theme)
+        insertStatement.setString(2, entry.title)
+        insertStatement.setString(3, entry.url)
         // write each entry into database
         insertStatement.executeUpdate()
     }
@@ -512,4 +558,32 @@ class SeenHistoryController : AutoCloseable {
             throw IllegalStateException("Could not initialize seen history controller", ex)
         }
     }
+}
+
+private data class SeenHistoryEntry(
+    val theme: String,
+    val title: String,
+    val url: String
+)
+
+private fun DatenFilm.toSeenHistoryEntry(): SeenHistoryEntry? {
+    if (isLivestream) {
+        return null
+    }
+
+    val url = urlNormalQuality.takeIf(String::isNotBlank) ?: return null
+    return SeenHistoryEntry(
+        theme = thema,
+        title = title,
+        url = url
+    )
+}
+
+private fun AudioEntry.toSeenHistoryEntry(): SeenHistoryEntry? {
+    val url = audioUrl?.toString()?.takeIf(String::isNotBlank) ?: return null
+    return SeenHistoryEntry(
+        theme = theme,
+        title = title,
+        url = url
+    )
 }
