@@ -18,6 +18,7 @@
 
 package mediathek.mainwindow;
 
+import com.formdev.flatlaf.FlatLaf;
 import mediathek.gui.messages.DarkModeChangeEvent;
 import mediathek.tool.MessageBus;
 import net.engio.mbassy.listener.Handler;
@@ -26,138 +27,222 @@ import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.ValueMarker;
 import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYAreaRenderer;
+import org.jfree.chart.ui.Layer;
 import org.jfree.chart.ui.RectangleInsets;
 import org.jfree.data.time.Millisecond;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.data.time.TimeSeriesDataItem;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.text.DecimalFormat;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import java.util.Objects;
 
-public class MemoryUsagePanel extends JPanel {
+public final class MemoryUsagePanel extends JPanel implements AutoCloseable {
+    private static final RectangleInsets CHART_INSETS = new RectangleInsets(5.0, 5.0, 5.0, 5.0);
+    private static final BasicStroke AVERAGE_STROKE = new BasicStroke(1.5f);
+    private static final Color SERIES_FILL = new Color(255, 0, 0, 100);
+    private static final Color SERIES_OUTLINE = Color.RED;
+    private static final Color AVERAGE_LINE_LIGHT_THEME = new Color(0, 170, 0);
+    private static final Color AVERAGE_LINE_DARK_THEME = new Color(144, 238, 144);
+    private static final Color FALLBACK_LABEL_COLOR = Color.LIGHT_GRAY;
+    private static final Color FALLBACK_BACKGROUND_COLOR = Color.DARK_GRAY;
+    private static final Runtime RUNTIME = Runtime.getRuntime();
 
-    private final TimeSeries total = new TimeSeries("Total Memory");
-    private final DateAxis domain = new DateAxis("Time");
-    private final NumberAxis range = new NumberAxis("Memory");
+    private final MonitorConfiguration configuration;
+    private final TimeSeries usedMemorySeries = new TimeSeries("Used Memory");
+    private final DateAxis timeAxis = createTimeAxis();
+    private final NumberAxis memoryAxis = createMemoryAxis();
+    private final ValueMarker averageMarker = createAverageMarker();
+    private final XYPlot plot;
     private final JFreeChart chart;
+    private final Timer samplingTimer;
+    private boolean subscribedToMessageBus;
 
-    public MemoryUsagePanel(int maxAge, @NotNull TimeUnit timeUnit) {
-
+    public MemoryUsagePanel(@NotNull Duration historyWindow, @NotNull Duration sampleInterval) {
         super(new BorderLayout());
+        configuration = new MonitorConfiguration(historyWindow, sampleInterval);
 
-        total.setMaximumItemAge(TimeUnit.MILLISECONDS.convert(maxAge, timeUnit));
+        configureDataset();
+        plot = createPlot();
+        chart = createChart();
+        samplingTimer = createSamplingTimer();
 
-        TimeSeriesCollection dataset = new TimeSeriesCollection();
-        dataset.addSeries(total);
+        add(createChartPanel(), BorderLayout.CENTER);
+        applyTheme();
+    }
 
-        range.setAutoRange(true);
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        subscribeToMessageBus();
+        samplingTimer.start();
+    }
 
+    @Override
+    public void removeNotify() {
+        samplingTimer.stop();
+        unsubscribeFromMessageBus();
+        super.removeNotify();
+    }
+
+    @Override
+    public void close() {
+        samplingTimer.stop();
+        unsubscribeFromMessageBus();
+    }
+
+    @Handler
+    private void handleDarkModeChange(DarkModeChangeEvent event) {
+        SwingUtilities.invokeLater(this::applyTheme);
+    }
+
+    private void configureDataset() {
+        usedMemorySeries.setMaximumItemAge(configuration.historyWindow().toMillis());
+        usedMemorySeries.setMaximumItemCount(configuration.maxItemCount());
+    }
+
+    private DateAxis createTimeAxis() {
+        var axis = new DateAxis("Zeit");
+        axis.setAutoRange(true);
+        axis.setLowerMargin(0.0);
+        axis.setUpperMargin(0.0);
+        axis.setTickLabelsVisible(true);
+        return axis;
+    }
+
+    private NumberAxis createMemoryAxis() {
+        var axis = new NumberAxis("MiB");
+        axis.setAutoRange(true);
+        axis.setAutoRangeIncludesZero(true);
+        axis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+        return axis;
+    }
+
+    private XYPlot createPlot() {
+        var dataset = new TimeSeriesCollection(usedMemorySeries);
         var renderer = new XYAreaRenderer();
         renderer.setOutline(true);
-        renderer.setSeriesPaint(0, new Color(255, 0, 0, 100));
-        renderer.setSeriesOutlinePaint(0, Color.RED);
+        renderer.setSeriesPaint(0, SERIES_FILL);
+        renderer.setSeriesOutlinePaint(0, SERIES_OUTLINE);
 
-        var plot = new XYPlot(dataset, domain, range, renderer);
-        plot.setBackgroundPaint(Color.BLACK);
-        plot.setAxisOffset(new RectangleInsets(5.0, 5.0, 5.0, 5.0));
+        var xyPlot = new XYPlot(dataset, timeAxis, memoryAxis, renderer);
+        xyPlot.setAxisOffset(CHART_INSETS);
+        xyPlot.addRangeMarker(averageMarker, Layer.FOREGROUND);
+        return xyPlot;
+    }
 
-        domain.setAutoRange(true);
-        domain.setLowerMargin(0.0);
-        domain.setUpperMargin(0.0);
-        domain.setTickLabelsVisible(true);
+    private JFreeChart createChart() {
+        var freeChart = new JFreeChart(plot);
+        freeChart.setAntiAlias(true);
+        freeChart.removeLegend();
+        return freeChart;
+    }
 
-        range.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-        range.setNumberFormatOverride(new DecimalFormat("#######.##"));
-
-        chart = new JFreeChart(plot);
-        chart.setAntiAlias(true);
-        chart.removeLegend();
-
-        setLabelColors();
-
+    private ChartPanel createChartPanel() {
         var chartPanel = new ChartPanel(chart);
         chartPanel.setPopupMenu(null);
         chartPanel.setMouseZoomable(false);
         chartPanel.setDomainZoomable(false);
         chartPanel.setRangeZoomable(false);
         chartPanel.setMouseWheelEnabled(false);
-        chartPanel.addMouseListener(new MouseAdapter() {
+        chartPanel.addMouseListener(new java.awt.event.MouseAdapter() {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                System.gc();
+            public void mouseClicked(java.awt.event.MouseEvent event) {
+                RUNTIME.gc();
             }
         });
-        add(chartPanel);
-
-        MessageBus.getMessageBus().subscribe(this);
+        return chartPanel;
     }
 
-    @Handler
-    private void handleDarkModeChange(DarkModeChangeEvent e) {
-        SwingUtilities.invokeLater(this::setLabelColors);
+    private Timer createSamplingTimer() {
+        var delayMillis = Math.toIntExact(configuration.sampleInterval().toMillis());
+        return new Timer(delayMillis, _ -> sampleUsedMemory());
     }
 
-    private void setLabelColors() {
-        var labelColor = UIManager.getColor("Label.foreground");
-        var panelColor = UIManager.getColor("Panel.background");
-        if (labelColor == null) {
-            labelColor = Color.LIGHT_GRAY;
+    private void sampleUsedMemory() {
+        var usedMemoryInMiB = usedMemoryInMiB();
+        usedMemorySeries.addOrUpdate(new Millisecond(), usedMemoryInMiB);
+        averageMarker.setValue(calculateAverageUsedMemoryInMiB());
+    }
+
+    private double usedMemoryInMiB() {
+        return (RUNTIME.totalMemory() - RUNTIME.freeMemory()) / (1024d * 1024d);
+    }
+
+    private ValueMarker createAverageMarker() {
+        var marker = new ValueMarker(0d, AVERAGE_LINE_LIGHT_THEME, AVERAGE_STROKE);
+        marker.setAlpha(0.9f);
+        return marker;
+    }
+
+    private double calculateAverageUsedMemoryInMiB() {
+        var itemCount = usedMemorySeries.getItemCount();
+        if (itemCount == 0) {
+            return 0d;
         }
-        if (panelColor == null) {
-            panelColor = Color.DARK_GRAY;
+
+        double totalUsedMemory = 0d;
+        for (var item : usedMemorySeries.getItems()) {
+            totalUsedMemory += ((TimeSeriesDataItem) item).getValue().doubleValue();
         }
+        return totalUsedMemory / itemCount;
+    }
 
-        domain.setLabelPaint(labelColor);
-        domain.setTickLabelPaint(labelColor);
-        domain.setTickMarkPaint(labelColor);
-        domain.setAxisLinePaint(labelColor);
+    private void applyTheme() {
+        var labelColor = Objects.requireNonNullElse(UIManager.getColor("Label.foreground"), FALLBACK_LABEL_COLOR);
+        var panelColor = Objects.requireNonNullElse(UIManager.getColor("Panel.background"), FALLBACK_BACKGROUND_COLOR);
 
-        range.setLabelPaint(labelColor);
-        range.setTickLabelPaint(labelColor);
-        range.setTickMarkPaint(labelColor);
-        range.setAxisLinePaint(labelColor);
+        timeAxis.setLabelPaint(labelColor);
+        timeAxis.setTickLabelPaint(labelColor);
+        timeAxis.setTickMarkPaint(labelColor);
+        timeAxis.setAxisLinePaint(labelColor);
 
+        memoryAxis.setLabelPaint(labelColor);
+        memoryAxis.setTickLabelPaint(labelColor);
+        memoryAxis.setTickMarkPaint(labelColor);
+        memoryAxis.setAxisLinePaint(labelColor);
+
+        averageMarker.setPaint(FlatLaf.isLafDark() ? AVERAGE_LINE_DARK_THEME : AVERAGE_LINE_LIGHT_THEME);
         chart.setBackgroundPaint(panelColor);
-        XYPlot plot = (XYPlot) chart.getPlot();
         plot.setBackgroundPaint(panelColor);
         plot.setOutlinePaint(labelColor);
         plot.setDomainGridlinePaint(labelColor);
         plot.setRangeGridlinePaint(labelColor);
     }
 
-    private void addTotalObservation(double y) {
-        total.add(new Millisecond(), y);
+    private void subscribeToMessageBus() {
+        if (!subscribedToMessageBus) {
+            MessageBus.getMessageBus().subscribe(this);
+            subscribedToMessageBus = true;
+        }
     }
 
-    public class MemoryUsageDataGenerator extends Timer implements ActionListener {
+    private void unsubscribeFromMessageBus() {
+        if (subscribedToMessageBus) {
+            MessageBus.getMessageBus().unsubscribe(this);
+            subscribedToMessageBus = false;
+        }
+    }
 
-        /**
-         * Constructor.
-         *
-         * @param interval the interval
-         */
-        public MemoryUsageDataGenerator(int interval, @NotNull TimeUnit timeUnit) {
-            super((int) TimeUnit.MILLISECONDS.convert(interval, timeUnit), null);
-            addActionListener(this);
+    public record MonitorConfiguration(Duration historyWindow, Duration sampleInterval) {
+        public MonitorConfiguration {
+            Objects.requireNonNull(historyWindow, "historyWindow");
+            Objects.requireNonNull(sampleInterval, "sampleInterval");
+            if (historyWindow.isZero() || historyWindow.isNegative()) {
+                throw new IllegalArgumentException("historyWindow must be positive");
+            }
+            if (sampleInterval.isZero() || sampleInterval.isNegative()) {
+                throw new IllegalArgumentException("sampleInterval must be positive");
+            }
         }
 
-        /**
-         * Adds a new total memory reading (converted to MByte) to the dataset.
-         *
-         * @param event the action event.
-         */
-        public void actionPerformed(ActionEvent event) {
-            long t = Runtime.getRuntime().totalMemory() / (1024 * 1024);
-            addTotalObservation(t);
+        public int maxItemCount() {
+            return Math.toIntExact(Math.max(2L, Math.ceilDiv(historyWindow.toMillis(), sampleInterval.toMillis()) + 1L));
         }
-
     }
 }
