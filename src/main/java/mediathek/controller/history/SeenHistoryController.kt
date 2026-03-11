@@ -25,6 +25,8 @@ class SeenHistoryController : AutoCloseable {
     private var insertStatement: PreparedStatement
     private val dataSource: SQLiteDataSource = SqlDatabaseConfig.dataSource
     private var deleteStatement: PreparedStatement
+    private var existingUrlProbeClearStatement: PreparedStatement
+    private var existingUrlProbeInsertStatement: PreparedStatement
     private var seenStatement: PreparedStatement
 
     /**
@@ -420,10 +422,29 @@ class SeenHistoryController : AutoCloseable {
         }
 
         val existingUrls = LinkedHashSet<String>(urls.size)
-        for (url in urls.asSequence().filter(String::isNotBlank)) {
-            if (hasBeenSeenUrl(url)) {
-                existingUrls.add(url)
+        val candidates = urls.asSequence().filter(String::isNotBlank).distinct().toList()
+        if (candidates.isEmpty()) {
+            return emptySet()
+        }
+
+        inTransaction {
+            existingUrlProbeClearStatement.executeUpdate()
+
+            for (url in candidates) {
+                existingUrlProbeInsertStatement.setString(1, url)
+                existingUrlProbeInsertStatement.addBatch()
             }
+            existingUrlProbeInsertStatement.executeBatch()
+
+            connection.createStatement().use { statement ->
+                statement.executeQuery(FIND_EXISTING_URLS_SQL).use { rs ->
+                    while (rs.next()) {
+                        existingUrls.add(rs.getString(1))
+                    }
+                }
+            }
+
+            existingUrlProbeClearStatement.executeUpdate()
         }
         return existingUrls
     }
@@ -439,6 +460,8 @@ class SeenHistoryController : AutoCloseable {
         try {
             insertStatement.close()
             deleteStatement.close()
+            existingUrlProbeClearStatement.close()
+            existingUrlProbeInsertStatement.close()
             seenStatement.close()
             connection.close()
 
@@ -454,6 +477,14 @@ class SeenHistoryController : AutoCloseable {
         private val logger = LogManager.getLogger()
         private const val INSERT_SQL = "INSERT OR IGNORE INTO seen_history(thema,titel,url) values (?,?,?)"
         private const val DELETE_SQL = "DELETE FROM seen_history WHERE url = ?"
+        private const val CREATE_EXISTING_URL_PROBE_TABLE_SQL = "CREATE TEMP TABLE IF NOT EXISTS temp_seen_history_probe(url TEXT PRIMARY KEY)"
+        private const val CLEAR_EXISTING_URL_PROBE_SQL = "DELETE FROM temp_seen_history_probe"
+        private const val INSERT_EXISTING_URL_PROBE_SQL = "INSERT OR IGNORE INTO temp_seen_history_probe(url) VALUES (?)"
+        private const val FIND_EXISTING_URLS_SQL = """
+            SELECT sh.url
+            FROM seen_history sh
+            INNER JOIN temp_seen_history_probe probe ON probe.url = sh.url
+        """
         private const val SEEN_SQL = "SELECT COUNT(url) AS total FROM seen_history WHERE url = ?"
         private const val LASTRUN = "database.seen_history.maintenance.lastRun"
         private const val MAX_DAYS: Long = 30
@@ -555,9 +586,14 @@ class SeenHistoryController : AutoCloseable {
 
             performSqliteSetup()
             ensureUniqueUrlIndex()
+            connection.createStatement().use { statement ->
+                statement.executeUpdate(CREATE_EXISTING_URL_PROBE_TABLE_SQL)
+            }
 
             insertStatement = connection.prepareStatement(INSERT_SQL)
             deleteStatement = connection.prepareStatement(DELETE_SQL)
+            existingUrlProbeClearStatement = connection.prepareStatement(CLEAR_EXISTING_URL_PROBE_SQL)
+            existingUrlProbeInsertStatement = connection.prepareStatement(INSERT_EXISTING_URL_PROBE_SQL)
             seenStatement = connection.prepareStatement(SEEN_SQL)
 
             installShutdownHook()
