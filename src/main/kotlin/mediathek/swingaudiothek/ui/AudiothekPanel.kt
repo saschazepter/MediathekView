@@ -386,7 +386,7 @@ class AudiothekPanel(
                         error("Download fehlgeschlagen: HTTP ${response.code}")
                     }
 
-                    val body = response.body ?: error("Download fehlgeschlagen: keine Antwortdaten")
+                    val body = response.body
                     val totalBytes = body.contentLength().takeIf { it >= 0L }
 
                     downloadHandle.setProgress(0L, totalBytes)
