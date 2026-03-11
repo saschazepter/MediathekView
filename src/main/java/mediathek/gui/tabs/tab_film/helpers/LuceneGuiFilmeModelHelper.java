@@ -76,7 +76,7 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
     }
 
     private Collection<DatenFilm> getAllFilms() {
-        return (IndexedFilmList) Daten.getInstance().getListeFilmeNachBlackList();
+        return Daten.getInstance().getListeFilmeNachBlackList();
     }
 
     private Collection<DatenFilm> filterFilms() {
@@ -96,7 +96,7 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
                 parser.setAllowLeadingWildcard(true);
                 Query initialQuery;
                 if (filterContext.searchFieldText().isEmpty())
-                    initialQuery = new MatchAllDocsQuery();
+                    initialQuery = MatchAllDocsQuery.INSTANCE;
                 else
                     initialQuery = parser.parse(filterContext.searchFieldText(), LuceneIndexKeys.TITEL);
 
