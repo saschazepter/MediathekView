@@ -5,10 +5,7 @@ import mediathek.tool.ApplicationConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.MMapDirectory;
-import org.apache.lucene.store.NIOFSDirectory;
+import org.apache.lucene.store.*;
 
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -41,6 +38,7 @@ public class IndexedFilmList extends ListeFilme {
             case "mmap" -> new MMapDirectory(indexPath);
             case "niofs" -> new NIOFSDirectory(indexPath);
             case "auto" -> FSDirectory.open(indexPath);
+            case "in-memory" -> new ByteBuffersDirectory();
             default -> {
                 logger.warn("Unknown Lucene directory mode '{}', falling back to 'auto'", mode);
                 yield FSDirectory.open(indexPath);
