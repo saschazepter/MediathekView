@@ -18,21 +18,30 @@
 
 package mediathek.swingaudiothek.ui
 
-import javax.swing.JButton
-import javax.swing.JLabel
-import javax.swing.JTextField
-import javax.swing.JToolBar
+import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 
 class AudiothekToolBar : JToolBar() {
     private val searchField = JTextField(28)
+    private val clearSearchButton = JButton("x")
     private val downloadManagerButton = JButton("dlm")
 
     init {
         isFloatable = false
+        clearSearchButton.isFocusable = false
+        clearSearchButton.toolTipText = "Filter löschen"
+        clearSearchButton.isEnabled = false
+        searchField.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent?) = updateClearButtonState()
+            override fun removeUpdate(e: DocumentEvent?) = updateClearButtonState()
+            override fun changedUpdate(e: DocumentEvent?) = updateClearButtonState()
+        })
 
         add(JLabel("Filter"))
         addSeparator()
         add(searchField)
+        add(clearSearchButton)
         addSeparator()
         add(downloadManagerButton)
     }
@@ -45,11 +54,28 @@ class AudiothekToolBar : JToolBar() {
         downloadManagerButton.addActionListener { action() }
     }
 
+    fun addClearSearchListener(action: () -> Unit) {
+        clearSearchButton.action = object : AbstractAction("x") {
+            override fun actionPerformed(e: java.awt.event.ActionEvent?) {
+                searchField.text = ""
+                action()
+            }
+        }
+        clearSearchButton.toolTipText = "Filter löschen"
+        clearSearchButton.isFocusable = false
+        updateClearButtonState()
+    }
+
     fun downloadManagerAnchor(): JButton = downloadManagerButton
 
     fun setLoading(loading: Boolean) {
         searchField.isEnabled = !loading
+        clearSearchButton.isEnabled = !loading && searchField.text.isNotBlank()
     }
 
     fun currentQuery(): String = searchField.text
+
+    private fun updateClearButtonState() {
+        clearSearchButton.isEnabled = searchField.isEnabled && searchField.text.isNotBlank()
+    }
 }

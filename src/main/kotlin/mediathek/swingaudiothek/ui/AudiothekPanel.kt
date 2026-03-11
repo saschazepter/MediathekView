@@ -131,6 +131,7 @@ class AudiothekPanel(
             }
         }
         toolBar.addFilterSubmitListener(::applyFilterNow)
+        toolBar.addClearSearchListener { applyFilterNow("") }
         toolBar.addDownloadManagerListener(::toggleDownloadManager)
         tableScrollPane.addComponentListener(object : ComponentAdapter() {
             override fun componentResized(event: ComponentEvent?) {
