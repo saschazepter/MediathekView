@@ -18,6 +18,8 @@
 
 package mediathek.swingaudiothek.ui
 
+import org.kordamp.ikonli.materialdesign2.MaterialDesignT
+import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Dimension
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -26,7 +28,8 @@ import javax.swing.event.DocumentListener
 class AudiothekToolBar : JToolBar() {
     private val searchField = JTextField(28)
     private val clearSearchButton = JButton("x")
-    private val downloadManagerButton = JButton("dlm")
+    private val downloadManagerButton = JButton()
+    private val downloadManagerIdleIcon = FontIcon.of(MaterialDesignT.TRAY_ARROW_DOWN, 16)
     private val downloadProgressIcon = CircularProgressIcon()
 
     init {
@@ -36,6 +39,7 @@ class AudiothekToolBar : JToolBar() {
         clearSearchButton.toolTipText = "Filter löschen"
         clearSearchButton.isEnabled = false
         downloadManagerButton.isFocusable = false
+        downloadManagerButton.icon = downloadManagerIdleIcon
         downloadManagerButton.horizontalTextPosition = SwingConstants.RIGHT
         downloadManagerButton.iconTextGap = 6
         searchField.document.addDocumentListener(object : DocumentListener {
@@ -76,15 +80,13 @@ class AudiothekToolBar : JToolBar() {
 
     fun setDownloadProgress(summary: DownloadSummary) {
         if (summary.activeCount <= 0) {
-            downloadManagerButton.icon = null
-            downloadManagerButton.text = "dlm"
+            downloadManagerButton.icon = downloadManagerIdleIcon
             downloadManagerButton.toolTipText = null
             return
         }
 
         downloadProgressIcon.progress = summary.progress
         downloadManagerButton.icon = downloadProgressIcon
-        downloadManagerButton.text = "dlm"
         downloadManagerButton.toolTipText = "${(summary.progress * 100).toInt()} %"
         downloadManagerButton.repaint()
     }
