@@ -419,17 +419,10 @@ class SeenHistoryController : AutoCloseable {
             return emptySet()
         }
 
-        val existingUrls = HashSet<String>(urls.size)
-        for (chunk in urls.chunked(MAX_SQL_VARIABLES)) {
-            val placeholders = chunk.joinToString(",") { "?" }
-            val sql = "SELECT url FROM seen_history WHERE url IN ($placeholders)"
-            connection.prepareStatement(sql).use { statement ->
-                chunk.forEachIndexed { index, url -> statement.setString(index + 1, url) }
-                statement.executeQuery().use { rs ->
-                    while (rs.next()) {
-                        existingUrls.add(rs.getString(1))
-                    }
-                }
+        val existingUrls = LinkedHashSet<String>(urls.size)
+        for (url in urls.asSequence().filter(String::isNotBlank)) {
+            if (hasBeenSeenUrl(url)) {
+                existingUrls.add(url)
             }
         }
         return existingUrls
@@ -464,7 +457,6 @@ class SeenHistoryController : AutoCloseable {
         private const val SEEN_SQL = "SELECT COUNT(url) AS total FROM seen_history WHERE url = ?"
         private const val LASTRUN = "database.seen_history.maintenance.lastRun"
         private const val MAX_DAYS: Long = 30
-        private const val MAX_SQL_VARIABLES = 900
         private val CACHE_LOCK = Any()
         private val urlCache = ConcurrentHashMap.newKeySet<String>()
         @Volatile private var memCachePrepared: Boolean = false
