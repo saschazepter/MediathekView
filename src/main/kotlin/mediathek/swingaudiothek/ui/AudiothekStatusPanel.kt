@@ -37,6 +37,10 @@ class AudiothekStatusPanel : JXStatusBar() {
         sourceLabel.text = text
     }
 
+    fun setStandVisible(visible: Boolean) {
+        sourceLabel.isVisible = visible
+    }
+
     fun setAge(text: String) {
         agePanel.setAge(text)
     }

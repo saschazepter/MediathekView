@@ -38,6 +38,7 @@ import mediathek.tool.http.MVHttpClient
 import okhttp3.Call
 import okhttp3.Request
 import org.apache.commons.lang3.SystemUtils
+import org.apache.logging.log4j.LogManager
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.BorderLayout
 import java.awt.Desktop
@@ -60,6 +61,7 @@ import javax.swing.*
 class AudiothekPanel(
     private val repository: AudioRepository
 ) : JPanel(BorderLayout(10, 10)) {
+    private val logger = LogManager.getLogger(AudiothekPanel::class.java)
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private var loadJob: Job? = null
     private var ageTickerJob: Job? = null
@@ -171,6 +173,7 @@ class AudiothekPanel(
         datasetTimestamp = result.dataset.metaLocal
         table.setRows(result.dataset.entries)
         applyFilterNow(toolBar.currentQuery())
+        statusPanel.setStandVisible(true)
         statusPanel.setStand("Stand: ${result.dataset.metaLocal?.format(DATASET_TIMESTAMP_FORMAT) ?: "-"}")
         startAgeTicker()
         refreshSelectionState()
@@ -190,6 +193,8 @@ class AudiothekPanel(
     }
 
     private fun handleLoadFailure(error: Throwable, isManualReload: Boolean) {
+        logger.error("Failed to load Audiothek data", error)
+
         if (isManualReload && table.rowCount > 0) {
             JOptionPane.showMessageDialog(
                 this,
@@ -205,7 +210,8 @@ class AudiothekPanel(
         stopAgeTicker()
         showErrorOverlay()
         detailsPanel.setCurrentAudioEntry(null)
-        statusPanel.setStand(error.message ?: error::class.java.simpleName)
+        statusPanel.setStandVisible(false)
+        statusPanel.setStand("Stand: -")
         statusPanel.setAge("")
         statusPanel.setCount("0 Einträge")
     }
