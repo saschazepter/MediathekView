@@ -291,7 +291,7 @@ class AudiothekPanel(
     }
 
     private fun syncErrorOverlayBounds() {
-        errorOverlay.setSize(tableScrollPane.size)
+        errorOverlay.size = tableScrollPane.size
         errorOverlay.revalidate()
     }
 
