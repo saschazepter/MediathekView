@@ -24,6 +24,7 @@ import com.formdev.flatlaf.themes.FlatMacLightLaf;
 import org.apache.commons.lang3.SystemUtils;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.event.*;
@@ -37,6 +38,7 @@ public final class SwingPopoverControl {
     private JDialog window;                    // <-- was JWindow, jetzt JDialog (pro show neu)
     private final Bubble bubble;
     private final JPanel contentHost;
+    private Border contentBorder = new EmptyBorder(12, 14, 12, 14);
     private boolean perPixelTransparencyEnabled = true;
 
     private AWTEventListener outsideClickListener;
@@ -66,7 +68,7 @@ public final class SwingPopoverControl {
 
         contentHost = new JPanel(new BorderLayout());
         contentHost.setOpaque(false);
-        contentHost.setBorder(new EmptyBorder(12, 14, 12, 14));
+        contentHost.setBorder(contentBorder);
 
         bubble.add(contentHost, BorderLayout.CENTER);
     }
@@ -192,6 +194,20 @@ public final class SwingPopoverControl {
 
     public boolean isShowing() {
         return window != null && window.isVisible();
+    }
+
+    public void setContentPadding(int top, int left, int bottom, int right) {
+        setContentBorder(new EmptyBorder(top, left, bottom, right));
+    }
+
+    public void setContentBorder(Border border) {
+        contentBorder = (border != null) ? border : BorderFactory.createEmptyBorder();
+        contentHost.setBorder(contentBorder);
+        contentHost.revalidate();
+        if (window != null) {
+            window.pack();
+            reposition();
+        }
     }
 
     public void show(Component anchor, JComponent content, Placement placement) {

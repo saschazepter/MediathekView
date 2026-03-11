@@ -18,6 +18,7 @@
 
 package mediathek.swingaudiothek.ui
 
+import com.jidesoft.popup.JidePopup
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Konstanten
@@ -27,7 +28,6 @@ import mediathek.mac.MacMultimediaPlayerLocator
 import mediathek.mac.SingleIinaPlayer
 import mediathek.mainwindow.MediathekGui
 import mediathek.swing.OverlayPanel
-import mediathek.swing.SwingPopoverControl
 import mediathek.swingaudiothek.data.AudioDownloadStatus
 import mediathek.swingaudiothek.data.AudioLoadResult
 import mediathek.swingaudiothek.data.AudioRepository
@@ -88,8 +88,15 @@ class AudiothekPanel(
 
     private val downloadClient = MVHttpClient.getInstance().httpClient
     private val downloadManagerPanel = AudioDownloadManagerPanel()
-    private val downloadManagerPopover = SwingPopoverControl().apply {
-        setDismissOnFocusLost(true)
+    private val downloadManagerPopup = JidePopup().apply {
+        contentPane.layout = BorderLayout()
+        contentPane.add(downloadManagerPanel, BorderLayout.CENTER)
+        setOwner(toolBar.downloadManagerAnchor())
+        isMovable = false
+        isResizable = false
+        isAttachable = false
+        isTransient = true
+        setDefaultMoveOperation(JidePopup.HIDE_ON_MOVED)
     }
     private val activeDownloadCount = AtomicInteger(0)
     private var datasetTimestamp: LocalDateTime? = null
@@ -105,7 +112,7 @@ class AudiothekPanel(
     }
 
     fun disposePanel() {
-        downloadManagerPopover.hide()
+        downloadManagerPopup.hidePopupImmediately()
         table.saveState()
         uiScope.coroutineContext[Job]?.cancel()
     }
@@ -257,15 +264,12 @@ class AudiothekPanel(
     }
 
     private fun toggleDownloadManager() {
-        if (downloadManagerPopover.isShowing) {
-            downloadManagerPopover.hide()
+        if (downloadManagerPopup.isPopupVisible) {
+            downloadManagerPopup.hidePopup()
             return
         }
-        downloadManagerPopover.show(
-            toolBar.downloadManagerAnchor(),
-            downloadManagerPanel,
-            SwingPopoverControl.Placement.BOTTOM
-        )
+        downloadManagerPopup.setOwner(toolBar.downloadManagerAnchor())
+        downloadManagerPopup.showPopup(toolBar.downloadManagerAnchor())
     }
 
     private fun buildLoadFailureMessage(error: Throwable): String {

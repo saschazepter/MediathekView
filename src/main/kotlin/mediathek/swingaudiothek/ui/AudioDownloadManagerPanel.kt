@@ -27,7 +27,9 @@ import javax.swing.*
 
 class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
     private val listModel = DefaultListModel<AudioDownloadItem>()
-    private val list = JList(listModel)
+    private val list = object : JList<AudioDownloadItem>(listModel) {
+        override fun getScrollableTracksViewportWidth(): Boolean = true
+    }
 
     init {
         preferredSize = Dimension(500, 320)
