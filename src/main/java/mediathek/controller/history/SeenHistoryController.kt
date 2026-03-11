@@ -157,6 +157,22 @@ class SeenHistoryController : AutoCloseable {
         }
     }
 
+    fun markUnseen(entry: AudioEntry) {
+        val url = entry.audioUrl?.toString().orEmpty()
+        if (url.isBlank()) {
+            return
+        }
+
+        try {
+            deleteStatement.setString(1, url)
+            deleteStatement.executeUpdate()
+            removeFromPreparedCache(url)
+            sendChangeMessage()
+        } catch (ex: SQLException) {
+            logger.error("markUnseen audio", ex)
+        }
+    }
+
     /**
      * Load all URLs from database and store in memory.
      */

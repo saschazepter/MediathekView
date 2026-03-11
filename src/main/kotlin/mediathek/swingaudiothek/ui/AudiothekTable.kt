@@ -294,6 +294,8 @@ class AudiothekTable(
         JPopupMenu().apply {
             add(createRowActionItem("Abspielen", FontAwesomeSolid.PLAY, entry, onOpenAudio))
             add(createRowActionItem("Download", FontAwesomeSolid.CLOUD_DOWNLOAD_ALT, entry, onDownload))
+            addSeparator()
+            add(createSeenHistoryMenuItem(entry))
             show(event.component, event.x, event.y)
         }
     }
@@ -320,6 +322,22 @@ class AudiothekTable(
     ): JMenuItem {
         return JMenuItem(title, FontIcon.of(iconLiteral, 14)).apply {
             addActionListener { action(entry) }
+        }
+    }
+
+    private fun createSeenHistoryMenuItem(entry: AudioEntry): JMenuItem {
+        val hasBeenSeen = seenHistoryController.hasBeenSeen(entry)
+        val title = if (hasBeenSeen) "Als ungesehen markieren" else "Als gesehen markieren"
+        val icon = if (hasBeenSeen) FontAwesomeSolid.UNDO else FontAwesomeSolid.CHECK
+        return JMenuItem(title, FontIcon.of(icon, 14)).apply {
+            addActionListener {
+                if (hasBeenSeen) {
+                    seenHistoryController.markUnseen(entry)
+                } else {
+                    seenHistoryController.markSeen(entry)
+                }
+                refreshSeenState()
+            }
         }
     }
 
