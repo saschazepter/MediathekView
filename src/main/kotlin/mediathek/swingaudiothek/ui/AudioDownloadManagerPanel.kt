@@ -316,6 +316,7 @@ private class AudioDownloadRowPanel(
         primaryButton.isEnabled = item.primaryEnabled
         primaryButton.isVisible = item.primaryLabel.isNotBlank()
         primaryButton.icon = primaryIcon
+        primaryButton.toolTipText = item.primaryLabel.takeIf { primaryIcon != null }
 
         val secondaryIcon = when (item.secondaryLabel) {
             "Abbrechen" -> cancelIcon
@@ -325,6 +326,7 @@ private class AudioDownloadRowPanel(
         secondaryButton.isEnabled = item.secondaryEnabled
         secondaryButton.isVisible = item.secondaryLabel.isNotBlank()
         secondaryButton.icon = secondaryIcon
+        secondaryButton.toolTipText = item.secondaryLabel.takeIf { secondaryIcon != null }
 
         removeButton.isEnabled = item.removeEnabled
         removeButton.isVisible = item.removeEnabled
