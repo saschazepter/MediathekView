@@ -20,6 +20,9 @@ package mediathek.swingaudiothek.ui
 
 import mediathek.swing.IconUtils
 import org.kordamp.ikonli.materialdesign2.MaterialDesignC
+import org.kordamp.ikonli.materialdesign2.MaterialDesignP
+import org.kordamp.ikonli.materialdesign2.MaterialDesignR
+import org.kordamp.ikonli.materialdesign2.MaterialDesignT
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -196,6 +199,10 @@ private class AudioDownloadRowPanel(
     private val progressBar = JProgressBar(0, 100)
     private val primaryButton = JButton()
     private val secondaryButton = JButton()
+    private val pauseIcon = IconUtils.of(MaterialDesignP.PAUSE)
+    private val resumeIcon = IconUtils.of(MaterialDesignT.TRAY_ARROW_DOWN)
+    private val restartIcon = IconUtils.of(MaterialDesignR.RESTART)
+    private val cancelIcon = IconUtils.of(MaterialDesignC.CANCEL)
     private val removeButton = JLabel().apply {
         icon = IconUtils.of(MaterialDesignC.CLOSE_CIRCLE_OUTLINE, 18)
         toolTipText = "Entfernen"
@@ -299,13 +306,25 @@ private class AudioDownloadRowPanel(
         progressBar.value = item.progressPercent
         progressBar.string = item.progressText
 
-        primaryButton.text = item.primaryLabel
+        val primaryIcon = when (item.primaryLabel) {
+            "Pause" -> pauseIcon
+            "Fortsetzen" -> resumeIcon
+            "Neu starten" -> restartIcon
+            else -> null
+        }
+        primaryButton.text = if (primaryIcon == null) item.primaryLabel else ""
         primaryButton.isEnabled = item.primaryEnabled
         primaryButton.isVisible = item.primaryLabel.isNotBlank()
+        primaryButton.icon = primaryIcon
 
-        secondaryButton.text = item.secondaryLabel
+        val secondaryIcon = when (item.secondaryLabel) {
+            "Abbrechen" -> cancelIcon
+            else -> null
+        }
+        secondaryButton.text = if (secondaryIcon == null) item.secondaryLabel else ""
         secondaryButton.isEnabled = item.secondaryEnabled
         secondaryButton.isVisible = item.secondaryLabel.isNotBlank()
+        secondaryButton.icon = secondaryIcon
 
         removeButton.isEnabled = item.removeEnabled
         removeButton.isVisible = item.removeEnabled
