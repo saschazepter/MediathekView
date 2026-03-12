@@ -49,7 +49,7 @@ class AudioRepository(
 ) {
     private val logger = LogManager.getLogger(AudioRepository::class.java)
 
-    suspend fun loadAudiothek(): AudioLoadResult = withContext(Dispatchers.IO) {
+    suspend fun loadAudiothek(useCachedOnDownloadFailure: Boolean = false): AudioLoadResult = withContext(Dispatchers.IO) {
         val cachedMetadata = cache.readMetadata()
         val sourceUrl = resolver.resolveSourceUrl(cachedMetadata?.sourceUrl)
         val request = Request.Builder()
@@ -61,50 +61,58 @@ class AudioRepository(
             .get()
             .build()
 
-        client.newCall(request).execute().use { response ->
-            when (response.code) {
-                304 -> {
-                    if (!cache.hasCachedAudio()) {
-                        error("Audiothek cache miss after HTTP 304 for $sourceUrl")
+        try {
+            client.newCall(request).execute().use { response ->
+                when (response.code) {
+                    304 -> {
+                        if (!cache.hasCachedAudio()) {
+                            error("Audiothek cache miss after HTTP 304 for $sourceUrl")
+                        }
+                        logger.info("Audiothek unchanged, no new audio file downloaded for {}", sourceUrl)
+                        return@withContext cachedResult(sourceUrl, AudioDownloadStatus.NOT_MODIFIED)
                     }
-                    logger.info("Audiothek unchanged, no new audio file downloaded for {}", sourceUrl)
+
+                    !in 200..299 -> {
+                        if (cache.hasCachedAudio()) {
+                            logger.warn(
+                                "Audiothek download skipped after HTTP {} for {}, using cached audio file",
+                                response.code,
+                                sourceUrl
+                            )
+                            return@withContext cachedResult(sourceUrl, AudioDownloadStatus.USED_CACHE_AFTER_FAILURE)
+                        }
+                    }
+                }
+
+                if (!response.isSuccessful) {
+                    error("Failed to load audiothek data from $sourceUrl: HTTP ${response.code}")
+                }
+
+                val bodyBytes = response.body.bytes()
+                val cachedBodyBytes = cache.readCachedAudioBytes()
+                if (cachedBodyBytes != null && Arrays.equals(cachedBodyBytes, bodyBytes)) {
+                    logger.info("Audiothek unchanged, downloaded content matches cached audio file for {}", sourceUrl)
                     return@withContext cachedResult(sourceUrl, AudioDownloadStatus.NOT_MODIFIED)
                 }
 
-                !in 200..299 -> {
-                    if (cache.hasCachedAudio()) {
-                        logger.warn(
-                            "Audiothek download skipped after HTTP {} for {}, using cached audio file",
-                            response.code,
-                            sourceUrl
-                        )
-                        return@withContext cachedResult(sourceUrl, AudioDownloadStatus.USED_CACHE_AFTER_FAILURE)
-                    }
-                }
+                cache.write(
+                    sourceUrl = sourceUrl,
+                    eTag = response.header("ETag"),
+                    lastModified = response.header("Last-Modified"),
+                    body = bodyBytes
+                )
+
+                AudioLoadResult(
+                    dataset = parseAudioDataset(sourceUrl, ByteArrayInputStream(bodyBytes)),
+                    downloadStatus = AudioDownloadStatus.DOWNLOADED
+                )
             }
-
-            if (!response.isSuccessful) {
-                error("Failed to load audiothek data from $sourceUrl: HTTP ${response.code}")
+        } catch (error: Exception) {
+            if (useCachedOnDownloadFailure && cache.hasCachedAudio()) {
+                logger.warn("Audiothek download failed for {}, using cached audio file", sourceUrl, error)
+                return@withContext cachedResult(sourceUrl, AudioDownloadStatus.USED_CACHE_AFTER_FAILURE)
             }
-
-            val bodyBytes = response.body.bytes()
-            val cachedBodyBytes = cache.readCachedAudioBytes()
-            if (cachedBodyBytes != null && Arrays.equals(cachedBodyBytes, bodyBytes)) {
-                logger.info("Audiothek unchanged, downloaded content matches cached audio file for {}", sourceUrl)
-                return@withContext cachedResult(sourceUrl, AudioDownloadStatus.NOT_MODIFIED)
-            }
-
-            cache.write(
-                sourceUrl = sourceUrl,
-                eTag = response.header("ETag"),
-                lastModified = response.header("Last-Modified"),
-                body = bodyBytes
-            )
-
-            AudioLoadResult(
-                dataset = parseAudioDataset(sourceUrl, ByteArrayInputStream(bodyBytes)),
-                downloadStatus = AudioDownloadStatus.DOWNLOADED
-            )
+            throw error
         }
     }
 

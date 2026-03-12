@@ -205,7 +205,7 @@ class AudiothekPanel(
             }
 
             try {
-                runCatching { repository.loadAudiothek() }
+                runCatching { repository.loadAudiothek(useCachedOnDownloadFailure = !isManualReload) }
                     .onSuccess { handleLoadSuccess(it, isManualReload) }
                     .onFailure { handleLoadFailure(it, isManualReload) }
             } finally {
