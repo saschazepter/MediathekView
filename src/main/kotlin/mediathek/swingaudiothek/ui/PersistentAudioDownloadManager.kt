@@ -36,6 +36,9 @@ class PersistentAudioDownloadManager(
     private val onDownloadCompleted: (AudioDownloadTaskSnapshot) -> Unit
 ) {
     private val logger = LogManager.getLogger(PersistentAudioDownloadManager::class.java)
+    private val http11Client: OkHttpClient = httpClient.newBuilder()
+        .protocols(listOf(Protocol.HTTP_1_1))
+        .build()
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val tasks = linkedMapOf<String, ManagedTask>()
     private val listeners = mutableListOf<(List<AudioDownloadTaskSnapshot>) -> Unit>()
@@ -190,10 +193,22 @@ class PersistentAudioDownloadManager(
             updateTask(task, snapshot.copy(downloadedBytes = existingBytes))
         }
 
-        executeDownload(task, audioUrl.toString(), tempFile, targetFile)
+        executeDownloadWithFallback(task, audioUrl.toString(), tempFile, targetFile)
     }
 
-    private suspend fun executeDownload(task: ManagedTask, url: String, tempFile: Path, targetFile: Path) {
+    private suspend fun executeDownloadWithFallback(task: ManagedTask, url: String, tempFile: Path, targetFile: Path) {
+        try {
+            executeDownload(task, url, tempFile, targetFile, httpClient)
+        } catch (ex: Exception) {
+            if (task.stopMode != StopMode.NONE || ex !is java.io.IOException) {
+                throw ex
+            }
+            logger.info("Audiothek-Download fehlgeschlagen, versuche HTTP/1.1-Fallback für {}", url, ex)
+            executeDownload(task, url, tempFile, targetFile, http11Client)
+        }
+    }
+
+    private suspend fun executeDownload(task: ManagedTask, url: String, tempFile: Path, targetFile: Path, client: OkHttpClient) {
         val downloadedBytes = task.snapshot.downloadedBytes
         val request = Request.Builder()
             .url(url)
@@ -205,20 +220,20 @@ class PersistentAudioDownloadManager(
             }
             .build()
 
-        val call = httpClient.newCall(request)
+        val call = client.newCall(request)
         task.activeCall = call
         call.execute().use { response ->
             when {
                 response.code == 416 && downloadedBytes > 0L -> {
                     deleteIfExists(tempFile)
                     updateTask(task, task.snapshot.copy(downloadedBytes = 0L, totalBytes = null))
-                    executeDownload(task, url, tempFile, targetFile)
+                    executeDownload(task, url, tempFile, targetFile, client)
                 }
                 response.isSuccessful && response.body != null -> {
                     if (response.code == 200 && downloadedBytes > 0L) {
                         deleteIfExists(tempFile)
                         updateTask(task, task.snapshot.copy(downloadedBytes = 0L, totalBytes = determineTotalBytes(response, 0L)))
-                        executeDownload(task, url, tempFile, targetFile)
+                        executeDownload(task, url, tempFile, targetFile, client)
                         return
                     }
                     streamResponseToFile(task, response, response.body!!, tempFile)
