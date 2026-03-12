@@ -305,7 +305,7 @@ private fun AudioDownloadTaskSnapshot.toListItem(): AudioDownloadItem {
     }
 
     val statusText = when (state) {
-        AudioDownloadTaskState.DOWNLOADING -> buildTransferStatus("Laeuft", downloadedBytes, totalBytes)
+        AudioDownloadTaskState.DOWNLOADING -> buildTransferStatus("Läuft", downloadedBytes, totalBytes)
         AudioDownloadTaskState.PAUSED -> buildTransferStatus("Pausiert", downloadedBytes, totalBytes)
         AudioDownloadTaskState.COMPLETED -> "Abgeschlossen"
         AudioDownloadTaskState.CANCELLED -> "Abgebrochen"
