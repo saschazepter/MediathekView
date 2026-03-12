@@ -18,6 +18,8 @@
 
 package mediathek.swingaudiothek.ui
 
+import mediathek.swing.IconUtils
+import org.kordamp.ikonli.materialdesign2.MaterialDesignC
 import java.awt.*
 import java.nio.file.Path
 import javax.swing.*
@@ -171,6 +173,7 @@ private data class AudioDownloadItem(
     val primaryEnabled: Boolean,
     val secondaryLabel: String,
     val secondaryEnabled: Boolean,
+    val removeEnabled: Boolean,
     val downloadedBytes: Long = 0L,
     val totalBytes: Long? = null
 )
@@ -186,6 +189,15 @@ private class AudioDownloadRowPanel(
     private val progressBar = JProgressBar(0, 100)
     private val primaryButton = JButton()
     private val secondaryButton = JButton()
+    private val removeButton = JButton().apply {
+        icon = IconUtils.of(MaterialDesignC.CLOSE_CIRCLE_OUTLINE, 18)
+        hideActionText = true
+        isContentAreaFilled = false
+        isBorderPainted = false
+        isFocusPainted = false
+        margin = Insets(0, 0, 0, 0)
+        toolTipText = "Entfernen"
+    }
 
     init {
         val borderColor = UIManager.getColor("Component.borderColor") ?: Color.LIGHT_GRAY
@@ -201,6 +213,7 @@ private class AudioDownloadRowPanel(
         progressBar.isStringPainted = true
         primaryButton.addActionListener { primaryActionListener?.invoke(currentItem.id) }
         secondaryButton.addActionListener { secondaryActionListener?.invoke(currentItem.id) }
+        removeButton.addActionListener { secondaryActionListener?.invoke(currentItem.id) }
 
         val gbc = GridBagConstraints().apply {
             insets = Insets(2, 2, 2, 2)
@@ -250,6 +263,13 @@ private class AudioDownloadRowPanel(
         gbc.insets = Insets(2, 12, 2, 2)
         add(buttonPanel, gbc)
 
+        gbc.gridx = 3
+        gbc.gridy = 0
+        gbc.gridheight = 1
+        gbc.anchor = GridBagConstraints.NORTHEAST
+        gbc.insets = Insets(2, 8, 2, 2)
+        add(removeButton, gbc)
+
         update(item)
     }
 
@@ -275,6 +295,9 @@ private class AudioDownloadRowPanel(
         secondaryButton.text = item.secondaryLabel
         secondaryButton.isEnabled = item.secondaryEnabled
         secondaryButton.isVisible = item.secondaryLabel.isNotBlank()
+
+        removeButton.isEnabled = item.removeEnabled
+        removeButton.isVisible = item.removeEnabled
 
         revalidate()
         repaint()
@@ -324,7 +347,14 @@ private fun AudioDownloadTaskSnapshot.toListItem(): AudioDownloadItem {
         AudioDownloadTaskState.PAUSED -> "Abbrechen" to true
         AudioDownloadTaskState.FAILED,
         AudioDownloadTaskState.CANCELLED,
-        AudioDownloadTaskState.COMPLETED -> "Entfernen" to true
+        AudioDownloadTaskState.COMPLETED -> "" to false
+    }
+    val removeEnabled = when (state) {
+        AudioDownloadTaskState.FAILED,
+        AudioDownloadTaskState.CANCELLED,
+        AudioDownloadTaskState.COMPLETED -> true
+        AudioDownloadTaskState.DOWNLOADING,
+        AudioDownloadTaskState.PAUSED -> false
     }
 
     return AudioDownloadItem(
@@ -340,6 +370,7 @@ private fun AudioDownloadTaskSnapshot.toListItem(): AudioDownloadItem {
         primaryEnabled = primary.second,
         secondaryLabel = secondary.first,
         secondaryEnabled = secondary.second,
+        removeEnabled = removeEnabled,
         downloadedBytes = downloadedBytes,
         totalBytes = totalBytes
     )
