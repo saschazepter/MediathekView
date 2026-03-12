@@ -21,7 +21,6 @@ package mediathek.swingaudiothek.ui
 import mediathek.swing.IconUtils
 import org.kordamp.ikonli.materialdesign2.MaterialDesignC
 import java.awt.*
-import java.nio.file.Path
 import javax.swing.*
 import kotlin.math.roundToInt
 
@@ -164,7 +163,6 @@ private data class AudioDownloadItem(
     val id: String,
     val state: AudioDownloadTaskState,
     val audioName: String,
-    val saveTarget: Path,
     val status: String,
     val progressText: String,
     val progressPercent: Int,
@@ -316,6 +314,7 @@ private class AudioDownloadRowPanel(
 
 private fun AudioDownloadTaskSnapshot.toListItem(): AudioDownloadItem {
     val restartAllowed = isRestartAllowed(state, errorMessage)
+    val primaryAction = resolvePrimaryAction(state, restartAllowed)
     val progressPercent = totalBytes
         ?.takeIf { it > 0L }
         ?.let { ((downloadedBytes.coerceAtMost(it).toDouble() / it.toDouble()) * 100.0).roundToInt().coerceIn(0, 100) }
@@ -339,13 +338,6 @@ private fun AudioDownloadTaskSnapshot.toListItem(): AudioDownloadItem {
         AudioDownloadTaskState.FAILED -> sanitizeFailureMessage(errorMessage)
     }
 
-    val primary = when (state) {
-        AudioDownloadTaskState.DOWNLOADING -> "Pause" to true
-        AudioDownloadTaskState.PAUSED -> "Fortsetzen" to true
-        AudioDownloadTaskState.FAILED,
-        AudioDownloadTaskState.CANCELLED -> if (restartAllowed) "Neu starten" to true else "" to false
-        AudioDownloadTaskState.COMPLETED -> "" to false
-    }
     val secondary = when (state) {
         AudioDownloadTaskState.DOWNLOADING,
         AudioDownloadTaskState.PAUSED -> "Abbrechen" to true
@@ -365,13 +357,12 @@ private fun AudioDownloadTaskSnapshot.toListItem(): AudioDownloadItem {
         id = id,
         state = state,
         audioName = audioName,
-        saveTarget = Path.of(targetFile),
         status = statusText,
         progressText = progressText,
         progressPercent = progressPercent,
         progressIndeterminate = state == AudioDownloadTaskState.DOWNLOADING && (totalBytes ?: 0L) <= 0L,
-        primaryLabel = primary.first,
-        primaryEnabled = primary.second,
+        primaryLabel = primaryAction.first,
+        primaryEnabled = primaryAction.second,
         secondaryLabel = secondary.first,
         secondaryEnabled = secondary.second,
         removeEnabled = removeEnabled,
@@ -381,11 +372,22 @@ private fun AudioDownloadTaskSnapshot.toListItem(): AudioDownloadItem {
 }
 
 private fun isRestartAllowed(state: AudioDownloadTaskState, errorMessage: String?): Boolean {
-    if (state != AudioDownloadTaskState.FAILED) {
-        return true
-    }
     val message = errorMessage?.lowercase().orEmpty()
-    return !message.contains("http 404")
+    return when (state) {
+        AudioDownloadTaskState.FAILED if message.contains("http 404") -> false
+        else -> true
+    }
+}
+
+private fun resolvePrimaryAction(
+    state: AudioDownloadTaskState,
+    restartAllowed: Boolean
+): Pair<String, Boolean> = when (state) {
+    AudioDownloadTaskState.DOWNLOADING -> "Pause" to true
+    AudioDownloadTaskState.PAUSED -> "Fortsetzen" to true
+    AudioDownloadTaskState.FAILED,
+    AudioDownloadTaskState.CANCELLED -> if (restartAllowed) "Neu starten" to true else "" to false
+    AudioDownloadTaskState.COMPLETED -> "" to false
 }
 
 private fun sanitizeFailureMessage(errorMessage: String?): String {

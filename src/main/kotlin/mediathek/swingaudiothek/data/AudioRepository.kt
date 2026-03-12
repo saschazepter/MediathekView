@@ -52,10 +52,14 @@ class AudioRepository(
     suspend fun loadAudiothek(): AudioLoadResult = withContext(Dispatchers.IO) {
         val cachedMetadata = cache.readMetadata()
         val sourceUrl = resolver.resolveSourceUrl(cachedMetadata?.sourceUrl)
-        val requestBuilder = Request.Builder().url(sourceUrl)
-        cachedMetadata?.eTag?.let { requestBuilder.header("If-None-Match", it) }
-        cachedMetadata?.lastModified?.let { requestBuilder.header("If-Modified-Since", it) }
-        val request = requestBuilder.get().build()
+        val request = Request.Builder()
+            .url(sourceUrl)
+            .apply {
+                cachedMetadata?.eTag?.let { header("If-None-Match", it) }
+                cachedMetadata?.lastModified?.let { header("If-Modified-Since", it) }
+            }
+            .get()
+            .build()
 
         client.newCall(request).execute().use { response ->
             when (response.code) {
@@ -64,10 +68,7 @@ class AudioRepository(
                         error("Audiothek cache miss after HTTP 304 for $sourceUrl")
                     }
                     logger.info("Audiothek unchanged, no new audio file downloaded for {}", sourceUrl)
-                    return@withContext AudioLoadResult(
-                        dataset = loadCachedDataset(sourceUrl),
-                        downloadStatus = AudioDownloadStatus.NOT_MODIFIED
-                    )
+                    return@withContext cachedResult(sourceUrl, AudioDownloadStatus.NOT_MODIFIED)
                 }
 
                 !in 200..299 -> {
@@ -77,10 +78,7 @@ class AudioRepository(
                             response.code,
                             sourceUrl
                         )
-                        return@withContext AudioLoadResult(
-                            dataset = loadCachedDataset(sourceUrl),
-                            downloadStatus = AudioDownloadStatus.USED_CACHE_AFTER_FAILURE
-                        )
+                        return@withContext cachedResult(sourceUrl, AudioDownloadStatus.USED_CACHE_AFTER_FAILURE)
                     }
                 }
             }
@@ -93,10 +91,7 @@ class AudioRepository(
             val cachedBodyBytes = cache.readCachedAudioBytes()
             if (cachedBodyBytes != null && Arrays.equals(cachedBodyBytes, bodyBytes)) {
                 logger.info("Audiothek unchanged, downloaded content matches cached audio file for {}", sourceUrl)
-                return@withContext AudioLoadResult(
-                    dataset = loadCachedDataset(sourceUrl),
-                    downloadStatus = AudioDownloadStatus.NOT_MODIFIED
-                )
+                return@withContext cachedResult(sourceUrl, AudioDownloadStatus.NOT_MODIFIED)
             }
 
             cache.write(
@@ -112,6 +107,11 @@ class AudioRepository(
             )
         }
     }
+
+    private fun cachedResult(sourceUrl: String, status: AudioDownloadStatus) = AudioLoadResult(
+        dataset = loadCachedDataset(sourceUrl),
+        downloadStatus = status
+    )
 
     private fun loadCachedDataset(sourceUrl: String): AudioDataset =
         cache.openCachedAudio().use { parseAudioDataset(sourceUrl, it) }

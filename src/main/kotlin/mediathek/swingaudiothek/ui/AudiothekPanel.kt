@@ -101,21 +101,21 @@ class AudiothekPanel(
         if (event !is MouseEvent || event.id != MouseEvent.MOUSE_PRESSED) {
             return@AWTEventListener
         }
-        if (!downloadManagerPopup.isPopupVisible) {
+        if (!isDownloadManagerVisible) {
             return@AWTEventListener
         }
         if (isInsideDownloadPopup(event) || SwingUtilities.isDescendingFrom(event.component, toolBar.downloadManagerAnchor())) {
             return@AWTEventListener
         }
         SwingUtilities.invokeLater {
-            if (downloadManagerPopup.isPopupVisible) {
-                downloadManagerPopup.hidePopup()
-            }
+            hideDownloadManagerIfVisible()
         }
     }
     private val activeDownloadCount = AtomicInteger(0)
     private var datasetTimestamp: LocalDateTime? = null
     private val iinaPlayer = SingleIinaPlayer()
+    private val isDownloadManagerVisible: Boolean
+        get() = downloadManagerPopup.isPopupVisible
 
     init {
         add(toolBar, BorderLayout.NORTH)
@@ -133,7 +133,7 @@ class AudiothekPanel(
         pauseDownloadsForShutdown()
         table.dispose()
         table.saveState()
-        uiScope.coroutineContext[Job]?.cancel()
+        uiScope.cancel()
     }
 
     fun activeDownloadCount(): Int = activeDownloadCount.get()
@@ -166,17 +166,11 @@ class AudiothekPanel(
         toolBar.addFilterSubmitListener(::applyFilterNow)
         toolBar.addClearSearchListener { applyFilterNow("") }
         toolBar.addDownloadManagerListener(::toggleDownloadManager)
-        downloadManagerPanel.addProgressListener { summary ->
-            activeDownloadCount.set(summary.activeCount)
-            toolBar.setDownloadProgress(summary)
-            statusPanel.setActiveDownloads(summary.activeCount)
-        }
+        downloadManagerPanel.addProgressListener(::updateDownloadSummary)
         downloadManagerPanel.addPrimaryActionListener(::handleDownloadPrimaryAction)
         downloadManagerPanel.addSecondaryActionListener(::handleDownloadSecondaryAction)
         downloadManagerPanel.addEmptyListener {
-            if (downloadManagerPopup.isPopupVisible) {
-                downloadManagerPopup.hidePopup()
-            }
+            hideDownloadManagerIfVisible()
         }
         downloadManager.addListener { snapshots ->
             SwingUtilities.invokeLater {
@@ -307,12 +301,24 @@ class AudiothekPanel(
     }
 
     private fun toggleDownloadManager() {
-        if (downloadManagerPopup.isPopupVisible) {
-            downloadManagerPopup.hidePopup()
+        if (isDownloadManagerVisible) {
+            hideDownloadManagerIfVisible()
             return
         }
         downloadManagerPopup.owner = toolBar.downloadManagerAnchor()
         downloadManagerPopup.showPopup(toolBar.downloadManagerAnchor())
+    }
+
+    private fun hideDownloadManagerIfVisible() {
+        if (isDownloadManagerVisible) {
+            downloadManagerPopup.hidePopup()
+        }
+    }
+
+    private fun updateDownloadSummary(summary: DownloadSummary) {
+        activeDownloadCount.set(summary.activeCount)
+        toolBar.setDownloadProgress(summary)
+        statusPanel.setActiveDownloads(summary.activeCount)
     }
 
     private fun isInsideDownloadPopup(event: MouseEvent): Boolean {

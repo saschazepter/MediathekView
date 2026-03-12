@@ -95,23 +95,15 @@ class PersistentAudioDownloadManager(
                 runDownload(task)
             } catch (_: CancellationException) {
                 when (task.stopMode) {
-                    StopMode.PAUSE, StopMode.SHUTDOWN -> updateTask(
-                        task,
-                        task.snapshot.copy(state = AudioDownloadTaskState.PAUSED)
-                    )
-                    StopMode.CANCEL -> {
-                        deleteIfExists(Path.of(task.snapshot.tempFile))
-                        updateTask(task, task.snapshot.copy(state = AudioDownloadTaskState.CANCELLED))
-                    }
-                    StopMode.NONE -> updateTask(task, task.snapshot.copy(state = AudioDownloadTaskState.PAUSED))
+                    StopMode.PAUSE, StopMode.SHUTDOWN, StopMode.CANCEL -> handleExpectedStop(task)
+                    StopMode.NONE -> task.updateSnapshot(task.snapshot.copy(state = AudioDownloadTaskState.PAUSED))
                 }
             } catch (ex: Exception) {
                 if (isExpectedStop(task, ex)) {
                     handleExpectedStop(task)
                 } else {
                     logger.warn("Audio download failed for {}", task.snapshot.audioUrl, ex)
-                    updateTask(
-                        task,
+                    task.updateSnapshot(
                         task.snapshot.copy(
                             state = AudioDownloadTaskState.FAILED,
                             errorMessage = ex.message ?: ex::class.java.simpleName
@@ -127,32 +119,11 @@ class PersistentAudioDownloadManager(
     }
 
     fun pause(taskId: String) {
-        val task = tasks[taskId] ?: return
-        task.stopMode = StopMode.PAUSE
-        task.activeCall?.cancel()
-        task.job?.cancel()
-        if (task.job == null) {
-            updateTask(task, task.snapshot.copy(state = AudioDownloadTaskState.PAUSED))
-        }
+        stopTask(taskId, StopMode.PAUSE) { copy(state = AudioDownloadTaskState.PAUSED) }
     }
 
     fun cancel(taskId: String) {
-        val task = tasks[taskId] ?: return
-        task.stopMode = StopMode.CANCEL
-        task.activeCall?.cancel()
-        task.job?.cancel()
-        if (task.job == null) {
-            deleteIfExists(Path.of(task.snapshot.tempFile))
-            updateTask(
-                task,
-                task.snapshot.copy(
-                    state = AudioDownloadTaskState.CANCELLED,
-                    downloadedBytes = 0L,
-                    totalBytes = null,
-                    errorMessage = null
-                )
-            )
-        }
+        stopTask(taskId, StopMode.CANCEL, AudioDownloadTaskSnapshot::asCancelled)
     }
 
     fun remove(taskId: String) {
@@ -190,7 +161,7 @@ class PersistentAudioDownloadManager(
 
         val existingBytes = sizeIfExists(tempFile)?.coerceAtLeast(0L) ?: 0L
         if (existingBytes != snapshot.downloadedBytes) {
-            updateTask(task, snapshot.copy(downloadedBytes = existingBytes))
+            task.updateSnapshot(snapshot.copy(downloadedBytes = existingBytes))
         }
 
         executeDownloadWithFallback(task, audioUrl.toString(), tempFile, targetFile)
@@ -226,20 +197,24 @@ class PersistentAudioDownloadManager(
             when {
                 response.code == 416 && downloadedBytes > 0L -> {
                     deleteIfExists(tempFile)
-                    updateTask(task, task.snapshot.copy(downloadedBytes = 0L, totalBytes = null))
+                    task.updateSnapshot(task.snapshot.copy(downloadedBytes = 0L, totalBytes = null))
                     executeDownload(task, url, tempFile, targetFile, client)
                 }
                 response.isSuccessful && response.body != null -> {
                     if (response.code == 200 && downloadedBytes > 0L) {
                         deleteIfExists(tempFile)
-                        updateTask(task, task.snapshot.copy(downloadedBytes = 0L, totalBytes = determineTotalBytes(response, 0L)))
+                        task.updateSnapshot(
+                            task.snapshot.copy(
+                                downloadedBytes = 0L,
+                                totalBytes = determineTotalBytes(response, 0L)
+                            )
+                        )
                         executeDownload(task, url, tempFile, targetFile, client)
                         return
                     }
                     streamResponseToFile(task, response, response.body!!, tempFile)
                     moveDownloadedFile(tempFile, targetFile)
-                    updateTask(
-                        task,
+                    task.updateSnapshot(
                         task.snapshot.copy(
                             state = AudioDownloadTaskState.COMPLETED,
                             downloadedBytes = task.snapshot.totalBytes ?: task.snapshot.downloadedBytes,
@@ -256,7 +231,7 @@ class PersistentAudioDownloadManager(
     private fun streamResponseToFile(task: ManagedTask, response: Response, body: ResponseBody, tempFile: Path) {
         val existingBytes = task.snapshot.downloadedBytes
         val totalBytes = determineTotalBytes(response, existingBytes)
-        updateTask(task, task.snapshot.copy(totalBytes = totalBytes))
+        task.updateSnapshot(task.snapshot.copy(totalBytes = totalBytes))
 
         val options = if (existingBytes > 0L) {
             arrayOf(StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND)
@@ -287,8 +262,7 @@ class PersistentAudioDownloadManager(
             }
             output.write(buffer, 0, read)
             downloadedBytes += read
-            updateTask(
-                task,
+            task.updateSnapshot(
                 task.snapshot.copy(
                     downloadedBytes = downloadedBytes,
                     totalBytes = totalBytes
@@ -316,6 +290,25 @@ class PersistentAudioDownloadManager(
         persistAndNotify(force = persist)
     }
 
+    private fun ManagedTask.updateSnapshot(
+        snapshot: AudioDownloadTaskSnapshot,
+        persist: Boolean = true
+    ) = updateTask(this, snapshot, persist)
+
+    private fun stopTask(
+        taskId: String,
+        stopMode: StopMode,
+        stateChange: AudioDownloadTaskSnapshot.() -> AudioDownloadTaskSnapshot
+    ) {
+        val task = tasks[taskId] ?: return
+        task.stopMode = stopMode
+        task.activeCall?.cancel()
+        task.job?.cancel()
+        if (task.job == null) {
+            task.updateSnapshot(task.snapshot.stateChange())
+        }
+    }
+
     private fun isExpectedStop(task: ManagedTask, exception: Exception): Boolean {
         if (task.stopMode == StopMode.NONE) {
             return false
@@ -325,21 +318,10 @@ class PersistentAudioDownloadManager(
 
     private fun handleExpectedStop(task: ManagedTask) {
         when (task.stopMode) {
-            StopMode.PAUSE, StopMode.SHUTDOWN -> updateTask(
-                task,
-                task.snapshot.copy(state = AudioDownloadTaskState.PAUSED)
-            )
+            StopMode.PAUSE, StopMode.SHUTDOWN -> task.updateSnapshot(task.snapshot.copy(state = AudioDownloadTaskState.PAUSED))
             StopMode.CANCEL -> {
                 deleteIfExists(Path.of(task.snapshot.tempFile))
-                updateTask(
-                    task,
-                    task.snapshot.copy(
-                        state = AudioDownloadTaskState.CANCELLED,
-                        downloadedBytes = 0L,
-                        totalBytes = null,
-                        errorMessage = null
-                    )
-                )
+                task.updateSnapshot(task.snapshot.asCancelled())
             }
             StopMode.NONE -> Unit
         }
@@ -357,7 +339,7 @@ class PersistentAudioDownloadManager(
 
     private fun shouldPersistProgress(): Boolean {
         val now = System.nanoTime()
-        if (now - lastPersistNanos >= 1_000_000_000L) {
+        if (now - lastPersistNanos >= PROGRESS_PERSIST_INTERVAL_NANOS) {
             lastPersistNanos = now
             return true
         }
@@ -366,7 +348,7 @@ class PersistentAudioDownloadManager(
 
     private fun shouldNotifyProgress(): Boolean {
         val now = System.nanoTime()
-        if (now - lastNotifyNanos >= 250_000_000L) {
+        if (now - lastNotifyNanos >= PROGRESS_NOTIFY_INTERVAL_NANOS) {
             lastNotifyNanos = now
             return true
         }
@@ -396,14 +378,9 @@ class PersistentAudioDownloadManager(
 
         snapshots
             .asSequence()
-            .filterNot { it.state == AudioDownloadTaskState.COMPLETED || it.state == AudioDownloadTaskState.FAILED }
-            .forEach { snapshot ->
-            val restoredState = when (snapshot.state) {
-                AudioDownloadTaskState.DOWNLOADING -> AudioDownloadTaskState.PAUSED
-                else -> snapshot.state
-            }
-            tasks[snapshot.id] = ManagedTask(snapshot.copy(state = restoredState))
-            }
+            .filterNot(AudioDownloadTaskSnapshot::shouldBeDiscardedOnStartup)
+            .map(AudioDownloadTaskSnapshot::asRestoredSnapshot)
+            .forEach { snapshot -> tasks[snapshot.id] = ManagedTask(snapshot) }
         persistAndNotify(force = true)
     }
 
@@ -444,6 +421,8 @@ class PersistentAudioDownloadManager(
     }
 
     companion object {
+        private const val PROGRESS_PERSIST_INTERVAL_NANOS = 1_000_000_000L
+        private const val PROGRESS_NOTIFY_INTERVAL_NANOS = 250_000_000L
         private val JSON = Json {
             ignoreUnknownKeys = true
             prettyPrint = true
@@ -477,4 +456,25 @@ enum class AudioDownloadTaskState {
 
 private fun sizeIfExists(path: Path): Long? {
     return if (Files.exists(path)) Files.size(path) else null
+}
+
+private fun AudioDownloadTaskSnapshot.asCancelled(): AudioDownloadTaskSnapshot {
+    return copy(
+        state = AudioDownloadTaskState.CANCELLED,
+        downloadedBytes = 0L,
+        totalBytes = null,
+        errorMessage = null
+    )
+}
+
+private fun AudioDownloadTaskSnapshot.asRestoredSnapshot(): AudioDownloadTaskSnapshot = copy(
+    state = when (state) {
+        AudioDownloadTaskState.DOWNLOADING -> AudioDownloadTaskState.PAUSED
+        else -> state
+    }
+)
+
+private fun AudioDownloadTaskSnapshot.shouldBeDiscardedOnStartup(): Boolean = when (state) {
+    AudioDownloadTaskState.COMPLETED, AudioDownloadTaskState.FAILED -> true
+    else -> false
 }
