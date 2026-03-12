@@ -39,10 +39,13 @@ import mediathek.tool.http.MVHttpClient
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
 import org.jdesktop.swingx.VerticalLayout
+import java.awt.AWTEvent
 import java.awt.BorderLayout
 import java.awt.Desktop
+import java.awt.Toolkit
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import java.awt.event.MouseEvent
 import java.io.File
 import java.net.URI
 import java.time.Duration
@@ -89,9 +92,26 @@ class AudiothekPanel(
         isMovable = false
         isResizable = true
         isAttachable = false
-        isTransient = true
+        isTransient = false
+        isFocusable = true
         setKeepPreviousSize(false)
         setDefaultMoveOperation(JidePopup.HIDE_ON_MOVED)
+    }
+    private val downloadPopupOutsideClickListener = java.awt.event.AWTEventListener { event ->
+        if (event !is MouseEvent || event.id != MouseEvent.MOUSE_PRESSED) {
+            return@AWTEventListener
+        }
+        if (!downloadManagerPopup.isPopupVisible) {
+            return@AWTEventListener
+        }
+        if (isInsideDownloadPopup(event) || SwingUtilities.isDescendingFrom(event.component, toolBar.downloadManagerAnchor())) {
+            return@AWTEventListener
+        }
+        SwingUtilities.invokeLater {
+            if (downloadManagerPopup.isPopupVisible) {
+                downloadManagerPopup.hidePopup()
+            }
+        }
     }
     private val activeDownloadCount = AtomicInteger(0)
     private var datasetTimestamp: LocalDateTime? = null
@@ -103,11 +123,13 @@ class AudiothekPanel(
         add(southPanel, BorderLayout.SOUTH)
         errorOverlay.isVisible = false
         syncErrorOverlayBounds()
+        Toolkit.getDefaultToolkit().addAWTEventListener(downloadPopupOutsideClickListener, AWTEvent.MOUSE_EVENT_MASK)
         setupListeners()
     }
 
     fun disposePanel() {
         downloadManagerPopup.hidePopupImmediately()
+        Toolkit.getDefaultToolkit().removeAWTEventListener(downloadPopupOutsideClickListener)
         pauseDownloadsForShutdown()
         table.dispose()
         table.saveState()
@@ -291,6 +313,15 @@ class AudiothekPanel(
         }
         downloadManagerPopup.setOwner(toolBar.downloadManagerAnchor())
         downloadManagerPopup.showPopup(toolBar.downloadManagerAnchor())
+    }
+
+    private fun isInsideDownloadPopup(event: MouseEvent): Boolean {
+        val component = event.component ?: return false
+        if (SwingUtilities.isDescendingFrom(component, downloadManagerPanel)) {
+            return true
+        }
+        val popupWindow = SwingUtilities.getWindowAncestor(downloadManagerPanel) ?: return false
+        return component === popupWindow || SwingUtilities.isDescendingFrom(component, popupWindow)
     }
 
     private fun buildLoadFailureMessage(error: Throwable): String {
