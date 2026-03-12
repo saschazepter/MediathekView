@@ -25,11 +25,14 @@ import mediathek.config.StandardLocations
 import mediathek.swingaudiothek.model.AudioEntry
 import okhttp3.*
 import org.apache.logging.log4j.LogManager
+import java.io.IOException
 import java.io.InputStream
 import java.net.SocketException
 import java.net.URI
+import java.nio.channels.FileChannel
 import java.nio.file.*
 import java.util.*
+import kotlin.io.path.exists
 
 class PersistentAudioDownloadManager(
     private val httpClient: OkHttpClient,
@@ -155,13 +158,19 @@ class PersistentAudioDownloadManager(
     private suspend fun runDownload(task: ManagedTask) {
         val snapshot = task.snapshot
         val audioUrl = URI.create(snapshot.audioUrl)
-        val targetFile = Path.of(snapshot.targetFile)
-        val tempFile = Path.of(snapshot.tempFile)
-        Files.createDirectories(targetFile.parent ?: Path.of("."))
+        val targetFile = resolveFollowedPath(Path.of(snapshot.targetFile))
+        val tempFile = resolveFollowedPath(Path.of(snapshot.tempFile))
+        ensureParentDirectoryExists(targetFile)
 
         val existingBytes = sizeIfExists(tempFile)?.coerceAtLeast(0L) ?: 0L
         if (existingBytes != snapshot.downloadedBytes) {
-            task.updateSnapshot(snapshot.copy(downloadedBytes = existingBytes))
+            task.updateSnapshot(
+                snapshot.copy(
+                    targetFile = targetFile.toString(),
+                    tempFile = tempFile.toString(),
+                    downloadedBytes = existingBytes
+                )
+            )
         }
 
         executeDownloadWithFallback(task, audioUrl.toString(), tempFile, targetFile)
@@ -357,7 +366,7 @@ class PersistentAudioDownloadManager(
 
     private fun persist() {
         runCatching {
-            Files.createDirectories(storePath.parent)
+            ensureParentDirectoryExists(storePath)
             Files.writeString(storePath, JSON.encodeToString(tasks.values.map { it.snapshot }))
         }.onFailure {
             logger.warn("Failed to persist audiothek downloads", it)
@@ -389,21 +398,72 @@ class PersistentAudioDownloadManager(
     }
 
     private fun deleteIfExists(path: Path) {
-        runCatching { Files.deleteIfExists(path) }
+        runCatching {
+            withFileRetry(path, "delete") {
+                Files.deleteIfExists(path)
+            }
+        }
             .onFailure { logger.debug("Failed to delete {}", path, it) }
     }
 
     private fun moveDownloadedFile(tempFile: Path, targetFile: Path) {
+        ensureParentDirectoryExists(targetFile)
         try {
-            Files.move(
-                tempFile,
-                targetFile,
-                StandardCopyOption.REPLACE_EXISTING,
-                StandardCopyOption.ATOMIC_MOVE
-            )
+            withFileRetry(targetFile, "atomic-move") {
+                Files.move(
+                    tempFile,
+                    targetFile,
+                    StandardCopyOption.REPLACE_EXISTING,
+                    StandardCopyOption.ATOMIC_MOVE
+                )
+            }
         } catch (_: AtomicMoveNotSupportedException) {
-            Files.move(tempFile, targetFile, StandardCopyOption.REPLACE_EXISTING)
+            withFileRetry(targetFile, "move") {
+                Files.move(tempFile, targetFile, StandardCopyOption.REPLACE_EXISTING)
+            }
         }
+    }
+
+    private fun ensureParentDirectoryExists(path: Path) {
+        val parent = path.parent ?: return
+        withFileRetry(parent, "create-directories") {
+            Files.createDirectories(parent)
+        }
+    }
+
+    private fun resolveFollowedPath(path: Path): Path {
+        val normalized = path.toAbsolutePath().normalize()
+        val parent = normalized.parent ?: return normalized
+        val resolvedParent = runCatching { parent.toRealPath() }.getOrElse { parent }
+        return resolvedParent.resolve(normalized.fileName.toString())
+    }
+
+    private fun <T> withFileRetry(path: Path, operation: String, action: () -> T): T {
+        var lastFailure: Exception? = null
+        repeat(FILE_OPERATION_RETRY_COUNT) { attempt ->
+            try {
+                return action()
+            } catch (ex: Exception) {
+                if (!isRetryableFileException(ex) || attempt == FILE_OPERATION_RETRY_COUNT - 1) {
+                    throw ex
+                }
+                lastFailure = ex
+                logger.debug(
+                    "Retrying file operation {} for {} ({}/{})",
+                    operation,
+                    path,
+                    attempt + 1,
+                    FILE_OPERATION_RETRY_COUNT,
+                    ex
+                )
+                Thread.sleep(FILE_OPERATION_RETRY_DELAY_MILLIS)
+            }
+        }
+        throw lastFailure ?: IllegalStateException("File operation retry failed for $operation: $path")
+    }
+
+    private fun isRetryableFileException(ex: Exception): Boolean {
+        return ex is FileSystemException || ex is AccessDeniedException || ex is IOException
     }
 
     private data class ManagedTask(
@@ -423,6 +483,8 @@ class PersistentAudioDownloadManager(
     companion object {
         private const val PROGRESS_PERSIST_INTERVAL_NANOS = 1_000_000_000L
         private const val PROGRESS_NOTIFY_INTERVAL_NANOS = 250_000_000L
+        private const val FILE_OPERATION_RETRY_COUNT = 3
+        private const val FILE_OPERATION_RETRY_DELAY_MILLIS = 150L
         private val JSON = Json {
             ignoreUnknownKeys = true
             prettyPrint = true
@@ -455,7 +517,15 @@ enum class AudioDownloadTaskState {
 }
 
 private fun sizeIfExists(path: Path): Long? {
-    return if (Files.exists(path)) Files.size(path) else null
+    if (!path.exists()) {
+        return null
+    }
+
+    return try {
+        FileChannel.open(path, StandardOpenOption.READ).use { it.size() }
+    } catch (_: NoSuchFileException) {
+        null
+    }
 }
 
 private fun AudioDownloadTaskSnapshot.asCancelled(): AudioDownloadTaskSnapshot {
