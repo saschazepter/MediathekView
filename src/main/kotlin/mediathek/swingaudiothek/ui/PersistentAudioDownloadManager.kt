@@ -381,7 +381,7 @@ class PersistentAudioDownloadManager(
 
         snapshots
             .asSequence()
-            .filterNot { it.state == AudioDownloadTaskState.COMPLETED }
+            .filterNot { it.state == AudioDownloadTaskState.COMPLETED || it.state == AudioDownloadTaskState.FAILED }
             .forEach { snapshot ->
             val restoredState = when (snapshot.state) {
                 AudioDownloadTaskState.DOWNLOADING -> AudioDownloadTaskState.PAUSED
