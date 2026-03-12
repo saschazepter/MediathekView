@@ -23,13 +23,20 @@ import java.nio.file.Path
 import javax.swing.*
 import kotlin.math.roundToInt
 
-private const val MAX_DOWNLOAD_ROW_WIDTH = 600
-private const val DOWNLOAD_PANEL_PREFERRED_WIDTH = 620
+private const val DOWNLOAD_ROW_PREFERRED_WIDTH = 600
+private const val DOWNLOAD_PANEL_INSET = 5
+private const val DOWNLOAD_PANEL_PREFERRED_WIDTH = DOWNLOAD_ROW_PREFERRED_WIDTH + (DOWNLOAD_PANEL_INSET * 2)
 
 class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
     private val contentPanel = JPanel().apply {
         layout = BoxLayout(this, BoxLayout.Y_AXIS)
         isOpaque = false
+        border = BorderFactory.createEmptyBorder(
+            DOWNLOAD_PANEL_INSET,
+            DOWNLOAD_PANEL_INSET,
+            DOWNLOAD_PANEL_INSET,
+            DOWNLOAD_PANEL_INSET
+        )
     }
     private val scrollPane = JScrollPane(contentPanel)
     private var emptyListener: (() -> Unit)? = null
@@ -186,7 +193,8 @@ private class AudioDownloadRowPanel(
             BorderFactory.createEmptyBorder(10, 12, 10, 12)
         )
         background = UIManager.getColor("Panel.background") ?: background
-        maximumSize = Dimension(MAX_DOWNLOAD_ROW_WIDTH, 96)
+        preferredSize = Dimension(DOWNLOAD_ROW_PREFERRED_WIDTH, 96)
+        maximumSize = Dimension(Int.MAX_VALUE, 96)
         alignmentX = LEFT_ALIGNMENT
 
         progressBar.isStringPainted = true
