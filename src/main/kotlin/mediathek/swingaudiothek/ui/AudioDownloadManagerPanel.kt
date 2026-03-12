@@ -285,6 +285,7 @@ private class AudioDownloadRowPanel(
         nameValueLabel.toolTipText = item.audioName
         statusValueLabel.text = ellipsize(item.status, 80)
         statusValueLabel.toolTipText = item.status
+        progressBar.isVisible = item.state != AudioDownloadTaskState.COMPLETED
         progressBar.isIndeterminate = item.progressIndeterminate
         progressBar.value = item.progressPercent
         progressBar.string = item.progressText
