@@ -88,14 +88,14 @@ class AudiothekPanel(
     private val downloadManagerPopup = JidePopup().apply {
         contentPane.layout = BorderLayout()
         contentPane.add(downloadManagerPanel, BorderLayout.CENTER)
-        setOwner(toolBar.downloadManagerAnchor())
+        owner = toolBar.downloadManagerAnchor()
         isMovable = false
         isResizable = true
         isAttachable = false
         isTransient = false
         isFocusable = true
-        setKeepPreviousSize(false)
-        setDefaultMoveOperation(JidePopup.HIDE_ON_MOVED)
+        isKeepPreviousSize = false
+        defaultMoveOperation = JidePopup.HIDE_ON_MOVED
     }
     private val downloadPopupOutsideClickListener = java.awt.event.AWTEventListener { event ->
         if (event !is MouseEvent || event.id != MouseEvent.MOUSE_PRESSED) {
@@ -311,7 +311,7 @@ class AudiothekPanel(
             downloadManagerPopup.hidePopup()
             return
         }
-        downloadManagerPopup.setOwner(toolBar.downloadManagerAnchor())
+        downloadManagerPopup.owner = toolBar.downloadManagerAnchor()
         downloadManagerPopup.showPopup(toolBar.downloadManagerAnchor())
     }
 
