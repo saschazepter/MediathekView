@@ -255,6 +255,11 @@ private class AudioDownloadRowPanel(
 
     fun update(item: AudioDownloadItem) {
         currentItem = item
+        background = if (item.state == AudioDownloadTaskState.FAILED) {
+            Color(255, 0, 0, 76)
+        } else {
+            UIManager.getColor("Panel.background") ?: background
+        }
         nameValueLabel.text = ellipsize(item.audioName, 90)
         nameValueLabel.toolTipText = item.audioName
         statusValueLabel.text = ellipsize(item.status, 80)
