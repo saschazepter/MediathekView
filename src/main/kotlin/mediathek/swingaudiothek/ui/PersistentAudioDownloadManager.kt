@@ -27,6 +27,8 @@ import okhttp3.*
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 import java.io.InputStream
+import java.io.InterruptedIOException
+import java.io.OutputStream
 import java.net.SocketException
 import java.net.URI
 import java.nio.channels.FileChannel
@@ -155,7 +157,7 @@ class PersistentAudioDownloadManager(
         }
     }
 
-    private suspend fun runDownload(task: ManagedTask) {
+    private fun runDownload(task: ManagedTask) {
         val snapshot = task.snapshot
         val audioUrl = URI.create(snapshot.audioUrl)
         val targetFile = resolveFollowedPath(Path.of(snapshot.targetFile))
@@ -176,11 +178,11 @@ class PersistentAudioDownloadManager(
         executeDownloadWithFallback(task, audioUrl.toString(), tempFile, targetFile)
     }
 
-    private suspend fun executeDownloadWithFallback(task: ManagedTask, url: String, tempFile: Path, targetFile: Path) {
+    private fun executeDownloadWithFallback(task: ManagedTask, url: String, tempFile: Path, targetFile: Path) {
         try {
             executeDownload(task, url, tempFile, targetFile, httpClient)
         } catch (ex: Exception) {
-            if (task.stopMode != StopMode.NONE || ex !is java.io.IOException) {
+            if (task.stopMode != StopMode.NONE || ex !is IOException) {
                 throw ex
             }
             logger.info("Audiothek-Download fehlgeschlagen, versuche HTTP/1.1-Fallback für {}", url, ex)
@@ -188,7 +190,7 @@ class PersistentAudioDownloadManager(
         }
     }
 
-    private suspend fun executeDownload(task: ManagedTask, url: String, tempFile: Path, targetFile: Path, client: OkHttpClient) {
+    private fun executeDownload(task: ManagedTask, url: String, tempFile: Path, targetFile: Path, client: OkHttpClient) {
         val downloadedBytes = task.snapshot.downloadedBytes
         val request = Request.Builder()
             .url(url)
@@ -209,19 +211,20 @@ class PersistentAudioDownloadManager(
                     task.updateSnapshot(task.snapshot.copy(downloadedBytes = 0L, totalBytes = null))
                     executeDownload(task, url, tempFile, targetFile, client)
                 }
-                response.isSuccessful && response.body != null -> {
+                response.isSuccessful -> {
+                    val body = response.body ?: error("Download fehlgeschlagen: Leerer Response-Body")
                     if (response.code == 200 && downloadedBytes > 0L) {
                         deleteIfExists(tempFile)
                         task.updateSnapshot(
                             task.snapshot.copy(
                                 downloadedBytes = 0L,
-                                totalBytes = determineTotalBytes(response, 0L)
+                                totalBytes = determineTotalBytes(response, body, 0L)
                             )
                         )
                         executeDownload(task, url, tempFile, targetFile, client)
                         return
                     }
-                    streamResponseToFile(task, response, response.body!!, tempFile)
+                    streamResponseToFile(task, response, body, tempFile)
                     moveDownloadedFile(tempFile, targetFile)
                     task.updateSnapshot(
                         task.snapshot.copy(
@@ -239,7 +242,7 @@ class PersistentAudioDownloadManager(
 
     private fun streamResponseToFile(task: ManagedTask, response: Response, body: ResponseBody, tempFile: Path) {
         val existingBytes = task.snapshot.downloadedBytes
-        val totalBytes = determineTotalBytes(response, existingBytes)
+        val totalBytes = determineTotalBytes(response, body, existingBytes)
         task.updateSnapshot(task.snapshot.copy(totalBytes = totalBytes))
 
         val options = if (existingBytes > 0L) {
@@ -258,7 +261,7 @@ class PersistentAudioDownloadManager(
     private fun copyStream(
         task: ManagedTask,
         input: InputStream,
-        output: java.io.OutputStream,
+        output: OutputStream,
         startBytes: Long,
         totalBytes: Long?
     ) {
@@ -281,17 +284,17 @@ class PersistentAudioDownloadManager(
         }
     }
 
-    private fun determineTotalBytes(response: Response, downloadedBytes: Long): Long? {
+    private fun determineTotalBytes(
+        response: Response,
+        body: ResponseBody,
+        downloadedBytes: Long
+    ): Long? {
         response.header("Content-Range")
             ?.substringAfterLast('/')
             ?.toLongOrNull()
             ?.let { return it }
-        val contentLength = response.body?.contentLength()?.takeIf { it >= 0L } ?: return null
-        return if (response.code == 206) {
-            downloadedBytes + contentLength
-        } else {
-            contentLength
-        }
+        val contentLength = body.contentLength().takeIf { it >= 0L } ?: return null
+        return if (response.code == 206) downloadedBytes + contentLength else contentLength
     }
 
     private fun updateTask(task: ManagedTask, snapshot: AudioDownloadTaskSnapshot, persist: Boolean = true) {
@@ -319,10 +322,8 @@ class PersistentAudioDownloadManager(
     }
 
     private fun isExpectedStop(task: ManagedTask, exception: Exception): Boolean {
-        if (task.stopMode == StopMode.NONE) {
-            return false
-        }
-        return exception is SocketException || exception is java.io.InterruptedIOException
+        return task.stopMode != StopMode.NONE &&
+            (exception is SocketException || exception is InterruptedIOException)
     }
 
     private fun handleExpectedStop(task: ManagedTask) {
@@ -374,7 +375,7 @@ class PersistentAudioDownloadManager(
     }
 
     private fun loadPersistedTasks() {
-        if (!Files.exists(storePath)) {
+        if (!storePath.exists()) {
             return
         }
 
