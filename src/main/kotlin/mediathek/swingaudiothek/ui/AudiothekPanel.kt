@@ -90,6 +90,7 @@ class AudiothekPanel(
         isResizable = true
         isAttachable = false
         isTransient = true
+        setKeepPreviousSize(false)
         setDefaultMoveOperation(JidePopup.HIDE_ON_MOVED)
     }
     private val activeDownloadCount = AtomicInteger(0)

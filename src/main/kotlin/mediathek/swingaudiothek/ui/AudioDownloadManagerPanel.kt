@@ -24,6 +24,7 @@ import javax.swing.*
 import kotlin.math.roundToInt
 
 private const val MAX_DOWNLOAD_ROW_WIDTH = 600
+private const val DOWNLOAD_PANEL_PREFERRED_WIDTH = 620
 
 class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
     private val contentPanel = JPanel().apply {
@@ -40,7 +41,7 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
     private val rowPanels = LinkedHashMap<String, AudioDownloadRowPanel>()
 
     init {
-        preferredSize = Dimension(500, 320)
+        preferredSize = Dimension(DOWNLOAD_PANEL_PREFERRED_WIDTH, 320)
         val popoverBackground = UIManager.getColor("Panel.background") ?: background
         background = popoverBackground
         isOpaque = true
