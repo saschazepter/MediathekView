@@ -285,7 +285,8 @@ private class AudioDownloadRowPanel(
         nameValueLabel.toolTipText = item.audioName
         statusValueLabel.text = ellipsize(item.status, 80)
         statusValueLabel.toolTipText = item.status
-        progressBar.isVisible = item.state != AudioDownloadTaskState.COMPLETED
+        progressBar.isVisible = item.state != AudioDownloadTaskState.COMPLETED &&
+            item.state != AudioDownloadTaskState.FAILED
         progressBar.isIndeterminate = item.progressIndeterminate
         progressBar.value = item.progressPercent
         progressBar.string = item.progressText
@@ -314,6 +315,7 @@ private class AudioDownloadRowPanel(
 }
 
 private fun AudioDownloadTaskSnapshot.toListItem(): AudioDownloadItem {
+    val restartAllowed = isRestartAllowed(state, errorMessage)
     val progressPercent = totalBytes
         ?.takeIf { it > 0L }
         ?.let { ((downloadedBytes.coerceAtMost(it).toDouble() / it.toDouble()) * 100.0).roundToInt().coerceIn(0, 100) }
@@ -341,7 +343,7 @@ private fun AudioDownloadTaskSnapshot.toListItem(): AudioDownloadItem {
         AudioDownloadTaskState.DOWNLOADING -> "Pause" to true
         AudioDownloadTaskState.PAUSED -> "Fortsetzen" to true
         AudioDownloadTaskState.FAILED,
-        AudioDownloadTaskState.CANCELLED -> "Neu starten" to true
+        AudioDownloadTaskState.CANCELLED -> if (restartAllowed) "Neu starten" to true else "" to false
         AudioDownloadTaskState.COMPLETED -> "" to false
     }
     val secondary = when (state) {
@@ -376,6 +378,14 @@ private fun AudioDownloadTaskSnapshot.toListItem(): AudioDownloadItem {
         downloadedBytes = downloadedBytes,
         totalBytes = totalBytes
     )
+}
+
+private fun isRestartAllowed(state: AudioDownloadTaskState, errorMessage: String?): Boolean {
+    if (state != AudioDownloadTaskState.FAILED) {
+        return true
+    }
+    val message = errorMessage?.lowercase().orEmpty()
+    return !message.contains("http 404")
 }
 
 private fun sanitizeFailureMessage(errorMessage: String?): String {
