@@ -49,6 +49,7 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
 
     init {
         preferredSize = Dimension(DOWNLOAD_PANEL_PREFERRED_WIDTH, 320)
+        minimumSize = Dimension(DOWNLOAD_PANEL_PREFERRED_WIDTH, 160)
         val popoverBackground = UIManager.getColor("Panel.background") ?: background
         background = popoverBackground
         isOpaque = true
