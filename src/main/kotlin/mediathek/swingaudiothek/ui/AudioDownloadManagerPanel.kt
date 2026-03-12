@@ -265,8 +265,9 @@ private class AudioDownloadRowPanel(
 
         gbc.gridx = 3
         gbc.gridy = 0
-        gbc.gridheight = 1
-        gbc.anchor = GridBagConstraints.NORTHEAST
+        gbc.gridheight = 3
+        gbc.anchor = GridBagConstraints.CENTER
+        gbc.fill = GridBagConstraints.VERTICAL
         gbc.insets = Insets(2, 8, 2, 2)
         add(removeButton, gbc)
 
