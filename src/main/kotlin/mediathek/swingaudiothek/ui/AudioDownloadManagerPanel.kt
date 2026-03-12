@@ -21,6 +21,8 @@ package mediathek.swingaudiothek.ui
 import mediathek.swing.IconUtils
 import org.kordamp.ikonli.materialdesign2.MaterialDesignC
 import java.awt.*
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.*
 import kotlin.math.roundToInt
 
@@ -44,6 +46,7 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
     private var progressListener: ((DownloadSummary) -> Unit)? = null
     private var primaryActionListener: ((String) -> Unit)? = null
     private var secondaryActionListener: ((String) -> Unit)? = null
+    private var removeActionListener: ((String) -> Unit)? = null
     private var previousTaskIds: List<String> = emptyList()
     private var currentItems: List<AudioDownloadItem> = emptyList()
     private val rowPanels = LinkedHashMap<String, AudioDownloadRowPanel>()
@@ -78,7 +81,8 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
                 rowPanels[item.id] = AudioDownloadRowPanel(
                     item,
                     primaryActionListener,
-                    secondaryActionListener
+                    secondaryActionListener,
+                    removeActionListener
                 )
             } else {
                 rowPanel.update(item)
@@ -123,6 +127,10 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
 
     fun addSecondaryActionListener(listener: (String) -> Unit) {
         secondaryActionListener = listener
+    }
+
+    fun addRemoveActionListener(listener: (String) -> Unit) {
+        removeActionListener = listener
     }
 
     private fun notifyProgressChanged() {
@@ -179,7 +187,8 @@ private data class AudioDownloadItem(
 private class AudioDownloadRowPanel(
     item: AudioDownloadItem,
     primaryActionListener: ((String) -> Unit)?,
-    secondaryActionListener: ((String) -> Unit)?
+    secondaryActionListener: ((String) -> Unit)?,
+    removeActionListener: ((String) -> Unit)?
 ) : JPanel(GridBagLayout()) {
     private var currentItem: AudioDownloadItem = item
     private val nameValueLabel = JLabel()
@@ -187,14 +196,17 @@ private class AudioDownloadRowPanel(
     private val progressBar = JProgressBar(0, 100)
     private val primaryButton = JButton()
     private val secondaryButton = JButton()
-    private val removeButton = JButton().apply {
+    private val removeButton = JLabel().apply {
         icon = IconUtils.of(MaterialDesignC.CLOSE_CIRCLE_OUTLINE, 18)
-        hideActionText = true
-        isContentAreaFilled = false
-        isBorderPainted = false
-        isFocusPainted = false
-        margin = Insets(0, 0, 0, 0)
         toolTipText = "Entfernen"
+        cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+        addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                if (isEnabled) {
+                    removeActionListener?.invoke(currentItem.id)
+                }
+            }
+        })
     }
 
     init {
@@ -211,8 +223,6 @@ private class AudioDownloadRowPanel(
         progressBar.isStringPainted = true
         primaryButton.addActionListener { primaryActionListener?.invoke(currentItem.id) }
         secondaryButton.addActionListener { secondaryActionListener?.invoke(currentItem.id) }
-        removeButton.addActionListener { secondaryActionListener?.invoke(currentItem.id) }
-
         val gbc = GridBagConstraints().apply {
             insets = Insets(2, 2, 2, 2)
             fill = GridBagConstraints.HORIZONTAL

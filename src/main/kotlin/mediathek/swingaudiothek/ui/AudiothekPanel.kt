@@ -169,6 +169,7 @@ class AudiothekPanel(
         downloadManagerPanel.addProgressListener(::updateDownloadSummary)
         downloadManagerPanel.addPrimaryActionListener(::handleDownloadPrimaryAction)
         downloadManagerPanel.addSecondaryActionListener(::handleDownloadSecondaryAction)
+        downloadManagerPanel.addRemoveActionListener(::handleDownloadRemoveAction)
         downloadManagerPanel.addEmptyListener {
             hideDownloadManagerIfVisible()
         }
@@ -434,7 +435,18 @@ class AudiothekPanel(
             AudioDownloadTaskState.PAUSED -> downloadManager.cancel(taskId)
             AudioDownloadTaskState.FAILED,
             AudioDownloadTaskState.CANCELLED,
+            AudioDownloadTaskState.COMPLETED -> Unit
+        }
+    }
+
+    private fun handleDownloadRemoveAction(taskId: String) {
+        val snapshot = downloadManager.snapshot(taskId) ?: return
+        when (snapshot.state) {
+            AudioDownloadTaskState.FAILED,
+            AudioDownloadTaskState.CANCELLED,
             AudioDownloadTaskState.COMPLETED -> downloadManager.remove(taskId)
+            AudioDownloadTaskState.DOWNLOADING,
+            AudioDownloadTaskState.PAUSED -> Unit
         }
     }
 
