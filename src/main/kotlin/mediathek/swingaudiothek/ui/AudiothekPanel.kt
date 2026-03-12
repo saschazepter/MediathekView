@@ -36,8 +36,6 @@ import mediathek.swingaudiothek.model.AudioEntry
 import mediathek.tool.FileDialogs
 import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.http.MVHttpClient
-import okhttp3.Call
-import okhttp3.Request
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
 import org.jdesktop.swingx.VerticalLayout
@@ -47,16 +45,10 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.io.File
 import java.net.URI
-import java.nio.file.AtomicMoveNotSupportedException
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.StandardCopyOption
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicInteger
-import java.util.concurrent.atomic.AtomicReference
 import javax.swing.*
 
 class AudiothekPanel(
@@ -88,13 +80,14 @@ class AudiothekPanel(
     }
 
     private val downloadClient = MVHttpClient.getInstance().httpClient
+    private val downloadManager = PersistentAudioDownloadManager(downloadClient, ::handleDownloadCompleted)
     private val downloadManagerPanel = AudioDownloadManagerPanel()
     private val downloadManagerPopup = JidePopup().apply {
         contentPane.layout = BorderLayout()
         contentPane.add(downloadManagerPanel, BorderLayout.CENTER)
         setOwner(toolBar.downloadManagerAnchor())
         isMovable = false
-        isResizable = false
+        isResizable = true
         isAttachable = false
         isTransient = true
         setDefaultMoveOperation(JidePopup.HIDE_ON_MOVED)
@@ -114,12 +107,20 @@ class AudiothekPanel(
 
     fun disposePanel() {
         downloadManagerPopup.hidePopupImmediately()
+        pauseDownloadsForShutdown()
         table.dispose()
         table.saveState()
         uiScope.coroutineContext[Job]?.cancel()
     }
 
     fun activeDownloadCount(): Int = activeDownloadCount.get()
+
+    fun pauseDownloadsForShutdown() {
+        downloadManagerPopup.hidePopupImmediately()
+        runBlocking {
+            downloadManager.shutdown()
+        }
+    }
 
     private fun setupListeners() {
         addComponentListener(object : ComponentAdapter() {
@@ -143,12 +144,20 @@ class AudiothekPanel(
         toolBar.addClearSearchListener { applyFilterNow("") }
         toolBar.addDownloadManagerListener(::toggleDownloadManager)
         downloadManagerPanel.addProgressListener { summary ->
+            activeDownloadCount.set(summary.activeCount)
             toolBar.setDownloadProgress(summary)
             statusPanel.setActiveDownloads(summary.activeCount)
         }
+        downloadManagerPanel.addPrimaryActionListener(::handleDownloadPrimaryAction)
+        downloadManagerPanel.addSecondaryActionListener(::handleDownloadSecondaryAction)
         downloadManagerPanel.addEmptyListener {
             if (downloadManagerPopup.isPopupVisible) {
                 downloadManagerPopup.hidePopup()
+            }
+        }
+        downloadManager.addListener { snapshots ->
+            SwingUtilities.invokeLater {
+                downloadManagerPanel.setTasks(snapshots)
             }
         }
         tableScrollPane.addComponentListener(object : ComponentAdapter() {
@@ -342,7 +351,7 @@ class AudiothekPanel(
         }
 
         val targetFile = chooseDownloadTarget(entry) ?: return
-        startDownload(entry, audioUrl, targetFile.toPath())
+        downloadManager.enqueue(entry, targetFile.toPath())
     }
 
     private fun chooseDownloadTarget(entry: AudioEntry): File? {
@@ -369,113 +378,40 @@ class AudiothekPanel(
         return sanitizedBaseName + extension
     }
 
-    private fun startDownload(entry: AudioEntry, audioUrl: URI, targetFile: Path) {
-        val cancelRequested = AtomicBoolean(false)
-        val activeCall = AtomicReference<Call?>(null)
-        val downloadJob = AtomicReference<Job?>(null)
-        activeDownloadCount.incrementAndGet()
-        val downloadHandle = downloadManagerPanel.addDownload(
-            audioName = entry.title.ifBlank { "(ohne Titel)" },
-            saveTarget = targetFile
-        ) {
-            cancelRequested.set(true)
-            activeCall.get()?.cancel()
-            downloadJob.get()?.cancel()
-        }
-        downloadHandle.setProgress(0L, null)
-
-        downloadJob.set(uiScope.launch(Dispatchers.IO) {
-            val parentDirectory = targetFile.parent ?: Path.of(".")
-            Files.createDirectories(parentDirectory)
-            val tempFile = Files.createTempFile(parentDirectory, "audio-", ".part")
-
-            try {
-                val request = Request.Builder()
-                    .url(audioUrl.toString())
-                    .get()
-                    .build()
-                val call = downloadClient.newCall(request)
-                activeCall.set(call)
-
-                call.execute().use { response ->
-                    if (!response.isSuccessful) {
-                        error("Download fehlgeschlagen: HTTP ${response.code}")
-                    }
-
-                    val body = response.body
-                    val totalBytes = body.contentLength().takeIf { it >= 0L }
-
-                    downloadHandle.setProgress(0L, totalBytes)
-
-                    body.byteStream().use { input ->
-                        Files.newOutputStream(tempFile).buffered().use { output ->
-                            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                            var downloadedBytes = 0L
-                            while (true) {
-                                ensureActive()
-                                val read = input.read(buffer)
-                                if (read < 0) {
-                                    break
-                                }
-                                output.write(buffer, 0, read)
-                                downloadedBytes += read
-                                downloadHandle.setProgress(downloadedBytes, totalBytes)
-                            }
-                        }
-                    }
-                }
-
-                moveDownloadedFile(tempFile, targetFile)
-                markAudioAsSeen(entry)
-                downloadHandle.markCompleted()
-            } catch (_: CancellationException) {
-                Files.deleteIfExists(tempFile)
-                downloadHandle.markCancelled()
-            } catch (ex: Exception) {
-                Files.deleteIfExists(tempFile)
-                downloadHandle.markFailed(ex.message ?: ex::class.java.simpleName)
-                withContext(Dispatchers.Swing) {
-                    if (!cancelRequested.get()) {
-                        JOptionPane.showMessageDialog(
-                            this@AudiothekPanel,
-                            "Der Download ist fehlgeschlagen:\n${ex.message ?: ex::class.java.simpleName}",
-                            Konstanten.PROGRAMMNAME,
-                            JOptionPane.ERROR_MESSAGE
-                        )
-                    }
-                }
-            } finally {
-                activeCall.set(null)
-                activeDownloadCount.updateAndGet { current -> (current - 1).coerceAtLeast(0) }
-            }
-        })
-    }
-
-    private fun moveDownloadedFile(tempFile: Path, targetFile: Path) {
-        try {
-            Files.move(
-                tempFile,
-                targetFile,
-                StandardCopyOption.REPLACE_EXISTING,
-                StandardCopyOption.ATOMIC_MOVE
-            )
-        } catch (_: AtomicMoveNotSupportedException) {
-            Files.move(
-                tempFile,
-                targetFile,
-                StandardCopyOption.REPLACE_EXISTING
-            )
+    private fun handleDownloadPrimaryAction(taskId: String) {
+        val snapshot = downloadManager.snapshot(taskId) ?: return
+        when (snapshot.state) {
+            AudioDownloadTaskState.DOWNLOADING -> downloadManager.pause(taskId)
+            AudioDownloadTaskState.PAUSED,
+            AudioDownloadTaskState.FAILED,
+            AudioDownloadTaskState.CANCELLED -> downloadManager.resume(taskId)
+            AudioDownloadTaskState.COMPLETED -> Unit
         }
     }
 
-    private fun markAudioAsSeen(entry: AudioEntry) {
+    private fun handleDownloadSecondaryAction(taskId: String) {
+        val snapshot = downloadManager.snapshot(taskId) ?: return
+        when (snapshot.state) {
+            AudioDownloadTaskState.DOWNLOADING,
+            AudioDownloadTaskState.PAUSED -> downloadManager.cancel(taskId)
+            AudioDownloadTaskState.FAILED,
+            AudioDownloadTaskState.CANCELLED,
+            AudioDownloadTaskState.COMPLETED -> downloadManager.remove(taskId)
+        }
+    }
+
+    private fun handleDownloadCompleted(snapshot: AudioDownloadTaskSnapshot) {
+        markAudioAsSeen(snapshot)
+    }
+
+    private fun markAudioAsSeen(snapshot: AudioDownloadTaskSnapshot) {
         try {
             SeenHistoryController().use {
-                it.markSeen(entry)
+                it.markSeen(snapshot.toAudioEntry())
             }
             SwingUtilities.invokeLater { table.refreshSeenState() }
         } catch (ex: Exception) {
-            logger.warn("Failed to mark downloaded audio as seen: {}", entry.audioUrl, ex)
+            logger.warn("Failed to mark downloaded audio as seen: {}", snapshot.audioUrl, ex)
         }
     }
 
@@ -533,4 +469,22 @@ class AudiothekPanel(
     companion object {
         private val DATASET_TIMESTAMP_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
     }
+}
+
+private fun AudioDownloadTaskSnapshot.toAudioEntry(): AudioEntry {
+    return AudioEntry(
+        channel = channel,
+        genre = "",
+        theme = theme,
+        title = audioName,
+        durationMinutes = null,
+        sizeMb = null,
+        description = "",
+        audioUrl = audioUrl.takeIf(String::isNotBlank)?.let(URI::create),
+        websiteUrl = null,
+        isNew = false,
+        isPodcast = false,
+        isDuplicate = false,
+        publishedAt = null
+    )
 }

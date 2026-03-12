@@ -18,98 +18,82 @@
 
 package mediathek.swingaudiothek.ui
 
-import mediathek.mainwindow.MediathekGui
 import java.awt.*
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
 import java.nio.file.Path
 import javax.swing.*
+import kotlin.math.roundToInt
+
+private const val MAX_DOWNLOAD_ROW_WIDTH = 600
 
 class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
-    private val listModel = DefaultListModel<AudioDownloadItem>()
-    private val list = object : JList<AudioDownloadItem>(listModel) {
-        override fun getScrollableTracksViewportWidth(): Boolean = true
+    private val contentPanel = JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+        isOpaque = false
     }
+    private val scrollPane = JScrollPane(contentPanel)
     private var emptyListener: (() -> Unit)? = null
     private var progressListener: ((DownloadSummary) -> Unit)? = null
+    private var primaryActionListener: ((String) -> Unit)? = null
+    private var secondaryActionListener: ((String) -> Unit)? = null
+    private var previousTaskIds: List<String> = emptyList()
+    private var currentItems: List<AudioDownloadItem> = emptyList()
+    private val rowPanels = LinkedHashMap<String, AudioDownloadRowPanel>()
 
     init {
         preferredSize = Dimension(500, 320)
         val popoverBackground = UIManager.getColor("Panel.background") ?: background
         background = popoverBackground
         isOpaque = true
-        list.cellRenderer = AudioDownloadListRenderer()
-        list.selectionMode = ListSelectionModel.SINGLE_SELECTION
-        list.fixedCellHeight = -1
-        list.visibleRowCount = 8
-        list.background = popoverBackground
-        list.isOpaque = true
-        list.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(event: MouseEvent) {
-                handleClick(event)
+        contentPanel.background = popoverBackground
+
+        scrollPane.border = BorderFactory.createEmptyBorder()
+        scrollPane.viewport.background = popoverBackground
+        scrollPane.horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+
+        add(scrollPane, BorderLayout.CENTER)
+    }
+
+    fun setTasks(tasks: List<AudioDownloadTaskSnapshot>) {
+        val taskIds = tasks.map { it.id }
+        val shouldScrollToEnd = taskIds.size > previousTaskIds.size || taskIds.lastOrNull() != previousTaskIds.lastOrNull()
+        previousTaskIds = taskIds
+        currentItems = tasks.map { it.toListItem() }
+
+        val removedIds = rowPanels.keys - taskIds.toSet()
+        removedIds.forEach(rowPanels::remove)
+
+        currentItems.forEach { item ->
+            val rowPanel = rowPanels[item.id]
+            if (rowPanel == null) {
+                rowPanels[item.id] = AudioDownloadRowPanel(
+                    item,
+                    primaryActionListener,
+                    secondaryActionListener
+                )
+            } else {
+                rowPanel.update(item)
             }
-        })
+        }
 
-        add(JScrollPane(list).apply {
-            border = BorderFactory.createEmptyBorder()
-            viewport.background = popoverBackground
-        }, BorderLayout.CENTER)
-    }
+        contentPanel.removeAll()
+        currentItems.forEachIndexed { index, item ->
+            contentPanel.add(rowPanels.getValue(item.id))
+            if (index < currentItems.lastIndex) {
+                contentPanel.add(Box.createVerticalStrut(8))
+            }
+        }
+        contentPanel.add(Box.createVerticalGlue())
+        contentPanel.revalidate()
+        contentPanel.repaint()
 
-    fun addDownload(audioName: String, saveTarget: Path, onCancelRequested: () -> Unit): AudioDownloadHandle {
-        val item = AudioDownloadItem(
-            audioName = audioName,
-            saveTarget = saveTarget,
-            onCancelRequested = onCancelRequested,
-            onRemoveRequested = { removeItem(it) }
-        )
-        listModel.addElement(item)
-        list.ensureIndexIsVisible(listModel.size() - 1)
         notifyProgressChanged()
-        return AudioDownloadHandleImpl(item) {
-            repaintItem(it)
-            notifyProgressChanged()
-        }
-    }
 
-    private fun handleClick(event: MouseEvent) {
-        val index = list.locationToIndex(event.point)
-        if (index < 0) {
-            return
+        if (shouldScrollToEnd) {
+            SwingUtilities.invokeLater {
+                scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
+            }
         }
-
-        val bounds = list.getCellBounds(index, index) ?: return
-        if (!bounds.contains(event.point)) {
-            return
-        }
-
-        val item = listModel.get(index)
-        val relativePoint = Point(event.x - bounds.x, event.y - bounds.y)
-        val cancelBounds = buttonBounds(bounds.width, true)
-        val removeBounds = buttonBounds(bounds.width, false)
-        when {
-            cancelBounds.contains(relativePoint) && item.cancelEnabled -> confirmCancel(item)
-            removeBounds.contains(relativePoint) && item.removeEnabled -> item.onRemoveRequested(item)
-        }
-    }
-
-    private fun confirmCancel(item: AudioDownloadItem) {
-        val result = JOptionPane.showConfirmDialog(
-            MediathekGui.ui(),
-            "Soll der Download wirklich abgebrochen werden?\n${item.audioName}",
-            "Audio-Downloads",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE
-        )
-        if (result == JOptionPane.YES_OPTION) {
-            item.onCancelRequested()
-        }
-    }
-
-    private fun removeItem(item: AudioDownloadItem) {
-        listModel.removeElement(item)
-        notifyProgressChanged()
-        if (listModel.isEmpty) {
+        if (currentItems.isEmpty()) {
             emptyListener?.invoke()
         }
     }
@@ -123,41 +107,29 @@ class AudioDownloadManagerPanel : JPanel(BorderLayout()) {
         notifyProgressChanged()
     }
 
-    private fun repaintItem(item: AudioDownloadItem) {
-        val index = listModel.indexOf(item)
-        if (index >= 0) {
-            list.repaint(list.getCellBounds(index, index))
-        }
+    fun addPrimaryActionListener(listener: (String) -> Unit) {
+        primaryActionListener = listener
     }
 
-    private fun buttonBounds(rowWidth: Int, cancelButton: Boolean): Rectangle {
-        val x = rowWidth - BUTTON_WIDTH - 6
-        val y = if (cancelButton) 14 else 14 + BUTTON_HEIGHT + BUTTON_GAP
-        return Rectangle(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
-    }
-
-    companion object {
-        private const val BUTTON_WIDTH = 90
-        private const val BUTTON_HEIGHT = 28
-        private const val BUTTON_GAP = 8
+    fun addSecondaryActionListener(listener: (String) -> Unit) {
+        secondaryActionListener = listener
     }
 
     private fun notifyProgressChanged() {
         progressListener?.invoke(
             DownloadSummary(
-                activeCount = (0 until listModel.size())
-                    .map { listModel.getElementAt(it) }
-                    .count { it.isActive() },
-                progress = calculateAggregateProgress()
+                activeCount = currentItems.count { it.state == AudioDownloadTaskState.DOWNLOADING },
+                progress = calculateAggregateProgress(currentItems)
             )
         )
     }
 
-    private fun calculateAggregateProgress(): Double {
-        val activeItems = (0 until listModel.size())
-            .map { listModel.getElementAt(it) }
-            .filter { it.isActive() && !it.progressIndeterminate && (it.totalBytes ?: 0L) > 0L }
-
+    private fun calculateAggregateProgress(items: List<AudioDownloadItem>): Double {
+        val activeItems = items.filter {
+            it.state == AudioDownloadTaskState.DOWNLOADING &&
+                !it.progressIndeterminate &&
+                (it.totalBytes ?: 0L) > 0L
+        }
         if (activeItems.isEmpty()) {
             return 0.0
         }
@@ -177,130 +149,49 @@ data class DownloadSummary(
     val progress: Double
 )
 
-interface AudioDownloadHandle {
-    fun setProgress(downloadedBytes: Long, totalBytes: Long?)
-    fun markCancelling()
-    fun markCompleted()
-    fun markCancelled()
-    fun markFailed(message: String)
-}
-
-private class AudioDownloadHandleImpl(
-    private val item: AudioDownloadItem,
-    private val onStateChanged: (AudioDownloadItem) -> Unit
-) : AudioDownloadHandle {
-    override fun setProgress(downloadedBytes: Long, totalBytes: Long?) {
-        SwingUtilities.invokeLater {
-            item.totalBytes = totalBytes
-            item.downloadedBytes = downloadedBytes
-            item.status = "Download läuft ..."
-            item.progressIndeterminate = totalBytes == null || totalBytes <= 0L
-            if (totalBytes != null && totalBytes > 0L) {
-                item.progressPercent = ((downloadedBytes * 100) / totalBytes).toInt().coerceIn(0, 100)
-                item.progressText = "${item.progressPercent} % (${formatSize(downloadedBytes)} / ${formatSize(totalBytes)})"
-            } else {
-                item.progressPercent = 0
-                item.progressText = formatSize(downloadedBytes)
-            }
-            onStateChanged(item)
-        }
-    }
-
-    override fun markCancelling() {
-        SwingUtilities.invokeLater {
-            item.status = "Wird abgebrochen ..."
-            item.progressIndeterminate = true
-            item.progressText = "Abbruch läuft ..."
-            item.cancelEnabled = false
-            onStateChanged(item)
-        }
-    }
-
-    override fun markCompleted() {
-        SwingUtilities.invokeLater {
-            item.status = "Abgeschlossen"
-            item.progressIndeterminate = false
-            item.progressPercent = 100
-            item.progressText = "100 %"
-            item.cancelEnabled = false
-            item.removeEnabled = true
-            onStateChanged(item)
-        }
-    }
-
-    override fun markCancelled() {
-        SwingUtilities.invokeLater {
-            item.status = "Abgebrochen"
-            item.progressIndeterminate = false
-            item.progressText = "Abgebrochen"
-            item.cancelEnabled = false
-            item.removeEnabled = true
-            onStateChanged(item)
-        }
-    }
-
-    override fun markFailed(message: String) {
-        SwingUtilities.invokeLater {
-            item.status = message
-            item.progressIndeterminate = false
-            item.progressText = "Fehlgeschlagen"
-            item.cancelEnabled = false
-            item.removeEnabled = true
-            onStateChanged(item)
-        }
-    }
-
-    private fun formatSize(bytes: Long): String {
-        if (bytes < 1024L) {
-            return "$bytes B"
-        }
-        val units = listOf("KB", "MB", "GB")
-        var value = bytes.toDouble() / 1024.0
-        var unitIndex = 0
-        while (value >= 1024.0 && unitIndex < units.lastIndex) {
-            value /= 1024.0
-            unitIndex++
-        }
-        return String.format("%.1f %s", value, units[unitIndex])
-    }
-}
-
 private data class AudioDownloadItem(
+    val id: String,
+    val state: AudioDownloadTaskState,
     val audioName: String,
     val saveTarget: Path,
-    val onCancelRequested: () -> Unit,
-    val onRemoveRequested: (AudioDownloadItem) -> Unit,
-    var status: String = "Wartet auf Start ...",
-    var progressText: String = "0 %",
-    var progressPercent: Int = 0,
-    var progressIndeterminate: Boolean = false,
-    var cancelEnabled: Boolean = true,
-    var removeEnabled: Boolean = false,
-    var downloadedBytes: Long = 0L,
-    var totalBytes: Long? = null,
-    var cancelButtonBounds: Rectangle = Rectangle(),
-    var removeButtonBounds: Rectangle = Rectangle()
-) {
-    fun isActive(): Boolean = cancelEnabled && !removeEnabled
-}
+    val status: String,
+    val progressText: String,
+    val progressPercent: Int,
+    val progressIndeterminate: Boolean,
+    val primaryLabel: String,
+    val primaryEnabled: Boolean,
+    val secondaryLabel: String,
+    val secondaryEnabled: Boolean,
+    val downloadedBytes: Long = 0L,
+    val totalBytes: Long? = null
+)
 
-private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownloadItem> {
-    private val maxTextWidth = 300
-    private val borderColor = UIManager.getColor("Component.borderColor") ?: Color.LIGHT_GRAY
-    private val titleLabel = JLabel()
-    private val statusLabel = JLabel()
-    private val progressBar = JProgressBar(0, 100).apply {
-        isStringPainted = true
-    }
-    private var item: AudioDownloadItem? = null
+private class AudioDownloadRowPanel(
+    item: AudioDownloadItem,
+    primaryActionListener: ((String) -> Unit)?,
+    secondaryActionListener: ((String) -> Unit)?
+) : JPanel(GridBagLayout()) {
+    private var currentItem: AudioDownloadItem = item
+    private val nameValueLabel = JLabel()
+    private val statusValueLabel = JLabel()
+    private val progressBar = JProgressBar(0, 100)
+    private val primaryButton = JButton()
+    private val secondaryButton = JButton()
 
     init {
-        layout = BorderLayout(8, 8)
-        border = BorderFactory.createEmptyBorder(2, 2, 2, 2)
+        val borderColor = UIManager.getColor("Component.borderColor") ?: Color.LIGHT_GRAY
+        border = BorderFactory.createCompoundBorder(
+            BorderFactory.createLineBorder(borderColor, 1, true),
+            BorderFactory.createEmptyBorder(10, 12, 10, 12)
+        )
+        background = UIManager.getColor("Panel.background") ?: background
+        maximumSize = Dimension(MAX_DOWNLOAD_ROW_WIDTH, 96)
+        alignmentX = LEFT_ALIGNMENT
 
-        val content = JPanel(GridBagLayout()).apply {
-            isOpaque = false
-        }
+        progressBar.isStringPainted = true
+        primaryButton.addActionListener { primaryActionListener?.invoke(currentItem.id) }
+        secondaryButton.addActionListener { secondaryActionListener?.invoke(currentItem.id) }
+
         val gbc = GridBagConstraints().apply {
             insets = Insets(2, 2, 2, 2)
             fill = GridBagConstraints.HORIZONTAL
@@ -310,124 +201,174 @@ private class AudioDownloadListRenderer : JPanel(), ListCellRenderer<AudioDownlo
         gbc.gridx = 0
         gbc.gridy = 0
         gbc.weightx = 0.0
-        content.add(JLabel("Name:"), gbc)
+        add(JLabel("Name:"), gbc)
 
         gbc.gridx = 1
         gbc.weightx = 1.0
-        content.add(titleLabel, gbc)
+        add(nameValueLabel, gbc)
 
         gbc.gridx = 0
         gbc.gridy = 1
         gbc.weightx = 0.0
-        content.add(JLabel("Status:"), gbc)
+        add(JLabel("Status:"), gbc)
 
         gbc.gridx = 1
         gbc.weightx = 1.0
-        content.add(statusLabel, gbc)
+        add(statusValueLabel, gbc)
 
         gbc.gridx = 0
         gbc.gridy = 2
         gbc.gridwidth = 2
         gbc.weightx = 1.0
-        content.add(progressBar, gbc)
+        add(progressBar, gbc)
 
-        add(content, BorderLayout.CENTER)
-    }
-
-    override fun getListCellRendererComponent(
-        list: JList<out AudioDownloadItem>,
-        value: AudioDownloadItem,
-        index: Int,
-        isSelected: Boolean,
-        cellHasFocus: Boolean
-    ): Component {
-        item = value
-        titleLabel.text = ellipsize(value.audioName)
-        statusLabel.text = ellipsize(value.status)
-        progressBar.isIndeterminate = value.progressIndeterminate
-        progressBar.value = value.progressPercent
-        progressBar.string = value.progressText
-
-        background = if (isSelected) list.selectionBackground else list.background
-        foreground = if (isSelected) list.selectionForeground else list.foreground
-        titleLabel.foreground = foreground
-        statusLabel.foreground = foreground
-        progressBar.foreground = UIManager.getColor("ProgressBar.foreground")
-        isOpaque = true
-        return this
-    }
-
-    override fun paintComponent(g: Graphics) {
-        super.paintComponent(g)
-        val currentItem = item ?: return
-        val graphics = g.create() as Graphics2D
-        try {
-            graphics.color = borderColor
-            graphics.drawRoundRect(0, 0, width - 1, height - 1, 10, 10)
-            paintButtons(graphics, currentItem)
-        } finally {
-            graphics.dispose()
+        val buttonPanel = JPanel().apply {
+            layout = BoxLayout(this, BoxLayout.Y_AXIS)
+            isOpaque = false
+            add(primaryButton)
+            add(Box.createVerticalStrut(8))
+            add(secondaryButton)
         }
+
+        gbc.gridx = 2
+        gbc.gridy = 0
+        gbc.gridheight = 3
+        gbc.gridwidth = 1
+        gbc.weightx = 0.0
+        gbc.fill = GridBagConstraints.NONE
+        gbc.anchor = GridBagConstraints.NORTHEAST
+        gbc.insets = Insets(2, 12, 2, 2)
+        add(buttonPanel, gbc)
+
+        update(item)
     }
 
-    private fun paintButtons(graphics: Graphics2D, item: AudioDownloadItem) {
-        item.cancelButtonBounds = Rectangle(width - 90 - 6, 14, 90, 28)
-        item.removeButtonBounds = Rectangle(width - 90 - 6, 14 + 28 + 8, 90, 28)
+    fun update(item: AudioDownloadItem) {
+        currentItem = item
+        nameValueLabel.text = ellipsize(item.audioName, 90)
+        nameValueLabel.toolTipText = item.audioName
+        statusValueLabel.text = ellipsize(item.status, 80)
+        statusValueLabel.toolTipText = item.status
+        progressBar.isIndeterminate = item.progressIndeterminate
+        progressBar.value = item.progressPercent
+        progressBar.string = item.progressText
 
-        paintButton(graphics, item.cancelButtonBounds, "Abbrechen", item.cancelEnabled)
-        paintButton(graphics, item.removeButtonBounds, "Entfernen", item.removeEnabled)
+        primaryButton.text = item.primaryLabel
+        primaryButton.isEnabled = item.primaryEnabled
+        primaryButton.isVisible = item.primaryLabel.isNotBlank()
+
+        secondaryButton.text = item.secondaryLabel
+        secondaryButton.isEnabled = item.secondaryEnabled
+        secondaryButton.isVisible = item.secondaryLabel.isNotBlank()
+
+        revalidate()
+        repaint()
     }
 
-    private fun paintButton(graphics: Graphics2D, bounds: Rectangle, text: String, enabled: Boolean) {
-        val bg = if (enabled) {
-            UIManager.getColor("Button.background") ?: Color(230, 230, 230)
-        } else {
-            UIManager.getColor("Button.disabledBackground") ?: Color(245, 245, 245)
-        }
-        val fg = if (enabled) {
-            UIManager.getColor("Button.foreground") ?: Color.BLACK
-        } else {
-            UIManager.getColor("Button.disabledText") ?: Color.GRAY
-        }
-        graphics.color = bg
-        graphics.fillRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 8, 8)
-        graphics.color = borderColor
-        graphics.drawRoundRect(bounds.x, bounds.y, bounds.width, bounds.height, 8, 8)
-        graphics.color = fg
-        val fm = graphics.fontMetrics
-        val textX = bounds.x + (bounds.width - fm.stringWidth(text)) / 2
-        val textY = bounds.y + (bounds.height - fm.height) / 2 + fm.ascent
-        graphics.drawString(text, textX, textY)
-    }
-
-    override fun getPreferredSize(): Dimension {
-        return Dimension(super.getPreferredSize().width, 96)
-    }
-
-    override fun doLayout() {
-        super.doLayout()
-        getComponent(0).setBounds(4, 4, minOf(width - 104, maxTextWidth), height - 8)
-    }
-
-    private fun ellipsize(text: String): String {
-        val fm = getFontMetrics(font ?: UIManager.getFont("Label.font"))
-        if (fm.stringWidth(text) <= maxTextWidth) {
+    private fun ellipsize(text: String, maxChars: Int): String {
+        if (text.length <= maxChars) {
             return text
         }
-
-        val ellipsis = "..."
-        val targetWidth = maxTextWidth - fm.stringWidth(ellipsis)
-        if (targetWidth <= 0) {
-            return ellipsis
-        }
-
-        val builder = StringBuilder()
-        for (char in text) {
-            if (fm.stringWidth(builder.toString() + char) > targetWidth) {
-                break
-            }
-            builder.append(char)
-        }
-        return builder.append(ellipsis).toString()
+        return text.take(maxChars - 3) + "..."
     }
+}
+
+private fun AudioDownloadTaskSnapshot.toListItem(): AudioDownloadItem {
+    val progressPercent = totalBytes
+        ?.takeIf { it > 0L }
+        ?.let { ((downloadedBytes.coerceAtMost(it).toDouble() / it.toDouble()) * 100.0).roundToInt().coerceIn(0, 100) }
+        ?: if (state == AudioDownloadTaskState.COMPLETED) 100 else 0
+    val progressText = when (state) {
+        AudioDownloadTaskState.COMPLETED -> "100 %"
+        AudioDownloadTaskState.DOWNLOADING,
+        AudioDownloadTaskState.PAUSED -> totalBytes
+            ?.takeIf { it > 0L }
+            ?.let { "$progressPercent %" }
+            ?: formatByteSize(downloadedBytes)
+        AudioDownloadTaskState.CANCELLED -> "Abgebrochen"
+        AudioDownloadTaskState.FAILED -> "Fehler"
+    }
+
+    val statusText = when (state) {
+        AudioDownloadTaskState.DOWNLOADING -> buildTransferStatus("Laeuft", downloadedBytes, totalBytes)
+        AudioDownloadTaskState.PAUSED -> buildTransferStatus("Pausiert", downloadedBytes, totalBytes)
+        AudioDownloadTaskState.COMPLETED -> "Abgeschlossen"
+        AudioDownloadTaskState.CANCELLED -> "Abgebrochen"
+        AudioDownloadTaskState.FAILED -> sanitizeFailureMessage(errorMessage)
+    }
+
+    val primary = when (state) {
+        AudioDownloadTaskState.DOWNLOADING -> "Pause" to true
+        AudioDownloadTaskState.PAUSED -> "Fortsetzen" to true
+        AudioDownloadTaskState.FAILED,
+        AudioDownloadTaskState.CANCELLED -> "Neu starten" to true
+        AudioDownloadTaskState.COMPLETED -> "" to false
+    }
+    val secondary = when (state) {
+        AudioDownloadTaskState.DOWNLOADING,
+        AudioDownloadTaskState.PAUSED -> "Abbrechen" to true
+        AudioDownloadTaskState.FAILED,
+        AudioDownloadTaskState.CANCELLED,
+        AudioDownloadTaskState.COMPLETED -> "Entfernen" to true
+    }
+
+    return AudioDownloadItem(
+        id = id,
+        state = state,
+        audioName = audioName,
+        saveTarget = Path.of(targetFile),
+        status = statusText,
+        progressText = progressText,
+        progressPercent = progressPercent,
+        progressIndeterminate = state == AudioDownloadTaskState.DOWNLOADING && (totalBytes ?: 0L) <= 0L,
+        primaryLabel = primary.first,
+        primaryEnabled = primary.second,
+        secondaryLabel = secondary.first,
+        secondaryEnabled = secondary.second,
+        downloadedBytes = downloadedBytes,
+        totalBytes = totalBytes
+    )
+}
+
+private fun sanitizeFailureMessage(errorMessage: String?): String {
+    val message = errorMessage?.trim().orEmpty()
+    if (message.isBlank()) {
+        return "Fehlgeschlagen"
+    }
+    if (looksLikePath(message)) {
+        return "Fehlgeschlagen: Datei konnte nicht gespeichert werden"
+    }
+    return "Fehlgeschlagen: $message"
+}
+
+private fun looksLikePath(message: String): Boolean {
+    return message.startsWith("/") ||
+        message.startsWith("\\") ||
+        Regex("^[A-Za-z]:[\\\\/]").containsMatchIn(message) ||
+        (message.contains("/") && !message.startsWith("http")) ||
+        message.contains("\\")
+}
+
+private fun buildTransferStatus(prefix: String, downloadedBytes: Long, totalBytes: Long?): String {
+    val downloaded = formatByteSize(downloadedBytes)
+    val total = totalBytes?.takeIf { it > 0L }?.let(::formatByteSize)
+    return if (total == null) {
+        "$prefix ($downloaded)"
+    } else {
+        "$prefix ($downloaded / $total)"
+    }
+}
+
+private fun formatByteSize(bytes: Long): String {
+    if (bytes < 1024L) {
+        return "$bytes B"
+    }
+    val units = listOf("KB", "MB", "GB")
+    var value = bytes.toDouble()
+    var unitIndex = -1
+    while (value >= 1024.0 && unitIndex < units.lastIndex) {
+        value /= 1024.0
+        unitIndex++
+    }
+    return String.format("%.1f %s", value, units[unitIndex])
 }

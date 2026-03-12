@@ -1189,6 +1189,7 @@ public class MediathekGui extends JFrame {
             if (result != JOptionPane.YES_OPTION) {
                 return false;
             }
+            tabAudiothek.pauseDownloadsForShutdown();
         }
 
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
