@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui
+package mediathek.swingaudiothek.ui.main
 
+import mediathek.swingaudiothek.ui.download.CircularProgressIcon
+import mediathek.swingaudiothek.ui.download.DownloadSummary
 import org.kordamp.ikonli.materialdesign2.MaterialDesignT
 import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Dimension

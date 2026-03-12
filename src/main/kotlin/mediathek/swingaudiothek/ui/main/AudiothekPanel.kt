@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui
+package mediathek.swingaudiothek.ui.main
 
 import com.jidesoft.popup.JidePopup
 import kotlinx.coroutines.*
@@ -29,10 +29,16 @@ import mediathek.mac.MacMultimediaPlayerLocator
 import mediathek.mac.SingleIinaPlayer
 import mediathek.mainwindow.MediathekGui
 import mediathek.swing.OverlayPanel
-import mediathek.swingaudiothek.data.AudioDownloadStatus
-import mediathek.swingaudiothek.data.AudioLoadResult
-import mediathek.swingaudiothek.data.AudioRepository
+import mediathek.swingaudiothek.download.AudioDownloadTaskSnapshot
+import mediathek.swingaudiothek.download.AudioDownloadTaskState
+import mediathek.swingaudiothek.download.PersistentAudioDownloadManager
 import mediathek.swingaudiothek.model.AudioEntry
+import mediathek.swingaudiothek.repository.AudioDownloadStatus
+import mediathek.swingaudiothek.repository.AudioLoadResult
+import mediathek.swingaudiothek.repository.AudioRepository
+import mediathek.swingaudiothek.ui.download.AudioDownloadManagerPanel
+import mediathek.swingaudiothek.ui.download.DownloadSummary
+import mediathek.swingaudiothek.ui.table.AudiothekTable
 import mediathek.tool.FileDialogs
 import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.http.MVHttpClient

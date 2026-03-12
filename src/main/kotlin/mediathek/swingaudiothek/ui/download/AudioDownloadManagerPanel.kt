@@ -16,9 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui
+package mediathek.swingaudiothek.ui.download
 
 import mediathek.swing.IconUtils
+import mediathek.swingaudiothek.download.AudioDownloadTaskSnapshot
+import mediathek.swingaudiothek.download.AudioDownloadTaskState
 import org.kordamp.ikonli.materialdesign2.MaterialDesignC
 import org.kordamp.ikonli.materialdesign2.MaterialDesignP
 import org.kordamp.ikonli.materialdesign2.MaterialDesignR

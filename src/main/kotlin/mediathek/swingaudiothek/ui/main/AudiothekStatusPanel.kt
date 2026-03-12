@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui
+package mediathek.swingaudiothek.ui.main
 
 import org.jdesktop.swingx.JXStatusBar
 import java.awt.FlowLayout

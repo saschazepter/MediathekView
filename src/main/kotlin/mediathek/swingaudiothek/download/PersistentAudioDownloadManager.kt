@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui
+package mediathek.swingaudiothek.download
 
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.data
+package mediathek.swingaudiothek.repository
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
