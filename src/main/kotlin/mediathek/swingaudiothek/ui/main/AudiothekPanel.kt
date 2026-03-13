@@ -21,6 +21,7 @@ package mediathek.swingaudiothek.ui.main
 import com.jidesoft.popup.JidePopup
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.controller.history.SeenHistoryController
 import mediathek.gui.actions.UrlHyperlinkAction
@@ -42,6 +43,8 @@ import mediathek.swingaudiothek.ui.table.AudiothekTable
 import mediathek.tool.FileDialogs
 import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.http.MVHttpClient
+import mediathek.tool.notification.MessageType
+import mediathek.tool.notification.NotificationMessage
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
 import org.jdesktop.swingx.VerticalLayout
@@ -89,7 +92,11 @@ class AudiothekPanel(
     }
 
     private val downloadClient = MVHttpClient.getInstance().httpClient
-    private val downloadManager = PersistentAudioDownloadManager(downloadClient, ::handleDownloadCompleted)
+    private val downloadManager = PersistentAudioDownloadManager(
+        downloadClient,
+        ::handleDownloadCompleted,
+        ::handleDownloadFailed
+    )
     private val downloadManagerPanel = AudioDownloadManagerPanel()
     private val downloadManagerPopup = JidePopup().apply {
         contentPane.layout = BorderLayout()
@@ -457,7 +464,40 @@ class AudiothekPanel(
     }
 
     private fun handleDownloadCompleted(snapshot: AudioDownloadTaskSnapshot) {
+        showDownloadNotification(
+            title = "Download abgeschlossen",
+            message = "\"${snapshot.audioName}\" wurde heruntergeladen.",
+            type = MessageType.INFO
+        )
         markAudioAsSeen(snapshot)
+    }
+
+    private fun handleDownloadFailed(snapshot: AudioDownloadTaskSnapshot) {
+        showDownloadNotification(
+            title = "Download fehlgeschlagen",
+            message = buildString {
+                append("„")
+                append(snapshot.audioName)
+                append("“ konnte nicht heruntergeladen werden.")
+                snapshot.errorMessage
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let {
+                        append(' ')
+                        append(it)
+                    }
+            },
+            type = MessageType.ERROR
+        )
+    }
+
+    private fun showDownloadNotification(title: String, message: String, type: MessageType) {
+        Daten.getInstance().notificationCenter().displayNotification(
+            NotificationMessage().apply {
+                this.title = title
+                this.message = message
+                this.type = type
+            }
+        )
     }
 
     private fun markAudioAsSeen(snapshot: AudioDownloadTaskSnapshot) {

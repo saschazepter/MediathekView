@@ -38,7 +38,8 @@ import kotlin.io.path.exists
 
 class PersistentAudioDownloadManager(
     private val httpClient: OkHttpClient,
-    private val onDownloadCompleted: (AudioDownloadTaskSnapshot) -> Unit
+    private val onDownloadCompleted: (AudioDownloadTaskSnapshot) -> Unit,
+    private val onDownloadFailed: (AudioDownloadTaskSnapshot) -> Unit
 ) {
     private val logger = LogManager.getLogger(PersistentAudioDownloadManager::class.java)
     private val http11Client: OkHttpClient = httpClient.newBuilder()
@@ -114,6 +115,7 @@ class PersistentAudioDownloadManager(
                             errorMessage = ex.message ?: ex::class.java.simpleName
                         )
                     )
+                    onDownloadFailed(task.snapshot)
                 }
             } finally {
                 task.activeCall = null
