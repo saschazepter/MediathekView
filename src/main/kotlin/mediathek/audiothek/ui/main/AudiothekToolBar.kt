@@ -22,7 +22,6 @@ import com.formdev.flatlaf.FlatClientProperties
 import mediathek.audiothek.ui.download.CircularProgressIcon
 import mediathek.audiothek.ui.download.DownloadSummary
 import org.jdesktop.swingx.JXBusyLabel
-import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import org.kordamp.ikonli.materialdesign2.MaterialDesignT
 import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Dimension
@@ -36,8 +35,6 @@ class AudiothekToolBar : JToolBar() {
         private const val ICON_SIZE = 16
         private const val MAX_SEARCH_FIELD_WIDTH = 500
         private const val PODCAST_SEARCH_TOOLTIP = "Podcastindex-Suche läuft"
-        private const val ONLINE_SEARCH_UNAVAILABLE_TOOLTIP = "Es ist kein Proxy für die Online-Suche konfiguriert"
-        private const val SETTINGS_TOOLTIP = "Audiothek-Einstellungen"
     }
 
     private val searchField = JTextField(SEARCH_FIELD_COLUMNS)
@@ -48,10 +45,8 @@ class AudiothekToolBar : JToolBar() {
         isBusy = false
         isVisible = false
     }
-    private val settingsButton = JButton()
     private val downloadManagerButton = JButton()
     private val downloadManagerIdleIcon = FontIcon.of(MaterialDesignT.TRAY_ARROW_DOWN, ICON_SIZE)
-    private val settingsIcon = FontIcon.of(FontAwesomeSolid.COG, ICON_SIZE)
     private val downloadProgressIcon = CircularProgressIcon()
 
     init {
@@ -90,10 +85,6 @@ class AudiothekToolBar : JToolBar() {
         onlineSearchCheckBox.addActionListener { action(onlineSearchCheckBox.isSelected) }
     }
 
-    fun addSettingsListener(action: () -> Unit) {
-        settingsButton.addActionListener { action() }
-    }
-
     fun setHelpAction(action: Action) {
         helpButton.action = action
         helpButton.text = null
@@ -107,18 +98,6 @@ class AudiothekToolBar : JToolBar() {
 
     fun setOnlineSearchEnabled(enabled: Boolean) {
         onlineSearchCheckBox.isSelected = enabled
-    }
-
-    fun setOnlineSearchAvailable(available: Boolean) {
-        onlineSearchCheckBox.isEnabled = available
-        onlineSearchCheckBox.toolTipText = if (available) {
-            null
-        } else {
-            ONLINE_SEARCH_UNAVAILABLE_TOOLTIP
-        }
-        if (!available) {
-            setPodcastSearchBusy(false)
-        }
     }
 
     fun setPodcastSearchBusy(busy: Boolean) {
@@ -142,7 +121,7 @@ class AudiothekToolBar : JToolBar() {
     fun setLoading(loading: Boolean) {
         searchField.isEnabled = !loading
         helpButton.isEnabled = !loading
-        settingsButton.isEnabled = !loading
+        onlineSearchCheckBox.isEnabled = !loading
     }
 
     fun currentQuery(): String = searchField.text
@@ -156,9 +135,6 @@ class AudiothekToolBar : JToolBar() {
     private fun configureButtons() {
         helpButton.isFocusable = false
         onlineSearchCheckBox.isFocusable = false
-        settingsButton.isFocusable = false
-        settingsButton.icon = settingsIcon
-        settingsButton.toolTipText = SETTINGS_TOOLTIP
         downloadManagerButton.isFocusable = false
         downloadManagerButton.icon = downloadManagerIdleIcon
         downloadManagerButton.horizontalTextPosition = SwingConstants.RIGHT
@@ -172,8 +148,6 @@ class AudiothekToolBar : JToolBar() {
         addSeparator()
         add(onlineSearchCheckBox)
         add(podcastSearchBusyLabel)
-        addSeparator()
-        add(settingsButton)
         addSeparator()
         add(downloadManagerButton)
     }

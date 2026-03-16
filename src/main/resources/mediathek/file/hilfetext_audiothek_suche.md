@@ -84,11 +84,9 @@ Dann müssen alle angegebenen Teile passen.
 
 Wenn die Checkbox **Online-Suche** aktiviert ist, werden zusätzlich passende Ergebnisse von **Podcastindex** geladen und in der Trefferliste ergänzt.
 
-Diese Suche läuft parallel zur lokalen Suche. Währenddessen zeigt die Statusleiste neben **Stand:** einen Aktivitätsindikator an.
+Diese Suche läuft parallel zur lokalen Suche. Währenddessen zeigt die Werkzeugleiste rechts neben **Online-Suche** einen Aktivitätsindikator an.
 
 Die Online-Suche wird nur bei freiem Suchtext verwendet. Sobald ein Suchschlüssel wie `sender:`, `titel:`, `thema:` oder `datum:` verwendet wird, findet nur noch die lokale Audiothek-Suche statt.
-
-Wenn kein Proxy für die Online-Suche konfiguriert ist, ist die Checkbox deaktiviert.
 
 Wird die Checkbox ausgeschaltet, werden nur noch die lokalen Audiothek-Einträge angezeigt.
 

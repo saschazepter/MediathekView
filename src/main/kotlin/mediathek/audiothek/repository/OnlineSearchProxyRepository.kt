@@ -41,9 +41,12 @@ class OnlineSearchProxyRepository(
         .connectTimeout(5, TimeUnit.SECONDS)
         .readTimeout(8, TimeUnit.SECONDS)
         .writeTimeout(5, TimeUnit.SECONDS)
-        .build(),
-    private val configProvider: OnlineSearchProxyConfigProvider = OnlineSearchProxyConfigProvider()
+        .build()
 ) {
+    companion object {
+        private const val BASE_URL = "https://audiothek.crystalpalace.info"
+    }
+
     private val logger = LogManager.getLogger(OnlineSearchProxyRepository::class.java)
     private val jsonFactory = JsonFactory()
 
@@ -53,14 +56,13 @@ class OnlineSearchProxyRepository(
             return@withContext emptyList()
         }
 
-        val baseUrl = configProvider.readBaseUrl() ?: return@withContext emptyList()
-        val requestUrl = baseUrl.toHttpUrlOrNull()
+        val requestUrl = BASE_URL.toHttpUrlOrNull()
             ?.newBuilder()
             ?.addPathSegments("api/audiothek/podcast-search")
             ?.addQueryParameter("q", normalizedQuery)
             ?.build()
             ?: run {
-                logger.warn("Ungültige Proxy-URL für die Audiothek-Onlinesuche: {}", baseUrl)
+                logger.warn("Ungültige Proxy-URL für die Audiothek-Onlinesuche: {}", BASE_URL)
                 return@withContext emptyList()
             }
 
