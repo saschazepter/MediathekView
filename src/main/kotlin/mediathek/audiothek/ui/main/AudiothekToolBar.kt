@@ -21,6 +21,7 @@ package mediathek.audiothek.ui.main
 import com.formdev.flatlaf.FlatClientProperties
 import mediathek.audiothek.ui.download.CircularProgressIcon
 import mediathek.audiothek.ui.download.DownloadSummary
+import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import org.kordamp.ikonli.materialdesign2.MaterialDesignT
 import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Dimension
@@ -32,9 +33,10 @@ class AudiothekToolBar : JToolBar() {
     private val searchField = JTextField(28)
     private val helpButton = JButton()
     private val onlineSearchCheckBox = JCheckBox("Online-Suche", true)
-    private val settingsButton = JButton("Einstellungen")
+    private val settingsButton = JButton()
     private val downloadManagerButton = JButton()
     private val downloadManagerIdleIcon = FontIcon.of(MaterialDesignT.TRAY_ARROW_DOWN, 16)
+    private val settingsIcon = FontIcon.of(FontAwesomeSolid.COG, 16)
     private val downloadProgressIcon = CircularProgressIcon()
 
     init {
@@ -46,6 +48,7 @@ class AudiothekToolBar : JToolBar() {
         configureEmbeddedSearchActions()
         onlineSearchCheckBox.isFocusable = false
         settingsButton.isFocusable = false
+        settingsButton.icon = settingsIcon
         downloadManagerButton.isFocusable = false
         downloadManagerButton.icon = downloadManagerIdleIcon
         downloadManagerButton.horizontalTextPosition = SwingConstants.RIGHT
