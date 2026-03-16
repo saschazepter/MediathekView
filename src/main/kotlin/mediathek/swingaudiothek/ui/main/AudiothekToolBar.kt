@@ -30,6 +30,7 @@ import javax.swing.event.DocumentListener
 class AudiothekToolBar : JToolBar() {
     private val searchField = JTextField(28)
     private val clearSearchButton = JButton("x")
+    private val helpButton = JButton()
     private val onlineSearchCheckBox = JCheckBox("Online-Suche", true)
     private val downloadManagerButton = JButton()
     private val downloadManagerIdleIcon = FontIcon.of(MaterialDesignT.TRAY_ARROW_DOWN, 16)
@@ -41,6 +42,7 @@ class AudiothekToolBar : JToolBar() {
         clearSearchButton.isFocusable = false
         clearSearchButton.toolTipText = "Filter löschen"
         clearSearchButton.isEnabled = false
+        helpButton.isFocusable = false
         onlineSearchCheckBox.isFocusable = false
         downloadManagerButton.isFocusable = false
         downloadManagerButton.icon = downloadManagerIdleIcon
@@ -56,6 +58,7 @@ class AudiothekToolBar : JToolBar() {
         addSeparator()
         add(searchField)
         add(clearSearchButton)
+        add(helpButton)
         addSeparator()
         add(onlineSearchCheckBox)
         addSeparator()
@@ -84,6 +87,13 @@ class AudiothekToolBar : JToolBar() {
 
     fun addOnlineSearchToggleListener(action: (Boolean) -> Unit) {
         onlineSearchCheckBox.addActionListener { action(onlineSearchCheckBox.isSelected) }
+    }
+
+    fun setHelpAction(action: Action) {
+        helpButton.action = action
+        helpButton.text = null
+        helpButton.toolTipText = action.getValue(Action.SHORT_DESCRIPTION) as? String
+        helpButton.isFocusable = false
     }
 
     fun downloadManagerAnchor(): JButton = downloadManagerButton

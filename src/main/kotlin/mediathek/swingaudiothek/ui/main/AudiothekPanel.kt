@@ -24,6 +24,7 @@ import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.controller.history.SeenHistoryController
+import mediathek.gui.actions.ShowAudiothekSearchHelpAction
 import mediathek.gui.actions.UrlHyperlinkAction
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel
 import mediathek.mac.MacMultimediaPlayerLocator
@@ -133,6 +134,7 @@ class AudiothekPanel(
         get() = downloadManagerPopup.isPopupVisible
 
     init {
+        toolBar.setHelpAction(ShowAudiothekSearchHelpAction())
         val onlineSearchAvailable = podcastIndexCredentialsProvider.read() != null
         toolBar.setOnlineSearchAvailable(onlineSearchAvailable)
         toolBar.setOnlineSearchEnabled(

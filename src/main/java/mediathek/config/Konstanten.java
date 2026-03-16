@@ -100,4 +100,5 @@ public class Konstanten {
     public static final String PFAD_HILFETEXT_RESET_SET = "/mediathek/file/hilfetext_reset_set.txt";
     public static final String PFAD_HILFETEXT_DIALOG_ADD_ABO = "/mediathek/file/hilfetext_dialog_add_abo.txt";
     public static final String PFAD_LUCENE_TUTORIAL_MARKDOWN = "/mediathek/file/lucene_tutorial.md";
+    public static final String PFAD_AUDIOTHEK_SUCHE_HILFE_MARKDOWN = "/mediathek/file/hilfetext_audiothek_suche.md";
 }
