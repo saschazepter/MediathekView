@@ -16,12 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.model
+package mediathek.audiothek.ui.table
 
-import java.time.LocalDateTime
+import javax.swing.table.DefaultTableCellRenderer
 
-data class AudioDataset(
-    val metaLocal: LocalDateTime?,
-    val sourceUrl: String,
-    val entries: List<AudioEntry>
-)
+class CenteredTextCellRenderer : DefaultTableCellRenderer() {
+    init {
+        horizontalAlignment = CENTER
+    }
+}

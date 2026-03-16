@@ -16,11 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui.main
+package mediathek.audiothek.ui.main
 
 import com.jidesoft.popup.JidePopup
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import mediathek.audiothek.download.AudioDownloadTaskSnapshot
+import mediathek.audiothek.download.AudioDownloadTaskState
+import mediathek.audiothek.download.PersistentAudioDownloadManager
+import mediathek.audiothek.model.AudioEntry
+import mediathek.audiothek.repository.*
+import mediathek.audiothek.ui.download.AudioDownloadManagerPanel
+import mediathek.audiothek.ui.download.DownloadSummary
+import mediathek.audiothek.ui.table.AudiothekTable
 import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.controller.history.SeenHistoryController
@@ -31,14 +39,6 @@ import mediathek.mac.MacMultimediaPlayerLocator
 import mediathek.mac.SingleIinaPlayer
 import mediathek.mainwindow.MediathekGui
 import mediathek.swing.OverlayPanel
-import mediathek.swingaudiothek.download.AudioDownloadTaskSnapshot
-import mediathek.swingaudiothek.download.AudioDownloadTaskState
-import mediathek.swingaudiothek.download.PersistentAudioDownloadManager
-import mediathek.swingaudiothek.model.AudioEntry
-import mediathek.swingaudiothek.repository.*
-import mediathek.swingaudiothek.ui.download.AudioDownloadManagerPanel
-import mediathek.swingaudiothek.ui.download.DownloadSummary
-import mediathek.swingaudiothek.ui.table.AudiothekTable
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.FileDialogs
 import mediathek.tool.GuiFunktionenProgramme

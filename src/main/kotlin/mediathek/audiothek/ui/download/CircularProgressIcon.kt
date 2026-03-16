@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui.download
+package mediathek.audiothek.ui.download
 
 import java.awt.*
 import java.awt.geom.Arc2D

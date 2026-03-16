@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui.main
+package mediathek.audiothek.ui.main
 
 import com.formdev.flatlaf.FlatClientProperties
-import mediathek.swingaudiothek.ui.download.CircularProgressIcon
-import mediathek.swingaudiothek.ui.download.DownloadSummary
+import mediathek.audiothek.ui.download.CircularProgressIcon
+import mediathek.audiothek.ui.download.DownloadSummary
 import org.kordamp.ikonli.materialdesign2.MaterialDesignT
 import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Dimension

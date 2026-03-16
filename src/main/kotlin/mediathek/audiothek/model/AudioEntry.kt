@@ -16,12 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui.table
+package mediathek.audiothek.model
 
-import javax.swing.table.DefaultTableCellRenderer
+import java.net.URI
+import java.time.LocalDateTime
 
-class CenteredTextCellRenderer : DefaultTableCellRenderer() {
-    init {
-        horizontalAlignment = CENTER
-    }
-}
+data class AudioEntry(
+    val channel: String,
+    val genre: String,
+    val theme: String,
+    val title: String,
+    val durationMinutes: Int?,
+    val sizeMb: Int?,
+    val description: String,
+    val audioUrl: URI?,
+    val websiteUrl: URI?,
+    val isNew: Boolean,
+    val isPodcast: Boolean,
+    val isDuplicate: Boolean,
+    val publishedAt: LocalDateTime?
+)

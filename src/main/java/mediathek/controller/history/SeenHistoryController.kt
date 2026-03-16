@@ -1,9 +1,9 @@
 package mediathek.controller.history
 
+import mediathek.audiothek.model.AudioEntry
 import mediathek.config.Daten
 import mediathek.daten.DatenFilm
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
-import mediathek.swingaudiothek.model.AudioEntry
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.MessageBus
 import mediathek.tool.sql.SqlDatabaseConfig

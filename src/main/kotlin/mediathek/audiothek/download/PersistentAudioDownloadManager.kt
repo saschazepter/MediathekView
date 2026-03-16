@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.download
+package mediathek.audiothek.download
 
 import kotlinx.coroutines.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import mediathek.audiothek.model.AudioEntry
 import mediathek.config.StandardLocations
-import mediathek.swingaudiothek.model.AudioEntry
 import okhttp3.*
 import org.apache.logging.log4j.LogManager
 import java.io.IOException

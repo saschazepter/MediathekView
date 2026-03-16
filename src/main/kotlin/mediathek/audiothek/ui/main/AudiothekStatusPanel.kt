@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui.main
+package mediathek.audiothek.ui.main
 
 import org.jdesktop.swingx.JXBusyLabel
 import org.jdesktop.swingx.JXStatusBar

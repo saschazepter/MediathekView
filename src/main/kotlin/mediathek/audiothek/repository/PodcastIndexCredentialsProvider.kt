@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.repository
+package mediathek.audiothek.repository
 
 import org.apache.logging.log4j.LogManager
 import java.security.MessageDigest

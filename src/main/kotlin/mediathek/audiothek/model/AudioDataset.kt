@@ -16,23 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.model
+package mediathek.audiothek.model
 
-import java.net.URI
 import java.time.LocalDateTime
 
-data class AudioEntry(
-    val channel: String,
-    val genre: String,
-    val theme: String,
-    val title: String,
-    val durationMinutes: Int?,
-    val sizeMb: Int?,
-    val description: String,
-    val audioUrl: URI?,
-    val websiteUrl: URI?,
-    val isNew: Boolean,
-    val isPodcast: Boolean,
-    val isDuplicate: Boolean,
-    val publishedAt: LocalDateTime?
+data class AudioDataset(
+    val metaLocal: LocalDateTime?,
+    val sourceUrl: String,
+    val entries: List<AudioEntry>
 )

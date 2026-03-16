@@ -16,13 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui.table
+package mediathek.audiothek.ui.table
 
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import mediathek.audiothek.model.AudioEntry
 import mediathek.config.MVColor
 import mediathek.controller.history.SeenHistoryController
-import mediathek.swingaudiothek.model.AudioEntry
 import mediathek.tool.ApplicationConfiguration
 import org.apache.logging.log4j.LogManager
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid

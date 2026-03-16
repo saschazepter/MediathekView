@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.ui.table
+package mediathek.audiothek.ui.table
 
-import mediathek.swingaudiothek.model.AudioEntry
+import mediathek.audiothek.model.AudioEntry
 import javax.swing.table.AbstractTableModel
 
 class AudioTableModel : AbstractTableModel() {

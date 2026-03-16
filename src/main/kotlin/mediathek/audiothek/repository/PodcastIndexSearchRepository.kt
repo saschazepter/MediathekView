@@ -16,11 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.repository
+package mediathek.audiothek.repository
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import mediathek.swingaudiothek.model.AudioEntry
+import mediathek.audiothek.model.AudioEntry
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.http.MVHttpClient
 import okhttp3.HttpUrl.Companion.toHttpUrl

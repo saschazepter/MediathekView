@@ -2,6 +2,8 @@ package mediathek.mainwindow;
 
 import com.formdev.flatlaf.extras.components.FlatButton;
 import mediathek.Main;
+import mediathek.audiothek.repository.AudioRepository;
+import mediathek.audiothek.ui.main.AudiothekPanel;
 import mediathek.config.*;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.controller.starter.Start;
@@ -37,8 +39,6 @@ import mediathek.gui.tasks.RefreshAboWorker;
 import mediathek.logging.LogDialog;
 import mediathek.res.GetIcon;
 import mediathek.swing.IconOnlyButton;
-import mediathek.swingaudiothek.repository.AudioRepository;
-import mediathek.swingaudiothek.ui.main.AudiothekPanel;
 import mediathek.tool.*;
 import mediathek.tool.notification.GenericNotificationCenter;
 import mediathek.tool.notification.INotificationCenter;

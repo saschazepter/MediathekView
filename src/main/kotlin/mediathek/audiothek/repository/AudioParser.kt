@@ -16,10 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.swingaudiothek.repository
+package mediathek.audiothek.repository
 
-import mediathek.swingaudiothek.model.AudioDataset
-import mediathek.swingaudiothek.model.AudioEntry
+import mediathek.audiothek.model.AudioDataset
+import mediathek.audiothek.model.AudioEntry
 import tools.jackson.core.JsonParser
 import tools.jackson.core.JsonToken
 import tools.jackson.core.ObjectReadContext
