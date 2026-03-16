@@ -25,6 +25,8 @@ import java.util.*
 class PodcastIndexCredentialsProvider {
     private val logger = LogManager.getLogger(PodcastIndexCredentialsProvider::class.java)
 
+    fun hasCredentials(): Boolean = read() != null
+
     fun read(): PodcastIndexCredentials? {
         val key = readValue(PRIMARY_KEY_PROPERTY)
         val secret = readValue(PRIMARY_SECRET_PROPERTY)
@@ -38,8 +40,7 @@ class PodcastIndexCredentialsProvider {
     }
 
     private fun readValue(name: String): String? {
-        return systemProperty(name)
-            ?: environment(name)
+        return systemProperty(name) ?: environment(name)
     }
 
     private fun systemProperty(name: String): String? {

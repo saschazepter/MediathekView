@@ -82,6 +82,7 @@ class AudiothekPanel(
     private val toolBar = AudiothekToolBar()
     private val podcastIndexCredentialsProvider = PodcastIndexCredentialsProvider()
     private val podcastIndexSearchRepository = PodcastIndexSearchRepository()
+    private val onlineSearchAvailable = podcastIndexCredentialsProvider.hasCredentials()
     private val tableScrollPane = JScrollPane(table)
     private val errorOverlay = OverlayPanel("Audiothek konnte nicht geladen werden")
     private val tableContainer = JLayeredPane().apply {
@@ -135,12 +136,8 @@ class AudiothekPanel(
 
     init {
         toolBar.setHelpAction(ShowAudiothekSearchHelpAction())
-        val onlineSearchAvailable = podcastIndexCredentialsProvider.read() != null
         toolBar.setOnlineSearchAvailable(onlineSearchAvailable)
-        toolBar.setOnlineSearchEnabled(
-            ApplicationConfiguration.getConfiguration()
-                .getBoolean(ApplicationConfiguration.APPLICATION_UI_AUDIOTHEK_ONLINE_SEARCH, true) && onlineSearchAvailable
-        )
+        toolBar.setOnlineSearchEnabled(isPersistedOnlineSearchEnabled())
         add(toolBar, BorderLayout.NORTH)
         add(tableContainer, BorderLayout.CENTER)
         add(southPanel, BorderLayout.SOUTH)
@@ -190,8 +187,7 @@ class AudiothekPanel(
         toolBar.addFilterSubmitListener(::applyFilterNow)
         toolBar.addClearSearchListener { applyFilterNow("") }
         toolBar.addOnlineSearchToggleListener { enabled ->
-            ApplicationConfiguration.getConfiguration()
-                .setProperty(ApplicationConfiguration.APPLICATION_UI_AUDIOTHEK_ONLINE_SEARCH, enabled)
+            persistOnlineSearchEnabled(enabled)
             applyFilterNow(toolBar.currentQuery())
         }
         toolBar.addDownloadManagerListener(::toggleDownloadManager)
@@ -216,6 +212,16 @@ class AudiothekPanel(
 
     private fun shouldLoadWhenShown(): Boolean {
         return datasetTimestamp == null && !table.hasEntries() && loadJob?.isActive != true
+    }
+
+    private fun isPersistedOnlineSearchEnabled(): Boolean {
+        return ApplicationConfiguration.getConfiguration()
+            .getBoolean(ApplicationConfiguration.APPLICATION_UI_AUDIOTHEK_ONLINE_SEARCH, true) && onlineSearchAvailable
+    }
+
+    private fun persistOnlineSearchEnabled(enabled: Boolean) {
+        ApplicationConfiguration.getConfiguration()
+            .setProperty(ApplicationConfiguration.APPLICATION_UI_AUDIOTHEK_ONLINE_SEARCH, enabled)
     }
 
     private fun triggerLoad(isManualReload: Boolean) {
