@@ -387,6 +387,7 @@ class AudiothekPanel(
         podcastSearchJob?.cancel()
         table.setExternalSearchEntries(emptyList())
         statusPanel.setCount("${table.rowCount} Treffer")
+        statusPanel.setPodcastSearchBusy(false)
 
         val normalizedQuery = query.trim()
         if (normalizedQuery.isEmpty()) {
@@ -395,17 +396,24 @@ class AudiothekPanel(
         }
 
         podcastSearchJob = uiScope.launch {
-            val externalEntries = runCatching { podcastIndexSearchRepository.search(normalizedQuery) }
-                .onFailure { logger.warn("Podcastindex-Suche fehlgeschlagen für '{}'", normalizedQuery, it) }
-                .getOrDefault(emptyList())
+            statusPanel.setPodcastSearchBusy(true)
+            try {
+                val externalEntries = runCatching { podcastIndexSearchRepository.search(normalizedQuery) }
+                    .onFailure { logger.warn("Podcastindex-Suche fehlgeschlagen für '{}'", normalizedQuery, it) }
+                    .getOrDefault(emptyList())
 
-            if (!isActive || toolBar.currentQuery().trim() != normalizedQuery) {
-                return@launch
+                if (!isActive || toolBar.currentQuery().trim() != normalizedQuery) {
+                    return@launch
+                }
+
+                table.setExternalSearchEntries(externalEntries)
+                statusPanel.setCount("${table.rowCount} Treffer")
+                refreshSelectionState()
+            } finally {
+                if (toolBar.currentQuery().trim() == normalizedQuery) {
+                    statusPanel.setPodcastSearchBusy(false)
+                }
             }
-
-            table.setExternalSearchEntries(externalEntries)
-            statusPanel.setCount("${table.rowCount} Treffer")
-            refreshSelectionState()
         }
     }
 

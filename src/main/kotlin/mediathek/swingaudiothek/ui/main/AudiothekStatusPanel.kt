@@ -18,6 +18,7 @@
 
 package mediathek.swingaudiothek.ui.main
 
+import org.jdesktop.swingx.JXBusyLabel
 import org.jdesktop.swingx.JXStatusBar
 import java.awt.FlowLayout
 import javax.swing.JLabel
@@ -28,10 +29,16 @@ class AudiothekStatusPanel : JXStatusBar() {
     private val sourceLabel = JLabel("Stand: -")
     private val agePanel = AudiothekAgePanel()
     private val activeDownloadsLabel = JLabel("")
+    private val podcastSearchBusyLabel = JXBusyLabel().apply {
+        toolTipText = "Podcastindex-Suche läuft"
+        isBusy = false
+        isVisible = false
+    }
     private val countLabel = JLabel("0 Einträge", SwingConstants.RIGHT)
     private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
         isOpaque = false
         add(sourceLabel)
+        add(podcastSearchBusyLabel)
         add(activeDownloadsLabel)
     }
 
@@ -79,5 +86,10 @@ class AudiothekStatusPanel : JXStatusBar() {
             "$count aktive Downloads"
         }
         activeDownloadsLabel.isVisible = true
+    }
+
+    fun setPodcastSearchBusy(busy: Boolean) {
+        podcastSearchBusyLabel.isBusy = busy
+        podcastSearchBusyLabel.isVisible = busy
     }
 }
