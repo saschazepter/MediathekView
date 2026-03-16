@@ -37,6 +37,12 @@ Optional:
 - `PODCASTINDEX_PROXY_CONFIG_FILE`
   Standard: `/etc/podcastindex-proxy.conf`
 
+Für alle optionalen Werte gilt dieselbe Priorität:
+
+1. Environment
+2. Konfigurationsdatei
+3. eingebauter Default
+
 ### Format der Konfigurationsdatei
 
 Beispiel für `/etc/podcastindex-proxy.conf`:
@@ -44,6 +50,8 @@ Beispiel für `/etc/podcastindex-proxy.conf`:
 ```ini
 PODCASTINDEX_API_KEY=dein-key
 PODCASTINDEX_API_SECRET=dein-secret
+PODCASTINDEX_FEED_LIMIT=5
+PODCASTINDEX_EPISODE_LIMIT=50
 ```
 
 Leere Zeilen und Kommentarzeilen mit `#` werden ignoriert.
@@ -91,28 +99,32 @@ Beispieldateien liegen unter:
 ### Linux mit `systemd`
 
 1. Binary nach `/opt/podcastindex-proxy/podcastindex-proxy` kopieren.
-2. Dienstnutzer und Gruppe `podcastindex-proxy` anlegen oder die Unit auf einen vorhandenen Benutzer anpassen.
-3. Optional `/etc/podcastindex-proxy.conf` mit Key und Secret anlegen.
-4. Für Betrieb hinter einem Reverse Proxy am besten intern nur auf `127.0.0.1:18080` lauschen:
+2. Dienstnutzer und Gruppe `podcastindex-proxy` anlegen:
+
+```sh
+sudo useradd --system --home-dir /opt/podcastindex-proxy --shell /usr/sbin/nologin podcastindex-proxy
+```
+
+3. Besitzrechte für das Installationsverzeichnis setzen:
+
+```sh
+sudo chown -R podcastindex-proxy:podcastindex-proxy /opt/podcastindex-proxy
+```
+
+4. Optional `/etc/podcastindex-proxy.conf` mit Key und Secret anlegen.
+5. Für Betrieb hinter einem Reverse Proxy am besten intern nur auf `127.0.0.1:18080` lauschen:
 
 ```ini
 PODCASTINDEX_PROXY_HOST=127.0.0.1
 PODCASTINDEX_PROXY_PORT=18080
 ```
 
-5. Die Beispiel-Datei anpassen und nach `/etc/systemd/system/podcastindex-proxy.service` kopieren.
-6. Dienst aktivieren und starten:
+6. Die Beispiel-Datei anpassen und nach `/etc/systemd/system/podcastindex-proxy.service` kopieren.
+7. Dienst aktivieren und starten:
 
 ```sh
 sudo systemctl daemon-reload
 sudo systemctl enable --now podcastindex-proxy
-```
-
-Beispiel für einen Systembenutzer:
-
-```sh
-sudo useradd --system --home-dir /opt/podcastindex-proxy --shell /usr/sbin/nologin podcastindex-proxy
-sudo chown -R podcastindex-proxy:podcastindex-proxy /opt/podcastindex-proxy
 ```
 
 Wenn `systemctl status` mit `217/USER` fehlschlägt, stimmt der in der Unit-Datei eingetragene Benutzer oder die Gruppe nicht.

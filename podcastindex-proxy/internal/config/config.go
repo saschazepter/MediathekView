@@ -38,13 +38,13 @@ func FromEnvironment() (Config, error) {
 	}
 
 	return Config{
-		Host:                envOrDefault("PODCASTINDEX_PROXY_HOST", "0.0.0.0"),
-		Port:                intEnv("PODCASTINDEX_PROXY_PORT", 8080, 1, 65535),
+		Host:                stringSetting("PODCASTINDEX_PROXY_HOST", fileValues, "0.0.0.0"),
+		Port:                intSetting("PODCASTINDEX_PROXY_PORT", fileValues, 8080, 1, 65535),
 		APIKey:              apiKey,
 		APISecret:           apiSecret,
-		UserAgent:           envOrDefault("PODCASTINDEX_PROXY_USER_AGENT", "MediathekView-Podcastindex-Proxy"),
-		DefaultFeedLimit:    intEnv("PODCASTINDEX_FEED_LIMIT", 10, 1, 50),
-		DefaultEpisodeLimit: intEnv("PODCASTINDEX_EPISODE_LIMIT", 100, 1, 200),
+		UserAgent:           stringSetting("PODCASTINDEX_PROXY_USER_AGENT", fileValues, "MediathekView-Podcastindex-Proxy"),
+		DefaultFeedLimit:    intSetting("PODCASTINDEX_FEED_LIMIT", fileValues, 10, 1, 50),
+		DefaultEpisodeLimit: intSetting("PODCASTINDEX_EPISODE_LIMIT", fileValues, 100, 1, 200),
 		ConfigFile:          configFile,
 	}, nil
 }
@@ -66,7 +66,10 @@ func requireSetting(name string, fileValues map[string]string) (string, error) {
 }
 
 func loadConfigFile() (map[string]string, string, error) {
-	configFile := envOrDefault("PODCASTINDEX_PROXY_CONFIG_FILE", "/etc/podcastindex-proxy.conf")
+	configFile := strings.TrimSpace(os.Getenv("PODCASTINDEX_PROXY_CONFIG_FILE"))
+	if configFile == "" {
+		configFile = "/etc/podcastindex-proxy.conf"
+	}
 	fileInfo, err := os.Stat(configFile)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -109,17 +112,23 @@ func loadConfigFile() (map[string]string, string, error) {
 	return values, configFile, nil
 }
 
-func envOrDefault(name, fallback string) string {
-	value := strings.TrimSpace(os.Getenv(name))
-	if value == "" {
-		return fallback
+func stringSetting(name string, fileValues map[string]string, fallback string) string {
+	if value := strings.TrimSpace(os.Getenv(name)); value != "" {
+		return value
 	}
 
-	return value
+	if value := strings.TrimSpace(fileValues[name]); value != "" {
+		return value
+	}
+
+	return fallback
 }
 
-func intEnv(name string, fallback, min, max int) int {
-	value := strings.TrimSpace(os.Getenv(name))
+func intSetting(name string, fileValues map[string]string, fallback, min, max int) int {
+	return clampInt(parseIntOrFallback(stringSetting(name, fileValues, ""), fallback), min, max)
+}
+
+func parseIntOrFallback(value string, fallback int) int {
 	if value == "" {
 		return fallback
 	}
@@ -129,13 +138,17 @@ func intEnv(name string, fallback, min, max int) int {
 		return fallback
 	}
 
-	if parsed < min {
+	return parsed
+}
+
+func clampInt(value, min, max int) int {
+	if value < min {
 		return min
 	}
 
-	if parsed > max {
+	if value > max {
 		return max
 	}
 
-	return parsed
+	return value
 }
