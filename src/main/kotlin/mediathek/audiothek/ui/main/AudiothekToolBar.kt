@@ -31,6 +31,7 @@ class AudiothekToolBar : JToolBar() {
     private val searchField = JTextField(28)
     private val helpButton = JButton()
     private val onlineSearchCheckBox = JCheckBox("Online-Suche", true)
+    private val settingsButton = JButton("Einstellungen")
     private val downloadManagerButton = JButton()
     private val downloadManagerIdleIcon = FontIcon.of(MaterialDesignT.TRAY_ARROW_DOWN, 16)
     private val downloadProgressIcon = CircularProgressIcon()
@@ -43,16 +44,20 @@ class AudiothekToolBar : JToolBar() {
         helpButton.isFocusable = false
         configureEmbeddedSearchActions()
         onlineSearchCheckBox.isFocusable = false
+        settingsButton.isFocusable = false
         downloadManagerButton.isFocusable = false
         downloadManagerButton.icon = downloadManagerIdleIcon
         downloadManagerButton.horizontalTextPosition = SwingConstants.RIGHT
         downloadManagerButton.iconTextGap = 6
+        settingsButton.toolTipText = "Audiothek-Einstellungen"
 
         add(JLabel("Filter"))
         addSeparator()
         add(searchField)
         addSeparator()
         add(onlineSearchCheckBox)
+        addSeparator()
+        add(settingsButton)
         addSeparator()
         add(downloadManagerButton)
     }
@@ -76,6 +81,10 @@ class AudiothekToolBar : JToolBar() {
         onlineSearchCheckBox.addActionListener { action(onlineSearchCheckBox.isSelected) }
     }
 
+    fun addSettingsListener(action: () -> Unit) {
+        settingsButton.addActionListener { action() }
+    }
+
     fun setHelpAction(action: Action) {
         helpButton.action = action
         helpButton.text = null
@@ -96,7 +105,7 @@ class AudiothekToolBar : JToolBar() {
         onlineSearchCheckBox.toolTipText = if (available) {
             null
         } else {
-            "Es sind keine API Keys für die Online-Suche vorhanden"
+            "Es ist kein Proxy für die Online-Suche konfiguriert"
         }
     }
 
@@ -116,6 +125,7 @@ class AudiothekToolBar : JToolBar() {
     fun setLoading(loading: Boolean) {
         searchField.isEnabled = !loading
         helpButton.isEnabled = !loading
+        settingsButton.isEnabled = !loading
     }
 
     fun currentQuery(): String = searchField.text

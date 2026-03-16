@@ -26,7 +26,6 @@ import org.w3c.dom.Element
 import org.xml.sax.InputSource
 import java.io.StringReader
 import java.time.Duration
-import java.util.concurrent.ThreadLocalRandom
 import javax.xml.parsers.DocumentBuilderFactory
 
 class AudioSourceResolver(
@@ -35,18 +34,18 @@ class AudioSourceResolver(
         .connectTimeout(Duration.ofSeconds(20))
         .build()
 ) {
-    suspend fun resolveSourceUrl(preferredUrl: String? = null): String = withContext(Dispatchers.IO) {
+    suspend fun resolveSourceUrls(preferredUrl: String? = null): List<String> = withContext(Dispatchers.IO) {
         val storedUrls = loadStoredUrls()
-        preferredUrl?.takeIf(String::isNotBlank)?.let { cachedUrl ->
-            if (storedUrls.isEmpty() || cachedUrl in storedUrls || cachedUrl in FALLBACK_URLS) {
-                return@withContext cachedUrl
-            }
+        buildList {
+            preferredUrl?.takeIf(String::isNotBlank)?.let(::add)
+            addAll(storedUrls)
+            addAll(FALLBACK_URLS)
         }
-        if (storedUrls.isNotEmpty()) {
-            storedUrls.random()
-        } else {
-            FALLBACK_URLS[ThreadLocalRandom.current().nextInt(FALLBACK_URLS.size)]
-        }
+            .asSequence()
+            .map(String::trim)
+            .filter(String::isNotEmpty)
+            .toCollection(LinkedHashSet())
+            .toList()
     }
 
     private fun loadStoredUrls(): List<String> {

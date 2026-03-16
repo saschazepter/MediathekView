@@ -80,9 +80,9 @@ class AudiothekPanel(
     private val statusPanel = AudiothekStatusPanel()
     private val detailsPanel = FilmDescriptionPanel()
     private val toolBar = AudiothekToolBar()
-    private val podcastIndexCredentialsProvider = PodcastIndexCredentialsProvider()
-    private val podcastIndexSearchRepository = PodcastIndexSearchRepository()
-    private val onlineSearchAvailable = podcastIndexCredentialsProvider.hasCredentials()
+    private val onlineSearchProxyConfigProvider = OnlineSearchProxyConfigProvider()
+    private val onlineSearchProxyRepository = OnlineSearchProxyRepository()
+    private var onlineSearchAvailable = onlineSearchProxyConfigProvider.hasBaseUrl()
     private val tableScrollPane = JScrollPane(table)
     private val errorOverlay = OverlayPanel("Audiothek konnte nicht geladen werden")
     private val tableContainer = JLayeredPane().apply {
@@ -190,6 +190,7 @@ class AudiothekPanel(
             persistOnlineSearchEnabled(enabled)
             applyFilterNow(toolBar.currentQuery())
         }
+        toolBar.addSettingsListener(::showOnlineSearchSettingsDialog)
         toolBar.addDownloadManagerListener(::toggleDownloadManager)
         downloadManagerPanel.addProgressListener(::updateDownloadSummary)
         downloadManagerPanel.addPrimaryActionListener(::handleDownloadPrimaryAction)
@@ -222,6 +223,41 @@ class AudiothekPanel(
     private fun persistOnlineSearchEnabled(enabled: Boolean) {
         ApplicationConfiguration.getConfiguration()
             .setProperty(ApplicationConfiguration.APPLICATION_UI_AUDIOTHEK_ONLINE_SEARCH, enabled)
+    }
+
+    private fun showOnlineSearchSettingsDialog() {
+        val currentValue = ApplicationConfiguration.getConfiguration()
+            .getString(ApplicationConfiguration.APPLICATION_AUDIOTHEK_ONLINE_SEARCH_PROXY_URL, "")
+
+        val inputField = JTextField(currentValue, 40)
+        val panel = JPanel(BorderLayout(0, 8)).apply {
+            add(JLabel("Proxy-URL für die Audiothek-Onlinesuche:"), BorderLayout.NORTH)
+            add(inputField, BorderLayout.CENTER)
+        }
+
+        val result = JOptionPane.showConfirmDialog(
+            this,
+            panel,
+            "Audiothek-Einstellungen",
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE
+        )
+        if (result != JOptionPane.OK_OPTION) {
+            return
+        }
+
+        val proxyUrl = inputField.text.trim()
+        ApplicationConfiguration.getConfiguration()
+            .setProperty(ApplicationConfiguration.APPLICATION_AUDIOTHEK_ONLINE_SEARCH_PROXY_URL, proxyUrl)
+
+        refreshOnlineSearchAvailability()
+        applyFilterNow(toolBar.currentQuery())
+    }
+
+    private fun refreshOnlineSearchAvailability() {
+        onlineSearchAvailable = onlineSearchProxyConfigProvider.hasBaseUrl()
+        toolBar.setOnlineSearchAvailable(onlineSearchAvailable)
+        toolBar.setOnlineSearchEnabled(isPersistedOnlineSearchEnabled())
     }
 
     private fun triggerLoad(isManualReload: Boolean) {
@@ -416,8 +452,8 @@ class AudiothekPanel(
         podcastSearchJob = uiScope.launch {
             statusPanel.setPodcastSearchBusy(true)
             try {
-                val externalEntries = runCatching { podcastIndexSearchRepository.search(normalizedQuery) }
-                    .onFailure { logger.warn("Podcastindex-Suche fehlgeschlagen für '{}'", normalizedQuery, it) }
+                val externalEntries = runCatching { onlineSearchProxyRepository.search(normalizedQuery) }
+                    .onFailure { logger.warn("Online-Suche über Proxy fehlgeschlagen für '{}'", normalizedQuery, it) }
                     .getOrDefault(emptyList())
 
                 if (!isActive || toolBar.currentQuery().trim() != normalizedQuery) {
