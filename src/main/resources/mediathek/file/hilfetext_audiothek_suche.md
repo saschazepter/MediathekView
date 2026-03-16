@@ -88,7 +88,7 @@ Diese Suche läuft parallel zur lokalen Suche. Währenddessen zeigt die Statusle
 
 Die Online-Suche wird nur bei freiem Suchtext verwendet. Sobald ein Suchschlüssel wie `sender:`, `titel:`, `thema:` oder `datum:` verwendet wird, findet nur noch die lokale Audiothek-Suche statt.
 
-Wenn keine API-Keys für die Online-Suche vorhanden sind, ist die Checkbox deaktiviert.
+Wenn kein Proxy für die Online-Suche konfiguriert ist, ist die Checkbox deaktiviert.
 
 Wird die Checkbox ausgeschaltet, werden nur noch die lokalen Audiothek-Einträge angezeigt.
 
