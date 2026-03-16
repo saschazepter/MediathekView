@@ -41,6 +41,7 @@ import mediathek.swingaudiothek.repository.PodcastIndexSearchRepository
 import mediathek.swingaudiothek.ui.download.AudioDownloadManagerPanel
 import mediathek.swingaudiothek.ui.download.DownloadSummary
 import mediathek.swingaudiothek.ui.table.AudiothekTable
+import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.FileDialogs
 import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.http.MVHttpClient
@@ -134,6 +135,10 @@ class AudiothekPanel(
         get() = downloadManagerPopup.isPopupVisible
 
     init {
+        toolBar.setOnlineSearchEnabled(
+            ApplicationConfiguration.getConfiguration()
+                .getBoolean(ApplicationConfiguration.APPLICATION_UI_AUDIOTHEK_ONLINE_SEARCH, true)
+        )
         add(toolBar, BorderLayout.NORTH)
         add(tableContainer, BorderLayout.CENTER)
         add(southPanel, BorderLayout.SOUTH)
@@ -182,6 +187,11 @@ class AudiothekPanel(
         }
         toolBar.addFilterSubmitListener(::applyFilterNow)
         toolBar.addClearSearchListener { applyFilterNow("") }
+        toolBar.addOnlineSearchToggleListener { enabled ->
+            ApplicationConfiguration.getConfiguration()
+                .setProperty(ApplicationConfiguration.APPLICATION_UI_AUDIOTHEK_ONLINE_SEARCH, enabled)
+            applyFilterNow(toolBar.currentQuery())
+        }
         toolBar.addDownloadManagerListener(::toggleDownloadManager)
         downloadManagerPanel.addProgressListener(::updateDownloadSummary)
         downloadManagerPanel.addPrimaryActionListener(::handleDownloadPrimaryAction)
@@ -390,7 +400,7 @@ class AudiothekPanel(
         statusPanel.setPodcastSearchBusy(false)
 
         val normalizedQuery = query.trim()
-        if (normalizedQuery.isEmpty()) {
+        if (normalizedQuery.isEmpty() || !toolBar.isOnlineSearchEnabled()) {
             refreshSelectionState()
             return
         }
