@@ -18,18 +18,17 @@
 
 package mediathek.swingaudiothek.ui.main
 
+import com.formdev.flatlaf.FlatClientProperties
 import mediathek.swingaudiothek.ui.download.CircularProgressIcon
 import mediathek.swingaudiothek.ui.download.DownloadSummary
 import org.kordamp.ikonli.materialdesign2.MaterialDesignT
 import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Dimension
 import javax.swing.*
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
+import javax.swing.text.JTextComponent
 
 class AudiothekToolBar : JToolBar() {
     private val searchField = JTextField(28)
-    private val clearSearchButton = JButton("x")
     private val helpButton = JButton()
     private val onlineSearchCheckBox = JCheckBox("Online-Suche", true)
     private val downloadManagerButton = JButton()
@@ -39,26 +38,19 @@ class AudiothekToolBar : JToolBar() {
     init {
         isFloatable = false
         searchField.maximumSize = Dimension(500, searchField.preferredSize.height)
-        clearSearchButton.isFocusable = false
-        clearSearchButton.toolTipText = "Filter löschen"
-        clearSearchButton.isEnabled = false
+        searchField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Audiothek-Suche")
+        searchField.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true)
         helpButton.isFocusable = false
+        configureEmbeddedSearchActions()
         onlineSearchCheckBox.isFocusable = false
         downloadManagerButton.isFocusable = false
         downloadManagerButton.icon = downloadManagerIdleIcon
         downloadManagerButton.horizontalTextPosition = SwingConstants.RIGHT
         downloadManagerButton.iconTextGap = 6
-        searchField.document.addDocumentListener(object : DocumentListener {
-            override fun insertUpdate(e: DocumentEvent?) = updateClearButtonState()
-            override fun removeUpdate(e: DocumentEvent?) = updateClearButtonState()
-            override fun changedUpdate(e: DocumentEvent?) = updateClearButtonState()
-        })
 
         add(JLabel("Filter"))
         addSeparator()
         add(searchField)
-        add(clearSearchButton)
-        add(helpButton)
         addSeparator()
         add(onlineSearchCheckBox)
         addSeparator()
@@ -74,15 +66,10 @@ class AudiothekToolBar : JToolBar() {
     }
 
     fun addClearSearchListener(action: () -> Unit) {
-        clearSearchButton.action = object : AbstractAction("x") {
-            override fun actionPerformed(e: java.awt.event.ActionEvent?) {
-                searchField.text = ""
-                action()
-            }
-        }
-        clearSearchButton.toolTipText = "Filter löschen"
-        clearSearchButton.isFocusable = false
-        updateClearButtonState()
+        searchField.putClientProperty("JTextField.clearCallback", java.util.function.Consumer<JTextComponent> {
+            searchField.text = ""
+            action()
+        })
     }
 
     fun addOnlineSearchToggleListener(action: (Boolean) -> Unit) {
@@ -128,12 +115,18 @@ class AudiothekToolBar : JToolBar() {
 
     fun setLoading(loading: Boolean) {
         searchField.isEnabled = !loading
-        clearSearchButton.isEnabled = !loading && searchField.text.isNotBlank()
+        helpButton.isEnabled = !loading
     }
 
     fun currentQuery(): String = searchField.text
 
-    private fun updateClearButtonState() {
-        clearSearchButton.isEnabled = searchField.isEnabled && searchField.text.isNotBlank()
+    private fun configureEmbeddedSearchActions() {
+        val trailingToolbar = JToolBar().apply {
+            isFloatable = false
+            isOpaque = false
+            border = null
+            add(helpButton)
+        }
+        searchField.putClientProperty(FlatClientProperties.TEXT_FIELD_TRAILING_COMPONENT, trailingToolbar)
     }
 }
