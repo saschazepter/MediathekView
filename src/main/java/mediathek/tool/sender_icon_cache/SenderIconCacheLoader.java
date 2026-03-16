@@ -52,6 +52,7 @@ class SenderIconCacheLoader {
             case "ndr" -> "/icons/sender/ndr.svg";
             case "one" -> "/icons/sender/one.svg";
             case "phoenix" -> "/icons/sender/phoenix.svg";
+            case "podcastindex", "podcast index" -> "/icons/sender/podcastindex-brand-text.svg";
             case "radio bremen tv", "radio bremen" -> "/icons/sender/radio-bremen.svg";
             case "rbb" -> "/icons/sender/rbb.svg";
             case "sr" -> "/icons/sender/sr.svg";
