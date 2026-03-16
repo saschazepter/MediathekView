@@ -31,46 +31,35 @@ import javax.swing.*
 import javax.swing.text.JTextComponent
 
 class AudiothekToolBar : JToolBar() {
-    private val searchField = JTextField(28)
+    companion object {
+        private const val SEARCH_FIELD_COLUMNS = 28
+        private const val ICON_SIZE = 16
+        private const val MAX_SEARCH_FIELD_WIDTH = 500
+        private const val PODCAST_SEARCH_TOOLTIP = "Podcastindex-Suche läuft"
+        private const val ONLINE_SEARCH_UNAVAILABLE_TOOLTIP = "Es ist kein Proxy für die Online-Suche konfiguriert"
+        private const val SETTINGS_TOOLTIP = "Audiothek-Einstellungen"
+    }
+
+    private val searchField = JTextField(SEARCH_FIELD_COLUMNS)
     private val helpButton = JButton()
     private val onlineSearchCheckBox = JCheckBox("Online-Suche", true)
     private val podcastSearchBusyLabel = JXBusyLabel().apply {
-        toolTipText = "Podcastindex-Suche läuft"
+        toolTipText = PODCAST_SEARCH_TOOLTIP
         isBusy = false
         isVisible = false
     }
     private val settingsButton = JButton()
     private val downloadManagerButton = JButton()
-    private val downloadManagerIdleIcon = FontIcon.of(MaterialDesignT.TRAY_ARROW_DOWN, 16)
-    private val settingsIcon = FontIcon.of(FontAwesomeSolid.COG, 16)
+    private val downloadManagerIdleIcon = FontIcon.of(MaterialDesignT.TRAY_ARROW_DOWN, ICON_SIZE)
+    private val settingsIcon = FontIcon.of(FontAwesomeSolid.COG, ICON_SIZE)
     private val downloadProgressIcon = CircularProgressIcon()
 
     init {
         isFloatable = false
-        searchField.maximumSize = Dimension(500, searchField.preferredSize.height)
-        searchField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Audiothek-Suche")
-        searchField.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true)
-        helpButton.isFocusable = false
+        configureSearchField()
+        configureButtons()
         configureEmbeddedSearchActions()
-        onlineSearchCheckBox.isFocusable = false
-        settingsButton.isFocusable = false
-        settingsButton.icon = settingsIcon
-        downloadManagerButton.isFocusable = false
-        downloadManagerButton.icon = downloadManagerIdleIcon
-        downloadManagerButton.horizontalTextPosition = SwingConstants.RIGHT
-        downloadManagerButton.iconTextGap = 6
-        settingsButton.toolTipText = "Audiothek-Einstellungen"
-
-        add(JLabel("Filter"))
-        addSeparator()
-        add(searchField)
-        addSeparator()
-        add(onlineSearchCheckBox)
-        add(podcastSearchBusyLabel)
-        addSeparator()
-        add(settingsButton)
-        addSeparator()
-        add(downloadManagerButton)
+        buildLayout()
     }
 
     fun addFilterSubmitListener(action: (String) -> Unit) {
@@ -125,7 +114,7 @@ class AudiothekToolBar : JToolBar() {
         onlineSearchCheckBox.toolTipText = if (available) {
             null
         } else {
-            "Es ist kein Proxy für die Online-Suche konfiguriert"
+            ONLINE_SEARCH_UNAVAILABLE_TOOLTIP
         }
         if (!available) {
             setPodcastSearchBusy(false)
@@ -157,6 +146,37 @@ class AudiothekToolBar : JToolBar() {
     }
 
     fun currentQuery(): String = searchField.text
+
+    private fun configureSearchField() {
+        searchField.maximumSize = Dimension(MAX_SEARCH_FIELD_WIDTH, searchField.preferredSize.height)
+        searchField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Audiothek-Suche")
+        searchField.putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true)
+    }
+
+    private fun configureButtons() {
+        helpButton.isFocusable = false
+        onlineSearchCheckBox.isFocusable = false
+        settingsButton.isFocusable = false
+        settingsButton.icon = settingsIcon
+        settingsButton.toolTipText = SETTINGS_TOOLTIP
+        downloadManagerButton.isFocusable = false
+        downloadManagerButton.icon = downloadManagerIdleIcon
+        downloadManagerButton.horizontalTextPosition = SwingConstants.RIGHT
+        downloadManagerButton.iconTextGap = 6
+    }
+
+    private fun buildLayout() {
+        add(JLabel("Filter"))
+        addSeparator()
+        add(searchField)
+        addSeparator()
+        add(onlineSearchCheckBox)
+        add(podcastSearchBusyLabel)
+        addSeparator()
+        add(settingsButton)
+        addSeparator()
+        add(downloadManagerButton)
+    }
 
     private fun configureEmbeddedSearchActions() {
         val trailingToolbar = JToolBar().apply {

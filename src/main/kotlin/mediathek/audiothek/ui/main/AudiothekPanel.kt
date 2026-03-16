@@ -258,6 +258,9 @@ class AudiothekPanel(
         onlineSearchAvailable = onlineSearchProxyConfigProvider.hasBaseUrl()
         toolBar.setOnlineSearchAvailable(onlineSearchAvailable)
         toolBar.setOnlineSearchEnabled(isPersistedOnlineSearchEnabled())
+        if (!onlineSearchAvailable) {
+            resetExternalSearchState()
+        }
     }
 
     private fun triggerLoad(isManualReload: Boolean) {
@@ -432,19 +435,15 @@ class AudiothekPanel(
 
     private fun applyFilterNow(query: String) {
         table.applyFilter(query)
-        statusPanel.setCount("${table.rowCount} Treffer")
-        refreshSelectionState()
+        refreshVisibleResults()
         triggerPodcastSearch(query)
     }
 
     private fun triggerPodcastSearch(query: String) {
-        podcastSearchJob?.cancel()
-        table.setExternalSearchEntries(emptyList())
-        statusPanel.setCount("${table.rowCount} Treffer")
-        toolBar.setPodcastSearchBusy(false)
+        resetExternalSearchState()
 
         val normalizedQuery = query.trim()
-        if (normalizedQuery.isEmpty() || containsLuceneFieldToken(normalizedQuery) || !toolBar.isOnlineSearchEnabled()) {
+        if (!shouldRunOnlineSearch(normalizedQuery)) {
             refreshSelectionState()
             return
         }
@@ -452,23 +451,52 @@ class AudiothekPanel(
         podcastSearchJob = uiScope.launch {
             toolBar.setPodcastSearchBusy(true)
             try {
-                val externalEntries = runCatching { onlineSearchProxyRepository.search(normalizedQuery) }
-                    .onFailure { logger.warn("Online-Suche über Proxy fehlgeschlagen für '{}'", normalizedQuery, it) }
-                    .getOrDefault(emptyList())
+                val externalEntries = loadExternalSearchEntries(normalizedQuery)
 
-                if (!isActive || toolBar.currentQuery().trim() != normalizedQuery) {
+                if (!isCurrentQuery(normalizedQuery)) {
                     return@launch
                 }
 
                 table.setExternalSearchEntries(externalEntries)
-                statusPanel.setCount("${table.rowCount} Treffer")
-                refreshSelectionState()
+                refreshVisibleResults()
             } finally {
-                if (toolBar.currentQuery().trim() == normalizedQuery) {
+                if (isCurrentQuery(normalizedQuery)) {
                     toolBar.setPodcastSearchBusy(false)
                 }
             }
         }
+    }
+
+    private fun resetExternalSearchState() {
+        podcastSearchJob?.cancel()
+        table.setExternalSearchEntries(emptyList())
+        toolBar.setPodcastSearchBusy(false)
+        refreshResultCount()
+    }
+
+    private fun refreshVisibleResults() {
+        refreshResultCount()
+        refreshSelectionState()
+    }
+
+    private fun refreshResultCount() {
+        statusPanel.setCount("${table.rowCount} Treffer")
+    }
+
+    private fun shouldRunOnlineSearch(query: String): Boolean {
+        return query.isNotEmpty() &&
+            !containsLuceneFieldToken(query) &&
+            toolBar.isOnlineSearchEnabled()
+    }
+
+    private suspend fun loadExternalSearchEntries(query: String): List<AudioEntry> {
+        return runCatching { onlineSearchProxyRepository.search(query) }
+            .onFailure { logger.warn("Online-Suche über Proxy fehlgeschlagen für '{}'", query, it) }
+            .getOrDefault(emptyList())
+    }
+
+    private fun isCurrentQuery(query: String): Boolean {
+        return toolBar.currentQuery().trim() == query
     }
 
     private fun containsLuceneFieldToken(query: String): Boolean {
