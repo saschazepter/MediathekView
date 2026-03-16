@@ -26,7 +26,6 @@ import mediathek.tool.http.MVHttpClient
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.apache.logging.log4j.LogManager
 import org.jsoup.Jsoup
 import tools.jackson.core.JsonParser
 import tools.jackson.core.JsonToken
@@ -45,9 +44,9 @@ class PodcastIndexSearchRepository(
         .connectTimeout(5, TimeUnit.SECONDS)
         .readTimeout(8, TimeUnit.SECONDS)
         .writeTimeout(5, TimeUnit.SECONDS)
-        .build()
+        .build(),
+    private val credentialsProvider: PodcastIndexCredentialsProvider = PodcastIndexCredentialsProvider()
 ) {
-    private val logger = LogManager.getLogger(PodcastIndexSearchRepository::class.java)
     private val jsonFactory = JsonFactory()
 
     suspend fun search(query: String): List<AudioEntry> = withContext(Dispatchers.IO) {
@@ -56,7 +55,7 @@ class PodcastIndexSearchRepository(
             return@withContext emptyList()
         }
 
-        val credentials = readCredentials() ?: return@withContext emptyList()
+        val credentials = credentialsProvider.read() ?: return@withContext emptyList()
         val feeds = executeAuthenticatedRequest(
             credentials = credentials,
             url = SEARCH_URL.toHttpUrl().newBuilder()
@@ -72,7 +71,7 @@ class PodcastIndexSearchRepository(
         }.distinctBy(::entryKey)
     }
 
-    private fun loadEpisodesForFeed(credentials: Credentials, feed: FeedSearchResult): List<AudioEntry> {
+    private fun loadEpisodesForFeed(credentials: PodcastIndexCredentials, feed: FeedSearchResult): List<AudioEntry> {
         val urlBuilder = when {
             feed.id != null -> EPISODES_BY_FEED_ID_URL.toHttpUrl().newBuilder()
                 .addQueryParameter("id", feed.id.toString())
@@ -257,31 +256,13 @@ class PodcastIndexSearchRepository(
         return categories.toList()
     }
 
-    private fun readCredentials(): Credentials? {
-        val configuration = ApplicationConfiguration.getConfiguration()
-        val key = configuration.getString(ApplicationConfiguration.APPLICATION_AUDIOTHEK_PODCASTINDEX_API_KEY, "")
-            .ifBlank { System.getenv(ENV_API_KEY).orEmpty() }
-            .ifBlank { System.getProperty(ENV_API_KEY).orEmpty() }
-            .ifBlank { System.getProperty(SYS_API_KEY).orEmpty() }
-        val secret = configuration.getString(ApplicationConfiguration.APPLICATION_AUDIOTHEK_PODCASTINDEX_API_SECRET, "")
-            .ifBlank { System.getenv(ENV_API_SECRET).orEmpty() }
-            .ifBlank { System.getProperty(ENV_API_SECRET).orEmpty() }
-            .ifBlank { System.getProperty(SYS_API_SECRET).orEmpty() }
-
-        if (key.isBlank() || secret.isBlank()) {
-            logger.debug("Podcastindex-Zugangsdaten fehlen, externe Podcast-Suche bleibt deaktiviert")
-            return null
-        }
-        return Credentials(key = key, secret = secret)
-    }
-
     private fun readUserAgent(): String {
         return ApplicationConfiguration.getConfiguration()
             .getString(ApplicationConfiguration.APPLICATION_USER_AGENT, "MediathekView")
             .ifBlank { "MediathekView" }
     }
 
-    private fun buildAuthorization(credentials: Credentials, authDate: String): String {
+    private fun buildAuthorization(credentials: PodcastIndexCredentials, authDate: String): String {
         val payload = credentials.key + credentials.secret + authDate
         return MessageDigest.getInstance("SHA-1")
             .digest(payload.toByteArray(Charsets.UTF_8))
@@ -289,7 +270,7 @@ class PodcastIndexSearchRepository(
     }
 
     private fun <T> executeAuthenticatedRequest(
-        credentials: Credentials,
+        credentials: PodcastIndexCredentials,
         url: okhttp3.HttpUrl,
         parse: (okhttp3.ResponseBody) -> T
     ): T {
@@ -378,11 +359,6 @@ class PodcastIndexSearchRepository(
         ).joinToString("\u0000")
     }
 
-    private data class Credentials(
-        val key: String,
-        val secret: String
-    )
-
     private data class FeedSearchResult(
         val id: Long?,
         val title: String,
@@ -399,9 +375,5 @@ class PodcastIndexSearchRepository(
         private const val EPISODES_BY_FEED_ID_URL = "https://api.podcastindex.org/api/1.0/episodes/byfeedid"
         private const val EPISODES_BY_FEED_URL = "https://api.podcastindex.org/api/1.0/episodes/byfeedurl"
         private const val SEARCH_LIMIT = 25
-        private const val ENV_API_KEY = "PODCASTINDEX_API_KEY"
-        private const val ENV_API_SECRET = "PODCASTINDEX_API_SECRET"
-        private const val SYS_API_KEY = "mediathek.audiothek.podcastindex.apiKey"
-        private const val SYS_API_SECRET = "mediathek.audiothek.podcastindex.apiSecret"
     }
 }
