@@ -24,6 +24,7 @@ import mediathek.audiothek.ui.download.DownloadSummary
 import org.kordamp.ikonli.materialdesign2.MaterialDesignT
 import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Dimension
+import java.awt.event.KeyEvent
 import javax.swing.*
 import javax.swing.text.JTextComponent
 
@@ -74,6 +75,15 @@ class AudiothekToolBar : JToolBar() {
         searchField.putClientProperty("JTextField.clearCallback", java.util.function.Consumer<JTextComponent> {
             searchField.text = ""
             action()
+        })
+        searchField.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "clearSearchField")
+        searchField.actionMap.put("clearSearchField", object : AbstractAction() {
+            override fun actionPerformed(event: java.awt.event.ActionEvent?) {
+                if (searchField.text.isNotEmpty()) {
+                    searchField.text = ""
+                    action()
+                }
+            }
         })
     }
 
