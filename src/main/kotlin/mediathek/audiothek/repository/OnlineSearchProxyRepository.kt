@@ -21,6 +21,7 @@ package mediathek.audiothek.repository
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import mediathek.audiothek.model.AudioEntry
+import mediathek.config.Konstanten
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.http.MVHttpClient
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -43,10 +44,6 @@ class OnlineSearchProxyRepository(
         .writeTimeout(5, TimeUnit.SECONDS)
         .build()
 ) {
-    companion object {
-        private const val BASE_URL = "https://audiothek.crystalpalace.info"
-    }
-
     private val logger = LogManager.getLogger(OnlineSearchProxyRepository::class.java)
     private val jsonFactory = JsonFactory()
 
@@ -56,13 +53,16 @@ class OnlineSearchProxyRepository(
             return@withContext emptyList()
         }
 
-        val requestUrl = BASE_URL.toHttpUrlOrNull()
+        val requestUrl = Konstanten.AUDIOTHEK_ONLINE_SEARCH_PROXY_URL.toHttpUrlOrNull()
             ?.newBuilder()
             ?.addPathSegments("api/audiothek/podcast-search")
             ?.addQueryParameter("q", normalizedQuery)
             ?.build()
             ?: run {
-                logger.warn("Ungültige Proxy-URL für die Audiothek-Onlinesuche: {}", BASE_URL)
+                logger.warn(
+                    "Ungültige Proxy-URL für die Audiothek-Onlinesuche: {}",
+                    Konstanten.AUDIOTHEK_ONLINE_SEARCH_PROXY_URL
+                )
                 return@withContext emptyList()
             }
 
