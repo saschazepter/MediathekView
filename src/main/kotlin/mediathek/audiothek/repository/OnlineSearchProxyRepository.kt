@@ -39,9 +39,9 @@ import java.util.concurrent.TimeUnit
 
 class OnlineSearchProxyRepository(
     private val client: OkHttpClient = MVHttpClient.getInstance().httpClient.newBuilder()
-        .connectTimeout(5, TimeUnit.SECONDS)
-        .readTimeout(8, TimeUnit.SECONDS)
-        .writeTimeout(5, TimeUnit.SECONDS)
+        .connectTimeout(20, TimeUnit.SECONDS)
+        .readTimeout(20, TimeUnit.SECONDS)
+        .writeTimeout(20, TimeUnit.SECONDS)
         .build()
 ) {
     private val logger = LogManager.getLogger(OnlineSearchProxyRepository::class.java)
