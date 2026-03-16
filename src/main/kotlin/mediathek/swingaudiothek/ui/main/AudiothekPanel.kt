@@ -34,10 +34,7 @@ import mediathek.swingaudiothek.download.AudioDownloadTaskSnapshot
 import mediathek.swingaudiothek.download.AudioDownloadTaskState
 import mediathek.swingaudiothek.download.PersistentAudioDownloadManager
 import mediathek.swingaudiothek.model.AudioEntry
-import mediathek.swingaudiothek.repository.AudioDownloadStatus
-import mediathek.swingaudiothek.repository.AudioLoadResult
-import mediathek.swingaudiothek.repository.AudioRepository
-import mediathek.swingaudiothek.repository.PodcastIndexSearchRepository
+import mediathek.swingaudiothek.repository.*
 import mediathek.swingaudiothek.ui.download.AudioDownloadManagerPanel
 import mediathek.swingaudiothek.ui.download.DownloadSummary
 import mediathek.swingaudiothek.ui.table.AudiothekTable
@@ -82,6 +79,7 @@ class AudiothekPanel(
     private val statusPanel = AudiothekStatusPanel()
     private val detailsPanel = FilmDescriptionPanel()
     private val toolBar = AudiothekToolBar()
+    private val podcastIndexCredentialsProvider = PodcastIndexCredentialsProvider()
     private val podcastIndexSearchRepository = PodcastIndexSearchRepository()
     private val tableScrollPane = JScrollPane(table)
     private val errorOverlay = OverlayPanel("Audiothek konnte nicht geladen werden")
@@ -135,9 +133,11 @@ class AudiothekPanel(
         get() = downloadManagerPopup.isPopupVisible
 
     init {
+        val onlineSearchAvailable = podcastIndexCredentialsProvider.read() != null
+        toolBar.setOnlineSearchAvailable(onlineSearchAvailable)
         toolBar.setOnlineSearchEnabled(
             ApplicationConfiguration.getConfiguration()
-                .getBoolean(ApplicationConfiguration.APPLICATION_UI_AUDIOTHEK_ONLINE_SEARCH, true)
+                .getBoolean(ApplicationConfiguration.APPLICATION_UI_AUDIOTHEK_ONLINE_SEARCH, true) && onlineSearchAvailable
         )
         add(toolBar, BorderLayout.NORTH)
         add(tableContainer, BorderLayout.CENTER)

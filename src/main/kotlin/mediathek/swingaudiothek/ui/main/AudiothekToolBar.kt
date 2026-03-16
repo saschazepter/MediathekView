@@ -94,6 +94,15 @@ class AudiothekToolBar : JToolBar() {
         onlineSearchCheckBox.isSelected = enabled
     }
 
+    fun setOnlineSearchAvailable(available: Boolean) {
+        onlineSearchCheckBox.isEnabled = available
+        onlineSearchCheckBox.toolTipText = if (available) {
+            null
+        } else {
+            "Es sind keine API Keys für die Online-Suche vorhanden"
+        }
+    }
+
     fun setDownloadProgress(summary: DownloadSummary) {
         if (summary.activeCount <= 0) {
             downloadManagerButton.icon = downloadManagerIdleIcon
