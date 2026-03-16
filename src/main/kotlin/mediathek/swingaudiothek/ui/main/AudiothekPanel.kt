@@ -400,7 +400,7 @@ class AudiothekPanel(
         statusPanel.setPodcastSearchBusy(false)
 
         val normalizedQuery = query.trim()
-        if (normalizedQuery.isEmpty() || !toolBar.isOnlineSearchEnabled()) {
+        if (normalizedQuery.isEmpty() || containsLuceneFieldToken(normalizedQuery) || !toolBar.isOnlineSearchEnabled()) {
             refreshSelectionState()
             return
         }
@@ -425,6 +425,18 @@ class AudiothekPanel(
                 }
             }
         }
+    }
+
+    private fun containsLuceneFieldToken(query: String): Boolean {
+        return PODCAST_QUERY_TOKEN_REGEX.findAll(query)
+            .map { it.value.trim() }
+            .filter(String::isNotEmpty)
+            .any { token ->
+                val separatorIndex = token.indexOf(':')
+                separatorIndex > 0 &&
+                    separatorIndex < token.lastIndex &&
+                    token.substring(0, separatorIndex).lowercase() in PODCAST_EXCLUDED_FIELD_KEYS
+            }
     }
 
     private fun refreshSelectionState() {
@@ -613,6 +625,24 @@ class AudiothekPanel(
 
     companion object {
         private val DATASET_TIMESTAMP_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
+        private val PODCAST_QUERY_TOKEN_REGEX = """[^\s:]+:"[^"]*"|[^\s]+""".toRegex()
+        private val PODCAST_EXCLUDED_FIELD_KEYS = setOf(
+            "sender",
+            "genre",
+            "thema",
+            "theme",
+            "titel",
+            "title",
+            "datum",
+            "date",
+            "zeit",
+            "time",
+            "dauer",
+            "duration",
+            "groesse",
+            "größe",
+            "size"
+        )
     }
 }
 
