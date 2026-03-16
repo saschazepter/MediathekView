@@ -4,7 +4,7 @@ Die Suche im Tab **Audiothek** filtert die angezeigten Einträge nach dem Inhalt
 
 Die Suche wird gestartet, wenn im Suchfeld die Eingabetaste gedrückt wird.
 
-Mit dem **x** rechts neben dem Suchfeld wird der Suchtext gelöscht und die vollständige Liste wieder angezeigt.
+Der Suchtext kann über die integrierte Löschen-Funktion im Suchfeld oder mit der Taste `Esc` entfernt werden. Danach wird wieder die vollständige Liste angezeigt.
 
 ## Lokale Suche
 
