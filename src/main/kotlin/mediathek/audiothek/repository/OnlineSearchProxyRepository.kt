@@ -26,6 +26,7 @@ import mediathek.tool.http.MVHttpClient
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.apache.logging.log4j.LogManager
 import tools.jackson.core.JsonParser
 import tools.jackson.core.JsonToken
 import tools.jackson.core.ObjectReadContext
@@ -43,6 +44,7 @@ class OnlineSearchProxyRepository(
         .build(),
     private val configProvider: OnlineSearchProxyConfigProvider = OnlineSearchProxyConfigProvider()
 ) {
+    private val logger = LogManager.getLogger(OnlineSearchProxyRepository::class.java)
     private val jsonFactory = JsonFactory()
 
     suspend fun search(query: String): List<AudioEntry> = withContext(Dispatchers.IO) {
@@ -57,7 +59,10 @@ class OnlineSearchProxyRepository(
             ?.addPathSegments("api/audiothek/podcast-search")
             ?.addQueryParameter("q", normalizedQuery)
             ?.build()
-            ?: error("Ungültige Proxy-URL für die Audiothek-Onlinesuche: $baseUrl")
+            ?: run {
+                logger.warn("Ungültige Proxy-URL für die Audiothek-Onlinesuche: {}", baseUrl)
+                return@withContext emptyList()
+            }
 
         val request = Request.Builder()
             .url(requestUrl)
@@ -65,13 +70,27 @@ class OnlineSearchProxyRepository(
             .get()
             .build()
 
-        client.newCall(request).execute().use { response ->
-            if (!response.isSuccessful) {
-                error("Onlinesuche fehlgeschlagen: HTTP ${response.code}")
-            }
+        runCatching {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    logger.warn(
+                        "Onlinesuche über Proxy fehlgeschlagen für '{}': HTTP {}",
+                        normalizedQuery,
+                        response.code
+                    )
+                    return@withContext emptyList()
+                }
 
-            val body = response.body ?: error("Proxy-Antwort ohne Body")
-            body.byteStream().use(::parseEntries)
+                val body = response.body ?: run {
+                    logger.warn("Proxy-Antwort ohne Body für Audiothek-Onlinesuche '{}'", normalizedQuery)
+                    return@withContext emptyList()
+                }
+
+                body.byteStream().use(::parseEntries)
+            }
+        }.getOrElse { error ->
+            logger.warn("Onlinesuche über Proxy fehlgeschlagen für '{}': {}", normalizedQuery, error.message)
+            emptyList()
         }
     }
 

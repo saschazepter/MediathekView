@@ -1,5 +1,12 @@
 package podcastindex
 
+import (
+	"bytes"
+	"encoding/json"
+	"fmt"
+	"strconv"
+)
+
 type SearchResponse struct {
 	Feeds []Feed `json:"feeds"`
 }
@@ -34,7 +41,37 @@ type Episode struct {
 	EnclosureURL    string `json:"enclosureUrl"`
 	EnclosureLength *int64 `json:"enclosureLength"`
 	Link            string `json:"link"`
-	Duration        string `json:"duration"`
+	Duration        StringValue `json:"duration"`
 	FeedTitle       string `json:"feedTitle"`
 	DatePublished   *int64 `json:"datePublished"`
+}
+
+type StringValue string
+
+func (value *StringValue) UnmarshalJSON(data []byte) error {
+	trimmed := bytes.TrimSpace(data)
+	if bytes.Equal(trimmed, []byte("null")) {
+		*value = ""
+		return nil
+	}
+
+	var stringValue string
+	if err := json.Unmarshal(trimmed, &stringValue); err == nil {
+		*value = StringValue(stringValue)
+		return nil
+	}
+
+	var intValue int64
+	if err := json.Unmarshal(trimmed, &intValue); err == nil {
+		*value = StringValue(strconv.FormatInt(intValue, 10))
+		return nil
+	}
+
+	var floatValue float64
+	if err := json.Unmarshal(trimmed, &floatValue); err == nil {
+		*value = StringValue(strconv.FormatFloat(floatValue, 'f', -1, 64))
+		return nil
+	}
+
+	return fmt.Errorf("unsupported JSON value for string field: %s", string(trimmed))
 }

@@ -93,7 +93,7 @@ func (service *Service) toAudioEntry(feed podcastindex.Feed, episode podcastinde
 		entry.PublishedAt = publishedAt
 	}
 
-	if duration := durationMinutes(episode.Duration); duration != nil {
+	if duration := durationMinutes(string(episode.Duration)); duration != nil {
 		entry.DurationMinutes = duration
 	}
 
