@@ -66,6 +66,7 @@ class AudiothekTable(
     private val luceneIndex = AudiothekLuceneIndex()
     private val customColumnWidths = mutableMapOf<Int, Int>()
     private var allEntries: List<AudioEntry> = emptyList()
+    private var externalSearchEntries: List<AudioEntry> = emptyList()
     private var currentFilterQuery = ""
     private var restoringState = false
 
@@ -89,6 +90,11 @@ class AudiothekTable(
     fun setRows(entries: List<AudioEntry>) {
         allEntries = entries
         luceneIndex.replaceEntries(entries)
+        applyFilter(currentFilterQuery)
+    }
+
+    fun setExternalSearchEntries(entries: List<AudioEntry>) {
+        externalSearchEntries = entries
         applyFilter(currentFilterQuery)
     }
 
@@ -121,7 +127,8 @@ class AudiothekTable(
             audioTableModel.setRows(allEntries)
             return
         }
-        audioTableModel.setRows(luceneIndex.search(normalized, visibleSearchFields()))
+        val localResults = luceneIndex.search(normalized, visibleSearchFields())
+        audioTableModel.setRows(mergeSearchResults(localResults, externalSearchEntries))
     }
 
     fun selectFirstRow() {
@@ -153,6 +160,31 @@ class AudiothekTable(
         return background.takeUnless { it is UIResource }
             ?: UIManager.getColor("Table.background")
             ?: background
+    }
+
+    private fun mergeSearchResults(localResults: List<AudioEntry>, externalResults: List<AudioEntry>): List<AudioEntry> {
+        if (externalResults.isEmpty()) {
+            return localResults
+        }
+
+        return buildList(localResults.size + externalResults.size) {
+            val seenKeys = hashSetOf<String>()
+            (localResults + externalResults).forEach { entry ->
+                if (seenKeys.add(entryKey(entry))) {
+                    add(entry)
+                }
+            }
+        }
+    }
+
+    private fun entryKey(entry: AudioEntry): String {
+        return listOf(
+            entry.channel,
+            entry.title,
+            entry.audioUrl?.toString().orEmpty(),
+            entry.websiteUrl?.toString().orEmpty(),
+            entry.publishedAt?.toString().orEmpty()
+        ).joinToString("\u0000")
     }
 
     private fun configureSorting() {

@@ -37,6 +37,7 @@ import mediathek.swingaudiothek.model.AudioEntry
 import mediathek.swingaudiothek.repository.AudioDownloadStatus
 import mediathek.swingaudiothek.repository.AudioLoadResult
 import mediathek.swingaudiothek.repository.AudioRepository
+import mediathek.swingaudiothek.repository.PodcastIndexSearchRepository
 import mediathek.swingaudiothek.ui.download.AudioDownloadManagerPanel
 import mediathek.swingaudiothek.ui.download.DownloadSummary
 import mediathek.swingaudiothek.ui.table.AudiothekTable
@@ -70,6 +71,7 @@ class AudiothekPanel(
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private var loadJob: Job? = null
     private var ageTickerJob: Job? = null
+    private var podcastSearchJob: Job? = null
 
     private val table = AudiothekTable(
         onOpenAudio = ::openAudioEntry,
@@ -79,6 +81,7 @@ class AudiothekPanel(
     private val statusPanel = AudiothekStatusPanel()
     private val detailsPanel = FilmDescriptionPanel()
     private val toolBar = AudiothekToolBar()
+    private val podcastIndexSearchRepository = PodcastIndexSearchRepository()
     private val tableScrollPane = JScrollPane(table)
     private val errorOverlay = OverlayPanel("Audiothek konnte nicht geladen werden")
     private val tableContainer = JLayeredPane().apply {
@@ -146,6 +149,7 @@ class AudiothekPanel(
         pauseDownloadsForShutdown()
         table.dispose()
         table.saveState()
+        podcastSearchJob?.cancel()
         uiScope.cancel()
     }
 
@@ -376,6 +380,33 @@ class AudiothekPanel(
         table.applyFilter(query)
         statusPanel.setCount("${table.rowCount} Treffer")
         refreshSelectionState()
+        triggerPodcastSearch(query)
+    }
+
+    private fun triggerPodcastSearch(query: String) {
+        podcastSearchJob?.cancel()
+        table.setExternalSearchEntries(emptyList())
+        statusPanel.setCount("${table.rowCount} Treffer")
+
+        val normalizedQuery = query.trim()
+        if (normalizedQuery.isEmpty()) {
+            refreshSelectionState()
+            return
+        }
+
+        podcastSearchJob = uiScope.launch {
+            val externalEntries = runCatching { podcastIndexSearchRepository.search(normalizedQuery) }
+                .onFailure { logger.warn("Podcastindex-Suche fehlgeschlagen für '{}'", normalizedQuery, it) }
+                .getOrDefault(emptyList())
+
+            if (!isActive || toolBar.currentQuery().trim() != normalizedQuery) {
+                return@launch
+            }
+
+            table.setExternalSearchEntries(externalEntries)
+            statusPanel.setCount("${table.rowCount} Treffer")
+            refreshSelectionState()
+        }
     }
 
     private fun refreshSelectionState() {
@@ -387,7 +418,7 @@ class AudiothekPanel(
     }
 
     private fun openAudioEntry(entry: AudioEntry) {
-        entry.audioUrl?.let(::openExternal)
+        (entry.audioUrl ?: entry.websiteUrl)?.let(::openExternal)
     }
 
     private fun downloadAudioEntry(entry: AudioEntry) {
