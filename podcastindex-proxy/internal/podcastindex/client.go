@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -54,6 +55,7 @@ func (client *Client) SearchFeeds(ctx context.Context, query string, limit int) 
 		return nil, err
 	}
 
+	slog.Debug("podcastindex feed search response", "query", query, "feeds", len(response.Feeds))
 	return response.Feeds, nil
 }
 
@@ -78,7 +80,14 @@ func (client *Client) LoadEpisodes(ctx context.Context, feed Feed, limit int) ([
 		return nil, err
 	}
 
-	return response.MergedItems(), nil
+	items := response.MergedItems()
+	slog.Debug(
+		"podcastindex episode response",
+		"feedTitle", feed.Title,
+		"feedID", feed.ID,
+		"episodes", len(items),
+	)
+	return items, nil
 }
 
 func (client *Client) doRequest(ctx context.Context, endpoint string, target any) error {
@@ -93,11 +102,16 @@ func (client *Client) doRequest(ctx context.Context, endpoint string, target any
 	request.Header.Set("X-Auth-Date", timestamp)
 	request.Header.Set("Authorization", client.authorization(timestamp))
 
+	slog.Debug("podcastindex request", "url", endpoint)
+
 	response, err := client.httpClient.Do(request)
 	if err != nil {
+		slog.Warn("podcastindex request failed", "url", endpoint, "error", err)
 		return err
 	}
 	defer response.Body.Close()
+
+	slog.Debug("podcastindex response", "url", endpoint, "status", response.StatusCode)
 
 	if response.StatusCode < http.StatusOK || response.StatusCode >= http.StatusMultipleChoices {
 		return &StatusError{

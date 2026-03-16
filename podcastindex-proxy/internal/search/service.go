@@ -2,6 +2,7 @@ package search
 
 import (
 	"context"
+	"log/slog"
 
 	"github.com/mediathekview/podcastindex-proxy/internal/config"
 	"github.com/mediathekview/podcastindex-proxy/internal/model"
@@ -34,21 +35,35 @@ func NewService(cfg config.Config, client feedClient) *Service {
 
 func (service *Service) Search(ctx context.Context, query string, options Options) ([]model.AudioEntry, error) {
 	normalized := service.normalizeOptions(options)
+	slog.Info(
+		"searching podcast index",
+		"query", query,
+		"feedLimit", normalized.feedLimit,
+		"episodeLimit", normalized.episodeLimit,
+	)
 
 	feeds, err := service.client.SearchFeeds(ctx, query, normalized.feedLimit)
 	if err != nil {
+		slog.Warn("feed search failed", "query", query, "error", err)
 		return nil, err
 	}
+	slog.Info("feed search completed", "query", query, "feeds", len(feeds))
 
 	results := make([]model.AudioEntry, 0, normalized.feedLimit*normalized.episodeLimit)
 	seenKeys := make(map[string]struct{}, normalized.feedLimit*normalized.episodeLimit)
 
 	for _, feed := range feeds {
+		feedName := firstNonBlank(feed.Title, feed.Author, feed.OwnerName, feed.URL)
+		slog.Debug("loading feed episodes", "query", query, "feed", feedName)
+
 		episodes, err := service.client.LoadEpisodes(ctx, feed, normalized.episodeLimit)
 		if err != nil {
+			slog.Warn("episode load failed", "query", query, "feed", feedName, "error", err)
 			return nil, err
 		}
+		slog.Debug("feed episodes loaded", "query", query, "feed", feedName, "episodes", len(episodes))
 
+		addedForFeed := 0
 		for _, episode := range episodes {
 			entry, ok := toAudioEntry(feed, episode)
 			if !ok {
@@ -62,8 +77,13 @@ func (service *Service) Search(ctx context.Context, query string, options Option
 
 			seenKeys[key] = struct{}{}
 			results = append(results, entry)
+			addedForFeed++
 		}
+
+		slog.Debug("feed mapped", "query", query, "feed", feedName, "added", addedForFeed, "totalResults", len(results))
 	}
+
+	slog.Info("search finished", "query", query, "results", len(results), "feeds", len(feeds))
 
 	return results, nil
 }

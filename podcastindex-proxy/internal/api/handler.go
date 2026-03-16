@@ -18,14 +18,12 @@ type searchService interface {
 }
 
 type Handler struct {
-	logger  *slog.Logger
 	mux     *http.ServeMux
 	service searchService
 }
 
-func NewHandler(service searchService, logWriter io.Writer) *Handler {
+func NewHandler(service searchService, _ io.Writer) *Handler {
 	handler := &Handler{
-		logger:  slog.New(slog.NewTextHandler(logWriter, nil)),
 		mux:     http.NewServeMux(),
 		service: service,
 	}
@@ -60,17 +58,26 @@ func (h *Handler) handlePodcastSearch(responseWriter http.ResponseWriter, reques
 		return
 	}
 
+	slog.Info(
+		"podcast search request",
+		"query", query,
+		"feedLimit", options.FeedLimit,
+		"episodeLimit", options.EpisodeLimit,
+		"remoteAddr", request.RemoteAddr,
+	)
+
 	results, err := h.service.Search(request.Context(), query, options)
 	if err != nil {
 		h.handleSearchError(responseWriter, query, err)
 		return
 	}
 
+	slog.Info("podcast search completed", "query", query, "results", len(results))
 	writeJSON(responseWriter, http.StatusOK, model.PodcastSearchResponse{Results: results})
 }
 
 func (h *Handler) handleSearchError(responseWriter http.ResponseWriter, query string, err error) {
-	h.logger.Warn("podcast search failed", "query", query, "error", err)
+	slog.Warn("podcast search failed", "query", query, "error", err)
 
 	var statusError *podcastindex.StatusError
 	if errors.As(err, &statusError) {

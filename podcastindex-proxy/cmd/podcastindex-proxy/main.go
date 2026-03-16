@@ -13,7 +13,9 @@ import (
 )
 
 func main() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
 	slog.SetDefault(logger)
 
 	cfg, err := config.FromEnvironment()
@@ -30,7 +32,14 @@ func main() {
 		os.Stdout,
 	))
 
-	logger.Info("Podcastindex-Proxy lauscht", "address", "http://"+cfg.ListenAddress())
+	logger.Info(
+		"Podcastindex-Proxy lauscht",
+		"address", "http://"+cfg.ListenAddress(),
+		"userAgent", cfg.UserAgent,
+		"feedLimit", cfg.DefaultFeedLimit,
+		"episodeLimit", cfg.DefaultEpisodeLimit,
+		"configFile", cfg.ConfigFile,
+	)
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logger.Error("server stopped", "error", err)
 		os.Exit(1)
