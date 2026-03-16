@@ -1,0 +1,18 @@
+[Unit]
+Description=Podcastindex Proxy for MediathekView
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=podcastindex-proxy
+Group=podcastindex-proxy
+WorkingDirectory=/opt/podcastindex-proxy
+ExecStart=/opt/podcastindex-proxy/podcastindex-proxy
+Restart=on-failure
+RestartSec=5
+Environment=PODCASTINDEX_PROXY_HOST=127.0.0.1
+Environment=PODCASTINDEX_PROXY_PORT=18080
+
+[Install]
+WantedBy=multi-user.target
