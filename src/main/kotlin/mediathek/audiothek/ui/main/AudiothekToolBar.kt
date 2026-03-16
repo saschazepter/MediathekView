@@ -21,6 +21,7 @@ package mediathek.audiothek.ui.main
 import com.formdev.flatlaf.FlatClientProperties
 import mediathek.audiothek.ui.download.CircularProgressIcon
 import mediathek.audiothek.ui.download.DownloadSummary
+import org.jdesktop.swingx.JXBusyLabel
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import org.kordamp.ikonli.materialdesign2.MaterialDesignT
 import org.kordamp.ikonli.swing.FontIcon
@@ -33,6 +34,11 @@ class AudiothekToolBar : JToolBar() {
     private val searchField = JTextField(28)
     private val helpButton = JButton()
     private val onlineSearchCheckBox = JCheckBox("Online-Suche", true)
+    private val podcastSearchBusyLabel = JXBusyLabel().apply {
+        toolTipText = "Podcastindex-Suche läuft"
+        isBusy = false
+        isVisible = false
+    }
     private val settingsButton = JButton()
     private val downloadManagerButton = JButton()
     private val downloadManagerIdleIcon = FontIcon.of(MaterialDesignT.TRAY_ARROW_DOWN, 16)
@@ -60,6 +66,7 @@ class AudiothekToolBar : JToolBar() {
         add(searchField)
         addSeparator()
         add(onlineSearchCheckBox)
+        add(podcastSearchBusyLabel)
         addSeparator()
         add(settingsButton)
         addSeparator()
@@ -120,6 +127,14 @@ class AudiothekToolBar : JToolBar() {
         } else {
             "Es ist kein Proxy für die Online-Suche konfiguriert"
         }
+        if (!available) {
+            setPodcastSearchBusy(false)
+        }
+    }
+
+    fun setPodcastSearchBusy(busy: Boolean) {
+        podcastSearchBusyLabel.isBusy = busy
+        podcastSearchBusyLabel.isVisible = busy
     }
 
     fun setDownloadProgress(summary: DownloadSummary) {

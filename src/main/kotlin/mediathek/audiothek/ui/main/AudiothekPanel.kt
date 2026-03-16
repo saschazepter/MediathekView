@@ -441,7 +441,7 @@ class AudiothekPanel(
         podcastSearchJob?.cancel()
         table.setExternalSearchEntries(emptyList())
         statusPanel.setCount("${table.rowCount} Treffer")
-        statusPanel.setPodcastSearchBusy(false)
+        toolBar.setPodcastSearchBusy(false)
 
         val normalizedQuery = query.trim()
         if (normalizedQuery.isEmpty() || containsLuceneFieldToken(normalizedQuery) || !toolBar.isOnlineSearchEnabled()) {
@@ -450,7 +450,7 @@ class AudiothekPanel(
         }
 
         podcastSearchJob = uiScope.launch {
-            statusPanel.setPodcastSearchBusy(true)
+            toolBar.setPodcastSearchBusy(true)
             try {
                 val externalEntries = runCatching { onlineSearchProxyRepository.search(normalizedQuery) }
                     .onFailure { logger.warn("Online-Suche über Proxy fehlgeschlagen für '{}'", normalizedQuery, it) }
@@ -465,7 +465,7 @@ class AudiothekPanel(
                 refreshSelectionState()
             } finally {
                 if (toolBar.currentQuery().trim() == normalizedQuery) {
-                    statusPanel.setPodcastSearchBusy(false)
+                    toolBar.setPodcastSearchBusy(false)
                 }
             }
         }
