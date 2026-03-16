@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"time"
@@ -13,16 +13,34 @@ import (
 )
 
 func main() {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
+
 	cfg, err := config.FromEnvironment()
 	if err != nil {
-		log.Fatal(err)
+		logger.Error("failed to load configuration", "error", err)
+		os.Exit(1)
 	}
 
-	httpClient := &http.Client{Timeout: 10 * time.Second}
-	podcastClient := podcastindex.NewClient(cfg, httpClient)
-	searchService := search.NewService(cfg, podcastClient)
-	handler := api.NewHandler(searchService, os.Stdout)
+	server := newServer(cfg, api.NewHandler(
+		search.NewService(
+			cfg,
+			podcastindex.NewClient(cfg, &http.Client{Timeout: 10 * time.Second}),
+		),
+		os.Stdout,
+	))
 
-	log.Printf("Podcastindex-Proxy lauscht auf http://%s:%d", cfg.Host, cfg.Port)
-	log.Fatal(http.ListenAndServe(cfg.ListenAddress(), handler))
+	logger.Info("Podcastindex-Proxy lauscht", "address", "http://"+cfg.ListenAddress())
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		logger.Error("server stopped", "error", err)
+		os.Exit(1)
+	}
+}
+
+func newServer(cfg config.Config, handler http.Handler) *http.Server {
+	return &http.Server{
+		Addr:              cfg.ListenAddress(),
+		Handler:           handler,
+		ReadHeaderTimeout: 5 * time.Second,
+	}
 }

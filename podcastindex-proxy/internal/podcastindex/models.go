@@ -35,15 +35,15 @@ type Feed struct {
 }
 
 type Episode struct {
-	Title           string `json:"title"`
-	Description     string `json:"description"`
-	ContentText     string `json:"contentText"`
-	EnclosureURL    string `json:"enclosureUrl"`
-	EnclosureLength *int64 `json:"enclosureLength"`
-	Link            string `json:"link"`
+	Title           string      `json:"title"`
+	Description     string      `json:"description"`
+	ContentText     string      `json:"contentText"`
+	EnclosureURL    string      `json:"enclosureUrl"`
+	EnclosureLength *int64      `json:"enclosureLength"`
+	Link            string      `json:"link"`
 	Duration        StringValue `json:"duration"`
-	FeedTitle       string `json:"feedTitle"`
-	DatePublished   *int64 `json:"datePublished"`
+	FeedTitle       string      `json:"feedTitle"`
+	DatePublished   *int64      `json:"datePublished"`
 }
 
 type StringValue string

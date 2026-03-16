@@ -3,6 +3,7 @@ package config
 import (
 	"bufio"
 	"fmt"
+	"net"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -49,7 +50,7 @@ func FromEnvironment() (Config, error) {
 }
 
 func (c Config) ListenAddress() string {
-	return fmt.Sprintf("%s:%d", c.Host, c.Port)
+	return net.JoinHostPort(c.Host, strconv.Itoa(c.Port))
 }
 
 func requireSetting(name string, fileValues map[string]string) (string, error) {
@@ -59,10 +60,6 @@ func requireSetting(name string, fileValues map[string]string) (string, error) {
 
 	if value := strings.TrimSpace(fileValues[name]); value != "" {
 		return value, nil
-	}
-
-	if len(fileValues) > 0 {
-		return "", fmt.Errorf("%q fehlt in Umgebung und Konfigurationsdatei", name)
 	}
 
 	return "", fmt.Errorf("%q fehlt in Umgebung und Konfigurationsdatei", name)
@@ -110,15 +107,6 @@ func loadConfigFile() (map[string]string, string, error) {
 	}
 
 	return values, configFile, nil
-}
-
-func requireEnv(name string) (string, error) {
-	value := strings.TrimSpace(os.Getenv(name))
-	if value == "" {
-		return "", fmt.Errorf("Umgebungsvariable %q fehlt", name)
-	}
-
-	return value, nil
 }
 
 func envOrDefault(name, fallback string) string {

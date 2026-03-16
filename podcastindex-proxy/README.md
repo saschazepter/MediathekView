@@ -7,6 +7,12 @@ Dieses Projekt ist bewusst vom Desktop-Client getrennt und enthält die Podcasti
 
 Der Proxy nimmt Suchanfragen der App entgegen, ruft damit Podcastindex auf und liefert ein kompaktes JSON-Format zurück, das sich leicht in `AudioEntry`-ähnliche Daten mappen lässt.
 
+## Voraussetzungen
+
+- Go `1.26` oder neuer
+- gültige Podcastindex-Zugangsdaten
+- optional `systemd`, `caddy` oder `nginx` für den Dauerbetrieb
+
 ## Konfiguration
 
 Erforderlich, jeweils mit Priorität:
@@ -68,36 +74,24 @@ Optionaler Build:
 go build -o ./.bin/podcastindex-proxy ./cmd/podcastindex-proxy
 ```
 
+Tests:
+
+```sh
+GOCACHE=/tmp/gocache go test ./...
+```
+
 ## Betrieb als Dienst
 
 Beispieldateien liegen unter:
 
 - `deploy/caddy/Caddyfile`
-- `deploy/launchd/de.mediathekview.podcastindex-proxy.plist`
 - `deploy/nginx/podcastindex-proxy.conf`
 - `deploy/systemd/podcastindex-proxy.service`
-
-### macOS mit `launchd`
-
-1. Binary bauen und nach `/usr/local/bin/podcastindex-proxy` kopieren.
-2. Arbeits- und Log-Verzeichnisse anlegen:
-
-```sh
-mkdir -p /usr/local/var/podcastindex-proxy
-mkdir -p /usr/local/var/log
-```
-
-3. Die Beispiel-`plist` anpassen und nach `~/Library/LaunchAgents/` oder `/Library/LaunchDaemons/` kopieren.
-4. Dienst laden:
-
-```sh
-launchctl load ~/Library/LaunchAgents/de.mediathekview.podcastindex-proxy.plist
-```
 
 ### Linux mit `systemd`
 
 1. Binary nach `/opt/podcastindex-proxy/podcastindex-proxy` kopieren.
-2. Eigenen Dienstnutzer anlegen, falls gewünscht.
+2. Dienstnutzer und Gruppe `podcastindex-proxy` anlegen oder die Unit auf einen vorhandenen Benutzer anpassen.
 3. Optional `/etc/podcastindex-proxy.conf` mit Key und Secret anlegen.
 4. Für Betrieb hinter einem Reverse Proxy am besten intern nur auf `127.0.0.1:18080` lauschen:
 
@@ -113,6 +107,15 @@ PODCASTINDEX_PROXY_PORT=18080
 sudo systemctl daemon-reload
 sudo systemctl enable --now podcastindex-proxy
 ```
+
+Beispiel für einen Systembenutzer:
+
+```sh
+sudo useradd --system --home-dir /opt/podcastindex-proxy --shell /usr/sbin/nologin podcastindex-proxy
+sudo chown -R podcastindex-proxy:podcastindex-proxy /opt/podcastindex-proxy
+```
+
+Wenn `systemctl status` mit `217/USER` fehlschlägt, stimmt der in der Unit-Datei eingetragene Benutzer oder die Gruppe nicht.
 
 ### Reverse Proxy mit `caddy`
 
@@ -214,15 +217,22 @@ Antwort:
 }
 ```
 
+Hinweise:
+
+- `feedLimit` und `episodeLimit` werden serverseitig auf sinnvolle Grenzen begrenzt.
+- Podcastindex liefert `duration` nicht konsistent. Der Proxy akzeptiert sowohl Strings als auch numerische Werte.
+
 ## Projektstruktur
 
 - `cmd/podcastindex-proxy`
-  Startpunkt des HTTP-Servers
+  Startpunkt des HTTP-Servers und `http.Server`-Initialisierung
 - `internal/config`
-  Konfiguration über Umgebungsvariablen
-- `internal/podcastindex`
-  Authentifizierte Zugriffe auf Podcastindex
-- `internal/search`
-  Feed- und Episoden-Suche sowie Datenbereinigung
+  Konfiguration über Umgebung und Konfigurationsdatei
 - `internal/api`
-  HTTP-Handler und JSON-Modelle
+  HTTP-Routing, Request-Parsing und JSON-Antworten
+- `internal/podcastindex`
+  Authentifizierte Zugriffe auf Podcastindex und API-Modelle
+- `internal/search`
+  Suchorchestrierung, Mapping und Text-/Dauer-Normalisierung
+- `internal/model`
+  Response-Modelle des Proxy-API
