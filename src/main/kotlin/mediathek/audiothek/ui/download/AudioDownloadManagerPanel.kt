@@ -21,6 +21,7 @@ package mediathek.audiothek.ui.download
 import mediathek.audiothek.download.AudioDownloadTaskSnapshot
 import mediathek.audiothek.download.AudioDownloadTaskState
 import mediathek.swing.IconUtils
+import org.apache.commons.lang3.SystemUtils
 import org.kordamp.ikonli.materialdesign2.MaterialDesignC
 import org.kordamp.ikonli.materialdesign2.MaterialDesignP
 import org.kordamp.ikonli.materialdesign2.MaterialDesignR
@@ -196,6 +197,7 @@ private class AudioDownloadRowPanel(
     removeActionListener: ((String) -> Unit)?
 ) : JPanel(GridBagLayout()) {
     private var currentItem: AudioDownloadItem = item
+    private val showProgressText = !SystemUtils.IS_OS_MAC_OSX
     private val nameValueLabel = JLabel()
     private val statusValueLabel = JLabel()
     private val progressBar = JProgressBar(0, 100)
@@ -229,7 +231,7 @@ private class AudioDownloadRowPanel(
         maximumSize = Dimension(Int.MAX_VALUE, 96)
         alignmentX = LEFT_ALIGNMENT
 
-        progressBar.isStringPainted = true
+        progressBar.isStringPainted = showProgressText
         primaryButton.addActionListener { primaryActionListener?.invoke(currentItem.id) }
         secondaryButton.addActionListener { secondaryActionListener?.invoke(currentItem.id) }
         val gbc = GridBagConstraints().apply {
@@ -306,7 +308,7 @@ private class AudioDownloadRowPanel(
             item.state != AudioDownloadTaskState.FAILED
         progressBar.isIndeterminate = item.progressIndeterminate
         progressBar.value = item.progressPercent
-        progressBar.string = item.progressText
+        progressBar.string = if (showProgressText) item.progressText else null
 
         val primaryIcon = when (item.primaryLabel) {
             "Pause" -> pauseIcon
