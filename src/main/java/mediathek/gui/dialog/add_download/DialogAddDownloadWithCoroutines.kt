@@ -163,10 +163,13 @@ class DialogAddDownloadWithCoroutines(
         EscapeKeyHandler.installHandler(this) { this.dispose() }
 
         setupUI()
+        updateMinimumSizeFromPackedLayout()
+        constrainPackedSizeToScreen()
 
-        setupMinimumSizeForOs()
-        restoreWindowSizeFromConfig() //only install on windows and linux, macOS works...
-        installMinResizePreventer()
+        if (!SystemUtils.IS_OS_MAC_OSX) {
+            restoreWindowSizeFromConfig()
+            constrainPackedSizeToScreen()
+        }
 
         setLocationRelativeTo(parent)
 
@@ -223,6 +226,14 @@ class DialogAddDownloadWithCoroutines(
         setupInfoFileCreationCheckBox()
 
         nameGeaendert = false
+    }
+
+    private fun updateMinimumSizeFromPackedLayout() {
+        pack()
+        val packedSize = size
+        minimumDialogWidth = max(minimumDialogWidth, packedSize.width)
+        minimumDialogHeight = packedSize.height
+        minimumSize = Dimension(minimumDialogWidth, minimumDialogHeight)
     }
 
     private fun prepareDownload(startAutomatically: Boolean) {
@@ -484,23 +495,6 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
-    /** Prevents that a dialog can be resized smaller than its minimum dimensions.
-     * Needed on Windows, but not macOS and Linux. */
-    private fun installMinResizePreventer() {
-        if (!SystemUtils.IS_OS_WINDOWS) return
-
-        addComponentListener(object : ComponentAdapter() {
-            override fun componentResized(e: ComponentEvent?) {
-                val size = getSize()
-                val w = max(size.width, minimumSize.width)
-                val h = max(size.height, minimumSize.height)
-                if (w != size.width || h != size.height) {
-                    setSize(w, h)
-                }
-            }
-        })
-    }
-
     private fun restoreWindowSizeFromConfig() {
         val config = ApplicationConfiguration.getConfiguration()
         try {
@@ -526,18 +520,6 @@ class DialogAddDownloadWithCoroutines(
         }
         lblStatus.setText("")
         lblAudioInfo.setText("")
-    }
-
-    private fun setupMinimumSizeForOs() {
-        if (SystemUtils.IS_OS_WINDOWS)
-            minimumDialogHeight -= 150
-        else if (SystemUtils.IS_OS_LINUX) {
-            minimumDialogHeight -= 50
-        }
-        else if (SystemUtils.IS_OS_MAC_OSX) {
-            minimumDialogHeight -= 150
-        }
-        minimumSize = Dimension(minimumDialogWidth, minimumDialogHeight)
     }
 
     private suspend fun fetchLiveFilmInfo(resolution: FilmResolution.Enum) {

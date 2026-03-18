@@ -286,6 +286,8 @@ public class DialogAddDownload extends JDialog {
 
         //---- jTextFieldSender ----
         jTextFieldSender.setEditable(false);
+        jTextFieldSender.setColumns(30);
+        jTextFieldSender.setMinimumSize(new Dimension(0, 26));
         jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | Font.BOLD));
         jTextFieldSender.setText(" ARD: Tatort, ...");
         jTextFieldSender.setBorder(new TitledBorder("Film"));
@@ -323,4 +325,17 @@ public class DialogAddDownload extends JDialog {
     protected JLabel lblAudioInfo;
     protected JTextField jTextFieldSender;
     // End of variables declaration//GEN-END:variables
+
+    protected void constrainPackedSizeToScreen() {
+        var graphicsConfiguration = getGraphicsConfiguration();
+        Rectangle usableBounds = graphicsConfiguration != null
+                ? graphicsConfiguration.getBounds().intersection(GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds())
+                : GraphicsEnvironment.getLocalGraphicsEnvironment().getMaximumWindowBounds();
+
+        int boundedWidth = (int) Math.min(getWidth(), usableBounds.getWidth());
+        int boundedHeight = (int) Math.min(getHeight(), usableBounds.getHeight());
+        if (boundedWidth != getWidth() || boundedHeight != getHeight()) {
+            setSize(boundedWidth, boundedHeight);
+        }
+    }
 }
