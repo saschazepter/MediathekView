@@ -71,7 +71,10 @@ class DialogAddDownloadWithCoroutines(
         data class Fetch(val resolution: FilmResolution.Enum) : LiveInfoCommand
     }
 
-    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+    private val coroutineScopeDelegate = lazy(LazyThreadSafetyMode.NONE) {
+        CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+    }
+    private val coroutineScope by coroutineScopeDelegate
     private val liveInfoRequests = MutableSharedFlow<LiveInfoCommand>(
         extraBufferCapacity = 1,
         onBufferOverflow = BufferOverflow.DROP_OLDEST
@@ -185,7 +188,9 @@ class DialogAddDownloadWithCoroutines(
     }
 
     override fun dispose() {
-        coroutineScope.cancel()
+        if (coroutineScopeDelegate.isInitialized()) {
+            coroutineScope.cancel()
+        }
         super.dispose()
     }
 

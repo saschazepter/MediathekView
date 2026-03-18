@@ -152,6 +152,10 @@ public class DialogAddDownload extends JDialog {
                 //---- jLabel1 ----
                 jLabel1.setText("Zielpfad:");
 
+                //---- jTextFieldName ----
+                jTextFieldName.setColumns(30);
+                jTextFieldName.setMinimumSize(new Dimension(0, 26));
+
                 //---- jLabelSet ----
                 jLabelSet.setText("Set:");
 
@@ -195,7 +199,7 @@ public class DialogAddDownload extends JDialog {
                                 .addGroup(jPanel7Layout.createSequentialGroup()
                                     .addComponent(jLabel4)
                                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jTextFieldName)))
+                                    .addComponent(jTextFieldName, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                             .addContainerGap())
                 );
                 jPanel7Layout.setVerticalGroup(

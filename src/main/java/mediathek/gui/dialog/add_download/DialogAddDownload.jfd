@@ -114,6 +114,8 @@ new FormModel {
 					} )
 					add( new FormComponent( "javax.swing.JTextField" ) {
 						name: "jTextFieldName"
+						"columns": 30
+						"minimumSize": new java.awt.Dimension( 0, 26 )
 						auxiliary() {
 							"JavaCodeGenerator.variableModifiers": 4
 						}
