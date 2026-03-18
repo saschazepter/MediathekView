@@ -2,7 +2,7 @@ package mediathek.gui.actions.export
 
 import mediathek.config.Konstanten
 import mediathek.mainwindow.MediathekGui
-import mediathek.tool.FileDialogs.Companion.chooseSaveFileLocation
+import mediathek.tool.FileDialogs.chooseSaveFileLocation
 import java.awt.event.ActionEvent
 import java.beans.PropertyChangeEvent
 import javax.swing.AbstractAction

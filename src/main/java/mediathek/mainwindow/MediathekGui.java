@@ -2,6 +2,8 @@ package mediathek.mainwindow;
 
 import com.formdev.flatlaf.extras.components.FlatButton;
 import mediathek.Main;
+import mediathek.audiothek.repository.AudioRepository;
+import mediathek.audiothek.ui.main.AudiothekPanel;
 import mediathek.config.*;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.controller.starter.Start;
@@ -139,6 +141,9 @@ public class MediathekGui extends JFrame {
     private final ShowLuceneTutorialAction showLuceneTutorialAction = new ShowLuceneTutorialAction(this);
     private final LivestreamPanel tabLivestreams = new LivestreamPanel();
     private final ToggleZappLivestreamsTabAction toggleZappLivestreamsTabAction = new ToggleZappLivestreamsTabAction(tabLivestreams);
+    private final AudioRepository audiothekRepository = new AudioRepository();
+    private final AudiothekPanel tabAudiothek = new AudiothekPanel(audiothekRepository);
+    private final ToggleAudiothekTabAction toggleAudiothekTabAction = new ToggleAudiothekTabAction(tabAudiothek);
     private final LogDialog logWindow = new LogDialog(this);
     public FixedRedrawStatusBar swingStatusBar;
     public GuiFilme tabFilme;
@@ -264,7 +269,7 @@ public class MediathekGui extends JFrame {
                     return false;
                 }
             }, Daten.getInstance().getDecoratedPool());
-            future.whenCompleteAsync((result, throwable) -> {
+            future.whenCompleteAsync((_, throwable) -> {
                 if (throwable == null) {
                     try {
                         SwingUtilities.invokeAndWait(() -> quitApplication(true));
@@ -817,6 +822,7 @@ public class MediathekGui extends JFrame {
         tabbedPane.addTab(GuiFilme.NAME, tabFilme);
         tabbedPane.addTab(GuiDownloads.NAME, tabDownloads);
         installLivestreamsTab();
+        installAudiothekTab();
 
         if (ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.APPLICATION_RESTORE_SELECTED_TAB, false))
             tabbedPane.restoreSavedTabPosition();
@@ -833,6 +839,15 @@ public class MediathekGui extends JFrame {
         tabLivestreams.putClientProperty("JTabbedPane.tabCloseCallback", (IntConsumer) _ -> toggleZappLivestreamsTabAction.actionPerformed(null));
         if (show) {
             tabbedPane.addTab("zapp Livestreams", tabLivestreams);
+        }
+    }
+
+    protected void installAudiothekTab() {
+        var show = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.APPLICATION_UI_SHOW_AUDIOTHEK, true);
+        tabAudiothek.putClientProperty("JTabbedPane.tabClosable", true);
+        tabAudiothek.putClientProperty("JTabbedPane.tabCloseCallback", (IntConsumer) _ -> toggleAudiothekTabAction.actionPerformed(null));
+        if (show) {
+            tabbedPane.addTab("Audiothek", tabAudiothek);
         }
     }
 
@@ -998,6 +1013,7 @@ public class MediathekGui extends JFrame {
     private void createViewMenu() {
         tabFilme.installViewMenuEntry(jMenuAnsicht);
         jMenuAnsicht.add(toggleZappLivestreamsTabAction);
+        jMenuAnsicht.add(toggleAudiothekTabAction);
         jMenuAnsicht.addSeparator();
         if (!SystemUtils.IS_OS_MAC_OSX) {
             jMenuAnsicht.add(showMemoryMonitorAction);
@@ -1159,6 +1175,23 @@ public class MediathekGui extends JFrame {
             setShutdownRequested(dialogBeenden.isShutdownRequested());
         }
 
+        if (tabAudiothek.activeDownloadCount() > 0) {
+            var activeAudiothekDownloads = tabAudiothek.activeDownloadCount();
+            var result = JOptionPane.showConfirmDialog(
+                    this,
+                    activeAudiothekDownloads == 1
+                            ? "Es ist noch ein Audiothek-Download aktiv.\nTrotzdem beenden?"
+                            : "Es sind noch " + activeAudiothekDownloads + " Audiothek-Downloads aktiv.\nTrotzdem beenden?",
+                    Konstanten.PROGRAMMNAME,
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.WARNING_MESSAGE
+            );
+            if (result != JOptionPane.YES_OPTION) {
+                return false;
+            }
+            tabAudiothek.pauseDownloadsForShutdown();
+        }
+
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
         if (automaticFilmlistUpdate != null)
@@ -1198,6 +1231,9 @@ public class MediathekGui extends JFrame {
 
         logger.trace("Save Tab Download data.");
         tabDownloads.tabelleSpeichern();
+
+        logger.trace("Disposing Tab Audiothek");
+        tabAudiothek.disposePanel();
 
         logger.trace("Stop all downloads.");
         stopDownloads();
@@ -1335,6 +1371,35 @@ public class MediathekGui extends JFrame {
             else {
                 tabbedPane.remove(tabIndex);
                 ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.APPLICATION_UI_SHOW_ZAPP_LIVESTREAMS, false);
+            }
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            toggleTab();
+        }
+    }
+
+    public class ToggleAudiothekTabAction extends AbstractAction {
+        private static final String TAB_TITLE = "Audiothek Tab ein-/ausblenden";
+        private final AudiothekPanel audiothekPanel;
+
+        public ToggleAudiothekTabAction(AudiothekPanel audiothekPanel) {
+            this.audiothekPanel = audiothekPanel;
+            putValue(Action.NAME, TAB_TITLE);
+        }
+
+        private void toggleTab() {
+            var tabIndex = tabbedPane.indexOfComponent(audiothekPanel);
+            if (tabIndex == -1) {
+                audiothekPanel.putClientProperty("JTabbedPane.tabClosable", true);
+                audiothekPanel.putClientProperty("JTabbedPane.tabCloseCallback", (IntConsumer) _ -> actionPerformed(null));
+                tabbedPane.add("Audiothek", audiothekPanel);
+                ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.APPLICATION_UI_SHOW_AUDIOTHEK, true);
+            }
+            else {
+                tabbedPane.remove(tabIndex);
+                ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.APPLICATION_UI_SHOW_AUDIOTHEK, false);
             }
         }
 

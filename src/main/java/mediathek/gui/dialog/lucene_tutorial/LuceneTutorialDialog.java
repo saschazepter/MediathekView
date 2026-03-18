@@ -34,12 +34,18 @@ public final class LuceneTutorialDialog extends JDialog {
     private static final Logger logger = LogManager.getLogger();
     private static final String FALLBACK_HTML = """
             <html><body>
-            <p>Die Lucene-Anleitung konnte nicht geladen werden.</p>
+            <p>Die Hilfe konnte nicht geladen werden.</p>
             </body></html>
             """;
+    private final String markdownResourcePath;
 
     public LuceneTutorialDialog(Window owner) {
-        super(owner, "Lucene-Suchsyntax", ModalityType.MODELESS);
+        this(owner, "Lucene-Suchsyntax", Konstanten.PFAD_LUCENE_TUTORIAL_MARKDOWN);
+    }
+
+    public LuceneTutorialDialog(Window owner, String title, String markdownResourcePath) {
+        super(owner, title, ModalityType.MODELESS);
+        this.markdownResourcePath = markdownResourcePath;
         initComponents();
         loadTutorial();
         EscapeKeyHandler.installHandler(this, this::dispose);
@@ -49,23 +55,23 @@ public final class LuceneTutorialDialog extends JDialog {
         try {
             var markdown = loadMarkdownResource();
             if (markdown != null) {
-                logger.trace("Rendering Lucene tutorial from Markdown resource {}", Konstanten.PFAD_LUCENE_TUTORIAL_MARKDOWN);
+                logger.trace("Rendering Markdown help from resource {}", markdownResourcePath);
                 tutorialPane.setHtml(LuceneTutorialRenderer.renderMarkdown(markdown));
                 return;
             }
 
-            logger.error("Lucene tutorial Markdown resource could not be found");
-            logger.trace("Showing inline fallback because no Lucene tutorial resource could be loaded");
+            logger.error("Markdown help resource could not be found: {}", markdownResourcePath);
+            logger.trace("Showing inline fallback because no Markdown help resource could be loaded");
             showFallbackHtml();
         } catch (Exception ex) {
-            logger.error("Failed to load Lucene tutorial resource", ex);
-            logger.trace("Showing inline fallback because loading the Lucene tutorial resource failed");
+            logger.error("Failed to load Markdown help resource {}", markdownResourcePath, ex);
+            logger.trace("Showing inline fallback because loading the Markdown help resource failed");
             showFallbackHtml();
         }
     }
 
     private String loadMarkdownResource() throws Exception {
-        try (InputStream markdownStream = getClass().getResourceAsStream(Konstanten.PFAD_LUCENE_TUTORIAL_MARKDOWN)) {
+        try (InputStream markdownStream = getClass().getResourceAsStream(markdownResourcePath)) {
             if (markdownStream == null) {
                 return null;
             }

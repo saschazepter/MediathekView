@@ -1,5 +1,6 @@
 package mediathek.controller.history
 
+import mediathek.audiothek.model.AudioEntry
 import mediathek.config.Daten
 import mediathek.daten.DatenFilm
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
@@ -24,6 +25,8 @@ class SeenHistoryController : AutoCloseable {
     private var insertStatement: PreparedStatement
     private val dataSource: SQLiteDataSource = SqlDatabaseConfig.dataSource
     private var deleteStatement: PreparedStatement
+    private var existingUrlProbeClearStatement: PreparedStatement
+    private var existingUrlProbeInsertStatement: PreparedStatement
     private var seenStatement: PreparedStatement
 
     /**
@@ -87,11 +90,11 @@ class SeenHistoryController : AutoCloseable {
             return
         }
 
-        if (film.isLivestream) return
-        if (hasBeenSeen(film)) return
+        val entry = film.toSeenHistoryEntry() ?: return
+        if (hasBeenSeenUrl(entry.url)) return
         try {
-            writeToDatabase(film)
-            addToPreparedCache(film.urlNormalQuality)
+            writeToDatabase(entry)
+            addToPreparedCache(entry.url)
             Daten.getInstance().listeBookmarkList.updateSeen(true, film)
 
             sendChangeMessage()
@@ -104,26 +107,25 @@ class SeenHistoryController : AutoCloseable {
         try {
             val candidates = list
                 .asSequence()
-                .filterNot { it.isLivestream }
-                .filter { it.urlNormalQuality.isNotBlank() }
-                .distinctBy { it.urlNormalQuality }
+                .mapNotNull { film -> film.toSeenHistoryEntry()?.let { film to it } }
+                .distinctBy { (_, entry) -> entry.url }
                 .toList()
 
             if (candidates.isNotEmpty()) {
-                val existingUrls = findExistingUrls(candidates.map { it.urlNormalQuality })
+                val existingUrls = findExistingUrls(candidates.map { (_, entry) -> entry.url })
                 val insertedUrls = ArrayList<String>(candidates.size)
 
                 inTransaction {
-                    for (film in candidates) {
-                        if (film.urlNormalQuality in existingUrls) {
+                    for ((_, entry) in candidates) {
+                        if (entry.url in existingUrls) {
                             continue
                         }
 
-                        insertStatement.setString(1, film.thema)
-                        insertStatement.setString(2, film.title)
-                        insertStatement.setString(3, film.urlNormalQuality)
+                        insertStatement.setString(1, entry.theme)
+                        insertStatement.setString(2, entry.title)
+                        insertStatement.setString(3, entry.url)
                         insertStatement.addBatch()
-                        insertedUrls.add(film.urlNormalQuality)
+                        insertedUrls.add(entry.url)
                     }
                     insertStatement.executeBatch()
                 }
@@ -137,6 +139,39 @@ class SeenHistoryController : AutoCloseable {
             sendChangeMessage()
         } catch (ex: SQLException) {
             logger.error("markSeen", ex)
+        }
+    }
+
+    fun markSeen(entry: AudioEntry?) {
+        if (entry == null) {
+            logger.warn("markSeen: no audio entry found")
+            return
+        }
+
+        val historyEntry = entry.toSeenHistoryEntry() ?: return
+        if (hasBeenSeenUrl(historyEntry.url)) return
+        try {
+            writeToDatabase(historyEntry)
+            addToPreparedCache(historyEntry.url)
+            sendChangeMessage()
+        } catch (ex: SQLException) {
+            logger.error("markSeen audio", ex)
+        }
+    }
+
+    fun markUnseen(entry: AudioEntry) {
+        val url = entry.audioUrl?.toString().orEmpty()
+        if (url.isBlank()) {
+            return
+        }
+
+        try {
+            deleteStatement.setString(1, url)
+            deleteStatement.executeUpdate()
+            removeFromPreparedCache(url)
+            sendChangeMessage()
+        } catch (ex: SQLException) {
+            logger.error("markUnseen audio", ex)
         }
     }
 
@@ -218,15 +253,44 @@ class SeenHistoryController : AutoCloseable {
         return urlCache.contains(film.urlNormalQuality)
     }
 
+    fun hasBeenSeenFromCache(entry: AudioEntry): Boolean {
+        if (!memCachePrepared)
+            prepareMemoryCache()
+
+        val url = entry.audioUrl?.toString().orEmpty()
+        return url.isNotBlank() && urlCache.contains(url)
+    }
+
     fun hasBeenSeen(film: DatenFilm): Boolean {
         if (memCachePrepared) {
             return urlCache.contains(film.urlNormalQuality)
         }
 
+        return hasBeenSeenUrl(film.urlNormalQuality)
+    }
+
+    fun hasBeenSeen(entry: AudioEntry): Boolean {
+        val url = entry.audioUrl?.toString().orEmpty()
+        if (url.isBlank()) {
+            return false
+        }
+
+        if (memCachePrepared) {
+            return urlCache.contains(url)
+        }
+
+        return hasBeenSeenUrl(url)
+    }
+
+    private fun hasBeenSeenUrl(url: String): Boolean {
+        if (url.isBlank()) {
+            return false
+        }
+
         var result: Boolean
 
         try {
-            seenStatement.setString(1, film.urlNormalQuality)
+            seenStatement.setString(1, url)
             seenStatement.executeQuery().use {
                 it.next()
                 val total = it.getInt(1)
@@ -270,14 +334,14 @@ class SeenHistoryController : AutoCloseable {
     /**
      * Write an entry to the database.
      *
-     * @param film the film data to be written.
+     * @param entry the history data to be written.
      * @throws SQLException .
      */
     @Throws(SQLException::class)
-    private fun writeToDatabase(film: DatenFilm) {
-        insertStatement.setString(1, film.thema)
-        insertStatement.setString(2, film.title)
-        insertStatement.setString(3, film.urlNormalQuality)
+    private fun writeToDatabase(entry: SeenHistoryEntry) {
+        insertStatement.setString(1, entry.theme)
+        insertStatement.setString(2, entry.title)
+        insertStatement.setString(3, entry.url)
         // write each entry into database
         insertStatement.executeUpdate()
     }
@@ -357,18 +421,30 @@ class SeenHistoryController : AutoCloseable {
             return emptySet()
         }
 
-        val existingUrls = HashSet<String>(urls.size)
-        for (chunk in urls.chunked(MAX_SQL_VARIABLES)) {
-            val placeholders = chunk.joinToString(",") { "?" }
-            val sql = "SELECT url FROM seen_history WHERE url IN ($placeholders)"
-            connection.prepareStatement(sql).use { statement ->
-                chunk.forEachIndexed { index, url -> statement.setString(index + 1, url) }
-                statement.executeQuery().use { rs ->
+        val existingUrls = LinkedHashSet<String>(urls.size)
+        val candidates = urls.asSequence().filter(String::isNotBlank).distinct().toList()
+        if (candidates.isEmpty()) {
+            return emptySet()
+        }
+
+        inTransaction {
+            existingUrlProbeClearStatement.executeUpdate()
+
+            for (url in candidates) {
+                existingUrlProbeInsertStatement.setString(1, url)
+                existingUrlProbeInsertStatement.addBatch()
+            }
+            existingUrlProbeInsertStatement.executeBatch()
+
+            connection.createStatement().use { statement ->
+                statement.executeQuery(FIND_EXISTING_URLS_SQL).use { rs ->
                     while (rs.next()) {
                         existingUrls.add(rs.getString(1))
                     }
                 }
             }
+
+            existingUrlProbeClearStatement.executeUpdate()
         }
         return existingUrls
     }
@@ -384,6 +460,8 @@ class SeenHistoryController : AutoCloseable {
         try {
             insertStatement.close()
             deleteStatement.close()
+            existingUrlProbeClearStatement.close()
+            existingUrlProbeInsertStatement.close()
             seenStatement.close()
             connection.close()
 
@@ -399,10 +477,17 @@ class SeenHistoryController : AutoCloseable {
         private val logger = LogManager.getLogger()
         private const val INSERT_SQL = "INSERT OR IGNORE INTO seen_history(thema,titel,url) values (?,?,?)"
         private const val DELETE_SQL = "DELETE FROM seen_history WHERE url = ?"
+        private const val CREATE_EXISTING_URL_PROBE_TABLE_SQL = "CREATE TEMP TABLE IF NOT EXISTS temp_seen_history_probe(url TEXT PRIMARY KEY)"
+        private const val CLEAR_EXISTING_URL_PROBE_SQL = "DELETE FROM temp_seen_history_probe"
+        private const val INSERT_EXISTING_URL_PROBE_SQL = "INSERT OR IGNORE INTO temp_seen_history_probe(url) VALUES (?)"
+        private const val FIND_EXISTING_URLS_SQL = """
+            SELECT sh.url
+            FROM seen_history sh
+            INNER JOIN temp_seen_history_probe probe ON probe.url = sh.url
+        """
         private const val SEEN_SQL = "SELECT COUNT(url) AS total FROM seen_history WHERE url = ?"
         private const val LASTRUN = "database.seen_history.maintenance.lastRun"
         private const val MAX_DAYS: Long = 30
-        private const val MAX_SQL_VARIABLES = 900
         private val CACHE_LOCK = Any()
         private val urlCache = ConcurrentHashMap.newKeySet<String>()
         @Volatile private var memCachePrepared: Boolean = false
@@ -501,9 +586,14 @@ class SeenHistoryController : AutoCloseable {
 
             performSqliteSetup()
             ensureUniqueUrlIndex()
+            connection.createStatement().use { statement ->
+                statement.executeUpdate(CREATE_EXISTING_URL_PROBE_TABLE_SQL)
+            }
 
             insertStatement = connection.prepareStatement(INSERT_SQL)
             deleteStatement = connection.prepareStatement(DELETE_SQL)
+            existingUrlProbeClearStatement = connection.prepareStatement(CLEAR_EXISTING_URL_PROBE_SQL)
+            existingUrlProbeInsertStatement = connection.prepareStatement(INSERT_EXISTING_URL_PROBE_SQL)
             seenStatement = connection.prepareStatement(SEEN_SQL)
 
             installShutdownHook()
@@ -512,4 +602,32 @@ class SeenHistoryController : AutoCloseable {
             throw IllegalStateException("Could not initialize seen history controller", ex)
         }
     }
+}
+
+private data class SeenHistoryEntry(
+    val theme: String,
+    val title: String,
+    val url: String
+)
+
+private fun DatenFilm.toSeenHistoryEntry(): SeenHistoryEntry? {
+    if (isLivestream) {
+        return null
+    }
+
+    val url = urlNormalQuality.takeIf(String::isNotBlank) ?: return null
+    return SeenHistoryEntry(
+        theme = thema,
+        title = title,
+        url = url
+    )
+}
+
+private fun AudioEntry.toSeenHistoryEntry(): SeenHistoryEntry? {
+    val url = audioUrl?.toString()?.takeIf(String::isNotBlank) ?: return null
+    return SeenHistoryEntry(
+        theme = theme,
+        title = title,
+        url = url
+    )
 }

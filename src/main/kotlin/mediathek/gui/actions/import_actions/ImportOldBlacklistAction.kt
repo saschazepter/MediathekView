@@ -2,7 +2,7 @@ package mediathek.gui.actions.import_actions
 
 import mediathek.config.Konstanten
 import mediathek.mainwindow.MediathekGui
-import mediathek.tool.FileDialogs.Companion.chooseLoadFileLocation
+import mediathek.tool.FileDialogs.chooseLoadFileLocation
 import mediathek.tool.SwingErrorDialog
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction

@@ -63,6 +63,7 @@ public class Konstanten {
     public static final HttpUrl ROUTER_BASE_URL = HttpUrl.get("https://liste.mediathekview.de");
     public static final HttpUrl WEBSITE_BASE_URL = HttpUrl.get("https://mediathekview.de");
     public static final HttpUrl URL_MEDIATHEKVIEW_RESOURCES = HttpUrl.get("https://res.mediathekview.de");
+    public static final String AUDIOTHEK_ONLINE_SEARCH_PROXY_URL = "https://audiothek.crystalpalace.info";
     public static final String PSET_PROGRAM_GROUP_LIST_PATH = "programmgruppen13/programmgruppen.xml";
     public static final String PROGRAM_VERSION_PATH = "prog-info-13.xml";
     public static final String ADRESSE_DOWNLOAD = "https://mediathekview.de/download/";
@@ -100,4 +101,5 @@ public class Konstanten {
     public static final String PFAD_HILFETEXT_RESET_SET = "/mediathek/file/hilfetext_reset_set.txt";
     public static final String PFAD_HILFETEXT_DIALOG_ADD_ABO = "/mediathek/file/hilfetext_dialog_add_abo.txt";
     public static final String PFAD_LUCENE_TUTORIAL_MARKDOWN = "/mediathek/file/lucene_tutorial.md";
+    public static final String PFAD_AUDIOTHEK_SUCHE_HILFE_MARKDOWN = "/mediathek/file/hilfetext_audiothek_suche.md";
 }

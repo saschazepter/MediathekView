@@ -21,17 +21,25 @@ package mediathek.swing
 import java.awt.Color
 import java.awt.Font
 import java.awt.Graphics
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseWheelEvent
+import java.awt.event.MouseWheelListener
 import javax.swing.JComponent
 
 class OverlayPanel(private val message: String) : JComponent() {
+    private val backgroundColor = Color(192, 192, 192, 128)
 
     init {
         isOpaque = false
+        val mouseBlocker = object : MouseAdapter() {}
+        addMouseListener(mouseBlocker)
+        addMouseMotionListener(mouseBlocker)
+        addMouseWheelListener(MouseWheelListener { event: MouseWheelEvent -> event.consume() })
     }
 
     override fun paintComponent(g: Graphics) {
         super.paintComponent(g)
-        g.color = Color.LIGHT_GRAY
+        g.color = backgroundColor
         g.fillRect(0, 0, width, height)
 
         g.color = Color.BLACK
