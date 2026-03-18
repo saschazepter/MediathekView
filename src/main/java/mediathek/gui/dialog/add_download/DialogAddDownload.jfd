@@ -3,18 +3,20 @@ JFDML JFormDesigner: "8.3" encoding: "UTF-8"
 new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
-		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-			"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel1::t:::x, comp jTextFieldSender::l:::x, comp panel2::l:::x, comp jPanelSize::l:::x}, space :::p}}"
-			"$verticalGroup": "par l {seq l {space :::p, comp jTextFieldSender:::p::p, space :::p, comp jPanel1:::p::p, space :::p, comp jPanelSize:::::x, space :::p, comp panel2:::p::p, space :::p}}"
+		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+			"$layoutConstraints": "insets dialog,hidemode 3,fillx"
+			"$columnConstraints": "[grow,fill]"
+			"$rowConstraints": "[][][grow,fill][]"
 		} ) {
 			name: "this"
 			"defaultCloseOperation": 2
 			"title": "Film speichern"
 			"minimumSize": new java.awt.Dimension( 660, 420 )
 			"preferredSize": new java.awt.Dimension( 660, 420 )
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq t {comp panel1:::::x, space :::p}}"
-				"$verticalGroup": "par l {seq l {space :::p, comp panel1:::p::p, space :::p}}"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "insets 0,hidemode 3,fillx"
+				"$columnConstraints": "[grow,fill]"
+				"$rowConstraints": "[]"
 			} ) {
 				name: "panel2"
 				auxiliary() {
@@ -56,11 +58,16 @@ new FormModel {
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 2 0"
 					} )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0,growx,alignx right"
 				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 3,growx"
 			} )
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel2::::654:x, comp jPanel7:::::x}, space :::p}}"
-				"$verticalGroup": "par l {seq l {space :::p, comp jPanel7:::p::p, space :p:12:p, comp jPanel2:::p::p, space :::x}}"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "insets 0,hidemode 3,fillx"
+				"$columnConstraints": "[grow,fill]"
+				"$rowConstraints": "[][12][]"
 			} ) {
 				name: "jPanel1"
 				auxiliary() {
@@ -95,37 +102,26 @@ new FormModel {
 							"JavaCodeGenerator.variableModifiers": 4
 						}
 					} )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 2,growx"
 				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-					"$horizontalGroup": "par l {seq {space :::p, par l {seq l {par l {comp jLabelSet::l:p::p, comp jLabel1::l:p::p}, space :p:20:p, par l {comp jPanel4:::::x, comp jComboBoxPset:::::x}}, seq l {comp jLabel4:::p::p, space :::p, comp jTextFieldName:::::x:2}}, space :::p}}"
-					"$verticalGroup": "par l {seq {space :::p, par b {comp jLabelSet::b:p::p, comp jComboBoxPset::b:p::p}, space u:p::p, par t {comp jPanel4:::p::p, comp jLabel1:::p::p}, space :::p, par c {comp jLabel4::c:p::p, comp jTextFieldName::c:p::p}, space :::p}}"
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "insets 0,hidemode 3,fillx,gap 5 8"
+					"$columnConstraints": "[right][grow,fill]"
+					"$rowConstraints": "[][][]"
 				} ) {
 					name: "jPanel7"
-					"maximumSize": new java.awt.Dimension( 606, 32767 )
 					auxiliary() {
 						"JavaCodeGenerator.variableLocal": true
 					}
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "jLabel1"
-						"text": "Zielpfad:"
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-					} )
-					add( new FormComponent( "javax.swing.JTextField" ) {
-						name: "jTextFieldName"
-						"columns": 30
-						"minimumSize": new java.awt.Dimension( 0, 26 )
-						auxiliary() {
-							"JavaCodeGenerator.variableModifiers": 4
-						}
-					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "jLabelSet"
 						"text": "Set:"
 						auxiliary() {
 							"JavaCodeGenerator.variableLocal": true
 						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 0"
 					} )
 					add( new FormComponent( "javax.swing.JComboBox" ) {
 						name: "jComboBoxPset"
@@ -134,15 +130,23 @@ new FormModel {
 							"JavaCodeGenerator.typeParameters": "String"
 							"JavaCodeGenerator.variableModifiers": 4
 						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 0,growx"
 					} )
 					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "jLabel4"
-						"text": "Dateiname:"
+						name: "jLabel1"
+						"text": "Zielpfad:"
 						auxiliary() {
 							"JavaCodeGenerator.variableLocal": true
 						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 1"
 					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class javax.swing.BoxLayout ) ) {
+					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+						"$layoutConstraints": "insets 0,hidemode 3,fillx,gap 5 0"
+						"$columnConstraints": "[grow,fill][pref!][pref!]"
+						"$rowConstraints": "[]"
+					} ) {
 						name: "jPanel4"
 						auxiliary() {
 							"JavaCodeGenerator.variableLocal": true
@@ -155,6 +159,8 @@ new FormModel {
 								"JavaCodeGenerator.typeParameters": "String"
 								"JavaCodeGenerator.variableModifiers": 4
 							}
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 0 0,growx,pushx"
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "jButtonZiel"
@@ -163,6 +169,8 @@ new FormModel {
 							auxiliary() {
 								"JavaCodeGenerator.variableModifiers": 4
 							}
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 1 0"
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "jButtonDelHistory"
@@ -171,19 +179,79 @@ new FormModel {
 							auxiliary() {
 								"JavaCodeGenerator.variableModifiers": 4
 							}
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 0"
 						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 1,growx"
 					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "jLabel4"
+						"text": "Dateiname:"
+						auxiliary() {
+							"JavaCodeGenerator.variableLocal": true
+						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 2"
+					} )
+					add( new FormComponent( "javax.swing.JTextField" ) {
+						name: "jTextFieldName"
+						"columns": 30
+						"minimumSize": new java.awt.Dimension( 0, 26 )
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 2,growx,pushx"
+					} )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0,growx"
 				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 1,growx"
 			} )
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-				"$horizontalGroup": "par l {seq {space :::p, par l {comp jPanel3::::642:x, seq l {comp jPanel6:::p::p, space :0:0:x}}, space :::p}}"
-				"$verticalGroup": "par l {seq l {space :::p, comp jPanel6:::p::p, space :::p, comp jPanel3:::p::p, space :::x}}"
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "insets 0,hidemode 3,fillx"
+				"$columnConstraints": "[grow,fill]"
+				"$rowConstraints": "[][grow,fill]"
 			} ) {
 				name: "jPanelSize"
 				"border": new javax.swing.border.TitledBorder( "Download-Qualität" )
 				auxiliary() {
 					"JavaCodeGenerator.variableModifiers": 4
 				}
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+					name: "jPanel6"
+					auxiliary() {
+						"JavaCodeGenerator.variableLocal": true
+					}
+					add( new FormComponent( "javax.swing.JRadioButton" ) {
+						name: "jRadioButtonAufloesungHd"
+						"$buttonGroup": new FormReference( "buttonGroup1" )
+						"text": "Höchste/Hoch"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
+					} )
+					add( new FormComponent( "javax.swing.JRadioButton" ) {
+						name: "jRadioButtonAufloesungHoch"
+						"$buttonGroup": new FormReference( "buttonGroup1" )
+						"text": "Mittel"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
+					} )
+					add( new FormComponent( "javax.swing.JRadioButton" ) {
+						name: "jRadioButtonAufloesungKlein"
+						"$buttonGroup": new FormReference( "buttonGroup1" )
+						"text": "Niedrig"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
+					} )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0,alignx left"
+				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
 					"alignment": 0
 				} ) {
@@ -227,37 +295,11 @@ new FormModel {
 							}
 						} )
 					} )
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 1,growx,pushy"
 				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
-					name: "jPanel6"
-					auxiliary() {
-						"JavaCodeGenerator.variableLocal": true
-					}
-					add( new FormComponent( "javax.swing.JRadioButton" ) {
-						name: "jRadioButtonAufloesungHd"
-						"$buttonGroup": new FormReference( "buttonGroup1" )
-						"text": "Höchste/Hoch"
-						auxiliary() {
-							"JavaCodeGenerator.variableModifiers": 4
-						}
-					} )
-					add( new FormComponent( "javax.swing.JRadioButton" ) {
-						name: "jRadioButtonAufloesungHoch"
-						"$buttonGroup": new FormReference( "buttonGroup1" )
-						"text": "Mittel"
-						auxiliary() {
-							"JavaCodeGenerator.variableModifiers": 4
-						}
-					} )
-					add( new FormComponent( "javax.swing.JRadioButton" ) {
-						name: "jRadioButtonAufloesungKlein"
-						"$buttonGroup": new FormReference( "buttonGroup1" )
-						"text": "Niedrig"
-						auxiliary() {
-							"JavaCodeGenerator.variableModifiers": 4
-						}
-					} )
-				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 2,grow,push"
 			} )
 			add( new FormComponent( "javax.swing.JTextField" ) {
 				name: "jTextFieldSender"
@@ -268,6 +310,8 @@ new FormModel {
 				auxiliary() {
 					"JavaCodeGenerator.variableModifiers": 4
 				}
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 0,growx"
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )

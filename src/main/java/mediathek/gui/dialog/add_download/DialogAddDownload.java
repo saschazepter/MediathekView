@@ -52,26 +52,26 @@ public class DialogAddDownload extends JDialog {
         jCheckBoxPfadSpeichern = new JCheckBox();
         jCheckBoxSubtitle = new DownloadSubtitleCheckBox();
         var jPanel7 = new JPanel();
-        var jLabel1 = new JLabel();
-        jTextFieldName = new JTextField();
         var jLabelSet = new JLabel();
         jComboBoxPset = new javax.swing.JComboBox<>();
-        var jLabel4 = new JLabel();
+        var jLabel1 = new JLabel();
         var jPanel4 = new JPanel();
         jComboBoxPfad = new javax.swing.JComboBox<>();
         jButtonZiel = new JButton();
         jButtonDelHistory = new JButton();
+        var jLabel4 = new JLabel();
+        jTextFieldName = new JTextField();
         jPanelSize = new JPanel();
+        var jPanel6 = new JPanel();
+        jRadioButtonAufloesungHd = new JRadioButton();
+        jRadioButtonAufloesungHoch = new JRadioButton();
+        jRadioButtonAufloesungKlein = new JRadioButton();
         var jPanel3 = new JPanel();
         btnRequestLiveInfo = new JButton();
         lblBusyIndicator = new JXBusyLabel();
         var jPanel5 = new JPanel();
         lblStatus = new JLabel();
         lblAudioInfo = new JLabel();
-        var jPanel6 = new JPanel();
-        jRadioButtonAufloesungHd = new JRadioButton();
-        jRadioButtonAufloesungHoch = new JRadioButton();
-        jRadioButtonAufloesungKlein = new JRadioButton();
         jTextFieldSender = new JTextField();
 
         //======== this ========
@@ -80,9 +80,28 @@ public class DialogAddDownload extends JDialog {
         setMinimumSize(new Dimension(660, 420));
         setPreferredSize(new Dimension(660, 420));
         var contentPane = getContentPane();
+        contentPane.setLayout(new MigLayout(
+            new LC().fillX().insets("dialog").hideMode(3),
+            // columns
+            new AC()
+                .grow().fill(),
+            // rows
+            new AC()
+                .gap()
+                .gap()
+                .grow().fill().gap()
+                ));
 
         //======== panel2 ========
         {
+            panel2.setLayout(new MigLayout(
+                new LC().fillX().insets("0").hideMode(3),
+                // columns
+                new AC()
+                    .grow().fill(),
+                // rows
+                new AC()
+                    ));
 
             //======== panel1 ========
             {
@@ -109,26 +128,22 @@ public class DialogAddDownload extends JDialog {
                 jButtonAbbrechen.setText("Abbrechen");
                 panel1.add(jButtonAbbrechen, new CC().cell(2, 0));
             }
-
-            GroupLayout panel2Layout = new GroupLayout(panel2);
-            panel2.setLayout(panel2Layout);
-            panel2Layout.setHorizontalGroup(
-                panel2Layout.createParallelGroup()
-                    .addGroup(GroupLayout.Alignment.TRAILING, panel2Layout.createSequentialGroup()
-                        .addComponent(panel1, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addContainerGap())
-            );
-            panel2Layout.setVerticalGroup(
-                panel2Layout.createParallelGroup()
-                    .addGroup(panel2Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap())
-            );
+            panel2.add(panel1, new CC().cell(0, 0).alignX("right").growX());
         }
+        contentPane.add(panel2, new CC().cell(0, 3).growX());
 
         //======== jPanel1 ========
         {
+            jPanel1.setLayout(new MigLayout(
+                new LC().fillX().insets("0").hideMode(3),
+                // columns
+                new AC()
+                    .grow().fill(),
+                // rows
+                new AC()
+                    .gap()
+                    .size("12").gap()
+                    ));
 
             //======== jPanel2 ========
             {
@@ -144,108 +159,103 @@ public class DialogAddDownload extends JDialog {
                 jPanel2.add(jCheckBoxPfadSpeichern);
                 jPanel2.add(jCheckBoxSubtitle);
             }
+            jPanel1.add(jPanel2, new CC().cell(0, 2).growX());
 
             //======== jPanel7 ========
             {
-                jPanel7.setMaximumSize(new Dimension(606, 32767));
-
-                //---- jLabel1 ----
-                jLabel1.setText("Zielpfad:");
-
-                //---- jTextFieldName ----
-                jTextFieldName.setColumns(30);
-                jTextFieldName.setMinimumSize(new Dimension(0, 26));
+                jPanel7.setLayout(new MigLayout(
+                    new LC().fillX().insets("0").hideMode(3).gridGap("5", "8"),
+                    // columns
+                    new AC()
+                        .align("right").gap()
+                        .grow().fill(),
+                    // rows
+                    new AC()
+                        .gap()
+                        .gap()
+                        ));
 
                 //---- jLabelSet ----
                 jLabelSet.setText("Set:");
+                jPanel7.add(jLabelSet, new CC().cell(0, 0));
+                jPanel7.add(jComboBoxPset, new CC().cell(1, 0).growX());
 
-                //---- jLabel4 ----
-                jLabel4.setText("Dateiname:");
+                //---- jLabel1 ----
+                jLabel1.setText("Zielpfad:");
+                jPanel7.add(jLabel1, new CC().cell(0, 1));
 
                 //======== jPanel4 ========
                 {
-                    jPanel4.setLayout(new BoxLayout(jPanel4, BoxLayout.X_AXIS));
+                    jPanel4.setLayout(new MigLayout(
+                        new LC().fillX().insets("0").hideMode(3).gridGap("5", "0"),
+                        // columns
+                        new AC()
+                            .grow().fill().gap()
+                            .size("pref!").gap()
+                            .size("pref!"),
+                        // rows
+                        new AC()
+                            ));
 
                     //---- jComboBoxPfad ----
                     jComboBoxPfad.setEditable(true);
-                    jPanel4.add(jComboBoxPfad);
+                    jPanel4.add(jComboBoxPfad, new CC().cell(0, 0).pushX().growX());
 
                     //---- jButtonZiel ----
                     jButtonZiel.setText("F");
                     jButtonZiel.setToolTipText("Zielpfad ausw\u00e4hlen");
-                    jPanel4.add(jButtonZiel);
+                    jPanel4.add(jButtonZiel, new CC().cell(1, 0));
 
                     //---- jButtonDelHistory ----
                     jButtonDelHistory.setText("H");
                     jButtonDelHistory.setToolTipText("History l\u00f6schen");
-                    jPanel4.add(jButtonDelHistory);
+                    jPanel4.add(jButtonDelHistory, new CC().cell(2, 0));
                 }
+                jPanel7.add(jPanel4, new CC().cell(1, 1).growX());
 
-                GroupLayout jPanel7Layout = new GroupLayout(jPanel7);
-                jPanel7.setLayout(jPanel7Layout);
-                jPanel7Layout.setHorizontalGroup(
-                    jPanel7Layout.createParallelGroup()
-                        .addGroup(jPanel7Layout.createSequentialGroup()
-                            .addContainerGap()
-                            .addGroup(jPanel7Layout.createParallelGroup()
-                                .addGroup(jPanel7Layout.createSequentialGroup()
-                                    .addGroup(jPanel7Layout.createParallelGroup()
-                                        .addComponent(jLabelSet)
-                                        .addComponent(jLabel1))
-                                    .addGap(20, 20, 20)
-                                    .addGroup(jPanel7Layout.createParallelGroup()
-                                        .addComponent(jPanel4, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(jComboBoxPset)))
-                                .addGroup(jPanel7Layout.createSequentialGroup()
-                                    .addComponent(jLabel4)
-                                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                    .addComponent(jTextFieldName, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                            .addContainerGap())
-                );
-                jPanel7Layout.setVerticalGroup(
-                    jPanel7Layout.createParallelGroup()
-                        .addGroup(jPanel7Layout.createSequentialGroup()
-                            .addContainerGap()
-                            .addGroup(jPanel7Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                .addComponent(jLabelSet)
-                                .addComponent(jComboBoxPset, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-                            .addGroup(jPanel7Layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                                .addComponent(jPanel4, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addComponent(jLabel1))
-                            .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                            .addGroup(jPanel7Layout.createParallelGroup(GroupLayout.Alignment.CENTER)
-                                .addComponent(jLabel4)
-                                .addComponent(jTextFieldName, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                            .addContainerGap())
-                );
+                //---- jLabel4 ----
+                jLabel4.setText("Dateiname:");
+                jPanel7.add(jLabel4, new CC().cell(0, 2));
+
+                //---- jTextFieldName ----
+                jTextFieldName.setColumns(30);
+                jTextFieldName.setMinimumSize(new Dimension(0, 26));
+                jPanel7.add(jTextFieldName, new CC().cell(1, 2).pushX().growX());
             }
-
-            GroupLayout jPanel1Layout = new GroupLayout(jPanel1);
-            jPanel1.setLayout(jPanel1Layout);
-            jPanel1Layout.setHorizontalGroup(
-                jPanel1Layout.createParallelGroup()
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanel1Layout.createParallelGroup()
-                            .addComponent(jPanel2, GroupLayout.DEFAULT_SIZE, 654, Short.MAX_VALUE)
-                            .addComponent(jPanel7, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())
-            );
-            jPanel1Layout.setVerticalGroup(
-                jPanel1Layout.createParallelGroup()
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel7, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addGap(12, 12, 12)
-                        .addComponent(jPanel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            );
+            jPanel1.add(jPanel7, new CC().cell(0, 0).growX());
         }
+        contentPane.add(jPanel1, new CC().cell(0, 1).growX());
 
         //======== jPanelSize ========
         {
             jPanelSize.setBorder(new TitledBorder("Download-Qualit\u00e4t"));
+            jPanelSize.setLayout(new MigLayout(
+                new LC().fillX().insets("0").hideMode(3),
+                // columns
+                new AC()
+                    .grow().fill(),
+                // rows
+                new AC()
+                    .gap()
+                    .grow().fill()));
+
+            //======== jPanel6 ========
+            {
+                jPanel6.setLayout(new FlowLayout());
+
+                //---- jRadioButtonAufloesungHd ----
+                jRadioButtonAufloesungHd.setText("H\u00f6chste/Hoch");
+                jPanel6.add(jRadioButtonAufloesungHd);
+
+                //---- jRadioButtonAufloesungHoch ----
+                jRadioButtonAufloesungHoch.setText("Mittel");
+                jPanel6.add(jRadioButtonAufloesungHoch);
+
+                //---- jRadioButtonAufloesungKlein ----
+                jRadioButtonAufloesungKlein.setText("Niedrig");
+                jPanel6.add(jRadioButtonAufloesungKlein);
+            }
+            jPanelSize.add(jPanel6, new CC().cell(0, 0).alignX("left"));
 
             //======== jPanel3 ========
             {
@@ -270,80 +280,16 @@ public class DialogAddDownload extends JDialog {
                 }
                 jPanel3.add(jPanel5);
             }
-
-            //======== jPanel6 ========
-            {
-                jPanel6.setLayout(new FlowLayout());
-
-                //---- jRadioButtonAufloesungHd ----
-                jRadioButtonAufloesungHd.setText("H\u00f6chste/Hoch");
-                jPanel6.add(jRadioButtonAufloesungHd);
-
-                //---- jRadioButtonAufloesungHoch ----
-                jRadioButtonAufloesungHoch.setText("Mittel");
-                jPanel6.add(jRadioButtonAufloesungHoch);
-
-                //---- jRadioButtonAufloesungKlein ----
-                jRadioButtonAufloesungKlein.setText("Niedrig");
-                jPanel6.add(jRadioButtonAufloesungKlein);
-            }
-
-            GroupLayout jPanelSizeLayout = new GroupLayout(jPanelSize);
-            jPanelSize.setLayout(jPanelSizeLayout);
-            jPanelSizeLayout.setHorizontalGroup(
-                jPanelSizeLayout.createParallelGroup()
-                    .addGroup(jPanelSizeLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(jPanelSizeLayout.createParallelGroup()
-                            .addComponent(jPanel3, GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE)
-                            .addGroup(jPanelSizeLayout.createSequentialGroup()
-                                .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE)))
-                        .addContainerGap())
-            );
-            jPanelSizeLayout.setVerticalGroup(
-                jPanelSizeLayout.createParallelGroup()
-                    .addGroup(jPanelSizeLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(jPanel6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            );
+            jPanelSize.add(jPanel3, new CC().cell(0, 1).pushY().growX());
         }
+        contentPane.add(jPanelSize, new CC().cell(0, 2).push().grow());
 
         //---- jTextFieldSender ----
         jTextFieldSender.setEditable(false);
         jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | Font.BOLD));
         jTextFieldSender.setText(" ARD: Tatort, ...");
         jTextFieldSender.setBorder(new TitledBorder("Film"));
-
-        GroupLayout contentPaneLayout = new GroupLayout(contentPane);
-        contentPane.setLayout(contentPaneLayout);
-        contentPaneLayout.setHorizontalGroup(
-            contentPaneLayout.createParallelGroup()
-                .addGroup(contentPaneLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(contentPaneLayout.createParallelGroup()
-                        .addComponent(jPanel1, GroupLayout.Alignment.TRAILING, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jTextFieldSender)
-                        .addComponent(panel2, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jPanelSize, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addContainerGap())
-        );
-        contentPaneLayout.setVerticalGroup(
-            contentPaneLayout.createParallelGroup()
-                .addGroup(contentPaneLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(jTextFieldSender, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(jPanel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(jPanelSize, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(panel2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap())
-        );
+        contentPane.add(jTextFieldSender, new CC().cell(0, 0).growX());
         pack();
         setLocationRelativeTo(getOwner());
 
@@ -362,19 +308,19 @@ public class DialogAddDownload extends JDialog {
     protected JCheckBox jCheckBoxInfodatei;
     protected JCheckBox jCheckBoxPfadSpeichern;
     protected DownloadSubtitleCheckBox jCheckBoxSubtitle;
-    protected JTextField jTextFieldName;
     protected JComboBox<String> jComboBoxPset;
     protected JComboBox<String> jComboBoxPfad;
     protected JButton jButtonZiel;
     protected JButton jButtonDelHistory;
+    protected JTextField jTextFieldName;
     protected JPanel jPanelSize;
+    protected JRadioButton jRadioButtonAufloesungHd;
+    protected JRadioButton jRadioButtonAufloesungHoch;
+    protected JRadioButton jRadioButtonAufloesungKlein;
     protected JButton btnRequestLiveInfo;
     protected JXBusyLabel lblBusyIndicator;
     protected JLabel lblStatus;
     protected JLabel lblAudioInfo;
-    protected JRadioButton jRadioButtonAufloesungHd;
-    protected JRadioButton jRadioButtonAufloesungHoch;
-    protected JRadioButton jRadioButtonAufloesungKlein;
     protected JTextField jTextFieldSender;
     // End of variables declaration//GEN-END:variables
 }
