@@ -39,10 +39,7 @@ import mediathek.tool.MessageBus.messageBus
 import org.apache.commons.configuration2.sync.LockMode
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.Frame
-import java.awt.GraphicsEnvironment
+import java.awt.*
 import java.awt.event.ActionListener
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -240,8 +237,8 @@ class DialogAddDownloadWithCoroutines(
 
     private fun initializeDialogSize(parent: Frame) {
         updateMinimumSizeFromPackedLayout()
+        restoreWindowBoundsFromConfig(parent)
         constrainPackedSizeToScreen()
-        setLocationRelativeTo(parent)
     }
 
     private fun registerWindowPositionTracking() {
@@ -298,8 +295,7 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun constrainPackedSizeToScreen() {
-        val maximumWindowBounds = GraphicsEnvironment.getLocalGraphicsEnvironment().maximumWindowBounds
-        val usableBounds = graphicsConfiguration?.bounds?.intersection(maximumWindowBounds) ?: maximumWindowBounds
+        val usableBounds = getUsableScreenBounds()
         val boundedWidth = size.width.coerceAtMost(usableBounds.width)
         val boundedHeight = size.height.coerceAtMost(usableBounds.height)
         if (boundedWidth != size.width || boundedHeight != size.height) {
@@ -309,6 +305,38 @@ class DialogAddDownloadWithCoroutines(
             minimumSize.width.coerceAtMost(usableBounds.width),
             minimumSize.height.coerceAtMost(usableBounds.height)
         )
+    }
+
+    private fun restoreWindowBoundsFromConfig(parent: Frame) {
+        val config = ApplicationConfiguration.getConfiguration()
+        try {
+            config.lock(LockMode.READ)
+            val width = config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH)
+            val height = config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT)
+            val x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X)
+            val y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y)
+            applyStoredBounds(x, y, width, height)
+        } catch (_: NoSuchElementException) {
+            setLocationRelativeTo(parent)
+        } finally {
+            config.unlock(LockMode.READ)
+        }
+    }
+
+    private fun applyStoredBounds(x: Int, y: Int, width: Int, height: Int) {
+        val usableBounds = getUsableScreenBounds()
+        val boundedWidth = width.coerceAtLeast(minimumSize.width).coerceAtMost(usableBounds.width)
+        val boundedHeight = height.coerceAtLeast(minimumSize.height).coerceAtMost(usableBounds.height)
+        val maxX = usableBounds.x + usableBounds.width - boundedWidth
+        val maxY = usableBounds.y + usableBounds.height - boundedHeight
+        val boundedX = x.coerceIn(usableBounds.x, maxX)
+        val boundedY = y.coerceIn(usableBounds.y, maxY)
+        setBounds(boundedX, boundedY, boundedWidth, boundedHeight)
+    }
+
+    private fun getUsableScreenBounds(): Rectangle {
+        val maximumWindowBounds = GraphicsEnvironment.getLocalGraphicsEnvironment().maximumWindowBounds
+        return graphicsConfiguration?.bounds?.intersection(maximumWindowBounds) ?: maximumWindowBounds
     }
 
     private fun prepareDownload(startAutomatically: Boolean) {
