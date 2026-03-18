@@ -29,7 +29,8 @@ import javax.swing.*;
 import java.awt.*;
 
 public class SenderIconLabel extends JLabel {
-    private static final Dimension ICON_DIMENSION = new Dimension(96, 96);
+    private static final Dimension DEFAULT_ICON_DIMENSION = new Dimension(96, 96);
+    private Dimension iconDimension = DEFAULT_ICON_DIMENSION;
 
     public SenderIconLabel() {
         setText("");
@@ -44,9 +45,18 @@ public class SenderIconLabel extends JLabel {
         setPreferredSize(d);
     }
 
+    public void setMaxIconSize(@NotNull Dimension iconDimension) {
+        this.iconDimension = new Dimension(iconDimension);
+        if (getIcon() == null) {
+            setPreferredSize(new Dimension(iconDimension));
+            setMaximumSize(new Dimension(iconDimension));
+        }
+    }
+
     public void setSender(@Nullable String sender) {
         if (sender == null) {
             setIcon(null);
+            setPreferredSize(new Dimension(iconDimension));
         }
         else {
             MVSenderIconCache.get(sender).ifPresentOrElse(icon -> {
@@ -54,12 +64,12 @@ public class SenderIconLabel extends JLabel {
                 if (icon instanceof FlatSVGIcon svg) {
                     var destDim = SenderIconRenderUtil.calculateFittedDimensionAllowUpscale(
                             new Dimension(svg.getIconWidth(), svg.getIconHeight()),
-                            ICON_DIMENSION
+                            iconDimension
                     );
                     origIcon = svg.derive(destDim.width, destDim.height);
                 } else {
                     var imageDim = new Dimension(icon.getIconWidth(), icon.getIconHeight());
-                    var destDim = SenderIconRenderUtil.calculateFittedDimensionAllowUpscale(imageDim, ICON_DIMENSION);
+                    var destDim = SenderIconRenderUtil.calculateFittedDimensionAllowUpscale(imageDim, iconDimension);
                     origIcon = new ScaledImageIcon(icon, destDim.width, destDim.height);
                 }
                 setText("");
@@ -68,6 +78,7 @@ public class SenderIconLabel extends JLabel {
             }, () -> {
                 setIcon(null);
                 setText(sender);
+                setPreferredSize(null);
             });
         }
     }

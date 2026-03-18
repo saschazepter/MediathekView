@@ -300,16 +300,40 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 3,growx"
 			} )
-			add( new FormComponent( "javax.swing.JTextField" ) {
-				name: "jTextFieldSender"
-				"editable": false
-				"columns": 30
-				"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
-				"text": " ARD: Tatort, ..."
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "insets 5,hidemode 3,fillx,gap 8 0"
+				"$columnConstraints": "[pref!][grow,fill]"
+				"$rowConstraints": "[center]"
+			} ) {
+				name: "filmPanel"
 				"border": new javax.swing.border.TitledBorder( "Film" )
 				auxiliary() {
-					"JavaCodeGenerator.variableModifiers": 4
+					"JavaCodeGenerator.variableLocal": true
 				}
+				add( new FormComponent( "mediathek.gui.tabs.tab_film.SenderIconLabel" ) {
+					name: "lblSenderIcon"
+					"maximumSize": new java.awt.Dimension( 64, 64 )
+					"minimumSize": new java.awt.Dimension( 64, 64 )
+					"preferredSize": new java.awt.Dimension( 64, 64 )
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 4
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0,aligny center"
+				} )
+				add( new FormComponent( "javax.swing.JTextField" ) {
+					name: "jTextFieldSender"
+					"editable": false
+					"columns": 30
+					"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
+					"text": "Tatort, ..."
+					"border": null
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 4
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 0,growx,pushx"
+				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 0,growx"
 			} )

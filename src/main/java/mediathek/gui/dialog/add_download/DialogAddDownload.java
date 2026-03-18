@@ -18,6 +18,7 @@
 
 package mediathek.gui.dialog.add_download;
 
+import mediathek.gui.tabs.tab_film.SenderIconLabel;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
@@ -70,6 +71,8 @@ public class DialogAddDownload extends JDialog {
         var jPanel5 = new JPanel();
         lblStatus = new JLabel();
         lblAudioInfo = new JLabel();
+        var filmPanel = new JPanel();
+        lblSenderIcon = new SenderIconLabel();
         jTextFieldSender = new JTextField();
 
         //======== this ========
@@ -280,13 +283,33 @@ public class DialogAddDownload extends JDialog {
         }
         contentPane.add(jPanelSize, new CC().cell(0, 3).growX());
 
-        //---- jTextFieldSender ----
-        jTextFieldSender.setEditable(false);
-        jTextFieldSender.setColumns(30);
-        jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | Font.BOLD));
-        jTextFieldSender.setText(" ARD: Tatort, ...");
-        jTextFieldSender.setBorder(new TitledBorder("Film"));
-        contentPane.add(jTextFieldSender, new CC().cell(0, 0).growX());
+        //======== filmPanel ========
+        {
+            filmPanel.setBorder(new TitledBorder("Film"));
+            filmPanel.setLayout(new MigLayout(
+                new LC().fillX().insets("5").hideMode(3).gridGap("8", "0"),
+                // columns
+                new AC()
+                    .size("pref!").gap()
+                    .grow().fill(),
+                // rows
+                new AC()
+                    .align("center")));
+
+            //---- lblSenderIcon ----
+            lblSenderIcon.setMaximumSize(new Dimension(64, 64));
+            lblSenderIcon.setMinimumSize(new Dimension(64, 64));
+            lblSenderIcon.setPreferredSize(new Dimension(64, 64));
+            filmPanel.add(lblSenderIcon, new CC().cell(0, 0).alignY("center"));
+
+            //---- jTextFieldSender ----
+            jTextFieldSender.setEditable(false);
+            jTextFieldSender.setColumns(30);
+            jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | Font.BOLD));
+            jTextFieldSender.setText("Tatort, ...");
+            filmPanel.add(jTextFieldSender, new CC().cell(1, 0).pushX().growX());
+        }
+        contentPane.add(filmPanel, new CC().cell(0, 0).growX());
         pack();
         setLocationRelativeTo(getOwner());
 
@@ -318,6 +341,7 @@ public class DialogAddDownload extends JDialog {
     protected JXBusyLabel lblBusyIndicator;
     protected JLabel lblStatus;
     protected JLabel lblAudioInfo;
+    protected SenderIconLabel lblSenderIcon;
     protected JTextField jTextFieldSender;
     // End of variables declaration//GEN-END:variables
 

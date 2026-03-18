@@ -546,9 +546,12 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun setupSenderTextField() {
+        lblSenderIcon.setMaxIconSize(Dimension(64, 64))
+        lblSenderIcon.setSender(film.sender)
         jTextFieldSender.apply {
-            text = "${film.sender}: ${film.title}"
+            text = film.title
             setBackground(UIManager.getColor("Label.background"))
+            isOpaque = false
         }
     }
 
