@@ -303,10 +303,10 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$layoutConstraints": "insets 5,hidemode 3,fillx,gap 8 0"
 				"$columnConstraints": "[pref!][grow,fill]"
-				"$rowConstraints": "[center]"
+				"$rowConstraints": "[top]"
 			} ) {
 				name: "filmPanel"
-				"border": new javax.swing.border.TitledBorder( "Film" )
+				"border": javax.swing.BorderFactory.createEtchedBorder()
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
@@ -319,18 +319,38 @@ new FormModel {
 						"JavaCodeGenerator.variableModifiers": 4
 					}
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 0,aligny center"
+					"value": "cell 0 0,aligny top"
 				} )
-				add( new FormComponent( "javax.swing.JTextField" ) {
-					name: "jTextFieldSender"
-					"editable": false
-					"columns": 30
-					"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
-					"text": "Tatort, ..."
-					"border": null
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "insets 0,hidemode 3,fillx,gap 0 2"
+					"$columnConstraints": "[grow,fill]"
+					"$rowConstraints": "[][]"
+				} ) {
+					name: "filmTextPanel"
 					auxiliary() {
-						"JavaCodeGenerator.variableModifiers": 4
+						"JavaCodeGenerator.variableLocal": true
 					}
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblFilmTitle"
+						"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
+						"minimumSize": new java.awt.Dimension( 0, 0 )
+						"text": "Tatort, ..."
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 0,growx,pushx"
+					} )
+					add( new FormComponent( "javax.swing.JLabel" ) {
+						name: "lblFilmThema"
+						"minimumSize": new java.awt.Dimension( 0, 0 )
+						"text": "Thema"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 1,growx,pushx"
+					} )
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 1 0,growx,pushx"
 				} )

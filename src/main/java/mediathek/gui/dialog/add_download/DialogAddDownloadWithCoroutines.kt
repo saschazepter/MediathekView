@@ -115,6 +115,7 @@ class DialogAddDownloadWithCoroutines(
     companion object {
         private val logger = LogManager.getLogger()
         private const val MINIMUM_DIALOG_WIDTH = 720
+        private const val HEADER_TEXT_WIDTH = 360
         private const val NO_DATA_AVAILABLE = "Keine Daten verfügbar."
         private const val TITLED_BORDER_STRING = "Download-Qualität"
         private const val KEY_LABEL_FOREGROUND: String = "Label.foreground"
@@ -123,6 +124,30 @@ class DialogAddDownloadWithCoroutines(
             video = "Video: 1920x1080, 2220 kBit/s, 50 fps (avg), H.264",
             audio = "Audio: 48000 Hz, 128 kBit/s, AAC (Advanced Audio Coding)"
         )
+
+        private fun toWrappedHeaderText(text: String, width: Int): String {
+            if (text.isBlank()) {
+                return ""
+            }
+            return "<html><body style='width:${width}px'>${escapeHtml(text)}</body></html>"
+        }
+
+        private fun escapeHtml(text: String): String {
+            return buildString(text.length) {
+                text.forEach { ch ->
+                    append(
+                        when (ch) {
+                            '&' -> "&amp;"
+                            '<' -> "&lt;"
+                            '>' -> "&gt;"
+                            '"' -> "&quot;"
+                            '\'' -> "&#39;"
+                            else -> ch
+                        }
+                    )
+                }
+            }
+        }
 
         @JvmStatic
         fun saveComboPfad(jcb: JComboBox<String>, orgPath: String) {
@@ -222,7 +247,6 @@ class DialogAddDownloadWithCoroutines(
         applySelectedProgramSet()
         setupNameTextField()
         setupPathEditor()
-        updateSenderFieldMinimumHeight()
         nameGeaendert = false
     }
 
@@ -279,11 +303,6 @@ class DialogAddDownloadWithCoroutines(
         lblAudioInfo.minimumSize = lblAudioInfo.preferredSize
 
         showLiveInfo(originalText)
-    }
-
-    private fun updateSenderFieldMinimumHeight() {
-        val preferredHeight = jTextFieldSender.preferredSize.height
-        jTextFieldSender.minimumSize = Dimension(0, preferredHeight)
     }
 
     private fun updateMinimumSizeFromPackedLayout() {
@@ -548,11 +567,8 @@ class DialogAddDownloadWithCoroutines(
     private fun setupSenderTextField() {
         lblSenderIcon.setMaxIconSize(Dimension(64, 64))
         lblSenderIcon.setSender(film.sender)
-        jTextFieldSender.apply {
-            text = film.title
-            setBackground(UIManager.getColor("Label.background"))
-            isOpaque = false
-        }
+        lblFilmTitle.text = toWrappedHeaderText(film.title, HEADER_TEXT_WIDTH)
+        lblFilmThema.text = toWrappedHeaderText(film.thema, HEADER_TEXT_WIDTH)
     }
 
     private fun setupDeleteHistoryButton() {
