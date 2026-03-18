@@ -219,19 +219,28 @@ public class DialogAddDownload extends JDialog {
 
             //======== jPanel6 ========
             {
-                jPanel6.setLayout(new FlowLayout(FlowLayout.LEFT));
+                jPanel6.setLayout(new MigLayout(
+                    new LC().insets("0").hideMode(3).alignX("left").gridGap("20", "0"),
+                    // columns
+                    new AC()
+                        .size("pref!").gap()
+                        .size("pref!").gap()
+                        .size("pref!"),
+                    // rows
+                    new AC()
+                        ));
 
                 //---- jRadioButtonAufloesungHd ----
                 jRadioButtonAufloesungHd.setText("H\u00f6chste/Hoch");
-                jPanel6.add(jRadioButtonAufloesungHd);
+                jPanel6.add(jRadioButtonAufloesungHd, new CC().cell(0, 0));
 
                 //---- jRadioButtonAufloesungHoch ----
                 jRadioButtonAufloesungHoch.setText("Mittel");
-                jPanel6.add(jRadioButtonAufloesungHoch);
+                jPanel6.add(jRadioButtonAufloesungHoch, new CC().cell(1, 0));
 
                 //---- jRadioButtonAufloesungKlein ----
                 jRadioButtonAufloesungKlein.setText("Niedrig");
-                jPanel6.add(jRadioButtonAufloesungKlein);
+                jPanel6.add(jRadioButtonAufloesungKlein, new CC().cell(2, 0));
             }
             jPanelSize.add(jPanel6, new CC().cell(0, 0).alignX("left"));
 
@@ -258,11 +267,11 @@ public class DialogAddDownload extends JDialog {
                     jPanel5.setLayout(new GridLayout(2, 1));
 
                     //---- lblStatus ----
-                    lblStatus.setText("status");
+                    lblStatus.setText("Video: n/a");
                     jPanel5.add(lblStatus);
 
                     //---- lblAudioInfo ----
-                    lblAudioInfo.setText("audio");
+                    lblAudioInfo.setText("Audio: n/a");
                     jPanel5.add(lblAudioInfo);
                 }
                 jPanel3.add(jPanel5, new CC().cell(2, 0).pushX().growX());

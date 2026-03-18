@@ -201,8 +201,10 @@ new FormModel {
 				auxiliary() {
 					"JavaCodeGenerator.variableModifiers": 4
 				}
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
-					"alignment": 0
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "insets 0,hidemode 3,alignx left,gap 20 0"
+					"$columnConstraints": "[pref!][pref!][pref!]"
+					"$rowConstraints": "[]"
 				} ) {
 					name: "jPanel6"
 					auxiliary() {
@@ -215,6 +217,8 @@ new FormModel {
 						auxiliary() {
 							"JavaCodeGenerator.variableModifiers": 4
 						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 0"
 					} )
 					add( new FormComponent( "javax.swing.JRadioButton" ) {
 						name: "jRadioButtonAufloesungHoch"
@@ -223,6 +227,8 @@ new FormModel {
 						auxiliary() {
 							"JavaCodeGenerator.variableModifiers": 4
 						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 0"
 					} )
 					add( new FormComponent( "javax.swing.JRadioButton" ) {
 						name: "jRadioButtonAufloesungKlein"
@@ -231,6 +237,8 @@ new FormModel {
 						auxiliary() {
 							"JavaCodeGenerator.variableModifiers": 4
 						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 2 0"
 					} )
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 0 0,alignx left"
@@ -271,14 +279,14 @@ new FormModel {
 						}
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "lblStatus"
-							"text": "status"
+							"text": "Video: n/a"
 							auxiliary() {
 								"JavaCodeGenerator.variableModifiers": 4
 							}
 						} )
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "lblAudioInfo"
-							"text": "audio"
+							"text": "Audio: n/a"
 							auxiliary() {
 								"JavaCodeGenerator.variableModifiers": 4
 							}
@@ -308,7 +316,7 @@ new FormModel {
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"location": new java.awt.Point( 0, 0 )
-			"size": new java.awt.Dimension( 680, 480 )
+			"size": new java.awt.Dimension( 680, 445 )
 		} )
 		add( new FormNonVisual( "javax.swing.ButtonGroup" ) {
 			name: "buttonGroup1"
