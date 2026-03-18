@@ -24,10 +24,9 @@ import com.github.kokorin.jaffree.ffprobe.FFprobeResult
 import com.github.kokorin.jaffree.ffprobe.Stream
 import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
-import kotlinx.coroutines.flow.callbackFlow
-import kotlinx.coroutines.flow.debounce
-import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.config.MVColor
@@ -67,8 +66,16 @@ class DialogAddDownloadWithCoroutines(
     private var activeProgramSet: DatenPset,
     private val requestedResolution: Optional<FilmResolution.Enum>
 ) : DialogAddDownload(parent) {
+    private sealed interface LiveInfoCommand {
+        data object Cancel : LiveInfoCommand
+        data class Fetch(val resolution: FilmResolution.Enum) : LiveInfoCommand
+    }
+
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
-    private var liveInfoJob: Job? = null
+    private val liveInfoRequests = MutableSharedFlow<LiveInfoCommand>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     private var highQualityMandated: Boolean = false
     private var stopBeob = false
     private var nameGeaendert = false
@@ -77,11 +84,9 @@ class DialogAddDownloadWithCoroutines(
     private var minimumDialogWidth: Int = 720
     private var minimumDialogHeight: Int = 600
     private val listeSpeichern: ListePset = Daten.listePset.listeSpeichern
-    private var fileSizeJob: Job? = null
     private var dateiGroesseHighQuality: String = ""
     private var dateiGroesseNormalQuality: String = ""
     private var dateiGroesseLowQuality: String = ""
-    private var pathDiskSpaceJob: Job? = null
     private lateinit var cbPathTextComponent: JTextComponent
     private lateinit var datenDownload: DatenDownload
 
@@ -164,11 +169,16 @@ class DialogAddDownloadWithCoroutines(
 
         addComponentListener(DialogPositionComponentListener())
 
-        btnRequestLiveInfo.addActionListener {
-            liveInfoJob?.cancel()
-            liveInfoJob = coroutineScope.launch {
-                fetchLiveFilmInfo()
+        coroutineScope.launch {
+            liveInfoRequests.collectLatest { command ->
+                if (command is LiveInfoCommand.Fetch) {
+                    fetchLiveFilmInfo(command.resolution)
+                }
             }
+        }
+
+        btnRequestLiveInfo.addActionListener {
+            liveInfoRequests.tryEmit(LiveInfoCommand.Fetch(getFilmResolution()))
         }
 
         btnDownloadImmediately.requestFocus()
@@ -183,10 +193,8 @@ class DialogAddDownloadWithCoroutines(
         setupBusyIndicator()
         detectFfprobeExecutable()
 
-        fileSizeJob = launchResolutionFutures()
-
         coroutineScope.launch {
-            waitForFileSizeJob()
+            loadResolutionSizes()
             calculateAndCheckDiskSpaceAsync()
         }
 
@@ -402,7 +410,7 @@ class DialogAddDownloadWithCoroutines(
             lblAudioInfo.setText("")
             lblBusyIndicator.isBusy = false
             lblBusyIndicator.isVisible = false
-            liveInfoJob?.cancel()
+            liveInfoRequests.tryEmit(LiveInfoCommand.Cancel)
         }
         jRadioButtonAufloesungHd.addActionListener(listener)
         jRadioButtonAufloesungHd.setEnabled(!film.highQualityUrl.isEmpty())
@@ -527,7 +535,7 @@ class DialogAddDownloadWithCoroutines(
         minimumSize = Dimension(minimumDialogWidth, minimumDialogHeight)
     }
 
-    private suspend fun fetchLiveFilmInfo() {
+    private suspend fun fetchLiveFilmInfo(resolution: FilmResolution.Enum) {
         btnRequestLiveInfo.isEnabled = false
         lblBusyIndicator.apply {
             isVisible = true
@@ -537,9 +545,9 @@ class DialogAddDownloadWithCoroutines(
         lblAudioInfo.text = ""
 
         try {
-            val url = film.getUrlFuerAufloesung(getFilmResolution())
+            val url = film.getUrlFuerAufloesung(resolution)
 
-            val result = withContext(Dispatchers.IO) {
+            val result = runInterruptible(Dispatchers.IO) {
                 FFprobe.atPath(ffprobePath)
                     .setShowStreams(true)
                     .setInput(url)
@@ -698,8 +706,7 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
-    private suspend fun calculateAndCheckDiskSpaceAsync() {
-        val currentPath = cbPathTextComponent.text
+    private suspend fun calculateAndCheckDiskSpaceAsync(currentPath: String = cbPathTextComponent.text) {
         val usableSpace = withContext(Dispatchers.IO) {
             getFreeDiskSpace(currentPath)
         }
@@ -710,7 +717,7 @@ class DialogAddDownloadWithCoroutines(
         cbPathTextComponent = jComboBoxPfad.editor.editorComponent as JTextComponent
         cbPathTextComponent.isOpaque = true
 
-        pathDiskSpaceJob = coroutineScope.launch {
+        coroutineScope.launch {
             callbackFlow {
                 val document = cbPathTextComponent.document
                 val listener = object : DocumentListener {
@@ -733,14 +740,14 @@ class DialogAddDownloadWithCoroutines(
             }
                 .debounce(250)
                 .distinctUntilChanged()
-                .collect { currentPath ->
+                .collectLatest { currentPath ->
                     if (!stopBeob) {
                         nameGeaendert = true
                         // do not perform check on Windows
                         if (!SystemUtils.IS_OS_WINDOWS) {
                             fileNameCheck(currentPath)
                         }
-                        calculateAndCheckDiskSpaceAsync()
+                        calculateAndCheckDiskSpaceAsync(currentPath)
                     }
                 }
         }
@@ -842,56 +849,45 @@ class DialogAddDownloadWithCoroutines(
             .getOrDefault("")
     }
 
-    private fun launchResolutionFutures(): Job = coroutineScope.launch {
-        val fetchSizeBackup = ApplicationConfiguration.getConfiguration()
-            .getBoolean(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true)
-        ApplicationConfiguration.getConfiguration()
-            .setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true)
+    private suspend fun loadResolutionSizes() {
+        val configuration = ApplicationConfiguration.getConfiguration()
+        val fetchSizeBackup = configuration.getBoolean(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true)
+        configuration.setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true)
 
         try {
-            val hqDeferred = async(Dispatchers.IO) { fetchFileSizeForQuality(FilmResolution.Enum.HIGH_QUALITY) }
-            val hochDeferred = async(Dispatchers.IO) { fetchFileSizeForNormalQuality() }
-            val kleinDeferred = async(Dispatchers.IO) { fetchFileSizeForQuality(FilmResolution.Enum.LOW) }
-
-            val hqSize = hqDeferred.await()
-            val hochSize = hochDeferred.await()
-            val kleinSize = kleinDeferred.await()
-
-            withContext(Dispatchers.Swing) {
-                if (jRadioButtonAufloesungHd.isEnabled) {
-                    dateiGroesseHighQuality = hqSize
-                    if (dateiGroesseHighQuality.isNotEmpty()) {
-                        jRadioButtonAufloesungHd.text += "   [ $dateiGroesseHighQuality MB ]"
-                    }
-                }
-
-                dateiGroesseNormalQuality = hochSize
-                if (dateiGroesseNormalQuality.isNotEmpty()) {
-                    jRadioButtonAufloesungHoch.text += "   [ $dateiGroesseNormalQuality MB ]"
-                }
-
-                if (jRadioButtonAufloesungKlein.isEnabled) {
-                    dateiGroesseLowQuality = kleinSize
-                    if (dateiGroesseLowQuality.isNotEmpty()) {
-                        jRadioButtonAufloesungKlein.text += "   [ $dateiGroesseLowQuality MB ]"
-                    }
+            val (hqSize, hochSize, kleinSize) = withContext(Dispatchers.IO) {
+                supervisorScope {
+                    val hqDeferred = async { fetchFileSizeForQuality(FilmResolution.Enum.HIGH_QUALITY) }
+                    val hochDeferred = async { fetchFileSizeForNormalQuality() }
+                    val kleinDeferred = async { fetchFileSizeForQuality(FilmResolution.Enum.LOW) }
+                    Triple(hqDeferred.await(), hochDeferred.await(), kleinDeferred.await())
                 }
             }
+
+            if (jRadioButtonAufloesungHd.isEnabled) {
+                dateiGroesseHighQuality = hqSize
+                if (dateiGroesseHighQuality.isNotEmpty()) {
+                    jRadioButtonAufloesungHd.text += "   [ $dateiGroesseHighQuality MB ]"
+                }
+            }
+
+            dateiGroesseNormalQuality = hochSize
+            if (dateiGroesseNormalQuality.isNotEmpty()) {
+                jRadioButtonAufloesungHoch.text += "   [ $dateiGroesseNormalQuality MB ]"
+            }
+
+            if (jRadioButtonAufloesungKlein.isEnabled) {
+                dateiGroesseLowQuality = kleinSize
+                if (dateiGroesseLowQuality.isNotEmpty()) {
+                    jRadioButtonAufloesungKlein.text += "   [ $dateiGroesseLowQuality MB ]"
+                }
+            }
+        } catch (ex: CancellationException) {
+            throw ex
         } catch (ex: Exception) {
             logger.error("Error occurred while fetching file sizes", ex)
         } finally {
-            ApplicationConfiguration.getConfiguration()
-                .setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, fetchSizeBackup)
-        }
-    }
-
-    private suspend fun waitForFileSizeJob() {
-        try {
-            fileSizeJob?.join()
-        } catch (ex: CancellationException) {
-            logger.warn("File size calculation was cancelled", ex)
-        } catch (ex: Exception) {
-            logger.error("Error while waiting for file size calculation", ex)
+            configuration.setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, fetchSizeBackup)
         }
     }
 
