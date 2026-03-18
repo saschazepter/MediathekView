@@ -24,6 +24,10 @@ import com.github.kokorin.jaffree.ffprobe.FFprobeResult
 import com.github.kokorin.jaffree.ffprobe.Stream
 import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.config.MVColor
@@ -77,6 +81,7 @@ class DialogAddDownloadWithCoroutines(
     private var dateiGroesseHighQuality: String = ""
     private var dateiGroesseNormalQuality: String = ""
     private var dateiGroesseLowQuality: String = ""
+    private var pathDiskSpaceJob: Job? = null
     private lateinit var cbPathTextComponent: JTextComponent
     private lateinit var datenDownload: DatenDownload
 
@@ -182,7 +187,7 @@ class DialogAddDownloadWithCoroutines(
 
         coroutineScope.launch {
             waitForFileSizeJob()
-            calculateAndCheckDiskSpace()
+            calculateAndCheckDiskSpaceAsync()
         }
 
         setupZielButton()
@@ -646,7 +651,7 @@ class DialogAddDownloadWithCoroutines(
     /**
      * Calculate free disk space on volume and check if the movies can be safely downloaded.
      */
-    fun calculateAndCheckDiskSpace() {
+    private fun calculateAndCheckDiskSpace(usableSpaceBytes: Long) {
         UIManager.getColor(KEY_LABEL_FOREGROUND)?.let { fgColor ->
             jRadioButtonAufloesungHd.foreground = fgColor
             jRadioButtonAufloesungHoch.foreground = fgColor
@@ -655,7 +660,7 @@ class DialogAddDownloadWithCoroutines(
 
         try {
             val filmBorder = jPanelSize.border as? javax.swing.border.TitledBorder ?: return
-            var usableSpace = getFreeDiskSpace(cbPathTextComponent.text)
+            var usableSpace = usableSpaceBytes
 
             filmBorder.title = if (usableSpace > 0) {
                 "$TITLED_BORDER_STRING [ Freier Speicherplatz: ${FileUtils.humanReadableByteCountBinary(usableSpace)} ]"
@@ -693,35 +698,62 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
+    private suspend fun calculateAndCheckDiskSpaceAsync() {
+        val currentPath = cbPathTextComponent.text
+        val usableSpace = withContext(Dispatchers.IO) {
+            getFreeDiskSpace(currentPath)
+        }
+        calculateAndCheckDiskSpace(usableSpace)
+    }
+
     private fun setupPathTextComponent() {
         cbPathTextComponent = jComboBoxPfad.editor.editorComponent as JTextComponent
         cbPathTextComponent.isOpaque = true
 
-        cbPathTextComponent.document.addDocumentListener(object : DocumentListener {
-            override fun insertUpdate(e: DocumentEvent?) = tus()
-            override fun removeUpdate(e: DocumentEvent?) = tus()
-            override fun changedUpdate(e: DocumentEvent?) = tus()
-
-            private fun fileNameCheck(filePath: String) {
-                val editor = jComboBoxPfad.editor.editorComponent
-                if (filePath != FilenameUtils.checkFilenameForIllegalCharacters(filePath, true)) {
-                    editor.background = MVColor.DOWNLOAD_FEHLER.color
-                } else {
-                    editor.background = UIManager.getColor(KEY_TEXTFIELD_BACKGROUND)
-                }
-            }
-
-            private fun tus() {
-                if (!stopBeob) {
-                    nameGeaendert = true
-                    // do not perform check on Windows
-                    if (!SystemUtils.IS_OS_WINDOWS) {
-                        (jComboBoxPfad.selectedItem as? String)?.let { fileNameCheck(it) }
+        pathDiskSpaceJob = coroutineScope.launch {
+            callbackFlow {
+                val document = cbPathTextComponent.document
+                val listener = object : DocumentListener {
+                    override fun insertUpdate(e: DocumentEvent?) {
+                        trySend(cbPathTextComponent.text)
                     }
-                    calculateAndCheckDiskSpace()
+
+                    override fun removeUpdate(e: DocumentEvent?) {
+                        trySend(cbPathTextComponent.text)
+                    }
+
+                    override fun changedUpdate(e: DocumentEvent?) {
+                        trySend(cbPathTextComponent.text)
+                    }
                 }
+
+                document.addDocumentListener(listener)
+                trySend(cbPathTextComponent.text)
+                awaitClose { document.removeDocumentListener(listener) }
             }
-        })
+                .debounce(250)
+                .distinctUntilChanged()
+                .collect { currentPath ->
+                    if (!stopBeob) {
+                        nameGeaendert = true
+                        // do not perform check on Windows
+                        if (!SystemUtils.IS_OS_WINDOWS) {
+                            fileNameCheck(currentPath)
+                        }
+                        calculateAndCheckDiskSpaceAsync()
+                    }
+                }
+        }
+
+    }
+
+    private fun fileNameCheck(filePath: String) {
+        val editor = jComboBoxPfad.editor.editorComponent
+        if (filePath != FilenameUtils.checkFilenameForIllegalCharacters(filePath, true)) {
+            editor.background = MVColor.DOWNLOAD_FEHLER.color
+        } else {
+            editor.background = UIManager.getColor(KEY_TEXTFIELD_BACKGROUND)
+        }
     }
 
     private fun setupNameTextField() {
