@@ -713,6 +713,7 @@ class DialogAddDownloadWithCoroutines(
         calculateAndCheckDiskSpace(usableSpace)
     }
 
+    @OptIn(FlowPreview::class)
     private fun setupPathTextComponent() {
         cbPathTextComponent = jComboBoxPfad.editor.editorComponent as JTextComponent
         cbPathTextComponent.isOpaque = true
@@ -837,23 +838,19 @@ class DialogAddDownloadWithCoroutines(
     private fun fetchFileSizeForQuality(resolution: FilmResolution.Enum): String {
         return runCatching {
             val url = film.getUrlFuerAufloesung(resolution)
-            film.getFileSizeForUrl(url)
+            film.getFileSizeForUrl(url, true)
         }.onFailure { logger.error("Failed to retrieve file size for $resolution", it) }
             .getOrDefault("")
     }
 
     private fun fetchFileSizeForNormalQuality(): String {
         return runCatching {
-            film.getFileSizeForUrl(film.urlNormalQuality)
+            film.getFileSizeForUrl(film.urlNormalQuality, true)
         }.onFailure { logger.error("Failed to retrieve normal quality size", it) }
             .getOrDefault("")
     }
 
     private suspend fun loadResolutionSizes() {
-        val configuration = ApplicationConfiguration.getConfiguration()
-        val fetchSizeBackup = configuration.getBoolean(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true)
-        configuration.setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true)
-
         try {
             val (hqSize, hochSize, kleinSize) = withContext(Dispatchers.IO) {
                 supervisorScope {
@@ -886,8 +883,6 @@ class DialogAddDownloadWithCoroutines(
             throw ex
         } catch (ex: Exception) {
             logger.error("Error occurred while fetching file sizes", ex)
-        } finally {
-            configuration.setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, fetchSizeBackup)
         }
     }
 
