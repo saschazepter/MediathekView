@@ -40,6 +40,7 @@ public class Konstanten {
 
     public static final String FULL_FILM_LIST = "Filmliste-akt.xz";
     public static final String DIFF_FILM_LIST = "Filmliste-diff.xz";
+    public static final long AUDIOTHEK_SEARCH_TIMEOUT_SECONDS = 45;
 
     public static final long ALTER_FILMLISTE_SEKUNDEN_FUER_AUTOUPDATE = TimeUnit.SECONDS.convert(3, TimeUnit.HOURS);
 
@@ -64,6 +65,8 @@ public class Konstanten {
     public static final HttpUrl WEBSITE_BASE_URL = HttpUrl.get("https://mediathekview.de");
     public static final HttpUrl URL_MEDIATHEKVIEW_RESOURCES = HttpUrl.get("https://res.mediathekview.de");
     public static final String AUDIOTHEK_ONLINE_SEARCH_PROXY_URL = "https://audiothek.crystalpalace.info";
+    public static final String AUDIOTHEK_PROXY_CLIENT_TOKEN_HEADER = "X-MV-Client-Token";
+    public static final String AUDIOTHEK_PROXY_CLIENT_TOKEN = "mv-audiothek-static-2026-03";
     public static final String PSET_PROGRAM_GROUP_LIST_PATH = "programmgruppen13/programmgruppen.xml";
     public static final String PROGRAM_VERSION_PATH = "prog-info-13.xml";
     public static final String ADRESSE_DOWNLOAD = "https://mediathekview.de/download/";

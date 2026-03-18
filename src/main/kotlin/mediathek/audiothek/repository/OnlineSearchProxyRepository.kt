@@ -39,9 +39,9 @@ import java.util.concurrent.TimeUnit
 
 class OnlineSearchProxyRepository(
     private val client: OkHttpClient = MVHttpClient.getInstance().httpClient.newBuilder()
-        .connectTimeout(20, TimeUnit.SECONDS)
-        .readTimeout(20, TimeUnit.SECONDS)
-        .writeTimeout(20, TimeUnit.SECONDS)
+        .connectTimeout(Konstanten.AUDIOTHEK_SEARCH_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        .readTimeout(Konstanten.AUDIOTHEK_SEARCH_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+        .writeTimeout(Konstanten.AUDIOTHEK_SEARCH_TIMEOUT_SECONDS, TimeUnit.SECONDS)
         .build()
 ) {
     private val logger = LogManager.getLogger(OnlineSearchProxyRepository::class.java)
@@ -69,6 +69,10 @@ class OnlineSearchProxyRepository(
         val request = Request.Builder()
             .url(requestUrl)
             .header("User-Agent", readUserAgent())
+            .header(
+                Konstanten.AUDIOTHEK_PROXY_CLIENT_TOKEN_HEADER,
+                Konstanten.AUDIOTHEK_PROXY_CLIENT_TOKEN
+            )
             .get()
             .build()
 
