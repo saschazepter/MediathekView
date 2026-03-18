@@ -220,7 +220,9 @@ new FormModel {
 				auxiliary() {
 					"JavaCodeGenerator.variableModifiers": 4
 				}
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) ) {
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
+					"alignment": 0
+				} ) {
 					name: "jPanel6"
 					auxiliary() {
 						"JavaCodeGenerator.variableLocal": true

@@ -166,11 +166,6 @@ class DialogAddDownloadWithCoroutines(
         updateMinimumSizeFromPackedLayout()
         constrainPackedSizeToScreen()
 
-        if (!SystemUtils.IS_OS_MAC_OSX) {
-            restoreWindowSizeFromConfig()
-            constrainPackedSizeToScreen()
-        }
-
         setLocationRelativeTo(parent)
 
         addComponentListener(DialogPositionComponentListener())
@@ -492,23 +487,6 @@ class DialogAddDownloadWithCoroutines(
                 setForeground(Color.RED)
             }
             btnRequestLiveInfo.setEnabled(false)
-        }
-    }
-
-    private fun restoreWindowSizeFromConfig() {
-        val config = ApplicationConfiguration.getConfiguration()
-        try {
-            config.lock(LockMode.READ)
-            val width = max(config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH), minimumDialogWidth)
-            val height = max(config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT), minimumDialogHeight)
-            val x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X)
-            val y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y)
-
-            setBounds(x, y, width, height)
-        } catch (_: NoSuchElementException) {
-            //do not restore anything
-        } finally {
-            config.unlock(LockMode.READ)
         }
     }
 

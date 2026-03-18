@@ -241,7 +241,7 @@ public class DialogAddDownload extends JDialog {
 
             //======== jPanel6 ========
             {
-                jPanel6.setLayout(new FlowLayout());
+                jPanel6.setLayout(new FlowLayout(FlowLayout.LEFT));
 
                 //---- jRadioButtonAufloesungHd ----
                 jRadioButtonAufloesungHd.setText("H\u00f6chste/Hoch");
