@@ -271,12 +271,12 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun isLowQualityRequested(): Boolean {
-        return activeProgramSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] == FilmResolution.Enum.LOW.toString() &&
+        return activeProgramSet.aufloesung == FilmResolution.Enum.LOW &&
                 film.lowQualityUrl.isNotEmpty()
     }
 
     private fun isHighQualityRequested(): Boolean {
-        return activeProgramSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] == FilmResolution.Enum.HIGH_QUALITY.toString()
+        return activeProgramSet.aufloesung == FilmResolution.Enum.HIGH_QUALITY
                 && film.isHighQuality
     }
 

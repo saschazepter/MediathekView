@@ -243,9 +243,11 @@ public class ListePsetVorlagen extends ArrayList<String[]> {
                     switch (parser.getLocalName()) {
                         case DatenPset.TAG:
                             datenPset = new DatenPset();
-                            if (!get(parser, DatenPset.TAG, DatenPset.XML_NAMES, datenPset.arr)) {
+                            String[] psetValues = new String[DatenPset.MAX_ELEM];
+                            if (!get(parser, DatenPset.TAG, DatenPset.XML_NAMES, psetValues)) {
                                 datenPset = null;
                             } else {
+                                datenPset.copyFrom(psetValues);
                                 if (!datenPset.isEmpty()) {
                                     //kann beim Einlesen der Konfigdatei vorkommen
                                     liste.add(datenPset);

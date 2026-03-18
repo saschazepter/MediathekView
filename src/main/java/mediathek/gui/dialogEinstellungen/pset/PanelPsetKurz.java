@@ -104,19 +104,19 @@ public class PanelPsetKurz extends PanelVorlage {
         }
         if (pSet != null) {
             jTextFieldName.setText(pSet.getName());
-            jTextArea1.setText(pSet.arr[DatenPset.PROGRAMMSET_BESCHREIBUNG]);
-            if (!pSet.istSpeichern() && pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD].isEmpty()) {
+            jTextArea1.setText(pSet.getBeschreibung());
+            if (!pSet.istSpeichern() && pSet.getZielPfad().isEmpty()) {
                 jTextFieldZiel.setEditable(false);
                 jButtonZiel.setEnabled(false);
             } else {
                 jTextFieldZiel.setEditable(true);
                 jButtonZiel.setEnabled(true);
                 // Zielpfad muss gesetzt werden
-                if (pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD].isEmpty()) {
-                    pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD] = SystemUtils.USER_HOME;
+                if (pSet.getZielPfad().isEmpty()) {
+                    pSet.setZielPfad(SystemUtils.USER_HOME);
                 }
             }
-            jTextFieldZiel.setText(pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD]);
+            jTextFieldZiel.setText(pSet.getZielPfad());
             extra();
         } else {
             jTextFieldName.setText("");
@@ -240,7 +240,7 @@ public class PanelPsetKurz extends PanelVorlage {
                     try {
                         textField.setText(chooser.getDirectory() + chooser.getFile());
                         if (arr == null) {
-                            pSet.arr[idx] = textField.getText();
+                            pSet.set(idx, textField.getText());
                         } else {
                             arr[idx] = textField.getText();
                         }
@@ -262,7 +262,7 @@ public class PanelPsetKurz extends PanelVorlage {
                     try {
                         textField.setText(chooser.getSelectedFile().getAbsolutePath());
                         if (arr == null) {
-                            pSet.arr[idx] = textField.getText();
+                            pSet.set(idx, textField.getText());
                         } else {
                             arr[idx] = textField.getText();
                         }
@@ -314,7 +314,7 @@ public class PanelPsetKurz extends PanelVorlage {
             if (!stopBeob) {
                 stopBeob = true;
                 if (arr == null) {
-                    pSet.arr[idx] = textField.getText();
+                    pSet.set(idx, textField.getText());
                 } else {
                     arr[idx] = textField.getText();
                 }
@@ -346,7 +346,7 @@ public class PanelPsetKurz extends PanelVorlage {
             }
             if (!stopBeob) {
                 stopBeob = true;
-                pSet.arr[DatenPset.PROGRAMMSET_NAME] = jTextFieldName.getText();
+                pSet.setName(jTextFieldName.getText());
                 int i = jListPset.getSelectedIndex();
                 jListPset.setModel(new DefaultComboBoxModel<>(listePset.getObjectDataCombo()));
                 jListPset.setSelectedIndex(i);

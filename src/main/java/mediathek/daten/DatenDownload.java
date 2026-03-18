@@ -159,7 +159,7 @@ public class DatenDownload implements Comparable<DatenDownload> {
         arr[DOWNLOAD_QUELLE] = String.valueOf(quelle);
         arr[DOWNLOAD_HISTORY_URL] = film.getUrlNormalQuality();
         if (aufloesung.isEmpty()) {
-            arr[DOWNLOAD_URL] = film.getUrlFuerAufloesung(FilmResolution.Enum.fromLegacyString(pSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG]));
+            arr[DOWNLOAD_URL] = film.getUrlFuerAufloesung(pSet.getAufloesung());
         } else {
             arr[DOWNLOAD_URL] = film.getUrlFuerAufloesung(FilmResolution.Enum.fromLegacyString(aufloesung));
         }
@@ -169,9 +169,9 @@ public class DatenDownload implements Comparable<DatenDownload> {
             arr[DOWNLOAD_URL] = getUrlWithoutParameters(arr[DOWNLOAD_URL]);
         }
 
-        arr[DatenDownload.DOWNLOAD_INFODATEI] = pSet.arr[DatenPset.PROGRAMMSET_INFODATEI];
-        arr[DatenDownload.DOWNLOAD_SUBTITLE] = pSet.arr[DatenPset.PROGRAMMSET_SUBTITLE];
-        arr[DatenDownload.DOWNLOAD_SPOTLIGHT] = pSet.arr[DatenPset.PROGRAMMSET_SPOTLIGHT];
+        arr[DatenDownload.DOWNLOAD_INFODATEI] = Boolean.toString(pSet.shouldCreateInfofile());
+        arr[DatenDownload.DOWNLOAD_SUBTITLE] = Boolean.toString(pSet.shouldDownloadSubtitle());
+        arr[DatenDownload.DOWNLOAD_SPOTLIGHT] = Boolean.toString(pSet.isSpotlight());
         if (!film.hasCountries())
             arr[DatenDownload.DOWNLOAD_GEO] = "";
         else {
@@ -636,10 +636,8 @@ public class DatenDownload implements Comparable<DatenDownload> {
             DatenProg programm = pSet.getProgUrl(arr[DOWNLOAD_URL]);
             // ##############################################
             // für die alten Versionen:
-            pSet.arr[DatenPset.PROGRAMMSET_ZIEL_DATEINAME] = pSet.arr[DatenPset.PROGRAMMSET_ZIEL_DATEINAME].replace("%n", "")
-                    .replace("%p", "");
-            pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD] = pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD].replace("%n", "")
-                    .replace("%p", "");
+            pSet.setZielDateiname(pSet.getZielDateiname().replace("%n", "").replace("%p", ""));
+            pSet.setZielPfad(pSet.getZielPfad().replace("%n", "").replace("%p", ""));
 
             for (DatenProg prog : pSet.getListeProg()) {
                 prog.arr[DatenProg.PROGRAMM_ZIEL_DATEINAME] = prog.arr[DatenProg.PROGRAMM_ZIEL_DATEINAME].replace("%n", "")
@@ -648,7 +646,7 @@ public class DatenDownload implements Comparable<DatenDownload> {
 
             // ##############################################
             // pSet und ... eintragen
-            arr[DOWNLOAD_PROGRAMMSET] = pSet.arr[DatenPset.PROGRAMMSET_NAME];
+            arr[DOWNLOAD_PROGRAMMSET] = pSet.get(DatenPset.PROGRAMMSET_NAME);
 
             // Direkter Download nur wenn url passt und wenn im Programm ein Zielpfad ist sonst Abspielen
             art = (pSet.checkDownloadDirekt(arr[DOWNLOAD_URL])
@@ -749,10 +747,10 @@ public class DatenDownload implements Comparable<DatenDownload> {
             }
 
             // Kürzen
-            if (Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_LAENGE_BESCHRAENKEN])) {
+            if (pSet.isLaengeBeschraenken()) {
                 int laenge = Konstanten.LAENGE_DATEINAME;
-                if (!pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE].isEmpty()) {
-                    laenge = Integer.parseInt(pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE]);
+                if (pSet.getMaxLaenge() != null) {
+                    laenge = pSet.getMaxLaenge();
                 }
                 name = GuiFunktionen.cutName(name, laenge);
             }
@@ -773,12 +771,12 @@ public class DatenDownload implements Comparable<DatenDownload> {
             if (abo != null) {
                 //Abos: den Namen des Abos eintragen
                 arr[DatenDownload.DOWNLOAD_ABO] = abo.getName();
-                if (Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_THEMA_ANLEGEN])) {
+                if (pSet.isThemaAnlegen()) {
                     //und Abopfad an den Pfad anhängen
                     path = GuiFunktionen.addsPfad(path, FilenameUtils.removeIllegalCharacters(abo.getZielpfad(), true));
                 }
             } else //Downloads
-                if (Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_THEMA_ANLEGEN])) {
+                if (pSet.isThemaAnlegen()) {
                     //und den Namen des Themas an den Zielpfad anhängen
                     path = GuiFunktionen.addsPfad(path, FilenameUtils.replaceLeerDateiname(arr[DatenDownload.DOWNLOAD_THEMA], true /*pfad*/,
                             Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_USE_REPLACETABLE)),
@@ -814,11 +812,11 @@ public class DatenDownload implements Comparable<DatenDownload> {
 
         int laenge = -1;
 
-        if (Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN])) {
+        if (pSet.isLaengeFieldBeschraenken()) {
             // nur dann ist was zu tun
             laenge = Konstanten.LAENGE_FELD;
-            if (!pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD].isEmpty()) {
-                laenge = Integer.parseInt(pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD]);
+            if (pSet.getMaxLaengeField() != null) {
+                laenge = pSet.getMaxLaengeField();
             }
         }
 
