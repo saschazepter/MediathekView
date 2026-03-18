@@ -41,16 +41,10 @@ public class DialogAddDownload extends JDialog {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     // Generated using JFormDesigner non-commercial license
     private void initComponents() {
-        var panel2 = new JPanel();
         var panel1 = new JPanel();
         btnQueueDownload = new JButton();
         btnDownloadImmediately = new JButton();
         jButtonAbbrechen = new JButton();
-        var jPanel1 = new JPanel();
-        var jPanel2 = new JPanel();
-        jCheckBoxInfodatei = new JCheckBox();
-        jCheckBoxPfadSpeichern = new JCheckBox();
-        jCheckBoxSubtitle = new DownloadSubtitleCheckBox();
         var jPanel7 = new JPanel();
         var jLabelSet = new JLabel();
         jComboBoxPset = new javax.swing.JComboBox<>();
@@ -61,6 +55,10 @@ public class DialogAddDownload extends JDialog {
         jButtonDelHistory = new JButton();
         var jLabel4 = new JLabel();
         jTextFieldName = new JTextField();
+        var jPanel2 = new JPanel();
+        jCheckBoxInfodatei = new JCheckBox();
+        jCheckBoxPfadSpeichern = new JCheckBox();
+        jCheckBoxSubtitle = new DownloadSubtitleCheckBox();
         jPanelSize = new JPanel();
         var jPanel6 = new JPanel();
         jRadioButtonAufloesungHd = new JRadioButton();
@@ -77,8 +75,6 @@ public class DialogAddDownload extends JDialog {
         //======== this ========
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Film speichern");
-        setMinimumSize(new Dimension(660, 420));
-        setPreferredSize(new Dimension(660, 420));
         var contentPane = getContentPane();
         contentPane.setLayout(new MigLayout(
             new LC().fillX().insets("dialog").hideMode(3),
@@ -89,142 +85,124 @@ public class DialogAddDownload extends JDialog {
             new AC()
                 .gap()
                 .gap()
-                .grow().fill().gap()
+                .gap()
+                .gap()
                 ));
 
-        //======== panel2 ========
+        //======== panel1 ========
         {
-            panel2.setLayout(new MigLayout(
-                new LC().fillX().insets("0").hideMode(3),
+            panel1.setLayout(new MigLayout(
+                new LC().insets("0").hideMode(3).alignX("right").gridGap("5", "5"),
                 // columns
                 new AC()
-                    .grow().fill(),
+                    .fill().gap()
+                    .fill().gap()
+                    .fill(),
                 // rows
                 new AC()
-                    ));
+                    .fill()));
 
-            //======== panel1 ========
-            {
-                panel1.setLayout(new MigLayout(
-                    new LC().insets("0").hideMode(3).alignX("right").gridGap("5", "5"),
-                    // columns
-                    new AC()
-                        .fill().gap()
-                        .fill().gap()
-                        .fill(),
-                    // rows
-                    new AC()
-                        .fill()));
+            //---- btnQueueDownload ----
+            btnQueueDownload.setText("In die Warteschlange");
+            panel1.add(btnQueueDownload, new CC().cell(0, 0));
 
-                //---- btnQueueDownload ----
-                btnQueueDownload.setText("In die Warteschlange");
-                panel1.add(btnQueueDownload, new CC().cell(0, 0));
+            //---- btnDownloadImmediately ----
+            btnDownloadImmediately.setText("Sofort laden");
+            panel1.add(btnDownloadImmediately, new CC().cell(1, 0));
 
-                //---- btnDownloadImmediately ----
-                btnDownloadImmediately.setText("Sofort laden");
-                panel1.add(btnDownloadImmediately, new CC().cell(1, 0));
-
-                //---- jButtonAbbrechen ----
-                jButtonAbbrechen.setText("Abbrechen");
-                panel1.add(jButtonAbbrechen, new CC().cell(2, 0));
-            }
-            panel2.add(panel1, new CC().cell(0, 0).alignX("right").growX());
+            //---- jButtonAbbrechen ----
+            jButtonAbbrechen.setText("Abbrechen");
+            panel1.add(jButtonAbbrechen, new CC().cell(2, 0));
         }
-        contentPane.add(panel2, new CC().cell(0, 3).growX());
+        contentPane.add(panel1, new CC().cell(0, 4).alignX("right"));
 
-        //======== jPanel1 ========
+        //======== jPanel7 ========
         {
-            jPanel1.setLayout(new MigLayout(
-                new LC().fillX().insets("0").hideMode(3),
+            jPanel7.setLayout(new MigLayout(
+                new LC().fillX().insets("0").hideMode(3).gridGap("5", "8"),
                 // columns
                 new AC()
+                    .align("right").gap()
                     .grow().fill(),
                 // rows
                 new AC()
                     .gap()
-                    .size("12").gap()
+                    .gap()
                     ));
 
-            //======== jPanel2 ========
+            //---- jLabelSet ----
+            jLabelSet.setText("Set:");
+            jPanel7.add(jLabelSet, new CC().cell(0, 0));
+            jPanel7.add(jComboBoxPset, new CC().cell(1, 0).growX());
+
+            //---- jLabel1 ----
+            jLabel1.setText("Zielpfad:");
+            jPanel7.add(jLabel1, new CC().cell(0, 1));
+
+            //======== jPanel4 ========
             {
-                jPanel2.setLayout(new GridLayout(2, 2));
-
-                //---- jCheckBoxInfodatei ----
-                jCheckBoxInfodatei.setText("Lege Infodatei an");
-                jCheckBoxInfodatei.setToolTipText("Erzeugt eine Infodatei im Format \"Infodatei.txt\"");
-                jPanel2.add(jCheckBoxInfodatei);
-
-                //---- jCheckBoxPfadSpeichern ----
-                jCheckBoxPfadSpeichern.setText("Zielpfad speichern");
-                jPanel2.add(jCheckBoxPfadSpeichern);
-                jPanel2.add(jCheckBoxSubtitle);
-            }
-            jPanel1.add(jPanel2, new CC().cell(0, 2).growX());
-
-            //======== jPanel7 ========
-            {
-                jPanel7.setLayout(new MigLayout(
-                    new LC().fillX().insets("0").hideMode(3).gridGap("5", "8"),
+                jPanel4.setLayout(new MigLayout(
+                    new LC().fillX().insets("0").hideMode(3).gridGap("5", "0"),
                     // columns
                     new AC()
-                        .align("right").gap()
-                        .grow().fill(),
+                        .grow().fill().gap()
+                        .size("pref!").gap()
+                        .size("pref!"),
                     // rows
                     new AC()
-                        .gap()
-                        .gap()
                         ));
 
-                //---- jLabelSet ----
-                jLabelSet.setText("Set:");
-                jPanel7.add(jLabelSet, new CC().cell(0, 0));
-                jPanel7.add(jComboBoxPset, new CC().cell(1, 0).growX());
+                //---- jComboBoxPfad ----
+                jComboBoxPfad.setEditable(true);
+                jPanel4.add(jComboBoxPfad, new CC().cell(0, 0).pushX().growX());
 
-                //---- jLabel1 ----
-                jLabel1.setText("Zielpfad:");
-                jPanel7.add(jLabel1, new CC().cell(0, 1));
+                //---- jButtonZiel ----
+                jButtonZiel.setText("F");
+                jButtonZiel.setToolTipText("Zielpfad ausw\u00e4hlen");
+                jPanel4.add(jButtonZiel, new CC().cell(1, 0));
 
-                //======== jPanel4 ========
-                {
-                    jPanel4.setLayout(new MigLayout(
-                        new LC().fillX().insets("0").hideMode(3).gridGap("5", "0"),
-                        // columns
-                        new AC()
-                            .grow().fill().gap()
-                            .size("pref!").gap()
-                            .size("pref!"),
-                        // rows
-                        new AC()
-                            ));
-
-                    //---- jComboBoxPfad ----
-                    jComboBoxPfad.setEditable(true);
-                    jPanel4.add(jComboBoxPfad, new CC().cell(0, 0).pushX().growX());
-
-                    //---- jButtonZiel ----
-                    jButtonZiel.setText("F");
-                    jButtonZiel.setToolTipText("Zielpfad ausw\u00e4hlen");
-                    jPanel4.add(jButtonZiel, new CC().cell(1, 0));
-
-                    //---- jButtonDelHistory ----
-                    jButtonDelHistory.setText("H");
-                    jButtonDelHistory.setToolTipText("History l\u00f6schen");
-                    jPanel4.add(jButtonDelHistory, new CC().cell(2, 0));
-                }
-                jPanel7.add(jPanel4, new CC().cell(1, 1).growX());
-
-                //---- jLabel4 ----
-                jLabel4.setText("Dateiname:");
-                jPanel7.add(jLabel4, new CC().cell(0, 2));
-
-                //---- jTextFieldName ----
-                jTextFieldName.setColumns(30);
-                jTextFieldName.setMinimumSize(new Dimension(0, 26));
-                jPanel7.add(jTextFieldName, new CC().cell(1, 2).pushX().growX());
+                //---- jButtonDelHistory ----
+                jButtonDelHistory.setText("H");
+                jButtonDelHistory.setToolTipText("History l\u00f6schen");
+                jPanel4.add(jButtonDelHistory, new CC().cell(2, 0));
             }
-            jPanel1.add(jPanel7, new CC().cell(0, 0).growX());
+            jPanel7.add(jPanel4, new CC().cell(1, 1).growX());
+
+            //---- jLabel4 ----
+            jLabel4.setText("Dateiname:");
+            jPanel7.add(jLabel4, new CC().cell(0, 2));
+
+            //---- jTextFieldName ----
+            jTextFieldName.setColumns(30);
+            jTextFieldName.setMinimumSize(new Dimension(0, 26));
+            jPanel7.add(jTextFieldName, new CC().cell(1, 2).pushX().growX());
         }
-        contentPane.add(jPanel1, new CC().cell(0, 1).growX());
+        contentPane.add(jPanel7, new CC().cell(0, 1).growX());
+
+        //======== jPanel2 ========
+        {
+            jPanel2.setLayout(new MigLayout(
+                new LC().fillX().insets("0").hideMode(3).gridGap("20", "6"),
+                // columns
+                new AC()
+                    .grow().fill().gap()
+                    .grow().fill(),
+                // rows
+                new AC()
+                    .gap()
+                    ));
+
+            //---- jCheckBoxInfodatei ----
+            jCheckBoxInfodatei.setText("Lege Infodatei an");
+            jCheckBoxInfodatei.setToolTipText("Erzeugt eine Infodatei im Format \"Infodatei.txt\"");
+            jPanel2.add(jCheckBoxInfodatei, new CC().cell(0, 0).alignX("left"));
+
+            //---- jCheckBoxPfadSpeichern ----
+            jCheckBoxPfadSpeichern.setText("Zielpfad speichern");
+            jPanel2.add(jCheckBoxPfadSpeichern, new CC().cell(1, 0).alignX("left"));
+            jPanel2.add(jCheckBoxSubtitle, new CC().cell(0, 1).alignX("left"));
+        }
+        contentPane.add(jPanel2, new CC().cell(0, 2).growX());
 
         //======== jPanelSize ========
         {
@@ -237,7 +215,7 @@ public class DialogAddDownload extends JDialog {
                 // rows
                 new AC()
                     .gap()
-                    .grow().fill()));
+                    ));
 
             //======== jPanel6 ========
             {
@@ -259,12 +237,21 @@ public class DialogAddDownload extends JDialog {
 
             //======== jPanel3 ========
             {
-                jPanel3.setLayout(new FlowLayout(FlowLayout.LEFT));
+                jPanel3.setLayout(new MigLayout(
+                    new LC().fillX().insets("0").hideMode(3).gridGap("10", "0"),
+                    // columns
+                    new AC()
+                        .size("pref!").gap()
+                        .size("pref!").gap()
+                        .grow().fill(),
+                    // rows
+                    new AC()
+                        ));
 
                 //---- btnRequestLiveInfo ----
                 btnRequestLiveInfo.setText("Codec-Details abrufen...");
-                jPanel3.add(btnRequestLiveInfo);
-                jPanel3.add(lblBusyIndicator);
+                jPanel3.add(btnRequestLiveInfo, new CC().cell(0, 0).alignY("top"));
+                jPanel3.add(lblBusyIndicator, new CC().cell(1, 0).alignY("top"));
 
                 //======== jPanel5 ========
                 {
@@ -278,16 +265,16 @@ public class DialogAddDownload extends JDialog {
                     lblAudioInfo.setText("audio");
                     jPanel5.add(lblAudioInfo);
                 }
-                jPanel3.add(jPanel5);
+                jPanel3.add(jPanel5, new CC().cell(2, 0).pushX().growX());
             }
-            jPanelSize.add(jPanel3, new CC().cell(0, 1).pushY().growX());
+            jPanelSize.add(jPanel3, new CC().cell(0, 1).growX());
         }
-        contentPane.add(jPanelSize, new CC().cell(0, 2).push().grow());
+        contentPane.add(jPanelSize, new CC().cell(0, 3).growX());
 
         //---- jTextFieldSender ----
         jTextFieldSender.setEditable(false);
         jTextFieldSender.setColumns(30);
-        jTextFieldSender.setMinimumSize(new Dimension(0, 26));
+        jTextFieldSender.setMinimumSize(new Dimension(0, 42));
         jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | Font.BOLD));
         jTextFieldSender.setText(" ARD: Tatort, ...");
         jTextFieldSender.setBorder(new TitledBorder("Film"));
@@ -307,14 +294,14 @@ public class DialogAddDownload extends JDialog {
     protected JButton btnQueueDownload;
     protected JButton btnDownloadImmediately;
     protected JButton jButtonAbbrechen;
-    protected JCheckBox jCheckBoxInfodatei;
-    protected JCheckBox jCheckBoxPfadSpeichern;
-    protected DownloadSubtitleCheckBox jCheckBoxSubtitle;
     protected JComboBox<String> jComboBoxPset;
     protected JComboBox<String> jComboBoxPfad;
     protected JButton jButtonZiel;
     protected JButton jButtonDelHistory;
     protected JTextField jTextFieldName;
+    protected JCheckBox jCheckBoxInfodatei;
+    protected JCheckBox jCheckBoxPfadSpeichern;
+    protected DownloadSubtitleCheckBox jCheckBoxSubtitle;
     protected JPanel jPanelSize;
     protected JRadioButton jRadioButtonAufloesungHd;
     protected JRadioButton jRadioButtonAufloesungHoch;

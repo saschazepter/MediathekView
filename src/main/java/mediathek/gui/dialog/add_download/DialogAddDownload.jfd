@@ -6,43 +6,111 @@ new FormModel {
 		add( new FormWindow( "javax.swing.JDialog", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 			"$layoutConstraints": "insets dialog,hidemode 3,fillx"
 			"$columnConstraints": "[grow,fill]"
-			"$rowConstraints": "[][][grow,fill][]"
+			"$rowConstraints": "[][][][][]"
 		} ) {
 			name: "this"
 			"defaultCloseOperation": 2
 			"title": "Film speichern"
-			"minimumSize": new java.awt.Dimension( 660, 420 )
-			"preferredSize": new java.awt.Dimension( 660, 420 )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-				"$layoutConstraints": "insets 0,hidemode 3,fillx"
-				"$columnConstraints": "[grow,fill]"
-				"$rowConstraints": "[]"
+				"$layoutConstraints": "insets 0,hidemode 3,alignx right,gap 5 5"
+				"$columnConstraints": "[fill][fill][fill]"
+				"$rowConstraints": "[fill]"
 			} ) {
-				name: "panel2"
+				name: "panel1"
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-					"$layoutConstraints": "insets 0,hidemode 3,alignx right,gap 5 5"
-					"$columnConstraints": "[fill][fill][fill]"
-					"$rowConstraints": "[fill]"
-				} ) {
-					name: "panel1"
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnQueueDownload"
+					"text": "In die Warteschlange"
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 4
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0"
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "btnDownloadImmediately"
+					"text": "Sofort laden"
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 4
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 0"
+				} )
+				add( new FormComponent( "javax.swing.JButton" ) {
+					name: "jButtonAbbrechen"
+					"text": "Abbrechen"
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 4
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 2 0"
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 4,alignx right"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "insets 0,hidemode 3,fillx,gap 5 8"
+				"$columnConstraints": "[right][grow,fill]"
+				"$rowConstraints": "[][][]"
+			} ) {
+				name: "jPanel7"
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "jLabelSet"
+					"text": "Set:"
 					auxiliary() {
 						"JavaCodeGenerator.variableLocal": true
 					}
-					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "btnQueueDownload"
-						"text": "In die Warteschlange"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0"
+				} )
+				add( new FormComponent( "javax.swing.JComboBox" ) {
+					name: "jComboBoxPset"
+					auxiliary() {
+						"JavaCodeGenerator.customCreateCode": "new javax.swing.JComboBox<>();"
+						"JavaCodeGenerator.typeParameters": "String"
+						"JavaCodeGenerator.variableModifiers": 4
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 0,growx"
+				} )
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "jLabel1"
+					"text": "Zielpfad:"
+					auxiliary() {
+						"JavaCodeGenerator.variableLocal": true
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 1"
+				} )
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "insets 0,hidemode 3,fillx,gap 5 0"
+					"$columnConstraints": "[grow,fill][pref!][pref!]"
+					"$rowConstraints": "[]"
+				} ) {
+					name: "jPanel4"
+					auxiliary() {
+						"JavaCodeGenerator.variableLocal": true
+					}
+					add( new FormComponent( "javax.swing.JComboBox" ) {
+						name: "jComboBoxPfad"
+						"editable": true
 						auxiliary() {
+							"JavaCodeGenerator.customCreateCode": "new javax.swing.JComboBox<>();"
+							"JavaCodeGenerator.typeParameters": "String"
 							"JavaCodeGenerator.variableModifiers": 4
 						}
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 0 0"
+						"value": "cell 0 0,growx,pushx"
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "btnDownloadImmediately"
-						"text": "Sofort laden"
+						name: "jButtonZiel"
+						"text": "F"
+						"toolTipText": "Zielpfad auswählen"
 						auxiliary() {
 							"JavaCodeGenerator.variableModifiers": 4
 						}
@@ -50,8 +118,9 @@ new FormModel {
 						"value": "cell 1 0"
 					} )
 					add( new FormComponent( "javax.swing.JButton" ) {
-						name: "jButtonAbbrechen"
-						"text": "Abbrechen"
+						name: "jButtonDelHistory"
+						"text": "H"
+						"toolTipText": "History löschen"
 						auxiliary() {
 							"JavaCodeGenerator.variableModifiers": 4
 						}
@@ -59,161 +128,73 @@ new FormModel {
 						"value": "cell 2 0"
 					} )
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 0,growx,alignx right"
+					"value": "cell 1 1,growx"
 				} )
-			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 3,growx"
-			} )
-			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-				"$layoutConstraints": "insets 0,hidemode 3,fillx"
-				"$columnConstraints": "[grow,fill]"
-				"$rowConstraints": "[][12][]"
-			} ) {
-				name: "jPanel1"
-				auxiliary() {
-					"JavaCodeGenerator.variableLocal": true
-				}
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridLayout ) {
-					"columns": 2
-					"rows": 2
-				} ) {
-					name: "jPanel2"
+				add( new FormComponent( "javax.swing.JLabel" ) {
+					name: "jLabel4"
+					"text": "Dateiname:"
 					auxiliary() {
 						"JavaCodeGenerator.variableLocal": true
 					}
-					add( new FormComponent( "javax.swing.JCheckBox" ) {
-						name: "jCheckBoxInfodatei"
-						"text": "Lege Infodatei an"
-						"toolTipText": "Erzeugt eine Infodatei im Format \"Infodatei.txt\""
-						auxiliary() {
-							"JavaCodeGenerator.variableModifiers": 4
-						}
-					} )
-					add( new FormComponent( "javax.swing.JCheckBox" ) {
-						name: "jCheckBoxPfadSpeichern"
-						"text": "Zielpfad speichern"
-						auxiliary() {
-							"JavaCodeGenerator.variableModifiers": 4
-						}
-					} )
-					add( new FormComponent( "mediathek.gui.dialog.add_download.DownloadSubtitleCheckBox" ) {
-						name: "jCheckBoxSubtitle"
-						auxiliary() {
-							"JavaCodeGenerator.variableModifiers": 4
-						}
-					} )
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 2,growx"
+					"value": "cell 0 2"
 				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-					"$layoutConstraints": "insets 0,hidemode 3,fillx,gap 5 8"
-					"$columnConstraints": "[right][grow,fill]"
-					"$rowConstraints": "[][][]"
-				} ) {
-					name: "jPanel7"
+				add( new FormComponent( "javax.swing.JTextField" ) {
+					name: "jTextFieldName"
+					"columns": 30
+					"minimumSize": new java.awt.Dimension( 0, 26 )
 					auxiliary() {
-						"JavaCodeGenerator.variableLocal": true
+						"JavaCodeGenerator.variableModifiers": 4
 					}
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "jLabelSet"
-						"text": "Set:"
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 0 0"
-					} )
-					add( new FormComponent( "javax.swing.JComboBox" ) {
-						name: "jComboBoxPset"
-						auxiliary() {
-							"JavaCodeGenerator.customCreateCode": "new javax.swing.JComboBox<>();"
-							"JavaCodeGenerator.typeParameters": "String"
-							"JavaCodeGenerator.variableModifiers": 4
-						}
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 1 0,growx"
-					} )
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "jLabel1"
-						"text": "Zielpfad:"
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 0 1"
-					} )
-					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
-						"$layoutConstraints": "insets 0,hidemode 3,fillx,gap 5 0"
-						"$columnConstraints": "[grow,fill][pref!][pref!]"
-						"$rowConstraints": "[]"
-					} ) {
-						name: "jPanel4"
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-						add( new FormComponent( "javax.swing.JComboBox" ) {
-							name: "jComboBoxPfad"
-							"editable": true
-							auxiliary() {
-								"JavaCodeGenerator.customCreateCode": "new javax.swing.JComboBox<>();"
-								"JavaCodeGenerator.typeParameters": "String"
-								"JavaCodeGenerator.variableModifiers": 4
-							}
-						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-							"value": "cell 0 0,growx,pushx"
-						} )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "jButtonZiel"
-							"text": "F"
-							"toolTipText": "Zielpfad auswählen"
-							auxiliary() {
-								"JavaCodeGenerator.variableModifiers": 4
-							}
-						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-							"value": "cell 1 0"
-						} )
-						add( new FormComponent( "javax.swing.JButton" ) {
-							name: "jButtonDelHistory"
-							"text": "H"
-							"toolTipText": "History löschen"
-							auxiliary() {
-								"JavaCodeGenerator.variableModifiers": 4
-							}
-						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-							"value": "cell 2 0"
-						} )
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 1 1,growx"
-					} )
-					add( new FormComponent( "javax.swing.JLabel" ) {
-						name: "jLabel4"
-						"text": "Dateiname:"
-						auxiliary() {
-							"JavaCodeGenerator.variableLocal": true
-						}
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 0 2"
-					} )
-					add( new FormComponent( "javax.swing.JTextField" ) {
-						name: "jTextFieldName"
-						"columns": 30
-						"minimumSize": new java.awt.Dimension( 0, 26 )
-						auxiliary() {
-							"JavaCodeGenerator.variableModifiers": 4
-						}
-					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-						"value": "cell 1 2,growx,pushx"
-					} )
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 0,growx"
+					"value": "cell 1 2,growx,pushx"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 1,growx"
 			} )
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+				"$layoutConstraints": "insets 0,hidemode 3,fillx,gap 20 6"
+				"$columnConstraints": "[grow,fill][grow,fill]"
+				"$rowConstraints": "[][]"
+			} ) {
+				name: "jPanel2"
+				auxiliary() {
+					"JavaCodeGenerator.variableLocal": true
+				}
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "jCheckBoxInfodatei"
+					"text": "Lege Infodatei an"
+					"toolTipText": "Erzeugt eine Infodatei im Format \"Infodatei.txt\""
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 4
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 0,alignx left"
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "jCheckBoxPfadSpeichern"
+					"text": "Zielpfad speichern"
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 4
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 1 0,alignx left"
+				} )
+				add( new FormComponent( "mediathek.gui.dialog.add_download.DownloadSubtitleCheckBox" ) {
+					name: "jCheckBoxSubtitle"
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 4
+					}
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 1,alignx left"
+				} )
+			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+				"value": "cell 0 2,growx"
+			} )
+			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$layoutConstraints": "insets 0,hidemode 3,fillx"
 				"$columnConstraints": "[grow,fill]"
-				"$rowConstraints": "[][grow,fill]"
+				"$rowConstraints": "[][]"
 			} ) {
 				name: "jPanelSize"
 				"border": new javax.swing.border.TitledBorder( "Download-Qualität" )
@@ -254,8 +235,10 @@ new FormModel {
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 0 0,alignx left"
 				} )
-				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.FlowLayout ) {
-					"alignment": 0
+				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
+					"$layoutConstraints": "insets 0,hidemode 3,fillx,gap 10 0"
+					"$columnConstraints": "[pref!][pref!][grow,fill]"
+					"$rowConstraints": "[]"
 				} ) {
 					name: "jPanel3"
 					auxiliary() {
@@ -267,12 +250,16 @@ new FormModel {
 						auxiliary() {
 							"JavaCodeGenerator.variableModifiers": 4
 						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 0 0,aligny top"
 					} )
 					add( new FormComponent( "org.jdesktop.swingx.JXBusyLabel" ) {
 						name: "lblBusyIndicator"
 						auxiliary() {
 							"JavaCodeGenerator.variableModifiers": 4
 						}
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 1 0,aligny top"
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.GridLayout ) {
 						"columns": 1
@@ -296,18 +283,20 @@ new FormModel {
 								"JavaCodeGenerator.variableModifiers": 4
 							}
 						} )
+					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+						"value": "cell 2 0,growx,pushx"
 					} )
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-					"value": "cell 0 1,growx,pushy"
+					"value": "cell 0 1,growx"
 				} )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 0 2,grow,push"
+				"value": "cell 0 3,growx"
 			} )
 			add( new FormComponent( "javax.swing.JTextField" ) {
 				name: "jTextFieldSender"
 				"editable": false
 				"columns": 30
-				"minimumSize": new java.awt.Dimension( 0, 26 )
+				"minimumSize": new java.awt.Dimension( 0, 42 )
 				"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
 				"text": " ARD: Tatort, ..."
 				"border": new javax.swing.border.TitledBorder( "Film" )
