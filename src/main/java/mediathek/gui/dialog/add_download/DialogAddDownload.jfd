@@ -304,7 +304,6 @@ new FormModel {
 				name: "jTextFieldSender"
 				"editable": false
 				"columns": 30
-				"minimumSize": new java.awt.Dimension( 0, 42 )
 				"font": new com.jformdesigner.model.SwingDerivedFont( null, 1, 0, false )
 				"text": " ARD: Tatort, ..."
 				"border": new javax.swing.border.TitledBorder( "Film" )

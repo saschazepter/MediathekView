@@ -283,7 +283,6 @@ public class DialogAddDownload extends JDialog {
         //---- jTextFieldSender ----
         jTextFieldSender.setEditable(false);
         jTextFieldSender.setColumns(30);
-        jTextFieldSender.setMinimumSize(new Dimension(0, 42));
         jTextFieldSender.setFont(jTextFieldSender.getFont().deriveFont(jTextFieldSender.getFont().getStyle() | Font.BOLD));
         jTextFieldSender.setText(" ARD: Tatort, ...");
         jTextFieldSender.setBorder(new TitledBorder("Film"));

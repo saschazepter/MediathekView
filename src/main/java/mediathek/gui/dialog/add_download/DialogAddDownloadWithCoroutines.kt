@@ -194,7 +194,9 @@ class DialogAddDownloadWithCoroutines(
 
     private fun setupUI() {
         setupBusyIndicator()
+        stabilizeLiveInfoArea()
         detectFfprobeExecutable()
+        updateSenderFieldMinimumHeight()
 
         coroutineScope.launch {
             loadResolutionSizes()
@@ -221,6 +223,27 @@ class DialogAddDownloadWithCoroutines(
         setupInfoFileCreationCheckBox()
 
         nameGeaendert = false
+    }
+
+    private fun stabilizeLiveInfoArea() {
+        val originalStatus = lblStatus.text
+        val originalAudioInfo = lblAudioInfo.text
+
+        lblStatus.text = "Video: 1920x1080, 2220 kBit/s, 50 fps (avg), H.264"
+        lblAudioInfo.text = "Audio: 48000 Hz, 128 kBit/s, AAC (Advanced Audio Coding)"
+
+        lblStatus.preferredSize = lblStatus.preferredSize
+        lblStatus.minimumSize = lblStatus.preferredSize
+        lblAudioInfo.preferredSize = lblAudioInfo.preferredSize
+        lblAudioInfo.minimumSize = lblAudioInfo.preferredSize
+
+        lblStatus.text = originalStatus
+        lblAudioInfo.text = originalAudioInfo
+    }
+
+    private fun updateSenderFieldMinimumHeight() {
+        val preferredHeight = jTextFieldSender.preferredSize.height
+        jTextFieldSender.minimumSize = Dimension(0, preferredHeight)
     }
 
     private fun updateMinimumSizeFromPackedLayout() {
