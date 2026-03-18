@@ -45,7 +45,7 @@ jobs:
         run: echo "The version is $MV_VERSION"
 
       - name: Set up Java 25 (Liberica) & cache Maven
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: liberica
           java-version: '25'
