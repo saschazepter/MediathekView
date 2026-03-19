@@ -477,14 +477,12 @@ public class FilmInfoDialog extends JDialog {
         contentPane.add(label2, "cell 0 1");
 
         //---- lblThema ----
-        lblThema.setPreferredSize(new Dimension(443, 32));
-        lblThema.setMinimumSize(new Dimension(51, 32));
-        contentPane.add(lblThema, "cell 1 1");
+        contentPane.add(lblThema, "cell 1 1,growx,wmin 0");
 
         //---- label3 ----
         label3.setText("Titel:");
         contentPane.add(label3, "cell 0 2");
-        contentPane.add(lblTitel, "cell 1 2");
+        contentPane.add(lblTitel, "cell 1 2,growx,wmin 0");
 
         //---- label4 ----
         label4.setText("Datum:");
