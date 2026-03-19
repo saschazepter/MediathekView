@@ -10,8 +10,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.RowSorter.SortKey;
+import javax.swing.plaf.UIResource;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumnModel;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -62,6 +64,23 @@ public abstract class MVTable extends JTable {
         calculateRowHeight();
 
         MessageBus.getMessageBus().subscribe(this);
+    }
+
+    protected Color defaultRowBackground(int row) {
+        if ((row % 2) != 0) {
+            var alternateRowColor = UIManager.getColor("Table.alternateRowColor");
+            if (alternateRowColor != null) {
+                return alternateRowColor;
+            }
+        }
+
+        var background = getBackground();
+        if (!(background instanceof UIResource)) {
+            return background;
+        }
+
+        var tableBackground = UIManager.getColor("Table.background");
+        return tableBackground != null ? tableBackground : background;
     }
 
     @Handler

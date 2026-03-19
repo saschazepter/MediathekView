@@ -1,25 +1,114 @@
 package mediathek.tool.table;
 
+import mediathek.config.MVColor;
 import mediathek.config.MVConfig;
+import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.tabs.tab_film.GuiFilme;
 import mediathek.tool.FilmSize;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.NotNull;
 
+import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import java.awt.*;
 import java.awt.event.MouseEvent;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
 
 public class MVFilmTable extends MVTable {
     private static final Logger logger = LogManager.getLogger();
+    private final SeenHistoryController history = new SeenHistoryController();
+    private final List<Color> bgList = new ArrayList<>();
     private MyRowSorter<TableModel> sorter;
 
-    @Override public String getToolTipText(MouseEvent e) {
+    public MVFilmTable() {
+        super(DatenFilm.MAX_ELEM, GuiFilme.VISIBLE_COLUMNS,
+                Optional.of(MVConfig.Configs.SYSTEM_TAB_FILME_ICON_ANZEIGEN),
+                Optional.of(MVConfig.Configs.SYSTEM_TAB_FILME_ICON_KLEIN),
+                Optional.of(MVConfig.Configs.SYSTEM_EIGENSCHAFTEN_TABELLE_FILME));
+
+        setAutoCreateRowSorter(false);
+        addPropertyChangeListener("model", evt -> {
+            //we need to setup sorter later as the model is invalid at ctor point...
+            var model = (TableModel) evt.getNewValue();
+            if (sorter == null) {
+                sorter = new MyRowSorter<>(model);
+                sorter.setModel(model);
+                setRowSorter(sorter);
+            }
+            else
+                sorter.setModel(model);
+        });
+    }
+
+    protected static Color blend(Collection<Color> colors) {
+        if (colors == null || colors.isEmpty()) {
+            return null;
+        }
+
+        int a = 0;
+        int r = 0;
+        int g = 0;
+        int b = 0;
+
+        for (Color color : colors) {
+            a += color.getAlpha();
+            r += color.getRed();
+            g += color.getGreen();
+            b += color.getBlue();
+        }
+
+        int size = colors.size();
+        return new Color(r / size, g / size, b / size, a / size);
+    }
+
+    @Override
+    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+        var selected = isRowSelected(row);
+
+        var component = super.prepareRenderer(renderer, row, column);
+        if (!selected) {
+            component.setBackground(defaultRowBackground(row));
+            var film = (DatenFilm) getModel().getValueAt(convertRowIndexToModel(row), DatenFilm.FILM_REF);
+            applyNewColorSetting(component, film);
+            applyColorSettings(component, film);
+        }
+
+        return component;
+    }
+
+    private void applyNewColorSetting(Component c, @NotNull DatenFilm datenFilm) {
+        if (datenFilm.isNew()) {
+            c.setForeground(MVColor.getNewColor());
+        }
+    }
+
+    private void applyColorSettings(Component c, @NotNull DatenFilm datenFilm) {
+        bgList.clear();
+        bgList.add(c.getBackground());
+
+        if (history.hasBeenSeenFromCache(datenFilm)) {
+            bgList.add(MVColor.FILM_HISTORY.color);
+        }
+        if (datenFilm.isBookmarked()) {
+            bgList.add(MVColor.FILM_BOOKMARKED.color);
+        }
+        if (datenFilm.isDuplicate()) {
+            bgList.add(MVColor.FILM_DUPLICATE.color);
+        }
+
+        if (bgList.size() >= 2)
+            c.setBackground(blend(bgList));
+        else
+            c.setBackground(bgList.getFirst());
+    }
+
+    @Override
+    public String getToolTipText(MouseEvent e) {
         var p = e.getPoint(); // MouseEvent
         final int viewColumn = columnAtPoint(p);
         final int modelColumnIndex = convertColumnIndexToModel(viewColumn);
@@ -42,32 +131,12 @@ public class MVFilmTable extends MVTable {
 
                 toolTipText = datenFilm.getTitle();
             }
-        } catch (RuntimeException ignored) {
+        }
+        catch (RuntimeException ignored) {
             //catch null pointer exception if mouse is over an empty line
         }
 
         return toolTipText;
-    }
-
-
-    public MVFilmTable() {
-        super(DatenFilm.MAX_ELEM, GuiFilme.VISIBLE_COLUMNS,
-                Optional.of(MVConfig.Configs.SYSTEM_TAB_FILME_ICON_ANZEIGEN),
-                Optional.of(MVConfig.Configs.SYSTEM_TAB_FILME_ICON_KLEIN),
-                Optional.of(MVConfig.Configs.SYSTEM_EIGENSCHAFTEN_TABELLE_FILME));
-
-        setAutoCreateRowSorter(false);
-        addPropertyChangeListener("model", evt -> {
-            //we need to setup sorter later as the model is invalid at ctor point...
-            var model = (TableModel) evt.getNewValue();
-            if (sorter == null) {
-                sorter = new MyRowSorter<>(model);
-                sorter.setModel(model);
-                setRowSorter(sorter);
-            }
-            else
-                sorter.setModel(model);
-        });
     }
 
     private void resetFilmeTab(int i) {
@@ -79,7 +148,7 @@ public class MVFilmTable extends MVTable {
             case DatenFilm.FILM_NR -> breite[i] = 75;
             case DatenFilm.FILM_TITEL -> breite[i] = 300;
             case DatenFilm.FILM_DATUM, DatenFilm.FILM_ZEIT, DatenFilm.FILM_SENDER, DatenFilm.FILM_GROESSE,
-                    DatenFilm.FILM_DAUER, DatenFilm.FILM_GEO -> breite[i] = 100;
+                 DatenFilm.FILM_DAUER, DatenFilm.FILM_GEO -> breite[i] = 100;
             case DatenFilm.FILM_URL -> breite[i] = 500;
             case DatenFilm.FILM_ABSPIELEN, DatenFilm.FILM_AUFZEICHNEN, DatenFilm.FILM_MERKEN -> breite[i] = 20;
             case DatenFilm.FILM_HD, DatenFilm.FILM_UT -> breite[i] = 50;
@@ -125,13 +194,13 @@ public class MVFilmTable extends MVTable {
         var rowSorter = getRowSorter();
         if (rowSorter != null) {
             listeSortKeys = rowSorter.getSortKeys();
-        } else {
+        }
+        else {
             listeSortKeys = null;
         }
     }
 
-    private void reorderColumns()
-    {
+    private void reorderColumns() {
         final TableColumnModel model = getColumnModel();
         var numCols = getColumnCount();
         for (int i = 0; i < reihe.length && i < numCols; ++i) {
@@ -141,8 +210,7 @@ public class MVFilmTable extends MVTable {
         }
     }
 
-    private void restoreSortKeys()
-    {
+    private void restoreSortKeys() {
         if (listeSortKeys != null) {
             var rowSorter = getRowSorter();
             var tblSortKeys = rowSorter.getSortKeys();
@@ -173,7 +241,8 @@ public class MVFilmTable extends MVTable {
             restoreSelectedTableRows();
 
             validate();
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             logger.error("setSpalten", ex);
         }
     }
