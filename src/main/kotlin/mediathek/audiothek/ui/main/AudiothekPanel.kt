@@ -68,7 +68,7 @@ import javax.swing.*
 
 class AudiothekPanel(
     private val repository: AudioRepository
-) : JPanel(BorderLayout(10, 10)) {
+) : JPanel(BorderLayout()) {
     private val logger = LogManager.getLogger(AudiothekPanel::class.java)
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private var loadJob: Job? = null
