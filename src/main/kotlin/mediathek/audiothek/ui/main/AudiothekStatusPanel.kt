@@ -25,7 +25,7 @@ import javax.swing.JPanel
 import javax.swing.SwingConstants
 
 class AudiothekStatusPanel : JXStatusBar() {
-    private val sourceLabel = JLabel("Stand: -")
+    private val sourceLabel = JLabel("Podcast-Liste erstellt: -")
     private val agePanel = AudiothekAgePanel()
     private val activeDownloadsLabel = JLabel("")
     private val countLabel = JLabel("0 Einträge", SwingConstants.RIGHT)
@@ -52,14 +52,6 @@ class AudiothekStatusPanel : JXStatusBar() {
 
     fun setAge(text: String) {
         agePanel.setAge(text)
-    }
-
-    fun addReloadListener(action: () -> Unit) {
-        agePanel.addReloadListener(action)
-    }
-
-    fun setReloadEnabled(enabled: Boolean) {
-        agePanel.setReloadEnabled(enabled)
     }
 
     fun setCount(text: String) {

@@ -22,6 +22,7 @@ import com.formdev.flatlaf.FlatClientProperties
 import mediathek.audiothek.ui.download.CircularProgressIcon
 import mediathek.audiothek.ui.download.DownloadSummary
 import org.jdesktop.swingx.JXBusyLabel
+import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import org.kordamp.ikonli.materialdesign2.MaterialDesignT
 import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Dimension
@@ -40,6 +41,11 @@ class AudiothekToolBar : JToolBar() {
     }
 
     private val searchField = JTextField(SEARCH_FIELD_COLUMNS)
+    private val reloadButton = JButton().apply {
+        icon = FontIcon.of(FontAwesomeSolid.RECYCLE, ICON_SIZE)
+        toolTipText = "Lokale Podcast-Daten aktualisieren"
+        isFocusable = false
+    }
     private val helpButton = JButton()
     private val onlineSearchCheckBox = JCheckBox("Online-Suche", true).apply {
         toolTipText = "Online-Suche via podcastindex.org nutzen"
@@ -63,6 +69,10 @@ class AudiothekToolBar : JToolBar() {
 
     fun addFilterSubmitListener(action: (String) -> Unit) {
         searchField.addActionListener { action(searchField.text) }
+    }
+
+    fun addReloadListener(action: () -> Unit) {
+        reloadButton.addActionListener { action() }
     }
 
     fun addDownloadManagerListener(action: () -> Unit) {
@@ -124,6 +134,7 @@ class AudiothekToolBar : JToolBar() {
 
     fun setLoading(loading: Boolean) {
         searchField.isEnabled = !loading
+        reloadButton.isEnabled = !loading
         helpButton.isEnabled = !loading
         onlineSearchCheckBox.isEnabled = !loading
     }
@@ -146,6 +157,8 @@ class AudiothekToolBar : JToolBar() {
     }
 
     private fun buildLayout() {
+        add(reloadButton)
+        addSeparator()
         add(JLabel("Suche:"))
         add(searchField)
         addSeparator()

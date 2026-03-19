@@ -178,7 +178,7 @@ class AudiothekPanel(
                 }
             }
         })
-        statusPanel.addReloadListener { triggerLoad(isManualReload = true) }
+        toolBar.addReloadListener { triggerLoad(isManualReload = true) }
         table.addEntrySelectionListener {
             if (!it.valueIsAdjusting) {
                 detailsPanel.setCurrentAudioEntry(table.selectedEntry())
@@ -229,18 +229,12 @@ class AudiothekPanel(
         loadJob = uiScope.launch {
             setLoadingState(true)
             hideErrorOverlay()
-            if (isManualReload) {
-                statusPanel.setReloadEnabled(false)
-            }
 
             try {
                 runCatching { repository.loadAudiothek(useCachedOnDownloadFailure = !isManualReload) }
                     .onSuccess { handleLoadSuccess(it, isManualReload) }
                     .onFailure { handleLoadFailure(it, isManualReload) }
             } finally {
-                if (isManualReload) {
-                    statusPanel.setReloadEnabled(true)
-                }
                 setLoadingState(false)
             }
         }
@@ -256,7 +250,7 @@ class AudiothekPanel(
         table.setRows(result.dataset.entries)
         applyFilterNow(toolBar.currentQuery())
         statusPanel.setStandVisible(true)
-        statusPanel.setStand("Stand: ${result.dataset.metaLocal?.format(DATASET_TIMESTAMP_FORMAT) ?: "-"}")
+        statusPanel.setStand("Podcast-Liste erstellt: ${result.dataset.metaLocal?.format(DATASET_TIMESTAMP_FORMAT) ?: "-"}")
         startAgeTicker()
         refreshSelectionState()
         if (isManualReload) {
@@ -293,7 +287,7 @@ class AudiothekPanel(
         showErrorOverlay()
         detailsPanel.setCurrentAudioEntry(null)
         statusPanel.setStandVisible(false)
-        statusPanel.setStand("Stand: -")
+        statusPanel.setStand("Podcast-Liste erstellt: -")
         statusPanel.setAge("")
         statusPanel.setCount("0 Einträge")
     }
@@ -657,7 +651,7 @@ class AudiothekPanel(
     }
 
     companion object {
-        private val DATASET_TIMESTAMP_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss")
+        private val DATASET_TIMESTAMP_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm")
         private val PODCAST_QUERY_TOKEN_REGEX = """[^\s:]+:"[^"]*"|[^\s]+""".toRegex()
         private val PODCAST_EXCLUDED_FIELD_KEYS = setOf(
             "sender",
