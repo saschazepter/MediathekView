@@ -98,7 +98,7 @@
         <caffeine.version>3.2.3</caffeine.version>
         <kotlinx-serialization.version>1.9.0</kotlinx-serialization.version>
         <dd-plist.version>1.28</dd-plist.version>
-        <flatlaf.version>3.7</flatlaf.version>
+        <flatlaf.version>3.7.1</flatlaf.version>
         <glazedlists.version>1.11.0</glazedlists.version>
         <ikonli.version>12.4.0</ikonli.version>
         <jackson.version>3.1.0</jackson.version>

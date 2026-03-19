@@ -1,4 +1,7 @@
 # **14.6.0**
+- **BUGFIX:** Dialog "Film speichern" neu geschrieben um vorhandene Layout-Probleme zu beheben.
+- **FEATURE:** Tab *Audiothek* zur Suche (offline als auch online), Abspielen und Download von Podcasts der ARD Audiothek und via podcastindex.org.
+- interne Optimierungen für mehr Geschwindigkeit
 
 # **14.5.0**
 - **BUGFIX(Linux):** Tray-Icon Funktion wird für KDE deaktiviert, das sie hier nicht richtig funktioniert.
