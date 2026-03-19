@@ -93,6 +93,11 @@ class DialogAddDownloadWithCoroutines(
         val low: String
     )
 
+    private data class StoredDialogPosition(
+        val x: Int,
+        val y: Int
+    )
+
     private val uiScopeDelegate = lazy(LazyThreadSafetyMode.NONE) {
         CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     }
@@ -106,6 +111,7 @@ class DialogAddDownloadWithCoroutines(
     private var nameGeaendert = false
     private var ffprobePath: Path? = null
     private var orgPfad = ""
+    private val appConfig get() = ApplicationConfiguration.getConfiguration()
     private val listeSpeichern: ListePset = Daten.listePset.listeSpeichern
     private lateinit var resolutionButtonLabels: ResolutionButtonLabels
     private lateinit var cbPathTextComponent: JTextComponent
@@ -240,7 +246,7 @@ class DialogAddDownloadWithCoroutines(
             normal = jRadioButtonAufloesungHoch.text,
             low = jRadioButtonAufloesungKlein.text
         )
-        setupSenderTextField()
+        setupFilmHeader()
         setupFilmQualityRadioButtons()
         setupDeleteHistoryButton()
         setupPfadSpeichernCheckBox()
@@ -328,38 +334,42 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun restoreWindowPositionFromConfig(parent: Frame) {
-        val config = ApplicationConfiguration.getConfiguration()
-        try {
-            config.lock(LockMode.READ)
-            val x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X)
-            val y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y)
-            applyStoredPosition(x, y)
-        } catch (_: NoSuchElementException) {
+        val storedPosition = readStoredDialogPosition()
+        if (storedPosition == null) {
             setLocationRelativeTo(parent)
-        } finally {
-            config.unlock(LockMode.READ)
+        } else {
+            applyStoredPosition(storedPosition)
         }
     }
 
     private fun removeStoredWindowSizeFromConfig() {
-        val config = ApplicationConfiguration.getConfiguration()
-        try {
-            config.lock(LockMode.WRITE)
-            config.clearProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH)
-            config.clearProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT)
-        } finally {
-            config.unlock(LockMode.WRITE)
+        withConfigLock(LockMode.WRITE) {
+            appConfig.clearProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH)
+            appConfig.clearProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT)
         }
     }
 
-    private fun applyStoredPosition(x: Int, y: Int) {
+    private fun readStoredDialogPosition(): StoredDialogPosition? {
+        return try {
+            withConfigLock(LockMode.READ) {
+                StoredDialogPosition(
+                    x = appConfig.getInt(ApplicationConfiguration.AddDownloadDialog.X),
+                    y = appConfig.getInt(ApplicationConfiguration.AddDownloadDialog.Y)
+                )
+            }
+        } catch (_: NoSuchElementException) {
+            null
+        }
+    }
+
+    private fun applyStoredPosition(position: StoredDialogPosition) {
         val usableBounds = getUsableScreenBounds()
         val boundedWidth = width.coerceAtMost(usableBounds.width)
         val boundedHeight = height.coerceAtMost(usableBounds.height)
         val maxX = usableBounds.x + usableBounds.width - boundedWidth
         val maxY = usableBounds.y + usableBounds.height - boundedHeight
-        val boundedX = x.coerceIn(usableBounds.x, maxX)
-        val boundedY = y.coerceIn(usableBounds.y, maxY)
+        val boundedX = position.x.coerceIn(usableBounds.x, maxX)
+        val boundedY = position.y.coerceIn(usableBounds.y, maxY)
         setLocation(boundedX, boundedY)
     }
 
@@ -464,41 +474,39 @@ class DialogAddDownloadWithCoroutines(
         // beim ersten Mal werden die Standardpfade gesucht
         if (!nameGeaendert) {
             // nur wenn vom Benutzer noch nicht geändert!
-            stopBeob = true
+            pausePathObservation {
+                datenDownload = DatenDownload(
+                    activeProgramSet,
+                    film,
+                    DatenDownload.QUELLE_DOWNLOAD,
+                    null,
+                    "",
+                    "",
+                    getFilmResolution().toString()
+                )
 
-            datenDownload = DatenDownload(
-                activeProgramSet,
-                film,
-                DatenDownload.QUELLE_DOWNLOAD,
-                null,
-                "",
-                "",
-                getFilmResolution().toString()
-            )
-
-            if (datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME].isEmpty()) {
-                // dann wird nicht gespeichert → eigentlich falsche Seteinstellungen?
-                jTextFieldName.apply {
-                    isEnabled = false
-                    text = ""
+                if (datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME].isEmpty()) {
+                    // dann wird nicht gespeichert → eigentlich falsche Seteinstellungen?
+                    jTextFieldName.apply {
+                        isEnabled = false
+                        text = ""
+                    }
+                    jComboBoxPfad.apply {
+                        isEnabled = false
+                        model = DefaultComboBoxModel(arrayOf(""))
+                    }
+                    jButtonZiel.isEnabled = false
+                } else {
+                    jTextFieldName.apply {
+                        isEnabled = true
+                        text = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME]
+                    }
+                    jComboBoxPfad.isEnabled = true
+                    jButtonZiel.isEnabled = true
+                    setModelPfad(datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD], jComboBoxPfad)
+                    orgPfad = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD]
                 }
-                jComboBoxPfad.apply {
-                    isEnabled = false
-                    model = DefaultComboBoxModel(arrayOf(""))
-                }
-                jButtonZiel.isEnabled = false
-            } else {
-                jTextFieldName.apply {
-                    isEnabled = true
-                    text = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME]
-                }
-                jComboBoxPfad.isEnabled = true
-                jButtonZiel.isEnabled = true
-                setModelPfad(datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD], jComboBoxPfad)
-                orgPfad = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD]
             }
-
-            stopBeob = false
         }
     }
 
@@ -574,7 +582,7 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
-    private fun setupSenderTextField() {
+    private fun setupFilmHeader() {
         lblSenderIcon.setMaxIconSize(Dimension(64, 64))
         lblSenderIcon.setSender(film.sender)
         lblFilmTitle.text = toWrappedHeaderText(film.title, HEADER_TEXT_WIDTH)
@@ -593,11 +601,10 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun setupPfadSpeichernCheckBox() {
-        val config = ApplicationConfiguration.getConfiguration()
         jCheckBoxPfadSpeichern.apply {
-            setSelected(config.getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true))
+            setSelected(appConfig.getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true))
             addActionListener {
-                config.setProperty(
+                appConfig.setProperty(
                     ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH,
                     jCheckBoxPfadSpeichern.isSelected
                 )
@@ -622,7 +629,7 @@ class DialogAddDownloadWithCoroutines(
 
     private fun setupBusyIndicator() {
         lblBusyIndicator.apply {
-            setText("")
+            text = ""
             isBusy = false
             isVisible = false
         }
@@ -738,17 +745,15 @@ class DialogAddDownloadWithCoroutines(
     private fun safeProcessBitRate(inBitRate: Int?): Int = (inBitRate ?: 0) / 1000
 
     private fun getJaffreeErrorString(ex: JaffreeAbnormalExitException): String {
-        return try {
-            val msg = ex.processErrorLogMessages.first().message.split(":")
-            val errMsg = msg.last().trim()
-            if (errMsg.startsWith("Server returned ")) {
-                errMsg.removePrefix("Server returned ").trim()
-            } else {
-                "Unbekannter Fehler aufgetreten."
-            }
-        } catch (_: Exception) {
-            "Unbekannter Fehler aufgetreten."
-        }
+        return ex.processErrorLogMessages
+            .firstOrNull()
+            ?.message
+            ?.substringAfterLast(':')
+            ?.trim()
+            ?.takeIf { it.startsWith("Server returned ") }
+            ?.removePrefix("Server returned ")
+            ?.trim()
+            ?: "Unbekannter Fehler aufgetreten."
     }
 
     /**
@@ -888,6 +893,15 @@ class DialogAddDownloadWithCoroutines(
         })
     }
 
+    private fun pausePathObservation(block: () -> Unit) {
+        stopBeob = true
+        try {
+            block()
+        } finally {
+            stopBeob = false
+        }
+    }
+
     /**
      * Get the free disk space for a selected path.
      *
@@ -954,13 +968,15 @@ class DialogAddDownloadWithCoroutines(
         return try {
             withContext(Dispatchers.IO) {
                 supervisorScope {
-                    val highDeferred = async { fetchFileSizeForQuality(FilmResolution.Enum.HIGH_QUALITY) }
-                    val normalDeferred = async { fetchFileSizeForNormalQuality() }
-                    val lowDeferred = async { fetchFileSizeForQuality(FilmResolution.Enum.LOW) }
+                    val sizes = awaitAll(
+                        async { fetchFileSizeForQuality(FilmResolution.Enum.HIGH_QUALITY) },
+                        async { fetchFileSizeForNormalQuality() },
+                        async { fetchFileSizeForQuality(FilmResolution.Enum.LOW) }
+                    )
                     ResolutionSizes(
-                        high = highDeferred.await(),
-                        normal = normalDeferred.await(),
-                        low = lowDeferred.await()
+                        high = sizes[0],
+                        normal = sizes[1],
+                        low = sizes[2]
                     )
                 }
             }
@@ -997,23 +1013,22 @@ class DialogAddDownloadWithCoroutines(
     }
 }
 
+private inline fun <T> withConfigLock(lockMode: LockMode, action: () -> T): T {
+    val configuration = ApplicationConfiguration.getConfiguration()
+    try {
+        configuration.lock(lockMode)
+        return action()
+    } finally {
+        configuration.unlock(lockMode)
+    }
+}
+
 private class DialogPositionComponentListener : ComponentAdapter() {
     override fun componentMoved(e: ComponentEvent) {
-        storeWindowPosition(e)
-    }
-
-    private fun storeWindowPosition(e: ComponentEvent) {
-        val config = ApplicationConfiguration.getConfiguration()
-        val component = e.component
-        val loc = component.location
-
-        try {
-            config.lock(LockMode.WRITE)
-            config.setProperty(ApplicationConfiguration.AddDownloadDialog.X, loc.x)
-            config.setProperty(ApplicationConfiguration.AddDownloadDialog.Y, loc.y)
-        } finally {
-            config.unlock(LockMode.WRITE)
+        withConfigLock(LockMode.WRITE) {
+            val location = e.component.location
+            ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.AddDownloadDialog.X, location.x)
+            ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.AddDownloadDialog.Y, location.y)
         }
     }
-
 }
