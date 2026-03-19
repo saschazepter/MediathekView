@@ -261,8 +261,9 @@ class DialogAddDownloadWithCoroutines(
 
     private fun initializeDialogSize(parent: Frame) {
         updateMinimumSizeFromPackedLayout()
-        restoreWindowBoundsFromConfig(parent)
         constrainPackedSizeToScreen()
+        removeStoredWindowSizeFromConfig()
+        restoreWindowPositionFromConfig(parent)
     }
 
     private fun registerWindowPositionTracking() {
@@ -326,15 +327,13 @@ class DialogAddDownloadWithCoroutines(
         )
     }
 
-    private fun restoreWindowBoundsFromConfig(parent: Frame) {
+    private fun restoreWindowPositionFromConfig(parent: Frame) {
         val config = ApplicationConfiguration.getConfiguration()
         try {
             config.lock(LockMode.READ)
-            val width = config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH)
-            val height = config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT)
             val x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X)
             val y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y)
-            applyStoredBounds(x, y, width, height)
+            applyStoredPosition(x, y)
         } catch (_: NoSuchElementException) {
             setLocationRelativeTo(parent)
         } finally {
@@ -342,15 +341,26 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
-    private fun applyStoredBounds(x: Int, y: Int, width: Int, height: Int) {
+    private fun removeStoredWindowSizeFromConfig() {
+        val config = ApplicationConfiguration.getConfiguration()
+        try {
+            config.lock(LockMode.WRITE)
+            config.clearProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH)
+            config.clearProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT)
+        } finally {
+            config.unlock(LockMode.WRITE)
+        }
+    }
+
+    private fun applyStoredPosition(x: Int, y: Int) {
         val usableBounds = getUsableScreenBounds()
-        val boundedWidth = width.coerceAtLeast(minimumSize.width).coerceAtMost(usableBounds.width)
-        val boundedHeight = height.coerceAtLeast(minimumSize.height).coerceAtMost(usableBounds.height)
+        val boundedWidth = width.coerceAtMost(usableBounds.width)
+        val boundedHeight = height.coerceAtMost(usableBounds.height)
         val maxX = usableBounds.x + usableBounds.width - boundedWidth
         val maxY = usableBounds.y + usableBounds.height - boundedHeight
         val boundedX = x.coerceIn(usableBounds.x, maxX)
         val boundedY = y.coerceIn(usableBounds.y, maxY)
-        setBounds(boundedX, boundedY, boundedWidth, boundedHeight)
+        setLocation(boundedX, boundedY)
     }
 
     private fun getUsableScreenBounds(): Rectangle {
@@ -988,11 +998,6 @@ class DialogAddDownloadWithCoroutines(
 }
 
 private class DialogPositionComponentListener : ComponentAdapter() {
-
-    override fun componentResized(e: ComponentEvent) {
-        storeWindowPosition(e)
-    }
-
     override fun componentMoved(e: ComponentEvent) {
         storeWindowPosition(e)
     }
@@ -1000,14 +1005,10 @@ private class DialogPositionComponentListener : ComponentAdapter() {
     private fun storeWindowPosition(e: ComponentEvent) {
         val config = ApplicationConfiguration.getConfiguration()
         val component = e.component
-
-        val dims = component.size
         val loc = component.location
 
         try {
             config.lock(LockMode.WRITE)
-            config.setProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH, dims.width)
-            config.setProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT, dims.height)
             config.setProperty(ApplicationConfiguration.AddDownloadDialog.X, loc.x)
             config.setProperty(ApplicationConfiguration.AddDownloadDialog.Y, loc.y)
         } finally {
