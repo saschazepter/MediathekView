@@ -1015,15 +1015,7 @@ public class MediathekGui extends JFrame {
         jMenuAnsicht.add(toggleZappLivestreamsTabAction);
         jMenuAnsicht.add(toggleAudiothekTabAction);
         jMenuAnsicht.addSeparator();
-        if (!SystemUtils.IS_OS_MAC_OSX) {
-            jMenuAnsicht.add(showMemoryMonitorAction);
-        }
-        else {
-            // only show for debug purposes...wil cause hang at shutdown
-            if (Config.isDebugModeEnabled()) {
-                jMenuAnsicht.add(showMemoryMonitorAction);
-            }
-        }
+        jMenuAnsicht.add(showMemoryMonitorAction);
         jMenuAnsicht.add(showBandwidthUsageAction);
         jMenuAnsicht.addSeparator();
         jMenuAnsicht.add(showFilmStatisticsAction);
