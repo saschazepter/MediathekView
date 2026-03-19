@@ -24,6 +24,9 @@ import com.github.kokorin.jaffree.ffprobe.FFprobeResult
 import com.github.kokorin.jaffree.ffprobe.Stream
 import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.config.MVColor
@@ -36,9 +39,7 @@ import mediathek.tool.MessageBus.messageBus
 import org.apache.commons.configuration2.sync.LockMode
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
-import java.awt.Color
-import java.awt.Dimension
-import java.awt.Frame
+import java.awt.*
 import java.awt.event.ActionListener
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -52,7 +53,6 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.JTextComponent
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.math.max
 
 class DialogAddDownloadWithCoroutines(
     parent: Frame,
@@ -63,29 +63,72 @@ class DialogAddDownloadWithCoroutines(
     private var activeProgramSet: DatenPset,
     private val requestedResolution: Optional<FilmResolution.Enum>
 ) : DialogAddDownload(parent) {
-    private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
-    private var liveInfoJob: Job? = null
+    private sealed interface LiveInfoCommand {
+        data object Cancel : LiveInfoCommand
+        data class Fetch(val resolution: FilmResolution.Enum) : LiveInfoCommand
+    }
+
+    private data class LiveInfoText(
+        val video: String = "",
+        val audio: String = ""
+    )
+
+    private data class ResolutionSizes(
+        val high: String = "",
+        val normal: String = "",
+        val low: String = ""
+    ) {
+        fun forResolution(resolution: FilmResolution.Enum): String {
+            return when (resolution) {
+                FilmResolution.Enum.HIGH_QUALITY -> high
+                FilmResolution.Enum.LOW -> low
+                else -> normal
+            }
+        }
+    }
+
+    private data class ResolutionButtonLabels(
+        val high: String,
+        val normal: String,
+        val low: String
+    )
+
+    private data class StoredDialogPosition(
+        val x: Int,
+        val y: Int
+    )
+
+    private val uiScopeDelegate = lazy(LazyThreadSafetyMode.NONE) {
+        CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+    }
+    private val uiScope by uiScopeDelegate
+    private val liveInfoRequests = MutableSharedFlow<LiveInfoCommand>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
     private var highQualityMandated: Boolean = false
     private var stopBeob = false
     private var nameGeaendert = false
     private var ffprobePath: Path? = null
     private var orgPfad = ""
-    private var minimumDialogWidth: Int = 720
-    private var minimumDialogHeight: Int = 600
+    private val appConfig get() = ApplicationConfiguration.getConfiguration()
     private val listeSpeichern: ListePset = Daten.listePset.listeSpeichern
-    private var fileSizeJob: Job? = null
-    private var dateiGroesseHighQuality: String = ""
-    private var dateiGroesseNormalQuality: String = ""
-    private var dateiGroesseLowQuality: String = ""
+    private lateinit var resolutionButtonLabels: ResolutionButtonLabels
     private lateinit var cbPathTextComponent: JTextComponent
     private lateinit var datenDownload: DatenDownload
+    private var resolutionSizes = ResolutionSizes()
 
     companion object {
         private val logger = LogManager.getLogger()
+        private const val MINIMUM_DIALOG_WIDTH = 720
         private const val NO_DATA_AVAILABLE = "Keine Daten verfügbar."
         private const val TITLED_BORDER_STRING = "Download-Qualität"
         private const val KEY_LABEL_FOREGROUND: String = "Label.foreground"
         private const val KEY_TEXTFIELD_BACKGROUND: String = "TextField.background"
+        private val LIVE_INFO_PLACEHOLDER = LiveInfoText(
+            video = "Video: 1920x1080, 2220 kBit/s, 50 fps (avg), H.264",
+            audio = "Audio: 48000 Hz, 128 kBit/s, AAC (Advanced Audio Coding)"
+        )
 
         @JvmStatic
         fun saveComboPfad(jcb: JComboBox<String>, orgPath: String) {
@@ -146,65 +189,170 @@ class DialogAddDownloadWithCoroutines(
     }
 
     init {
-        getRootPane().setDefaultButton(btnDownloadImmediately)
-        EscapeKeyHandler.installHandler(this) { this.dispose() }
-
-        setupUI()
-
-        setupMinimumSizeForOs()
-        restoreWindowSizeFromConfig() //only install on windows and linux, macOS works...
-        installMinResizePreventer()
-
-        setLocationRelativeTo(parent)
-
-        addComponentListener(DialogPositionComponentListener())
-
-        btnRequestLiveInfo.addActionListener {
-            liveInfoJob?.cancel()
-            liveInfoJob = coroutineScope.launch {
-                fetchLiveFilmInfo()
-            }
-        }
-
+        configureWindowDefaults()
+        initializeUi()
+        bindUi()
+        initializeDialogSize(parent)
+        registerWindowPositionTracking()
+        startCoroutineBindings()
         btnDownloadImmediately.requestFocus()
     }
 
     override fun dispose() {
-        coroutineScope.cancel()
+        if (uiScopeDelegate.isInitialized()) {
+            uiScope.cancel()
+        }
         super.dispose()
     }
 
-    private fun setupUI() {
+    private fun configureWindowDefaults() {
+        rootPane.defaultButton = btnDownloadImmediately
+        EscapeKeyHandler.installHandler(this) { dispose() }
+    }
+
+    private fun initializeUi() {
         setupBusyIndicator()
+        stabilizeLiveInfoArea()
         detectFfprobeExecutable()
-
-        fileSizeJob = launchResolutionFutures()
-
-        coroutineScope.launch {
-            waitForFileSizeJob()
-            calculateAndCheckDiskSpace()
-        }
-
         setupZielButton()
+        setupPSetComboBox()
+        resolutionButtonLabels = ResolutionButtonLabels(
+            high = jRadioButtonAufloesungHd.text,
+            normal = jRadioButtonAufloesungHoch.text,
+            low = jRadioButtonAufloesungKlein.text
+        )
+        setupFilmHeader()
+        setupFilmQualityRadioButtons()
+        setupDeleteHistoryButton()
+        setupPfadSpeichernCheckBox()
+        applySelectedProgramSet()
+        resetNameFieldValidationColor()
+        setupPathEditor()
+        constrainEditableFieldWidthsForPacking()
+        nameGeaendert = false
+    }
 
+    private fun bindUi() {
         btnDownloadImmediately.addActionListener { prepareDownload(true) }
         btnQueueDownload.addActionListener { prepareDownload(false) }
         jButtonAbbrechen.addActionListener { dispose() }
+        btnRequestLiveInfo.addActionListener {
+            liveInfoRequests.tryEmit(LiveInfoCommand.Fetch(getFilmResolution()))
+        }
+    }
 
-        setupPSetComboBox()
-        setupSenderTextField()
-        setupNameTextField()
-        setupPathTextComponent()
+    private fun initializeDialogSize(parent: Frame) {
+        updateMinimumSizeFromPackedLayout()
+        constrainPackedSizeToScreen()
+        removeStoredWindowSizeFromConfig()
+        restoreWindowPositionFromConfig(parent)
+    }
 
-        setupFilmQualityRadioButtons()
+    private fun registerWindowPositionTracking() {
+        addComponentListener(DialogPositionComponentListener())
+    }
 
-        setupDeleteHistoryButton()
-        setupPfadSpeichernCheckBox()
+    private fun startCoroutineBindings() {
+        startLiveInfoCollector()
+        startPathObservation()
+        startNameObservation()
+        loadInitialBackgroundData()
+    }
 
-        setupResolutionButtons()
-        setupInfoFileCreationCheckBox()
+    private fun startLiveInfoCollector() {
+        uiScope.launch {
+            liveInfoRequests.collectLatest { command ->
+                when (command) {
+                    LiveInfoCommand.Cancel -> resetLiveInfoDisplay()
+                    is LiveInfoCommand.Fetch -> fetchLiveFilmInfo(command.resolution)
+                }
+            }
+        }
+    }
 
-        nameGeaendert = false
+    private fun loadInitialBackgroundData() {
+        uiScope.launch {
+            applyResolutionSizes(loadResolutionSizes())
+            calculateAndCheckDiskSpaceAsync()
+        }
+    }
+
+    private fun stabilizeLiveInfoArea() {
+        val originalText = LiveInfoText(lblStatus.text, lblAudioInfo.text)
+        showLiveInfo(LIVE_INFO_PLACEHOLDER)
+
+        lblStatus.preferredSize = lblStatus.preferredSize
+        lblStatus.minimumSize = lblStatus.preferredSize
+        lblAudioInfo.preferredSize = lblAudioInfo.preferredSize
+        lblAudioInfo.minimumSize = lblAudioInfo.preferredSize
+
+        showLiveInfo(originalText)
+    }
+
+    private fun updateMinimumSizeFromPackedLayout() {
+        pack()
+        minimumSize = Dimension(
+            MINIMUM_DIALOG_WIDTH.coerceAtLeast(size.width),
+            size.height
+        )
+    }
+
+    private fun constrainPackedSizeToScreen() {
+        val usableBounds = getUsableScreenBounds()
+        val boundedWidth = size.width.coerceAtMost(usableBounds.width)
+        val boundedHeight = size.height.coerceAtMost(usableBounds.height)
+        if (boundedWidth != size.width || boundedHeight != size.height) {
+            size = Dimension(boundedWidth, boundedHeight)
+        }
+        minimumSize = Dimension(
+            minimumSize.width.coerceAtMost(usableBounds.width),
+            minimumSize.height.coerceAtMost(usableBounds.height)
+        )
+    }
+
+    private fun restoreWindowPositionFromConfig(parent: Frame) {
+        val storedPosition = readStoredDialogPosition()
+        if (storedPosition == null) {
+            setLocationRelativeTo(parent)
+        } else {
+            applyStoredPosition(storedPosition)
+        }
+    }
+
+    private fun removeStoredWindowSizeFromConfig() {
+        withConfigLock(LockMode.WRITE) {
+            appConfig.clearProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH)
+            appConfig.clearProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT)
+        }
+    }
+
+    private fun readStoredDialogPosition(): StoredDialogPosition? {
+        return try {
+            withConfigLock(LockMode.READ) {
+                StoredDialogPosition(
+                    x = appConfig.getInt(ApplicationConfiguration.AddDownloadDialog.X),
+                    y = appConfig.getInt(ApplicationConfiguration.AddDownloadDialog.Y)
+                )
+            }
+        } catch (_: NoSuchElementException) {
+            null
+        }
+    }
+
+    private fun applyStoredPosition(position: StoredDialogPosition) {
+        val usableBounds = getUsableScreenBounds()
+        val boundedWidth = width.coerceAtMost(usableBounds.width)
+        val boundedHeight = height.coerceAtMost(usableBounds.height)
+        val maxX = usableBounds.x + usableBounds.width - boundedWidth
+        val maxY = usableBounds.y + usableBounds.height - boundedHeight
+        val boundedX = position.x.coerceIn(usableBounds.x, maxX)
+        val boundedY = position.y.coerceIn(usableBounds.y, maxY)
+        setLocation(boundedX, boundedY)
+    }
+
+    private fun getUsableScreenBounds(): Rectangle {
+        val maximumWindowBounds = GraphicsEnvironment.getLocalGraphicsEnvironment().maximumWindowBounds
+        return graphicsConfiguration?.bounds?.intersection(maximumWindowBounds) ?: maximumWindowBounds
     }
 
     private fun prepareDownload(startAutomatically: Boolean) {
@@ -239,15 +387,15 @@ class DialogAddDownloadWithCoroutines(
     /**
      * Setup the resolution radio buttons based on available download URLs.
      */
-    private fun setupResolutionButtons() {
+    private fun applySelectedProgramSet() {
         activeProgramSet = listeSpeichern[jComboBoxPset.getSelectedIndex()]
-
-        prepareResolutionButtons()
-        prepareSubtitleCheckbox()
+        selectResolution()
+        updateSubtitleCheckbox()
+        updateInfoFileCreationCheckBox()
         setNameFilm()
     }
 
-    private fun prepareResolutionButtons() {
+    private fun selectResolution() {
         requestedResolution.ifPresent { highQualityMandated = it == FilmResolution.Enum.HIGH_QUALITY }
 
         when {
@@ -257,7 +405,7 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
-    private fun setupInfoFileCreationCheckBox() {
+    private fun updateInfoFileCreationCheckBox() {
         jCheckBoxInfodatei.apply {
             if (film.isLivestream) {
                 //disable for Livestreams as they do not contain useful data, even if pset wants it...
@@ -291,7 +439,7 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
-    private fun prepareSubtitleCheckbox() {
+    private fun updateSubtitleCheckbox() {
         if (!film.hasSubtitle()) {
             jCheckBoxSubtitle.setEnabled(false)
         } else {
@@ -303,42 +451,43 @@ class DialogAddDownloadWithCoroutines(
         // beim ersten Mal werden die Standardpfade gesucht
         if (!nameGeaendert) {
             // nur wenn vom Benutzer noch nicht geändert!
-            stopBeob = true
+            pausePathObservation {
+                datenDownload = DatenDownload(
+                    activeProgramSet,
+                    film,
+                    DatenDownload.QUELLE_DOWNLOAD,
+                    null,
+                    "",
+                    "",
+                    getFilmResolution().toString()
+                )
 
-            datenDownload = DatenDownload(
-                activeProgramSet,
-                film,
-                DatenDownload.QUELLE_DOWNLOAD,
-                null,
-                "",
-                "",
-                getFilmResolution().toString()
-            )
-
-            if (datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME].isEmpty()) {
-                // dann wird nicht gespeichert → eigentlich falsche Seteinstellungen?
-                jTextFieldName.apply {
-                    isEnabled = false
-                    text = ""
-                }
-                jComboBoxPfad.apply {
-                    isEnabled = false
-                    model = DefaultComboBoxModel(arrayOf(""))
-                }
-                jButtonZiel.isEnabled = false
-            } else {
-                jTextFieldName.apply {
-                    isEnabled = true
-                    text = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME]
-                }
-                jComboBoxPfad.isEnabled = true
-                jButtonZiel.isEnabled = true
-                setModelPfad(datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD], jComboBoxPfad)
-                orgPfad = datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD]
+                applyDownloadTargetFields(datenDownload)
             }
-
-            stopBeob = false
         }
+    }
+
+    private fun applyDownloadTargetFields(download: DatenDownload) {
+        val generatedName = download.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME]
+        if (generatedName.isEmpty()) {
+            // dann wird nicht gespeichert → eigentlich falsche Seteinstellungen?
+            setTargetInputsEnabled(false)
+            jTextFieldName.text = ""
+            jComboBoxPfad.model = DefaultComboBoxModel(arrayOf(""))
+            return
+        }
+
+        setTargetInputsEnabled(true)
+        jTextFieldName.text = generatedName
+        val targetPath = download.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD]
+        setModelPfad(targetPath, jComboBoxPfad)
+        orgPfad = targetPath
+    }
+
+    private fun setTargetInputsEnabled(enabled: Boolean) {
+        jTextFieldName.isEnabled = enabled
+        jComboBoxPfad.isEnabled = enabled
+        jButtonZiel.isEnabled = enabled
     }
 
     private fun addDownloadToQueue(startAutomatically: Boolean) {
@@ -351,11 +500,7 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun getFilmSize(): String {
-        return when {
-            jRadioButtonAufloesungHd.isSelected -> dateiGroesseHighQuality
-            jRadioButtonAufloesungKlein.isSelected -> dateiGroesseLowQuality
-            else -> dateiGroesseNormalQuality
-        }
+        return resolutionSizes.forResolution(getFilmResolution())
     }
 
 
@@ -393,20 +538,24 @@ class DialogAddDownloadWithCoroutines(
     private fun setupFilmQualityRadioButtons() {
         val listener = ActionListener {
             setNameFilm()
-            lblStatus.setText("")
-            lblAudioInfo.setText("")
-            lblBusyIndicator.isBusy = false
-            lblBusyIndicator.isVisible = false
-            liveInfoJob?.cancel()
+            resetLiveInfoDisplay()
+            liveInfoRequests.tryEmit(LiveInfoCommand.Cancel)
         }
-        jRadioButtonAufloesungHd.addActionListener(listener)
-        jRadioButtonAufloesungHd.setEnabled(!film.highQualityUrl.isEmpty())
-
-        jRadioButtonAufloesungKlein.addActionListener(listener)
-        jRadioButtonAufloesungKlein.setEnabled(!film.lowQualityUrl.isEmpty())
-
-        jRadioButtonAufloesungHoch.addActionListener(listener)
-        jRadioButtonAufloesungHoch.setSelected(true)
+        configureResolutionButton(
+            button = jRadioButtonAufloesungHd,
+            enabled = film.highQualityUrl.isNotEmpty(),
+            listener = listener
+        )
+        configureResolutionButton(
+            button = jRadioButtonAufloesungKlein,
+            enabled = film.lowQualityUrl.isNotEmpty(),
+            listener = listener
+        )
+        configureResolutionButton(
+            button = jRadioButtonAufloesungHoch,
+            listener = listener
+        )
+        jRadioButtonAufloesungHoch.isSelected = true
     }
 
     private fun setupPSetComboBox() {
@@ -416,15 +565,43 @@ class DialogAddDownloadWithCoroutines(
             setEnabled(listeSpeichern.size > 1)
             setModel(model)
             setSelectedItem(activeProgramSet.name)
-            addActionListener { setupResolutionButtons() }
+            addActionListener { applySelectedProgramSet() }
         }
     }
 
-    private fun setupSenderTextField() {
-        jTextFieldSender.apply {
-            text = "${film.sender}: ${film.title}"
-            setBackground(UIManager.getColor("Label.background"))
+    private fun setupFilmHeader() {
+        lblSenderIcon.setMaxIconSize(Dimension(64, 64))
+        lblSenderIcon.setSender(film.sender)
+        updateSenderLabelSizing()
+        lblFilmTitle.text = film.title
+        lblFilmTitle.toolTipText = film.title
+        lblFilmThema.text = film.thema
+        lblFilmThema.toolTipText = film.thema
+        constrainHeaderLabelWidthForPacking(lblFilmTitle)
+        constrainHeaderLabelWidthForPacking(lblFilmThema)
+    }
+
+    private fun updateSenderLabelSizing() {
+        if (lblSenderIcon.icon != null) {
+            val iconSize = lblSenderIcon.preferredSize
+            lblSenderIcon.minimumSize = iconSize
+            lblSenderIcon.preferredSize = iconSize
+            lblSenderIcon.maximumSize = iconSize
+            return
         }
+
+        val preferredSize = lblSenderIcon.preferredSize
+        val preferredHeight = preferredSize.height
+        lblSenderIcon.minimumSize = Dimension(0, preferredHeight)
+        lblSenderIcon.preferredSize = preferredSize
+        lblSenderIcon.maximumSize = Dimension(Int.MAX_VALUE, preferredHeight)
+    }
+
+    private fun constrainHeaderLabelWidthForPacking(label: JLabel) {
+        val preferredHeight = label.preferredSize.height
+        val constrainedSize = Dimension(0, preferredHeight)
+        label.minimumSize = constrainedSize
+        label.preferredSize = constrainedSize
     }
 
     private fun setupDeleteHistoryButton() {
@@ -439,11 +616,10 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun setupPfadSpeichernCheckBox() {
-        val config = ApplicationConfiguration.getConfiguration()
         jCheckBoxPfadSpeichern.apply {
-            setSelected(config.getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true))
+            setSelected(appConfig.getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true))
             addActionListener {
-                config.setProperty(
+                appConfig.setProperty(
                     ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH,
                     jCheckBoxPfadSpeichern.isSelected
                 )
@@ -466,126 +642,86 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
-    /** Prevents that a dialog can be resized smaller than its minimum dimensions.
-     * Needed on Windows, but not macOS and Linux. */
-    private fun installMinResizePreventer() {
-        if (!SystemUtils.IS_OS_WINDOWS) return
-
-        addComponentListener(object : ComponentAdapter() {
-            override fun componentResized(e: ComponentEvent?) {
-                val size = getSize()
-                val w = max(size.width, minimumSize.width)
-                val h = max(size.height, minimumSize.height)
-                if (w != size.width || h != size.height) {
-                    setSize(w, h)
-                }
-            }
-        })
-    }
-
-    private fun restoreWindowSizeFromConfig() {
-        val config = ApplicationConfiguration.getConfiguration()
-        try {
-            config.lock(LockMode.READ)
-            val width = max(config.getInt(ApplicationConfiguration.AddDownloadDialog.WIDTH), minimumDialogWidth)
-            val height = max(config.getInt(ApplicationConfiguration.AddDownloadDialog.HEIGHT), minimumDialogHeight)
-            val x = config.getInt(ApplicationConfiguration.AddDownloadDialog.X)
-            val y = config.getInt(ApplicationConfiguration.AddDownloadDialog.Y)
-
-            setBounds(x, y, width, height)
-        } catch (_: NoSuchElementException) {
-            //do not restore anything
-        } finally {
-            config.unlock(LockMode.READ)
-        }
-    }
-
     private fun setupBusyIndicator() {
         lblBusyIndicator.apply {
-            setText("")
+            text = ""
             isBusy = false
             isVisible = false
         }
-        lblStatus.setText("")
-        lblAudioInfo.setText("")
+        showLiveInfo(LiveInfoText())
     }
 
-    private fun setupMinimumSizeForOs() {
-        if (SystemUtils.IS_OS_WINDOWS)
-            minimumDialogHeight -= 150
-        else if (SystemUtils.IS_OS_LINUX) {
-            minimumDialogHeight -= 50
-        }
-        else if (SystemUtils.IS_OS_MAC_OSX) {
-            minimumDialogHeight -= 150
-        }
-        minimumSize = Dimension(minimumDialogWidth, minimumDialogHeight)
-    }
+    private suspend fun fetchLiveFilmInfo(resolution: FilmResolution.Enum) {
+        val executablePath = ffprobePath ?: return
 
-    private suspend fun fetchLiveFilmInfo() {
         btnRequestLiveInfo.isEnabled = false
         lblBusyIndicator.apply {
             isVisible = true
             isBusy = true
         }
-        lblStatus.text = ""
-        lblAudioInfo.text = ""
+        showLiveInfo(LiveInfoText())
 
         try {
-            val url = film.getUrlFuerAufloesung(getFilmResolution())
+            val url = film.getUrlFuerAufloesung(resolution)
 
-            val result = withContext(Dispatchers.IO) {
-                FFprobe.atPath(ffprobePath)
+            val result = runInterruptible(Dispatchers.IO) {
+                FFprobe.atPath(executablePath)
                     .setShowStreams(true)
                     .setInput(url)
                     .execute()
             }
 
-            processFFprobeResult(result)
+            showLiveInfo(buildLiveInfoText(result))
         } catch (_: CancellationException) {
-            clearInfo()
+            showLiveInfo(LiveInfoText())
         } catch (ex: JaffreeAbnormalExitException) {
-            setupLabels(getJaffreeErrorString(ex))
+            showLiveInfoError(getJaffreeErrorString(ex))
         } catch (_: Exception) {
-            setupLabels("Unbekannter Fehler aufgetreten.")
+            showLiveInfoError("Unbekannter Fehler aufgetreten.")
         } finally {
-            resetBusyLabelAndButton()
+            resetBusyIndicator()
+            btnRequestLiveInfo.isEnabled = true
         }
     }
 
-    private fun processFFprobeResult(result: FFprobeResult) {
+    private fun buildLiveInfoText(result: FFprobeResult): LiveInfoText {
         val audioStream = result.streams.find { it.codecType == StreamType.AUDIO }
         val videoStream = result.streams.find { it.codecType == StreamType.VIDEO }
 
-        lblAudioInfo.foreground = UIManager.getColor(KEY_LABEL_FOREGROUND)
-        lblAudioInfo.text = audioStream?.let { getAudioInfo(it, it.sampleRate) } ?: NO_DATA_AVAILABLE
-
-        lblStatus.foreground = UIManager.getColor(KEY_LABEL_FOREGROUND)
-        lblStatus.text = videoStream?.let {
-            val frameRate = it.avgFrameRate.toInt()
-            val codecName = getVideoCodecName(it)
-            getVideoInfoString(it, frameRate, codecName)
-        } ?: NO_DATA_AVAILABLE
+        return LiveInfoText(
+            video = videoStream?.let {
+                val frameRate = it.avgFrameRate.toInt()
+                val codecName = getVideoCodecName(it)
+                getVideoInfoString(it, frameRate, codecName)
+            } ?: NO_DATA_AVAILABLE,
+            audio = audioStream?.let { getAudioInfo(it, it.sampleRate) } ?: NO_DATA_AVAILABLE
+        )
     }
 
-    private fun resetBusyLabelAndButton() {
+    private fun resetBusyIndicator() {
         lblBusyIndicator.apply {
             isVisible = false
             isBusy = false
         }
-        btnRequestLiveInfo.setEnabled(true)
     }
 
-    private fun clearInfo() {
-        lblStatus.text = ""
-        lblAudioInfo.text = ""
+    private fun resetLiveInfoDisplay() {
+        resetBusyIndicator()
+        showLiveInfo(LiveInfoText())
     }
 
-    private fun setupLabels(inText: String) {
-        lblStatus.apply {
-            text = inText
-            foreground = Color.RED
-        }
+    private fun showLiveInfo(liveInfoText: LiveInfoText) {
+        val labelForeground = UIManager.getColor(KEY_LABEL_FOREGROUND)
+        lblStatus.foreground = labelForeground
+        lblAudioInfo.foreground = labelForeground
+        lblStatus.text = liveInfoText.video
+        lblAudioInfo.text = liveInfoText.audio
+    }
+
+    private fun showLiveInfoError(message: String) {
+        lblStatus.foreground = Color.RED
+        lblStatus.text = message
+        lblAudioInfo.foreground = UIManager.getColor(KEY_LABEL_FOREGROUND)
         lblAudioInfo.text = ""
     }
 
@@ -621,41 +757,29 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
-    private fun safeProcessBitRate(inBitRate: Int?): Int {
-        return try {
-            (inBitRate ?: 0) / 1000
-        } catch (_: Exception) {
-            0
-        }
-    }
+    private fun safeProcessBitRate(inBitRate: Int?): Int = (inBitRate ?: 0) / 1000
 
     private fun getJaffreeErrorString(ex: JaffreeAbnormalExitException): String {
-        return try {
-            val msg = ex.processErrorLogMessages.first().message.split(":")
-            val errMsg = msg.last().trim()
-            if (errMsg.startsWith("Server returned ")) {
-                errMsg.removePrefix("Server returned ").trim()
-            } else {
-                "Unbekannter Fehler aufgetreten."
-            }
-        } catch (_: Exception) {
-            "Unbekannter Fehler aufgetreten."
-        }
+        return ex.processErrorLogMessages
+            .firstOrNull()
+            ?.message
+            ?.substringAfterLast(':')
+            ?.trim()
+            ?.takeIf { it.startsWith("Server returned ") }
+            ?.removePrefix("Server returned ")
+            ?.trim()
+            ?: "Unbekannter Fehler aufgetreten."
     }
 
     /**
      * Calculate free disk space on volume and check if the movies can be safely downloaded.
      */
-    fun calculateAndCheckDiskSpace() {
-        UIManager.getColor(KEY_LABEL_FOREGROUND)?.let { fgColor ->
-            jRadioButtonAufloesungHd.foreground = fgColor
-            jRadioButtonAufloesungHoch.foreground = fgColor
-            jRadioButtonAufloesungKlein.foreground = fgColor
-        }
+    private fun calculateAndCheckDiskSpace(usableSpaceBytes: Long) {
+        resetResolutionButtonForegrounds()
 
         try {
             val filmBorder = jPanelSize.border as? javax.swing.border.TitledBorder ?: return
-            var usableSpace = getFreeDiskSpace(cbPathTextComponent.text)
+            var usableSpace = usableSpaceBytes
 
             filmBorder.title = if (usableSpace > 0) {
                 "$TITLED_BORDER_STRING [ Freier Speicherplatz: ${FileUtils.humanReadableByteCountBinary(usableSpace)} ]"
@@ -669,83 +793,151 @@ class DialogAddDownloadWithCoroutines(
             // jetzt noch prüfen, obs auf die Platte passt
             usableSpace /= FileSize.ONE_MiB
             if (usableSpace > 0) {
-                if (dateiGroesseHighQuality.isNotEmpty()) {
-                    val size = dateiGroesseHighQuality.toIntOrNull() ?: 0
-                    if (size > usableSpace) {
-                        jRadioButtonAufloesungHd.foreground = Color.RED
-                    }
-                }
-                if (dateiGroesseNormalQuality.isNotEmpty()) {
-                    val size = dateiGroesseNormalQuality.toIntOrNull() ?: 0
-                    if (size > usableSpace) {
-                        jRadioButtonAufloesungHoch.foreground = Color.RED
-                    }
-                }
-                if (dateiGroesseLowQuality.isNotEmpty()) {
-                    val size = dateiGroesseLowQuality.toIntOrNull() ?: 0
-                    if (size > usableSpace) {
-                        jRadioButtonAufloesungKlein.foreground = Color.RED
-                    }
-                }
+                markResolutionsExceedingDiskSpace(usableSpace)
             }
         } catch (ex: Exception) {
             logger.error("calculateAndCheckDiskSpace()", ex)
         }
     }
 
-    private fun setupPathTextComponent() {
-        cbPathTextComponent = jComboBoxPfad.editor.editorComponent as JTextComponent
-        cbPathTextComponent.isOpaque = true
-
-        cbPathTextComponent.document.addDocumentListener(object : DocumentListener {
-            override fun insertUpdate(e: DocumentEvent?) = tus()
-            override fun removeUpdate(e: DocumentEvent?) = tus()
-            override fun changedUpdate(e: DocumentEvent?) = tus()
-
-            private fun fileNameCheck(filePath: String) {
-                val editor = jComboBoxPfad.editor.editorComponent
-                if (filePath != FilenameUtils.checkFilenameForIllegalCharacters(filePath, true)) {
-                    editor.background = MVColor.DOWNLOAD_FEHLER.color
-                } else {
-                    editor.background = UIManager.getColor(KEY_TEXTFIELD_BACKGROUND)
-                }
-            }
-
-            private fun tus() {
-                if (!stopBeob) {
-                    nameGeaendert = true
-                    // do not perform check on Windows
-                    if (!SystemUtils.IS_OS_WINDOWS) {
-                        (jComboBoxPfad.selectedItem as? String)?.let { fileNameCheck(it) }
-                    }
-                    calculateAndCheckDiskSpace()
-                }
-            }
-        })
+    private fun resetResolutionButtonForegrounds() {
+        UIManager.getColor(KEY_LABEL_FOREGROUND)?.let { fgColor ->
+            jRadioButtonAufloesungHd.foreground = fgColor
+            jRadioButtonAufloesungHoch.foreground = fgColor
+            jRadioButtonAufloesungKlein.foreground = fgColor
+        }
     }
 
-    private fun setupNameTextField() {
-        jTextFieldName.document.addDocumentListener(object : DocumentListener {
-
-            override fun insertUpdate(e: DocumentEvent?) = tus()
-            override fun removeUpdate(e: DocumentEvent?) = tus()
-            override fun changedUpdate(e: DocumentEvent?) = tus()
-
-            private fun tus() {
-                if (!stopBeob) {
-                    nameGeaendert = true
-                    if (jTextFieldName.text != FilenameUtils.checkFilenameForIllegalCharacters(
-                            jTextFieldName.text,
-                            false
-                        )
-                    ) {
-                        jTextFieldName.background = MVColor.DOWNLOAD_FEHLER.color
-                    } else {
-                        jTextFieldName.background = UIManager.getDefaults().getColor(KEY_TEXTFIELD_BACKGROUND)
-                    }
-                }
+    private fun markResolutionsExceedingDiskSpace(usableSpaceInMiB: Long) {
+        val radioButtonsWithSizes = listOf(
+            jRadioButtonAufloesungHd to resolutionSizes.high,
+            jRadioButtonAufloesungHoch to resolutionSizes.normal,
+            jRadioButtonAufloesungKlein to resolutionSizes.low
+        )
+        for ((button, sizeText) in radioButtonsWithSizes) {
+            val size = sizeText.toIntOrNull() ?: continue
+            if (size > usableSpaceInMiB) {
+                button.foreground = Color.RED
             }
-        })
+        }
+    }
+
+    private suspend fun calculateAndCheckDiskSpaceAsync(currentPath: String = cbPathTextComponent.text) {
+        val usableSpace = withContext(Dispatchers.IO) {
+            getFreeDiskSpace(currentPath)
+        }
+        calculateAndCheckDiskSpace(usableSpace)
+    }
+
+    private fun setupPathEditor() {
+        cbPathTextComponent = jComboBoxPfad.editor.editorComponent as JTextComponent
+        cbPathTextComponent.isOpaque = true
+    }
+
+    private fun constrainEditableFieldWidthsForPacking() {
+        constrainComponentWidthForPacking(jTextFieldName)
+        constrainComponentWidthForPacking(jComboBoxPfad)
+        constrainComponentWidthForPacking(cbPathTextComponent)
+    }
+
+    private fun constrainComponentWidthForPacking(component: JComponent) {
+        val preferredHeight = component.preferredSize.height
+        val constrainedSize = Dimension(0, preferredHeight)
+        component.minimumSize = constrainedSize
+        component.preferredSize = constrainedSize
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun startPathObservation() {
+        uiScope.launch {
+            cbPathTextComponent.textChanges()
+                .debounce(250)
+                .distinctUntilChanged()
+                .collectLatest(::handlePathChange)
+        }
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun startNameObservation() {
+        uiScope.launch {
+            jTextFieldName.textChanges()
+                .drop(1)
+                .debounce(100)
+                .distinctUntilChanged()
+                .collect(::handleNameChange)
+        }
+    }
+
+    private suspend fun handlePathChange(currentPath: String) {
+        if (stopBeob) {
+            return
+        }
+        nameGeaendert = true
+        if (!SystemUtils.IS_OS_WINDOWS) {
+            updatePathValidationColor(currentPath)
+        }
+        calculateAndCheckDiskSpaceAsync(currentPath)
+    }
+
+    private fun handleNameChange(currentName: String) {
+        if (stopBeob) {
+            return
+        }
+        nameGeaendert = true
+        updateValidationBackground(
+            component = jTextFieldName,
+            isValid = currentName == FilenameUtils.checkFilenameForIllegalCharacters(currentName, false)
+        )
+    }
+
+    private fun JTextComponent.textChanges(): Flow<String> = callbackFlow {
+        val currentDocument = document
+        val listener = object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent?) {
+                trySend(text)
+            }
+
+            override fun removeUpdate(e: DocumentEvent?) {
+                trySend(text)
+            }
+
+            override fun changedUpdate(e: DocumentEvent?) {
+                trySend(text)
+            }
+        }
+
+        currentDocument.addDocumentListener(listener)
+        trySend(text)
+        awaitClose { currentDocument.removeDocumentListener(listener) }
+    }
+
+    private fun updatePathValidationColor(filePath: String) {
+        val editor = jComboBoxPfad.editor.editorComponent
+        updateValidationBackground(
+            component = editor as JComponent,
+            isValid = filePath == FilenameUtils.checkFilenameForIllegalCharacters(filePath, true)
+        )
+    }
+
+    private fun resetNameFieldValidationColor() {
+        jTextFieldName.background = UIManager.getDefaults().getColor(KEY_TEXTFIELD_BACKGROUND)
+    }
+
+    private fun updateValidationBackground(component: JComponent, isValid: Boolean) {
+        component.background = if (isValid) {
+            UIManager.getColor(KEY_TEXTFIELD_BACKGROUND)
+        } else {
+            MVColor.DOWNLOAD_FEHLER.color
+        }
+    }
+
+    private fun pausePathObservation(block: () -> Unit) {
+        stopBeob = true
+        try {
+            block()
+        } finally {
+            stopBeob = false
+        }
     }
 
     /**
@@ -798,99 +990,92 @@ class DialogAddDownloadWithCoroutines(
     private fun fetchFileSizeForQuality(resolution: FilmResolution.Enum): String {
         return runCatching {
             val url = film.getUrlFuerAufloesung(resolution)
-            film.getFileSizeForUrl(url)
+            film.getFileSizeForUrl(url, true)
         }.onFailure { logger.error("Failed to retrieve file size for $resolution", it) }
             .getOrDefault("")
     }
 
     private fun fetchFileSizeForNormalQuality(): String {
         return runCatching {
-            film.getFileSizeForUrl(film.urlNormalQuality)
+            film.getFileSizeForUrl(film.urlNormalQuality, true)
         }.onFailure { logger.error("Failed to retrieve normal quality size", it) }
             .getOrDefault("")
     }
 
-    private fun launchResolutionFutures(): Job = coroutineScope.launch {
-        val fetchSizeBackup = ApplicationConfiguration.getConfiguration()
-            .getBoolean(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true)
-        ApplicationConfiguration.getConfiguration()
-            .setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, true)
-
-        try {
-            val hqDeferred = async(Dispatchers.IO) { fetchFileSizeForQuality(FilmResolution.Enum.HIGH_QUALITY) }
-            val hochDeferred = async(Dispatchers.IO) { fetchFileSizeForNormalQuality() }
-            val kleinDeferred = async(Dispatchers.IO) { fetchFileSizeForQuality(FilmResolution.Enum.LOW) }
-
-            val hqSize = hqDeferred.await()
-            val hochSize = hochDeferred.await()
-            val kleinSize = kleinDeferred.await()
-
-            withContext(Dispatchers.Swing) {
-                if (jRadioButtonAufloesungHd.isEnabled) {
-                    dateiGroesseHighQuality = hqSize
-                    if (dateiGroesseHighQuality.isNotEmpty()) {
-                        jRadioButtonAufloesungHd.text += "   [ $dateiGroesseHighQuality MB ]"
-                    }
-                }
-
-                dateiGroesseNormalQuality = hochSize
-                if (dateiGroesseNormalQuality.isNotEmpty()) {
-                    jRadioButtonAufloesungHoch.text += "   [ $dateiGroesseNormalQuality MB ]"
-                }
-
-                if (jRadioButtonAufloesungKlein.isEnabled) {
-                    dateiGroesseLowQuality = kleinSize
-                    if (dateiGroesseLowQuality.isNotEmpty()) {
-                        jRadioButtonAufloesungKlein.text += "   [ $dateiGroesseLowQuality MB ]"
-                    }
+    private suspend fun loadResolutionSizes(): ResolutionSizes {
+        return try {
+            withContext(Dispatchers.IO) {
+                supervisorScope {
+                    val sizes = awaitAll(
+                        async { fetchFileSizeForQuality(FilmResolution.Enum.HIGH_QUALITY) },
+                        async { fetchFileSizeForNormalQuality() },
+                        async { fetchFileSizeForQuality(FilmResolution.Enum.LOW) }
+                    )
+                    ResolutionSizes(
+                        high = sizes[0],
+                        normal = sizes[1],
+                        low = sizes[2]
+                    )
                 }
             }
+        } catch (ex: CancellationException) {
+            throw ex
         } catch (ex: Exception) {
             logger.error("Error occurred while fetching file sizes", ex)
-        } finally {
-            ApplicationConfiguration.getConfiguration()
-                .setProperty(ApplicationConfiguration.DOWNLOAD_FETCH_FILE_SIZE, fetchSizeBackup)
+            ResolutionSizes()
         }
     }
 
-    private suspend fun waitForFileSizeJob() {
-        try {
-            fileSizeJob?.join()
-        } catch (ex: CancellationException) {
-            logger.warn("File size calculation was cancelled", ex)
-        } catch (ex: Exception) {
-            logger.error("Error while waiting for file size calculation", ex)
+    private fun applyResolutionSizes(sizes: ResolutionSizes) {
+        resolutionSizes = sizes
+        jRadioButtonAufloesungHd.text = formatResolutionLabel(
+            resolutionButtonLabels.high,
+            sizes.high.takeIf { jRadioButtonAufloesungHd.isEnabled }
+        )
+        jRadioButtonAufloesungHoch.text = formatResolutionLabel(
+            resolutionButtonLabels.normal,
+            sizes.normal
+        )
+        jRadioButtonAufloesungKlein.text = formatResolutionLabel(
+            resolutionButtonLabels.low,
+            sizes.low.takeIf { jRadioButtonAufloesungKlein.isEnabled }
+        )
+    }
+
+    private fun formatResolutionLabel(baseLabel: String, sizeInMb: String?): String {
+        return if (sizeInMb.isNullOrEmpty()) {
+            baseLabel
+        } else {
+            "$baseLabel   [ $sizeInMb MB ]"
         }
     }
 
+    private fun configureResolutionButton(
+        button: JRadioButton,
+        enabled: Boolean = true,
+        listener: ActionListener
+    ) {
+        button.isEnabled = enabled
+        button.addActionListener(listener)
+    }
+}
+
+private inline fun <T> withConfigLock(lockMode: LockMode, action: () -> T): T {
+    val configuration = ApplicationConfiguration.getConfiguration()
+    try {
+        configuration.lock(lockMode)
+        return action()
+    } finally {
+        configuration.unlock(lockMode)
+    }
 }
 
 private class DialogPositionComponentListener : ComponentAdapter() {
-
-    override fun componentResized(e: ComponentEvent) {
-        storeWindowPosition(e)
-    }
-
     override fun componentMoved(e: ComponentEvent) {
-        storeWindowPosition(e)
-    }
-
-    private fun storeWindowPosition(e: ComponentEvent) {
-        val config = ApplicationConfiguration.getConfiguration()
-        val component = e.component
-
-        val dims = component.size
-        val loc = component.location
-
-        try {
-            config.lock(LockMode.WRITE)
-            config.setProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH, dims.width)
-            config.setProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT, dims.height)
-            config.setProperty(ApplicationConfiguration.AddDownloadDialog.X, loc.x)
-            config.setProperty(ApplicationConfiguration.AddDownloadDialog.Y, loc.y)
-        } finally {
-            config.unlock(LockMode.WRITE)
+        withConfigLock(LockMode.WRITE) {
+            val location = e.component.location
+            ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.AddDownloadDialog.X, location.x)
+            ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.AddDownloadDialog.Y, location.y)
         }
     }
-
 }
