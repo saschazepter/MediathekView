@@ -7,7 +7,6 @@ import mediathek.controller.starter.Start;
 import mediathek.daten.DatenDownload;
 import mediathek.daten.DatenFilm;
 import mediathek.swing.IconUtils;
-import mediathek.tool.ColorUtils;
 import mediathek.tool.table.MVTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,6 +20,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 public class CellRendererFilme extends CellRendererBaseWithStart {
     private static final Logger logger = LogManager.getLogger(CellRendererFilme.class);
@@ -85,7 +86,6 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
             final int rowModelIndex = table.convertRowIndexToModel(row);
             final int columnModelIndex = table.convertColumnIndexToModel(column);
             final DatenFilm datenFilm = (DatenFilm) table.getModel().getValueAt(rowModelIndex, DatenFilm.FILM_REF);
-            final boolean isBookMarked = datenFilm.isBookmarked();
             final var mvTable = (MVTable) table;
 
 
@@ -97,7 +97,7 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
                 switch (columnModelIndex) {
                     case DatenFilm.FILM_THEMA, DatenFilm.FILM_TITEL, DatenFilm.FILM_URL -> {
                         var textArea = createTextArea(value.toString());
-                        applyColorSettings(textArea, datenFilm, isBookMarked, isSelected);
+                        applyColorSettings(textArea, datenFilm, isSelected);
                         return textArea;
                     }
                 }
@@ -115,7 +115,7 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
                 }
                 case DatenFilm.FILM_AUFZEICHNEN -> handleButtonDownloadColumn(isSelected);
                 case DatenFilm.FILM_MERKEN ->
-                        handleButtonBookmarkColumn(isBookMarked, isSelected, datenFilm.isLivestream());
+                        handleButtonBookmarkColumn(datenFilm.isBookmarked(), isSelected, datenFilm.isLivestream());
                 case DatenFilm.FILM_SENDER -> {
                     if (mvTable.showSenderIcons()) {
                         Dimension targetDim = getSenderCellDimension(table, row, columnModelIndex);
@@ -131,7 +131,7 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
                 case DatenFilm.FILM_ZEIT -> drawTime(datenFilm);
             }
 
-            applyColorSettings(this, datenFilm, isBookMarked, isSelected);
+            applyColorSettings(this, datenFilm, isSelected);
         } catch (Exception ex) {
             logger.error("Fehler", ex);
         }
@@ -171,30 +171,55 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
         }
     }
 
-    private void applyColorSettings(Component c, @NotNull DatenFilm datenFilm, boolean isBookMarked, boolean isSelected) {
-        bgList.clear();
+    private void applyColorSettings(Component c, @NotNull DatenFilm datenFilm, boolean isSelected) {
+        if (datenFilm.isNew() && !isSelected) {
+            c.setForeground(MVColor.getNewColor());
+        }
 
+        bgList.clear();
         bgList.add(c.getBackground());
 
         if (history.hasBeenSeenFromCache(datenFilm)) {
             bgList.add(MVColor.FILM_HISTORY.color);
         }
-
-        if (datenFilm.isNew() && !isSelected) {
-            c.setForeground(MVColor.getNewColor());
-        }
-        if (isBookMarked) {
+        if (datenFilm.isBookmarked()) {
             bgList.add(MVColor.FILM_BOOKMARKED.color);
         }
         if (datenFilm.isDuplicate()) {
             bgList.add(MVColor.FILM_DUPLICATE.color);
         }
 
+        applyColorBlending(c, bgList);
+    }
+
+    protected void applyColorBlending(Component c, List<Color> bgList) {
         if (bgList.size() >= 2)
-            c.setBackground(ColorUtils.blend(bgList.toArray(new Color[0])));
+            c.setBackground(blend(bgList));
         else
             c.setBackground(bgList.getFirst());
     }
+
+    protected static Color blend(Collection<Color> colors) {
+        if (colors == null || colors.isEmpty()) {
+            return null;
+        }
+
+        int a = 0;
+        int r = 0;
+        int g = 0;
+        int b = 0;
+
+        for (Color color : colors) {
+            a += color.getAlpha();
+            r += color.getRed();
+            g += color.getGreen();
+            b += color.getBlue();
+        }
+
+        int size = colors.size();
+        return new Color(r / size, g / size, b / size, a / size);
+    }
+
 
     private void handleButtonStartColumn(final DatenDownload datenDownload, final boolean isSelected) {
         // Button Abspielen
