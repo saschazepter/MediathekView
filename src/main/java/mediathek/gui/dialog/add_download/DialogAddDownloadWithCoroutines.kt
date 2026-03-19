@@ -560,12 +560,29 @@ class DialogAddDownloadWithCoroutines(
     private fun setupFilmHeader() {
         lblSenderIcon.setMaxIconSize(Dimension(64, 64))
         lblSenderIcon.setSender(film.sender)
+        updateSenderLabelSizing()
         lblFilmTitle.text = film.title
         lblFilmTitle.toolTipText = film.title
         lblFilmThema.text = film.thema
         lblFilmThema.toolTipText = film.thema
         constrainHeaderLabelWidthForPacking(lblFilmTitle)
         constrainHeaderLabelWidthForPacking(lblFilmThema)
+    }
+
+    private fun updateSenderLabelSizing() {
+        if (lblSenderIcon.icon != null) {
+            val iconSize = lblSenderIcon.preferredSize
+            lblSenderIcon.minimumSize = iconSize
+            lblSenderIcon.preferredSize = iconSize
+            lblSenderIcon.maximumSize = iconSize
+            return
+        }
+
+        val preferredSize = lblSenderIcon.preferredSize
+        val preferredHeight = preferredSize.height
+        lblSenderIcon.minimumSize = Dimension(0, preferredHeight)
+        lblSenderIcon.preferredSize = preferredSize
+        lblSenderIcon.maximumSize = Dimension(Int.MAX_VALUE, preferredHeight)
     }
 
     private fun constrainHeaderLabelWidthForPacking(label: JLabel) {
