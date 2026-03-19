@@ -121,8 +121,6 @@ class DialogAddDownloadWithCoroutines(
     companion object {
         private val logger = LogManager.getLogger()
         private const val MINIMUM_DIALOG_WIDTH = 720
-        private const val HEADER_TEXT_FALLBACK_WIDTH = 560
-        private const val HEADER_TEXT_MIN_WIDTH = 240
         private const val NO_DATA_AVAILABLE = "Keine Daten verfügbar."
         private const val TITLED_BORDER_STRING = "Download-Qualität"
         private const val KEY_LABEL_FOREGROUND: String = "Label.foreground"
@@ -131,30 +129,6 @@ class DialogAddDownloadWithCoroutines(
             video = "Video: 1920x1080, 2220 kBit/s, 50 fps (avg), H.264",
             audio = "Audio: 48000 Hz, 128 kBit/s, AAC (Advanced Audio Coding)"
         )
-
-        private fun toWrappedHeaderText(text: String, width: Int): String {
-            if (text.isBlank()) {
-                return ""
-            }
-            return "<html><body style='width:${width}px'>${escapeHtml(text)}</body></html>"
-        }
-
-        private fun escapeHtml(text: String): String {
-            return buildString(text.length) {
-                text.forEach { ch ->
-                    append(
-                        when (ch) {
-                            '&' -> "&amp;"
-                            '<' -> "&lt;"
-                            '>' -> "&gt;"
-                            '"' -> "&quot;"
-                            '\'' -> "&#39;"
-                            else -> ch
-                        }
-                    )
-                }
-            }
-        }
 
         @JvmStatic
         fun saveComboPfad(jcb: JComboBox<String>, orgPath: String) {
@@ -275,11 +249,6 @@ class DialogAddDownloadWithCoroutines(
 
     private fun registerWindowPositionTracking() {
         addComponentListener(DialogPositionComponentListener())
-        addComponentListener(object : ComponentAdapter() {
-            override fun componentResized(e: ComponentEvent) {
-                updateFilmHeader()
-            }
-        })
     }
 
     private fun startCoroutineBindings() {
@@ -591,21 +560,19 @@ class DialogAddDownloadWithCoroutines(
     private fun setupFilmHeader() {
         lblSenderIcon.setMaxIconSize(Dimension(64, 64))
         lblSenderIcon.setSender(film.sender)
-        SwingUtilities.invokeLater { updateFilmHeader() }
+        lblFilmTitle.text = film.title
+        lblFilmTitle.toolTipText = film.title
+        lblFilmThema.text = film.thema
+        lblFilmThema.toolTipText = film.thema
+        constrainHeaderLabelWidthForPacking(lblFilmTitle)
+        constrainHeaderLabelWidthForPacking(lblFilmThema)
     }
 
-    private fun updateFilmHeader() {
-        val availableWidth = calculateHeaderTextWidth()
-        lblFilmTitle.text = toWrappedHeaderText(film.title, availableWidth)
-        lblFilmThema.text = toWrappedHeaderText(film.thema, availableWidth)
-    }
-
-    private fun calculateHeaderTextWidth(): Int {
-        val measuredWidth = lblFilmTitle.parent?.width ?: 0
-        return when {
-            measuredWidth > 0 -> (measuredWidth - 8).coerceAtLeast(HEADER_TEXT_MIN_WIDTH)
-            else -> HEADER_TEXT_FALLBACK_WIDTH
-        }
+    private fun constrainHeaderLabelWidthForPacking(label: JLabel) {
+        val preferredHeight = label.preferredSize.height
+        val constrainedSize = Dimension(0, preferredHeight)
+        label.minimumSize = constrainedSize
+        label.preferredSize = constrainedSize
     }
 
     private fun setupDeleteHistoryButton() {
