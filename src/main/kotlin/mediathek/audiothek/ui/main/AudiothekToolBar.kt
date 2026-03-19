@@ -25,21 +25,25 @@ import org.jdesktop.swingx.JXBusyLabel
 import org.kordamp.ikonli.materialdesign2.MaterialDesignT
 import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Dimension
+import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
+import java.util.function.Consumer
 import javax.swing.*
 import javax.swing.text.JTextComponent
 
 class AudiothekToolBar : JToolBar() {
     companion object {
         private const val SEARCH_FIELD_COLUMNS = 28
-        private const val ICON_SIZE = 16
+        private const val ICON_SIZE = 18
         private const val MAX_SEARCH_FIELD_WIDTH = 500
         private const val PODCAST_SEARCH_TOOLTIP = "Podcastindex-Suche läuft"
     }
 
     private val searchField = JTextField(SEARCH_FIELD_COLUMNS)
     private val helpButton = JButton()
-    private val onlineSearchCheckBox = JCheckBox("Online-Suche", true)
+    private val onlineSearchCheckBox = JCheckBox("Online-Suche", true).apply {
+        toolTipText = "Online-Suche via podcastindex.org nutzen"
+    }
     private val podcastSearchBusyLabel = JXBusyLabel().apply {
         toolTipText = PODCAST_SEARCH_TOOLTIP
         isBusy = false
@@ -66,13 +70,13 @@ class AudiothekToolBar : JToolBar() {
     }
 
     fun addClearSearchListener(action: () -> Unit) {
-        searchField.putClientProperty("JTextField.clearCallback", java.util.function.Consumer<JTextComponent> {
+        searchField.putClientProperty("JTextField.clearCallback", Consumer<JTextComponent> {
             searchField.text = ""
             action()
         })
         searchField.inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "clearSearchField")
         searchField.actionMap.put("clearSearchField", object : AbstractAction() {
-            override fun actionPerformed(event: java.awt.event.ActionEvent?) {
+            override fun actionPerformed(event: ActionEvent?) {
                 if (searchField.text.isNotEmpty()) {
                     searchField.text = ""
                     action()
@@ -108,7 +112,7 @@ class AudiothekToolBar : JToolBar() {
     fun setDownloadProgress(summary: DownloadSummary) {
         if (summary.activeCount <= 0) {
             downloadManagerButton.icon = downloadManagerIdleIcon
-            downloadManagerButton.toolTipText = null
+            downloadManagerButton.toolTipText = "Download-Manager"
             return
         }
 
@@ -137,13 +141,12 @@ class AudiothekToolBar : JToolBar() {
         onlineSearchCheckBox.isFocusable = false
         downloadManagerButton.isFocusable = false
         downloadManagerButton.icon = downloadManagerIdleIcon
-        downloadManagerButton.horizontalTextPosition = SwingConstants.RIGHT
+        downloadManagerButton.horizontalTextPosition = RIGHT
         downloadManagerButton.iconTextGap = 6
     }
 
     private fun buildLayout() {
-        add(JLabel("Filter"))
-        addSeparator()
+        add(JLabel("Suche:"))
         add(searchField)
         addSeparator()
         add(onlineSearchCheckBox)
@@ -157,6 +160,7 @@ class AudiothekToolBar : JToolBar() {
             isFloatable = false
             isOpaque = false
             border = null
+            addSeparator()
             add(helpButton)
         }
         searchField.putClientProperty(FlatClientProperties.TEXT_FIELD_TRAILING_COMPONENT, trailingToolbar)
