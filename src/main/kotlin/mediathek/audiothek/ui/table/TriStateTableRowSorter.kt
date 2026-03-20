@@ -18,13 +18,16 @@
 
 package mediathek.audiothek.ui.table
 
-import javax.swing.RowSorter
 import javax.swing.SortOrder
 import javax.swing.table.TableModel
 import javax.swing.table.TableRowSorter
 
 class TriStateTableRowSorter<M : TableModel>(model: M) : TableRowSorter<M>(model) {
     override fun toggleSortOrder(column: Int) {
+        if (!isSortable(column)) {
+            return
+        }
+
         val primaryKey = sortKeys.firstOrNull()
         if (primaryKey?.column == column && primaryKey.sortOrder == SortOrder.DESCENDING) {
             sortKeys = emptyList()
@@ -36,6 +39,6 @@ class TriStateTableRowSorter<M : TableModel>(model: M) : TableRowSorter<M>(model
         } else {
             SortOrder.ASCENDING
         }
-        sortKeys = listOf(RowSorter.SortKey(column, nextOrder))
+        sortKeys = listOf(SortKey(column, nextOrder))
     }
 }
