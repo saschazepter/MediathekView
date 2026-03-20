@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 derreisende77.
+ * Copyright (c) 2025-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class FilterSelectionComboBoxModel extends DefaultComboBoxModel<FilterDTO> {
-    private final FilterConfiguration filterConfiguration = new FilterConfiguration();
+    private final FilterConfiguration filterConfiguration;
     private final List<FilterDTO> availableFilters = new ArrayList<>();
 
     @Override
@@ -42,7 +42,8 @@ public class FilterSelectionComboBoxModel extends DefaultComboBoxModel<FilterDTO
         return filterConfiguration.getCurrentFilter();
     }
 
-    public FilterSelectionComboBoxModel() {
+    public FilterSelectionComboBoxModel(FilterConfiguration filterConfiguration) {
+        this.filterConfiguration = filterConfiguration;
         availableFilters.addAll(filterConfiguration.getAvailableFilters());
         FilterConfiguration.addAvailableFiltersObserver(() -> {
             //System.out.println("FILTER LIST CHANGED");

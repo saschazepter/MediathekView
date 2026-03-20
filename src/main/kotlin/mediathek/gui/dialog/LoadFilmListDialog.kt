@@ -4,10 +4,7 @@ import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.gui.actions.DisposeDialogAction
 import mediathek.gui.dialogEinstellungen.PanelFilmlisteLaden
-import mediathek.tool.ApplicationConfiguration
-import mediathek.tool.EscapeKeyHandler
-import mediathek.tool.FilmListUpdateType
-import mediathek.tool.GuiFunktionen
+import mediathek.tool.*
 import org.apache.commons.configuration2.sync.LockMode
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -74,20 +71,19 @@ class LoadFilmListDialog(owner: Frame?) : JDialog(owner, "Filmliste laden", true
     private fun restoreWindowSizeFromConfig() {
         val config = ApplicationConfiguration.getConfiguration()
         try {
-            config.lock(LockMode.READ)
-            val width = config.getInt(ApplicationConfiguration.LoadFilmListDialog.WIDTH)
-            val height = config.getInt(ApplicationConfiguration.LoadFilmListDialog.HEIGHT)
-            val x = config.getInt(ApplicationConfiguration.LoadFilmListDialog.X)
-            val y = config.getInt(ApplicationConfiguration.LoadFilmListDialog.Y)
-            setBounds(x, y, width, height)
+            config.withLock(LockMode.READ) {
+                val width = getInt(ApplicationConfiguration.LoadFilmListDialog.WIDTH)
+                val height = getInt(ApplicationConfiguration.LoadFilmListDialog.HEIGHT)
+                val x = getInt(ApplicationConfiguration.LoadFilmListDialog.X)
+                val y = getInt(ApplicationConfiguration.LoadFilmListDialog.Y)
+                setBounds(x, y, width, height)
+            }
         } catch (_: NoSuchElementException) {
             pack()
             if (width < 100 || height < 100) {
                 setSize(640, 480)
             }
             GuiFunktionen.centerOnScreen(this, false)
-        } finally {
-            config.unlock(LockMode.READ)
         }
     }
 
@@ -106,14 +102,11 @@ class LoadFilmListDialog(owner: Frame?) : JDialog(owner, "Filmliste laden", true
                 val component = e.component
                 val dims = component.size
                 val loc = component.location
-                try {
-                    config.lock(LockMode.WRITE)
-                    config.setProperty(ApplicationConfiguration.LoadFilmListDialog.WIDTH, dims.width)
-                    config.setProperty(ApplicationConfiguration.LoadFilmListDialog.HEIGHT, dims.height)
-                    config.setProperty(ApplicationConfiguration.LoadFilmListDialog.X, loc.x)
-                    config.setProperty(ApplicationConfiguration.LoadFilmListDialog.Y, loc.y)
-                } finally {
-                    config.unlock(LockMode.WRITE)
+                config.withLock(LockMode.WRITE) {
+                    setProperty(ApplicationConfiguration.LoadFilmListDialog.WIDTH, dims.width)
+                    setProperty(ApplicationConfiguration.LoadFilmListDialog.HEIGHT, dims.height)
+                    setProperty(ApplicationConfiguration.LoadFilmListDialog.X, loc.x)
+                    setProperty(ApplicationConfiguration.LoadFilmListDialog.Y, loc.y)
                 }
             }
         })

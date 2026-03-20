@@ -2,6 +2,7 @@ package mediathek.gui.abo
 
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.EscapeKeyHandler
+import mediathek.tool.withLock
 import org.apache.commons.configuration2.sync.LockMode
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -28,33 +29,27 @@ class ManageAboDialog(owner: Frame?) : JDialog(owner) {
     private fun restoreFromConfig() {
         val config = ApplicationConfiguration.getConfiguration()
         try {
-            config.lock(LockMode.READ)
-            val height = config.getInt(HEIGHT)
-            val width = config.getInt(WIDTH)
-            val x = config.getInt(X)
-            val y = config.getInt(Y)
+            config.withLock(LockMode.READ) {
+                val height = getInt(HEIGHT)
+                val width = getInt(WIDTH)
+                val x = getInt(X)
+                val y = getInt(Y)
 
-            setSize(width, height)
-            setLocation(x,y)
+                setSize(width, height)
+                setLocation(x, y)
+            }
         }
         catch(_: NoSuchElementException) {
-        }
-        finally {
-            config.unlock(LockMode.READ)
         }
     }
 
     private fun saveToConfig() {
         val config = ApplicationConfiguration.getConfiguration()
-        try {
-            config.lock(LockMode.WRITE)
-            config.setProperty(HEIGHT, size.height)
-            config.setProperty(WIDTH, size.width)
-            config.setProperty(X, location.x)
-            config.setProperty(Y, location.y)
-        }
-        finally {
-            config.unlock(LockMode.WRITE)
+        config.withLock(LockMode.WRITE) {
+            setProperty(HEIGHT, size.height)
+            setProperty(WIDTH, size.width)
+            setProperty(X, location.x)
+            setProperty(Y, location.y)
         }
     }
 

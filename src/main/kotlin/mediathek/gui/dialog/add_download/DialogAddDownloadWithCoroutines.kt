@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 derreisende77.
+ * Copyright (c) 2025-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -36,6 +36,7 @@ import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.*
 import mediathek.tool.MessageBus.messageBus
+import org.apache.commons.configuration2.Configuration
 import org.apache.commons.configuration2.sync.LockMode
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
@@ -249,7 +250,7 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun registerWindowPositionTracking() {
-        addComponentListener(DialogPositionComponentListener())
+        addComponentListener(DialogPositionComponentListener(appConfig))
     }
 
     private fun startCoroutineBindings() {
@@ -320,18 +321,18 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun removeStoredWindowSizeFromConfig() {
-        withConfigLock(LockMode.WRITE) {
-            appConfig.clearProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH)
-            appConfig.clearProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT)
+        appConfig.withLock(LockMode.WRITE) {
+            clearProperty(ApplicationConfiguration.AddDownloadDialog.WIDTH)
+            clearProperty(ApplicationConfiguration.AddDownloadDialog.HEIGHT)
         }
     }
 
     private fun readStoredDialogPosition(): StoredDialogPosition? {
         return try {
-            withConfigLock(LockMode.READ) {
+            appConfig.withLock(LockMode.READ) {
                 StoredDialogPosition(
-                    x = appConfig.getInt(ApplicationConfiguration.AddDownloadDialog.X),
-                    y = appConfig.getInt(ApplicationConfiguration.AddDownloadDialog.Y)
+                    x = getInt(ApplicationConfiguration.AddDownloadDialog.X),
+                    y = getInt(ApplicationConfiguration.AddDownloadDialog.Y)
                 )
             }
         } catch (_: NoSuchElementException) {
@@ -1060,22 +1061,12 @@ class DialogAddDownloadWithCoroutines(
     }
 }
 
-private inline fun <T> withConfigLock(lockMode: LockMode, action: () -> T): T {
-    val configuration = ApplicationConfiguration.getConfiguration()
-    try {
-        configuration.lock(lockMode)
-        return action()
-    } finally {
-        configuration.unlock(lockMode)
-    }
-}
-
-private class DialogPositionComponentListener : ComponentAdapter() {
+private class DialogPositionComponentListener(private val config: Configuration) : ComponentAdapter() {
     override fun componentMoved(e: ComponentEvent) {
-        withConfigLock(LockMode.WRITE) {
+        config.withLock(LockMode.WRITE) {
             val location = e.component.location
-            ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.AddDownloadDialog.X, location.x)
-            ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.AddDownloadDialog.Y, location.y)
+            setProperty(ApplicationConfiguration.AddDownloadDialog.X, location.x)
+            setProperty(ApplicationConfiguration.AddDownloadDialog.Y, location.y)
         }
     }
 }
