@@ -78,7 +78,7 @@ class SwingFilterDialog internal constructor(
         fun addFilmeLadenListener(listener: ListenerFilmeLaden)
         fun removeFilmeLadenListener(listener: ListenerFilmeLaden)
         fun senderList(): EventList<String>
-        fun getThemenUnprocessed(sender: String): Collection<String>
+        fun getThemen(senders: Collection<String>): List<String>
     }
 
     private object DefaultDependencies : Dependencies {
@@ -109,8 +109,8 @@ class SwingFilterDialog internal constructor(
             return FilterList(daten.allSendersList, SenderFilmlistLoadApprover::isApproved)
         }
 
-        override fun getThemenUnprocessed(sender: String): Collection<String> {
-            return daten.listeFilmeNachBlackList.getThemenUnprocessed(sender)
+        override fun getThemen(senders: Collection<String>): List<String> {
+            return daten.listeFilmeNachBlackList.getThemen(senders)
         }
     }
 
@@ -302,25 +302,9 @@ class SwingFilterDialog internal constructor(
         }
     }
 
-    private fun getThemaList(selectedSenders: List<String>): List<String> {
-        val finalList = mutableListOf<String>()
-
-        if (selectedSenders.isEmpty()) {
-            finalList.addAll(dependencies.getThemenUnprocessed(""))
-        } else {
-            selectedSenders.forEach { sender ->
-                finalList.addAll(dependencies.getThemenUnprocessed(sender))
-            }
-        }
-
-        return finalList
-            .distinct()
-            .sortedWith(GermanStringSorter.getInstance())
-    }
-
     private fun updateThemaComboBox() {
         val currentThema = jcbThema.selectedItem as? String
-        val tempThemaList = getThemaList(filterConfig.checkedChannels.toList())
+        val tempThemaList = dependencies.getThemen(filterConfig.checkedChannels.toList())
 
         val lock = sourceThemaList.readWriteLock.writeLock()
         lock.lock()
