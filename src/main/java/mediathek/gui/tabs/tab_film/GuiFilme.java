@@ -117,12 +117,12 @@ public class GuiFilme extends AGuiTabPanel {
     private final FilmFilterController filterController = new FilmFilterController(filterConfiguration,
             new FilmFilterController.DataProvider() {
                 @Override
-                public EventList<String> senderList() {
+                public @NotNull EventList<String> senderList() {
                     return new ca.odell.glazedlists.FilterList<>(daten.getAllSendersList(), mediathek.controller.SenderFilmlistLoadApprover::isApproved);
                 }
 
                 @Override
-                public List<String> getThemen(Collection<String> senders) {
+                public @NotNull List<String> getThemen(@NotNull Collection<String> senders) {
                     return daten.getListeFilmeNachBlackList().getThemen(senders);
                 }
             },
@@ -145,7 +145,7 @@ public class GuiFilme extends AGuiTabPanel {
     private final ListenerFilmeLaden filmListReloadListener = new ListenerFilmeLaden() {
         @Override
         public void start(ListenerFilmeLadenEvent event) {
-            SwingUtilities.invokeLater(() -> swingFilterDialog.onFilmDataLoadingStarted());
+            SwingUtilities.invokeLater(swingFilterDialog::onFilmDataLoadingStarted);
             bookmarkStartupReloadCoordinator.onFilmListLoadingStarted();
         }
 
@@ -235,19 +235,15 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     private void requestTableReload() {
-        SwingUtilities.invokeLater(() -> {
-            if (!reloadTableDataTimer.isRunning())
-                reloadTableDataTimer.start();
-            else
-                reloadTableDataTimer.restart();
-        });
+        if (!reloadTableDataTimer.isRunning())
+            reloadTableDataTimer.start();
+        else
+            reloadTableDataTimer.restart();
     }
 
     private void requestZeitraumReload() {
-        SwingUtilities.invokeLater(() -> {
-            daten.getListeBlacklist().filterListe();
-            requestTableReload();
-        });
+        daten.getListeBlacklist().filterListe();
+        requestTableReload();
     }
 
     public void disposePanel() {
