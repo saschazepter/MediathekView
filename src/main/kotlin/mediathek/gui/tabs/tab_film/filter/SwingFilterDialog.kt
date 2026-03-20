@@ -306,17 +306,13 @@ class SwingFilterDialog internal constructor(
         val currentThema = jcbThema.selectedItem as? String
         val tempThemaList = dependencies.getThemen(filterConfig.checkedChannels.toList())
 
-        val lock = sourceThemaList.readWriteLock.writeLock()
-        lock.lock()
-        try {
+        sourceThemaList.withWriteLock {
             sourceThemaList.clear()
             sourceThemaList.addAll(tempThemaList)
 
             if (!currentThema.isNullOrEmpty() && !sourceThemaList.contains(currentThema)) {
                 sourceThemaList.add(currentThema)
             }
-        } finally {
-            lock.unlock()
         }
 
         jcbThema.selectedItem = currentThema
@@ -335,9 +331,12 @@ class SwingFilterDialog internal constructor(
         jcbThema.model = model
 
         val thema = filterConfig.thema
-        if (!sourceThemaList.contains(thema)) {
-            sourceThemaList.add(thema)
+        sourceThemaList.withWriteLock {
+            if (!sourceThemaList.contains(thema)) {
+                sourceThemaList.add(thema)
+            }
         }
+
         jcbThema.selectedItem = thema
         jcbThema.addActionListener {
             (jcbThema.selectedItem as? String)?.let(filterConfig::setThema)
