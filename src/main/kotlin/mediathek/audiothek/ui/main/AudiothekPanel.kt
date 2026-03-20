@@ -60,11 +60,12 @@ import java.awt.event.ComponentEvent
 import java.awt.event.MouseEvent
 import java.io.File
 import java.net.URI
-import java.time.Duration
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.*
+import kotlin.time.Duration.Companion.ZERO
+import kotlin.time.toKotlinDuration
 
 class AudiothekPanel(
     private val repository: AudioRepository
@@ -72,7 +73,6 @@ class AudiothekPanel(
     private val logger = LogManager.getLogger(AudiothekPanel::class.java)
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private var loadJob: Job? = null
-    private var ageTickerJob: Job? = null
     private var podcastSearchJob: Job? = null
 
     private val table = AudiothekTable(
@@ -80,7 +80,7 @@ class AudiothekPanel(
         onDownload = ::downloadAudioEntry
     )
 
-    private val statusPanel = AudiothekStatusPanel()
+    private val statusPanel = AudiothekStatusPanel(ageProvider = ::currentDatasetAge)
     private val detailsPanel = FilmDescriptionPanel()
     private val toolBar = AudiothekToolBar()
     private val onlineSearchProxyRepository = OnlineSearchProxyRepository()
@@ -251,7 +251,6 @@ class AudiothekPanel(
         applyFilterNow(toolBar.currentQuery())
         statusPanel.setStandVisible(true)
         statusPanel.setStand("Podcast-Liste erstellt: ${result.dataset.metaLocal?.format(DATASET_TIMESTAMP_FORMAT) ?: "-"}")
-        startAgeTicker()
         refreshSelectionState()
         if (isManualReload) {
             showReloadMessage(result.downloadStatus)
@@ -283,47 +282,19 @@ class AudiothekPanel(
 
         table.setRows(emptyList())
         datasetTimestamp = null
-        stopAgeTicker()
         showErrorOverlay()
         detailsPanel.setCurrentAudioEntry(null)
         statusPanel.setStandVisible(false)
         statusPanel.setStand("Podcast-Liste erstellt: -")
-        statusPanel.setAge("")
         statusPanel.setCount("0 Einträge")
     }
 
-    private fun startAgeTicker() {
-        stopAgeTicker()
-        updateAgeLabel()
-        ageTickerJob = uiScope.launch {
-            while (true) {
-                delay(1_000)
-                updateAgeLabel()
-            }
-        }
-    }
-
-    private fun stopAgeTicker() {
-        ageTickerJob?.cancel()
-        ageTickerJob = null
-    }
-
-    private fun updateAgeLabel() {
-        val timestamp = datasetTimestamp
-        val age = timestamp?.let { calculateDatasetAge(it) }
-        statusPanel.setAge(age?.let { "Alter: ${formatAge(it)}" }.orEmpty())
-    }
-
-    private fun calculateDatasetAge(timestamp: LocalDateTime): Duration {
-        return Duration.between(timestamp, LocalDateTime.now()).coerceAtLeast(Duration.ZERO)
-    }
-
-    private fun formatAge(duration: Duration): String {
-        val totalSeconds = duration.seconds.coerceAtLeast(0)
-        val hours = totalSeconds / 3600
-        val minutes = (totalSeconds % 3600) / 60
-        val seconds = totalSeconds % 60
-        return "%02d:%02d:%02d".format(hours, minutes, seconds)
+    private fun currentDatasetAge(): kotlin.time.Duration? {
+        val timestamp = datasetTimestamp ?: return null
+        return java.time.Duration.between(timestamp, LocalDateTime.now())
+            .coerceAtLeast(java.time.Duration.ZERO)
+            .toKotlinDuration()
+            .coerceAtLeast(ZERO)
     }
 
     private fun setLoadingState(loading: Boolean) {

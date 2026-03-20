@@ -18,15 +18,22 @@
 
 package mediathek.audiothek.ui.main
 
+import mediathek.swing.FilmAgeLabel
 import org.jdesktop.swingx.JXStatusBar
 import java.awt.FlowLayout
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.SwingConstants
+import kotlin.time.Duration
 
-class AudiothekStatusPanel : JXStatusBar() {
+class AudiothekStatusPanel(
+    private val ageProvider: () -> Duration?
+) : JXStatusBar() {
     private val sourceLabel = JLabel("Podcast-Liste erstellt: -")
-    private val agePanel = AudiothekAgePanel()
+    private val ageLabel = FilmAgeLabel(
+        ageProvider = ageProvider,
+        tooltip = "Alter der Podcast-Liste"
+    )
     private val activeDownloadsLabel = JLabel("")
     private val countLabel = JLabel("0 Einträge", SwingConstants.RIGHT)
     private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 8, 0)).apply {
@@ -37,7 +44,7 @@ class AudiothekStatusPanel : JXStatusBar() {
 
     init {
         add(leftPanel, Constraint(Constraint.ResizeBehavior.FILL))
-        add(agePanel)
+        add(ageLabel)
         add(countLabel)
         activeDownloadsLabel.isVisible = false
     }
@@ -48,10 +55,6 @@ class AudiothekStatusPanel : JXStatusBar() {
 
     fun setStandVisible(visible: Boolean) {
         sourceLabel.isVisible = visible
-    }
-
-    fun setAge(text: String) {
-        agePanel.setAge(text)
     }
 
     fun setCount(text: String) {
