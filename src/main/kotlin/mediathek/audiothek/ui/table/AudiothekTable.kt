@@ -21,6 +21,7 @@ package mediathek.audiothek.ui.table
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import mediathek.audiothek.model.AudioEntry
+import mediathek.config.Konstanten
 import mediathek.config.MVColor
 import mediathek.controller.history.SeenHistoryController
 import mediathek.tool.ApplicationConfiguration
@@ -75,7 +76,7 @@ class AudiothekTable(
         rowSorter = sorter
         setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
         fillsViewportHeight = true
-        rowHeight = 24
+        rowHeight = Konstanten.TABLE_DEFAULT_ROW_HEIGHT
         setAutoResizeMode(AUTO_RESIZE_OFF)
 
         configureSorting()
