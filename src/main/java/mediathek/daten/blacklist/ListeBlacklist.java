@@ -119,26 +119,30 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
 
         if (completeFilmList != null && !completeFilmList.isEmpty()) { // Check if there are any movies
             filteredList.setMetaData(completeFilmList.getMetaData());
+            final var config = ApplicationConfiguration.getConfiguration();
+            var evaluateDuplicates = config.getBoolean(ApplicationConfiguration.FILM_EVALUATE_DUPLICATES, true);
+            var filterBlacklistDuplicates = config.getBoolean(ApplicationConfiguration.BLACKLIST_FILTER_DUPLICATES, false);
 
-            this.parallelStream().forEach(entry -> {
+            final List<BlacklistRule> blacklistSnapshot = List.copyOf(this);
+            final List<DatenFilm> filmSnapshot;
+
+            synchronized (completeFilmList) {
+                filmSnapshot = List.copyOf(completeFilmList);
+            }
+
+            blacklistSnapshot.forEach(entry -> {
                 entry.convertToLowerCase();
                 entry.checkPatterns();
             });
 
-
-            var stream = completeFilmList.parallelStream();
-
-            final var config = ApplicationConfiguration.getConfiguration();
+            var stream = filmSnapshot.parallelStream();
             //if we don't evaluate there will be no chance to filter here...
-            var evaluateDuplicates = config.getBoolean(ApplicationConfiguration.FILM_EVALUATE_DUPLICATES, true);
             if (evaluateDuplicates) {
-                var filterBlacklistDuplicates = config.getBoolean(ApplicationConfiguration.BLACKLIST_FILTER_DUPLICATES, false);
                 if (filterBlacklistDuplicates) {
                     stream = stream.filter(film -> !film.isDuplicate());
                 }
             }
-
-            stream.filter(createPredicate()).forEachOrdered(filteredList::add);
+            stream.filter(createPredicate(blacklistSnapshot)).forEachOrdered(filteredList::add);
         }
     }
 
@@ -147,7 +151,7 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
      *
      * @return The reduced filter predicates.
      */
-    private Predicate<DatenFilm> createPredicate() {
+    private Predicate<DatenFilm> createPredicate(List<BlacklistRule> blacklistSnapshot) {
         final List<Predicate<DatenFilm>> filterList = new ArrayList<>();
         // we must keep it for the "old-style search. for lucene it is useless
         if (!(Daten.getInstance().getListeFilmeNachBlackList() instanceof IndexedFilmList)) {
@@ -167,8 +171,8 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
             }
 
             //add the filter predicates to the list
-            if (!isEmpty()) {
-                ApplyBlacklistFilterPredicate predicate = new ApplyBlacklistFilterPredicate(this);
+            if (!blacklistSnapshot.isEmpty()) {
+                ApplyBlacklistFilterPredicate predicate = new ApplyBlacklistFilterPredicate(blacklistSnapshot);
                 filterList.add(predicate);
             }
 
