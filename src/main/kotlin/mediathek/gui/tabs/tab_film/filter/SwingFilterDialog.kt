@@ -311,13 +311,14 @@ class SwingFilterDialog internal constructor(
         try {
             sourceThemaList.clear()
             sourceThemaList.addAll(tempThemaList)
+
+            if (!currentThema.isNullOrEmpty() && !sourceThemaList.contains(currentThema)) {
+                sourceThemaList.add(currentThema)
+            }
         } finally {
             lock.unlock()
         }
 
-        if (!currentThema.isNullOrEmpty() && !sourceThemaList.contains(currentThema)) {
-            sourceThemaList.add(currentThema)
-        }
         jcbThema.selectedItem = currentThema
     }
 
