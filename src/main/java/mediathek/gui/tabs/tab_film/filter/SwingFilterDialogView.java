@@ -22,7 +22,7 @@ import com.jidesoft.swing.JideSplitButton;
 import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
-import mediathek.swing.AutoCompletionComboBox2;
+import mediathek.swing.StrictSearchComboBox;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
@@ -70,7 +70,7 @@ public class SwingFilterDialogView extends JDialog {
         var separator5 = new JSeparator();
         var pnlThema = new JPanel();
         label4 = new JLabel();
-        jcbThema = new AutoCompletionComboBox2();
+        jcbThema = new StrictSearchComboBox();
         btnResetThema = new JButton();
         var separator6 = new JSeparator();
         var pnlFlimlength = new JPanel();
@@ -346,7 +346,7 @@ public class SwingFilterDialogView extends JDialog {
     protected JScrollPane scpSenderList;
     protected CheckBoxList senderList;
     protected JLabel label4;
-    protected AutoCompletionComboBox2 jcbThema;
+    protected StrictSearchComboBox jcbThema;
     protected JButton btnResetThema;
     protected JLabel label5;
     protected JLabel lblMinFilmLengthValue;

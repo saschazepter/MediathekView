@@ -128,7 +128,6 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
 
             var stream = completeFilmList.parallelStream();
 
-            //TODO add config dialog setting
             final var config = ApplicationConfiguration.getConfiguration();
             //if we don't evaluate there will be no chance to filter here...
             var evaluateDuplicates = config.getBoolean(ApplicationConfiguration.FILM_EVALUATE_DUPLICATES, true);

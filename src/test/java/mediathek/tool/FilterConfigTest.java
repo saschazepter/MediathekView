@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.tool;
 
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider;
@@ -11,6 +29,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -276,6 +295,22 @@ class FilterConfigTest {
         Assertions.assertTrue(filterConfig.getAvailableFilters().contains(new FilterDTO(filterId, filterName)));
     }
 
+    @DisplayName("Check if reading checked channels does not normalize config by writing")
+    @Test
+    void getCheckedChannels_collectionProperty_readDoesNotMutateConfiguration() {
+        XMLConfiguration xmlConfiguration = new XMLConfiguration();
+        FilterConfiguration filterConfig = new FilterConfiguration(xmlConfiguration);
+        UUID filterId = UUID.randomUUID();
+        filterConfig.addNewFilter(filterId, "Filter 1");
+        filterConfig.setCurrentFilter(filterId);
+
+        String key = String.format(FilterConfiguration.FilterConfigurationKeys.FILTER_PANEL_CHECKED_CHANNELS.getKey(), filterId);
+        xmlConfiguration.setProperty(key, Arrays.asList("ARD", "3Sat"));
+
+        Assertions.assertEquals(List.of("ARD", "3Sat"), new ArrayList<>(filterConfig.getCheckedChannels()));
+        Assertions.assertTrue(xmlConfiguration.getProperty(key) instanceof List<?>);
+    }
+
     @DisplayName("Check if filter is removed correctly after delete by filter")
     @Test
     void deleteFilter_addThreeFiltersDeleteOneByFilter_deleteNotInConfigAnymore() {
@@ -408,14 +443,13 @@ class FilterConfigTest {
     @DisplayName("Check if available filter observer callback is called when filter is added")
     @Test
     void addAvailableFiltersObserver_addFilter_callbackIsCalled() {
-        new FilterConfiguration(new XMLConfiguration())
-                .addNewFilter(new FilterDTO(UUID.randomUUID(), "Filter 1"));
+        FilterConfiguration filterConfig = new FilterConfiguration(new XMLConfiguration());
+        filterConfig.addNewFilter(new FilterDTO(UUID.randomUUID(), "Filter 1"));
 
         AtomicBoolean called = new AtomicBoolean(false);
-        FilterConfiguration.addAvailableFiltersObserver(() -> called.set(true));
+        filterConfig.addAvailableFiltersObserver(() -> called.set(true));
 
-        new FilterConfiguration(new XMLConfiguration())
-                .addNewFilter(new FilterDTO(UUID.randomUUID(), "Neuer Filter"));
+        filterConfig.addNewFilter(new FilterDTO(UUID.randomUUID(), "Neuer Filter"));
 
         Assertions.assertTrue(called.get(), "is callback called?");
     }
@@ -428,7 +462,7 @@ class FilterConfigTest {
                 new FilterConfiguration(new XMLConfiguration())
                         .addNewFilter(new FilterDTO(filterId, "Filter 1"));
         AtomicBoolean called = new AtomicBoolean(false);
-        FilterConfiguration.addAvailableFiltersObserver(() -> called.set(true));
+        filterConfig.addAvailableFiltersObserver(() -> called.set(true));
 
         filterConfig.deleteFilter(filterId);
 
@@ -443,7 +477,7 @@ class FilterConfigTest {
                 new FilterConfiguration(new XMLConfiguration())
                         .addNewFilter(new FilterDTO(filterId, "Filter 1"));
         AtomicBoolean called = new AtomicBoolean(false);
-        FilterConfiguration.addAvailableFiltersObserver(() -> called.set(true));
+        filterConfig.addAvailableFiltersObserver(() -> called.set(true));
 
         filterConfig.setCurrentFilter(filterId).renameCurrentFilter("New name");
 
@@ -457,7 +491,7 @@ class FilterConfigTest {
         FilterConfiguration filterConfig =
                 new FilterConfiguration(new XMLConfiguration()).addNewFilter(filterBeforeRename);
         AtomicReference<FilterDTO> filter = new AtomicReference<>();
-        FilterConfiguration.addCurrentFiltersObserver(filter::set);
+        filterConfig.addCurrentFiltersObserver(filter::set);
 
         String new_name = "New name";
         filterConfig.setCurrentFilter(filterBeforeRename).renameCurrentFilter(new_name);
@@ -478,7 +512,7 @@ class FilterConfigTest {
                         .addNewFilter(filter2)
                         .setCurrentFilter(filter1);
         AtomicReference<FilterDTO> filter = new AtomicReference<>();
-        FilterConfiguration.addCurrentFiltersObserver(filter::set);
+        filterConfig.addCurrentFiltersObserver(filter::set);
 
         filterConfig.setCurrentFilter(filter2);
 
@@ -496,7 +530,7 @@ class FilterConfigTest {
                         .addNewFilter(filter2)
                         .setCurrentFilter(filter1);
         AtomicReference<FilterDTO> filter = new AtomicReference<>();
-        FilterConfiguration.addCurrentFiltersObserver(filter::set);
+        filterConfig.addCurrentFiltersObserver(filter::set);
 
         filterConfig.deleteFilter(filter1);
 

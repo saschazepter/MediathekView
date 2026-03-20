@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 derreisende77.
+ * Copyright (c) 2025-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,12 +18,12 @@
 
 package mediathek.gui.tabs.tab_film.filter.zeitraum;
 
-import mediathek.tool.FilterConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
+import java.util.function.Consumer;
 
 public class ZeitraumSpinner extends JSpinner {
     private static Logger logger;
@@ -39,8 +39,7 @@ public class ZeitraumSpinner extends JSpinner {
         ((DefaultEditor) getEditor()).getTextField().setFormatterFactory(new ZeitraumSpinnerFormatterFactory());
     }
 
-    public void restoreFilterConfig(@NotNull FilterConfiguration filterConfiguration) throws NumberFormatException {
-        var zeitraumVal = filterConfiguration.getZeitraum();
+    public void restoreValue(@NotNull String zeitraumVal, @NotNull Consumer<String> fallbackWriter) throws NumberFormatException {
         try {
             int zeitraumValInt;
             if (zeitraumVal.equals(ZeitraumSpinnerFormatter.INFINITE_TEXT))
@@ -53,11 +52,11 @@ public class ZeitraumSpinner extends JSpinner {
             getLogger().error("Failed to parse zeitraum value: {}", zeitraumVal, ex);
             getLogger().error("Using default value: {}", ZeitraumSpinnerFormatter.INFINITE_VALUE);
             setValue(ZeitraumSpinnerFormatter.INFINITE_VALUE);
-            filterConfiguration.setZeitraum(ZeitraumSpinnerFormatter.INFINITE_TEXT);
+            fallbackWriter.accept(ZeitraumSpinnerFormatter.INFINITE_TEXT);
         }
     }
 
-    public void installFilterConfigurationChangeListener(@NotNull FilterConfiguration filterConfiguration) {
+    public void installValueChangeListener(@NotNull Consumer<String> valueConsumer) {
         addChangeListener(l -> {
             var val = (int) getValue();
             String strVal;
@@ -66,7 +65,7 @@ public class ZeitraumSpinner extends JSpinner {
             else
                 strVal = String.valueOf(val);
 
-            filterConfiguration.setZeitraum(strVal);
+            valueConsumer.accept(strVal);
         });
     }
 }

@@ -20,26 +20,16 @@ package mediathek.gui.tabs.tab_film.filter
 
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.FilterList
 import ca.odell.glazedlists.swing.GlazedListsSwing
 import com.jidesoft.swing.CheckBoxList
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import mediathek.config.Daten
 import mediathek.config.Konstanten
-import mediathek.controller.SenderFilmlistLoadApprover
-import mediathek.filmeSuchen.ListenerFilmeLaden
-import mediathek.filmeSuchen.ListenerFilmeLadenEvent
-import mediathek.gui.messages.BaseEvent
-import mediathek.gui.messages.FilterZeitraumEvent
-import mediathek.gui.messages.ReloadTableDataEvent
 import mediathek.gui.messages.TableModelChangeEvent
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.mainwindow.MediathekGui
 import mediathek.swing.IconUtils
 import mediathek.tool.*
-import mediathek.tool.MessageBus.messageBus
-import net.engio.mbassy.listener.Handler
 import org.apache.commons.configuration2.Configuration
 import org.apache.commons.configuration2.sync.LockMode
 import org.apache.logging.log4j.LogManager
@@ -47,72 +37,18 @@ import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import java.awt.Component
 import java.awt.Dimension
 import java.awt.Window
-import java.awt.event.ActionEvent
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
-import java.awt.event.KeyEvent
-import java.util.*
+import java.awt.event.*
 import javax.swing.*
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
 
-class SwingFilterDialog internal constructor(
+class SwingFilterDialog @JvmOverloads internal constructor(
     owner: Window,
     private val filterSelectionComboBoxModel: FilterSelectionComboBoxModel,
     private val filterToggleButton: JToggleButton,
-    private val filterConfig: FilterConfiguration,
-    private val dependencies: Dependencies
+    private val filterController: FilmFilterController,
+    private val prompts: DialogPrompts = JOptionPaneDialogPrompts
 ) : SwingFilterDialogView(owner, filterSelectionComboBoxModel) {
-
-    constructor(
-        owner: Window,
-        filterSelectionComboBoxModel: FilterSelectionComboBoxModel,
-        filterToggleButton: JToggleButton,
-        filterConfig: FilterConfiguration
-    ) : this(owner, filterSelectionComboBoxModel, filterToggleButton, filterConfig, DefaultDependencies)
-
-    interface Dependencies {
-        fun subscribe(subscriber: Any)
-        fun unsubscribe(subscriber: Any)
-        fun publish(event: BaseEvent)
-        fun addFilmeLadenListener(listener: ListenerFilmeLaden)
-        fun removeFilmeLadenListener(listener: ListenerFilmeLaden)
-        fun senderList(): EventList<String>
-        fun getThemen(senders: Collection<String>): List<String>
-    }
-
-    private object DefaultDependencies : Dependencies {
-        private val daten: Daten
-            get() = Daten.getInstance()
-
-        override fun subscribe(subscriber: Any) {
-            messageBus.subscribe(subscriber)
-        }
-
-        override fun unsubscribe(subscriber: Any) {
-            messageBus.unsubscribe(subscriber)
-        }
-
-        override fun publish(event: BaseEvent) {
-            messageBus.publish(event)
-        }
-
-        override fun addFilmeLadenListener(listener: ListenerFilmeLaden) {
-            daten.filmeLaden.addAdListener(listener)
-        }
-
-        override fun removeFilmeLadenListener(listener: ListenerFilmeLaden) {
-            daten.filmeLaden.removeAdListener(listener)
-        }
-
-        override fun senderList(): EventList<String> {
-            return FilterList(daten.allSendersList, SenderFilmlistLoadApprover::isApproved)
-        }
-
-        override fun getThemen(senders: Collection<String>): List<String> {
-            return daten.listeFilmeNachBlackList.getThemen(senders)
-        }
-    }
 
     companion object {
         private const val CHECKBOX_RELOAD_DEBOUNCE_MS = 450L
@@ -123,6 +59,55 @@ class SwingFilterDialog internal constructor(
         private const val STR_RESET_THEMA = "Thema zurücksetzen"
         private const val STR_RENAME_FILTER = "Filter umbenennen"
         private val logger = LogManager.getLogger()
+
+        internal fun determineFilterSwitchReload(
+            previousState: FilmFilterState,
+            currentState: FilmFilterState,
+            requestReload: Boolean
+        ): FilterSwitchReloadType {
+            if (!requestReload || previousState.currentFilter == currentState.currentFilter) {
+                return FilterSwitchReloadType.NONE
+            }
+
+            return if (previousState.zeitraum != currentState.zeitraum) {
+                FilterSwitchReloadType.ZEITRAUM
+            } else {
+                FilterSwitchReloadType.TABLE
+            }
+        }
+
+        internal fun applyFilterSwitchReload(
+            previousState: FilmFilterState,
+            currentState: FilmFilterState,
+            requestReload: Boolean,
+            reloadRequester: FilmFilterController.ReloadRequester
+        ): FilterSwitchReloadType {
+            val reloadType = determineFilterSwitchReload(previousState, currentState, requestReload)
+            when (reloadType) {
+                FilterSwitchReloadType.ZEITRAUM -> reloadRequester.requestZeitraumReload()
+                FilterSwitchReloadType.TABLE -> reloadRequester.requestTableReload()
+                FilterSwitchReloadType.NONE -> Unit
+            }
+            return reloadType
+        }
+
+        internal fun applyFilterStateChangeReload(
+            previousState: FilmFilterState,
+            currentState: FilmFilterState,
+            reloadRequester: FilmFilterController.ReloadRequester
+        ): FilterSwitchReloadType {
+            if (previousState == currentState) {
+                return FilterSwitchReloadType.NONE
+            }
+
+            return if (previousState.zeitraum != currentState.zeitraum) {
+                reloadRequester.requestZeitraumReload()
+                FilterSwitchReloadType.ZEITRAUM
+            } else {
+                reloadRequester.requestTableReload()
+                FilterSwitchReloadType.TABLE
+            }
+        }
     }
 
     private val config: Configuration = ApplicationConfiguration.getConfiguration()
@@ -135,10 +120,29 @@ class SwingFilterDialog internal constructor(
     private val checkBoxBindings = createCheckBoxBindings()
     private val senderCheckBoxList = SenderCheckBoxList()
     private val filmLengthRangeSlider = filmLengthSlider as FilmLengthSlider
-    private val filmeLadenListener = FilmeLadenListener()
+    private val filterView: FilmFilterView by lazy {
+        DialogFilterView(
+            checkBoxBindings = checkBoxBindings.map { it.checkBox to it.selectedStateReader },
+            senderSelectionRenderer = senderCheckBoxList::restoreFilterConfig,
+            sourceThemaList = sourceThemaList,
+            themaSelectionRenderer = ::setThemaSelectionSilently,
+            filmLengthRangeSlider = filmLengthRangeSlider,
+            minFilmLengthValueLabel = lblMinFilmLengthValue,
+            maxFilmLengthValueLabel = lblMaxFilmLengthValue,
+            zeitraumSpinner = spZeitraum,
+            zeitraumFallbackWriter = filterController::onZeitraumFallbackChanged,
+            deleteCurrentFilterAction = deleteCurrentFilterAction,
+        )
+    }
     private val filterSelectionDataListener = FilterSelectionDataListener()
+    private val filterSelectionActionListener = ActionListener { syncCurrentFilterAndRestore(requestReload = true) }
+    private val filterSwitchReloadRequester = object : FilmFilterController.ReloadRequester {
+        override fun requestTableReload() = filterController.requestTableReload()
+        override fun requestZeitraumReload() = filterController.requestZeitraumReload()
+    }
     private var checkboxReloadJob: Job? = null
     private var zeitraumReloadJob: Job? = null
+    private val suppressedEventTypes = mutableSetOf<SuppressedEventType>()
     private val managedActions by lazy {
         listOf<Action>(
             renameFilterAction,
@@ -165,23 +169,66 @@ class SwingFilterDialog internal constructor(
             label2
         ) + checkBoxBindings.map(CheckBoxBinding::checkBox)
     }
-    private val restoreOperations by lazy {
-        listOf(
-            ::restoreCheckBoxSettings,
-            ::restoreThemaSelection,
-            senderCheckBoxList::restoreFilterConfig,
-            { filmLengthRangeSlider.restoreFilterConfig(filterConfig) },
-            { spZeitraum.restoreFilterConfig(filterConfig) }
-        )
+
+    internal interface DialogPrompts {
+        fun confirmDeleteCurrentFilter(): Boolean
+        fun confirmResetCurrentFilter(): Boolean
+        fun requestNewFilterName(suggestedName: String): String?
+        fun requestRenameFilterName(currentFilterName: String): String?
+    }
+
+    private object JOptionPaneDialogPrompts : DialogPrompts {
+        override fun confirmDeleteCurrentFilter(): Boolean {
+            return JOptionPane.showConfirmDialog(
+                MediathekGui.ui(),
+                "Möchten Sie wirklich den aktuellen Filter löschen?",
+                Konstanten.PROGRAMMNAME,
+                JOptionPane.YES_NO_OPTION
+            ) == JOptionPane.YES_OPTION
+        }
+
+        override fun confirmResetCurrentFilter(): Boolean {
+            return JOptionPane.showConfirmDialog(
+                MediathekGui.ui(),
+                "Sind Sie sicher, dass Sie den Filter zurücksetzen möchten?",
+                "Filter zurücksetzen",
+                JOptionPane.YES_NO_OPTION
+            ) == JOptionPane.YES_OPTION
+        }
+
+        override fun requestNewFilterName(suggestedName: String): String? {
+            return JOptionPane.showInputDialog(
+                MediathekGui.ui(),
+                "Filtername:",
+                STR_NEW_FILTER,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                suggestedName
+            ) as? String
+        }
+
+        override fun requestRenameFilterName(currentFilterName: String): String? {
+            return JOptionPane.showInputDialog(
+                MediathekGui.ui(),
+                "Neuer Name des Filters:",
+                "Filter umbenennen",
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                null,
+                currentFilterName
+            ) as? String
+        }
     }
 
     init {
         scpSenderList.setViewportView(senderCheckBoxList)
+        filterController.initializeFilmData()
 
         configureComponents()
         setupInteraction()
         restoreState()
-        registerExternalListeners()
+        registerLocalListeners()
     }
 
     override fun dispose() {
@@ -189,8 +236,7 @@ class SwingFilterDialog internal constructor(
         zeitraumReloadJob?.cancel()
         uiScope.cancel()
         filterSelectionComboBoxModel.removeListDataListener(filterSelectionDataListener)
-        dependencies.removeFilmeLadenListener(filmeLadenListener)
-        dependencies.unsubscribe(this)
+        cboxFilterSelection.removeActionListener(filterSelectionActionListener)
         super.dispose()
     }
 
@@ -215,11 +261,10 @@ class SwingFilterDialog internal constructor(
         restoreDialogVisibility()
     }
 
-    private fun registerExternalListeners() {
+    private fun registerLocalListeners() {
         filterSelectionComboBoxModel.addListDataListener(filterSelectionDataListener)
+        cboxFilterSelection.addActionListener(filterSelectionActionListener)
         addComponentListener(FilterDialogComponentListener())
-        dependencies.subscribe(this)
-        dependencies.addFilmeLadenListener(filmeLadenListener)
     }
 
     private fun setupRoundControls() {
@@ -238,14 +283,17 @@ class SwingFilterDialog internal constructor(
     }
 
     private fun setupButtons() {
-        checkDeleteCurrentFilterButtonState()
+        updateDeleteCurrentFilterButtonState()
         btnResetThema.action = ResetThemaAction()
     }
 
     private fun setupCheckBoxes() {
         checkBoxBindings.forEach { binding ->
             binding.checkBox.addActionListener {
-                binding.selectedStateWriter(binding.checkBox.isSelected)
+                if (isSuppressed(SuppressedEventType.CHECKBOX)) {
+                    return@addActionListener
+                }
+                binding.changeHandler(binding.checkBox.isSelected)
                 requestDebouncedCheckboxReload()
             }
         }
@@ -253,35 +301,25 @@ class SwingFilterDialog internal constructor(
 
     private fun requestDebouncedCheckboxReload() {
         checkboxReloadJob = restartDebouncedJob(checkboxReloadJob, CHECKBOX_RELOAD_DEBOUNCE_MS) {
-            publishReloadTableDataEvent()
+            filterController.requestTableReload()
         }
-    }
-
-    private fun publishReloadTableDataEvent() {
-        dependencies.publish(ReloadTableDataEvent())
     }
 
     private fun createCheckBoxBindings(): List<CheckBoxBinding> {
         return listOf(
-            CheckBoxBinding(cbShowNewOnly, filterConfig::isShowNewOnly, filterConfig::setShowNewOnly),
-            CheckBoxBinding(cbShowBookMarkedOnly, filterConfig::isShowBookMarkedOnly, filterConfig::setShowBookMarkedOnly),
-            CheckBoxBinding(cbShowOnlyHq, filterConfig::isShowHighQualityOnly, filterConfig::setShowHighQualityOnly),
-            CheckBoxBinding(cbShowSubtitlesOnly, filterConfig::isShowSubtitlesOnly, filterConfig::setShowSubtitlesOnly),
-            CheckBoxBinding(cbShowOnlyLivestreams, filterConfig::isShowLivestreamsOnly, filterConfig::setShowLivestreamsOnly),
-            CheckBoxBinding(cbShowUnseenOnly, filterConfig::isShowUnseenOnly, filterConfig::setShowUnseenOnly),
-            CheckBoxBinding(cbDontShowAbos, filterConfig::isDontShowAbos, filterConfig::setDontShowAbos),
-            CheckBoxBinding(cbDontShowSignLanguage, filterConfig::isDontShowSignLanguage, filterConfig::setDontShowSignLanguage),
-            CheckBoxBinding(cbDontShowGeoblocked, filterConfig::isDontShowGeoblocked, filterConfig::setDontShowGeoblocked),
-            CheckBoxBinding(cbDontShowTrailers, filterConfig::isDontShowTrailers, filterConfig::setDontShowTrailers),
-            CheckBoxBinding(cbDontShowAudioVersions, filterConfig::isDontShowAudioVersions, filterConfig::setDontShowAudioVersions),
-            CheckBoxBinding(cbDontShowDuplicates, filterConfig::isDontShowDuplicates, filterConfig::setDontShowDuplicates)
+            CheckBoxBinding(cbShowNewOnly, FilmFilterState::showNewOnly, filterController::onShowNewOnlyChanged),
+            CheckBoxBinding(cbShowBookMarkedOnly, FilmFilterState::showBookMarkedOnly, filterController::onShowBookMarkedOnlyChanged),
+            CheckBoxBinding(cbShowOnlyHq, FilmFilterState::showHighQualityOnly, filterController::onShowHighQualityOnlyChanged),
+            CheckBoxBinding(cbShowSubtitlesOnly, FilmFilterState::showSubtitlesOnly, filterController::onShowSubtitlesOnlyChanged),
+            CheckBoxBinding(cbShowOnlyLivestreams, FilmFilterState::showLivestreamsOnly, filterController::onShowLivestreamsOnlyChanged),
+            CheckBoxBinding(cbShowUnseenOnly, FilmFilterState::showUnseenOnly, filterController::onShowUnseenOnlyChanged),
+            CheckBoxBinding(cbDontShowAbos, FilmFilterState::dontShowAbos, filterController::onDontShowAbosChanged),
+            CheckBoxBinding(cbDontShowSignLanguage, FilmFilterState::dontShowSignLanguage, filterController::onDontShowSignLanguageChanged),
+            CheckBoxBinding(cbDontShowGeoblocked, FilmFilterState::dontShowGeoblocked, filterController::onDontShowGeoblockedChanged),
+            CheckBoxBinding(cbDontShowTrailers, FilmFilterState::dontShowTrailers, filterController::onDontShowTrailersChanged),
+            CheckBoxBinding(cbDontShowAudioVersions, FilmFilterState::dontShowAudioVersions, filterController::onDontShowAudioVersionsChanged),
+            CheckBoxBinding(cbDontShowDuplicates, FilmFilterState::dontShowDuplicates, filterController::onDontShowDuplicatesChanged)
         )
-    }
-
-    private fun restoreCheckBoxSettings() {
-        checkBoxBindings.forEach { binding ->
-            binding.checkBox.isSelected = binding.selectedStateReader()
-        }
     }
 
     private fun setupFilmLengthSlider() {
@@ -295,27 +333,19 @@ class SwingFilterDialog internal constructor(
             lblMaxFilmLengthValue.text = slider.highValueText
 
             if (!slider.valueIsAdjusting) {
-                filterConfig.setFilmLengthMin(slider.lowValue.toDouble())
-                filterConfig.setFilmLengthMax(slider.highValue.toDouble())
-                publishReloadTableDataEvent()
+                filterController.onFilmLengthChanged(
+                    slider.lowValue.toDouble(),
+                    slider.highValue.toDouble()
+                )
             }
         }
     }
 
-    private fun updateThemaComboBox() {
-        val currentThema = jcbThema.selectedItem as? String
-        val tempThemaList = dependencies.getThemen(filterConfig.checkedChannels.toList())
-
-        sourceThemaList.withWriteLock {
-            sourceThemaList.clear()
-            sourceThemaList.addAll(tempThemaList)
-
-            if (!currentThema.isNullOrEmpty() && !sourceThemaList.contains(currentThema)) {
-                sourceThemaList.add(currentThema)
-            }
+    private fun renderFilterState() {
+        val renderModel = filterController.renderModel()
+        withSuppressedEvents(SuppressedEventType.ZEITRAUM) {
+            filterView.render(renderModel.state, renderModel.availableThemen, renderModel.canDeleteCurrentFilter)
         }
-
-        jcbThema.selectedItem = currentThema
     }
 
     private fun createPopupMenu(): JPopupMenu {
@@ -330,25 +360,39 @@ class SwingFilterDialog internal constructor(
         val model = GlazedListsSwing.eventComboBoxModel(EventListWithEmptyFirstEntry(sourceThemaList))
         jcbThema.model = model
 
-        val thema = filterConfig.thema
+        val thema = filterController.state().thema
         sourceThemaList.withWriteLock {
             if (!sourceThemaList.contains(thema)) {
                 sourceThemaList.add(thema)
             }
         }
 
-        jcbThema.selectedItem = thema
+        setThemaSelectionSilently(thema)
         jcbThema.addActionListener {
-            (jcbThema.selectedItem as? String)?.let(filterConfig::setThema)
-            publishReloadTableDataEvent()
+            if (isSuppressed(SuppressedEventType.THEMA)) {
+                return@addActionListener
+            }
+            filterController.onThemaChanged(currentThemaSelection())
         }
     }
 
     private fun setupZeitraumSpinner() {
         runCatching {
-            spZeitraum.restoreFilterConfig(filterConfig)
-            spZeitraum.installFilterConfigurationChangeListener(filterConfig)
-            spZeitraum.addChangeListener { requestDebouncedZeitraumReload() }
+            filterView.render(
+                filterController.state(),
+                availableThemen = sourceThemaList.toList(),
+                canDeleteCurrentFilter = filterController.canDeleteCurrentFilter()
+            )
+            spZeitraum.installValueChangeListener {
+                if (!isSuppressed(SuppressedEventType.ZEITRAUM)) {
+                    filterController.onZeitraumChanged(it)
+                }
+            }
+            spZeitraum.addChangeListener {
+                if (!isSuppressed(SuppressedEventType.ZEITRAUM)) {
+                    requestDebouncedZeitraumReload()
+                }
+            }
         }.onFailure {
             logger.error("Failed to setup zeitraum spinner", it)
         }
@@ -357,7 +401,7 @@ class SwingFilterDialog internal constructor(
     private fun requestDebouncedZeitraumReload() {
         zeitraumReloadJob = restartDebouncedJob(zeitraumReloadJob, ZEITRAUM_RELOAD_DEBOUNCE_MS) {
             resetSenderSelection()
-            dependencies.publish(FilterZeitraumEvent())
+            filterController.requestZeitraumReload()
         }
     }
 
@@ -369,16 +413,43 @@ class SwingFilterDialog internal constructor(
         }
     }
 
-    private fun checkDeleteCurrentFilterButtonState() {
-        deleteCurrentFilterAction.isEnabled = filterConfig.availableFilterCount > 1
+    private fun updateDeleteCurrentFilterButtonState() {
+        deleteCurrentFilterAction.isEnabled = filterController.canDeleteCurrentFilter()
+    }
+
+    private fun reloadForStateChange(previousState: FilmFilterState) {
+        applyFilterStateChangeReload(previousState, filterController.state(), filterSwitchReloadRequester)
     }
 
     private fun restoreConfigSettings() {
-        restoreOperations.forEach { it.invoke() }
+        checkboxReloadJob?.cancel()
+        zeitraumReloadJob?.cancel()
+        withSuppressedEvents(SuppressedEventType.FILTER_SELECTION, SuppressedEventType.CHECKBOX) {
+            renderFilterState()
+        }
     }
 
-    private fun restoreThemaSelection() {
-        jcbThema.selectedItem = filterConfig.thema
+    private fun currentThemaSelection(): String {
+        return (jcbThema.selectedItem as? String)
+            ?: (jcbThema.editor.item as? String)
+            ?: ""
+    }
+
+    private fun setThemaSelectionSilently(thema: String?) {
+        withSuppressedEvents(SuppressedEventType.THEMA) {
+            jcbThema.selectedItem = thema
+        }
+    }
+
+    private fun isSuppressed(eventType: SuppressedEventType): Boolean = eventType in suppressedEventTypes
+
+    private inline fun withSuppressedEvents(vararg eventTypes: SuppressedEventType, action: () -> Unit) {
+        suppressedEventTypes.addAll(eventTypes)
+        try {
+            action()
+        } finally {
+            eventTypes.forEach(suppressedEventTypes::remove)
+        }
     }
 
     private fun applyEnabledState(enabled: Boolean) {
@@ -395,8 +466,7 @@ class SwingFilterDialog internal constructor(
         senderCheckBoxList.selectNone()
     }
 
-    @Handler
-    private fun handleTableModelChangeEvent(event: TableModelChangeEvent) {
+    fun onTableModelChangeEvent(event: TableModelChangeEvent) {
         uiScope.launch {
             val enabled = !event.active
             isEnabled = enabled
@@ -404,9 +474,31 @@ class SwingFilterDialog internal constructor(
             if (event.active) {
                 deleteCurrentFilterAction.isEnabled = false
             } else {
-                checkDeleteCurrentFilterButtonState()
+                updateDeleteCurrentFilterButtonState()
             }
         }
+    }
+
+    fun onFilmDataLoadingStarted() {
+        isEnabled = false
+    }
+
+    fun onFilmDataLoaded() {
+        filterController.onFilmDataLoaded()
+        renderFilterState()
+        isEnabled = true
+    }
+
+    internal fun triggerResetCurrentFilter() {
+        resetCurrentFilterAction.actionPerformed(null)
+    }
+
+    internal fun triggerDeleteCurrentFilter() {
+        deleteCurrentFilterAction.actionPerformed(null)
+    }
+
+    internal fun triggerRenameCurrentFilter() {
+        renameFilterAction.actionPerformed(null)
     }
 
     private fun restoreDialogVisibility() {
@@ -450,15 +542,11 @@ class SwingFilterDialog internal constructor(
         }
 
         override fun actionPerformed(e: ActionEvent?) {
-            val result = JOptionPane.showConfirmDialog(
-                MediathekGui.ui(),
-                "Sind Sie sicher, dass Sie den Filter zurücksetzen möchten?",
-                "Filter zurücksetzen",
-                JOptionPane.YES_NO_OPTION
-            )
-            if (result == JOptionPane.YES_OPTION) {
-                filterConfig.clearCurrentFilter()
+            if (prompts.confirmResetCurrentFilter()) {
+                val previousState = filterController.state()
+                filterController.resetCurrentFilter()
                 restoreConfigSettings()
+                reloadForStateChange(previousState)
             }
         }
     }
@@ -479,12 +567,14 @@ class SwingFilterDialog internal constructor(
         }
 
         private fun setupSenderList() {
-            model = GlazedListsSwing.eventListModel(dependencies.senderList())
+            model = GlazedListsSwing.eventListModel(filterController.senderList())
             checkBoxListSelectionModel.addListSelectionListener { event ->
+                if (isSuppressed(SuppressedEventType.SENDER_SELECTION)) {
+                    return@addListSelectionListener
+                }
                 if (!event.valueIsAdjusting) {
-                    filterConfig.setCheckedChannels(selectedSenders)
-                    updateThemaComboBox()
-                    publishReloadTableDataEvent()
+                    filterController.onSenderSelectionChanged(selectedSenders.toSet())
+                    renderFilterState()
                 }
             }
 
@@ -523,22 +613,24 @@ class SwingFilterDialog internal constructor(
                 return newSelectedSenderList
             }
 
-        fun restoreFilterConfig() {
-            val checkedSenders = filterConfig.checkedChannels
+        fun restoreFilterConfig(state: FilmFilterState) {
+            val checkedSenders = state.checkedChannels
             val selectionModel = checkBoxListSelectionModel
             val senderListModel = model
 
-            selectionModel.valueIsAdjusting = true
-            try {
-                selectNone()
-                for (index in 0 until senderListModel.size) {
-                    val item = senderListModel.getElementAt(index) as String
-                    if (checkedSenders.contains(item)) {
-                        selectionModel.addSelectionInterval(index, index)
+            withSuppressedEvents(SuppressedEventType.SENDER_SELECTION) {
+                selectionModel.valueIsAdjusting = true
+                try {
+                    selectNone()
+                    for (index in 0 until senderListModel.size) {
+                        val item = senderListModel.getElementAt(index) as String
+                        if (checkedSenders.contains(item)) {
+                            selectionModel.addSelectionInterval(index, index)
+                        }
                     }
+                } finally {
+                    selectionModel.valueIsAdjusting = false
                 }
-            } finally {
-                selectionModel.valueIsAdjusting = false
             }
         }
 
@@ -552,33 +644,23 @@ class SwingFilterDialog internal constructor(
         }
 
         override fun actionPerformed(e: ActionEvent?) {
-            val newFilterName = JOptionPane.showInputDialog(
-                MediathekGui.ui(),
-                "Filtername:",
-                STR_NEW_FILTER,
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                null,
-                "Filter ${filterConfig.availableFilters.size + 1}"
-            ) as? String
+            val newFilterName = prompts.requestNewFilterName(filterController.nextFilterNameSuggestion())
 
             if (newFilterName != null) {
-                filterConfig.findFilterForName(newFilterName).ifPresentOrElse(
-                    {
+                when (val result = filterController.addFilter(newFilterName)) {
+                    FilmFilterController.AddFilterResult.NameAlreadyExists -> {
                         JOptionPane.showMessageDialog(
                             MediathekGui.ui(),
                             "Ein Filter mit dem gewählten Namen existiert bereits!",
                             STR_NEW_FILTER,
                             JOptionPane.ERROR_MESSAGE
                         )
-                    },
-                    {
-                        val newFilter = FilterDTO(UUID.randomUUID(), newFilterName)
-                        filterConfig.addNewFilter(newFilter)
-                        checkDeleteCurrentFilterButtonState()
-                        filterSelectionComboBoxModel.selectedItem = newFilter
                     }
-                )
+                    is FilmFilterController.AddFilterResult.Added -> {
+                        updateDeleteCurrentFilterButtonState()
+                        filterSelectionComboBoxModel.selectedItem = result.filter
+                    }
+                }
             }
         }
 
@@ -592,15 +674,12 @@ class SwingFilterDialog internal constructor(
         }
 
         override fun actionPerformed(e: ActionEvent?) {
-            val result = JOptionPane.showConfirmDialog(
-                MediathekGui.ui(),
-                "Möchten Sie wirklich den aktuellen Filter löschen?",
-                Konstanten.PROGRAMMNAME,
-                JOptionPane.YES_NO_OPTION
-            )
-            if (result == JOptionPane.YES_OPTION) {
-                filterConfig.deleteFilter(filterConfig.currentFilter)
-                checkDeleteCurrentFilterButtonState()
+            if (prompts.confirmDeleteCurrentFilter()) {
+                val previousState = filterController.state()
+                filterController.deleteCurrentFilter()
+                restoreConfigSettings()
+                updateDeleteCurrentFilterButtonState()
+                reloadForStateChange(previousState)
             }
         }
 
@@ -613,8 +692,8 @@ class SwingFilterDialog internal constructor(
         }
 
         override fun actionPerformed(e: ActionEvent?) {
-            filterConfig.thema = ""
-            jcbThema.selectedIndex = 0
+            filterController.onThemaReset()
+            jcbThema.selectedItem = ""
         }
 
     }
@@ -633,16 +712,8 @@ class SwingFilterDialog internal constructor(
         }
 
         override fun actionPerformed(e: ActionEvent?) {
-            val currentFilterName = filterConfig.currentFilter.name()
-            val input = JOptionPane.showInputDialog(
-                MediathekGui.ui(),
-                "Neuer Name des Filters:",
-                "Filter umbenennen",
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                null,
-                currentFilterName
-            ) as? String ?: return
+            val currentFilterName = filterController.state().currentFilter.name()
+            val input = prompts.requestRenameFilterName(currentFilterName) ?: return
 
             if (input.isEmpty()) {
                 JOptionPane.showMessageDialog(
@@ -661,25 +732,19 @@ class SwingFilterDialog internal constructor(
                 return
             }
 
-            filterConfig.findFilterForName(trimmedName).ifPresentOrElse(
-                {
+            when (filterController.renameCurrentFilter(trimmedName)) {
+                FilmFilterController.RenameFilterResult.NameAlreadyExists -> {
                     JOptionPane.showMessageDialog(
                         MediathekGui.ui(),
                         "Filter $trimmedName existiert bereits.\nAktion wird abgebrochen",
                         Konstanten.PROGRAMMNAME,
                         JOptionPane.ERROR_MESSAGE
                     )
-                },
-                {
-                    config.withLock(LockMode.WRITE) {
-                        val thema = filterConfig.thema
-                        filterConfig.thema = ""
-                        filterConfig.renameCurrentFilter(trimmedName)
-                        filterConfig.thema = thema
-                    }
+                }
+                FilmFilterController.RenameFilterResult.Renamed -> {
                     logger.trace("Renamed filter \"{}\" to \"{}\"", currentFilterName, trimmedName)
                 }
-            )
+            }
         }
 
     }
@@ -721,26 +786,49 @@ class SwingFilterDialog internal constructor(
         }
     }
 
-    private inner class FilmeLadenListener : ListenerFilmeLaden() {
-        override fun start(event: ListenerFilmeLadenEvent) {
-            isEnabled = false
-        }
-
-        override fun fertig(event: ListenerFilmeLadenEvent) {
-            updateThemaComboBox()
-            isEnabled = true
-        }
-    }
-
     private inner class FilterSelectionDataListener : ListDataListener {
         override fun intervalAdded(event: ListDataEvent) = restoreConfigSettings()
         override fun intervalRemoved(event: ListDataEvent) = restoreConfigSettings()
-        override fun contentsChanged(event: ListDataEvent) = restoreConfigSettings()
+        override fun contentsChanged(event: ListDataEvent) {
+            if (event.index0 == -1 && event.index1 == -1) {
+                return
+            }
+            restoreConfigSettings()
+        }
+    }
+
+    private fun syncCurrentFilterAndRestore(requestReload: Boolean = false) {
+        if (isSuppressed(SuppressedEventType.FILTER_SELECTION)) {
+            return
+        }
+        val selectedFilter = cboxFilterSelection.selectedItem as? FilterDTO ?: return
+        val previousState = filterController.state()
+        val changed = filterController.restoreCurrentFilterSelection(selectedFilter)
+        restoreConfigSettings()
+        if (!changed) {
+            return
+        }
+        applyFilterSwitchReload(previousState, filterController.state(), requestReload, filterSwitchReloadRequester)
     }
 
     private data class CheckBoxBinding(
         val checkBox: JCheckBox,
-        val selectedStateReader: () -> Boolean,
-        val selectedStateWriter: (Boolean) -> Unit
+        val selectedStateReader: (FilmFilterState) -> Boolean,
+        val changeHandler: (Boolean) -> Unit
     )
+
+}
+
+private enum class SuppressedEventType {
+    CHECKBOX,
+    THEMA,
+    SENDER_SELECTION,
+    ZEITRAUM,
+    FILTER_SELECTION
+}
+
+internal enum class FilterSwitchReloadType {
+    NONE,
+    TABLE,
+    ZEITRAUM
 }

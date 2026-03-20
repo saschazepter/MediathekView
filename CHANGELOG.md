@@ -1,5 +1,7 @@
 # **14.6.0**
 - **BUGFIX:** Dialog "Film speichern" neu geschrieben um vorhandene Layout-Probleme zu beheben.
+- **BUGFIX:** Das Löschen der Thema-ComboBox mit dem Löschen-Button funktioniert nach Keyboard-Manipulation. Das Thema wird auch weiter angewendet.
+- **BUGFIX:** Vorhandenes Thema wird bei Filterwechsel angewendet und nicht gelöscht. 
 - **FEATURE:** Tab *Audiothek* zur Suche (offline als auch online), Abspielen und Download von Podcasts der ARD Audiothek und via podcastindex.org.
 - interne Optimierungen für mehr Geschwindigkeit
 

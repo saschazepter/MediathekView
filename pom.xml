@@ -551,7 +551,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
-                    <argLine>-XX:+EnableDynamicAgentLoading -Xshare:off --enable-native-access=ALL-UNNAMED</argLine>
+                    <argLine>-XX:+EnableDynamicAgentLoading -Xshare:off --enable-native-access=ALL-UNNAMED --add-exports=java.desktop/sun.swing=ALL-UNNAMED --add-exports=java.desktop/com.apple.laf=ALL-UNNAMED</argLine>
                 </configuration>
             </plugin>
             <plugin>
@@ -584,12 +584,13 @@
                 <executions>
                     <execution>
                         <id>compile</id>
-                        <phase>process-sources</phase>
+                        <phase>compile</phase>
                         <goals>
                             <goal>compile</goal>
                         </goals>
                         <configuration>
                             <sourceDirs>
+                                <source>src/main/java</source>
                                 <source>src/main/kotlin</source>
                                 <source>target/generated-sources/annotations</source>
                             </sourceDirs>
@@ -604,6 +605,7 @@
                         </goals>
                         <configuration>
                             <sourceDirs>
+                                <sourceDir>${project.basedir}/src/test/java</sourceDir>
                                 <sourceDir>${project.basedir}/src/test/kotlin</sourceDir>
                             </sourceDirs>
                             <jvmTarget>${kotlin.language.target}</jvmTarget>
