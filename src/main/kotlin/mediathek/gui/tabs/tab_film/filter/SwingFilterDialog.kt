@@ -400,7 +400,7 @@ class SwingFilterDialog @JvmOverloads internal constructor(
 
     private fun requestDebouncedZeitraumReload() {
         zeitraumReloadJob = restartDebouncedJob(zeitraumReloadJob, ZEITRAUM_RELOAD_DEBOUNCE_MS) {
-            resetSenderSelection()
+            //senderCheckBoxList.selectNone()
             filterController.requestZeitraumReload()
         }
     }
@@ -460,10 +460,6 @@ class SwingFilterDialog @JvmOverloads internal constructor(
     override fun setEnabled(enabled: Boolean) {
         super.setEnabled(enabled)
         applyEnabledState(enabled)
-    }
-
-    fun resetSenderSelection() {
-        senderCheckBoxList.selectNone()
     }
 
     fun onTableModelChangeEvent(event: TableModelChangeEvent) {
