@@ -18,10 +18,6 @@
 
 package mediathek.gui.dialog.add_download
 
-import com.github.kokorin.jaffree.StreamType
-import com.github.kokorin.jaffree.ffprobe.FFprobe
-import com.github.kokorin.jaffree.ffprobe.FFprobeResult
-import com.github.kokorin.jaffree.ffprobe.Stream
 import com.github.kokorin.jaffree.process.JaffreeAbnormalExitException
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.BufferOverflow
@@ -32,6 +28,9 @@ import mediathek.config.Daten
 import mediathek.config.MVColor
 import mediathek.config.MVConfig
 import mediathek.daten.*
+import mediathek.gui.dialog.download.DownloadQualityLiveInfoText
+import mediathek.gui.dialog.download.DownloadQualityResolutionSizes
+import mediathek.gui.dialog.download.DownloadQualitySupport
 import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.*
@@ -45,9 +44,7 @@ import java.awt.event.ActionListener
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.io.File
-import java.nio.file.Files
 import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.*
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -67,25 +64,6 @@ class DialogAddDownloadWithCoroutines(
     private sealed interface LiveInfoCommand {
         data object Cancel : LiveInfoCommand
         data class Fetch(val resolution: FilmResolution.Enum) : LiveInfoCommand
-    }
-
-    private data class LiveInfoText(
-        val video: String = "",
-        val audio: String = ""
-    )
-
-    private data class ResolutionSizes(
-        val high: String = "",
-        val normal: String = "",
-        val low: String = ""
-    ) {
-        fun forResolution(resolution: FilmResolution.Enum): String {
-            return when (resolution) {
-                FilmResolution.Enum.HIGH_QUALITY -> high
-                FilmResolution.Enum.LOW -> low
-                else -> normal
-            }
-        }
     }
 
     private data class ResolutionButtonLabels(
@@ -117,16 +95,15 @@ class DialogAddDownloadWithCoroutines(
     private lateinit var resolutionButtonLabels: ResolutionButtonLabels
     private lateinit var cbPathTextComponent: JTextComponent
     private lateinit var datenDownload: DatenDownload
-    private var resolutionSizes = ResolutionSizes()
+    private var resolutionSizes = DownloadQualityResolutionSizes()
 
     companion object {
         private val logger = LogManager.getLogger()
         private const val MINIMUM_DIALOG_WIDTH = 720
-        private const val NO_DATA_AVAILABLE = "Keine Daten verfügbar."
         private const val TITLED_BORDER_STRING = "Download-Qualität"
         private const val KEY_LABEL_FOREGROUND: String = "Label.foreground"
         private const val KEY_TEXTFIELD_BACKGROUND: String = "TextField.background"
-        private val LIVE_INFO_PLACEHOLDER = LiveInfoText(
+        private val LIVE_INFO_PLACEHOLDER = DownloadQualityLiveInfoText(
             video = "Video: 1920x1080, 2220 kBit/s, 50 fps (avg), H.264",
             audio = "Audio: 48000 Hz, 128 kBit/s, AAC (Advanced Audio Coding)"
         )
@@ -279,7 +256,7 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun stabilizeLiveInfoArea() {
-        val originalText = LiveInfoText(lblStatus.text, lblAudioInfo.text)
+        val originalText = DownloadQualityLiveInfoText(lblStatus.text, lblAudioInfo.text)
         showLiveInfo(LIVE_INFO_PLACEHOLDER)
 
         lblStatus.preferredSize = lblStatus.preferredSize
@@ -629,10 +606,8 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun detectFfprobeExecutable() {
-        try {
-            ffprobePath = GuiFunktionenProgramme.findExecutableOnPath("ffprobe").parent
-        } catch (_: Exception) {
-            logger.error("ffprobe not found on system.")
+        ffprobePath = DownloadQualitySupport.findFfprobeExecutableDirectory()
+        if (ffprobePath == null) {
             lblBusyIndicator.apply {
                 isVisible = true
                 isBusy = false
@@ -649,7 +624,7 @@ class DialogAddDownloadWithCoroutines(
             isBusy = false
             isVisible = false
         }
-        showLiveInfo(LiveInfoText())
+        showLiveInfo(DownloadQualityLiveInfoText())
     }
 
     private suspend fun fetchLiveFilmInfo(resolution: FilmResolution.Enum) {
@@ -660,43 +635,24 @@ class DialogAddDownloadWithCoroutines(
             isVisible = true
             isBusy = true
         }
-        showLiveInfo(LiveInfoText())
+        showLiveInfo(DownloadQualityLiveInfoText())
 
         try {
-            val url = film.getUrlFuerAufloesung(resolution)
-
             val result = runInterruptible(Dispatchers.IO) {
-                FFprobe.atPath(executablePath)
-                    .setShowStreams(true)
-                    .setInput(url)
-                    .execute()
+                DownloadQualitySupport.fetchLiveInfo(executablePath, film, resolution)
             }
 
-            showLiveInfo(buildLiveInfoText(result))
+            showLiveInfo(result)
         } catch (_: CancellationException) {
-            showLiveInfo(LiveInfoText())
+            showLiveInfo(DownloadQualityLiveInfoText())
         } catch (ex: JaffreeAbnormalExitException) {
-            showLiveInfoError(getJaffreeErrorString(ex))
+            showLiveInfoError(DownloadQualitySupport.getLiveInfoErrorString(ex))
         } catch (_: Exception) {
             showLiveInfoError("Unbekannter Fehler aufgetreten.")
         } finally {
             resetBusyIndicator()
             btnRequestLiveInfo.isEnabled = true
         }
-    }
-
-    private fun buildLiveInfoText(result: FFprobeResult): LiveInfoText {
-        val audioStream = result.streams.find { it.codecType == StreamType.AUDIO }
-        val videoStream = result.streams.find { it.codecType == StreamType.VIDEO }
-
-        return LiveInfoText(
-            video = videoStream?.let {
-                val frameRate = it.avgFrameRate.toInt()
-                val codecName = getVideoCodecName(it)
-                getVideoInfoString(it, frameRate, codecName)
-            } ?: NO_DATA_AVAILABLE,
-            audio = audioStream?.let { getAudioInfo(it, it.sampleRate) } ?: NO_DATA_AVAILABLE
-        )
     }
 
     private fun resetBusyIndicator() {
@@ -708,10 +664,10 @@ class DialogAddDownloadWithCoroutines(
 
     private fun resetLiveInfoDisplay() {
         resetBusyIndicator()
-        showLiveInfo(LiveInfoText())
+        showLiveInfo(DownloadQualityLiveInfoText())
     }
 
-    private fun showLiveInfo(liveInfoText: LiveInfoText) {
+    private fun showLiveInfo(liveInfoText: DownloadQualityLiveInfoText) {
         val labelForeground = UIManager.getColor(KEY_LABEL_FOREGROUND)
         lblStatus.foreground = labelForeground
         lblAudioInfo.foreground = labelForeground
@@ -727,52 +683,6 @@ class DialogAddDownloadWithCoroutines(
     }
 
     /**
-     * Return only the first part of the long codec name.
-     *
-     * @param stream The video stream from ffprobe.
-     * @return First entry of long codec name.
-     */
-    private fun getVideoCodecName(stream: Stream): String {
-        logger.trace("video codec long name: ${stream.codecLongName}")
-        return stream.codecLongName.split("/")
-            .firstOrNull()
-            ?.trim()
-            ?: stream.codecLongName
-    }
-
-    private fun getAudioInfo(stream: Stream, sampleRate: Int?): String {
-        val bitRate = safeProcessBitRate(stream.bitRate)
-        return if (bitRate == 0) {
-            "Audio: ${sampleRate ?: "?"} Hz, ${stream.codecLongName}"
-        } else {
-            "Audio: ${sampleRate ?: "?"} Hz, $bitRate kBit/s, ${stream.codecLongName}"
-        }
-    }
-
-    private fun getVideoInfoString(stream: Stream, frameRate: Int, codecName: String?): String {
-        val bitRate = safeProcessBitRate(stream.bitRate)
-        return if (bitRate == 0) {
-            "Video: ${stream.width}x${stream.height}, $frameRate fps (avg), $codecName"
-        } else {
-            "Video: ${stream.width}x${stream.height}, $bitRate kBit/s, $frameRate fps (avg), $codecName"
-        }
-    }
-
-    private fun safeProcessBitRate(inBitRate: Int?): Int = (inBitRate ?: 0) / 1000
-
-    private fun getJaffreeErrorString(ex: JaffreeAbnormalExitException): String {
-        return ex.processErrorLogMessages
-            .firstOrNull()
-            ?.message
-            ?.substringAfterLast(':')
-            ?.trim()
-            ?.takeIf { it.startsWith("Server returned ") }
-            ?.removePrefix("Server returned ")
-            ?.trim()
-            ?: "Unbekannter Fehler aufgetreten."
-    }
-
-    /**
      * Calculate free disk space on volume and check if the movies can be safely downloaded.
      */
     private fun calculateAndCheckDiskSpace(usableSpaceBytes: Long) {
@@ -782,11 +692,7 @@ class DialogAddDownloadWithCoroutines(
             val filmBorder = jPanelSize.border as? javax.swing.border.TitledBorder ?: return
             var usableSpace = usableSpaceBytes
 
-            filmBorder.title = if (usableSpace > 0) {
-                "$TITLED_BORDER_STRING [ Freier Speicherplatz: ${FileUtils.humanReadableByteCountBinary(usableSpace)} ]"
-            } else {
-                TITLED_BORDER_STRING
-            }
+            filmBorder.title = DownloadQualitySupport.qualityPanelTitle(TITLED_BORDER_STRING, usableSpace)
 
             // Border needs to be repainted after update...
             jPanelSize.repaint()
@@ -825,7 +731,7 @@ class DialogAddDownloadWithCoroutines(
 
     private suspend fun calculateAndCheckDiskSpaceAsync(currentPath: String = cbPathTextComponent.text) {
         val usableSpace = withContext(Dispatchers.IO) {
-            getFreeDiskSpace(currentPath)
+            DownloadQualitySupport.getFreeDiskSpace(currentPath)
         }
         calculateAndCheckDiskSpace(usableSpace)
     }
@@ -941,31 +847,6 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
-    /**
-     * Get the free disk space for a selected path.
-     *
-     * @return Free disk space in bytes.
-     */
-    private fun getFreeDiskSpace(strPath: String): Long {
-        if (strPath.isEmpty()) return 0L
-
-        return try {
-            var path = Paths.get(strPath)
-            while (path != null && Files.notExists(path)) {
-                path = path.parent
-            }
-
-            if (path == null) {
-                0L
-            } else {
-                Files.getFileStore(path).usableSpace
-            }
-        } catch (ex: Exception) {
-            logger.error("getFreeDiskSpace Failed", ex)
-            0L
-        }
-    }
-
     private fun setupZielButton() {
         jButtonZiel.apply {
             icon = SVGIconUtilities.createSVGIcon("icons/fontawesome/folder-open.svg")
@@ -988,46 +869,18 @@ class DialogAddDownloadWithCoroutines(
         }
     }
 
-    private fun fetchFileSizeForQuality(resolution: FilmResolution.Enum): String {
-        return runCatching {
-            val url = film.getUrlFuerAufloesung(resolution)
-            film.getFileSizeForUrl(url, true)
-        }.onFailure { logger.error("Failed to retrieve file size for $resolution", it) }
-            .getOrDefault("")
-    }
-
-    private fun fetchFileSizeForNormalQuality(): String {
-        return runCatching {
-            film.getFileSizeForUrl(film.urlNormalQuality, true)
-        }.onFailure { logger.error("Failed to retrieve normal quality size", it) }
-            .getOrDefault("")
-    }
-
-    private suspend fun loadResolutionSizes(): ResolutionSizes {
+    private suspend fun loadResolutionSizes(): DownloadQualityResolutionSizes {
         return try {
-            withContext(Dispatchers.IO) {
-                supervisorScope {
-                    val sizes = awaitAll(
-                        async { fetchFileSizeForQuality(FilmResolution.Enum.HIGH_QUALITY) },
-                        async { fetchFileSizeForNormalQuality() },
-                        async { fetchFileSizeForQuality(FilmResolution.Enum.LOW) }
-                    )
-                    ResolutionSizes(
-                        high = sizes[0],
-                        normal = sizes[1],
-                        low = sizes[2]
-                    )
-                }
-            }
+            withContext(Dispatchers.IO) { DownloadQualitySupport.loadResolutionSizes(film) }
         } catch (ex: CancellationException) {
             throw ex
         } catch (ex: Exception) {
             logger.error("Error occurred while fetching file sizes", ex)
-            ResolutionSizes()
+            DownloadQualityResolutionSizes()
         }
     }
 
-    private fun applyResolutionSizes(sizes: ResolutionSizes) {
+    private fun applyResolutionSizes(sizes: DownloadQualityResolutionSizes) {
         resolutionSizes = sizes
         jRadioButtonAufloesungHd.text = formatResolutionLabel(
             resolutionButtonLabels.high,
@@ -1044,11 +897,7 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun formatResolutionLabel(baseLabel: String, sizeInMb: String?): String {
-        return if (sizeInMb.isNullOrEmpty()) {
-            baseLabel
-        } else {
-            "$baseLabel   [ $sizeInMb MB ]"
-        }
+        return DownloadQualitySupport.formatResolutionLabel(baseLabel, sizeInMb)
     }
 
     private fun configureResolutionButton(

@@ -193,6 +193,14 @@ public class MVPanelDownloadZiel extends JPanel {
         return !orgPfad.equals(datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD_DATEINAME]);
     }
 
+    public String getCurrentPath() {
+        return ((JTextComponent) jComboBoxPath.getEditor().getEditorComponent()).getText();
+    }
+
+    public void addPathDocumentListener(DocumentListener listener) {
+        ((JTextComponent) jComboBoxPath.getEditor().getEditorComponent()).getDocument().addDocumentListener(listener);
+    }
+
     private class ZielBeobachter implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {

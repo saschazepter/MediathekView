@@ -87,10 +87,7 @@ class OnlineSearchProxyRepository(
                     return@withContext emptyList()
                 }
 
-                val body = response.body ?: run {
-                    logger.warn("Proxy-Antwort ohne Body für Audiothek-Onlinesuche '{}'", normalizedQuery)
-                    return@withContext emptyList()
-                }
+                val body = response.body
 
                 body.byteStream().use(::parseEntries)
             }

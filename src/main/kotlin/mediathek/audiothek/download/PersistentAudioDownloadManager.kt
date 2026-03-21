@@ -214,7 +214,7 @@ class PersistentAudioDownloadManager(
                     executeDownload(task, url, tempFile, targetFile, client)
                 }
                 response.isSuccessful -> {
-                    val body = response.body ?: error("Download fehlgeschlagen: Leerer Response-Body")
+                    val body = response.body
                     if (response.code == 200 && downloadedBytes > 0L) {
                         deleteIfExists(tempFile)
                         task.updateSnapshot(

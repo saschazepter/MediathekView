@@ -17,7 +17,7 @@ import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
 import mediathek.gui.actions.*;
 import mediathek.gui.dialog.DialogBeendenZeit;
 import mediathek.gui.dialog.DialogEditAbo;
-import mediathek.gui.dialog.DialogEditDownload;
+import mediathek.gui.dialog.edit_download.DialogEditDownload;
 import mediathek.gui.messages.*;
 import mediathek.gui.tabs.AGuiTabPanel;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
@@ -624,9 +624,9 @@ public class GuiDownloads extends AGuiTabPanel {
             }
         }
         DatenDownload datenDownloadKopy = datenDownload.getCopy();
-        DialogEditDownload dialog = new DialogEditDownload(mediathekGui, datenDownloadKopy, gestartet, tabelle.getColumnModel());
+        DialogEditDownload dialog = new DialogEditDownload(mediathekGui, datenDownloadKopy, gestartet);
         dialog.setVisible(true);
-        if (dialog.ok) {
+        if (dialog.isConfirmed()) {
             datenDownload.aufMichKopieren(datenDownloadKopy);
             reloadTable();
         }
