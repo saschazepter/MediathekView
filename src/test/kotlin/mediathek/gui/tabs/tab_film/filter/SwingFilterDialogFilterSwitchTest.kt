@@ -22,9 +22,12 @@ import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.assumeUiA
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.createDialogSetup
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.onEdt
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.showNewOnlyCheckBox
+import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.triggerAddNewFilter
+import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.triggerCloneCurrentFilter
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.triggerDeleteCurrentFilter
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.triggerRenameCurrentFilter
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.triggerResetCurrentFilter
+import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.zeitraumSpinnerValue
 import mediathek.tool.FilterDTO
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -89,6 +92,7 @@ internal class SwingFilterDialogFilterSwitchTest {
         val setup = createDialogSetup()
 
         try {
+            val tableReloadsBeforeAdd = setup.reloadRequester.tableReloadRequests
             val addedFilter = when (val result = setup.controller.addFilter("Added Filter")) {
                 is FilmFilterController.AddFilterResult.Added -> result.filter
                 FilmFilterController.AddFilterResult.NameAlreadyExists -> error("filter name unexpectedly existed")
@@ -101,7 +105,67 @@ internal class SwingFilterDialogFilterSwitchTest {
 
             assertEquals(addedFilter, setup.controller.currentFilter())
             assertEquals(addedFilter, setup.comboBox.selectedItem)
+            assertEquals(tableReloadsBeforeAdd, setup.reloadRequester.tableReloadRequests)
+        } finally {
+            onEdt {
+                setup.dialog.dispose()
+                setup.model.close()
+            }
+        }
+    }
+
+    @Test
+    fun `adding a filter from a zeitraum-limited selection resets zeitraum to unlimited`() {
+        assumeUiAvailable()
+
+        val setup = createDialogSetup()
+
+        try {
+            onEdt {
+                setup.comboBox.selectedItem = setup.zeitraumFilter
+            }
+            onEdt {}
+
+            onEdt {
+                triggerAddNewFilter(setup, "Fresh Filter")
+            }
+            onEdt {}
+
+            assertEquals("Fresh Filter", setup.controller.currentFilter().name())
+            assertEquals(ZeitraumSpinner.INFINITE_TEXT, setup.controller.state().zeitraum)
+            assertEquals(ZeitraumSpinner.INFINITE_VALUE, zeitraumSpinnerValue(setup.dialog))
             assertEquals(0, setup.reloadRequester.tableReloadRequests)
+            assertEquals(2, setup.reloadRequester.zeitraumReloadRequests)
+        } finally {
+            onEdt {
+                setup.dialog.dispose()
+                setup.model.close()
+            }
+        }
+    }
+
+    @Test
+    fun `cloning current filter copies state and selects cloned filter`() {
+        assumeUiAvailable()
+
+        val setup = createDialogSetup()
+
+        try {
+            onEdt {
+                setup.comboBox.selectedItem = setup.zeitraumFilter
+            }
+            onEdt {}
+
+            onEdt {
+                triggerCloneCurrentFilter(setup.dialog)
+            }
+            onEdt {}
+
+            assertEquals("Filter 3 Kopie", setup.controller.currentFilter().name())
+            assertEquals("7", setup.controller.state().zeitraum)
+            assertEquals(setup.controller.currentFilter(), setup.comboBox.selectedItem)
+            assertEquals(1, setup.reloadRequester.tableReloadRequests)
+            assertEquals(1, setup.reloadRequester.zeitraumReloadRequests)
         } finally {
             onEdt {
                 setup.dialog.dispose()

@@ -356,7 +356,7 @@ new FormModel {
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 0 0"
 				} )
-				add( new FormComponent( "mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner" ) {
+				add( new FormComponent( "mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner" ) {
 					name: "spZeitraum"
 					auxiliary() {
 						"JavaCodeGenerator.variableModifiers": 4

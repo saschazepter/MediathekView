@@ -189,6 +189,43 @@ internal class FilmFilterControllerTest {
     }
 
     @Test
+    fun `adding a filter resets zeitraum to unlimited`() {
+        val controller = createController()
+        controller.onZeitraumChanged("7")
+
+        val added = controller.addFilter("Second Filter")
+
+        assertTrue(added is FilmFilterController.AddFilterResult.Added)
+        assertEquals(ZeitraumSpinner.INFINITE_TEXT, controller.state().zeitraum)
+    }
+
+    @Test
+    fun `cloning current filter copies state and appends kopie to name`() {
+        val controller = createController()
+        controller.onShowNewOnlyChanged(true)
+        controller.onZeitraumChanged("7")
+
+        val cloned = controller.cloneCurrentFilter()
+
+        assertEquals("Filter 1 Kopie", cloned.filter.name())
+        assertEquals(cloned.filter, controller.currentFilter())
+        assertTrue(controller.state().showNewOnly)
+        assertEquals("7", controller.state().zeitraum)
+        assertEquals(2, controller.availableFilters().size)
+    }
+
+    @Test
+    fun `cloning original filter uses incremented kopie names when needed`() {
+        val controller = createController()
+
+        controller.cloneCurrentFilter()
+        controller.restoreCurrentFilterSelection(DEFAULT_FILTER)
+        val secondClone = controller.cloneCurrentFilter()
+
+        assertEquals("Filter 1 Kopie 2", secondClone.filter.name())
+    }
+
+    @Test
     fun `restoring already selected filter is a no-op`() {
         val controller = createController()
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 derreisende77.
+ * Copyright (c) 2025-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,57 +19,35 @@
 package mediathek.gui.tabs.tab_film.filter;
 
 import com.jidesoft.swing.RangeSlider;
-import mediathek.tool.FilterConfiguration;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.util.Hashtable;
 
 public class FilmLengthSlider extends RangeSlider {
-    private static final Logger logger = LogManager.getLogger();
+    private static final int MIN_FILM_LENGTH = 0;
     private static final int MAX_FILM_LENGTH = 240;
+    public static final int UNLIMITED_VALUE = MAX_FILM_LENGTH;
     private static final int TICK_SPACING = 30;
-    public final static int UNLIMITED_VALUE = MAX_FILM_LENGTH;
+    private static final String UNLIMITED_TEXT = "∞";
 
     public FilmLengthSlider() {
-        super(0, MAX_FILM_LENGTH);
+        super(MIN_FILM_LENGTH, MAX_FILM_LENGTH);
+
         setPaintLabels(true);
         setPaintTicks(true);
         setPaintTrack(true);
         setMajorTickSpacing(TICK_SPACING);
-        setLabelTable(new FilmlengthLabelTable());
-    }
-
-    public void restoreFilterConfig(@NotNull FilterConfiguration filterConfig) {
-        try {
-            setValueIsAdjusting(true);
-            setLowValue((int) filterConfig.getFilmLengthMin());
-            setHighValue((int) filterConfig.getFilmLengthMax());
-            setValueIsAdjusting(false);
-        } catch (Exception exception) {
-            logger.error("Failed to restore filmlength config", exception);
-        }
+        setLabelTable(new Hashtable<Integer, JComponent>() {
+            {
+                for (int filmLength = MIN_FILM_LENGTH; filmLength < MAX_FILM_LENGTH; filmLength += TICK_SPACING) {
+                    put(filmLength, new JLabel(Integer.toString(filmLength)));
+                }
+                put(MAX_FILM_LENGTH, new JLabel(UNLIMITED_TEXT));
+            }
+        });
     }
 
     public String getHighValueText() {
-        String res;
-        var highValue = getHighValue();
-        if (highValue == UNLIMITED_VALUE) {
-            res = "∞";
-        } else {
-            res = String.valueOf(highValue);
-        }
-        return res;
-    }
-
-    private static class FilmlengthLabelTable extends Hashtable<Integer, JComponent> {
-        public FilmlengthLabelTable() {
-            for (int i = 0; i < MAX_FILM_LENGTH; i += TICK_SPACING) {
-                put(i, new JLabel(String.valueOf(i)));
-            }
-            put(MAX_FILM_LENGTH, new JLabel("∞"));
-        }
+        return getHighValue() == UNLIMITED_VALUE ? UNLIMITED_TEXT : Integer.toString(getHighValue());
     }
 }

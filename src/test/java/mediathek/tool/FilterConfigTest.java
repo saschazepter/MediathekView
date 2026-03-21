@@ -19,7 +19,7 @@
 package mediathek.tool;
 
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider;
-import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinnerFormatter;
+import mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner;
 import org.apache.commons.configuration2.XMLConfiguration;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -69,7 +69,7 @@ class FilterConfigTest {
                 arguments(
                         "getZeitraum",
                         (Supplier<String>) filterConfig::getZeitraum,
-                        ZeitraumSpinnerFormatter.INFINITE_TEXT));
+                        ZeitraumSpinner.INFINITE_TEXT));
     }
 
     @DisplayName("Check if a new filter is created when no current filter id is set and no other filters exist")
@@ -124,7 +124,7 @@ class FilterConfigTest {
         Assertions.assertTrue(config.isShowNewOnly());
         Assertions.assertEquals(42d, config.getFilmLengthMax());
         Assertions.assertFalse(config.isShowLivestreamsOnly());
-        Assertions.assertEquals(ZeitraumSpinnerFormatter.INFINITE_TEXT, config.getZeitraum());
+        Assertions.assertEquals(ZeitraumSpinner.INFINITE_TEXT, config.getZeitraum());
 
         config.setCurrentFilter(secondFilterID);
         Assertions.assertEquals(secondFilterID, config.getCurrentFilterID());
@@ -168,7 +168,7 @@ class FilterConfigTest {
         Assertions.assertTrue(config.isShowNewOnly());
         Assertions.assertEquals(42d, config.getFilmLengthMax());
         Assertions.assertFalse(config.isShowLivestreamsOnly());
-        Assertions.assertEquals(ZeitraumSpinnerFormatter.INFINITE_TEXT, config.getZeitraum());
+        Assertions.assertEquals(ZeitraumSpinner.INFINITE_TEXT, config.getZeitraum());
 
         config.setCurrentFilter(secondFilterID);
         Assertions.assertEquals(secondFilterID, config.getCurrentFilterID());

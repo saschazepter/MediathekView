@@ -19,7 +19,6 @@
 package mediathek.gui.tabs.tab_film.filter
 
 import ca.odell.glazedlists.BasicEventList
-import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner
 import mediathek.tool.FilterDTO
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Assumptions.assumeFalse
@@ -145,6 +144,29 @@ internal class DialogFilterViewTest {
         )
 
         assertFalse(deleteAction.isEnabled)
+    }
+
+    @Test
+    fun `zeitraum spinner falls back to unlimited for invalid persisted value`() {
+        val spinner = ZeitraumSpinner()
+        var fallbackWritten = ""
+
+        spinner.restoreValue("invalid") { fallbackWritten = it }
+
+        assertEquals(ZeitraumSpinner.INFINITE_VALUE, spinner.value)
+        assertEquals(ZeitraumSpinner.INFINITE_TEXT, fallbackWritten)
+    }
+
+    @Test
+    fun `zeitraum spinner emits infinite symbol for zero value`() {
+        val spinner = ZeitraumSpinner()
+        var emittedValue = ""
+
+        spinner.installValueChangeListener { emittedValue = it }
+        spinner.value = 7
+        spinner.value = ZeitraumSpinner.INFINITE_VALUE
+
+        assertEquals(ZeitraumSpinner.INFINITE_TEXT, emittedValue)
     }
 
     private class TestFilmLengthSlider : FilmLengthSlider() {

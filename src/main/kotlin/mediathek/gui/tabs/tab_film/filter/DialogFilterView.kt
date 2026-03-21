@@ -19,7 +19,6 @@
 package mediathek.gui.tabs.tab_film.filter
 
 import ca.odell.glazedlists.EventList
-import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner
 import mediathek.tool.withWriteLock
 import javax.swing.Action
 import javax.swing.JCheckBox
@@ -50,12 +49,9 @@ class DialogFilterView(
         }
         themaSelectionRenderer(state.thema)
 
-        filmLengthRangeSlider.valueIsAdjusting = true
-        try {
+        filmLengthRangeSlider.withValueIsAdjusting {
             filmLengthRangeSlider.lowValue = state.filmLengthMin.toInt()
             filmLengthRangeSlider.highValue = state.filmLengthMax.toInt()
-        } finally {
-            filmLengthRangeSlider.valueIsAdjusting = false
         }
         minFilmLengthValueLabel.text = filmLengthRangeSlider.lowValue.toString()
         maxFilmLengthValueLabel.text = filmLengthRangeSlider.highValueText
@@ -63,5 +59,14 @@ class DialogFilterView(
         zeitraumSpinner.restoreValue(state.zeitraum, zeitraumFallbackWriter)
 
         deleteCurrentFilterAction.isEnabled = canDeleteCurrentFilter
+    }
+
+    inline fun <T> FilmLengthSlider.withValueIsAdjusting(action: FilmLengthSlider.() -> T): T {
+        valueIsAdjusting = true
+        try {
+            return action()
+        } finally {
+            valueIsAdjusting = false
+        }
     }
 }

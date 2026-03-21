@@ -55,6 +55,7 @@ class FilmFilterController(
     }
 
     companion object {
+        private const val COPY_SUFFIX = " Kopie"
         private val logger = LogManager.getLogger()
         private val verbosePersistReasons = setOf(
             "senderSelection",
@@ -293,7 +294,22 @@ class FilmFilterController(
         logger.trace("Updating filter lifecycle for reason=addFilter: newFilter={}", newFilter)
         filterConfig.addNewFilter(newFilter)
         filterConfig.currentFilter = newFilter
+        filterConfig.clearCurrentFilter()
         syncStateFromConfig("addFilter", notifyAvailableFilters = true)
+        return AddFilterResult.Added(newFilter)
+    }
+
+    fun cloneCurrentFilter(): AddFilterResult.Added {
+        val sourceState = currentState
+        val newFilter = FilterDTO(UUID.randomUUID(), nextCloneFilterName(sourceState.currentFilter.name()))
+        logger.trace(
+            "Updating filter lifecycle for reason=cloneFilter: sourceFilter={} newFilter={}",
+            sourceState.currentFilter,
+            newFilter
+        )
+        filterConfig.addNewFilter(newFilter)
+        persist("cloneFilter", sourceState.copy(currentFilter = newFilter))
+        syncStateFromConfig("cloneFilter", notifyAvailableFilters = true)
         return AddFilterResult.Added(newFilter)
     }
 
@@ -364,6 +380,22 @@ class FilmFilterController(
         }
         if (previousState.currentFilter != currentState.currentFilter) {
             currentFilterObservers.forEach { it.accept(currentState.currentFilter) }
+        }
+    }
+
+    private fun nextCloneFilterName(sourceName: String): String {
+        val baseName = "$sourceName$COPY_SUFFIX"
+        if (filterConfig.findFilterForName(baseName).isEmpty) {
+            return baseName
+        }
+
+        var suffixIndex = 2
+        while (true) {
+            val candidate = "$baseName $suffixIndex"
+            if (filterConfig.findFilterForName(candidate).isEmpty) {
+                return candidate
+            }
+            suffixIndex++
         }
     }
 }

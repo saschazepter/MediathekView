@@ -145,10 +145,25 @@ internal object SwingFilterDialogTestFixture {
         setup.dialog.triggerRenameCurrentFilter()
     }
 
+    fun triggerAddNewFilter(setup: DialogSetup, newName: String?) {
+        setup.requestedNewFilterName.set(newName)
+        setup.dialog.triggerAddNewFilter()
+    }
+
+    fun triggerCloneCurrentFilter(dialog: SwingFilterDialog) {
+        dialog.triggerCloneCurrentFilter()
+    }
+
     fun showNewOnlyCheckBox(dialog: SwingFilterDialog): JCheckBox {
         val field = dialog.javaClass.superclass.getDeclaredField("cbShowNewOnly")
         field.isAccessible = true
         return field.get(dialog) as JCheckBox
+    }
+
+    fun zeitraumSpinnerValue(dialog: SwingFilterDialog): Int {
+        val field = dialog.javaClass.superclass.getDeclaredField("spZeitraum")
+        field.isAccessible = true
+        return (field.get(dialog) as ZeitraumSpinner).value as Int
     }
 
     private fun <T> withCrossPlatformLookAndFeel(action: () -> T): T {

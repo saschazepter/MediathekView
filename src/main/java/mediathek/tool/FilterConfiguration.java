@@ -19,7 +19,7 @@
 package mediathek.tool;
 
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider;
-import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinnerFormatter;
+import mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner;
 import org.apache.commons.configuration2.Configuration;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -159,7 +159,7 @@ public class FilterConfiguration {
                 && !isDontShowGeoblocked()
                 && !isDontShowAudioVersions()
                 && !isDontShowDuplicates()
-                && getZeitraum().equalsIgnoreCase(ZeitraumSpinnerFormatter.INFINITE_TEXT);
+                && getZeitraum().equalsIgnoreCase(ZeitraumSpinner.INFINITE_TEXT);
     }
 
     public boolean isShowHighQualityOnly() {
@@ -302,7 +302,7 @@ public class FilterConfiguration {
     }
 
     public String getZeitraum() {
-        return getCurrentFilterString(FilterConfigurationKeys.FILTER_PANEL_ZEITRAUM, ZeitraumSpinnerFormatter.INFINITE_TEXT);
+        return getCurrentFilterString(FilterConfigurationKeys.FILTER_PANEL_ZEITRAUM, ZeitraumSpinner.INFINITE_TEXT);
     }
 
     public FilterConfiguration setZeitraum(@NotNull String zeitraum) {

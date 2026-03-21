@@ -4,7 +4,9 @@
 - **BUGFIX:** Vorhandenes Thema wird bei Filterwechsel angewendet und nicht gelöscht.
 - **BUGFIX:** Änderung des Zeitraums löscht nicht mehr die Sender.
 - **FEATURE:** Tab *Audiothek* zur Suche (offline als auch online), Abspielen und Download von Podcasts der ARD Audiothek und via podcastindex.org.
+- **FEATURE:** Filter können nun kopiert werden.
 - interne Optimierungen für mehr Geschwindigkeit.
+- interne Fehler wurden behoben.
 
 # **14.5.0**
 - **BUGFIX(Linux):** Tray-Icon Funktion wird für KDE deaktiviert, das sie hier nicht richtig funktioniert.

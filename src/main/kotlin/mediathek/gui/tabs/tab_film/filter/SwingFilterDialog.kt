@@ -55,6 +55,7 @@ class SwingFilterDialog @JvmOverloads internal constructor(
         private const val ZEITRAUM_RELOAD_DEBOUNCE_MS = 450L
         private const val CONFIG_SENDERLIST_VERTICAL_WRAP = "senderlist.vertical_wrap"
         private const val STR_NEW_FILTER = "Neuen Filter anlegen"
+        private const val STR_CLONE_CURRENT_FILTER = "Aktuellen Filter kopieren"
         private const val STR_DELETE_CURRENT_FILTER = "Aktuellen Filter löschen"
         private const val STR_RESET_THEMA = "Thema zurücksetzen"
         private const val STR_RENAME_FILTER = "Filter umbenennen"
@@ -116,6 +117,7 @@ class SwingFilterDialog @JvmOverloads internal constructor(
     private val renameFilterAction = RenameFilterAction()
     private val deleteCurrentFilterAction = DeleteCurrentFilterAction()
     private val addNewFilterAction = AddNewFilterAction()
+    private val cloneCurrentFilterAction = CloneCurrentFilterAction()
     private val resetCurrentFilterAction = ResetCurrentFilterAction()
     private val checkBoxBindings = createCheckBoxBindings()
     private val senderCheckBoxList = SenderCheckBoxList()
@@ -277,6 +279,7 @@ class SwingFilterDialog @JvmOverloads internal constructor(
     private fun populateSplitButton() {
         btnSplit.add(renameFilterAction)
         btnSplit.add(addNewFilterAction)
+        btnSplit.add(cloneCurrentFilterAction)
         btnSplit.add(deleteCurrentFilterAction)
         btnSplit.addSeparator()
         btnSplit.add(resetCurrentFilterAction)
@@ -386,10 +389,6 @@ class SwingFilterDialog @JvmOverloads internal constructor(
             spZeitraum.installValueChangeListener {
                 if (!isSuppressed(SuppressedEventType.ZEITRAUM)) {
                     filterController.onZeitraumChanged(it)
-                }
-            }
-            spZeitraum.addChangeListener {
-                if (!isSuppressed(SuppressedEventType.ZEITRAUM)) {
                     requestDebouncedZeitraumReload()
                 }
             }
@@ -495,6 +494,14 @@ class SwingFilterDialog @JvmOverloads internal constructor(
 
     internal fun triggerRenameCurrentFilter() {
         renameFilterAction.actionPerformed(null)
+    }
+
+    internal fun triggerAddNewFilter() {
+        addNewFilterAction.actionPerformed(null)
+    }
+
+    internal fun triggerCloneCurrentFilter() {
+        cloneCurrentFilterAction.actionPerformed(null)
     }
 
     private fun restoreDialogVisibility() {
@@ -643,6 +650,7 @@ class SwingFilterDialog @JvmOverloads internal constructor(
             val newFilterName = prompts.requestNewFilterName(filterController.nextFilterNameSuggestion())
 
             if (newFilterName != null) {
+                val previousState = filterController.state()
                 when (val result = filterController.addFilter(newFilterName)) {
                     FilmFilterController.AddFilterResult.NameAlreadyExists -> {
                         JOptionPane.showMessageDialog(
@@ -653,13 +661,32 @@ class SwingFilterDialog @JvmOverloads internal constructor(
                         )
                     }
                     is FilmFilterController.AddFilterResult.Added -> {
+                        restoreConfigSettings()
                         updateDeleteCurrentFilterButtonState()
+                        reloadForStateChange(previousState)
                         filterSelectionComboBoxModel.selectedItem = result.filter
                     }
                 }
             }
         }
 
+    }
+
+    private inner class CloneCurrentFilterAction : AbstractAction() {
+        init {
+            putValue(SMALL_ICON, IconUtils.of(FontAwesomeSolid.COPY))
+            putValue(SHORT_DESCRIPTION, STR_CLONE_CURRENT_FILTER)
+            putValue(NAME, "$STR_CLONE_CURRENT_FILTER...")
+        }
+
+        override fun actionPerformed(e: ActionEvent?) {
+            val previousState = filterController.state()
+            val result = filterController.cloneCurrentFilter()
+            restoreConfigSettings()
+            updateDeleteCurrentFilterButtonState()
+            reloadForStateChange(previousState)
+            filterSelectionComboBoxModel.selectedItem = result.filter
+        }
     }
 
     private inner class DeleteCurrentFilterAction : AbstractAction() {

@@ -19,7 +19,6 @@ package mediathek.gui.tabs.tab_film.filter;
 
 import com.jidesoft.swing.CheckBoxList;
 import com.jidesoft.swing.JideSplitButton;
-import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinner;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
 import mediathek.swing.StrictSearchComboBox;
