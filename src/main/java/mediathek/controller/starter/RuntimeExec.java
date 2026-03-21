@@ -30,6 +30,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Locale;
+import java.util.OptionalDouble;
+import java.util.OptionalLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,16 +43,14 @@ public class RuntimeExec {
     public static final String TRENNER_PROG_ARRAY = "<>";
     private static final Pattern PATTERN_FFMPEG = Pattern.compile("(?<=  Duration: )[^,]*"); // Duration: 00:00:30.28, start: 0.000000, bitrate: N/A
     private static final Pattern PATTERN_TIME = Pattern.compile("(?<=time=)[^ ]*"); // frame=  147 fps= 17 q=-1.0 size=    1588kB time=00:00:05.84 bitrate=2226.0kbits/s
-    private static final Pattern PATTERN_SIZE = Pattern.compile("(?<=size=)[^k]*"); // frame=  147 fps= 17 q=-1.0 size=    1588kB time=00:00:05.84 bitrate=2226.0kbits/s
+    private static final Pattern PATTERN_SIZE = Pattern.compile("(?<=size=)\\s*\\d+(?:\\.\\d+)?\\s*[KMG]?i?B", Pattern.CASE_INSENSITIVE);
     private static final Logger logger = LogManager.getLogger();
     private final String strProgCall;
     private Start start;
-    private double totalSecs;
-    private long oldSize;
-    private long oldSecs;
     private MVFilmSize mVFilmSize;
     private String[] arrProgCallArray;
     private String strProgCallArray = "";
+    private final ProgressTracker progressTracker = new ProgressTracker();
 
     public RuntimeExec(MVFilmSize mVFilmSize, Start start,
                        String strProgCall, String strProgCallArray) {
@@ -65,6 +66,92 @@ public class RuntimeExec {
 
     public RuntimeExec(String p) {
         strProgCall = p;
+    }
+
+    static OptionalDouble parseDurationSeconds(String input) {
+        Matcher matcher = PATTERN_FFMPEG.matcher(input);
+        if (!matcher.find()) {
+            return OptionalDouble.empty();
+        }
+
+        return parseTimeSeconds(matcher.group().trim());
+    }
+
+    static OptionalDouble parseTimeSeconds(String timeToken) {
+        if (timeToken == null || timeToken.isBlank()) {
+            return OptionalDouble.empty();
+        }
+
+        try {
+            if (timeToken.contains(":")) {
+                String[] hms = timeToken.trim().split(":");
+                if (hms.length != 3) {
+                    return OptionalDouble.empty();
+                }
+                double seconds = Integer.parseInt(hms[0]) * 3600
+                        + Integer.parseInt(hms[1]) * 60
+                        + Double.parseDouble(hms[2]);
+                return OptionalDouble.of(seconds);
+            }
+
+            return OptionalDouble.of(Double.parseDouble(timeToken.trim()));
+        }
+        catch (NumberFormatException ignored) {
+            return OptionalDouble.empty();
+        }
+    }
+
+    static OptionalDouble parseProgressTimeSeconds(String input) {
+        Matcher matcher = PATTERN_TIME.matcher(input);
+        if (!matcher.find()) {
+            return OptionalDouble.empty();
+        }
+
+        return parseTimeSeconds(matcher.group().trim());
+    }
+
+    static OptionalLong parseSizeBytes(String input) {
+        Matcher matcher = PATTERN_SIZE.matcher(input);
+        if (!matcher.find()) {
+            return OptionalLong.empty();
+        }
+
+        String sizeToken = matcher.group().trim();
+        int unitStart = 0;
+        while (unitStart < sizeToken.length()) {
+            char c = sizeToken.charAt(unitStart);
+            if (!(Character.isDigit(c) || c == '.')) {
+                break;
+            }
+            unitStart++;
+        }
+
+        if (unitStart == 0 || unitStart >= sizeToken.length()) {
+            return OptionalLong.empty();
+        }
+
+        try {
+            double value = Double.parseDouble(sizeToken.substring(0, unitStart));
+            String unit = sizeToken.substring(unitStart).trim().toUpperCase(Locale.ROOT);
+            long multiplier = switch (unit) {
+                case "B" -> 1L;
+                case "KB" -> 1_000L;
+                case "KIB" -> 1_024L;
+                case "MB" -> 1_000_000L;
+                case "MIB" -> 1_048_576L;
+                case "GB" -> 1_000_000_000L;
+                case "GIB" -> 1_073_741_824L;
+                default -> -1L;
+            };
+            if (multiplier < 0) {
+                return OptionalLong.empty();
+            }
+
+            return OptionalLong.of(Math.round(value * multiplier));
+        }
+        catch (NumberFormatException ignored) {
+            return OptionalLong.empty();
+        }
     }
 
     private void logOutput(String s, boolean isArray) {
@@ -96,11 +183,8 @@ public class RuntimeExec {
                 process = new ProcessBuilder(ProcessCommandUtils.tokenizeCommand(strProgCall)).start();
             }
 
-            ClearInOut clearIn = new ClearInOut(IoType.INPUT, process);
-            ClearInOut clearOut = new ClearInOut(IoType.ERROR, process);
-
-            clearIn.start();
-            clearOut.start();
+            startStreamConsumer(process, IoType.INPUT);
+            startStreamConsumer(process, IoType.ERROR);
         }
         catch (Exception ex) {
             logger.error("Fehler beim Starten", ex);
@@ -110,132 +194,113 @@ public class RuntimeExec {
 
     private enum IoType {INPUT, ERROR}
 
-    private class ClearInOut extends Thread {
-        private final IoType art;
-        private final Process process;
-        private int percent;
-        private int percent_start = -1;
+    private void startStreamConsumer(Process process, IoType ioType) {
+        Thread.ofVirtual()
+                .name(String.format("ClearInOut type %s for pid %d", ioType, process.pid()))
+                .start(() -> consumeStream(process, ioType));
+    }
 
-        public ClearInOut(IoType art, Process process) {
-            this.art = art;
-            this.process = process;
-            setName(String.format("ClearInOut type %s for pid %d", art.toString(), process.pid()));
-        }
+    private void consumeStream(Process process, IoType ioType) {
+        var streamContext = createStreamContext(process, ioType);
 
-        @Override
-        public void run() {
-            final String titel;
-            final InputStream in;
-            if (art == IoType.INPUT) {
-                in = process.getInputStream();
-                titel = "INPUTSTREAM";
-            }
-            else {
-                in = process.getErrorStream();
-                titel = String.format("ERRORSTREAM [%d]", process.pid());
-            }
-
-            try (in;
-                 var isr = new InputStreamReader(in);
-                 var buff = new BufferedReader(isr)) {
-                String inStr;
-                while ((inStr = buff.readLine()) != null) {
-                    GetPercentageFromErrorStream(inStr);
-                    // only print stream info when enhanced log mode enabled
-                    if (Config.isEnhancedLoggingEnabled()) {
-                        logger.trace("  >> {}}: {}}", titel, inStr);
-                    }
+        try (var reader = new BufferedReader(new InputStreamReader(streamContext.stream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                if (streamContext.parseProgress()) {
+                    progressTracker.acceptErrorLine(line);
+                }
+                if (Config.isEnhancedLoggingEnabled()) {
+                    logger.trace("  >> {}}: {}}", streamContext.title(), line);
                 }
             }
-            catch (IOException ex) {
-                logger.error("ClearInOut.run() error occured", ex);
-            }
         }
+        catch (IOException ex) {
+            logger.error("Error while consuming {} for pid {}", ioType, process.pid(), ex);
+        }
+    }
 
-        private void GetPercentageFromErrorStream(String input) {
-            Matcher matcher;
+    private StreamContext createStreamContext(Process process, IoType ioType) {
+        return switch (ioType) {
+            case INPUT -> new StreamContext("INPUTSTREAM", process.getInputStream(), false);
+            case ERROR -> new StreamContext(String.format("ERRORSTREAM [%d]", process.pid()), process.getErrorStream(), true);
+        };
+    }
 
-            // für ffmpeg
-            // ffmpeg muss dazu mit dem Parameter -i gestartet werden:
-            // -i %f -acodec copy -vcodec copy -y **
+    private boolean canTrackProgress() {
+        return start != null && start.startTime != null && mVFilmSize != null;
+    }
+
+    private long secondsSinceStart() {
+        return Duration.between(start.startTime, LocalDateTime.now()).toSeconds();
+    }
+
+    private record StreamContext(String title, InputStream stream, boolean parseProgress) {
+    }
+
+    private final class ProgressTracker {
+        private double totalSecs;
+        private long oldSizeBytes;
+        private long oldBandwidthSampleSecs;
+        private int percent = -1;
+        private int percentStart = -1;
+
+        void acceptErrorLine(String input) {
+            if (!canTrackProgress()) {
+                return;
+            }
+
+            // ffmpeg progress and diagnostics are emitted on stderr.
             try {
-                // Gesamtzeit
-                matcher = PATTERN_FFMPEG.matcher(input);
-                if (matcher.find()) {
-                    // Find duration
-                    String dauer = matcher.group().trim();
-                    String[] hms = dauer.split(":");
-                    totalSecs = Integer.parseInt(hms[0]) * 3600
-                            + Integer.parseInt(hms[1]) * 60
-                            + Double.parseDouble(hms[2]);
-                }
-                // Bandbreite
-                matcher = PATTERN_SIZE.matcher(input);
-                if (matcher.find()) {
-                    String s = matcher.group().trim();
-                    if (!s.isEmpty()) {
-                        try {
-
-                            final long aktSize = Integer.parseInt(s.replace("kB", ""));
-                            mVFilmSize.setAktSize(aktSize * 1_000);
-                            final var akt = Duration.between(start.startTime, LocalDateTime.now()).toSeconds();
-                            if (oldSecs < akt - 5) {
-                                start.bandbreite = (aktSize - oldSize) * 1_000 / (akt - oldSecs);
-                                oldSecs = akt;
-                                oldSize = aktSize;
-                            }
-                        }
-                        catch (NumberFormatException ignored) {
-                        }
-                    }
-                }
-                // Fortschritt
-                matcher = PATTERN_TIME.matcher(input);
-                if (totalSecs > 0 && matcher.find()) {
-                    // ffmpeg    1611kB time=00:00:06.73 bitrate=1959.7kbits/s   
-                    // avconv    size=   26182kB time=100.96 bitrate=2124.5kbits/s 
-                    String zeit = matcher.group();
-                    if (zeit.contains(":")) {
-                        String[] hms = zeit.split(":");
-                        final double aktSecs = Integer.parseInt(hms[0]) * 3600
-                                + Integer.parseInt(hms[1]) * 60
-                                + Double.parseDouble(hms[2]);
-                        double d = aktSecs / totalSecs * 100;
-                        meldenDouble(d);
-                    }
-                    else {
-                        double aktSecs = Double.parseDouble(zeit);
-                        double d = aktSecs / totalSecs * 100;
-                        meldenDouble(d);
-                    }
-                }
+                parseDurationSeconds(input).ifPresent(duration -> totalSecs = duration);
+                parseSizeBytes(input).ifPresent(this::updateTransferredBytes);
+                parseProgressTimeSeconds(input).ifPresent(this::updateProgressSeconds);
             }
-            catch (Exception ex) {
+            catch (RuntimeException ex) {
                 DownloadProgressEventPublisher.publishThrottled();
-                logger.error("GetPercentageFromErrorStream(): {}", input);
+                logger.error("Failed to parse ffmpeg output line: {}", input, ex);
             }
         }
 
-        private void meldenDouble(double d) {
-            // nur ganze Int speichern, und 1000 Schritte
-            d *= 10;
-            int pNeu = (int) d;
-            start.percent = pNeu;
-            if (pNeu != percent) {
-                percent = pNeu;
-                if (percent_start == -1) {
-                    // für wiedergestartete Downloads
-                    percent_start = percent;
-                }
-                if (percent > (percent_start + 5)) {
-                    // sonst macht es noch keinen Sinn
-                    final var diffZeit = Duration.between(start.startTime, LocalDateTime.now()).toSeconds();
-                    int diffProzent = percent - percent_start;
-                    int restProzent = 1000 - percent;
-                    start.restSekunden = (diffZeit * restProzent / diffProzent);
-                }
-                DownloadProgressEventPublisher.publishThrottled();
+        private void updateTransferredBytes(long sizeBytes) {
+            mVFilmSize.setAktSize(sizeBytes);
+
+            var elapsedSecs = secondsSinceStart();
+            if (oldBandwidthSampleSecs < elapsedSecs - 5) {
+                start.bandbreite = (sizeBytes - oldSizeBytes) / (elapsedSecs - oldBandwidthSampleSecs);
+                oldBandwidthSampleSecs = elapsedSecs;
+                oldSizeBytes = sizeBytes;
             }
+        }
+
+        private void updateProgressSeconds(double progressSeconds) {
+            if (totalSecs <= 0) {
+                return;
+            }
+
+            updatePercent(progressSeconds / totalSecs * 100);
+        }
+
+        private void updatePercent(double percentValue) {
+            // nur ganze Int speichern, und 1000 Schritte
+            int newPercent = (int) (percentValue * 10);
+            start.percent = newPercent;
+            if (newPercent == percent) {
+                return;
+            }
+
+            percent = newPercent;
+            if (percentStart == -1) {
+                // für wiedergestartete Downloads
+                percentStart = percent;
+            }
+            if (percent > (percentStart + 5)) {
+                // sonst macht es noch keinen Sinn
+                long elapsedSecs = secondsSinceStart();
+                int progressed = percent - percentStart;
+                int remaining = 1000 - percent;
+                start.restSekunden = elapsedSecs * remaining / progressed;
+            }
+            DownloadProgressEventPublisher.publishThrottled();
         }
     }
 }
