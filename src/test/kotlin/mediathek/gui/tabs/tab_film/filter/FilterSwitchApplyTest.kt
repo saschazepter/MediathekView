@@ -68,8 +68,8 @@ internal class FilterSwitchApplyTest {
             dontShowDuplicates = false,
             checkedChannels = emptySet(),
             thema = "",
-            filmLengthMin = 0.0,
-            filmLengthMax = FilmLengthSlider.UNLIMITED_VALUE.toDouble(),
+            filmLengthMin = 0,
+            filmLengthMax = FilmLengthSlider.UNLIMITED_VALUE,
             zeitraum = zeitraum
         )
     }

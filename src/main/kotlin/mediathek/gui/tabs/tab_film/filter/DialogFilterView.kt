@@ -50,8 +50,8 @@ class DialogFilterView(
         themaSelectionRenderer(state.thema)
 
         filmLengthRangeSlider.withValueIsAdjusting {
-            filmLengthRangeSlider.lowValue = state.filmLengthMin.toInt()
-            filmLengthRangeSlider.highValue = state.filmLengthMax.toInt()
+            filmLengthRangeSlider.lowValue = state.filmLengthMin
+            filmLengthRangeSlider.highValue = state.filmLengthMax
         }
         minFilmLengthValueLabel.text = filmLengthRangeSlider.lowValue.toString()
         maxFilmLengthValueLabel.text = filmLengthRangeSlider.highValueText

@@ -78,8 +78,8 @@ internal class DialogFilterViewTest {
             dontShowDuplicates = false,
             checkedChannels = setOf("3Sat"),
             thema = "...von oben",
-            filmLengthMin = 10.0,
-            filmLengthMax = 60.0,
+            filmLengthMin = 10,
+            filmLengthMax = 60,
             zeitraum = "7"
         )
 
@@ -135,8 +135,8 @@ internal class DialogFilterViewTest {
                 dontShowDuplicates = false,
                 checkedChannels = emptySet(),
                 thema = "",
-                filmLengthMin = 0.0,
-                filmLengthMax = FilmLengthSlider.UNLIMITED_VALUE.toDouble(),
+                filmLengthMin = 0,
+                filmLengthMax = FilmLengthSlider.UNLIMITED_VALUE,
                 zeitraum = "0"
             ),
             availableThemen = emptyList(),

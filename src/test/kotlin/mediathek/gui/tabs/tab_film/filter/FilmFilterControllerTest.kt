@@ -95,11 +95,32 @@ internal class FilmFilterControllerTest {
         val reloadRequester = RecordingReloadRequester()
         val controller = createController(reloadRequester)
 
-        controller.onFilmLengthChanged(15.0, 90.0)
+        controller.onFilmLengthChanged(15, 90)
 
-        assertEquals(15.0, controller.state().filmLengthMin)
-        assertEquals(90.0, controller.state().filmLengthMax)
+        assertEquals(15, controller.state().filmLengthMin)
+        assertEquals(90, controller.state().filmLengthMax)
         assertEquals(1, reloadRequester.tableReloadRequests)
+    }
+
+    @Test
+    fun `film length state truncates persisted doubles and persists ints as doubles`() {
+        val filterConfiguration = TestFilterConfiguration(XMLConfiguration())
+        filterConfiguration.addNewFilter(DEFAULT_FILTER)
+        filterConfiguration.setCurrentFilter(DEFAULT_FILTER)
+        filterConfiguration.setFilmLengthMin(15.9)
+        filterConfiguration.setFilmLengthMax(90.4)
+
+        val controller = FilmFilterController(filterConfiguration)
+
+        assertEquals(15, controller.state().filmLengthMin)
+        assertEquals(90, controller.state().filmLengthMax)
+        assertEquals(15.9, filterConfiguration.filmLengthMin)
+        assertEquals(90.4, filterConfiguration.filmLengthMax)
+
+        controller.onFilmLengthChanged(22, 77)
+
+        assertEquals(22.0, filterConfiguration.filmLengthMin)
+        assertEquals(77.0, filterConfiguration.filmLengthMax)
     }
 
     @Test

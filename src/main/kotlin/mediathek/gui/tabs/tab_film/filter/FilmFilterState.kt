@@ -37,8 +37,8 @@ data class FilmFilterState(
     val dontShowDuplicates: Boolean,
     val checkedChannels: Set<String>,
     val thema: String,
-    val filmLengthMin: Double,
-    val filmLengthMax: Double,
+    val filmLengthMin: Int,
+    val filmLengthMax: Int,
     val zeitraum: String,
 ) {
     companion object {
@@ -59,8 +59,8 @@ data class FilmFilterState(
                 dontShowDuplicates = filterConfig.isDontShowDuplicates,
                 checkedChannels = filterConfig.checkedChannels,
                 thema = filterConfig.thema,
-                filmLengthMin = filterConfig.filmLengthMin,
-                filmLengthMax = filterConfig.filmLengthMax,
+                filmLengthMin = filterConfig.filmLengthMin.toInt(),
+                filmLengthMax = filterConfig.filmLengthMax.toInt(),
                 zeitraum = filterConfig.zeitraum,
             )
         }

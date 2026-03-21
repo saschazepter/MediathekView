@@ -336,10 +336,7 @@ class SwingFilterDialog @JvmOverloads internal constructor(
             lblMaxFilmLengthValue.text = slider.highValueText
 
             if (!slider.valueIsAdjusting) {
-                filterController.onFilmLengthChanged(
-                    slider.lowValue.toDouble(),
-                    slider.highValue.toDouble()
-                )
+                filterController.onFilmLengthChanged(slider.lowValue, slider.highValue)
             }
         }
     }

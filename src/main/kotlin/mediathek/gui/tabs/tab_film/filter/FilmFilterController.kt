@@ -226,7 +226,7 @@ class FilmFilterController(
         filmDataState = FilmDataState.Ready
     }
 
-    fun onFilmLengthChanged(min: Double, max: Double) {
+    fun onFilmLengthChanged(min: Int, max: Int) {
         updateFilterStateAndReload("filmLength", { it.copy(filmLengthMin = min, filmLengthMax = max) })
     }
 
@@ -366,8 +366,8 @@ class FilmFilterController(
         filterConfig.setDontShowDuplicates(state.dontShowDuplicates)
         filterConfig.setCheckedChannels(state.checkedChannels)
         filterConfig.thema = state.thema
-        filterConfig.setFilmLengthMin(state.filmLengthMin)
-        filterConfig.setFilmLengthMax(state.filmLengthMax)
+        filterConfig.setFilmLengthMin(state.filmLengthMin.toDouble())
+        filterConfig.setFilmLengthMax(state.filmLengthMax.toDouble())
         filterConfig.setZeitraum(state.zeitraum)
     }
 

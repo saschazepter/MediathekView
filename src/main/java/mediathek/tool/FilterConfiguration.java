@@ -36,7 +36,6 @@ import java.util.regex.Pattern;
 public class FilterConfiguration {
     protected static final String FILTER_PANEL_CURRENT_FILTER = "filter.current.filter";
     protected static final String FILTER_PANEL_AVAILABLE_FILTERS = "filter.available.filters.filter_";
-    private static final String KEY_UUID_SPLITERATOR = "_";
     private static final Pattern JSON_STRING_PATTERN = Pattern.compile("\"((?:\\\\.|[^\"])*)\"");
     private static final Logger LOG = LoggerFactory.getLogger(FilterConfiguration.class);
     private final Configuration configuration;
@@ -61,16 +60,8 @@ public class FilterConfiguration {
         availableFiltersChangedCallbacks.add(availableFiltersChangedCallback);
     }
 
-    public void removeAvailableFiltersObserver(Runnable availableFiltersChangedCallback) {
-        availableFiltersChangedCallbacks.remove(availableFiltersChangedCallback);
-    }
-
     public void addCurrentFiltersObserver(Consumer<FilterDTO> currentFilterChangedCallback) {
         currentFilterChangedCallbacks.add(currentFilterChangedCallback);
-    }
-
-    public void removeCurrentFiltersObserver(Consumer<FilterDTO> currentFilterChangedCallback) {
-        currentFilterChangedCallbacks.remove(currentFilterChangedCallback);
     }
 
     private void migrateOldFilterConfigurations() {
@@ -139,8 +130,8 @@ public class FilterConfiguration {
          * return true if filtering is not needed, false if needed.
          */
         final BooleanSupplier filmLengthFilterIsNotSet = () -> {
-            var filmLengthMin = (long) getFilmLengthMin();
-            var filmLengthMax = (long) getFilmLengthMax();
+            var filmLengthMin = (int) getFilmLengthMin();
+            var filmLengthMax = (int) getFilmLengthMax();
             return filmLengthMin == 0 && filmLengthMax == FilmLengthSlider.UNLIMITED_VALUE;
         };
 
