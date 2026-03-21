@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2025 derreisende77.
+ * Copyright (c) 2025-2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -42,9 +42,11 @@ public class NoFireOnKeyComboBoxSearchable extends ComboBoxSearchable {
     protected void setSelectedIndex(int index, boolean incremental) {
         Object propTableCellEditor = _component.getClientProperty("JComboBox.isTableCellEditor");
         Object propNoActionOnKeyNavigation = UIManager.get("ComboBox.noActionOnKeyNavigation");
-        if ((propTableCellEditor instanceof Boolean && (Boolean) propTableCellEditor) ||
+        boolean suppressActionEvent =
+                (propTableCellEditor instanceof Boolean && (Boolean) propTableCellEditor) ||
                 (propNoActionOnKeyNavigation instanceof Boolean && (Boolean) propNoActionOnKeyNavigation) ||
-                _noActionOnKeyNavigation) {
+                (_noActionOnKeyNavigation && incremental);
+        if (suppressActionEvent) {
             _preventActionEvent = true;
         }
         try {

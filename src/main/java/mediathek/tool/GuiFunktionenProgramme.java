@@ -185,8 +185,8 @@ public class GuiFunktionenProgramme {
             parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         }
         for (DatenPset ps : pSet) {
-            if (!ps.arr[DatenPset.PROGRAMMSET_ADD_ON].isEmpty()) {
-                if (!addOnZip(ps.arr[DatenPset.PROGRAMMSET_ADD_ON])) {
+            if (!ps.getAddOn().isEmpty()) {
+                if (!addOnZip(ps.getAddOn())) {
                     // und Tschüss
                     MVMessageDialog.showMessageDialog(null, "Die Datei wurde nicht importiert!",
                             "Fehler", JOptionPane.ERROR_MESSAGE);

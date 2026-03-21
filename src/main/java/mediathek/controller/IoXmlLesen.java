@@ -142,6 +142,17 @@ public class IoXmlLesen {
         }
     }
 
+    private DatenPset readProgramSet(XMLStreamReader parser) {
+        String[] psetValues = new String[DatenPset.MAX_ELEM];
+        if (!get(parser, DatenPset.TAG, DatenPset.XML_NAMES, psetValues)) {
+            return null;
+        }
+
+        DatenPset datenPset = new DatenPset();
+        datenPset.copyFrom(psetValues);
+        return datenPset;
+    }
+
     public boolean datenLesen(Path xmlFilePath) {
         boolean ret = false;
         if (Files.exists(xmlFilePath)) {
@@ -157,8 +168,8 @@ public class IoXmlLesen {
                         switch (parser.getLocalName()) {
                             case MVConfig.SYSTEM -> readSystemConfiguration(parser);
                             case DatenPset.TAG -> {
-                                datenPset = new DatenPset();
-                                if (get(parser, DatenPset.TAG, DatenPset.XML_NAMES, datenPset.arr)) {
+                                datenPset = readProgramSet(parser);
+                                if (datenPset != null) {
                                     Daten.listePset.add(datenPset);
                                 }
                             }

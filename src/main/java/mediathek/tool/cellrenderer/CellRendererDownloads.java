@@ -67,6 +67,40 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
             case DatenDownload.DOWNLOAD_GROESSE -> setHorizontalAlignment(SwingConstants.RIGHT);
         }
     }
+
+    protected void setBackgroundColor(final Component c, final Start s, final boolean isSelected) {
+        if (s != null) {
+            Color color = null;
+            switch (s.status) {
+                case Start.STATUS_INIT -> {
+                    if (isSelected)
+                        color = MVColor.DOWNLOAD_WAIT_SEL.color;
+                    else
+                        color = MVColor.DOWNLOAD_WAIT.color;
+                }
+                case Start.STATUS_RUN -> {
+                    if (isSelected)
+                        color = MVColor.DOWNLOAD_RUN_SEL.color;
+                    else
+                        color = MVColor.DOWNLOAD_RUN.color;
+                }
+                case Start.STATUS_FERTIG -> {
+                    if (isSelected)
+                        color = MVColor.DOWNLOAD_FERTIG_SEL.color;
+                    else
+                        color = MVColor.DOWNLOAD_FERTIG.color;
+                }
+                case Start.STATUS_ERR -> {
+                    if (isSelected)
+                        color = MVColor.DOWNLOAD_FEHLER_SEL.color;
+                    else
+                        color = MVColor.DOWNLOAD_FEHLER.color;
+                }
+            }
+            c.setBackground(color);
+        }
+    }
+
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,
                                                    int row, int column) {

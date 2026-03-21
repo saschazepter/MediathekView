@@ -19,8 +19,6 @@
 package mediathek.tool.cellrenderer;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import mediathek.config.MVColor;
-import mediathek.controller.starter.Start;
 import mediathek.daten.Country;
 import mediathek.daten.DatenFilm;
 import mediathek.swing.CompoundIcon;
@@ -142,39 +140,6 @@ public class CellRendererBaseWithStart extends CellRendererBase {
         setIcon(null);
         setToolTipText(null);
         setHorizontalAlignment(SwingConstants.LEADING);
-    }
-
-    protected void setBackgroundColor(final Component c, final Start s, final boolean isSelected) {
-        if (s != null) {
-            Color color = null;
-            switch (s.status) {
-                case Start.STATUS_INIT -> {
-                    if (isSelected)
-                        color = MVColor.DOWNLOAD_WAIT_SEL.color;
-                    else
-                        color = MVColor.DOWNLOAD_WAIT.color;
-                }
-                case Start.STATUS_RUN -> {
-                    if (isSelected)
-                        color = MVColor.DOWNLOAD_RUN_SEL.color;
-                    else
-                        color = MVColor.DOWNLOAD_RUN.color;
-                }
-                case Start.STATUS_FERTIG -> {
-                    if (isSelected)
-                        color = MVColor.DOWNLOAD_FERTIG_SEL.color;
-                    else
-                        color = MVColor.DOWNLOAD_FERTIG.color;
-                }
-                case Start.STATUS_ERR -> {
-                    if (isSelected)
-                        color = MVColor.DOWNLOAD_FEHLER_SEL.color;
-                    else
-                        color = MVColor.DOWNLOAD_FEHLER.color;
-                }
-            }
-            c.setBackground(color);
-        }
     }
 
     /**

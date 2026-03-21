@@ -19,7 +19,7 @@
 package mediathek.tool;
 
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider;
-import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinnerFormatter;
+import mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner;
 import org.apache.commons.configuration2.Configuration;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -36,12 +36,15 @@ import java.util.regex.Pattern;
 public class FilterConfiguration {
     protected static final String FILTER_PANEL_CURRENT_FILTER = "filter.current.filter";
     protected static final String FILTER_PANEL_AVAILABLE_FILTERS = "filter.available.filters.filter_";
-    private static final String KEY_UUID_SPLITERATOR = "_";
     private static final Pattern JSON_STRING_PATTERN = Pattern.compile("\"((?:\\\\.|[^\"])*)\"");
     private static final Logger LOG = LoggerFactory.getLogger(FilterConfiguration.class);
-    private static final CopyOnWriteArraySet<Runnable> availableFiltersChangedCallbacks = new CopyOnWriteArraySet<>();
-    private static final CopyOnWriteArraySet<Consumer<FilterDTO>> currentFilterChangedCallbacks = new CopyOnWriteArraySet<>();
     private final Configuration configuration;
+    private final CopyOnWriteArraySet<Runnable> availableFiltersChangedCallbacks = new CopyOnWriteArraySet<>();
+    private final CopyOnWriteArraySet<Consumer<FilterDTO>> currentFilterChangedCallbacks = new CopyOnWriteArraySet<>();
+    private final Map<UUID, FilterDTO> availableFiltersCache = new LinkedHashMap<>();
+    private boolean availableFiltersCacheInitialized;
+    private UUID currentFilterIdCache;
+    private boolean currentFilterCacheInitialized;
 
     public FilterConfiguration() {
         this(ApplicationConfiguration.getConfiguration());
@@ -53,11 +56,11 @@ public class FilterConfiguration {
         migrateOldFilterConfigurations();
     }
 
-    public static void addAvailableFiltersObserver(Runnable availableFiltersChangedCallback) {
+    public void addAvailableFiltersObserver(Runnable availableFiltersChangedCallback) {
         availableFiltersChangedCallbacks.add(availableFiltersChangedCallback);
     }
 
-    public static void addCurrentFiltersObserver(Consumer<FilterDTO> currentFilterChangedCallback) {
+    public void addCurrentFiltersObserver(Consumer<FilterDTO> currentFilterChangedCallback) {
         currentFilterChangedCallbacks.add(currentFilterChangedCallback);
     }
 
@@ -111,7 +114,8 @@ public class FilterConfiguration {
             T oldValue = configuration.get(classOfValueType, oldFilterConfigKey);
             if (oldValue == null) {
                 LOG.info("Filter Konfiguration {} ist null, ignoriere Konfiguration für Migration.", oldFilterConfigKey);
-            } else {
+            }
+            else {
                 newFilterSetter.accept(oldValue);
                 configuration.clearProperty(oldFilterConfigKey);
                 return true;
@@ -126,8 +130,8 @@ public class FilterConfiguration {
          * return true if filtering is not needed, false if needed.
          */
         final BooleanSupplier filmLengthFilterIsNotSet = () -> {
-            var filmLengthMin = (long)getFilmLengthMin();
-            var filmLengthMax = (long)getFilmLengthMax();
+            var filmLengthMin = (int) getFilmLengthMin();
+            var filmLengthMax = (int) getFilmLengthMax();
             return filmLengthMin == 0 && filmLengthMax == FilmLengthSlider.UNLIMITED_VALUE;
         };
 
@@ -146,153 +150,159 @@ public class FilterConfiguration {
                 && !isDontShowGeoblocked()
                 && !isDontShowAudioVersions()
                 && !isDontShowDuplicates()
-                && getZeitraum().equalsIgnoreCase(ZeitraumSpinnerFormatter.INFINITE_TEXT);
+                && getZeitraum().equalsIgnoreCase(ZeitraumSpinner.INFINITE_TEXT);
     }
 
     public boolean isShowHighQualityOnly() {
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_HD_ONLY.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_SHOW_HD_ONLY, false);
     }
 
     public FilterConfiguration setShowHighQualityOnly(boolean showHdOnly) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_HD_ONLY.getKey()), showHdOnly);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_SHOW_HD_ONLY, showHdOnly);
         return this;
     }
 
-    private String toFilterConfigNameWithCurrentFilter(String filterConfigNamePattern) {
-        return String.format(filterConfigNamePattern, getCurrentFilterID());
+    private String currentFilterConfigName(FilterConfigurationKeys filterConfigurationKey) {
+        return toFilterConfigName(filterConfigurationKey, requireCurrentFilterId());
+    }
+
+    private String toFilterConfigName(FilterConfigurationKeys filterConfigurationKey, UUID filterId) {
+        return String.format(filterConfigurationKey.getKey(), filterId);
+    }
+
+    private String toAvailableFilterKey(UUID filterId) {
+        return FILTER_PANEL_AVAILABLE_FILTERS + filterId;
     }
 
     public boolean isShowSubtitlesOnly() {
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_SUBTITLES_ONLY.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_SHOW_SUBTITLES_ONLY, false);
     }
 
     public FilterConfiguration setShowSubtitlesOnly(boolean showSubtitlesOnly) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_SUBTITLES_ONLY.getKey()), showSubtitlesOnly);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_SHOW_SUBTITLES_ONLY, showSubtitlesOnly);
         return this;
     }
 
     public boolean isShowNewOnly() {
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_NEW_ONLY.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_SHOW_NEW_ONLY, false);
     }
 
     public FilterConfiguration setShowNewOnly(boolean showNewOnly) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_NEW_ONLY.getKey()), showNewOnly);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_SHOW_NEW_ONLY, showNewOnly);
         return this;
     }
 
     public boolean isShowBookMarkedOnly() {
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_BOOK_MARKED_ONLY.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_SHOW_BOOK_MARKED_ONLY, false);
     }
 
     public FilterConfiguration setShowBookMarkedOnly(boolean showBookMarkedOnly) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_BOOK_MARKED_ONLY.getKey()), showBookMarkedOnly);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_SHOW_BOOK_MARKED_ONLY, showBookMarkedOnly);
         return this;
     }
 
     public boolean isShowUnseenOnly() {
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_UNSEEN_ONLY.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_SHOW_UNSEEN_ONLY, false);
     }
 
     public FilterConfiguration setShowUnseenOnly(boolean showUnseenOnly) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_UNSEEN_ONLY.getKey()), showUnseenOnly);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_SHOW_UNSEEN_ONLY, showUnseenOnly);
         return this;
     }
 
     public boolean isDontShowDuplicates() {
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_DUPLICATES.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_DUPLICATES, false);
     }
 
     public FilterConfiguration setDontShowDuplicates(boolean dontShowDuplicates) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_DUPLICATES.getKey()), dontShowDuplicates);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_DUPLICATES, dontShowDuplicates);
         return this;
     }
 
     public boolean isShowLivestreamsOnly() {
-
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_LIVESTREAMS_ONLY.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_SHOW_LIVESTREAMS_ONLY, false);
     }
 
     public FilterConfiguration setShowLivestreamsOnly(boolean showLivestreamsOnly) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_SHOW_LIVESTREAMS_ONLY.getKey()), showLivestreamsOnly);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_SHOW_LIVESTREAMS_ONLY, showLivestreamsOnly);
         return this;
     }
 
     public boolean isDontShowAbos() {
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_ABOS.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_ABOS, false);
     }
 
     public FilterConfiguration setDontShowAbos(boolean dontShowAbos) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_ABOS.getKey()), dontShowAbos);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_ABOS, dontShowAbos);
         return this;
     }
 
     public boolean isDontShowTrailers() {
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_TRAILERS.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_TRAILERS, false);
     }
 
     public FilterConfiguration setDontShowTrailers(boolean dontShowTrailers) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_TRAILERS.getKey()), dontShowTrailers);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_TRAILERS, dontShowTrailers);
         return this;
     }
 
     public boolean isDontShowSignLanguage() {
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_SIGN_LANGUAGE.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_SIGN_LANGUAGE, false);
     }
 
     public FilterConfiguration setDontShowSignLanguage(boolean dontShowSignLanguage) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_SIGN_LANGUAGE.getKey()), dontShowSignLanguage);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_SIGN_LANGUAGE, dontShowSignLanguage);
         return this;
     }
 
     public boolean isDontShowGeoblocked() {
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_GEOBLOCKED.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_GEOBLOCKED, false);
     }
 
     public FilterConfiguration setDontShowGeoblocked(boolean dontShowGeoblocked) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_GEOBLOCKED.getKey()), dontShowGeoblocked);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_GEOBLOCKED, dontShowGeoblocked);
         return this;
     }
 
     public boolean isDontShowAudioVersions() {
-        return configuration.getBoolean(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_AUDIO_VERSIONS.getKey()), false);
+        return getCurrentFilterBoolean(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_AUDIO_VERSIONS, false);
     }
 
     public FilterConfiguration setDontShowAudioVersions(boolean dontShowAudioVersions) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_AUDIO_VERSIONS.getKey()), dontShowAudioVersions);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_DONT_SHOW_AUDIO_VERSIONS, dontShowAudioVersions);
         return this;
     }
 
 
     public double getFilmLengthMin() {
-        return configuration.getDouble(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_FILM_LENGTH_MIN.getKey()), 0.0d);
+        return getCurrentFilterDouble(FilterConfigurationKeys.FILTER_PANEL_FILM_LENGTH_MIN, 0.0d);
     }
 
     public FilterConfiguration setFilmLengthMin(double filmLengthMin) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_FILM_LENGTH_MIN.getKey()), filmLengthMin);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_FILM_LENGTH_MIN, filmLengthMin);
         return this;
     }
 
     public double getFilmLengthMax() {
-        return configuration.getDouble(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_FILM_LENGTH_MAX.getKey()), FilmLengthSlider.UNLIMITED_VALUE);
+        return getCurrentFilterDouble(FilterConfigurationKeys.FILTER_PANEL_FILM_LENGTH_MAX, FilmLengthSlider.UNLIMITED_VALUE);
     }
 
     public FilterConfiguration setFilmLengthMax(double filmLengthMax) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_FILM_LENGTH_MAX.getKey()), filmLengthMax);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_FILM_LENGTH_MAX, filmLengthMax);
         return this;
     }
 
     public String getZeitraum() {
-        return configuration.getString(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_ZEITRAUM.getKey()),
-                ZeitraumSpinnerFormatter.INFINITE_TEXT);
+        return getCurrentFilterString(FilterConfigurationKeys.FILTER_PANEL_ZEITRAUM, ZeitraumSpinner.INFINITE_TEXT);
     }
 
     public FilterConfiguration setZeitraum(@NotNull String zeitraum) {
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_ZEITRAUM.getKey()), zeitraum);
+        setCurrentFilterProperty(FilterConfigurationKeys.FILTER_PANEL_ZEITRAUM, zeitraum);
         return this;
     }
 
     public Set<String> getCheckedChannels() {
-        String key = toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_CHECKED_CHANNELS.getKey());
+        String key = currentFilterConfigName(FilterConfigurationKeys.FILTER_PANEL_CHECKED_CHANNELS);
         Object value = configuration.getProperty(key);
 
         switch (value) {
@@ -303,8 +313,6 @@ public class FilterConfiguration {
                         result.add(item.toString());
                     }
                 });
-                // Normalize this key back to legacy JSON string format for old-version compatibility.
-                configuration.setProperty(key, JsonStringUtils.toJsonStringArray(result));
                 return result;
             }
             case null, default -> {
@@ -327,21 +335,22 @@ public class FilterConfiguration {
     public FilterConfiguration setCheckedChannels(@NotNull Collection<String> newList) {
         var distinctValues = new LinkedHashSet<>(newList);
         String json = JsonStringUtils.toJsonStringArray(distinctValues);
-        configuration.setProperty(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_CHECKED_CHANNELS.getKey()), json);
+        configuration.setProperty(currentFilterConfigName(FilterConfigurationKeys.FILTER_PANEL_CHECKED_CHANNELS), json);
         return this;
     }
 
 
     public String getThema() {
-        return configuration.getString(toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_THEMA.getKey()), "");
+        return getCurrentFilterString(FilterConfigurationKeys.FILTER_PANEL_THEMA, "");
     }
 
     public FilterConfiguration setThema(String thema) {
-        String key = toFilterConfigNameWithCurrentFilter(FilterConfigurationKeys.FILTER_PANEL_THEMA.getKey());
+        String key = currentFilterConfigName(FilterConfigurationKeys.FILTER_PANEL_THEMA);
 
         if (thema == null || thema.trim().isEmpty()) {
             configuration.clearProperty(key);
-        } else {
+        }
+        else {
             configuration.setProperty(key, thema);
         }
         return this;
@@ -365,14 +374,18 @@ public class FilterConfiguration {
                 result.add(JsonStringUtils.unescapeJsonString(matcher.group(1)));
             }
             return result;
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             LOG.error("Fehler beim Konvertieren der alten Senderliste aus JSON", e);
             return new HashSet<>();
         }
     }
 
     public FilterConfiguration clearCurrentFilter() {
-        Arrays.stream(FilterConfigurationKeys.values()).map(FilterConfigurationKeys::getKey).map(this::toFilterConfigNameWithCurrentFilter).forEach(configuration::clearProperty);
+        UUID currentFilterId = requireCurrentFilterId();
+        Arrays.stream(FilterConfigurationKeys.values())
+                .map(key -> toFilterConfigName(key, currentFilterId))
+                .forEach(configuration::clearProperty);
         return this;
     }
 
@@ -381,15 +394,23 @@ public class FilterConfiguration {
     }
 
     public FilterDTO getCurrentFilter() {
-        if (!configuration.containsKey(FILTER_PANEL_CURRENT_FILTER) || configuration.get(UUID.class, FILTER_PANEL_CURRENT_FILTER) == null) {
-            setCurrentFilter(getAvailableFilters().stream().findFirst().orElseGet(() -> {
+        UUID currentFilterId = requireCurrentFilterId();
+
+        if (availableFiltersCache.isEmpty()) {
+            return new FilterDTO(currentFilterId, configuration.getString(toAvailableFilterKey(currentFilterId), ""));
+        }
+
+        FilterDTO currentFilter = availableFiltersCache.get(currentFilterId);
+        if (currentFilter == null) {
+            FilterDTO filter = getFirstAvailableFilter().orElseGet(() -> {
                 FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), "Filter 1");
                 addNewFilter(newFilter);
                 return newFilter;
-            }));
+            });
+            setCurrentFilter(filter);
+            return filter;
         }
-        UUID currentFilterId = configuration.get(UUID.class, FILTER_PANEL_CURRENT_FILTER);
-        return new FilterDTO(currentFilterId, getFilterName(currentFilterId));
+        return currentFilter;
     }
 
     public FilterConfiguration setCurrentFilter(FilterDTO currentFilter) {
@@ -397,8 +418,11 @@ public class FilterConfiguration {
     }
 
     public FilterConfiguration setCurrentFilter(UUID currentFilterID) {
+        ensureAvailableFiltersCacheInitialized();
         configuration.setProperty(FILTER_PANEL_CURRENT_FILTER, currentFilterID);
-        currentFilterChangedCallbacks.forEach(consumer -> consumer.accept(getCurrentFilter()));
+        currentFilterIdCache = currentFilterID;
+        currentFilterCacheInitialized = true;
+        notifyCurrentFilterChanged(resolveCurrentFilterForNotification(currentFilterID));
         return this;
     }
 
@@ -411,35 +435,26 @@ public class FilterConfiguration {
     }
 
     public int getAvailableFilterCount() {
-        int count = 0;
-        var keys = configuration.getKeys();
-
-        while (keys.hasNext()) {
-            String key = keys.next();
-            if (key.startsWith(FILTER_PANEL_AVAILABLE_FILTERS)) {
-                count++;
-            }
-        }
-        return count;
+        ensureAvailableFiltersCacheInitialized();
+        return availableFiltersCache.size();
     }
 
     public List<FilterDTO> getAvailableFilters() {
-        List<String> availableFilterKeys = new ArrayList<>();
-        configuration.getKeys().forEachRemaining(key -> {
-            if (key.startsWith(FILTER_PANEL_AVAILABLE_FILTERS)) {
-                availableFilterKeys.add(key);
-            }
-        });
-        return availableFilterKeys.stream().map(key -> new FilterDTO(UUID.fromString(key.split(KEY_UUID_SPLITERATOR)[1]), configuration.getProperty(key).toString())).toList();
+        ensureAvailableFiltersCacheInitialized();
+        return List.copyOf(availableFiltersCache.values());
     }
 
     public String getFilterName(UUID id) {
-        return getAvailableFilters().stream().filter(filter -> filter.id().equals(id)).map(FilterDTO::name).findFirst().orElse("");
+        ensureAvailableFiltersCacheInitialized();
+        FilterDTO filter = availableFiltersCache.get(id);
+        return filter != null ? filter.name() : "";
     }
 
     public FilterConfiguration addNewFilter(FilterDTO filterDTO) {
-        configuration.addProperty(FILTER_PANEL_AVAILABLE_FILTERS + filterDTO.id(), filterDTO.name());
-        availableFiltersChangedCallbacks.forEach(Runnable::run);
+        ensureAvailableFiltersCacheInitialized();
+        configuration.addProperty(toAvailableFilterKey(filterDTO.id()), filterDTO.name());
+        availableFiltersCache.put(filterDTO.id(), filterDTO);
+        notifyAvailableFiltersChanged();
         return this;
     }
 
@@ -452,33 +467,121 @@ public class FilterConfiguration {
     }
 
     public FilterConfiguration deleteFilter(UUID idToDelete) {
-        boolean filterToDeleteIsCurrentFilter = idToDelete.equals(getCurrentFilterID());
+        ensureAvailableFiltersCacheInitialized();
+        ensureCurrentFilterCacheInitialized();
+
+        boolean filterToDeleteIsCurrentFilter = idToDelete.equals(currentFilterIdCache);
         if (filterToDeleteIsCurrentFilter) {
             configuration.clearProperty(FILTER_PANEL_CURRENT_FILTER);
+            currentFilterIdCache = null;
+            currentFilterCacheInitialized = true;
         }
-        configuration.getKeys().forEachRemaining(key -> clearPropertyWithKeyIfContainsId(idToDelete, key));
-        availableFiltersChangedCallbacks.forEach(Runnable::run);
+        clearFilterProperties(idToDelete);
+        availableFiltersCache.remove(idToDelete);
+        notifyAvailableFiltersChanged();
         if (filterToDeleteIsCurrentFilter) {
-            currentFilterChangedCallbacks.forEach(consumer -> consumer.accept(getCurrentFilter()));
+            notifyCurrentFilterChanged(getCurrentFilter());
         }
         return this;
     }
 
-    private void clearPropertyWithKeyIfContainsId(UUID idToDelete, String key) {
-        if (key.contains(idToDelete.toString())) {
-            configuration.clearProperty(key);
-        }
+    private void clearFilterProperties(UUID filterId) {
+        configuration.clearProperty(toAvailableFilterKey(filterId));
+        Arrays.stream(FilterConfigurationKeys.values())
+                .map(key -> toFilterConfigName(key, filterId))
+                .forEach(configuration::clearProperty);
     }
 
     public FilterConfiguration renameCurrentFilter(String newName) {
-        configuration.setProperty(FILTER_PANEL_AVAILABLE_FILTERS + getCurrentFilterID(), newName);
-        availableFiltersChangedCallbacks.forEach(Runnable::run);
-        currentFilterChangedCallbacks.forEach(consumer -> consumer.accept(getCurrentFilter()));
+        UUID currentFilterId = getCurrentFilterID();
+        configuration.setProperty(toAvailableFilterKey(currentFilterId), newName);
+        ensureAvailableFiltersCacheInitialized();
+        availableFiltersCache.put(currentFilterId, new FilterDTO(currentFilterId, newName));
+        notifyAvailableFiltersChanged();
+        notifyCurrentFilterChanged(getCurrentFilter());
         return this;
     }
 
     public Optional<FilterDTO> findFilterForName(String name) {
-        return getAvailableFilters().stream().filter(filter -> filter.name().equals(name)).findFirst();
+        ensureAvailableFiltersCacheInitialized();
+        return availableFiltersCache.values().stream().filter(filter -> filter.name().equals(name)).findFirst();
+    }
+
+    private void ensureAvailableFiltersCacheInitialized() {
+        if (availableFiltersCacheInitialized) {
+            return;
+        }
+
+        availableFiltersCache.clear();
+        configuration.getKeys().forEachRemaining(key -> {
+            if (key.startsWith(FILTER_PANEL_AVAILABLE_FILTERS)) {
+                UUID filterId = UUID.fromString(key.substring(FILTER_PANEL_AVAILABLE_FILTERS.length()));
+                availableFiltersCache.put(filterId, new FilterDTO(filterId, String.valueOf(configuration.getProperty(key))));
+            }
+        });
+        availableFiltersCacheInitialized = true;
+    }
+
+    private void ensureCurrentFilterCacheInitialized() {
+        if (currentFilterCacheInitialized) {
+            return;
+        }
+
+        currentFilterIdCache = configuration.get(UUID.class, FILTER_PANEL_CURRENT_FILTER, null);
+        currentFilterCacheInitialized = true;
+    }
+
+    private Optional<FilterDTO> getFirstAvailableFilter() {
+        ensureAvailableFiltersCacheInitialized();
+        return availableFiltersCache.values().stream().findFirst();
+    }
+
+    private void notifyAvailableFiltersChanged() {
+        availableFiltersChangedCallbacks.forEach(Runnable::run);
+    }
+
+    private void notifyCurrentFilterChanged(FilterDTO filter) {
+        currentFilterChangedCallbacks.forEach(consumer -> consumer.accept(filter));
+    }
+
+    private FilterDTO resolveCurrentFilterForNotification(UUID currentFilterID) {
+        FilterDTO currentFilter = availableFiltersCache.get(currentFilterID);
+        if (currentFilter != null) {
+            return currentFilter;
+        }
+        return new FilterDTO(currentFilterID, configuration.getString(toAvailableFilterKey(currentFilterID), ""));
+    }
+
+    private boolean getCurrentFilterBoolean(FilterConfigurationKeys key, boolean defaultValue) {
+        return configuration.getBoolean(currentFilterConfigName(key), defaultValue);
+    }
+
+    private double getCurrentFilterDouble(FilterConfigurationKeys key, double defaultValue) {
+        return configuration.getDouble(currentFilterConfigName(key), defaultValue);
+    }
+
+    private String getCurrentFilterString(FilterConfigurationKeys key, String defaultValue) {
+        return configuration.getString(currentFilterConfigName(key), defaultValue);
+    }
+
+    private void setCurrentFilterProperty(FilterConfigurationKeys key, Object value) {
+        configuration.setProperty(currentFilterConfigName(key), value);
+    }
+
+    private UUID requireCurrentFilterId() {
+        ensureAvailableFiltersCacheInitialized();
+        ensureCurrentFilterCacheInitialized();
+
+        if (currentFilterIdCache == null) {
+            FilterDTO filter = getFirstAvailableFilter().orElseGet(() -> {
+                FilterDTO newFilter = new FilterDTO(UUID.randomUUID(), "Filter 1");
+                addNewFilter(newFilter);
+                return newFilter;
+            });
+            setCurrentFilter(filter);
+        }
+
+        return currentFilterIdCache;
     }
 
     protected enum FilterConfigurationKeys {

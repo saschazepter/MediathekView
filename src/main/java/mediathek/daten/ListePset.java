@@ -49,7 +49,7 @@ public class ListePset extends ArrayList<DatenPset> {
     }
 
     private static void progMusterErsetzen(JFrame parent, DatenPset pSet) {
-        pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD] = pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD].replace(MUSTER_PFAD_ZIEL, StandardLocations.getStandardDownloadPath());
+        pSet.setZielPfad(pSet.getZielPfad().replace(MUSTER_PFAD_ZIEL, StandardLocations.getStandardDownloadPath()));
         String vlc = "";
         String ffmpeg = "";
 
@@ -104,7 +104,7 @@ public class ListePset extends ArrayList<DatenPset> {
     public DatenPset getPsetAbspielen() {
         //liefert die Programmgruppe zum Abspielen
         for (DatenPset datenPset : this) {
-            if (Boolean.parseBoolean(datenPset.arr[DatenPset.PROGRAMMSET_IST_ABSPIELEN])) {
+            if (datenPset.istAbspielen()) {
                 return datenPset;
             }
         }
@@ -144,19 +144,19 @@ public class ListePset extends ArrayList<DatenPset> {
 
     public ListePset getListeSpeichern() {
         // liefert eine Liste Programmsets, die zum Speichern angelegt sind (ist meist nur eins)
-        return this.stream().filter(datenPset -> Boolean.parseBoolean(datenPset.arr[DatenPset.PROGRAMMSET_IST_SPEICHERN]))
+        return this.stream().filter(DatenPset::istSpeichern)
                 .collect(Collectors.toCollection(ListePset::new));
     }
 
     public ListePset getListeButton() {
         // liefert eine Liste Programmsets, die als Button angelegt sind
-        return this.stream().filter(datenPset -> Boolean.parseBoolean(datenPset.arr[DatenPset.PROGRAMMSET_IST_BUTTON]))
+        return this.stream().filter(DatenPset::istButton)
                 .collect(Collectors.toCollection(ListePset::new));
     }
 
     public ListePset getListeAbo() {
         // liefert eine Liste Programmsets, die für Abos angelegt sind (ist meist nur eins)
-        return this.stream().filter(datenPset -> Boolean.parseBoolean(datenPset.arr[DatenPset.PROGRAMMSET_IST_ABO]))
+        return this.stream().filter(DatenPset::istAbo)
                 .collect(Collectors.toCollection(ListePset::new));
     }
 
@@ -192,13 +192,13 @@ public class ListePset extends ArrayList<DatenPset> {
     public boolean addPset(DatenPset datenPset) {
         boolean abspielen = false;
         for (DatenPset datenPset1 : this) {
-            if (Boolean.parseBoolean(datenPset1.arr[DatenPset.PROGRAMMSET_IST_ABSPIELEN])) {
+            if (datenPset1.istAbspielen()) {
                 abspielen = true;
                 break;
             }
         }
         if (abspielen) {
-            datenPset.arr[DatenPset.PROGRAMMSET_IST_ABSPIELEN] = Boolean.FALSE.toString();
+            datenPset.set(DatenPset.PROGRAMMSET_IST_ABSPIELEN, Boolean.FALSE.toString());
         }
         boolean ret = add(datenPset);
 
@@ -230,7 +230,7 @@ public class ListePset extends ArrayList<DatenPset> {
             object = new Object[this.size()][DatenPset.MAX_ELEM];
             while (iterator.hasNext()) {
                 datenPset = iterator.next();
-                object[i] = datenPset.arr;
+                object[i] = datenPset.toArray();
                 ++i;
             }
             model = new NonEditableTableModel(object, DatenPset.COLUMN_NAMES);

@@ -4,6 +4,7 @@ import mediathek.config.MVConfig;
 import mediathek.daten.DatenFilm;
 import mediathek.tool.Filter;
 
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
@@ -11,10 +12,10 @@ import java.util.function.Predicate;
 class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
     private static final String[] EMPTY_STRING = {""};
     private final boolean isWhitelist;
-    private final ListeBlacklist listeBlacklist;
+    private final List<BlacklistRule> listeBlacklist;
     private final Map<BlacklistRule,BlacklistPattern> rulePatternMap;
 
-    public ApplyBlacklistFilterPredicate(ListeBlacklist listeBlacklist) {
+    public ApplyBlacklistFilterPredicate(List<BlacklistRule> listeBlacklist) {
         isWhitelist = Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_IST_WHITELIST));
         this.listeBlacklist = listeBlacklist;
 

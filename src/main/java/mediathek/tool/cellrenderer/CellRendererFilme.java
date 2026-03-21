@@ -1,13 +1,10 @@
 package mediathek.tool.cellrenderer;
 
 import mediathek.config.Daten;
-import mediathek.config.MVColor;
-import mediathek.controller.history.SeenHistoryController;
 import mediathek.controller.starter.Start;
 import mediathek.daten.DatenDownload;
 import mediathek.daten.DatenFilm;
 import mediathek.swing.IconUtils;
-import mediathek.tool.ColorUtils;
 import mediathek.tool.table.MVTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,17 +17,15 @@ import java.awt.*;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
-import java.util.ArrayList;
 
 public class CellRendererFilme extends CellRendererBaseWithStart {
     private static final Logger logger = LogManager.getLogger(CellRendererFilme.class);
     private static final DateTimeFormatter PARSER = DateTimeFormatter.ofPattern("H:mm[:ss]");
-    private static final DateTimeFormatter SHORT  = DateTimeFormatter.ofPattern("HH:mm");
-    private static final DateTimeFormatter LONG   = DateTimeFormatter.ofPattern("HH:mm:ss");
+    private static final DateTimeFormatter SHORT = DateTimeFormatter.ofPattern("HH:mm");
+    private static final DateTimeFormatter LONG = DateTimeFormatter.ofPattern("HH:mm:ss");
     private static final int SECONDS_VARIANCE = 10;
     private final FontIcon selectedStopIcon;
     private final FontIcon normalStopIcon;
-    private final SeenHistoryController history = new SeenHistoryController();
     private final FontIcon selectedDownloadIcon;
     private final FontIcon normalDownloadIcon;
     private final FontIcon selectedPlayIcon;
@@ -38,7 +33,6 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
     private final FontIcon selectedBookmarkIcon;
     private final FontIcon normalBookmarkIcon;
     private final FontIcon selectedBookmarkIconHighlighted;
-    private final java.util.List<Color> bgList = new ArrayList<>();
 
     public CellRendererFilme() {
         selectedDownloadIcon = FontIcon.of(FontAwesomeSolid.DOWNLOAD, IconUtils.DEFAULT_SIZE, Color.WHITE);
@@ -85,7 +79,6 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
             final int rowModelIndex = table.convertRowIndexToModel(row);
             final int columnModelIndex = table.convertColumnIndexToModel(column);
             final DatenFilm datenFilm = (DatenFilm) table.getModel().getValueAt(rowModelIndex, DatenFilm.FILM_REF);
-            final boolean isBookMarked = datenFilm.isBookmarked();
             final var mvTable = (MVTable) table;
 
 
@@ -96,9 +89,7 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
 
                 switch (columnModelIndex) {
                     case DatenFilm.FILM_THEMA, DatenFilm.FILM_TITEL, DatenFilm.FILM_URL -> {
-                        var textArea = createTextArea(value.toString());
-                        applyColorSettings(textArea, datenFilm, isBookMarked, isSelected);
-                        return textArea;
+                        return createTextArea(value.toString());
                     }
                 }
             }
@@ -115,7 +106,7 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
                 }
                 case DatenFilm.FILM_AUFZEICHNEN -> handleButtonDownloadColumn(isSelected);
                 case DatenFilm.FILM_MERKEN ->
-                        handleButtonBookmarkColumn(isBookMarked, isSelected, datenFilm.isLivestream());
+                        handleButtonBookmarkColumn(datenFilm.isBookmarked(), isSelected, datenFilm.isLivestream());
                 case DatenFilm.FILM_SENDER -> {
                     if (mvTable.showSenderIcons()) {
                         Dimension targetDim = getSenderCellDimension(table, row, columnModelIndex);
@@ -130,9 +121,8 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
 
                 case DatenFilm.FILM_ZEIT -> drawTime(datenFilm);
             }
-
-            applyColorSettings(this, datenFilm, isBookMarked, isSelected);
-        } catch (Exception ex) {
+        }
+        catch (Exception ex) {
             logger.error("Fehler", ex);
         }
 
@@ -141,6 +131,7 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
 
     /**
      * Draw time without trailing seconds if zero.
+     *
      * @param film input film object.
      */
     private void drawTime(@NotNull DatenFilm film) {
@@ -150,11 +141,13 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
             return;
         }
 
+        zeit = zeit.trim();
         try {
-            var t = LocalTime.parse(zeit.trim(), PARSER);
+            var t = LocalTime.parse(zeit, PARSER);
             setText((t.getSecond() < SECONDS_VARIANCE ? SHORT : LONG).format(t));
-        } catch (DateTimeParseException ex) {
-            setText(zeit.trim());
+        }
+        catch (DateTimeParseException ex) {
+            setText(zeit);
         }
     }
 
@@ -165,35 +158,11 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
      */
     private void applyHorizontalAlignment(final int columnModelIndex) {
         switch (columnModelIndex) {
-            case DatenFilm.FILM_NR, DatenFilm.FILM_DATUM, DatenFilm.FILM_ZEIT, DatenFilm.FILM_DAUER, DatenFilm.FILM_ABSPIELEN, DatenFilm.FILM_AUFZEICHNEN, DatenFilm.FILM_MERKEN ->
+            case DatenFilm.FILM_NR, DatenFilm.FILM_DATUM, DatenFilm.FILM_ZEIT, DatenFilm.FILM_DAUER,
+                 DatenFilm.FILM_ABSPIELEN, DatenFilm.FILM_AUFZEICHNEN, DatenFilm.FILM_MERKEN ->
                     setHorizontalAlignment(SwingConstants.CENTER);
             case DatenFilm.FILM_GROESSE -> setHorizontalAlignment(SwingConstants.RIGHT);
         }
-    }
-
-    private void applyColorSettings(Component c, @NotNull DatenFilm datenFilm, boolean isBookMarked, boolean isSelected) {
-        bgList.clear();
-
-        bgList.add(c.getBackground());
-
-        if (history.hasBeenSeenFromCache(datenFilm)) {
-            bgList.add(MVColor.FILM_HISTORY.color);
-        }
-
-        if (datenFilm.isNew() && !isSelected) {
-            c.setForeground(MVColor.getNewColor());
-        }
-        if (isBookMarked) {
-            bgList.add(MVColor.FILM_BOOKMARKED.color);
-        }
-        if (datenFilm.isDuplicate()) {
-            bgList.add(MVColor.FILM_DUPLICATE.color);
-        }
-
-        if (bgList.size() >= 2)
-            c.setBackground(ColorUtils.blend(bgList.toArray(new Color[0])));
-        else
-            c.setBackground(bgList.getFirst());
     }
 
     private void handleButtonStartColumn(final DatenDownload datenDownload, final boolean isSelected) {
@@ -225,15 +194,18 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
         if (isLivestream) {
             setIcon(null);
             setToolTipText("");
-        } else {
+        }
+        else {
             // Button Merken
             setToolTipText(isBookMarked ? "Film aus Merkliste entfernen" : "Film merken");
             if (isBookMarked) {
                 setIcon(selectedBookmarkIconHighlighted);
-            } else {
+            }
+            else {
                 if (isSelected) {
                     setIcon(selectedBookmarkIcon);
-                } else
+                }
+                else
                     setIcon(normalBookmarkIcon);
             }
         }

@@ -99,7 +99,7 @@ public class IoXmlSchreiben {
         writeNewLine(writer);
         //Proggruppen schreiben, bei Konfig-Datei
         for (DatenPset datenPset : Daten.listePset) {
-            xmlSchreibenDaten(writer, DatenPset.TAG, DatenPset.XML_NAMES, datenPset.arr, true);
+            writeProgramSet(writer, datenPset);
             for (DatenProg datenProg : datenPset.getListeProg()) {
                 xmlSchreibenDaten(writer, DatenProg.TAG, DatenProg.XML_NAMES, datenProg.arr, true);
             }
@@ -155,12 +155,59 @@ public class IoXmlSchreiben {
         // wird beim Export Sets verwendet
         writer.writeCharacters("\n\n");
         for (DatenPset pset : psetArray) {
-            xmlSchreibenDaten(writer, DatenPset.TAG, DatenPset.XML_NAMES, pset.arr, true);
+            writeProgramSet(writer, pset);
             for (DatenProg datenProg : pset.getListeProg()) {
                 xmlSchreibenDaten(writer, DatenProg.TAG, DatenProg.XML_NAMES, datenProg.arr, true);
             }
             writer.writeCharacters("\n\n");
         }
+    }
+
+    private void writeProgramSet(XMLStreamWriter writer, DatenPset pset) {
+        try {
+            final var values = pset.toArray();
+            writer.writeStartElement(DatenPset.TAG);
+            writeNewLine(writer);
+
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_NAME], pset.getName());
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_PRAEFIX_DIREKT], pset.getPraefixDirekt());
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_SUFFIX_DIREKT], pset.getSuffixDirekt());
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_FARBE], values[DatenPset.PROGRAMMSET_FARBE]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_ZIEL_PFAD], pset.getZielPfad());
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_ZIEL_DATEINAME], pset.getZielDateiname());
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_THEMA_ANLEGEN], values[DatenPset.PROGRAMMSET_THEMA_ANLEGEN]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_IST_ABSPIELEN], values[DatenPset.PROGRAMMSET_IST_ABSPIELEN]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_IST_SPEICHERN], values[DatenPset.PROGRAMMSET_IST_SPEICHERN]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_IST_BUTTON], values[DatenPset.PROGRAMMSET_IST_BUTTON]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_IST_ABO], values[DatenPset.PROGRAMMSET_IST_ABO]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_LAENGE_BESCHRAENKEN], values[DatenPset.PROGRAMMSET_LAENGE_BESCHRAENKEN]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN], values[DatenPset.PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_MAX_LAENGE], values[DatenPset.PROGRAMMSET_MAX_LAENGE]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD], values[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_AUFLOESUNG], values[DatenPset.PROGRAMMSET_AUFLOESUNG]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_ADD_ON], pset.getAddOn());
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_BESCHREIBUNG], pset.getBeschreibung());
+            writeProgramSetField(writer, DatenPset.XML_NAMES[18], values[18]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_INFODATEI], values[DatenPset.PROGRAMMSET_INFODATEI]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_SPOTLIGHT], values[DatenPset.PROGRAMMSET_SPOTLIGHT]);
+            writeProgramSetField(writer, DatenPset.XML_NAMES[DatenPset.PROGRAMMSET_SUBTITLE], values[DatenPset.PROGRAMMSET_SUBTITLE]);
+
+            writer.writeEndElement();
+            writeNewLine(writer);
+        } catch (Exception ex) {
+            logger.error("writeProgramSet", ex);
+        }
+    }
+
+    private void writeProgramSetField(XMLStreamWriter writer, String xmlName, String value) throws XMLStreamException {
+        if (value == null || value.isEmpty()) {
+            return;
+        }
+        writer.writeCharacters("\t");
+        writer.writeStartElement(xmlName);
+        writer.writeCharacters(value);
+        writer.writeEndElement();
+        writeNewLine(writer);
     }
 
     private void xmlSchreibenDaten(XMLStreamWriter writer, String xmlName, String[] xmlSpalten, String[] datenArray, boolean newLine) {

@@ -1,5 +1,6 @@
 package mediathek.tool.table;
 
+import mediathek.config.Konstanten;
 import mediathek.config.MVConfig;
 import mediathek.gui.messages.FontSizeChangedEvent;
 import mediathek.tool.MessageBus;
@@ -10,8 +11,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.RowSorter.SortKey;
+import javax.swing.plaf.UIResource;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableColumnModel;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,14 +27,18 @@ public abstract class MVTable extends JTable {
     private static final Logger logger = LogManager.getLogger();
     protected final int[] breite;
     protected final int[] reihe;
-    public boolean useSmallSenderIcons;
     protected final int maxSpalten;
-    private int[] selRows = {};
     protected final boolean[] spaltenAnzeigen;
     protected final Optional<MVConfig.Configs> columnConfigurationDataConfigKey;
     protected final Optional<MVConfig.Configs> showIconsConfigKey;
     protected final Optional<MVConfig.Configs> smallSenderIconConfigKey;
+    /**
+     * unmodified JTable used to calculate the row height. Reference only.
+     */
+    private final JTable probe = new JTable();
+    public boolean useSmallSenderIcons;
     protected List<? extends RowSorter.SortKey> listeSortKeys;
+    private int[] selRows = {};
     private boolean showSenderIcon;
     private boolean lineBreak = true;
 
@@ -62,6 +69,33 @@ public abstract class MVTable extends JTable {
         calculateRowHeight();
 
         MessageBus.getMessageBus().subscribe(this);
+    }
+
+    /**
+     * Count the number of saved columns within the string.
+     * Counts the number of comma separated entries.
+     * @param s The string to be processed.
+     * @return The number of columns included.
+     */
+    protected static long countNumberOfColumns(@NotNull String s) {
+        return s.chars().filter(ch -> ch == ',').count() + 1;
+    }
+
+    protected Color defaultRowBackground(int row) {
+        if ((row % 2) != 0) {
+            var alternateRowColor = UIManager.getColor("Table.alternateRowColor");
+            if (alternateRowColor != null) {
+                return alternateRowColor;
+            }
+        }
+
+        var background = getBackground();
+        if (!(background instanceof UIResource)) {
+            return background;
+        }
+
+        var tableBackground = UIManager.getColor("Table.background");
+        return tableBackground != null ? tableBackground : background;
     }
 
     @Handler
@@ -106,44 +140,23 @@ public abstract class MVTable extends JTable {
      * @return The fictious size of a multi-line label.
      */
     private int getSizeArea() {
-        final int sizeArea;
-        var fm = getFontMetrics(getFont());
-        final var height = fm.getHeight();
-
-        if (lineBreak) {
-            sizeArea = 3 * height;
-        }
-        else {
-            sizeArea = height;
-        }
-
-        return sizeArea;
+        int lineHeight = getFontMetrics(getFont()).getHeight();
+        return lineBreak ? lineHeight * 3 : lineHeight;
     }
 
     /**
      * Calculate the row height in a table based on icon display,etc.
      */
     public void calculateRowHeight() {
-        var sizeArea = getSizeArea();
-        var fm = getFontMetrics(getFont());
+        int minimumHeight = Konstanten.TABLE_DEFAULT_ROW_HEIGHT;
 
-        var height = fm.getHeight() + 5; // add some extra spacing for the height
-
-        // check some minimum height requirements
         if (showSenderIcon) {
-            if (useSmallSenderIcons) {
-                // small icons
-                if (height < 18)
-                    height = 20;
-            }
-            else {
-                //large icons
-                if (height < 30)
-                    height = 36;
-            }
+            minimumHeight = useSmallSenderIcons
+                    ? Math.max(Konstanten.TABLE_DEFAULT_ROW_HEIGHT, probe.getRowHeight())
+                    : Math.max(Konstanten.TABLE_DEFAULT_LARGE_ICON_ROW_HEIGHT, probe.getRowHeight());
         }
 
-        setRowHeight(Math.max(height, sizeArea));
+        setRowHeight(Math.max(minimumHeight, getSizeArea()));
     }
 
     /**
@@ -438,15 +451,5 @@ public abstract class MVTable extends JTable {
             }
         }
         return true;
-    }
-
-    /**
-     * Count the number of saved columns within the string.
-     * Counts the number of comma separated entries.
-     * @param s The string to be processed.
-     * @return The number of columns included.
-     */
-    protected static long countNumberOfColumns(@NotNull String s) {
-        return s.chars().filter(ch -> ch == ',').count() + 1;
     }
 }

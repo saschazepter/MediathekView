@@ -252,47 +252,47 @@ public class PanelPsetLang extends PanelVorlage {
         jCheckBoxLaenge.addActionListener(_ -> {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.arr[DatenPset.PROGRAMMSET_LAENGE_BESCHRAENKEN] = Boolean.toString(jCheckBoxLaenge.isSelected());
+                pset.setLaengeBeschraenken(jCheckBoxLaenge.isSelected());
                 nurtabellePset();
             }
         });
         jCheckBoxField.addActionListener(_ -> {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.arr[DatenPset.PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN] = Boolean.toString(jCheckBoxField.isSelected());
+                pset.setLaengeFieldBeschraenken(jCheckBoxField.isSelected());
                 nurtabellePset();
             }
         });
         jCheckBoxThema.addActionListener(_ -> {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.arr[DatenPset.PROGRAMMSET_THEMA_ANLEGEN] = Boolean.toString(jCheckBoxThema.isSelected());
+                pset.setThemaAnlegen(jCheckBoxThema.isSelected());
                 nurtabellePset();
             }
         });
         jSpinnerLaenge.addChangeListener(_ -> {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.arr[DatenPset.PROGRAMMSET_MAX_LAENGE] = String.valueOf(((Number) jSpinnerLaenge.getModel().getValue()).intValue());
+                pset.setMaxLaenge(((Number) jSpinnerLaenge.getModel().getValue()).intValue());
             }
         });
         jSpinnerField.addChangeListener(_ -> {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.arr[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD] = String.valueOf(((Number) jSpinnerField.getModel().getValue()).intValue());
+                pset.setMaxLaengeField(((Number) jSpinnerField.getModel().getValue()).intValue());
             }
         });
         jCheckBoxInfodatei.addActionListener(_ -> {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.arr[DatenPset.PROGRAMMSET_INFODATEI] = Boolean.toString(jCheckBoxInfodatei.isSelected());
+                pset.setInfodatei(jCheckBoxInfodatei.isSelected());
                 nurtabellePset();
             }
         });
         jCheckBoxSubtitle.addActionListener(_ -> {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.arr[DatenPset.PROGRAMMSET_SUBTITLE] = Boolean.toString(jCheckBoxSubtitle.isSelected());
+                pset.setSubtitle(jCheckBoxSubtitle.isSelected());
                 nurtabellePset();
             }
         });
@@ -301,7 +301,7 @@ public class PanelPsetLang extends PanelVorlage {
         jCheckBoxSpotlight.addActionListener(_ -> {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.arr[DatenPset.PROGRAMMSET_SPOTLIGHT] = Boolean.toString(jCheckBoxSpotlight.isSelected());
+                pset.setSpotlight(jCheckBoxSpotlight.isSelected());
                 nurtabellePset();
             }
         });
@@ -322,7 +322,7 @@ public class PanelPsetLang extends PanelVorlage {
         jButtonGruppeStandardfarbe.addActionListener(_ -> {
             DatenPset pSet = getPset();
             if (pSet != null) {
-                pSet.arr[DatenPset.PROGRAMMSET_FARBE] = "";
+                pSet.clearFarbe();
                 tabellePset();
                 notifyProgramSetChanged();
             }
@@ -455,7 +455,7 @@ public class PanelPsetLang extends PanelVorlage {
                     boolean ret = true;
                     text.append("++++++++++++++++++++++++++++++++++++++++++++" + '\n');
                     text.append(PIPE + "Programmgruppe: ").append(datenPset.getName()).append('\n');
-                    var zielPfad = datenPset.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD];
+                    var zielPfad = datenPset.getZielPfad();
                     if (datenPset.progsContainPath()) {
                         // beim nur Abspielen wird er nicht gebraucht
                         if (zielPfad.isEmpty()) {
@@ -527,19 +527,19 @@ public class PanelPsetLang extends PanelVorlage {
         if (jRadioButtonAufloesungNormal.isSelected()) {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] = FilmResolution.Enum.NORMAL.toString();
+                pset.setAufloesung(FilmResolution.Enum.NORMAL);
             }
         }
         if (jRadioButtonAufloesungHD.isSelected()) {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] = FilmResolution.Enum.HIGH_QUALITY.toString();
+                pset.setAufloesung(FilmResolution.Enum.HIGH_QUALITY);
             }
         }
         if (jRadioButtonAufloesungKlein.isSelected()) {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.arr[DatenPset.PROGRAMMSET_AUFLOESUNG] = FilmResolution.Enum.LOW.toString();
+                pset.setAufloesung(FilmResolution.Enum.LOW);
             }
         }
     }
@@ -590,39 +590,39 @@ public class PanelPsetLang extends PanelVorlage {
         jButtonAbspielen.setBackground(null);
         if (pSet != null) {
             jTabbedPane.setTitleAt(0, "Set Name: " + pSet.getName());
-            if (pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE].isEmpty()) {
+            if (pSet.getMaxLaenge() == null) {
                 jSpinnerLaenge.setValue(Konstanten.LAENGE_DATEINAME);
-                pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE] = String.valueOf(Konstanten.LAENGE_DATEINAME);
+                pSet.setMaxLaenge(Konstanten.LAENGE_DATEINAME);
             } else {
-                jSpinnerLaenge.setValue(Integer.parseInt(pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE]));
+                jSpinnerLaenge.setValue(pSet.getMaxLaenge());
             }
-            if (pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD].isEmpty()) {
+            if (pSet.getMaxLaengeField() == null) {
                 jSpinnerField.setValue(Konstanten.LAENGE_FELD);
-                pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD] = String.valueOf(Konstanten.LAENGE_FELD);
+                pSet.setMaxLaengeField(Konstanten.LAENGE_FELD);
             } else {
-                jSpinnerField.setValue(Integer.parseInt(pSet.arr[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD]));
+                jSpinnerField.setValue(pSet.getMaxLaengeField());
             }
-            jCheckBoxLaenge.setSelected(Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_LAENGE_BESCHRAENKEN]));
-            jCheckBoxField.setSelected(Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN]));
-            jCheckBoxThema.setSelected(Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_THEMA_ANLEGEN]));
-            jCheckBoxInfodatei.setSelected(Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_INFODATEI]));
-            jCheckBoxSubtitle.setSelected(Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_SUBTITLE]));
+            jCheckBoxLaenge.setSelected(pSet.isLaengeBeschraenken());
+            jCheckBoxField.setSelected(pSet.isLaengeFieldBeschraenken());
+            jCheckBoxThema.setSelected(pSet.isThemaAnlegen());
+            jCheckBoxInfodatei.setSelected(pSet.shouldCreateInfofile());
+            jCheckBoxSubtitle.setSelected(pSet.shouldDownloadSubtitle());
             jCheckBoxSpotlight.setEnabled(SystemUtils.IS_OS_MAC_OSX);
-            jCheckBoxSpotlight.setSelected(Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_SPOTLIGHT]));
+            jCheckBoxSpotlight.setSelected(pSet.isSpotlight());
             jScrollPane1.setBorder(BorderFactory.createTitledBorder(null, "Set Name: " + pSet.getName(), TitledBorder.LEFT, TitledBorder.TOP));
             jTextFieldSetName.setText(pSet.getName());
-            tfGruppeDirektSuffix.setText(pSet.arr[DatenPset.PROGRAMMSET_SUFFIX_DIREKT]);
-            tfGruppeDirektPraefix.setText(pSet.arr[DatenPset.PROGRAMMSET_PRAEFIX_DIREKT]);
-            tfGruppeZielName.setText(pSet.arr[DatenPset.PROGRAMMSET_ZIEL_DATEINAME]);
-            tfGruppeZielPfad.setText(pSet.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD]);
-            jTextAreaSetBeschreibung.setText(pSet.arr[DatenPset.PROGRAMMSET_BESCHREIBUNG]);
+            tfGruppeDirektSuffix.setText(pSet.getSuffixDirekt());
+            tfGruppeDirektPraefix.setText(pSet.getPraefixDirekt());
+            tfGruppeZielName.setText(pSet.getZielDateiname());
+            tfGruppeZielPfad.setText(pSet.getZielPfad());
+            jTextAreaSetBeschreibung.setText(pSet.getBeschreibung());
 
             jCheckBoxSpeichern.setSelected(pSet.istSpeichern());
             jCheckBoxButton.setSelected(pSet.istButton());
             jCheckBoxAbo.setSelected(pSet.istAbo());
-            switch (pSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG]) {
-                case FilmResolution.HIGH_QUALITY -> jRadioButtonAufloesungHD.setSelected(true);
-                case FilmResolution.LOW -> jRadioButtonAufloesungKlein.setSelected(true);
+            switch (pSet.getAufloesung()) {
+                case HIGH_QUALITY -> jRadioButtonAufloesungHD.setSelected(true);
+                case LOW -> jRadioButtonAufloesungKlein.setSelected(true);
                 default -> jRadioButtonAufloesungNormal.setSelected(true);
             }
             tabelleProgramme.setModel(pSet.getListeProg().createModel());
@@ -909,7 +909,7 @@ public class PanelPsetLang extends PanelVorlage {
                     stopBeob = true;
                     final int modelIndex = tabellePset.convertRowIndexToModel(row);
                     var datenPset = listePset.get(modelIndex);
-                    datenPset.arr[psetIndex] = textComponent.getText();
+                    datenPset.set(psetIndex, textComponent.getText());
                     if (psetIndex == DatenPset.PROGRAMMSET_NAME) {
                         tabellePset.getModel().setValueAt(jTextFieldSetName.getText(), modelIndex, DatenPset.PROGRAMMSET_NAME);
                         jTabbedPane.setTitleAt(0, "Set Name: " + datenPset.getName());

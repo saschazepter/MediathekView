@@ -373,7 +373,7 @@ public class ListeDownloads extends LinkedList<DatenDownload> {
             DatenPset pSet = abo.getPsetName().isEmpty() ? pSet_ : Daten.listePset.getPsetAbo(abo.getPsetName());
             if (pSet != null) {
                 // mit der tatsächlichen URL prüfen, ob die URL schon in der Downloadliste ist
-                String urlDownload = film.getUrlFuerAufloesung(FilmResolution.Enum.fromLegacyString(pSet.arr[DatenPset.PROGRAMMSET_AUFLOESUNG]));
+                String urlDownload = film.getUrlFuerAufloesung(pSet.getAufloesung());
                 if (listeUrls.contains(urlDownload)) {
                     continue;
                 }

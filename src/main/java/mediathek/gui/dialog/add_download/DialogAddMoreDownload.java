@@ -49,11 +49,11 @@ public class DialogAddMoreDownload extends JDialog {
 
         initComponents();
 
-        chkSubtitle.setSelected(Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_SUBTITLE]));
+        chkSubtitle.setSelected(pSet.shouldDownloadSubtitle());
         subtitle = chkSubtitle.isSelected();
         chkSubtitle.addActionListener(_ -> subtitle = chkSubtitle.isSelected());
 
-        chkInfo.setSelected(Boolean.parseBoolean(pSet.arr[DatenPset.PROGRAMMSET_INFODATEI]));
+        chkInfo.setSelected(pSet.shouldCreateInfofile());
         info = chkInfo.isSelected();
         chkInfo.addActionListener(_ -> info = chkInfo.isSelected());
 

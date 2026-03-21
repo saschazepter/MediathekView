@@ -23,7 +23,7 @@ import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.DatenFilm;
 import mediathek.daten.IndexedFilmList;
 import mediathek.gui.tabs.tab_film.SearchFieldData;
-import mediathek.gui.tabs.tab_film.filter.zeitraum.ZeitraumSpinnerFormatter;
+import mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner;
 import mediathek.gui.tasks.LuceneIndexKeys;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
@@ -104,7 +104,7 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
                 qb.add(initialQuery, BooleanClause.Occur.MUST);
 
                 //Zeitraum filter on demand …
-                if (!support.filterConfiguration().getZeitraum().equalsIgnoreCase(ZeitraumSpinnerFormatter.INFINITE_TEXT)) {
+                if (!support.filterConfiguration().getZeitraum().equalsIgnoreCase(ZeitraumSpinner.INFINITE_TEXT)) {
                     try {
                         qb.add(createZeitraumQuery(analyzer), BooleanClause.Occur.FILTER);
                     } catch (Exception ex) {

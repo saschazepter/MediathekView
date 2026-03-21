@@ -36,7 +36,7 @@ public class CellRendererPset extends DefaultTableCellRenderer {
             int c = table.convertColumnIndexToModel(column);
             DatenPset datenPset = new DatenPset();
             for (int i = 0; i < DatenPset.MAX_ELEM; ++i) {
-                datenPset.arr[i] = table.getModel().getValueAt(r, i).toString();
+                datenPset.set(i, table.getModel().getValueAt(r, i).toString());
             }
             if (c == DatenPset.PROGRAMMSET_NAME) {
                 setForeground(datenPset.getFarbe());

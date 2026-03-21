@@ -40,10 +40,8 @@ new FormModel {
 			} )
 			add( new FormComponent( "mediathek.gui.filmInformation.HtmlMultilineLabel" ) {
 				name: "lblThema"
-				"preferredSize": new java.awt.Dimension( 443, 32 )
-				"minimumSize": new java.awt.Dimension( 51, 32 )
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 1 1"
+				"value": "cell 1 1,growx,wmin 0"
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label3"
@@ -57,7 +55,7 @@ new FormModel {
 			add( new FormComponent( "mediathek.gui.filmInformation.HtmlMultilineLabel" ) {
 				name: "lblTitel"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-				"value": "cell 1 2"
+				"value": "cell 1 2,growx,wmin 0"
 			} )
 			add( new FormComponent( "javax.swing.JLabel" ) {
 				name: "label4"

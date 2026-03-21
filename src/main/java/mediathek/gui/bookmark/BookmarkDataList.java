@@ -27,6 +27,8 @@ import mediathek.daten.DatenFilm;
 import mediathek.daten.ListeFilme;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
+import mediathek.gui.messages.BookmarkRefreshCompletedEvent;
+import mediathek.tool.MessageBus;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -50,7 +52,7 @@ public class BookmarkDataList {
         daten.getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
             @Override
             public void fertig(ListenerFilmeLadenEvent event) {
-                Thread.ofVirtual().start(() -> updateBookMarksFromFilmList());
+                Thread.ofVirtual().start(BookmarkDataList.this::refreshFromCurrentFilmList);
             }
         });
     }
@@ -166,6 +168,15 @@ public class BookmarkDataList {
         }
         catch (Exception e) {
             logger.error("Could not save bookmarks to {}", filePath, e);
+        }
+    }
+
+    public void refreshFromCurrentFilmList() {
+        try {
+            updateBookMarksFromFilmList();
+        }
+        finally {
+            MessageBus.getMessageBus().publishAsync(new BookmarkRefreshCompletedEvent());
         }
     }
 

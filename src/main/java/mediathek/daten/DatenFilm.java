@@ -495,12 +495,16 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     public String getFileSizeForUrl(@NotNull String url) {
+        return getFileSizeForUrl(url, false);
+    }
+
+    public String getFileSizeForUrl(@NotNull String url, boolean forceFetch) {
         if (url.equalsIgnoreCase(getUrlNormalQuality())) {
             return getFileSize().toString();
         }
         else {
             //FIXME this is blocking EDT!
-            return FileSize.getFileLengthFromUrl(url);
+            return FileSize.getFileLengthFromUrl(url, forceFetch);
         }
     }
 

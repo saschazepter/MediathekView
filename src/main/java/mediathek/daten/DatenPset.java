@@ -29,7 +29,6 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Arrays;
 import java.util.Optional;
 
 public class DatenPset implements Comparable<DatenPset> {
@@ -68,7 +67,28 @@ public class DatenPset implements Comparable<DatenPset> {
             "Beschreibung", "Info-URL", "Infodatei", "Spotlight", "Untertitel"};
     private static final Logger logger = LogManager.getLogger();
     private final ListeProg listeProg = new ListeProg();
-    public String[] arr;
+    private String name;
+    private String praefixDirekt;
+    private String suffixDirekt;
+    private Color farbe;
+    private String zielPfad;
+    private String zielDateiname;
+    private Boolean themaAnlegen;
+    private Boolean istAbspielen;
+    private Boolean istSpeichern;
+    private Boolean istButton;
+    private Boolean istAbo;
+    private Boolean laengeBeschraenken;
+    private Boolean laengeFieldBeschraenken;
+    private Integer maxLaenge;
+    private Integer maxLaengeField;
+    private FilmResolution.Enum aufloesung;
+    private String addOn;
+    private String beschreibung;
+    private String infoUrl;
+    private Boolean infodatei;
+    private Boolean spotlight;
+    private Boolean subtitle;
 
     public DatenPset() {
         initialize();
@@ -77,8 +97,8 @@ public class DatenPset implements Comparable<DatenPset> {
     public DatenPset(String name) {
         // neue Pset sind immer gleich Button
         initialize();
-        arr[PROGRAMMSET_NAME] = name;
-        arr[PROGRAMMSET_IST_BUTTON] = Boolean.TRUE.toString();
+        set(PROGRAMMSET_NAME, name);
+        set(PROGRAMMSET_IST_BUTTON, Boolean.TRUE.toString());
     }
 
     /**
@@ -86,7 +106,7 @@ public class DatenPset implements Comparable<DatenPset> {
      * @return true if download, otherwise false.
      */
     public boolean shouldDownloadSubtitle() {
-        return Boolean.parseBoolean(arr[PROGRAMMSET_SUBTITLE]);
+        return Boolean.TRUE.equals(subtitle);
     }
 
     /**
@@ -94,7 +114,267 @@ public class DatenPset implements Comparable<DatenPset> {
      * @return true for creation, false otherwise
      */
     public boolean shouldCreateInfofile() {
-        return Boolean.parseBoolean(arr[DatenPset.PROGRAMMSET_INFODATEI]);
+        return Boolean.TRUE.equals(infodatei);
+    }
+
+    public String getPraefixDirekt() {
+        return praefixDirekt;
+    }
+
+    public String getSuffixDirekt() {
+        return suffixDirekt;
+    }
+
+    public String getBeschreibung() {
+        return beschreibung;
+    }
+
+    public void setBeschreibung(String beschreibung) {
+        this.beschreibung = beschreibung == null ? "" : beschreibung;
+    }
+
+    public boolean isThemaAnlegen() {
+        return Boolean.TRUE.equals(themaAnlegen);
+    }
+
+    public void setThemaAnlegen(boolean themaAnlegen) {
+        this.themaAnlegen = themaAnlegen;
+    }
+
+    public boolean isLaengeBeschraenken() {
+        return Boolean.TRUE.equals(laengeBeschraenken);
+    }
+
+    public void setLaengeBeschraenken(boolean laengeBeschraenken) {
+        this.laengeBeschraenken = laengeBeschraenken;
+    }
+
+    public boolean isLaengeFieldBeschraenken() {
+        return Boolean.TRUE.equals(laengeFieldBeschraenken);
+    }
+
+    public void setLaengeFieldBeschraenken(boolean laengeFieldBeschraenken) {
+        this.laengeFieldBeschraenken = laengeFieldBeschraenken;
+    }
+
+    public Integer getMaxLaenge() {
+        return maxLaenge;
+    }
+
+    public void setMaxLaenge(Integer maxLaenge) {
+        this.maxLaenge = maxLaenge;
+    }
+
+    public Integer getMaxLaengeField() {
+        return maxLaengeField;
+    }
+
+    public void setMaxLaengeField(Integer maxLaengeField) {
+        this.maxLaengeField = maxLaengeField;
+    }
+
+    public FilmResolution.Enum getAufloesung() {
+        return aufloesung;
+    }
+
+    public void setAufloesung(FilmResolution.Enum aufloesung) {
+        this.aufloesung = aufloesung == null ? FilmResolution.Enum.NORMAL : aufloesung;
+    }
+
+    public boolean isSpotlight() {
+        return Boolean.TRUE.equals(spotlight);
+    }
+
+    public void setSpotlight(boolean spotlight) {
+        this.spotlight = spotlight;
+    }
+
+    public void setInfodatei(boolean infodatei) {
+        this.infodatei = infodatei;
+    }
+
+    public void setSubtitle(boolean subtitle) {
+        this.subtitle = subtitle;
+    }
+
+    public String getAddOn() {
+        return addOn;
+    }
+
+    public void setName(String name) {
+        this.name = name == null ? "" : name;
+    }
+
+    public void clearFarbe() {
+        this.farbe = null;
+    }
+
+    public String get(int index) {
+        return switch (index) {
+            case PROGRAMMSET_NAME -> name;
+            case PROGRAMMSET_PRAEFIX_DIREKT -> praefixDirekt;
+            case PROGRAMMSET_SUFFIX_DIREKT -> suffixDirekt;
+            case PROGRAMMSET_FARBE -> colorToString(farbe);
+            case PROGRAMMSET_ZIEL_PFAD -> zielPfad;
+            case PROGRAMMSET_ZIEL_DATEINAME -> zielDateiname;
+            case PROGRAMMSET_THEMA_ANLEGEN -> boolToString(themaAnlegen);
+            case PROGRAMMSET_IST_ABSPIELEN -> boolToString(istAbspielen);
+            case PROGRAMMSET_IST_SPEICHERN -> boolToString(istSpeichern);
+            case PROGRAMMSET_IST_BUTTON -> boolToString(istButton);
+            case PROGRAMMSET_IST_ABO -> boolToString(istAbo);
+            case PROGRAMMSET_LAENGE_BESCHRAENKEN -> boolToString(laengeBeschraenken);
+            case PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN -> boolToString(laengeFieldBeschraenken);
+            case PROGRAMMSET_MAX_LAENGE -> intToString(maxLaenge);
+            case PROGRAMMSET_MAX_LAENGE_FIELD -> intToString(maxLaengeField);
+            case PROGRAMMSET_AUFLOESUNG -> aufloesung == null ? "" : aufloesung.toString();
+            case PROGRAMMSET_ADD_ON -> addOn;
+            case PROGRAMMSET_BESCHREIBUNG -> beschreibung;
+            case 18 -> infoUrl;
+            case PROGRAMMSET_INFODATEI -> boolToString(infodatei);
+            case PROGRAMMSET_SPOTLIGHT -> boolToString(spotlight);
+            case PROGRAMMSET_SUBTITLE -> boolToString(subtitle);
+            default -> throw new ArrayIndexOutOfBoundsException(index);
+        };
+    }
+
+    public void set(int index, String value) {
+        final String normalizedValue = value == null ? "" : value;
+        if (index == PROGRAMMSET_IST_ABSPIELEN) {
+            if (Boolean.parseBoolean(normalizedValue)) {
+                setAbspielen();
+            } else {
+                istAbspielen = Boolean.FALSE;
+            }
+            return;
+        }
+
+        switch (index) {
+            case PROGRAMMSET_NAME -> name = normalizedValue;
+            case PROGRAMMSET_PRAEFIX_DIREKT -> praefixDirekt = normalizedValue;
+            case PROGRAMMSET_SUFFIX_DIREKT -> suffixDirekt = normalizedValue;
+            case PROGRAMMSET_FARBE -> farbe = parseColor(normalizedValue);
+            case PROGRAMMSET_ZIEL_PFAD -> zielPfad = normalizedValue;
+            case PROGRAMMSET_ZIEL_DATEINAME -> zielDateiname = normalizedValue;
+            case PROGRAMMSET_THEMA_ANLEGEN -> themaAnlegen = parseBoolean(normalizedValue);
+            case PROGRAMMSET_IST_SPEICHERN -> istSpeichern = parseBoolean(normalizedValue);
+            case PROGRAMMSET_IST_BUTTON -> istButton = parseBoolean(normalizedValue);
+            case PROGRAMMSET_IST_ABO -> istAbo = parseBoolean(normalizedValue);
+            case PROGRAMMSET_LAENGE_BESCHRAENKEN -> laengeBeschraenken = parseBoolean(normalizedValue);
+            case PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN -> laengeFieldBeschraenken = parseBoolean(normalizedValue);
+            case PROGRAMMSET_MAX_LAENGE -> maxLaenge = parseInteger(normalizedValue);
+            case PROGRAMMSET_MAX_LAENGE_FIELD -> maxLaengeField = parseInteger(normalizedValue);
+            case PROGRAMMSET_AUFLOESUNG -> aufloesung = normalizedValue.isEmpty() ? null : FilmResolution.Enum.fromLegacyString(normalizedValue);
+            case PROGRAMMSET_ADD_ON -> addOn = normalizedValue;
+            case PROGRAMMSET_BESCHREIBUNG -> beschreibung = normalizedValue;
+            case 18 -> infoUrl = normalizedValue;
+            case PROGRAMMSET_INFODATEI -> infodatei = parseBoolean(normalizedValue);
+            case PROGRAMMSET_SPOTLIGHT -> spotlight = parseBoolean(normalizedValue);
+            case PROGRAMMSET_SUBTITLE -> subtitle = parseBoolean(normalizedValue);
+            default -> throw new ArrayIndexOutOfBoundsException(index);
+        }
+    }
+
+    public String[] toArray() {
+        String[] values = new String[MAX_ELEM];
+        values[PROGRAMMSET_NAME] = getName();
+        values[PROGRAMMSET_PRAEFIX_DIREKT] = getPraefixDirekt();
+        values[PROGRAMMSET_SUFFIX_DIREKT] = getSuffixDirekt();
+        values[PROGRAMMSET_FARBE] = colorToString(farbe);
+        values[PROGRAMMSET_ZIEL_PFAD] = getZielPfad();
+        values[PROGRAMMSET_ZIEL_DATEINAME] = getZielDateiname();
+        values[PROGRAMMSET_THEMA_ANLEGEN] = boolToString(themaAnlegen);
+        values[PROGRAMMSET_IST_ABSPIELEN] = boolToString(istAbspielen);
+        values[PROGRAMMSET_IST_SPEICHERN] = boolToString(istSpeichern);
+        values[PROGRAMMSET_IST_BUTTON] = boolToString(istButton);
+        values[PROGRAMMSET_IST_ABO] = boolToString(istAbo);
+        values[PROGRAMMSET_LAENGE_BESCHRAENKEN] = boolToString(laengeBeschraenken);
+        values[PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN] = boolToString(laengeFieldBeschraenken);
+        values[PROGRAMMSET_MAX_LAENGE] = intToString(maxLaenge);
+        values[PROGRAMMSET_MAX_LAENGE_FIELD] = intToString(maxLaengeField);
+        values[PROGRAMMSET_AUFLOESUNG] = aufloesung == null ? "" : aufloesung.toString();
+        values[PROGRAMMSET_ADD_ON] = getAddOn();
+        values[PROGRAMMSET_BESCHREIBUNG] = getBeschreibung();
+        values[18] = infoUrl;
+        values[PROGRAMMSET_INFODATEI] = boolToString(infodatei);
+        values[PROGRAMMSET_SPOTLIGHT] = boolToString(spotlight);
+        values[PROGRAMMSET_SUBTITLE] = boolToString(subtitle);
+        return values;
+    }
+
+    public void copyFrom(String[] values) {
+        clearFields();
+        if (values == null) {
+            initializeDefaults();
+            return;
+        }
+
+        if (values.length > PROGRAMMSET_NAME) {
+            setName(values[PROGRAMMSET_NAME]);
+        }
+        if (values.length > PROGRAMMSET_PRAEFIX_DIREKT) {
+            set(PROGRAMMSET_PRAEFIX_DIREKT, values[PROGRAMMSET_PRAEFIX_DIREKT]);
+        }
+        if (values.length > PROGRAMMSET_SUFFIX_DIREKT) {
+            set(PROGRAMMSET_SUFFIX_DIREKT, values[PROGRAMMSET_SUFFIX_DIREKT]);
+        }
+        if (values.length > PROGRAMMSET_FARBE) {
+            set(PROGRAMMSET_FARBE, values[PROGRAMMSET_FARBE]);
+        }
+        if (values.length > PROGRAMMSET_ZIEL_PFAD) {
+            setZielPfad(values[PROGRAMMSET_ZIEL_PFAD]);
+        }
+        if (values.length > PROGRAMMSET_ZIEL_DATEINAME) {
+            setZielDateiname(values[PROGRAMMSET_ZIEL_DATEINAME]);
+        }
+        if (values.length > PROGRAMMSET_THEMA_ANLEGEN) {
+            set(PROGRAMMSET_THEMA_ANLEGEN, values[PROGRAMMSET_THEMA_ANLEGEN]);
+        }
+        if (values.length > PROGRAMMSET_IST_ABSPIELEN) {
+            set(PROGRAMMSET_IST_ABSPIELEN, values[PROGRAMMSET_IST_ABSPIELEN]);
+        }
+        if (values.length > PROGRAMMSET_IST_SPEICHERN) {
+            setSpeichern(Boolean.parseBoolean(values[PROGRAMMSET_IST_SPEICHERN]));
+        }
+        if (values.length > PROGRAMMSET_IST_BUTTON) {
+            setButton(Boolean.parseBoolean(values[PROGRAMMSET_IST_BUTTON]));
+        }
+        if (values.length > PROGRAMMSET_IST_ABO) {
+            setAbo(Boolean.parseBoolean(values[PROGRAMMSET_IST_ABO]));
+        }
+        if (values.length > PROGRAMMSET_LAENGE_BESCHRAENKEN) {
+            setLaengeBeschraenken(Boolean.parseBoolean(values[PROGRAMMSET_LAENGE_BESCHRAENKEN]));
+        }
+        if (values.length > PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN) {
+            setLaengeFieldBeschraenken(Boolean.parseBoolean(values[PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN]));
+        }
+        if (values.length > PROGRAMMSET_MAX_LAENGE) {
+            set(PROGRAMMSET_MAX_LAENGE, values[PROGRAMMSET_MAX_LAENGE]);
+        }
+        if (values.length > PROGRAMMSET_MAX_LAENGE_FIELD) {
+            set(PROGRAMMSET_MAX_LAENGE_FIELD, values[PROGRAMMSET_MAX_LAENGE_FIELD]);
+        }
+        if (values.length > PROGRAMMSET_AUFLOESUNG) {
+            set(PROGRAMMSET_AUFLOESUNG, values[PROGRAMMSET_AUFLOESUNG]);
+        }
+        if (values.length > PROGRAMMSET_ADD_ON) {
+            set(PROGRAMMSET_ADD_ON, values[PROGRAMMSET_ADD_ON]);
+        }
+        if (values.length > PROGRAMMSET_BESCHREIBUNG) {
+            setBeschreibung(values[PROGRAMMSET_BESCHREIBUNG]);
+        }
+        if (values.length > 18) {
+            set(18, values[18]);
+        }
+        if (values.length > PROGRAMMSET_INFODATEI) {
+            setInfodatei(Boolean.parseBoolean(values[PROGRAMMSET_INFODATEI]));
+        }
+        if (values.length > PROGRAMMSET_SPOTLIGHT) {
+            setSpotlight(Boolean.parseBoolean(values[PROGRAMMSET_SPOTLIGHT]));
+        }
+        if (values.length > PROGRAMMSET_SUBTITLE) {
+            setSubtitle(Boolean.parseBoolean(values[PROGRAMMSET_SUBTITLE]));
+        }
+        initializeDefaults();
     }
 
     public void addProg(DatenProg prog) {
@@ -127,7 +407,7 @@ public class DatenPset implements Comparable<DatenPset> {
 
     public boolean isEmpty() {
         boolean ret = true;
-        for (String s : arr) {
+        for (String s : toArray()) {
             if (!s.isEmpty()) {
                 ret = false;
             }
@@ -139,19 +419,19 @@ public class DatenPset implements Comparable<DatenPset> {
     }
 
     public boolean istAbspielen() {
-        return Boolean.parseBoolean(arr[PROGRAMMSET_IST_ABSPIELEN]);
+        return Boolean.TRUE.equals(istAbspielen);
     }
 
     public boolean istSpeichern() {
-        return Boolean.parseBoolean(arr[PROGRAMMSET_IST_SPEICHERN]);
+        return Boolean.TRUE.equals(istSpeichern);
     }
 
     public boolean istButton() {
-        return Boolean.parseBoolean(arr[PROGRAMMSET_IST_BUTTON]);
+        return Boolean.TRUE.equals(istButton);
     }
 
     public boolean istAbo() {
-        return Boolean.parseBoolean(arr[PROGRAMMSET_IST_ABO]);
+        return Boolean.TRUE.equals(istAbo);
     }
 
     /**
@@ -173,21 +453,21 @@ public class DatenPset implements Comparable<DatenPset> {
 
     public void setAbspielen() {
         for (DatenPset datenPset : Daten.listePset) {
-            datenPset.arr[DatenPset.PROGRAMMSET_IST_ABSPIELEN] = Boolean.FALSE.toString();
+            datenPset.istAbspielen = Boolean.FALSE;
         }
-        arr[DatenPset.PROGRAMMSET_IST_ABSPIELEN] = Boolean.TRUE.toString();
+        istAbspielen = Boolean.TRUE;
     }
 
     public void setSpeichern(boolean set) {
-        arr[DatenPset.PROGRAMMSET_IST_SPEICHERN] = Boolean.toString(set);
+        set(DatenPset.PROGRAMMSET_IST_SPEICHERN, Boolean.toString(set));
     }
 
     public void setButton(boolean set) {
-        arr[DatenPset.PROGRAMMSET_IST_BUTTON] = Boolean.toString(set);
+        set(DatenPset.PROGRAMMSET_IST_BUTTON, Boolean.toString(set));
     }
 
     public void setAbo(boolean set) {
-        arr[DatenPset.PROGRAMMSET_IST_ABO] = Boolean.toString(set);
+        set(DatenPset.PROGRAMMSET_IST_ABO, Boolean.toString(set));
     }
 
     public DatenProg getProgUrl(String url) {
@@ -217,7 +497,7 @@ public class DatenPset implements Comparable<DatenPset> {
     public String getZielDateiname(String url) {
         //gibt den Zieldateinamen für den Film zurück
         DatenProg prog = this.getProgUrl(url);
-        String ret = arr[PROGRAMMSET_ZIEL_DATEINAME];
+        String ret = get(PROGRAMMSET_ZIEL_DATEINAME);
         if (!checkDownloadDirekt(url) && prog != null) {
             // nur wenn kein direkter Download und ein passendes Programm
             if (!prog.arr[DatenProg.PROGRAMM_ZIEL_DATEINAME].equals("")) {
@@ -227,17 +507,29 @@ public class DatenPset implements Comparable<DatenPset> {
         return ret;
     }
 
+    public String getZielDateiname() {
+        return zielDateiname;
+    }
+
+    public void setZielDateiname(String zielDateiname) {
+        this.zielDateiname = zielDateiname == null ? "" : zielDateiname;
+    }
+
     public String getZielPfad() {
         //gibt den Zielpfad für den Film zurück
-        return arr[PROGRAMMSET_ZIEL_PFAD];
+        return zielPfad;
+    }
+
+    public void setZielPfad(String zielPfad) {
+        this.zielPfad = zielPfad == null ? "" : zielPfad;
     }
 
     public DatenPset copy() {
         DatenPset ret = new DatenPset();
-        System.arraycopy(this.arr, 0, ret.arr, 0, arr.length);
+        ret.copyFrom(this.toArray());
         //es darf nur einen geben!
-        ret.arr[PROGRAMMSET_NAME] = "Kopie-" + arr[PROGRAMMSET_NAME];
-        ret.arr[PROGRAMMSET_IST_ABSPIELEN] = Boolean.toString(false);
+        ret.setName("Kopie-" + getName());
+        ret.set(PROGRAMMSET_IST_ABSPIELEN, Boolean.toString(false));
         for (DatenProg prog : getListeProg()) {
             ret.addProg(prog.copy());
         }
@@ -253,37 +545,23 @@ public class DatenPset implements Comparable<DatenPset> {
     }
 
     public String getName() {
-        return arr[PROGRAMMSET_NAME];
+        return get(PROGRAMMSET_NAME);
     }
 
     public Color getFarbe() {
-        Color ret = null;
-        String r, g, b;
-        if (!arr[PROGRAMMSET_FARBE].equals("")) {
-            r = arr[PROGRAMMSET_FARBE].substring(0, arr[PROGRAMMSET_FARBE].indexOf(','));
-            g = arr[PROGRAMMSET_FARBE].substring(arr[PROGRAMMSET_FARBE].indexOf(',') + 1,
-                    arr[PROGRAMMSET_FARBE].lastIndexOf(','));
-            b = arr[PROGRAMMSET_FARBE].substring(arr[PROGRAMMSET_FARBE].lastIndexOf(',') + 1);
-            try {
-                ret = new Color(Integer.parseInt(r), Integer.parseInt(g), Integer.parseInt(b));
-            } catch (Exception ex) {
-                logger.error("getFarbe()", ex);
-            }
-        }
-        return ret;
+        return farbe;
     }
 
     public void setFarbe(Color farbe) {
-        arr[PROGRAMMSET_FARBE]
-                = farbe.getRed() + "," + farbe.getGreen() + "," + farbe.getBlue();
+        this.farbe = farbe;
     }
 
     public boolean checkDownloadDirekt(String url) {
         //auf direkte prüfen, pref oder suf: wenn angegeben dann muss es stimmen
-        if (!this.arr[PROGRAMMSET_PRAEFIX_DIREKT].equals("")
-                || !this.arr[PROGRAMMSET_SUFFIX_DIREKT].equals("")) {
-            return GuiFunktionenProgramme.checkPrefix(this.arr[PROGRAMMSET_PRAEFIX_DIREKT], url)
-                    && GuiFunktionenProgramme.checkSuffix(this.arr[PROGRAMMSET_SUFFIX_DIREKT], url);
+        if (!this.getPraefixDirekt().equals("")
+                || !this.getSuffixDirekt().equals("")) {
+            return GuiFunktionenProgramme.checkPrefix(this.getPraefixDirekt(), url)
+                    && GuiFunktionenProgramme.checkSuffix(this.getSuffixDirekt(), url);
         }
 
         return false;
@@ -295,7 +573,7 @@ public class DatenPset implements Comparable<DatenPset> {
         ret += "================================================" + System.lineSeparator();
         ret += "| Programmset" + System.lineSeparator();
         for (int i = 0; i < MAX_ELEM; ++i) {
-            ret += "| " + COLUMN_NAMES[i] + ": " + arr[i] + System.lineSeparator();
+            ret += "| " + COLUMN_NAMES[i] + ": " + get(i) + System.lineSeparator();
         }
         for (Object aListeProg : listeProg) {
             ret += "|" + System.lineSeparator();
@@ -306,20 +584,105 @@ public class DatenPset implements Comparable<DatenPset> {
     }
 
     private void initialize() {
-        arr = new String[MAX_ELEM];
-        Arrays.fill(arr, "");
+        clearFields();
+        initializeDefaults();
+    }
 
-        arr[PROGRAMMSET_THEMA_ANLEGEN] = Boolean.toString(true);
-        arr[PROGRAMMSET_IST_ABSPIELEN] = Boolean.toString(false);
-        arr[PROGRAMMSET_IST_SPEICHERN] = Boolean.toString(false);
-        arr[PROGRAMMSET_IST_BUTTON] = Boolean.toString(false);
-        arr[PROGRAMMSET_IST_ABO] = Boolean.toString(false);
-        arr[PROGRAMMSET_LAENGE_BESCHRAENKEN] = Boolean.toString(false);
-        arr[PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN] = Boolean.toString(false);
-        arr[PROGRAMMSET_INFODATEI] = Boolean.toString(false);
-        arr[PROGRAMMSET_SPOTLIGHT] = Boolean.toString(SystemUtils.IS_OS_MAC_OSX);
-        arr[PROGRAMMSET_SUBTITLE] = Boolean.toString(false);
-        arr[PROGRAMMSET_AUFLOESUNG] = FilmResolution.Enum.NORMAL.toString();
+    private void clearFields() {
+        name = "";
+        praefixDirekt = "";
+        suffixDirekt = "";
+        farbe = null;
+        zielPfad = "";
+        zielDateiname = "";
+        themaAnlegen = null;
+        istAbspielen = null;
+        istSpeichern = null;
+        istButton = null;
+        istAbo = null;
+        laengeBeschraenken = null;
+        laengeFieldBeschraenken = null;
+        maxLaenge = null;
+        maxLaengeField = null;
+        aufloesung = null;
+        addOn = "";
+        beschreibung = "";
+        infoUrl = "";
+        infodatei = null;
+        spotlight = null;
+        subtitle = null;
+    }
+
+    private void initializeDefaults() {
+        if (get(PROGRAMMSET_THEMA_ANLEGEN).isEmpty()) {
+            themaAnlegen = Boolean.TRUE;
+        }
+        if (get(PROGRAMMSET_IST_ABSPIELEN).isEmpty()) {
+            istAbspielen = Boolean.FALSE;
+        }
+        if (get(PROGRAMMSET_IST_SPEICHERN).isEmpty()) {
+            istSpeichern = Boolean.FALSE;
+        }
+        if (get(PROGRAMMSET_IST_BUTTON).isEmpty()) {
+            istButton = Boolean.FALSE;
+        }
+        if (get(PROGRAMMSET_IST_ABO).isEmpty()) {
+            istAbo = Boolean.FALSE;
+        }
+        if (get(PROGRAMMSET_LAENGE_BESCHRAENKEN).isEmpty()) {
+            laengeBeschraenken = Boolean.FALSE;
+        }
+        if (get(PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN).isEmpty()) {
+            laengeFieldBeschraenken = Boolean.FALSE;
+        }
+        if (get(PROGRAMMSET_INFODATEI).isEmpty()) {
+            infodatei = Boolean.FALSE;
+        }
+        if (get(PROGRAMMSET_SPOTLIGHT).isEmpty()) {
+            spotlight = SystemUtils.IS_OS_MAC_OSX;
+        }
+        if (get(PROGRAMMSET_SUBTITLE).isEmpty()) {
+            subtitle = Boolean.FALSE;
+        }
+        if (get(PROGRAMMSET_AUFLOESUNG).isEmpty()) {
+            aufloesung = FilmResolution.Enum.NORMAL;
+        }
+    }
+
+    private static String boolToString(Boolean value) {
+        return value == null ? "" : Boolean.toString(value);
+    }
+
+    private static Boolean parseBoolean(String value) {
+        return value.isEmpty() ? null : Boolean.parseBoolean(value);
+    }
+
+    private static String intToString(Integer value) {
+        return value == null ? "" : Integer.toString(value);
+    }
+
+    private static Integer parseInteger(String value) {
+        return value.isEmpty() ? null : Integer.parseInt(value);
+    }
+
+    private static String colorToString(Color value) {
+        return value == null ? "" : value.getRed() + "," + value.getGreen() + "," + value.getBlue();
+    }
+
+    private Color parseColor(String value) {
+        if (value.isEmpty()) {
+            return null;
+        }
+        try {
+            final var rgb = value.split(",", 3);
+            if (rgb.length != 3) {
+                throw new IllegalArgumentException("Invalid RGB color: " + value);
+            }
+            return new Color(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2]));
+        } catch (Exception ex) {
+            logger.error("getFarbe()", ex);
+            return null;
+        }
     }
 
     @Override

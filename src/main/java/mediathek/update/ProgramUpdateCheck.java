@@ -75,26 +75,26 @@ public class ProgramUpdateCheck implements AutoCloseable {
                     if (!listePsetOrgSpeichern.isEmpty()) {
                         for (DatenPset psNew : listePsetStandard.getListeSpeichern()) {
                             final var psOrg = listePsetOrgSpeichern.getFirst();
-                            psNew.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD] = psOrg.arr[DatenPset.PROGRAMMSET_ZIEL_PFAD];
-                            psNew.arr[DatenPset.PROGRAMMSET_THEMA_ANLEGEN] = psOrg.arr[DatenPset.PROGRAMMSET_THEMA_ANLEGEN];
-                            psNew.arr[DatenPset.PROGRAMMSET_LAENGE_BESCHRAENKEN] = psOrg.arr[DatenPset.PROGRAMMSET_LAENGE_BESCHRAENKEN];
-                            psNew.arr[DatenPset.PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN] = psOrg.arr[DatenPset.PROGRAMMSET_LAENGE_FIELD_BESCHRAENKEN];
-                            psNew.arr[DatenPset.PROGRAMMSET_MAX_LAENGE] = psOrg.arr[DatenPset.PROGRAMMSET_MAX_LAENGE];
-                            psNew.arr[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD] = psOrg.arr[DatenPset.PROGRAMMSET_MAX_LAENGE_FIELD];
+                            psNew.setZielPfad(psOrg.getZielPfad());
+                            psNew.setThemaAnlegen(psOrg.isThemaAnlegen());
+                            psNew.setLaengeBeschraenken(psOrg.isLaengeBeschraenken());
+                            psNew.setLaengeFieldBeschraenken(psOrg.isLaengeFieldBeschraenken());
+                            psNew.setMaxLaenge(psOrg.getMaxLaenge());
+                            psNew.setMaxLaengeField(psOrg.getMaxLaengeField());
                         }
                     }
                     if (!Daten.listePset.isEmpty()) {
                         // wenn leer, dann gibts immer die neuen und die sind dann auch aktiv
                         for (DatenPset psNew : listePsetStandard) {
                             // die bestehenden Sets sollen nicht gestört werden
-                            psNew.arr[DatenPset.PROGRAMMSET_IST_ABSPIELEN] = Boolean.FALSE.toString();
-                            psNew.arr[DatenPset.PROGRAMMSET_IST_ABO] = Boolean.FALSE.toString();
-                            psNew.arr[DatenPset.PROGRAMMSET_IST_BUTTON] = Boolean.FALSE.toString();
-                            psNew.arr[DatenPset.PROGRAMMSET_IST_SPEICHERN] = Boolean.FALSE.toString();
+                            psNew.set(DatenPset.PROGRAMMSET_IST_ABSPIELEN, Boolean.FALSE.toString());
+                            psNew.set(DatenPset.PROGRAMMSET_IST_ABO, Boolean.FALSE.toString());
+                            psNew.set(DatenPset.PROGRAMMSET_IST_BUTTON, Boolean.FALSE.toString());
+                            psNew.set(DatenPset.PROGRAMMSET_IST_SPEICHERN, Boolean.FALSE.toString());
                         }
                         // damit man sie auch findet :)
                         String date = new SimpleDateFormat("dd.MM.yyyy").format(new Date());
-                        listePsetStandard.forEach((psNew) -> psNew.arr[DatenPset.PROGRAMMSET_NAME] = psNew.getName() + ", neu: " + date);
+                        listePsetStandard.forEach((psNew) -> psNew.setName(psNew.getName() + ", neu: " + date));
                     }
                     GuiFunktionenProgramme.addSetVorlagen(MediathekGui.ui(), Daten.getInstance(), listePsetStandard, true); // damit auch AddOns geladen werden
                     logger.info("Setanlegen: OK");

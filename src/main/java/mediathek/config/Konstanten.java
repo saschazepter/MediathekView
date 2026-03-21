@@ -25,14 +25,16 @@ import java.util.concurrent.TimeUnit;
 
 
 public class Konstanten {
+    public static final int TABLE_DEFAULT_ROW_HEIGHT = 24;
+    public static final int TABLE_DEFAULT_LARGE_ICON_ROW_HEIGHT = TABLE_DEFAULT_ROW_HEIGHT + 12;
     public static final String JSOUP_USER_AGENT = "Mozilla/5.0";
     public static final String ZAPP_API_URL = "https://api.zapp.mediathekview.de/";
     public static final String NEW_SENDER_ACTIVATED_QUESTION_CONFIG_KEY = "newSendersActivated.fourteen.three";
     public static final String NEW_FILMLENGTH_ACTIVATED_QUESTION_CONFIG_KEY = "newFilmlengthActivated.fourteen.three";
     public static final long MINIMUM_MEMORY_THRESHOLD = 768 * FileUtils.ONE_MB;
-    public static final Version MVVERSION = new Version(14, 5, 0);
+    public static final Version MVVERSION = new Version(14, 6, 0);
 
-    public static final ApplicationType APPLICATION_TYPE = ApplicationType.PRODUCTION;
+    public static final ApplicationType APPLICATION_TYPE = ApplicationType.NIGHTLY;
     public static final String MACOS_OFFICIAL_APP = "OSX_OFFICIAL_APP";
 
     public static final String FORMAT_ZIP = ".zip";
@@ -40,6 +42,7 @@ public class Konstanten {
 
     public static final String FULL_FILM_LIST = "Filmliste-akt.xz";
     public static final String DIFF_FILM_LIST = "Filmliste-diff.xz";
+    public static final long AUDIOTHEK_SEARCH_TIMEOUT_SECONDS = 45;
 
     public static final long ALTER_FILMLISTE_SEKUNDEN_FUER_AUTOUPDATE = TimeUnit.SECONDS.convert(3, TimeUnit.HOURS);
 
@@ -63,6 +66,9 @@ public class Konstanten {
     public static final HttpUrl ROUTER_BASE_URL = HttpUrl.get("https://liste.mediathekview.de");
     public static final HttpUrl WEBSITE_BASE_URL = HttpUrl.get("https://mediathekview.de");
     public static final HttpUrl URL_MEDIATHEKVIEW_RESOURCES = HttpUrl.get("https://res.mediathekview.de");
+    public static final String AUDIOTHEK_ONLINE_SEARCH_PROXY_URL = "https://audiothek.crystalpalace.info";
+    public static final String AUDIOTHEK_PROXY_CLIENT_TOKEN_HEADER = "X-MV-Client-Token";
+    public static final String AUDIOTHEK_PROXY_CLIENT_TOKEN = "mv-audiothek-static-2026-03";
     public static final String PSET_PROGRAM_GROUP_LIST_PATH = "programmgruppen13/programmgruppen.xml";
     public static final String PROGRAM_VERSION_PATH = "prog-info-13.xml";
     public static final String ADRESSE_DOWNLOAD = "https://mediathekview.de/download/";
@@ -100,4 +106,5 @@ public class Konstanten {
     public static final String PFAD_HILFETEXT_RESET_SET = "/mediathek/file/hilfetext_reset_set.txt";
     public static final String PFAD_HILFETEXT_DIALOG_ADD_ABO = "/mediathek/file/hilfetext_dialog_add_abo.txt";
     public static final String PFAD_LUCENE_TUTORIAL_MARKDOWN = "/mediathek/file/lucene_tutorial.md";
+    public static final String PFAD_AUDIOTHEK_SUCHE_HILFE_MARKDOWN = "/mediathek/file/hilfetext_audiothek_suche.md";
 }

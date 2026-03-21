@@ -252,6 +252,10 @@ public class FilmeLaden {
         listeners.add(ListenerFilmeLaden.class, listener);
     }
 
+    public void removeAdListener(ListenerFilmeLaden listener) {
+        listeners.remove(ListenerFilmeLaden.class, listener);
+    }
+
     private void undEnde(ListenerFilmeLadenEvent event) {
         // Abos eintragen in der gesamten Liste vor Blacklist da das nur beim Ändern der Filmliste oder
         // beim Ändern von Abos gemacht wird

@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.daten;
 
 import mediathek.config.Konstanten;
@@ -6,10 +24,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -37,12 +52,15 @@ public class ListeFilme extends ArrayList<DatenFilm> {
     /**
      * case-insensitive .distinct() implementation.
      * @param keyExtractor the function to be applied to the key
-     * @return true if it has been seen already
      * @param <T> template param
      */
     private static <T> Predicate<T> distinctByKey(Function<? super T, ?> keyExtractor) {
         Set<Object> seen = ConcurrentHashMap.newKeySet();
         return t -> seen.add(keyExtractor.apply(t));
+    }
+
+    private static String normalizeKey(String value) {
+        return value.toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -53,7 +71,12 @@ public class ListeFilme extends ArrayList<DatenFilm> {
      * @return IMMUTABLE List of themas as String.
      */
     public List<String> getThemen(String sender) {
-        Stream<DatenFilm> mystream = parallelStream();
+        List<DatenFilm> snapshot;
+        synchronized (this) {
+            snapshot = List.copyOf(this);
+        }
+
+        Stream<DatenFilm> mystream = snapshot.parallelStream();
         //if sender is empty return all themas...
         if (!sender.isEmpty())
             mystream = mystream.filter(f -> f.getSender().equals(sender));
@@ -64,21 +87,38 @@ public class ListeFilme extends ArrayList<DatenFilm> {
     }
 
     /**
-     * Search all themas within list based on sender.
-     * If sender is empty, return full list of themas.
-     * <p>
-     * This version does not sort nor return a unique list.
+     * Search all distinct themas within list based on senders.
+     * If senders is empty, return the full distinct thema list.
      *
-     * @param sender sender name as String
-     * @return IMMUTABLE List of themas as String.
+     * @param senders sender names
+     * @return immutable sorted list of distinct themas
      */
-    public List<String> getThemenUnprocessed(String sender) {
-        Stream<DatenFilm> mystream = parallelStream();
-        //if sender is empty return all themas...
-        if (!sender.isEmpty())
-            mystream = mystream.filter(f -> f.getSender().equalsIgnoreCase(sender));
+    public List<String> getThemen(@NotNull Collection<String> senders) {
+        List<DatenFilm> snapshot;
+        synchronized (this) {
+            snapshot = List.copyOf(this);
+        }
 
-        return mystream.map(DatenFilm::getThema).toList();
+        var normalizedSenders = new HashSet<String>();
+        senders.forEach(sender -> normalizedSenders.add(normalizeKey(sender)));
+
+        var seenThemen = new HashSet<String>();
+        var result = new ArrayList<String>();
+        boolean includeAllSenders = normalizedSenders.isEmpty();
+
+        for (DatenFilm film : snapshot) {
+            if (!includeAllSenders && !normalizedSenders.contains(normalizeKey(film.getSender()))) {
+                continue;
+            }
+
+            var thema = film.getThema();
+            if (seenThemen.add(normalizeKey(thema))) {
+                result.add(thema);
+            }
+        }
+
+        result.sort(GermanStringSorter.getInstance());
+        return List.copyOf(result);
     }
 
     public synchronized void updateFromFilmList(@NotNull ListeFilme newFilmsList) {
@@ -95,32 +135,6 @@ public class ListeFilme extends ArrayList<DatenFilm> {
             film.init();
             add(film);
         });
-    }
-
-    /**
-     * Find movie with given url and sendername
-     * @param url    String wiht URL
-     * @param sender String with sender name
-     * @return DatenFilm object if found or null
-     */
-    public synchronized DatenFilm getFilmByUrlAndSender(@NotNull String url, @NotNull String sender) {
-        return parallelStream()
-                .filter(f -> f.getSender().equalsIgnoreCase(sender))
-                .filter(f -> f.getUrlNormalQuality().equalsIgnoreCase(url))
-                .findAny()
-                .orElse(null);
-    }
-
-    /**
-     * Find movie with given url
-     * @param url    String wiht URL
-     * @return DatenFilm object if found or null
-     */
-    public synchronized DatenFilm getFilmByUrl(@NotNull String url) {
-        return parallelStream()
-                .filter(f -> f.getUrlNormalQuality().equalsIgnoreCase(url))
-                .findAny()
-                .orElse(null);
     }
 
     public synchronized DatenFilm getFilmByUrl_klein_hoch_hd(String url) {
