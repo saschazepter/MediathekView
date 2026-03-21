@@ -455,7 +455,7 @@ public class MediathekGui extends JFrame {
     }
 
     /**
-     * Create either a native or a javafx notification center depending on platform
+     * Create either a native or a java notification center depending on platform
      */
     private void setupNotificationCenter() {
         final var notificationCenter = daten.notificationCenter();
