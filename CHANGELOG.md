@@ -3,6 +3,8 @@
 - **BUGFIX:** Das Löschen der Thema-ComboBox mit dem Löschen-Button funktioniert nach Keyboard-Manipulation. Das Thema wird auch weiter angewendet.
 - **BUGFIX:** Vorhandenes Thema wird bei Filterwechsel angewendet und nicht gelöscht.
 - **BUGFIX:** Änderung des Zeitraums löscht nicht mehr die Sender.
+- **BUGFIX:** Downloads mit ffmpeg zeigen wieder Fortschritt, Zeit und Gechwindigkeit an.
+- **BUGFIX(Windows):** Offizielle MV-Builds nutzen nun JetBrains Runtime 25. Damit sollte das Programm bei Nutzung einer RDP-Session nicht mehr abstürzen.
 - **FEATURE:** Tab *Audiothek* zur Suche (offline als auch online), Abspielen und Download von Podcasts der ARD Audiothek und via podcastindex.org.
 - **FEATURE:** Filter können nun kopiert werden.
 - **FEATURE:** *Download ändern*-Dialog bietet nun auch die Möglichkeit, Codec-Details abzurufen.
