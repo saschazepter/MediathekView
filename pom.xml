@@ -980,6 +980,13 @@
               Write-Host "→ Unpacking $zip → $outDir"
               Expand-Archive -Path $zip -DestinationPath $outDir -Force
 
+              $inner = Join-Path $outDir 'ffmpeg'
+              if (Test-Path $inner) {
+                Write-Host "→ Fixing ffmpeg unpacking $inner → $outDir"
+                Get-ChildItem $inner -Force | Move-Item -Destination $outDir -Force
+                Remove-Item $inner -Recurse -Force
+              }
+
               Write-Host "→ Deleting $zip"
               Remove-Item -Path $zip -Force
             ]]>
