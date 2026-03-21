@@ -649,10 +649,12 @@ class DialogEditDownload(
             DatenDownload.DOWNLOAD_PROGRAMMSET,
             DatenDownload.DOWNLOAD_PROGRAMM,
             DatenDownload.DOWNLOAD_DATUM -> addValueComponent(label, createValueLabel(datenDownload.arr[index]))
-
             DatenDownload.DOWNLOAD_ART -> addValueComponent(label, createValueLabel(downloadArtText()))
             DatenDownload.DOWNLOAD_QUELLE -> addValueComponent(label, createValueLabel(downloadQuelleText()))
-            DatenDownload.DOWNLOAD_DAUER -> addValueComponent(label, createValueLabel(formatDurationLikeFilmAge(datenDownload.arr[index])))
+            DatenDownload.DOWNLOAD_DAUER -> {
+                val durationText = DurationFormatter.fromOrNull(datenDownload.arr[index])?.toDisplayText() ?: ""
+                addValueComponent(label, createValueLabel(durationText))
+            }
             DatenDownload.DOWNLOAD_GEO -> addValueComponent(label, createGeoLabel())
             DatenDownload.DOWNLOAD_GROESSE -> addValueComponent(label, createValueLabel("${datenDownload.mVFilmSize} MB"))
             DatenDownload.DOWNLOAD_THEMA,
@@ -724,31 +726,6 @@ class DialogEditDownload(
         }
     }
 
-    private fun formatDurationLikeFilmAge(durationText: String?): String {
-        if (durationText.isNullOrBlank()) {
-            return ""
-        }
-
-        val parts = durationText.split(":")
-        if (parts.size != 3) {
-            return durationText
-        }
-
-        return try {
-            val totalMinutes = parts[0].toInt() * 60L + parts[1].toInt()
-            val days = totalMinutes / (24L * 60L)
-            val hours = (totalMinutes % (24L * 60L)) / 60L
-            val minutes = totalMinutes % 60L
-            when {
-                days > 0 -> "%dd %dh %dm".format(days, hours, minutes)
-                hours > 0 -> "%dh %dm".format(hours, minutes)
-                else -> "%dm".format(minutes)
-            }
-        } catch (_: NumberFormatException) {
-            durationText
-        }
-    }
-
     private fun downloadArtText(): String = when (datenDownload.art) {
         DatenDownload.ART_DOWNLOAD -> DatenDownload.ART_DOWNLOAD_TXT
         DatenDownload.ART_PROGRAMM -> DatenDownload.ART_PROGRAMM_TXT
@@ -792,21 +769,20 @@ class DialogEditDownload(
 
     private fun restoreLocation() {
         val config = ApplicationConfiguration.getConfiguration()
-        config.lock(LockMode.READ)
-        try {
-            location = Point(
-                config.getInt(ApplicationConfiguration.EditDownloadDialog.X),
-                config.getInt(ApplicationConfiguration.EditDownloadDialog.Y)
-            )
+        config.withLock(LockMode.READ) {
+            try {
+                location = Point(
+                    config.getInt(ApplicationConfiguration.EditDownloadDialog.X),
+                    config.getInt(ApplicationConfiguration.EditDownloadDialog.Y)
+                )
 
-            val width = config.getInt(ApplicationConfiguration.EditDownloadDialog.WIDTH, -1)
-            val height = config.getInt(ApplicationConfiguration.EditDownloadDialog.HEIGHT, -1)
-            if (width != -1 && height != -1) {
-                size = Dimension(width, height)
+                val width = config.getInt(ApplicationConfiguration.EditDownloadDialog.WIDTH, -1)
+                val height = config.getInt(ApplicationConfiguration.EditDownloadDialog.HEIGHT, -1)
+                if (width != -1 && height != -1) {
+                    size = Dimension(width, height)
+                }
+            } catch (_: NoSuchElementException) {
             }
-        } catch (_: NoSuchElementException) {
-        } finally {
-            config.unlock(LockMode.READ)
         }
     }
 
@@ -816,15 +792,12 @@ class DialogEditDownload(
         }
 
         val config = ApplicationConfiguration.getConfiguration()
-        try {
-            config.lock(LockMode.WRITE)
+        config.withLock(LockMode.WRITE) {
             val location = locationOnScreen
             config.setProperty(ApplicationConfiguration.EditDownloadDialog.X, location.x)
             config.setProperty(ApplicationConfiguration.EditDownloadDialog.Y, location.y)
             config.setProperty(ApplicationConfiguration.EditDownloadDialog.WIDTH, width)
             config.setProperty(ApplicationConfiguration.EditDownloadDialog.HEIGHT, height)
-        } finally {
-            config.unlock(LockMode.WRITE)
         }
     }
 

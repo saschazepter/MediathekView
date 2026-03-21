@@ -24,16 +24,14 @@ import mediathek.config.Konstanten;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.actions.UrlHyperlinkAction;
 import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.ApplicationConfiguration;
-import mediathek.tool.CopyToClipboardAction;
-import mediathek.tool.GuiFunktionen;
-import mediathek.tool.SwingErrorDialog;
+import mediathek.tool.*;
 import mediathek.tool.datum.DateUtil;
 import mediathek.tool.sender_icon_cache.MVSenderIconCache;
 import mediathek.tool.sender_icon_cache.SenderIconRenderUtil;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.configuration2.sync.LockMode;
 import org.jdesktop.swingx.JXHyperlink;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
@@ -46,9 +44,6 @@ import java.net.URI;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-/**
- * @author christianfranzke
- */
 public class FilmInfoDialog extends JDialog {
     private static final Dimension DEFAULT_SENDER_DIMENSION = new Dimension(48, 48);
     private static final Dimension DEFAULT_SENDER_HEIGHT_BOUNDARY = new Dimension(4096, DEFAULT_SENDER_DIMENSION.height);
@@ -219,6 +214,25 @@ public class FilmInfoDialog extends JDialog {
         lblAvailableUntil.setText("");
     }
 
+    private void updateDurationLabel(@NotNull DatenFilm film) {
+        var duration = film.getFilmLengthAsString();
+        try {
+            lblDuration.setText(DurationFormatter.from(duration).toDisplayText(""));
+        }
+        catch (IllegalArgumentException _) {
+            lblDuration.setText(duration);
+        }
+    }
+
+    private void updateGeoLabel(@NotNull DatenFilm film) {
+        if (!film.hasCountries()) {
+            lblGeo.setText("");
+        }
+        else {
+            lblGeo.setText(film.getCountriesAsString());
+        }
+    }
+
     private void updateTextFields() {
         currentFilmOptional.ifPresentOrElse(currentFilm -> {
             MVSenderIconCache.get(currentFilm.getSender()).ifPresentOrElse(icon -> {
@@ -241,14 +255,9 @@ public class FilmInfoDialog extends JDialog {
             lblTitel.setText(currentFilm.getTitle());
             lblDate.setText(currentFilm.getSendeDatum());
             lblUhrzeit.setText(currentFilm.getSendeZeit());
-            lblDuration.setText(currentFilm.getFilmLengthAsString());
+            updateDurationLabel(currentFilm);
             lblSize.setText(currentFilm.getFileSize().toString());
-            if (!currentFilm.hasCountries()) {
-                lblGeo.setText("");
-            }
-            else {
-                lblGeo.setText(currentFilm.getCountriesAsString());
-            }
+            updateGeoLabel(currentFilm);
             cbHq.setSelected(currentFilm.isHighQuality());
             cbSubtitle.setSelected(currentFilm.hasSubtitle());
 

@@ -20,6 +20,7 @@ package mediathek.swing
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
+import mediathek.tool.DurationFormatter
 import javax.swing.JLabel
 import kotlin.time.Duration
 
@@ -70,8 +71,8 @@ class FilmAgeLabel(
 
     private fun updateLabel() {
         val renderedText = ageProvider()
-            ?.let(FilmListAge::from)
-            ?.toDisplayText()
+            ?.let(DurationFormatter::from)
+            ?.toDisplayText("Alter: ")
             .orEmpty()
         if (renderedText == lastRenderedText) {
             return
@@ -81,26 +82,4 @@ class FilmAgeLabel(
         lastRenderedText = renderedText
     }
 
-    private data class FilmListAge(val totalMinutes: Long) {
-        val days: Long = totalMinutes / MINUTES_PER_DAY
-        val hours: Long = (totalMinutes % MINUTES_PER_DAY) / MINUTES_PER_HOUR
-        val minutes: Long = totalMinutes % MINUTES_PER_HOUR
-
-        fun toDisplayText(): String {
-            return when {
-                days > 0 -> "Alter: ${days}d ${hours}h ${minutes}m"
-                hours > 0 -> "Alter: ${hours}h ${minutes}m"
-                else -> "Alter: ${minutes}m"
-            }
-        }
-
-        companion object {
-            private const val MINUTES_PER_HOUR = 60L
-            private const val MINUTES_PER_DAY = 24L * MINUTES_PER_HOUR
-
-            fun from(duration: Duration): FilmListAge {
-                return FilmListAge(duration.inWholeMinutes)
-            }
-        }
-    }
 }
