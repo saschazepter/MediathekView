@@ -41,16 +41,16 @@ import java.util.regex.Pattern;
  */
 public class RuntimeExec {
     public static final String TRENNER_PROG_ARRAY = "<>";
-    private static final Pattern PATTERN_FFMPEG = Pattern.compile("(?<=  Duration: )[^,]*"); // Duration: 00:00:30.28, start: 0.000000, bitrate: N/A
+    private static final Pattern PATTERN_FFMPEG = Pattern.compile("(?<= {2}Duration: )[^,]*"); // Duration: 00:00:30.28, start: 0.000000, bitrate: N/A
     private static final Pattern PATTERN_TIME = Pattern.compile("(?<=time=)[^ ]*"); // frame=  147 fps= 17 q=-1.0 size=    1588kB time=00:00:05.84 bitrate=2226.0kbits/s
     private static final Pattern PATTERN_SIZE = Pattern.compile("(?<=size=)\\s*\\d+(?:\\.\\d+)?\\s*[KMG]?i?B", Pattern.CASE_INSENSITIVE);
     private static final Logger logger = LogManager.getLogger();
     private final String strProgCall;
+    private final ProgressTracker progressTracker = new ProgressTracker();
     private Start start;
     private MVFilmSize mVFilmSize;
     private String[] arrProgCallArray;
     private String strProgCallArray = "";
-    private final ProgressTracker progressTracker = new ProgressTracker();
 
     public RuntimeExec(MVFilmSize mVFilmSize, Start start,
                        String strProgCall, String strProgCallArray) {
@@ -192,11 +192,9 @@ public class RuntimeExec {
         return process;
     }
 
-    private enum IoType {INPUT, ERROR}
-
     private void startStreamConsumer(Process process, IoType ioType) {
         Thread.ofVirtual()
-                .name(String.format("ClearInOut type %s for pid %d", ioType, process.pid()))
+                .name(String.format("RuntimeExec ffmpeg stream consumer type %s for pid %d", ioType, process.pid()))
                 .start(() -> consumeStream(process, ioType));
     }
 
@@ -222,7 +220,8 @@ public class RuntimeExec {
     private StreamContext createStreamContext(Process process, IoType ioType) {
         return switch (ioType) {
             case INPUT -> new StreamContext("INPUTSTREAM", process.getInputStream(), false);
-            case ERROR -> new StreamContext(String.format("ERRORSTREAM [%d]", process.pid()), process.getErrorStream(), true);
+            case ERROR ->
+                    new StreamContext(String.format("ERRORSTREAM [%d]", process.pid()), process.getErrorStream(), true);
         };
     }
 
@@ -233,6 +232,8 @@ public class RuntimeExec {
     private long secondsSinceStart() {
         return Duration.between(start.startTime, LocalDateTime.now()).toSeconds();
     }
+
+    private enum IoType {INPUT, ERROR}
 
     private record StreamContext(String title, InputStream stream, boolean parseProgress) {
     }
