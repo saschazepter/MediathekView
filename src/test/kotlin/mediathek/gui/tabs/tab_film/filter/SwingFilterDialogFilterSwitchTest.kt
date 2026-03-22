@@ -20,6 +20,7 @@ package mediathek.gui.tabs.tab_film.filter
 
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.assumeUiAvailable
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.createDialogSetup
+import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.lockCurrentFilterCheckBox
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.onEdt
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.showNewOnlyCheckBox
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.triggerAddNewFilter
@@ -29,8 +30,7 @@ import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.triggerRe
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.triggerResetCurrentFilter
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialogTestFixture.zeitraumSpinnerValue
 import mediathek.tool.FilterDTO
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class SwingFilterDialogFilterSwitchTest {
@@ -311,6 +311,79 @@ internal class SwingFilterDialogFilterSwitchTest {
             assertEquals(false, setup.controller.state().showNewOnly)
             assertEquals(tableReloadsBeforeReset + 1, setup.reloadRequester.tableReloadRequests)
             assertEquals(zeitraumReloadsBeforeReset, setup.reloadRequester.zeitraumReloadRequests)
+        } finally {
+            onEdt {
+                setup.dialog.dispose()
+                setup.model.close()
+            }
+        }
+    }
+
+    @Test
+    fun `locked dialog applies checkbox change without persisting it to selected filter`() {
+        assumeUiAvailable()
+
+        val setup = createDialogSetup()
+
+        try {
+            assertFalse(setup.controller.state().showNewOnly)
+
+            onEdt {
+                lockCurrentFilterCheckBox(setup.dialog).doClick()
+                showNewOnlyCheckBox(setup.dialog).doClick()
+            }
+            onEdt {}
+
+            assertTrue(setup.controller.areCurrentFilterChangesLocked())
+            assertTrue(setup.controller.state().showNewOnly)
+
+            onEdt {
+                setup.comboBox.selectedItem = setup.secondFilter
+            }
+            onEdt {}
+            onEdt {
+                setup.comboBox.selectedItem = setup.controller.availableFilters().first()
+            }
+            onEdt {}
+
+            assertFalse(setup.controller.state().showNewOnly)
+        } finally {
+            onEdt {
+                setup.dialog.dispose()
+                setup.model.close()
+            }
+        }
+    }
+
+    @Test
+    fun `lock checkbox follows persisted state of selected filter`() {
+        assumeUiAvailable()
+
+        val setup = createDialogSetup()
+
+        try {
+            onEdt {
+                lockCurrentFilterCheckBox(setup.dialog).doClick()
+            }
+            onEdt {}
+
+            assertTrue(setup.controller.areCurrentFilterChangesLocked())
+
+            onEdt {
+                setup.comboBox.selectedItem = setup.secondFilter
+            }
+            onEdt {}
+
+            assertFalse(setup.controller.areCurrentFilterChangesLocked())
+            assertFalse(lockCurrentFilterCheckBox(setup.dialog).isSelected)
+
+            onEdt {
+                setup.comboBox.selectedItem = setup.controller.availableFilters().first()
+            }
+            onEdt {}
+
+            assertTrue(setup.controller.areCurrentFilterChangesLocked())
+            assertTrue(lockCurrentFilterCheckBox(setup.dialog).isSelected)
         } finally {
             onEdt {
                 setup.dialog.dispose()

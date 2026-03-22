@@ -36,6 +36,7 @@ import java.util.regex.Pattern;
 public class FilterConfiguration {
     protected static final String FILTER_PANEL_CURRENT_FILTER = "filter.current.filter";
     protected static final String FILTER_PANEL_AVAILABLE_FILTERS = "filter.available.filters.filter_";
+    protected static final String FILTER_PANEL_LOCKED = "filter.filter_%s.locked";
     private static final Pattern JSON_STRING_PATTERN = Pattern.compile("\"((?:\\\\.|[^\"])*)\"");
     private static final Logger LOG = LoggerFactory.getLogger(FilterConfiguration.class);
     private final Configuration configuration;
@@ -301,6 +302,24 @@ public class FilterConfiguration {
         return this;
     }
 
+    public boolean isCurrentFilterLocked() {
+        return configuration.getBoolean(currentFilterLockConfigName(), false);
+    }
+
+    public boolean isFilterLocked(@NotNull UUID filterId) {
+        return configuration.getBoolean(toFilterLockConfigName(filterId), false);
+    }
+
+    public FilterConfiguration setCurrentFilterLocked(boolean locked) {
+        String key = currentFilterLockConfigName();
+        if (locked) {
+            configuration.setProperty(key, true);
+        } else {
+            configuration.clearProperty(key);
+        }
+        return this;
+    }
+
     public Set<String> getCheckedChannels() {
         String key = currentFilterConfigName(FilterConfigurationKeys.FILTER_PANEL_CHECKED_CHANNELS);
         Object value = configuration.getProperty(key);
@@ -487,6 +506,7 @@ public class FilterConfiguration {
 
     private void clearFilterProperties(UUID filterId) {
         configuration.clearProperty(toAvailableFilterKey(filterId));
+        configuration.clearProperty(toFilterLockConfigName(filterId));
         Arrays.stream(FilterConfigurationKeys.values())
                 .map(key -> toFilterConfigName(key, filterId))
                 .forEach(configuration::clearProperty);
@@ -566,6 +586,14 @@ public class FilterConfiguration {
 
     private void setCurrentFilterProperty(FilterConfigurationKeys key, Object value) {
         configuration.setProperty(currentFilterConfigName(key), value);
+    }
+
+    private String currentFilterLockConfigName() {
+        return toFilterLockConfigName(requireCurrentFilterId());
+    }
+
+    private String toFilterLockConfigName(UUID filterId) {
+        return String.format(FILTER_PANEL_LOCKED, filterId);
     }
 
     private UUID requireCurrentFilterId() {

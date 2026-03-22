@@ -18,14 +18,17 @@ public class MemoryMonitorAction extends AbstractAction {
     public void closeMemoryMonitor() {
         if (dialog != null) {
             dialog.dispose();
-            dialog = null;
         }
     }
 
     public void showMemoryMonitor() {
         if (dialog == null || !dialog.isDisplayable()) {
-            dialog = new MemoryMonitorDialog(parent);
+            dialog = new MemoryMonitorDialog(parent, () -> {
+                dialog = null;
+                setEnabled(true);
+            });
         }
+        setEnabled(false);
         dialog.setVisible(true);
         dialog.toFront();
     }

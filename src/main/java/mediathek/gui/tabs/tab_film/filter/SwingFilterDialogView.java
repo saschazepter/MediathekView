@@ -44,6 +44,7 @@ public class SwingFilterDialogView extends JDialog {
         // Generated using JFormDesigner non-commercial license
         var pnlFilterCommon = new JPanel();
         cboxFilterSelection = new FilterSelectionComboBox();
+        cbLockCurrentFilter = new JCheckBox();
         btnSplit = new JideSplitButton();
         var separator2 = new JSeparator();
         var pnlShowOnly = new JPanel();
@@ -117,6 +118,7 @@ public class SwingFilterDialogView extends JDialog {
                 // columns
                 new AC()
                     .grow().fill().gap()
+                    .fill().gap()
                     .fill(),
                 // rows
                 new AC()
@@ -128,11 +130,16 @@ public class SwingFilterDialogView extends JDialog {
             cboxFilterSelection.setMinimumSize(new Dimension(50, 10));
             pnlFilterCommon.add(cboxFilterSelection, new CC().cell(0, 0));
 
+            //---- cbLockCurrentFilter ----
+            cbLockCurrentFilter.setText("Sperren");
+            cbLockCurrentFilter.setToolTipText("Filteränderungen nur temporär anwenden und nicht speichern");
+            pnlFilterCommon.add(cbLockCurrentFilter, new CC().cell(1, 0));
+
             //======== btnSplit ========
             {
                 btnSplit.setAlwaysDropdown(true);
             }
-            pnlFilterCommon.add(btnSplit, new CC().cell(1, 0));
+            pnlFilterCommon.add(btnSplit, new CC().cell(2, 0));
         }
         contentPane.add(pnlFilterCommon, new CC().cell(0, 0).growX());
         contentPane.add(separator2, new CC().cell(0, 1).growX());
@@ -328,6 +335,7 @@ public class SwingFilterDialogView extends JDialog {
     // JFormDesigner - Variables declaration - DO NOT MODIFY  //GEN-BEGIN:variables  @formatter:off
     // Generated using JFormDesigner non-commercial license
     protected FilterSelectionComboBox cboxFilterSelection;
+    protected JCheckBox cbLockCurrentFilter;
     protected JideSplitButton btnSplit;
     protected JCheckBox cbShowNewOnly;
     protected JCheckBox cbShowBookMarkedOnly;

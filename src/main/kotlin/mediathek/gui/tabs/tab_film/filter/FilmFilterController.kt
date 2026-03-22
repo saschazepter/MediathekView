@@ -57,15 +57,6 @@ class FilmFilterController(
     companion object {
         private const val COPY_SUFFIX = " Kopie"
         private val logger = LogManager.getLogger()
-        private val verbosePersistReasons = setOf(
-            "senderSelection",
-            "filmLength",
-            "thema",
-            "themaReset",
-            "zeitraum",
-            "zeitraumFallback",
-            "reconcileThema"
-        )
     }
 
     interface DataProvider {
@@ -123,7 +114,16 @@ class FilmFilterController(
 
     fun state(): FilmFilterState = currentState
 
+    fun areCurrentFilterChangesLocked(): Boolean = filterConfig.isCurrentFilterLocked
+
+    fun setCurrentFilterChangesLocked(locked: Boolean) {
+        filterConfig.setCurrentFilterLocked(locked)
+        currentFilterObservers.forEach { it.accept(currentState.currentFilter) }
+    }
+
     fun currentFilter(): FilterDTO = currentState.currentFilter
+
+    fun isFilterLocked(filter: FilterDTO): Boolean = filterConfig.isFilterLocked(filter.id())
 
     fun availableFilters(): List<FilterDTO> = filterConfig.availableFilters
 
@@ -143,75 +143,75 @@ class FilmFilterController(
         )
     }
 
-    fun updateFilterState(reason: String, transform: (FilmFilterState) -> FilmFilterState): FilmFilterState {
-        return updateFilterStateInternal(reason, transform).state
+    fun updateFilterState(transform: (FilmFilterState) -> FilmFilterState): FilmFilterState {
+        return updateFilterStateInternal(transform).state
     }
 
-    fun updateFilterStateAndReload(reason: String, transform: (FilmFilterState) -> FilmFilterState): FilmFilterState {
-        return updateFilterStateInternal(reason, transform).also {
+    fun updateFilterStateAndReload(transform: (FilmFilterState) -> FilmFilterState): FilmFilterState {
+        return updateFilterStateInternal(transform).also {
             if (it.changed) {
                 reloadRequester.requestTableReload()
             }
         }.state
     }
 
-    private fun updateFilterStateInternal(reason: String, transform: (FilmFilterState) -> FilmFilterState): StateUpdateResult {
+    private fun updateFilterStateInternal(transform: (FilmFilterState) -> FilmFilterState): StateUpdateResult {
         val previousState = currentState
         val updatedState = transform(previousState)
         if (updatedState == previousState) {
             return StateUpdateResult(previousState, changed = false)
         }
         currentState = updatedState
-        persist(reason, updatedState)
+        persist(updatedState)
         return StateUpdateResult(updatedState, changed = true)
     }
 
     fun onShowNewOnlyChanged(selected: Boolean) {
-        updateFilterState("showNewOnly", { it.copy(showNewOnly = selected) })
+        updateFilterState { it.copy(showNewOnly = selected) }
     }
 
     fun onShowBookMarkedOnlyChanged(selected: Boolean) {
-        updateFilterState("showBookMarkedOnly", { it.copy(showBookMarkedOnly = selected) })
+        updateFilterState { it.copy(showBookMarkedOnly = selected) }
     }
 
     fun onShowHighQualityOnlyChanged(selected: Boolean) {
-        updateFilterState("showHighQualityOnly", { it.copy(showHighQualityOnly = selected) })
+        updateFilterState { it.copy(showHighQualityOnly = selected) }
     }
 
     fun onShowSubtitlesOnlyChanged(selected: Boolean) {
-        updateFilterState("showSubtitlesOnly", { it.copy(showSubtitlesOnly = selected) })
+        updateFilterState { it.copy(showSubtitlesOnly = selected) }
     }
 
     fun onShowLivestreamsOnlyChanged(selected: Boolean) {
-        updateFilterState("showLivestreamsOnly", { it.copy(showLivestreamsOnly = selected) })
+        updateFilterState { it.copy(showLivestreamsOnly = selected) }
     }
 
     fun onShowUnseenOnlyChanged(selected: Boolean) {
-        updateFilterState("showUnseenOnly", { it.copy(showUnseenOnly = selected) })
+        updateFilterState { it.copy(showUnseenOnly = selected) }
     }
 
     fun onDontShowAbosChanged(selected: Boolean) {
-        updateFilterState("dontShowAbos", { it.copy(dontShowAbos = selected) })
+        updateFilterState { it.copy(dontShowAbos = selected) }
     }
 
     fun onDontShowSignLanguageChanged(selected: Boolean) {
-        updateFilterState("dontShowSignLanguage", { it.copy(dontShowSignLanguage = selected) })
+        updateFilterState { it.copy(dontShowSignLanguage = selected) }
     }
 
     fun onDontShowGeoblockedChanged(selected: Boolean) {
-        updateFilterState("dontShowGeoblocked", { it.copy(dontShowGeoblocked = selected) })
+        updateFilterState { it.copy(dontShowGeoblocked = selected) }
     }
 
     fun onDontShowTrailersChanged(selected: Boolean) {
-        updateFilterState("dontShowTrailers", { it.copy(dontShowTrailers = selected) })
+        updateFilterState { it.copy(dontShowTrailers = selected) }
     }
 
     fun onDontShowAudioVersionsChanged(selected: Boolean) {
-        updateFilterState("dontShowAudioVersions", { it.copy(dontShowAudioVersions = selected) })
+        updateFilterState { it.copy(dontShowAudioVersions = selected) }
     }
 
     fun onDontShowDuplicatesChanged(selected: Boolean) {
-        updateFilterState("dontShowDuplicates", { it.copy(dontShowDuplicates = selected) })
+        updateFilterState { it.copy(dontShowDuplicates = selected) }
     }
 
     fun initializeFilmData(hasAvailableThemen: Boolean) {
@@ -227,27 +227,27 @@ class FilmFilterController(
     }
 
     fun onFilmLengthChanged(min: Int, max: Int) {
-        updateFilterStateAndReload("filmLength", { it.copy(filmLengthMin = min, filmLengthMax = max) })
+        updateFilterStateAndReload { it.copy(filmLengthMin = min, filmLengthMax = max) }
     }
 
     fun onThemaChanged(thema: String) {
-        updateFilterStateAndReload("thema", { it.copy(thema = thema) })
+        updateFilterStateAndReload { it.copy(thema = thema) }
     }
 
     fun onThemaReset() {
-        updateFilterStateAndReload("themaReset", { it.copy(thema = "") })
+        updateFilterStateAndReload { it.copy(thema = "") }
     }
 
     fun onSenderSelectionChanged(checkedChannels: Set<String>) {
-        updateFilterStateAndReload("senderSelection", { it.copy(checkedChannels = checkedChannels) })
+        updateFilterStateAndReload { it.copy(checkedChannels = checkedChannels) }
     }
 
     fun onZeitraumChanged(value: String) {
-        updateFilterState("zeitraum", { it.copy(zeitraum = value) })
+        updateFilterState { it.copy(zeitraum = value) }
     }
 
     fun onZeitraumFallbackChanged(value: String) {
-        updateFilterState("zeitraumFallback", { it.copy(zeitraum = value) })
+        updateFilterState { it.copy(zeitraum = value) }
     }
 
     fun requestTableReload() {
@@ -280,7 +280,7 @@ class FilmFilterController(
             return currentState
         }
 
-        return updateFilterState("reconcileThema", { it.copy(thema = reconciledThema) })
+        return updateFilterState { it.copy(thema = reconciledThema) }
     }
 
     fun nextFilterNameSuggestion(): String = "Filter ${filterConfig.availableFilters.size + 1}"
@@ -308,7 +308,7 @@ class FilmFilterController(
             newFilter
         )
         filterConfig.addNewFilter(newFilter)
-        persist("cloneFilter", sourceState.copy(currentFilter = newFilter))
+        persist(sourceState.copy(currentFilter = newFilter))
         syncStateFromConfig("cloneFilter", notifyAvailableFilters = true)
         return AddFilterResult.Added(newFilter)
     }
@@ -343,11 +343,10 @@ class FilmFilterController(
         return RenameFilterResult.Renamed
     }
 
-    private fun persist(reason: String, state: FilmFilterState) {
-        if (reason in verbosePersistReasons) {
-            logger.trace("Persisting filter state for reason={}: {}", reason, state)
-        } else {
-            logger.trace("Persisting filter state for reason={}", reason)
+    private fun persist(state: FilmFilterState) {
+        if (filterConfig.isCurrentFilterLocked) {
+            //logger.trace("Skipping filter persistence for reason={} because current filter changes are locked", reason)
+            return
         }
         if (filterConfig.currentFilter != state.currentFilter) {
             filterConfig.currentFilter = state.currentFilter

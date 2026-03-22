@@ -38,6 +38,7 @@ internal class FilterSelectionComboBoxModelTest {
         val model = FilterSelectionComboBoxModel(
             selectedFilterSupplier = selected::get,
             availableFiltersSupplier = { listOf(first, second) },
+            filterLockedReader = { false },
             selectionObserverRegistry = NoOpSelectionObserverRegistry
         )
 
@@ -56,6 +57,7 @@ internal class FilterSelectionComboBoxModelTest {
         val model = FilterSelectionComboBoxModel(
             selectedFilterSupplier = selected::get,
             availableFiltersSupplier = { listOf(first, second) },
+            filterLockedReader = { false },
             selectionObserverRegistry = observers
         )
 
@@ -74,6 +76,7 @@ internal class FilterSelectionComboBoxModelTest {
         val model = FilterSelectionComboBoxModel(
             selectedFilterSupplier = selected::get,
             availableFiltersSupplier = { listOf(filter) },
+            filterLockedReader = { false },
             selectionObserverRegistry = NoOpSelectionObserverRegistry
         )
 

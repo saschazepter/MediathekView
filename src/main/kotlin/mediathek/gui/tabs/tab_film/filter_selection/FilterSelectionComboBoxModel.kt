@@ -23,6 +23,7 @@ import kotlinx.coroutines.swing.Swing
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.tool.FilterDTO
 import java.util.function.Consumer
+import java.util.function.Predicate
 import java.util.function.Supplier
 import javax.swing.DefaultComboBoxModel
 import javax.swing.SwingUtilities
@@ -30,6 +31,7 @@ import javax.swing.SwingUtilities
 class FilterSelectionComboBoxModel(
     private val selectedFilterSupplier: Supplier<FilterDTO>,
     private val availableFiltersSupplier: Supplier<List<FilterDTO>>,
+    private val filterLockedReader: Predicate<FilterDTO>,
     private val selectionObserverRegistry: FilmFilterController.SelectionObserverRegistry,
 ) : DefaultComboBoxModel<FilterDTO>(), AutoCloseable {
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
@@ -61,6 +63,8 @@ class FilterSelectionComboBoxModel(
         uiScope.cancel()
     }
 
+    fun isFilterLocked(filter: FilterDTO?): Boolean = filter != null && filterLockedReader.test(filter)
+
     private fun refreshAvailableFilters() {
         availableFilters.clear()
         availableFilters.addAll(availableFiltersSupplier.get())
@@ -82,8 +86,8 @@ class FilterSelectionComboBoxModel(
         dispatchOnEdt {
             if (super.getSelectedItem() !== filterDTO) {
                 super.setSelectedItem(filterDTO)
-                fireModelChanged()
             }
+            fireModelChanged()
         }
     }
 

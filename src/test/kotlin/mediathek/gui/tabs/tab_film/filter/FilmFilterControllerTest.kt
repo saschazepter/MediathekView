@@ -177,6 +177,38 @@ internal class FilmFilterControllerTest {
     }
 
     @Test
+    fun `locked checkbox changes update app state without persisting to filter configuration`() {
+        val reloadRequester = RecordingReloadRequester()
+        val filterConfiguration = TestFilterConfiguration(XMLConfiguration())
+        filterConfiguration.addNewFilter(DEFAULT_FILTER)
+        filterConfiguration.setCurrentFilter(DEFAULT_FILTER)
+        val controller = FilmFilterController(filterConfiguration, reloadRequester = reloadRequester)
+        controller.setCurrentFilterChangesLocked(true)
+
+        controller.onShowNewOnlyChanged(true)
+
+        assertTrue(controller.state().showNewOnly)
+        assertFalse(filterConfiguration.isShowNewOnly)
+        assertEquals(0, reloadRequester.tableReloadRequests)
+    }
+
+    @Test
+    fun `locked sender changes update app state and reload without persisting to filter configuration`() {
+        val reloadRequester = RecordingReloadRequester()
+        val filterConfiguration = TestFilterConfiguration(XMLConfiguration())
+        filterConfiguration.addNewFilter(DEFAULT_FILTER)
+        filterConfiguration.setCurrentFilter(DEFAULT_FILTER)
+        val controller = FilmFilterController(filterConfiguration, reloadRequester = reloadRequester)
+        controller.setCurrentFilterChangesLocked(true)
+
+        controller.onSenderSelectionChanged(setOf("ARD"))
+
+        assertEquals(setOf("ARD"), controller.state().checkedChannels)
+        assertTrue(filterConfiguration.checkedChannels.isEmpty())
+        assertEquals(1, reloadRequester.tableReloadRequests)
+    }
+
+    @Test
     fun `repeated identical checkbox value is a no-op`() {
         val reloadRequester = RecordingReloadRequester()
         val controller = createController(reloadRequester)

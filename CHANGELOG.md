@@ -7,6 +7,7 @@
 - **BUGFIX(Windows):** Offizielle MV-Builds nutzen nun JetBrains Runtime 25. Damit sollte das Programm bei Nutzung einer RDP-Session nicht mehr abstürzen.
 - **FEATURE:** Tab *Audiothek* zur Suche (offline als auch online), Abspielen und Download von Podcasts der ARD Audiothek und via podcastindex.org.
 - **FEATURE:** Filter können nun kopiert werden.
+- **FEATURE:** Sperrbare Filter. Änderungen an einem gesperrten Filter wirken sich auf die Filmliste aus, werden jedoch nicht dauerhaft gespeichert und beim nächsten Programmstart zurückgesetzt. Gesperrte Filter werden mit einem Schloß-Symbol in der Filterliste angezeigt.
 - **FEATURE:** *Download ändern*-Dialog bietet nun auch die Möglichkeit, Codec-Details abzurufen.
 - interne Optimierungen für mehr Geschwindigkeit.
 - interne Fehler wurden behoben.

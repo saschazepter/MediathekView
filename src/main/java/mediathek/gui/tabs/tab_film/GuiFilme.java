@@ -47,9 +47,8 @@ import mediathek.gui.tabs.AGuiTabPanel;
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
-import mediathek.gui.tabs.tab_film.helpers.GuiFilmeModelHelper;
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelper;
-import mediathek.gui.tabs.tab_film.helpers.LuceneGuiFilmeModelHelper;
+import mediathek.gui.tabs.tab_film.helpers.GuiModelHelperFactory;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.swing.IconUtils;
 import mediathek.tool.*;
@@ -141,6 +140,7 @@ public class GuiFilme extends AGuiTabPanel {
             new FilterSelectionComboBoxModel(
                     filterController::currentFilter,
                     filterController::availableFilters,
+                    filterController::isFilterLocked,
                     filterController.selectionObserverRegistry());
     private final ListenerFilmeLaden filmListReloadListener = new ListenerFilmeLaden() {
         @Override
@@ -715,7 +715,7 @@ public class GuiFilme extends AGuiTabPanel {
         modelFuture = CompletableFuture.supplyAsync(() -> {
             var searchFieldData = new SearchFieldData(searchField.getText(), searchField.getSearchMode());
             GuiModelHelper helper = GuiModelHelperFactory.createGuiModelHelper(
-                    historyController, searchFieldData, filterConfiguration);
+                    historyController, searchFieldData, filterController);
             return helper.getFilteredTableModel();
         }, decoratedPool);
         modelFuture.whenCompleteAsync((model, thrown) -> {
@@ -755,20 +755,6 @@ public class GuiFilme extends AGuiTabPanel {
         pendingTableReload = false;
         pendingTableReloadFromSearchField = false;
         loadTable(reloadFromSearchField);
-    }
-
-    static class GuiModelHelperFactory {
-        public static GuiModelHelper createGuiModelHelper(@NotNull SeenHistoryController historyController,
-                                                          @NotNull SearchFieldData searchFieldData,
-                                                          @NotNull FilterConfiguration filterConfig) {
-            GuiModelHelper helper;
-            if (Daten.getInstance().getListeFilmeNachBlackList() instanceof IndexedFilmList) {
-                helper = new LuceneGuiFilmeModelHelper(historyController, searchFieldData, filterConfig);
-            } else {
-                helper = new GuiFilmeModelHelper(historyController, searchFieldData, filterConfig);
-            }
-            return helper;
-        }
     }
 
     static class NonRepeatingTimer extends Timer {

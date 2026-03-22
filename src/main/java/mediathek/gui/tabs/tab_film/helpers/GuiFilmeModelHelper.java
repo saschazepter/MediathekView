@@ -22,8 +22,8 @@ import mediathek.config.Daten;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.tabs.tab_film.SearchFieldData;
+import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
 import mediathek.tool.ApplicationConfiguration;
-import mediathek.tool.FilterConfiguration;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -37,8 +37,8 @@ public final class GuiFilmeModelHelper implements GuiModelHelper {
 
     public GuiFilmeModelHelper(@NotNull SeenHistoryController historyController,
                                @NotNull SearchFieldData searchFieldData,
-                               @NotNull FilterConfiguration filterConfiguration) {
-        support = new GuiModelHelperSupport(historyController, searchFieldData, filterConfiguration);
+                               @NotNull FilmFilterController filterController) {
+        support = new GuiModelHelperSupport(historyController, searchFieldData, filterController);
     }
 
     @Override
@@ -54,7 +54,7 @@ public final class GuiFilmeModelHelper implements GuiModelHelper {
     private Collection<DatenFilm> filterFilms() {
         var filterContext = support.createFilterExecutionContext();
 
-        if (support.filterConfiguration().isShowUnseenOnly()) {
+        if (support.state().getShowUnseenOnly()) {
             support.prepareHistoryMemoryCache();
         }
 
@@ -84,19 +84,19 @@ public final class GuiFilmeModelHelper implements GuiModelHelper {
 
     private List<PredicateSpec> createPredicateSpecs() {
         return List.of(
-                predicateSpec(support.filterConfiguration()::isShowNewOnly, DatenFilm::isNew),
-                predicateSpec(support.filterConfiguration()::isShowBookMarkedOnly, DatenFilm::isBookmarked),
-                predicateSpec(support.filterConfiguration()::isShowLivestreamsOnly, DatenFilm::isLivestream),
-                predicateSpec(support.filterConfiguration()::isShowHighQualityOnly, DatenFilm::isHighQuality),
-                predicateSpec(support.filterConfiguration()::isDontShowTrailers, film -> !film.isTrailerTeaser()),
-                predicateSpec(support.filterConfiguration()::isDontShowSignLanguage, film -> !film.isSignLanguage()),
+                predicateSpec(() -> support.state().getShowNewOnly(), DatenFilm::isNew),
+                predicateSpec(() -> support.state().getShowBookMarkedOnly(), DatenFilm::isBookmarked),
+                predicateSpec(() -> support.state().getShowLivestreamsOnly(), DatenFilm::isLivestream),
+                predicateSpec(() -> support.state().getShowHighQualityOnly(), DatenFilm::isHighQuality),
+                predicateSpec(() -> support.state().getDontShowTrailers(), film -> !film.isTrailerTeaser()),
+                predicateSpec(() -> support.state().getDontShowSignLanguage(), film -> !film.isSignLanguage()),
                 predicateSpec(
-                        support.filterConfiguration()::isDontShowGeoblocked,
+                        () -> support.state().getDontShowGeoblocked(),
                         film -> !film.isGeoBlockedForLocation(ApplicationConfiguration.getInstance().getGeographicLocation())),
-                predicateSpec(support.filterConfiguration()::isDontShowAudioVersions, film -> !film.isAudioVersion()),
-                predicateSpec(support.filterConfiguration()::isDontShowAbos, film -> film.getAbo() == null),
-                predicateSpec(support.filterConfiguration()::isDontShowDuplicates, film -> !film.isDuplicate()),
-                predicateSpec(support.filterConfiguration()::isShowSubtitlesOnly, DatenFilm::hasAnySubtitles));
+                predicateSpec(() -> support.state().getDontShowAudioVersions(), film -> !film.isAudioVersion()),
+                predicateSpec(() -> support.state().getDontShowAbos(), film -> film.getAbo() == null),
+                predicateSpec(() -> support.state().getDontShowDuplicates(), film -> !film.isDuplicate()),
+                predicateSpec(() -> support.state().getShowSubtitlesOnly(), DatenFilm::hasAnySubtitles));
     }
 
     private PredicateSpec predicateSpec(@NotNull BooleanSupplier enabled, @NotNull Predicate<DatenFilm> predicate) {

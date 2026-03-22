@@ -79,6 +79,7 @@ internal object SwingFilterDialogTestFixture {
         val model = FilterSelectionComboBoxModel(
             controller::currentFilter,
             controller::availableFilters,
+            controller::isFilterLocked,
             controller.selectionObserverRegistry()
         )
 
@@ -156,6 +157,12 @@ internal object SwingFilterDialogTestFixture {
 
     fun showNewOnlyCheckBox(dialog: SwingFilterDialog): JCheckBox {
         val field = dialog.javaClass.superclass.getDeclaredField("cbShowNewOnly")
+        field.isAccessible = true
+        return field.get(dialog) as JCheckBox
+    }
+
+    fun lockCurrentFilterCheckBox(dialog: SwingFilterDialog): JCheckBox {
+        val field = dialog.javaClass.superclass.getDeclaredField("cbLockCurrentFilter")
         field.isAccessible = true
         return field.get(dialog) as JCheckBox
     }

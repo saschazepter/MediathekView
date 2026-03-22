@@ -22,8 +22,9 @@ import mediathek.controller.SenderFilmlistLoadApprover;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.tabs.tab_film.SearchFieldData;
+import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
+import mediathek.gui.tabs.tab_film.filter.FilmFilterState;
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider;
-import mediathek.tool.FilterConfiguration;
 import mediathek.tool.models.TModelFilm;
 import org.jetbrains.annotations.NotNull;
 
@@ -45,14 +46,14 @@ final class GuiModelHelperSupport {
 
     private final SeenHistoryController historyController;
     private final SearchFieldData searchFieldData;
-    private final FilterConfiguration filterConfiguration;
+    private final FilmFilterController filterController;
 
     GuiModelHelperSupport(@NotNull SeenHistoryController historyController,
                           @NotNull SearchFieldData searchFieldData,
-                          @NotNull FilterConfiguration filterConfiguration) {
+                          @NotNull FilmFilterController filterController) {
         this.historyController = historyController;
         this.searchFieldData = searchFieldData;
-        this.filterConfiguration = filterConfiguration;
+        this.filterController = filterController;
     }
 
     TableModel getFilteredTableModel(@NotNull Collection<DatenFilm> allFilms,
@@ -75,23 +76,44 @@ final class GuiModelHelperSupport {
         if (lengthFilterRange.hasUpperLimit()) {
             stream = stream.filter(film -> film.getFilmLength() < lengthFilterRange.maxLengthInSeconds());
         }
-        if (filterConfiguration.isShowUnseenOnly()) {
+        if (state().getShowUnseenOnly()) {
             stream = stream.filter(this::seenCheck);
         }
         return stream.filter(film -> minLengthCheck(film, lengthFilterRange));
     }
 
     boolean noFiltersAreSet() {
-        return filterConfiguration.noFiltersAreSet() && searchFieldData.isEmpty();
+        return noFiltersAreSet(state()) && searchFieldData.isEmpty();
+    }
+
+    private boolean noFiltersAreSet(@NotNull FilmFilterState state) {
+        return state.getCheckedChannels().isEmpty()
+                && state.getThema().isEmpty()
+                && state.getFilmLengthMin() == 0
+                && state.getFilmLengthMax() == FilmLengthSlider.UNLIMITED_VALUE
+                && !state.getDontShowAbos()
+                && !state.getShowUnseenOnly()
+                && !state.getShowHighQualityOnly()
+                && !state.getShowSubtitlesOnly()
+                && !state.getShowLivestreamsOnly()
+                && !state.getShowNewOnly()
+                && !state.getShowBookMarkedOnly()
+                && !state.getDontShowTrailers()
+                && !state.getDontShowSignLanguage()
+                && !state.getDontShowGeoblocked()
+                && !state.getDontShowAudioVersions()
+                && !state.getDontShowDuplicates()
+                && state.getZeitraum().equalsIgnoreCase(mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner.INFINITE_TEXT);
     }
 
     FilterExecutionContext createFilterExecutionContext() {
+        var state = state();
         var selectedSenders = getSelectedSendersFromFilter();
         var searchTerms = List.of(searchFieldData.evaluateThemaTitel());
         return new FilterExecutionContext(
                 createLengthFilterRange(),
                 selectedSenders,
-                filterConfiguration.getThema(),
+                state.getThema(),
                 searchFieldData.searchFieldText(),
                 searchFieldData.searchThroughDescriptions(),
                 searchTerms,
@@ -103,8 +125,8 @@ final class GuiModelHelperSupport {
                                 searchTerms.toArray(String[]::new)));
     }
 
-    FilterConfiguration filterConfiguration() {
-        return filterConfiguration;
+    FilmFilterState state() {
+        return filterController.state();
     }
 
     void prepareHistoryMemoryCache() {
@@ -120,7 +142,7 @@ final class GuiModelHelperSupport {
     }
 
     private Set<String> getSelectedSendersFromFilter() {
-        return filterConfiguration.getCheckedChannels().stream()
+        return state().getCheckedChannels().stream()
                 .filter(SenderFilmlistLoadApprover::isApproved)
                 .collect(java.util.stream.Collectors.toUnmodifiableSet());
     }
@@ -130,9 +152,10 @@ final class GuiModelHelperSupport {
     }
 
     private LengthFilterRange createLengthFilterRange() {
+        var state = state();
         return new LengthFilterRange(
-                TimeUnit.SECONDS.convert((long) filterConfiguration.getFilmLengthMin(), TimeUnit.MINUTES),
-                TimeUnit.SECONDS.convert((long) filterConfiguration.getFilmLengthMax(), TimeUnit.MINUTES));
+                TimeUnit.SECONDS.convert((long) state.getFilmLengthMin(), TimeUnit.MINUTES),
+                TimeUnit.SECONDS.convert((long) state.getFilmLengthMax(), TimeUnit.MINUTES));
     }
 
     private TModelFilm createFilmTableModel(@NotNull Collection<DatenFilm> films) {

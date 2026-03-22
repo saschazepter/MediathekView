@@ -22,9 +22,16 @@ public final class MemoryMonitorDialog extends JDialog {
 
     private final Configuration configuration = ApplicationConfiguration.getConfiguration();
     private final MemoryUsagePanel memoryUsagePanel = new MemoryUsagePanel(HISTORY_WINDOW, SAMPLE_INTERVAL);
+    private final Runnable onClose;
 
     public MemoryMonitorDialog(@NotNull JFrame parent) {
+        this(parent, () -> {
+        });
+    }
+
+    public MemoryMonitorDialog(@NotNull JFrame parent, @NotNull Runnable onClose) {
         super(parent, "Speicherverbrauch", false);
+        this.onClose = onClose;
 
         setType(Type.UTILITY);
         setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
@@ -54,6 +61,7 @@ public final class MemoryMonitorDialog extends JDialog {
             @Override
             public void windowClosed(WindowEvent event) {
                 storeVisibility(false);
+                notifyClosed();
             }
         });
     }
@@ -114,6 +122,10 @@ public final class MemoryMonitorDialog extends JDialog {
 
     private void storeVisibility(boolean visible) {
         configuration.setProperty(ApplicationConfiguration.MemoryMonitorDialog.VISIBLE, visible);
+    }
+
+    private void notifyClosed() {
+        onClose.run();
     }
 
     private record DialogBounds(int x, int y, int width, int height) {

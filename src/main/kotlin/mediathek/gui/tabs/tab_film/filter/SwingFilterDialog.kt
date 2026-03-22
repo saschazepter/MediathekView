@@ -155,6 +155,7 @@ class SwingFilterDialog @JvmOverloads internal constructor(
     private val managedComponents by lazy {
         listOf<JComponent>(
             cboxFilterSelection,
+            cbLockCurrentFilter,
             btnSplit,
             btnResetThema,
             label3,
@@ -251,10 +252,35 @@ class SwingFilterDialog @JvmOverloads internal constructor(
     }
 
     private fun setupInteraction() {
+        setupLockCheckBox()
         setupCheckBoxes()
         setupThemaComboBox()
         setupFilmLengthSlider()
         setupZeitraumSpinner()
+    }
+
+    private fun setupLockCheckBox() {
+        val unlockedIcon = IconUtils.of(FontAwesomeSolid.LOCK_OPEN)
+        val lockedIcon = IconUtils.of(FontAwesomeSolid.LOCK)
+        cbLockCurrentFilter.text = null
+        cbLockCurrentFilter.icon = unlockedIcon
+        cbLockCurrentFilter.selectedIcon = lockedIcon
+        cbLockCurrentFilter.disabledIcon = IconUtils.generateDisabledIcon(unlockedIcon)
+        cbLockCurrentFilter.disabledSelectedIcon = IconUtils.generateDisabledIcon(lockedIcon)
+        cbLockCurrentFilter.isSelected = filterController.areCurrentFilterChangesLocked()
+        updateLockTooltip()
+        cbLockCurrentFilter.addActionListener {
+            filterController.setCurrentFilterChangesLocked(cbLockCurrentFilter.isSelected)
+            updateLockTooltip()
+        }
+    }
+
+    private fun updateLockTooltip() {
+        cbLockCurrentFilter.toolTipText = if (cbLockCurrentFilter.isSelected) {
+            "Filter ist gesperrt: Änderungen werden angewendet, aber nicht gespeichert"
+        } else {
+            "Filter ist entsperrt: Änderungen werden angewendet und gespeichert"
+        }
     }
 
     private fun restoreState() {
@@ -420,6 +446,8 @@ class SwingFilterDialog @JvmOverloads internal constructor(
     private fun restoreConfigSettings() {
         checkboxReloadJob?.cancel()
         zeitraumReloadJob?.cancel()
+        cbLockCurrentFilter.isSelected = filterController.areCurrentFilterChangesLocked()
+        updateLockTooltip()
         withSuppressedEvents(SuppressedEventType.FILTER_SELECTION, SuppressedEventType.CHECKBOX) {
             renderFilterState()
         }

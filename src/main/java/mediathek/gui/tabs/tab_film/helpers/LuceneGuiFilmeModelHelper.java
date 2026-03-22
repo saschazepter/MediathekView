@@ -23,11 +23,11 @@ import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.DatenFilm;
 import mediathek.daten.IndexedFilmList;
 import mediathek.gui.tabs.tab_film.SearchFieldData;
+import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
 import mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner;
 import mediathek.gui.tasks.LuceneIndexKeys;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
-import mediathek.tool.FilterConfiguration;
 import mediathek.tool.LuceneDefaultAnalyzer;
 import mediathek.tool.SwingErrorDialog;
 import org.apache.logging.log4j.LogManager;
@@ -65,8 +65,8 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
 
     public LuceneGuiFilmeModelHelper(@NotNull SeenHistoryController historyController,
                                      @NotNull SearchFieldData searchFieldData,
-                                     @NotNull FilterConfiguration filterConfiguration) {
-        support = new GuiModelHelperSupport(historyController, searchFieldData, filterConfiguration);
+                                     @NotNull FilmFilterController filterController) {
+        support = new GuiModelHelperSupport(historyController, searchFieldData, filterController);
     }
 
     @Override
@@ -84,7 +84,7 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
         try (Analyzer analyzer = LuceneDefaultAnalyzer.buildPerFieldAnalyzer()) {
             var filterContext = support.createFilterExecutionContext();
 
-            if (support.filterConfiguration().isShowUnseenOnly()) {
+            if (support.state().getShowUnseenOnly()) {
                 support.prepareHistoryMemoryCache();
             }
 
@@ -104,7 +104,7 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
                 qb.add(initialQuery, BooleanClause.Occur.MUST);
 
                 //Zeitraum filter on demand …
-                if (!support.filterConfiguration().getZeitraum().equalsIgnoreCase(ZeitraumSpinner.INFINITE_TEXT)) {
+                if (!support.state().getZeitraum().equalsIgnoreCase(ZeitraumSpinner.INFINITE_TEXT)) {
                     try {
                         qb.add(createZeitraumQuery(analyzer), BooleanClause.Occur.FILTER);
                     } catch (Exception ex) {
@@ -143,14 +143,14 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
                 stream = matchingFilms.parallelStream();
             }
 
-            if (support.filterConfiguration().isShowBookMarkedOnly()) {
+            if (support.state().getShowBookMarkedOnly()) {
                 stream = stream.filter(DatenFilm::isBookmarked);
             }
-            if (support.filterConfiguration().isDontShowGeoblocked()) {
+            if (support.state().getDontShowGeoblocked()) {
                 var currentGeoLocation = ApplicationConfiguration.getInstance().getGeographicLocation();
                 stream = stream.filter(film -> !film.isGeoBlockedForLocation(currentGeoLocation));
             }
-            if (support.filterConfiguration().isDontShowAbos()) {
+            if (support.state().getDontShowAbos()) {
                 stream = stream.filter(film -> film.getAbo() == null);
             }
 
@@ -191,14 +191,14 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
 
     private List<QuerySpec> createQuerySpecs() {
         return List.of(
-                termQuerySpec(support.filterConfiguration()::isShowLivestreamsOnly, LuceneIndexKeys.LIVESTREAM, BooleanClause.Occur.FILTER),
-                termQuerySpec(support.filterConfiguration()::isShowHighQualityOnly, LuceneIndexKeys.HIGH_QUALITY, BooleanClause.Occur.FILTER),
-                termQuerySpec(support.filterConfiguration()::isDontShowTrailers, LuceneIndexKeys.TRAILER_TEASER, BooleanClause.Occur.MUST_NOT),
-                termQuerySpec(support.filterConfiguration()::isDontShowAudioVersions, LuceneIndexKeys.AUDIOVERSION, BooleanClause.Occur.MUST_NOT),
-                termQuerySpec(support.filterConfiguration()::isDontShowSignLanguage, LuceneIndexKeys.SIGN_LANGUAGE, BooleanClause.Occur.MUST_NOT),
-                termQuerySpec(support.filterConfiguration()::isDontShowDuplicates, LuceneIndexKeys.DUPLICATE, BooleanClause.Occur.MUST_NOT),
-                termQuerySpec(support.filterConfiguration()::isShowSubtitlesOnly, LuceneIndexKeys.SUBTITLE, BooleanClause.Occur.FILTER),
-                termQuerySpec(support.filterConfiguration()::isShowNewOnly, LuceneIndexKeys.NEW, BooleanClause.Occur.FILTER));
+                termQuerySpec(() -> support.state().getShowLivestreamsOnly(), LuceneIndexKeys.LIVESTREAM, BooleanClause.Occur.FILTER),
+                termQuerySpec(() -> support.state().getShowHighQualityOnly(), LuceneIndexKeys.HIGH_QUALITY, BooleanClause.Occur.FILTER),
+                termQuerySpec(() -> support.state().getDontShowTrailers(), LuceneIndexKeys.TRAILER_TEASER, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(() -> support.state().getDontShowAudioVersions(), LuceneIndexKeys.AUDIOVERSION, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(() -> support.state().getDontShowSignLanguage(), LuceneIndexKeys.SIGN_LANGUAGE, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(() -> support.state().getDontShowDuplicates(), LuceneIndexKeys.DUPLICATE, BooleanClause.Occur.MUST_NOT),
+                termQuerySpec(() -> support.state().getShowSubtitlesOnly(), LuceneIndexKeys.SUBTITLE, BooleanClause.Occur.FILTER),
+                termQuerySpec(() -> support.state().getShowNewOnly(), LuceneIndexKeys.NEW, BooleanClause.Occur.FILTER));
     }
 
     private QuerySpec termQuerySpec(@NotNull BooleanSupplier enabled, @NotNull String field, @NotNull BooleanClause.Occur occur) {
@@ -207,7 +207,7 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
 
     private Query createZeitraumQuery(@NotNull Analyzer analyzer) throws ParseException {
 
-        var numDays = Integer.parseInt(support.filterConfiguration().getZeitraum());
+        var numDays = Integer.parseInt(support.state().getZeitraum());
         var toDate = LocalDateTime.now();
         var fromDate = toDate.minusDays(numDays);
         var utcZone = ZoneId.of("UTC");

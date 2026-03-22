@@ -311,6 +311,44 @@ class FilterConfigTest {
         Assertions.assertTrue(xmlConfiguration.getProperty(key) instanceof List<?>);
     }
 
+    @DisplayName("Check if current filter lock state is stored per filter and survives recreation")
+    @Test
+    void currentFilterLock_persistedPerFilter_survivesConfigurationReload() {
+        XMLConfiguration xmlConfiguration = new XMLConfiguration();
+        FilterConfiguration filterConfig = new FilterConfiguration(xmlConfiguration);
+        UUID firstFilterId = UUID.randomUUID();
+        UUID secondFilterId = UUID.randomUUID();
+        filterConfig.addNewFilter(firstFilterId, "Filter 1");
+        filterConfig.addNewFilter(secondFilterId, "Filter 2");
+
+        filterConfig.setCurrentFilter(firstFilterId);
+        filterConfig.setCurrentFilterLocked(true);
+        filterConfig.setCurrentFilter(secondFilterId);
+        filterConfig.setCurrentFilterLocked(false);
+
+        FilterConfiguration reloaded = new FilterConfiguration(xmlConfiguration);
+
+        reloaded.setCurrentFilter(firstFilterId);
+        Assertions.assertTrue(reloaded.isCurrentFilterLocked());
+        reloaded.setCurrentFilter(secondFilterId);
+        Assertions.assertFalse(reloaded.isCurrentFilterLocked());
+    }
+
+    @DisplayName("Check if deleting a filter removes its persisted lock state")
+    @Test
+    void deleteFilter_lockedFilterDeleted_lockPropertyRemoved() {
+        XMLConfiguration xmlConfiguration = new XMLConfiguration();
+        FilterConfiguration filterConfig = new FilterConfiguration(xmlConfiguration);
+        UUID filterId = UUID.randomUUID();
+        filterConfig.addNewFilter(filterId, "Filter 1");
+        filterConfig.setCurrentFilter(filterId);
+        filterConfig.setCurrentFilterLocked(true);
+
+        filterConfig.deleteFilter(filterId);
+
+        Assertions.assertFalse(xmlConfiguration.containsKey(String.format(FilterConfiguration.FILTER_PANEL_LOCKED, filterId)));
+    }
+
     @DisplayName("Check if filter is removed correctly after delete by filter")
     @Test
     void deleteFilter_addThreeFiltersDeleteOneByFilter_deleteNotInConfigAnymore() {
