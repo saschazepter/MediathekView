@@ -105,14 +105,14 @@ object FileDialogs {
     @JvmStatic
     fun chooseSaveFileLocation(parent: JDialog, title: String, initialFile: String): File? =
         if (prefersNativeFileDialogs) {
-            showNativeDialog(parent, title, mode = FileDialog.SAVE, initialDirectory = initialFile)
+            showNativeDialog(parent, title, mode = FileDialog.SAVE, initialFile = initialFile)
         } else {
             // Linux HiDPI does not work with either AWT FileDialog or JavaFX FileChooser as of JFX 14.0.1.
             showSwingDialog(
                 parent = parent,
                 title = title,
                 selectionMode = JFileChooser.FILES_ONLY,
-                initialDirectory = initialFile,
+                initialFile = initialFile,
                 showDialog = JFileChooser::showSaveDialog
             )
         }
