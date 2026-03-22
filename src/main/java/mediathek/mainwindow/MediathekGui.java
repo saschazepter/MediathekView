@@ -132,7 +132,7 @@ public class MediathekGui extends JFrame {
     protected final Daten daten = Daten.getInstance();
     protected final PositionSavingTabbedPane tabbedPane = new PositionSavingTabbedPane();
     protected final JMenu jMenuHilfe = new JMenu();
-    protected final SettingsAction settingsAction = new SettingsAction(this);
+    protected final SettingsAction settingsAction = new SettingsAction();
     /**
      * the global configuration for this app.
      */
@@ -1142,14 +1142,6 @@ public class MediathekGui extends JFrame {
             FilmeLaden filmeLaden = new FilmeLaden(daten);
             filmeLaden.loadFilmlist("", false);
         }
-    }
-
-    public DialogEinstellungen getSettingsDialog() {
-        if (dialogEinstellungen == null) {
-            dialogEinstellungen = new DialogEinstellungen();
-        }
-
-        return dialogEinstellungen;
     }
 
     public boolean isShutdownRequested() {
