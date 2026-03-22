@@ -29,7 +29,7 @@ public class ResetSettingsPanel extends JPanel {
         jButtonHilfeReset.addActionListener(_ -> new DialogHilfe(parent, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_RESET)).setVisible(true));
         jButtonResetSets.addActionListener(_ -> {
             Daten.listePset.clear();
-            GuiFunktionenProgramme.addSetVorlagen(parent, Daten.getInstance(), ListePsetVorlagen.getStandarset(parent, true), true);
+            GuiFunktionenProgramme.addSetVorlagen(parent, ListePsetVorlagen.getStandarset(parent, true), true);
             MessageBus.getMessageBus().publishAsync(new ProgramSetChangedEvent());
         });
         jButtonResetAll.addActionListener(_ -> {

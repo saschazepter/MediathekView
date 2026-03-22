@@ -175,7 +175,7 @@ public class GuiFunktionenProgramme {
         return pfad;
     }
 
-    public static void addSetVorlagen(JFrame parent, Daten daten, ListePset pSet, boolean setVersion) {
+    public static void addSetVorlagen(JFrame parent, ListePset pSet, boolean setVersion) {
         if (pSet == null) {
             MVMessageDialog.showMessageDialog(null, "Die Datei wurde nicht importiert!",
                     "Fehler", JOptionPane.ERROR_MESSAGE);
@@ -198,7 +198,7 @@ public class GuiFunktionenProgramme {
             parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
 
-        DialogImportPset dialog = new DialogImportPset(parent, true, daten, pSet);
+        DialogImportPset dialog = new DialogImportPset(parent, true, pSet);
         dialog.setVisible(true);
         if (dialog.ok) {
             if (Daten.listePset.addPset(pSet)) {

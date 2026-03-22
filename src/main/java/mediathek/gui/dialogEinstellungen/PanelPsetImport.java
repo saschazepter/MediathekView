@@ -75,7 +75,7 @@ public class PanelPsetImport extends PanelVorlage {
             colModel.getColumn(jTableVorlagen.convertColumnIndexToView(ListePsetVorlagen.PGR_VERSION_NR)).setPreferredWidth(0);
             colModel.getColumn(jTableVorlagen.convertColumnIndexToView(ListePsetVorlagen.PGR_VERSION_NR)).setMaxWidth(0);
         }
-        jButtonImportStandard.addActionListener(_ -> GuiFunktionenProgramme.addSetVorlagen(parentComponent, daten, ListePsetVorlagen.getStandarset(parentComponent, true), true));
+        jButtonImportStandard.addActionListener(_ -> GuiFunktionenProgramme.addSetVorlagen(parentComponent, ListePsetVorlagen.getStandarset(parentComponent, true), true));
     }
 
     private void importDatei(String datei) {
@@ -87,7 +87,7 @@ public class PanelPsetImport extends PanelVorlage {
         }
 
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        GuiFunktionenProgramme.addSetVorlagen(parentComponent, daten, listePset, false);
+        GuiFunktionenProgramme.addSetVorlagen(parentComponent, listePset, false);
     }
 
     private void importText() {
@@ -96,7 +96,7 @@ public class PanelPsetImport extends PanelVorlage {
             // damit die Variablen ersetzt werden
             ListePset.progMusterErsetzen(parentComponent, listePset);
         }
-        GuiFunktionenProgramme.addSetVorlagen(parentComponent, daten, listePset, false);
+        GuiFunktionenProgramme.addSetVorlagen(parentComponent, listePset, false);
     }
 
     private void tabelleLaden() {

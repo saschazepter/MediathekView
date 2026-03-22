@@ -10,28 +10,26 @@ import javax.swing.*;
 
 public class DialogImportPset extends JDialog {
     public boolean ok = false;
-    private final ListePset liste;
-    private final Daten ddaten;
-    private final JFrame parentComponent;
 
-    public DialogImportPset(JFrame parent, boolean modal, Daten dd, ListePset lliste) {
+    public DialogImportPset(JFrame parent, boolean modal, ListePset liste) {
         super(parent, modal);
-        parentComponent = parent;
+        setTitle("Programmset");
+
         initComponents();
-        ddaten = dd;
-        this.setTitle("Programmset");
-        liste = lliste;
-        jScrollPane1.setViewportView(new PanelPsetKurz(ddaten, parentComponent, liste));
-        jButtonOk.addActionListener(e -> disposeWithCode(true));
-        jButtonAbbrechen.addActionListener(e -> disposeWithCode(false));
+
+        var daten = Daten.getInstance();
+
+        jScrollPane1.setViewportView(new PanelPsetKurz(daten, parent, liste));
+        jButtonOk.addActionListener(_ -> disposeWithCode(true));
+        jButtonAbbrechen.addActionListener(_ -> disposeWithCode(false));
 
         EscapeKeyHandler.installHandler(this, () -> disposeWithCode(false));
 
-        jCheckBoxAlleEinstellungen.addActionListener(e -> {
+        jCheckBoxAlleEinstellungen.addActionListener(_ -> {
             if (jCheckBoxAlleEinstellungen.isSelected()) {
-                jScrollPane1.setViewportView(new PanelPsetLang(ddaten, parentComponent, liste));
+                jScrollPane1.setViewportView(new PanelPsetLang(daten, parent, liste));
             } else {
-                jScrollPane1.setViewportView(new PanelPsetKurz(ddaten, parentComponent, liste));
+                jScrollPane1.setViewportView(new PanelPsetKurz(daten, parent, liste));
             }
         });
     }

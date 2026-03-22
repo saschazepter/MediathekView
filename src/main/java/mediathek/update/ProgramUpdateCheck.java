@@ -96,7 +96,7 @@ public class ProgramUpdateCheck implements AutoCloseable {
                         String date = new SimpleDateFormat("dd.MM.yyyy").format(new Date());
                         listePsetStandard.forEach((psNew) -> psNew.setName(psNew.getName() + ", neu: " + date));
                     }
-                    GuiFunktionenProgramme.addSetVorlagen(MediathekGui.ui(), Daten.getInstance(), listePsetStandard, true); // damit auch AddOns geladen werden
+                    GuiFunktionenProgramme.addSetVorlagen(MediathekGui.ui(), listePsetStandard, true); // damit auch AddOns geladen werden
                     logger.info("Setanlegen: OK");
                     logger.info("==========================================");
                 }

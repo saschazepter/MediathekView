@@ -1,6 +1,5 @@
 package mediathek.gui.dialog;
 
-import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.daten.ListePsetVorlagen;
 import mediathek.tool.EscapeKeyHandler;
@@ -33,8 +32,8 @@ public class DialogAboNoSet extends JDialog {
                 "Datei->Einstellungen->Aufzeichnen und Abspielen"
                 ein Programm zum Aufzeichnen für Abos festlegen. (Oder die Standardsets importieren)""");
         jButtonImport.addActionListener(l
-                -> GuiFunktionenProgramme.addSetVorlagen(parent, Daten.getInstance(),
-                        ListePsetVorlagen.getStandarset(parent, true), true));
+                -> GuiFunktionenProgramme.addSetVorlagen(parent,
+                ListePsetVorlagen.getStandarset(parent, true), true));
         jButtonOk.addActionListener((ActionEvent e) -> dispose());
 
         setSize(470,200);
