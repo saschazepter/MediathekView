@@ -214,8 +214,6 @@ public class GuiFunktionen {
     }
 
     public static String concatPaths(String pfad1, String pfad2) {
-        String ret;
-
         if (pfad1 == null || pfad2 == null) {
             return "";
         }
@@ -223,17 +221,14 @@ public class GuiFunktionen {
             return pfad1 + pfad2;
         }
 
-        if (pfad1.endsWith(File.separator)) {
-            ret = pfad1.substring(0, pfad1.length() - 1);
-        } else {
-            ret = pfad1;
+        while (pfad1.endsWith(File.separator)) {
+            pfad1 = pfad1.substring(0, pfad1.length() - 1);
         }
-        if (pfad2.charAt(0) == File.separatorChar) {
-            ret += pfad2;
+        if (pfad2.startsWith(File.separator)) {
+            return pfad1 + pfad2;
         } else {
-            ret += File.separator + pfad2;
+            return pfad1 + File.separator + pfad2;
         }
-        return ret;
     }
 
     public static String cutName(String name, int length) {

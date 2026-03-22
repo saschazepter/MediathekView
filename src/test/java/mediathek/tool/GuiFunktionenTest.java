@@ -37,4 +37,31 @@ class GuiFunktionenTest {
 
         Assertions.assertEquals(expected, res);
     }
+
+    @Test
+    void concatPaths() {
+        String sep = java.io.File.separator;
+        Assertions.assertEquals("", GuiFunktionen.concatPaths(null, null));
+        Assertions.assertEquals("", GuiFunktionen.concatPaths(null, "b"));
+        Assertions.assertEquals("", GuiFunktionen.concatPaths("a", null));
+        Assertions.assertEquals("ab", GuiFunktionen.concatPaths("", "ab"));
+        Assertions.assertEquals("ab", GuiFunktionen.concatPaths("ab", ""));
+
+        Assertions.assertEquals("a" + sep + "b", GuiFunktionen.concatPaths("a", "b"));
+        Assertions.assertEquals("a" + sep + "b", GuiFunktionen.concatPaths("a" + sep, "b"));
+        Assertions.assertEquals("a" + sep + "b", GuiFunktionen.concatPaths("a", sep + "b"));
+        Assertions.assertEquals("a" + sep + "b", GuiFunktionen.concatPaths("a" + sep, sep + "b"));
+
+        // Multiple separators at junction
+        Assertions.assertEquals("a" + sep + "b", GuiFunktionen.concatPaths("a" + sep + sep, "b"));
+
+        // Windows UNC paths (simulated)
+        if (sep.equals("\\")) {
+            Assertions.assertEquals("\\\\server\\share\\file", GuiFunktionen.concatPaths("\\\\server\\share", "file"));
+            Assertions.assertEquals("\\\\server\\share\\file", GuiFunktionen.concatPaths("\\\\server\\share\\", "file"));
+        } else {
+            Assertions.assertEquals("//server/share/file", GuiFunktionen.concatPaths("//server/share", "file"));
+            Assertions.assertEquals("//server/share/file", GuiFunktionen.concatPaths("//server/share/", "file"));
+        }
+    }
 }
