@@ -38,13 +38,8 @@ import java.util.regex.PatternSyntaxException;
 public class PanelBlacklist extends JPanel {
     public boolean ok;
     private final String name;
-    private final Daten daten;
-    private final JFrame parentComponent;
 
-    public PanelBlacklist(Daten d, JFrame parentComponent, String nname) {
-        daten = d;
-        this.parentComponent = parentComponent;
-
+    public PanelBlacklist(String nname) {
         initComponents();
         name = nname;
         jButtonHilfe.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg"));
@@ -87,7 +82,7 @@ public class PanelBlacklist extends JPanel {
                 init_();
             }
         });
-        daten.getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
+        Daten.getInstance().getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
             @Override
             public void fertig(ListenerFilmeLadenEvent event) {
                 comboThemaLaden();
@@ -204,9 +199,12 @@ public class PanelBlacklist extends JPanel {
 
         jButtonAendern.addActionListener(_ -> onChangeBlacklistRule());
 
-        jButtonHilfe.addActionListener(_ -> new DialogHilfe(parentComponent, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_BLACKLIST)).setVisible(true));
+        jButtonHilfe.addActionListener(_ -> {
+            Window owner = SwingUtilities.getWindowAncestor(this);
+            new DialogHilfe(owner, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_BLACKLIST)).setVisible(true);
+        });
         jButtonTabelleLoeschen.addActionListener(_ -> {
-            int ret = JOptionPane.showConfirmDialog(parentComponent,
+            int ret = JOptionPane.showConfirmDialog(this,
                     "<html>Möchten Sie wirklich <b>alle Regeln</b> dauerhaft löschen?</html>",
                     "Blacklist Regeln", JOptionPane.YES_NO_OPTION);
             if (ret == JOptionPane.OK_OPTION) {
@@ -314,7 +312,7 @@ public class PanelBlacklist extends JPanel {
     }
 
     private void notifyBlacklistChanged() {
-        daten.getListeBlacklist().filterListe();
+        Daten.getInstance().getListeBlacklist().filterListe();
         MessageBus.getMessageBus().publishAsync(new BlacklistChangedEvent());
     }
 
@@ -324,7 +322,7 @@ public class PanelBlacklist extends JPanel {
         if (filterSender.isEmpty())
             filterSender = "";
 
-        java.util.List<String> lst = daten.getListeFilme().getThemen(filterSender);
+        java.util.List<String> lst = Daten.getInstance().getListeFilme().getThemen(filterSender);
         DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
         model.addElement("");
         for (String item : lst)

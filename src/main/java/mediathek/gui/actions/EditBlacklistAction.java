@@ -1,6 +1,5 @@
 package mediathek.gui.actions;
 
-import mediathek.config.Daten;
 import mediathek.gui.dialog.DialogLeer;
 import mediathek.gui.dialogEinstellungen.PanelBlacklist;
 import mediathek.swing.IconUtils;
@@ -32,7 +31,7 @@ public class EditBlacklistAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         DialogLeer dialog = new DialogLeer(parent, true);
-        dialog.init("Blacklist", new PanelBlacklist(Daten.getInstance(), null, PanelBlacklist.class.getName() + "_3"));
+        dialog.init("Blacklist", new PanelBlacklist(PanelBlacklist.class.getName() + "_3"));
         dialog.setVisible(true);
     }
 }

@@ -10,13 +10,20 @@ public class DialogHilfe extends JDialog {
 
     public DialogHilfe(Dialog parent, boolean modal, @NotNull String text) {
         super(parent, modal);
-        initComponents();
-
-        setup(text);
+        initialize(text);
     }
 
     public DialogHilfe(Frame parent, boolean modal, @NotNull String text) {
         super(parent, modal);
+        initialize(text);
+    }
+
+    public DialogHilfe(Window parent, boolean modal, @NotNull String text) {
+        super(parent, Dialog.ModalityType.APPLICATION_MODAL);
+        initialize(text);
+    }
+
+    private void initialize(@NotNull String text) {
         initComponents();
 
         setup(text);
