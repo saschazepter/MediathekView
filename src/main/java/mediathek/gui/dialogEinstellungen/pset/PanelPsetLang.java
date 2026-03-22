@@ -27,7 +27,6 @@ import mediathek.daten.DatenProg;
 import mediathek.daten.DatenPset;
 import mediathek.daten.FilmResolution;
 import mediathek.daten.ListePset;
-import mediathek.gui.PanelVorlage;
 import mediathek.gui.messages.ProgramSetChangedEvent;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
@@ -59,14 +58,17 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PanelPsetLang extends PanelVorlage {
+public class PanelPsetLang extends JPanel {
     private int neuZaehler;
     private final ListePset listePset;
     private final MVTable tabellePset;
     private final MVTable tabelleProgramme;
+    protected final JFrame parentComponent;
+    protected boolean stopBeob;
 
-    public PanelPsetLang(Daten d, JFrame parentComponent, ListePset llistePset) {
-        super(d, parentComponent);
+    public PanelPsetLang(JFrame parentComponent, ListePset llistePset) {
+        this.parentComponent = parentComponent;
+
         initComponents();
         tabellePset = new MVPsetTable();
         jScrollPane3.setViewportView(tabellePset);
@@ -1072,7 +1074,7 @@ public class PanelPsetLang extends PanelVorlage {
                                 jPanel4Layout.createParallelGroup()
                                     .addGroup(jPanel4Layout.createSequentialGroup()
                                         .addContainerGap()
-                                        .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 567, Short.MAX_VALUE)
+                                        .addComponent(jScrollPane2, GroupLayout.DEFAULT_SIZE, 575, Short.MAX_VALUE)
                                         .addContainerGap())
                             );
                             jPanel4Layout.setVerticalGroup(
@@ -1112,7 +1114,7 @@ public class PanelPsetLang extends PanelVorlage {
                                         .addComponent(jCheckBoxButton)
                                         .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                         .addComponent(jCheckBoxAbo)
-                                        .addContainerGap(59, Short.MAX_VALUE))
+                                        .addContainerGap(67, Short.MAX_VALUE))
                             );
                             jPanel6Layout.setVerticalGroup(
                                 jPanel6Layout.createParallelGroup()
@@ -1225,7 +1227,7 @@ public class PanelPsetLang extends PanelVorlage {
                                             .addComponent(jButtonGruppeStandardfarbe))
                                         .addComponent(jLabel11)
                                         .addComponent(jLabel13))
-                                    .addContainerGap(319, Short.MAX_VALUE))
+                                    .addContainerGap(327, Short.MAX_VALUE))
                         );
                         jPanel5Layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {jButtonGruppeFarbe, jButtonGruppeStandardfarbe});
                         jPanel5Layout.setVerticalGroup(
@@ -1326,7 +1328,7 @@ public class PanelPsetLang extends PanelVorlage {
                                                     .addComponent(jButtonGruppePfad))
                                                 .addGroup(jPanel1Layout.createSequentialGroup()
                                                     .addComponent(jCheckBoxThema)
-                                                    .addGap(0, 203, Short.MAX_VALUE)))
+                                                    .addGap(0, 211, Short.MAX_VALUE)))
                                             .addGap(16, 16, 16))
                                         .addGroup(jPanel1Layout.createSequentialGroup()
                                             .addComponent(jLabel8)
@@ -1693,12 +1695,12 @@ public class PanelPsetLang extends PanelVorlage {
                                                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                     .addComponent(jLabel4)
                                                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                                    .addComponent(jTextFieldProgSuffix, GroupLayout.DEFAULT_SIZE, 189, Short.MAX_VALUE))
+                                                    .addComponent(jTextFieldProgSuffix, GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE))
                                                 .addGroup(jPanelProgrammDetailsLayout.createSequentialGroup()
                                                     .addGroup(jPanelProgrammDetailsLayout.createParallelGroup()
                                                         .addComponent(jCheckBoxRemoteDownload)
                                                         .addComponent(jCheckBoxRestart))
-                                                    .addGap(0, 194, Short.MAX_VALUE)))))
+                                                    .addGap(0, 199, Short.MAX_VALUE)))))
                                     .addContainerGap())
                         );
                         jPanelProgrammDetailsLayout.setVerticalGroup(
@@ -1840,9 +1842,9 @@ public class PanelPsetLang extends PanelVorlage {
             layout.createParallelGroup()
                 .addGroup(layout.createSequentialGroup()
                     .addGroup(layout.createParallelGroup()
-                        .addComponent(jSplitPane1, GroupLayout.DEFAULT_SIZE, 926, Short.MAX_VALUE)
+                        .addComponent(jSplitPane1, GroupLayout.DEFAULT_SIZE, 934, Short.MAX_VALUE)
                         .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                            .addContainerGap(742, Short.MAX_VALUE)
+                            .addContainerGap(750, Short.MAX_VALUE)
                             .addComponent(jButtonPruefen, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE)
                             .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                             .addComponent(jButtonHilfe)))

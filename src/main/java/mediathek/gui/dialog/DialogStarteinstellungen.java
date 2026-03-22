@@ -131,9 +131,9 @@ public class DialogStarteinstellungen extends JDialog {
 
         var daten = Daten.getInstance();
         if (jCheckBoxAlleEinstellungen.isSelected()) {
-            jScrollPane1.setViewportView(new PanelPsetLang(daten, parentComponent, Daten.listePset));
+            jScrollPane1.setViewportView(new PanelPsetLang(parentComponent, Daten.listePset));
         } else {
-            jScrollPane1.setViewportView(new PanelPsetKurz(daten, parentComponent, Daten.listePset));
+            jScrollPane1.setViewportView(new PanelPsetKurz(Daten.listePset));
         }
         status = State.FERTIG;
         jButtonStandard.setText("Weiter");

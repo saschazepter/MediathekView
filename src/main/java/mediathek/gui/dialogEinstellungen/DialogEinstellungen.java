@@ -193,7 +193,7 @@ public class DialogEinstellungen extends JFrame {
                     }
                     case NAME_programmsetImportieren -> {
                         jPanelExtra.removeAll();
-                        jPanelExtra.add(new PanelPsetImport(daten, this));
+                        jPanelExtra.add(new PanelPsetImport(this));
                     }
                     default -> {
                         jPanelExtra.removeAll();

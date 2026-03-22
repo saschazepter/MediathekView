@@ -236,7 +236,7 @@ public class PanelDateinamen extends JPanel {
                     jTextArea3.setEditable(false);
                     jTextArea3.setColumns(20);
                     jTextArea3.setRows(5);
-                    jTextArea3.setText("\nDie Dateinamen werden f\u00fcr jedes Betriebssystem passend aufbereitet.\n\nWer will, kann dar\u00fcber hinaus weitere Einstellungen mit einer Ersetzungstabelle\nvornehmen: z.B. \"\u00df\" durch \"ss\" ersetzen.\n"); //NON-NLS
+                    jTextArea3.setText("\nDie Dateinamen werden f\u00fcr jedes Betriebssystem passend aufbereitet.\n\nWer will, kann dar\u00fcber hinaus weitere Einstellungen mit einer Ersetzungstabelle\nvornehmen: z.B. \"\u00df\" durch \"ss\" ersetzen.\n");
                     jTextArea3.setMargin(new Insets(3, 3, 3, 3));
                     jScrollPane5.setViewportView(jTextArea3);
                 }
@@ -247,7 +247,7 @@ public class PanelDateinamen extends JPanel {
                     jPanel1Layout.createParallelGroup()
                         .addGroup(jPanel1Layout.createSequentialGroup()
                             .addContainerGap()
-                            .addComponent(jScrollPane5, GroupLayout.DEFAULT_SIZE, 773, Short.MAX_VALUE)
+                            .addComponent(jScrollPane5, GroupLayout.DEFAULT_SIZE, 781, Short.MAX_VALUE)
                             .addContainerGap())
                 );
                 jPanel1Layout.setVerticalGroup(
@@ -255,23 +255,23 @@ public class PanelDateinamen extends JPanel {
                         .addGroup(jPanel1Layout.createSequentialGroup()
                             .addContainerGap()
                             .addComponent(jScrollPane5, GroupLayout.PREFERRED_SIZE, 119, GroupLayout.PREFERRED_SIZE)
-                            .addContainerGap(459, Short.MAX_VALUE))
+                            .addContainerGap(473, Short.MAX_VALUE))
                 );
             }
-            jTabbedPane1.addTab("Dateinamen", jPanel1); //NON-NLS
+            jTabbedPane1.addTab("Dateinamen", jPanel1);
 
             //======== jPanel2 ========
             {
 
                 //---- jCheckBoxTable ----
-                jCheckBoxTable.setText("Ersetzungstabelle anwenden"); //NON-NLS
+                jCheckBoxTable.setText("Ersetzungstabelle anwenden");
 
                 //======== jPanel3 ========
                 {
                     jPanel3.setBorder(new EtchedBorder());
 
                     //---- jButtonReset ----
-                    jButtonReset.setText("Tabelle zur\u00fccksetzen"); //NON-NLS
+                    jButtonReset.setText("Tabelle zur\u00fccksetzen");
 
                     //======== jScrollPane3 ========
                     {
@@ -279,10 +279,10 @@ public class PanelDateinamen extends JPanel {
 
                         //---- jTextArea2 ----
                         jTextArea2.setEditable(false);
-                        jTextArea2.setBackground(UIManager.getColor("Label.background")); //NON-NLS
+                        jTextArea2.setBackground(UIManager.getColor("Label.background"));
                         jTextArea2.setColumns(20);
                         jTextArea2.setRows(4);
-                        jTextArea2.setText("Die Tabelle wird von oben nach unten abgearbeitet.\nEs ist also m\u00f6glich, dass eine Ersetzung durch eine weitere\nwieder ersetzt wird!"); //NON-NLS
+                        jTextArea2.setText("Die Tabelle wird von oben nach unten abgearbeitet.\nEs ist also m\u00f6glich, dass eine Ersetzung durch eine weitere\nwieder ersetzt wird!");
                         jTextArea2.setBorder(new EmptyBorder(1, 1, 1, 1));
                         jScrollPane3.setViewportView(jTextArea2);
                     }
@@ -299,32 +299,32 @@ public class PanelDateinamen extends JPanel {
                                 {null, null, null, null},
                             },
                             new String[] {
-                                "Title 1", "Title 2", "Title 3", "Title 4" //NON-NLS
+                                "Title 1", "Title 2", "Title 3", "Title 4"
                             }
                         ));
                         jScrollPane4.setViewportView(tabelle);
                     }
 
                     //---- jLabelAlert ----
-                    jLabelAlert.setText("Achtung"); //NON-NLS
+                    jLabelAlert.setText("Achtung");
 
                     //---- jLabelVon ----
-                    jLabelVon.setText("von:"); //NON-NLS
+                    jLabelVon.setText("von:");
 
                     //---- jLabelNach ----
-                    jLabelNach.setText("nach:"); //NON-NLS
+                    jLabelNach.setText("nach:");
 
                     //---- jButtonMinus ----
-                    jButtonMinus.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-remove.png"))); //NON-NLS
+                    jButtonMinus.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-remove.png")));
 
                     //---- jButtonPlus ----
-                    jButtonPlus.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-add.png"))); //NON-NLS
+                    jButtonPlus.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-add.png")));
 
                     //---- jButtonDown ----
-                    jButtonDown.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-down.png"))); //NON-NLS
+                    jButtonDown.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-down.png")));
 
                     //---- jButtonUp ----
-                    jButtonUp.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-up.png"))); //NON-NLS
+                    jButtonUp.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-move-up.png")));
 
                     GroupLayout jPanel3Layout = new GroupLayout(jPanel3);
                     jPanel3.setLayout(jPanel3Layout);
@@ -349,7 +349,7 @@ public class PanelDateinamen extends JPanel {
                                         .addComponent(jLabelNach)
                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jTextFieldNach, GroupLayout.PREFERRED_SIZE, 100, GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 111, Short.MAX_VALUE)
+                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, 122, Short.MAX_VALUE)
                                         .addComponent(jButtonUp)
                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jButtonDown)
@@ -363,7 +363,7 @@ public class PanelDateinamen extends JPanel {
                         jPanel3Layout.createParallelGroup()
                             .addGroup(GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                                 .addContainerGap()
-                                .addComponent(jScrollPane4, GroupLayout.DEFAULT_SIZE, 328, Short.MAX_VALUE)
+                                .addComponent(jScrollPane4, GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(jPanel3Layout.createParallelGroup(GroupLayout.Alignment.CENTER)
                                     .addComponent(jLabelVon)
@@ -386,8 +386,8 @@ public class PanelDateinamen extends JPanel {
                 }
 
                 //---- jCheckBoxAscii ----
-                jCheckBoxAscii.setText("Nur ASCII-Zeichen erlauben"); //NON-NLS
-                jCheckBoxAscii.setToolTipText("<html>Es werden alle Zeichen \"\u00fcber 127\" ersetzt.  Auch Umlaute wie \"\u00f6 -> oe\" werden ersetzt.<br>Wenn die Ersetzungstabelle aktiv ist, wird sie vorher abgearbeitet.</html>"); //NON-NLS
+                jCheckBoxAscii.setText("Nur ASCII-Zeichen erlauben");
+                jCheckBoxAscii.setToolTipText("<html>Es werden alle Zeichen \"\u00fcber 127\" ersetzt.  Auch Umlaute wie \"\u00f6 -> oe\" werden ersetzt.<br>Wenn die Ersetzungstabelle aktiv ist, wird sie vorher abgearbeitet.</html>");
 
                 GroupLayout jPanel2Layout = new GroupLayout(jPanel2);
                 jPanel2.setLayout(jPanel2Layout);
@@ -418,7 +418,7 @@ public class PanelDateinamen extends JPanel {
                             .addContainerGap())
                 );
             }
-            jTabbedPane1.addTab("Eigene Einstellungen", jPanel2); //NON-NLS
+            jTabbedPane1.addTab("Eigene Einstellungen", jPanel2);
         }
 
         GroupLayout layout = new GroupLayout(this);
@@ -434,7 +434,7 @@ public class PanelDateinamen extends JPanel {
             layout.createParallelGroup()
                 .addGroup(layout.createSequentialGroup()
                     .addContainerGap()
-                    .addComponent(jTabbedPane1)
+                    .addComponent(jTabbedPane1, GroupLayout.DEFAULT_SIZE, 638, Short.MAX_VALUE)
                     .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
