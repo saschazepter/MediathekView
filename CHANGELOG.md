@@ -6,11 +6,13 @@
 - **BUGFIX:** Downloads mit ffmpeg zeigen wieder Fortschritt, Zeit und Gechwindigkeit an.
 - **BUGFIX(Windows):** Offizielle MV-Builds nutzen nun JetBrains Runtime 25. Damit sollte das Programm bei Nutzung einer RDP-Session nicht mehr abstürzen.
 - **BUGFIX:** Programm-Log Autoscroll-Verhalten wurde korrigiert.
+- **BUGFIX:** Der Abo-Historie-Dialog kann nun gleichzeitig mehrere URLs löschen und exportieren. Weiterhin wurde eine Filterfunktion integriert.
 - **FEATURE:** Tab *Audiothek* zur Suche (offline als auch online), Abspielen und Download von Podcasts der ARD Audiothek und via podcastindex.org.
 - **FEATURE:** Filter können nun kopiert werden.
 - **FEATURE:** Sperrbare Filter. Änderungen an einem gesperrten Filter wirken sich auf die Filmliste aus, werden jedoch nicht dauerhaft gespeichert und beim nächsten Programmstart zurückgesetzt. Gesperrte Filter werden mit einem Schloß-Symbol in der Filterliste angezeigt.
 - **FEATURE:** *Download ändern*-Dialog bietet nun auch die Möglichkeit, Codec-Details abzurufen.
 - **FEATURE:** *Hilfe\Live Programm-Log anzeigen* zeigt die logging-Ausgaben von MediathekView in Echtzeit an. Diese können für die Fehlersuche exportiert werden. Lokale Dateipfade werden automatisch mittels `<redacted>` unkenntlich gemacht.
+- **FEATURE:** Die alte `downloadAbos.txt` wird nun in eine sqlite3-Datenbank `abo-history.db` migriert. Die alte Textdatei bleibt danach als `downloadAbos.txt.migrated` erhalten.
 - interne Optimierungen für mehr Geschwindigkeit.
 - interne Fehler wurden behoben.
 
