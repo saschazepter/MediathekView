@@ -19,22 +19,20 @@
 package mediathek.gui.tabs.tab_film.helpers;
 
 import mediathek.config.Daten;
-import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.IndexedFilmList;
 import mediathek.gui.tabs.tab_film.SearchFieldData;
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
 import org.jetbrains.annotations.NotNull;
 
 public class GuiModelHelperFactory {
-    public static GuiModelHelper createGuiModelHelper(@NotNull SeenHistoryController historyController,
-                                                      @NotNull SearchFieldData searchFieldData,
+    public static GuiModelHelper createGuiModelHelper(@NotNull SearchFieldData searchFieldData,
                                                       @NotNull FilmFilterController filterController) {
         GuiModelHelper helper;
         if (Daten.getInstance().getListeFilmeNachBlackList() instanceof IndexedFilmList) {
-            helper = new LuceneGuiFilmeModelHelper(historyController, searchFieldData, filterController);
+            helper = new LuceneGuiFilmeModelHelper(searchFieldData, filterController);
         }
         else {
-            helper = new GuiFilmeModelHelper(historyController, searchFieldData, filterController);
+            helper = new GuiFilmeModelHelper(searchFieldData, filterController);
         }
         return helper;
     }

@@ -13,10 +13,7 @@ class ResetDownloadHistoryAction(private val owner: JFrame) : AbstractAction() {
      Dies kann nicht rückgängig gemacht werden.
      """.trimIndent(), "Download-Historie löschen", JOptionPane.YES_NO_OPTION)
         if (ret == JOptionPane.OK_OPTION) {
-            val controller = SeenHistoryController()
-            controller.use {
-                controller.removeAll()
-            }
+            SeenHistoryController().use { it.removeAll() }
         }
     }
 

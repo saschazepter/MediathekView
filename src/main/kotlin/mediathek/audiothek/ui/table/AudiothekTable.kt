@@ -147,7 +147,7 @@ class AudiothekTable(
         if (!isRowSelected(row)) {
             component.background = defaultRowBackground(row)
             val entry = audioTableModel.getEntry(convertRowIndexToModel(row))
-            if (entry != null && seenHistoryController.hasBeenSeenFromCache(entry)) {
+            if (entry != null && seenHistoryController.hasBeenSeen(entry)) {
                 component.background = MVColor.FILM_HISTORY.color
             }
         }

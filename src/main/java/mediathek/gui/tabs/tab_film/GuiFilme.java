@@ -167,7 +167,6 @@ public class GuiFilme extends AGuiTabPanel {
     private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
     private final JScrollPane filmListScrollPane = new JScrollPane();
     private final JCheckBoxMenuItem cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
-    private final SeenHistoryController historyController = new SeenHistoryController();
     private final JCheckBoxMenuItem cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
     private final NonRepeatingTimer reloadTableDataTimer;
     private final FilmToolBar filmToolBar;
@@ -715,7 +714,7 @@ public class GuiFilme extends AGuiTabPanel {
         modelFuture = CompletableFuture.supplyAsync(() -> {
             var searchFieldData = new SearchFieldData(searchField.getText(), searchField.getSearchMode());
             GuiModelHelper helper = GuiModelHelperFactory.createGuiModelHelper(
-                    historyController, searchFieldData, filterController);
+                    searchFieldData, filterController);
             return helper.getFilteredTableModel();
         }, decoratedPool);
         modelFuture.whenCompleteAsync((model, thrown) -> {

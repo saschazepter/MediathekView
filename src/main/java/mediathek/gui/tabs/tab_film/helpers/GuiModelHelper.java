@@ -44,14 +44,11 @@ public sealed interface GuiModelHelper permits GuiFilmeModelHelper, LuceneGuiFil
 final class GuiModelHelperSupport {
     private static final long UNLIMITED_LENGTH_IN_SECONDS = TimeUnit.SECONDS.convert(FilmLengthSlider.UNLIMITED_VALUE, TimeUnit.MINUTES);
 
-    private final SeenHistoryController historyController;
     private final SearchFieldData searchFieldData;
     private final FilmFilterController filterController;
 
-    GuiModelHelperSupport(@NotNull SeenHistoryController historyController,
-                          @NotNull SearchFieldData searchFieldData,
+    GuiModelHelperSupport(@NotNull SearchFieldData searchFieldData,
                           @NotNull FilmFilterController filterController) {
-        this.historyController = historyController;
         this.searchFieldData = searchFieldData;
         this.filterController = filterController;
     }
@@ -119,7 +116,7 @@ final class GuiModelHelperSupport {
                 searchTerms,
                 film -> selectedSenders.isEmpty() || selectedSenders.contains(film.getSender()),
                 searchTerms.isEmpty()
-                        ? film -> true
+                        ? _ -> true
                         : FinalStageFilterFactory.createFinalStageFilter(
                                 searchFieldData.searchThroughDescriptions(),
                                 searchTerms.toArray(String[]::new)));
@@ -127,10 +124,6 @@ final class GuiModelHelperSupport {
 
     FilmFilterState state() {
         return filterController.state();
-    }
-
-    void prepareHistoryMemoryCache() {
-        historyController.prepareMemoryCache();
     }
 
     private boolean minLengthCheck(DatenFilm film, @NotNull LengthFilterRange lengthFilterRange) {
@@ -148,14 +141,14 @@ final class GuiModelHelperSupport {
     }
 
     private boolean seenCheck(DatenFilm film) {
-        return !historyController.hasBeenSeenFromCache(film);
+        return !SeenHistoryController.hasBeenSeenFromSharedCache(film);
     }
 
     private LengthFilterRange createLengthFilterRange() {
         var state = state();
         return new LengthFilterRange(
-                TimeUnit.SECONDS.convert((long) state.getFilmLengthMin(), TimeUnit.MINUTES),
-                TimeUnit.SECONDS.convert((long) state.getFilmLengthMax(), TimeUnit.MINUTES));
+                TimeUnit.SECONDS.convert(state.getFilmLengthMin(), TimeUnit.MINUTES),
+                TimeUnit.SECONDS.convert(state.getFilmLengthMax(), TimeUnit.MINUTES));
     }
 
     private TModelFilm createFilmTableModel(@NotNull Collection<DatenFilm> films) {

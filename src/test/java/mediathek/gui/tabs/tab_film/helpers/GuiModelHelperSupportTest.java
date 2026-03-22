@@ -2,7 +2,6 @@ package mediathek.gui.tabs.tab_film.helpers;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
-import mediathek.controller.history.SeenHistoryController;
 import mediathek.gui.tabs.tab_film.SearchControlFieldMode;
 import mediathek.gui.tabs.tab_film.SearchFieldData;
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
@@ -52,17 +51,14 @@ class GuiModelHelperSupportTest {
         controller.setCurrentFilterChangesLocked(true);
         controller.onSenderSelectionChanged(Collections.singleton("ARD"));
 
-        try (var historyController = new SeenHistoryController()) {
-            var support = new GuiModelHelperSupport(
-                    historyController,
-                    new SearchFieldData("", SearchControlFieldMode.THEMA_TITEL),
-                    controller);
+        var support = new GuiModelHelperSupport(
+                new SearchFieldData("", SearchControlFieldMode.THEMA_TITEL),
+                controller);
 
-            var context = support.createFilterExecutionContext();
+        var context = support.createFilterExecutionContext();
 
-            Assertions.assertEquals(Collections.singleton("ARD"), context.selectedSenders());
-            Assertions.assertTrue(filterConfiguration.getCheckedChannels().isEmpty());
-        }
+        Assertions.assertEquals(Collections.singleton("ARD"), context.selectedSenders());
+        Assertions.assertTrue(filterConfiguration.getCheckedChannels().isEmpty());
     }
 
     private static final class TestFilterConfiguration extends FilterConfiguration {

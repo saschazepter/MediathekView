@@ -22,8 +22,6 @@ import javax.swing.JOptionPane
 import javax.swing.JPopupMenu
 
 class JDownloadHelper {
-    private val historyController = SeenHistoryController()
-
     private fun downloadUrl(url: HttpUrl, film: DatenFilm) {
         val formBody: RequestBody = FormBody.Builder()
             .add("urls", url.toString())
@@ -38,7 +36,9 @@ class JDownloadHelper {
             val client = builder.build()
             client.newCall(request).execute().use {
                 if (it.isSuccessful)
-                    historyController.markSeen(film)
+                    SeenHistoryController().use { historyController ->
+                        historyController.markSeen(film)
+                    }
             }
         }
         catch (e: ConnectException) {

@@ -21,7 +21,6 @@ import java.util.List;
 
 public class MVFilmTable extends MVTable {
     private static final Logger logger = LogManager.getLogger();
-    private final SeenHistoryController history = new SeenHistoryController();
     private final List<Color> bgList = new ArrayList<>();
     private MyRowSorter<TableModel> sorter;
 
@@ -91,7 +90,7 @@ public class MVFilmTable extends MVTable {
         bgList.clear();
         bgList.add(c.getBackground());
 
-        if (history.hasBeenSeenFromCache(datenFilm)) {
+        if (SeenHistoryController.hasBeenSeenFromSharedCache(datenFilm)) {
             bgList.add(MVColor.FILM_HISTORY.color);
         }
         if (datenFilm.isBookmarked()) {

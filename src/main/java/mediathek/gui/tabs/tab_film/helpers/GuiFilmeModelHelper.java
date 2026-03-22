@@ -35,10 +35,9 @@ import java.util.stream.Stream;
 public final class GuiFilmeModelHelper implements GuiModelHelper {
     private final GuiModelHelperSupport support;
 
-    public GuiFilmeModelHelper(@NotNull SeenHistoryController historyController,
-                               @NotNull SearchFieldData searchFieldData,
+    public GuiFilmeModelHelper(@NotNull SearchFieldData searchFieldData,
                                @NotNull FilmFilterController filterController) {
-        support = new GuiModelHelperSupport(historyController, searchFieldData, filterController);
+        support = new GuiModelHelperSupport(searchFieldData, filterController);
     }
 
     @Override
@@ -55,7 +54,7 @@ public final class GuiFilmeModelHelper implements GuiModelHelper {
         var filterContext = support.createFilterExecutionContext();
 
         if (support.state().getShowUnseenOnly()) {
-            support.prepareHistoryMemoryCache();
+            SeenHistoryController.prepareSharedMemoryCache();
         }
 
         var stream = Daten.getInstance().getListeFilmeNachBlackList().parallelStream();

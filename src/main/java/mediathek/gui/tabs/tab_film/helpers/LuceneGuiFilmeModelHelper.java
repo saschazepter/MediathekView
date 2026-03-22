@@ -63,10 +63,9 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
 
     private final GuiModelHelperSupport support;
 
-    public LuceneGuiFilmeModelHelper(@NotNull SeenHistoryController historyController,
-                                     @NotNull SearchFieldData searchFieldData,
+    public LuceneGuiFilmeModelHelper(@NotNull SearchFieldData searchFieldData,
                                      @NotNull FilmFilterController filterController) {
-        support = new GuiModelHelperSupport(historyController, searchFieldData, filterController);
+        support = new GuiModelHelperSupport(searchFieldData, filterController);
     }
 
     @Override
@@ -85,7 +84,7 @@ public final class LuceneGuiFilmeModelHelper implements GuiModelHelper {
             var filterContext = support.createFilterExecutionContext();
 
             if (support.state().getShowUnseenOnly()) {
-                support.prepareHistoryMemoryCache();
+                SeenHistoryController.prepareSharedMemoryCache();
             }
 
             Stream<DatenFilm> stream = listeFilme.parallelStream();
