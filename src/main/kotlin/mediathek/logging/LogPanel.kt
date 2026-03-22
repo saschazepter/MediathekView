@@ -23,15 +23,23 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.onTimeout
 import kotlinx.coroutines.selects.select
 import kotlinx.coroutines.swing.Swing
+import mediathek.config.Konstanten
 import mediathek.swing.IconUtils
+import mediathek.tool.FileDialogs
 import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular
+import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import java.awt.BorderLayout
+import java.awt.Frame
+import java.io.File
+import java.nio.charset.StandardCharsets
+import java.nio.file.Files
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.BadLocationException
+import javax.swing.text.DefaultCaret
 import javax.swing.text.Document
 import javax.swing.text.PlainDocument
 
@@ -41,6 +49,10 @@ class LogPanel(
     private val batchSize: Int = 500,
     private val flushIntervalMs: Long = 75L
 ) : JPanel(BorderLayout()) {
+    companion object {
+        private val hiddenLoggers = setOf("mediathek.tool.dns.DnsSelector")
+    }
+
     private val textArea = JTextArea().apply {
         isEditable = false
         lineWrap = false
@@ -50,6 +62,10 @@ class LogPanel(
     private val scrollPane = JScrollPane(textArea)
 
     private val autoScrollToggle = JToggleButton("Auto-scroll", true)
+    private val btnExport = JButton().apply {
+        icon = IconUtils.of(FontAwesomeSolid.DOWNLOAD)
+        toolTipText = "Export Log"
+    }
     private val btnClearFilter = JButton().apply {
         icon = IconUtils.of(FontAwesomeRegular.TRASH_ALT)
         toolTipText = "Clear Filter"
@@ -75,11 +91,21 @@ class LogPanel(
             add(JLabel("Filter: "))
             add(filterField)
             addSeparator()
+            add(btnExport)
+            addSeparator()
             add(btnClearFilter)
         }
 
         add(toolbar, BorderLayout.NORTH)
         add(scrollPane, BorderLayout.CENTER)
+
+        autoScrollToggle.addActionListener {
+            updateAutoScrollBehavior()
+        }
+
+        btnExport.addActionListener {
+            exportVisibleContent()
+        }
 
         btnClearFilter.addActionListener {
             uiScope.launch { filterField.text = "" }
@@ -95,8 +121,59 @@ class LogPanel(
             }
         })
 
+        updateAutoScrollBehavior()
         reloadFromSnapshot()
         startConsumer()
+    }
+
+    private fun updateAutoScrollBehavior() {
+        val caret = textArea.caret as? DefaultCaret ?: return
+        if (autoScrollToggle.isSelected) {
+            caret.updatePolicy = DefaultCaret.ALWAYS_UPDATE
+            textArea.caretPosition = textArea.document.length
+        } else {
+            caret.updatePolicy = DefaultCaret.NEVER_UPDATE
+        }
+    }
+
+    private fun exportVisibleContent() {
+        val content = textArea.text
+        val targetFile = chooseExportFile() ?: return
+
+        runCatching {
+            targetFile.parentFile?.mkdirs()
+            Files.writeString(targetFile.toPath(), content, StandardCharsets.UTF_8)
+        }.onFailure { ex ->
+            JOptionPane.showMessageDialog(
+                this,
+                "Logdatei konnte nicht geschrieben werden.\n${ex.message ?: targetFile.absolutePath}",
+                Konstanten.PROGRAMMNAME,
+                JOptionPane.ERROR_MESSAGE
+            )
+        }.onSuccess {
+            JOptionPane.showMessageDialog(
+                this,
+                "Logdatei erfolgreich gespeichert.\n${targetFile.absolutePath}",
+                Konstanten.PROGRAMMNAME,
+                JOptionPane.INFORMATION_MESSAGE
+            )
+        }
+    }
+
+    private fun chooseExportFile(): File? {
+        val owner = SwingUtilities.getWindowAncestor(this)
+        val defaultFileName = "mediathekview-log.txt"
+
+        return when (owner) {
+            is Frame -> FileDialogs.chooseSaveFileLocation(owner, "Log exportieren", defaultFileName)
+            is JDialog -> FileDialogs.chooseSaveFileLocation(owner, "Log exportieren", defaultFileName)
+            else -> JFileChooser().apply {
+                dialogTitle = "Log exportieren"
+                selectedFile = File(defaultFileName)
+                fileSelectionMode = JFileChooser.FILES_ONLY
+                isFileHidingEnabled = true
+            }.takeIf { it.showSaveDialog(this) == JFileChooser.APPROVE_OPTION }?.selectedFile
+        }
     }
 
     /** Reload view from repository snapshot according to current filters. */
@@ -106,7 +183,7 @@ class LogPanel(
         uiScope.launch {
             val sb = StringBuilder(snapshot.size * 64)
             for (e in snapshot) {
-                if (matchesFilters(e)) sb.append(formatLine(e))
+                if (shouldDisplay(e)) sb.append(formatLine(e))
             }
             textArea.text = sb.toString()
             capDocument(textArea.document, maxChars)
@@ -125,7 +202,7 @@ class LogPanel(
             while (isActive) {
                 select {
                     live.onReceive { entry ->
-                        if (matchesFilters(entry)) {
+                        if (shouldDisplay(entry)) {
                             buffer.add(entry)
                             if (buffer.size >= batchSize)
                                 flush(buffer)
@@ -182,9 +259,9 @@ class LogPanel(
             return true
 
         val hay = buildString {
-            append(e.message)
+            append(LogPathRedactor.redact(e.message))
             if (e.thrown != null)
-                append('\n').append(e.thrown)
+                append('\n').append(LogPathRedactor.redact(e.thrown))
             append(' ').append(e.logger)
             append(' ').append(e.thread)
             append(' ').append(e.level.name())
@@ -192,13 +269,18 @@ class LogPanel(
         return hay.contains(f, ignoreCase = true)
     }
 
+    private fun shouldDisplay(e: LogEntry): Boolean =
+        e.logger !in hiddenLoggers && matchesFilters(e)
+
     private fun formatLine(e: LogEntry): String {
         val ts = tsFmt.format(e.instant.atZone(zone))
-        val base = "$ts ${e.level.name().padEnd(5)} ${e.logger} [${e.thread}] - ${e.message}"
-        return if (e.thrown.isNullOrBlank()) {
+        val redactedMessage = LogPathRedactor.redact(e.message)
+        val redactedThrown = e.thrown?.let(LogPathRedactor::redact)
+        val base = "$ts ${e.level.name().padEnd(5)} ${e.logger} [${e.thread}] - $redactedMessage"
+        return if (redactedThrown.isNullOrBlank()) {
             base + "\n"
         } else {
-            base + "\n" + e.thrown + "\n"
+            base + "\n" + redactedThrown + "\n"
         }
     }
 

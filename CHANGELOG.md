@@ -5,10 +5,12 @@
 - **BUGFIX:** Änderung des Zeitraums löscht nicht mehr die Sender.
 - **BUGFIX:** Downloads mit ffmpeg zeigen wieder Fortschritt, Zeit und Gechwindigkeit an.
 - **BUGFIX(Windows):** Offizielle MV-Builds nutzen nun JetBrains Runtime 25. Damit sollte das Programm bei Nutzung einer RDP-Session nicht mehr abstürzen.
+- **BUGFIX:** Programm-Log Autoscroll-Verhalten wurde korrigiert.
 - **FEATURE:** Tab *Audiothek* zur Suche (offline als auch online), Abspielen und Download von Podcasts der ARD Audiothek und via podcastindex.org.
 - **FEATURE:** Filter können nun kopiert werden.
 - **FEATURE:** Sperrbare Filter. Änderungen an einem gesperrten Filter wirken sich auf die Filmliste aus, werden jedoch nicht dauerhaft gespeichert und beim nächsten Programmstart zurückgesetzt. Gesperrte Filter werden mit einem Schloß-Symbol in der Filterliste angezeigt.
 - **FEATURE:** *Download ändern*-Dialog bietet nun auch die Möglichkeit, Codec-Details abzurufen.
+- **FEATURE:** *Hilfe\Live Programm-Log anzeigen* zeigt die logging-Ausgaben von MediathekView in Echtzeit an. Diese können für die Fehlersuche exportiert werden. Lokale Dateipfade werden automatisch mittels `<redacted>` unkenntlich gemacht.
 - interne Optimierungen für mehr Geschwindigkeit.
 - interne Fehler wurden behoben.
 
