@@ -68,7 +68,6 @@ import mediathek.update.ProgramUpdateCheck;
 import net.engio.mbassy.listener.Handler;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.configuration2.sync.LockMode;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -133,7 +132,7 @@ public class MediathekGui extends JFrame {
     protected final Daten daten = Daten.getInstance();
     protected final PositionSavingTabbedPane tabbedPane = new PositionSavingTabbedPane();
     protected final JMenu jMenuHilfe = new JMenu();
-    protected final SettingsAction settingsAction = new SettingsAction();
+    protected final SettingsAction settingsAction = new SettingsAction(this);
     /**
      * the global configuration for this app.
      */
@@ -956,15 +955,6 @@ public class MediathekGui extends JFrame {
             progressIndicatorThread.interrupt();
             progressIndicatorThread = null;
         }
-    }
-
-    @Handler
-    private void handleShowSettingsDialogEvent(ShowSettingsDialogEvent evt) {
-        SwingUtilities.invokeLater(() -> {
-            getSettingsDialog().setVisible(true);
-            if (!SystemUtils.IS_OS_LINUX)
-                getSettingsDialog().toFront();
-        });
     }
 
     /**

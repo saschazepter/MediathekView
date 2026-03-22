@@ -25,10 +25,8 @@ import mediathek.gui.actions.ShowAboutAction
 import mediathek.gui.messages.DownloadFinishedEvent
 import mediathek.gui.messages.DownloadStartEvent
 import mediathek.gui.messages.InstallTabSwitchListenerEvent
-import mediathek.gui.messages.ShowSettingsDialogEvent
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.GuiFunktionenProgramme
-import mediathek.tool.MessageBus
 import mediathek.tool.notification.INotificationCenter
 import mediathek.tool.notification.MacNotificationCenter
 import mediathek.tool.threads.IndicatorThread
@@ -288,7 +286,7 @@ class MediathekGuiMac : MediathekGui {
 
         if (desktop.isSupported(Desktop.Action.APP_PREFERENCES)) {
             desktop.setPreferencesHandler {
-                MessageBus.messageBus.publishAsync(ShowSettingsDialogEvent())
+                settingsAction.actionPerformed(null)
             }
         }
 

@@ -1,8 +1,7 @@
 package mediathek.gui.actions;
 
-import mediathek.gui.messages.ShowSettingsDialogEvent;
+import mediathek.mainwindow.MediathekGui;
 import mediathek.swing.IconUtils;
-import mediathek.tool.MessageBus;
 import org.apache.commons.lang3.SystemUtils;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 
@@ -11,7 +10,11 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 
 public class SettingsAction extends AbstractAction {
-    public SettingsAction() {
+    private final MediathekGui mediathekGui;
+
+    public SettingsAction(MediathekGui mediathekGui) {
+        this.mediathekGui = mediathekGui;
+
         putValue(Action.NAME, "Einstellungen...");
         if (!SystemUtils.IS_OS_MAC_OSX)
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
@@ -20,6 +23,9 @@ public class SettingsAction extends AbstractAction {
     }
     @Override
     public void actionPerformed(ActionEvent e) {
-        MessageBus.getMessageBus().publishAsync(new ShowSettingsDialogEvent());
+        var dialog = mediathekGui.getSettingsDialog();
+        dialog.setVisible(true);
+        if (!SystemUtils.IS_OS_LINUX)
+            dialog.toFront();
     }
 }
