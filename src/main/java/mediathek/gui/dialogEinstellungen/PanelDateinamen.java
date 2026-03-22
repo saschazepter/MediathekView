@@ -1,8 +1,6 @@
 package mediathek.gui.dialogEinstellungen;
 
-import mediathek.config.Daten;
 import mediathek.config.MVConfig;
-import mediathek.gui.PanelVorlage;
 import mediathek.gui.messages.ReplaceListChangedEvent;
 import mediathek.tool.*;
 import mediathek.tool.models.NonEditableTableModel;
@@ -18,8 +16,9 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
-public class PanelDateinamen extends PanelVorlage {
+public class PanelDateinamen extends JPanel {
     public boolean ok;
+    protected boolean stopBeob;
 
     @Handler
     private void handleReplaceListChange(ReplaceListChangedEvent e) {
@@ -29,8 +28,7 @@ public class PanelDateinamen extends PanelVorlage {
         });
     }
 
-    public PanelDateinamen(Daten d, JFrame pparentComponent) {
-        super(d, pparentComponent);
+    public PanelDateinamen() {
         initComponents();
         MessageBus.getMessageBus().subscribe(this);
 
