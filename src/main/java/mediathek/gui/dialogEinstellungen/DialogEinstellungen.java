@@ -163,7 +163,7 @@ public class DialogEinstellungen extends JFrame {
                     }
                     case NAME_allgemeineEinstellungenGeo -> {
                         jPanelExtra.removeAll();
-                        jPanelExtra.add(new PanelEinstellungenGeo(this));
+                        jPanelExtra.add(new PanelEinstellungenGeo());
                     }
                     case NAME_allgemeineEinstellungenColor -> {
                         jPanelExtra.removeAll();

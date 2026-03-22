@@ -4,7 +4,6 @@ import com.formdev.flatlaf.util.ScaledImageIcon;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.daten.Country;
-import mediathek.gui.dialog.DialogHilfe;
 import mediathek.gui.messages.BlacklistChangedEvent;
 import mediathek.gui.messages.GeoStateChangedEvent;
 import mediathek.tool.*;
@@ -21,10 +20,8 @@ import java.awt.*;
 import java.util.Objects;
 
 public class PanelEinstellungenGeo extends JPanel {
-    private final JFrame parentComponent;
 
-    public PanelEinstellungenGeo(JFrame pparentComponent) {
-        parentComponent = pparentComponent;
+    public PanelEinstellungenGeo() {
 
         initComponents();
         setCountryFlags();
@@ -83,7 +80,10 @@ public class PanelEinstellungenGeo extends JPanel {
         });
 
         jButtonHilfe.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg"));
-        jButtonHilfe.addActionListener(_ -> new DialogHilfe(parentComponent, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_GEO)).setVisible(true));
+        jButtonHilfe.addActionListener(_ -> {
+            final var msg = GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_GEO).trim();
+            JOptionPane.showMessageDialog(this, msg, Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
+        });
     }
 
     /**
