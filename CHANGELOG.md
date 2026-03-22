@@ -1,4 +1,5 @@
 # **14.6.0**
+- JetBrains Runtime JBR 25.0.2 wird verwendet
 - **BUGFIX:** Dialog "Film speichern" neu geschrieben um vorhandene Layout-Probleme zu beheben.
 - **BUGFIX:** Das Löschen der Thema-ComboBox mit dem Löschen-Button funktioniert nach Keyboard-Manipulation. Das Thema wird auch weiter angewendet.
 - **BUGFIX:** Vorhandenes Thema wird bei Filterwechsel angewendet und nicht gelöscht.
