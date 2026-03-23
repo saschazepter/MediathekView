@@ -175,15 +175,13 @@ public class GuiFunktionenProgramme {
         return pfad;
     }
 
-    public static void addSetVorlagen(JFrame parent, ListePset pSet, boolean setVersion) {
+    public static void addSetVorlagen(Component parent, ListePset pSet, boolean setVersion) {
         if (pSet == null) {
             MVMessageDialog.showMessageDialog(null, "Die Datei wurde nicht importiert!",
                     "Fehler", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        if (parent != null) {
-            parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        }
+
         for (DatenPset ps : pSet) {
             if (!ps.getAddOn().isEmpty()) {
                 if (!addOnZip(ps.getAddOn())) {
@@ -194,11 +192,9 @@ public class GuiFunktionenProgramme {
                 }
             }
         }
-        if (parent != null) {
-            parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
 
-        DialogImportPset dialog = new DialogImportPset(parent, true, pSet);
+        final var owner = parent instanceof Window window ? window : null;
+        DialogImportPset dialog = new DialogImportPset(owner, true, pSet);
         dialog.setVisible(true);
         if (dialog.ok) {
             if (Daten.listePset.addPset(pSet)) {

@@ -3,8 +3,8 @@ package mediathek.gui.dialogEinstellungen;
 import mediathek.config.Config;
 import mediathek.daten.ListePset;
 import mediathek.daten.ListePsetVorlagen;
-import mediathek.mainwindow.MediathekGui;
 import mediathek.swing.IconUtils;
+import mediathek.tool.FileDialogs;
 import mediathek.tool.GuiFunktionenProgramme;
 import mediathek.tool.SVGIconUtilities;
 import mediathek.tool.TextCopyPasteHandler;
@@ -22,15 +22,14 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.Arrays;
 
 public class PanelPsetImport extends JPanel {
     private final ListePsetVorlagen listePsetVorlagen = new ListePsetVorlagen();
     private static final Logger logger = LogManager.getLogger();
-    protected final JFrame parentComponent;
+    protected final Component parentComponent;
 
-    public PanelPsetImport(JFrame parentComponent) {
+    public PanelPsetImport(Component parentComponent) {
         this.parentComponent = parentComponent;
 
         initComponents();
@@ -194,35 +193,13 @@ public class PanelPsetImport extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            //we can use native chooser on Mac...
-            if (SystemUtils.IS_OS_MAC_OSX) {
-                FileDialog chooser = new FileDialog(MediathekGui.ui(), "Programmset auswählen");
-                chooser.setMode(FileDialog.LOAD);
-                chooser.setVisible(true);
-                if (chooser.getFile() != null) {
-                    try {
-                        jTextFieldDatei.setText(new File(chooser.getDirectory() + chooser.getFile()).getAbsolutePath());
-                    } catch (Exception ex) {
-                        logger.error(ex);
-                    }
-                }
-            } else {
-                int returnVal;
-                JFileChooser chooser = new JFileChooser();
-                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                chooser.setFileHidingEnabled(false);
-                if (jTextFieldDatei.getText().isEmpty()) {
-                    chooser.setCurrentDirectory(new File(SystemUtils.USER_HOME));
-                } else {
-                    chooser.setCurrentDirectory(new File(jTextFieldDatei.getText()));
-                }
-                returnVal = chooser.showOpenDialog(null);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    try {
-                        jTextFieldDatei.setText(chooser.getSelectedFile().getAbsolutePath());
-                    } catch (Exception ex) {
-                        logger.error(ex);
-                    }
+            var initialFile = jTextFieldDatei.getText().isEmpty() ? SystemUtils.USER_HOME : jTextFieldDatei.getText();
+            var selectedFile = FileDialogs.chooseLoadFileLocation(PanelPsetImport.this, "Programmset auswählen", initialFile);
+            if (selectedFile != null) {
+                try {
+                    jTextFieldDatei.setText(selectedFile.getAbsolutePath());
+                } catch (Exception ex) {
+                    logger.error(ex);
                 }
             }
         }

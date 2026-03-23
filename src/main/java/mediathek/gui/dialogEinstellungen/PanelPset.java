@@ -13,9 +13,9 @@ import javax.swing.*;
 import java.awt.*;
 
 public class PanelPset extends JPanel {
-    private final JFrame parentComponent;
+    private final Component parentComponent;
 
-    public PanelPset(JFrame parentComponent) {
+    public PanelPset(Component parentComponent) {
         this.parentComponent = parentComponent;
 
         initComponents();

@@ -3,6 +3,7 @@ package mediathek.gui.dialogEinstellungen;
 import mediathek.config.Konstanten;
 import mediathek.config.MVConfig;
 import mediathek.gui.dialog.DialogHilfe;
+import mediathek.tool.FileDialogs;
 import mediathek.tool.GetFile;
 import mediathek.tool.GuiFunktionenProgramme;
 import mediathek.tool.SVGIconUtilities;
@@ -22,9 +23,9 @@ public class PanelProgrammPfade extends JPanel {
     private static final Logger logger = LogManager.getLogger();
     private static final Color COLOR_PINK = new Color(255, 200, 200);
     private final boolean vlc, ffmpeg;
-    private final JFrame parentComponent;
+    private final Component parentComponent;
 
-    public PanelProgrammPfade(JFrame parentFrame, boolean vvlc, boolean fffmpeg) {
+    public PanelProgrammPfade(Component parentFrame, boolean vvlc, boolean fffmpeg) {
         initComponents();
         vlc = vvlc;
         ffmpeg = fffmpeg;
@@ -65,7 +66,10 @@ public class PanelProgrammPfade extends JPanel {
             MVConfig.add(MVConfig.Configs.SYSTEM_PFAD_FFMPEG, "");
             jTextFieldFFmpeg.setText(GuiFunktionenProgramme.getMusterPfadFFmpeg());
         });
-        jButtonHilfe.addActionListener(_ -> new DialogHilfe(parentComponent, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_STANDARD_PSET)).setVisible(true));
+        jButtonHilfe.addActionListener(_ -> {
+            final var owner = SwingUtilities.getWindowAncestor(PanelProgrammPfade.this);
+            new DialogHilfe(owner, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_STANDARD_PSET)).setVisible(true);
+        });
     }
 
     private void check() {
@@ -131,39 +135,14 @@ public class PanelProgrammPfade extends JPanel {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            //we can use native chooser on Mac...
-            if (SystemUtils.IS_OS_MAC_OSX) {
-                FileDialog chooser = new FileDialog(parentComponent, "Programmdatei auswählen");
-                chooser.setMode(FileDialog.LOAD);
-                chooser.setVisible(true);
-                if (chooser.getFile() != null) {
-                    try {
-                        textField.setText(new File(chooser.getDirectory() + chooser.getFile()).getAbsolutePath());
-                    }
-                    catch (Exception ex) {
-                        logger.error(ex);
-                    }
+            var initialFile = textField.getText().isEmpty() ? SystemUtils.USER_HOME : textField.getText();
+            var selectedFile = FileDialogs.chooseLoadFileLocation(PanelProgrammPfade.this, "Programmdatei auswählen", initialFile);
+            if (selectedFile != null) {
+                try {
+                    textField.setText(selectedFile.getAbsolutePath());
                 }
-            }
-            else {
-                int returnVal;
-                JFileChooser chooser = new JFileChooser();
-                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                chooser.setFileHidingEnabled(false);
-                if (textField.getText().isEmpty()) {
-                    chooser.setCurrentDirectory(new File(SystemUtils.USER_HOME));
-                }
-                else {
-                    chooser.setCurrentDirectory(new File(textField.getText()));
-                }
-                returnVal = chooser.showOpenDialog(null);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    try {
-                        textField.setText(chooser.getSelectedFile().getAbsolutePath());
-                    }
-                    catch (Exception ex) {
-                        logger.error(ex);
-                    }
+                catch (Exception ex) {
+                    logger.error(ex);
                 }
             }
         }

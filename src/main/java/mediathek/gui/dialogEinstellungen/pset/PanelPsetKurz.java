@@ -22,7 +22,7 @@ import mediathek.daten.DatenProg;
 import mediathek.daten.DatenPset;
 import mediathek.daten.ListePset;
 import mediathek.gui.messages.ProgramSetChangedEvent;
-import mediathek.mainwindow.MediathekGui;
+import mediathek.tool.FileDialogs;
 import mediathek.tool.MessageBus;
 import mediathek.tool.SVGIconUtilities;
 import mediathek.tool.TextCopyPasteHandler;
@@ -37,7 +37,6 @@ import javax.swing.event.DocumentListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
 
 public class PanelPsetKurz extends JPanel {
     private DatenPset pSet;
@@ -225,48 +224,19 @@ public class PanelPsetKurz extends JPanel {
             if (pSet == null) {
                 return;
             }
-            //we can use native directory chooser on Mac...
-            if (SystemUtils.IS_OS_MAC_OSX) {
-                //we want to select a directory only, so temporarily change properties
-                if (!file) {
-                    System.setProperty("apple.awt.fileDialogForDirectories", "true");
-                }
-                FileDialog chooser = new FileDialog(MediathekGui.ui(), "Film speichern");
-                chooser.setVisible(true);
-                if (chooser.getFile() != null) {
-                    //A directory was selected, that means Cancel was not pressed
-                    try {
-                        textField.setText(chooser.getDirectory() + chooser.getFile());
-                        if (arr == null) {
-                            pSet.set(idx, textField.getText());
-                        } else {
-                            arr[idx] = textField.getText();
-                        }
-                    } catch (Exception ex) {
-                        logger.error(ex);
+            var selectedFile = file
+                    ? FileDialogs.chooseLoadFileLocation(PanelPsetKurz.this, "Film speichern", textField.getText())
+                    : FileDialogs.chooseDirectoryLocation(PanelPsetKurz.this, "Film speichern", textField.getText());
+            if (selectedFile != null) {
+                try {
+                    textField.setText(selectedFile.getAbsolutePath());
+                    if (arr == null) {
+                        pSet.set(idx, textField.getText());
+                    } else {
+                        arr[idx] = textField.getText();
                     }
-                }
-                if (!file) {
-                    System.setProperty("apple.awt.fileDialogForDirectories", "false");
-                }
-            } else {
-                //use the cross-platform swing chooser
-                int returnVal;
-                JFileChooser chooser = new JFileChooser();
-                chooser.setCurrentDirectory(new File(textField.getText()));
-                chooser.setFileSelectionMode(file ? JFileChooser.FILES_ONLY : JFileChooser.DIRECTORIES_ONLY);
-                returnVal = chooser.showOpenDialog(null);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    try {
-                        textField.setText(chooser.getSelectedFile().getAbsolutePath());
-                        if (arr == null) {
-                            pSet.set(idx, textField.getText());
-                        } else {
-                            arr[idx] = textField.getText();
-                        }
-                    } catch (Exception ex) {
-                        logger.error(ex);
-                    }
+                } catch (Exception ex) {
+                    logger.error(ex);
                 }
             }
         }

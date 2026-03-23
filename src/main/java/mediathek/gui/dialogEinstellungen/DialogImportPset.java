@@ -1,23 +1,21 @@
 package mediathek.gui.dialogEinstellungen;
 
-import mediathek.config.Daten;
 import mediathek.daten.ListePset;
 import mediathek.gui.dialogEinstellungen.pset.PanelPsetKurz;
 import mediathek.gui.dialogEinstellungen.pset.PanelPsetLang;
 import mediathek.tool.EscapeKeyHandler;
 
 import javax.swing.*;
+import java.awt.*;
 
 public class DialogImportPset extends JDialog {
-    public boolean ok = false;
+    public boolean ok;
 
-    public DialogImportPset(JFrame parent, boolean modal, ListePset liste) {
-        super(parent, modal);
+    public DialogImportPset(Window parent, boolean modal, ListePset liste) {
+        super(parent, modal ? ModalityType.APPLICATION_MODAL : ModalityType.MODELESS);
         setTitle("Programmset");
 
         initComponents();
-
-        var daten = Daten.getInstance();
 
         jScrollPane1.setViewportView(new PanelPsetKurz(liste));
         jButtonOk.addActionListener(_ -> disposeWithCode(true));

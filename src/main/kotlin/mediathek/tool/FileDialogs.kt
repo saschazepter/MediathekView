@@ -19,13 +19,11 @@
 package mediathek.tool
 
 import org.apache.commons.lang3.SystemUtils
-import java.awt.Component
-import java.awt.Dialog
-import java.awt.FileDialog
-import java.awt.Frame
+import java.awt.*
 import java.io.File
 import javax.swing.JDialog
 import javax.swing.JFileChooser
+import javax.swing.SwingUtilities
 
 object FileDialogs {
     private const val MAC_DIRECTORY_DIALOG_PROPERTY = "apple.awt.fileDialogForDirectories"
@@ -36,11 +34,33 @@ object FileDialogs {
     private val FileDialog.selectedFileOrNull: File?
         get() = files.firstOrNull()
 
+    private fun resolveDialogOwner(parent: Component?): Window? = when (parent) {
+        null -> null
+        is Window -> parent
+        else -> SwingUtilities.getWindowAncestor(parent)
+    }
+
     @JvmStatic
     fun chooseDirectoryLocation(parent: Frame, title: String, initialFile: String): File? =
         if (SystemUtils.IS_OS_MAC_OSX) {
             withTemporarySystemProperty(MAC_DIRECTORY_DIALOG_PROPERTY, "true") {
                 showNativeDialog(parent, title, mode = FileDialog.LOAD, initialDirectory = initialFile)
+            }
+        } else {
+            showSwingDialog(
+                parent = parent,
+                title = title,
+                selectionMode = JFileChooser.DIRECTORIES_ONLY,
+                initialDirectory = initialFile,
+                showDialog = JFileChooser::showOpenDialog
+            )
+        }
+
+    @JvmStatic
+    fun chooseDirectoryLocation(parent: Component, title: String, initialFile: String): File? =
+        if (SystemUtils.IS_OS_MAC_OSX) {
+            withTemporarySystemProperty(MAC_DIRECTORY_DIALOG_PROPERTY, "true") {
+                showNativeDialog(resolveDialogOwner(parent), title, mode = FileDialog.LOAD, initialDirectory = initialFile)
             }
         } else {
             showSwingDialog(
@@ -70,6 +90,20 @@ object FileDialogs {
     fun chooseLoadFileLocation(parent: Frame, title: String, initialFile: String): File? =
         if (prefersNativeFileDialogs) {
             showNativeDialog(parent, title, mode = FileDialog.LOAD, initialDirectory = initialFile)
+        } else {
+            showSwingDialog(
+                parent = parent,
+                title = title,
+                selectionMode = JFileChooser.FILES_ONLY,
+                initialDirectory = initialFile,
+                showDialog = JFileChooser::showOpenDialog
+            )
+        }
+
+    @JvmStatic
+    fun chooseLoadFileLocation(parent: Component, title: String, initialFile: String): File? =
+        if (prefersNativeFileDialogs) {
+            showNativeDialog(resolveDialogOwner(parent), title, mode = FileDialog.LOAD, initialDirectory = initialFile)
         } else {
             showSwingDialog(
                 parent = parent,
@@ -117,6 +151,20 @@ object FileDialogs {
             )
         }
 
+    @JvmStatic
+    fun chooseSaveFileLocation(parent: Component, title: String, initialFile: String): File? =
+        if (prefersNativeFileDialogs) {
+            showNativeDialog(resolveDialogOwner(parent), title, mode = FileDialog.SAVE, initialFile = initialFile)
+        } else {
+            showSwingDialog(
+                parent = parent,
+                title = title,
+                selectionMode = JFileChooser.FILES_ONLY,
+                initialFile = initialFile,
+                showDialog = JFileChooser::showSaveDialog
+            )
+        }
+
     private fun showNativeDialog(
         parent: Frame,
         title: String,
@@ -132,6 +180,18 @@ object FileDialogs {
         initialDirectory: String = "",
         initialFile: String = ""
     ): File? = showNativeDialog(FileDialog(parent, title), mode, initialDirectory, initialFile)
+
+    private fun showNativeDialog(
+        parent: Window?,
+        title: String,
+        mode: Int,
+        initialDirectory: String = "",
+        initialFile: String = ""
+    ): File? = when (parent) {
+        is Frame -> showNativeDialog(parent, title, mode, initialDirectory, initialFile)
+        is Dialog -> showNativeDialog(parent, title, mode, initialDirectory, initialFile)
+        else -> showNativeDialog(FileDialog(null as Frame?, title), mode, initialDirectory, initialFile)
+    }
 
     private fun showNativeDialog(
         chooser: FileDialog,

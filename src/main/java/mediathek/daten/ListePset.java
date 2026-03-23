@@ -26,8 +26,8 @@ import mediathek.gui.messages.ProgramSetChangedEvent;
 import mediathek.tool.MessageBus;
 import mediathek.tool.models.NonEditableTableModel;
 
-import javax.swing.*;
 import javax.swing.table.TableModel;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.regex.Matcher;
@@ -40,7 +40,7 @@ public class ListePset extends ArrayList<DatenPset> {
     public static final String MUSTER_PFAD_FFMPEG = "PFAD_FFMPEG";
     public String version = "";
 
-    public static void progMusterErsetzen(JFrame parent, ListePset liste) {
+    public static void progMusterErsetzen(Component parent, ListePset liste) {
         for (DatenPset pSet : liste) {
             progMusterErsetzen(parent, pSet);
         }
@@ -48,7 +48,7 @@ public class ListePset extends ArrayList<DatenPset> {
         MessageBus.getMessageBus().publishAsync(new ProgramSetChangedEvent());
     }
 
-    private static void progMusterErsetzen(JFrame parent, DatenPset pSet) {
+    private static void progMusterErsetzen(Component parent, DatenPset pSet) {
         pSet.setZielPfad(pSet.getZielPfad().replace(MUSTER_PFAD_ZIEL, StandardLocations.getStandardDownloadPath()));
         String vlc = "";
         String ffmpeg = "";
@@ -85,18 +85,20 @@ public class ListePset extends ArrayList<DatenPset> {
         }
     }
 
-    private static String getPfadVlc(JFrame parent) {
+    private static String getPfadVlc(Component parent) {
         // liefert den Pfad wenn vorhanden, wenn nicht wird er in einem Dialog abgefragt
         if (MVConfig.get(MVConfig.Configs.SYSTEM_PFAD_VLC).isEmpty()) {
-            new DialogOk(null, true, new PanelProgrammPfade(parent, true /* vlc */, false/*ffmpeg*/), "Pfade Standardprogramme").setVisible(true);
+            var owner = parent instanceof Frame frame ? frame : null;
+            new DialogOk(owner, true, new PanelProgrammPfade(parent, true /* vlc */, false/*ffmpeg*/), "Pfade Standardprogramme").setVisible(true);
         }
         return MVConfig.get(MVConfig.Configs.SYSTEM_PFAD_VLC);
     }
 
-    private static String getPfadFFmpeg(JFrame parent) {
+    private static String getPfadFFmpeg(Component parent) {
         // liefert den Pfad wenn vorhanden, wenn nicht wird er in einem Dialog abgefragt
         if (MVConfig.get(MVConfig.Configs.SYSTEM_PFAD_FFMPEG).isEmpty()) {
-            new DialogOk(null, true, new PanelProgrammPfade(parent, false /* vlc */, true /*ffmpeg*/), "Pfade Standardprogramme").setVisible(true);
+            var owner = parent instanceof Frame frame ? frame : null;
+            new DialogOk(owner, true, new PanelProgrammPfade(parent, false /* vlc */, true /*ffmpeg*/), "Pfade Standardprogramme").setVisible(true);
         }
         return MVConfig.get(MVConfig.Configs.SYSTEM_PFAD_FFMPEG);
     }

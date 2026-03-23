@@ -28,7 +28,6 @@ import mediathek.daten.DatenPset;
 import mediathek.daten.FilmResolution;
 import mediathek.daten.ListePset;
 import mediathek.gui.messages.ProgramSetChangedEvent;
-import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import mediathek.tool.cellrenderer.CellRendererProgramme;
 import mediathek.tool.cellrenderer.CellRendererPset;
@@ -63,10 +62,10 @@ public class PanelPsetLang extends JPanel {
     private final ListePset listePset;
     private final MVTable tabellePset;
     private final MVTable tabelleProgramme;
-    protected final JFrame parentComponent;
+    protected final Component parentComponent;
     protected boolean stopBeob;
 
-    public PanelPsetLang(JFrame parentComponent, ListePset llistePset) {
+    public PanelPsetLang(Component parentComponent, ListePset llistePset) {
         this.parentComponent = parentComponent;
 
         initComponents();
@@ -145,7 +144,7 @@ public class PanelPsetLang extends JPanel {
             if (!jTextFieldProgPfad.getText().isEmpty()) {
                 initialFile = jTextFieldProgPfad.getText();
             }
-            var destFile = FileDialogs.chooseLoadFileLocation(MediathekGui.ui(),"Programm auswählen", initialFile);
+            var destFile = FileDialogs.chooseLoadFileLocation(PanelPsetLang.this, "Programm auswählen", initialFile);
             if (destFile != null) {
                 jTextFieldProgPfad.setText(destFile.getAbsolutePath());
             }
@@ -167,7 +166,7 @@ public class PanelPsetLang extends JPanel {
                 } else {
                     text = rows.length + " Programme löschen?";
                 }
-                int ret = JOptionPane.showConfirmDialog(parentComponent, text, "Löschen?", JOptionPane.YES_NO_OPTION);
+                int ret = JOptionPane.showConfirmDialog(this, text, "Löschen?", JOptionPane.YES_NO_OPTION);
                 if (ret == JOptionPane.OK_OPTION) {
                     for (int i = rows.length - 1; i >= 0; --i) {
                         final int delRow = tabelleProgramme.convertRowIndexToModel(rows[i]);
@@ -352,7 +351,7 @@ public class PanelPsetLang extends JPanel {
             if (!tfGruppeZielPfad.getText().isEmpty()) {
                 initialFile = tfGruppeZielPfad.getText();
             }
-            var destDirectory = FileDialogs.chooseDirectoryLocation(MediathekGui.ui(), "Filme speichern unter", initialFile);
+            var destDirectory = FileDialogs.chooseDirectoryLocation(PanelPsetLang.this, "Filme speichern unter", initialFile);
             if (destDirectory != null) {
                 tfGruppeZielPfad.setText(destDirectory.getAbsolutePath());
             }
@@ -762,7 +761,7 @@ public class PanelPsetLang extends JPanel {
             } else {
                 text = rows.length + " Set löschen?";
             }
-            int ret = JOptionPane.showConfirmDialog(parentComponent, text, "Löschen?", JOptionPane.YES_NO_OPTION);
+            int ret = JOptionPane.showConfirmDialog(this, text, "Löschen?", JOptionPane.YES_NO_OPTION);
             if (ret == JOptionPane.OK_OPTION) {
                 for (int i = rows.length - 1; i >= 0; --i) {
                     int delRow = tabellePset.convertRowIndexToModel(rows[i]);

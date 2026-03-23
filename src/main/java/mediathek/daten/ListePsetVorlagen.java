@@ -13,12 +13,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import javax.swing.table.TableModel;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import java.awt.*;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.UnknownHostException;
@@ -83,7 +83,7 @@ public class ListePsetVorlagen extends ArrayList<String[]> {
             return "";
     }
 
-    public static ListePset getStandarset(JFrame parent, boolean replaceMuster) {
+    public static ListePset getStandarset(Component parent, boolean replaceMuster) {
         ListePset listePset = null;
         String[] vorlage = null;
         ListePsetVorlagen listePsetVorlagen = new ListePsetVorlagen();
