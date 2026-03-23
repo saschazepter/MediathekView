@@ -29,8 +29,6 @@ import java.awt.Component
 import java.awt.Dialog
 import java.nio.file.Files
 import java.nio.file.Path
-import java.sql.SQLException
-import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JDialog
 import javax.swing.JOptionPane
@@ -47,7 +45,7 @@ internal object SeenHistoryCorruptionHandler {
         try {
             return openStore(dbPath)
         } catch (ex: Exception) {
-            if (!isCorruptionCandidate(ex)) {
+            if (!isCorruption(ex)) {
                 throw ex
             }
             logger.warn("Seen history database is corrupt: {}", dbPath, ex)
@@ -85,53 +83,16 @@ internal object SeenHistoryCorruptionHandler {
         return openStore(tempDb)
     }
 
-    internal fun isCorruptionCandidate(ex: Throwable): Boolean {
+    private fun isCorruption(ex: Throwable): Boolean {
         return generateSequence(ex) { it.cause }
-            .any { throwable ->
-                when (throwable) {
-                    is SQLiteException -> throwable.isLikelyCorruption()
-
-                    is SQLException -> throwable.messageIndicatesCorruption()
-
-                    else -> false
-                }
+            .filterIsInstance<SQLiteException>()
+            .any { sqliteEx ->
+                sqliteEx.resultCode == SQLiteErrorCode.SQLITE_CORRUPT ||
+                    sqliteEx.resultCode == SQLiteErrorCode.SQLITE_CORRUPT_INDEX ||
+                    sqliteEx.resultCode == SQLiteErrorCode.SQLITE_CORRUPT_SEQUENCE ||
+                    sqliteEx.resultCode == SQLiteErrorCode.SQLITE_CORRUPT_VTAB ||
+                    sqliteEx.resultCode == SQLiteErrorCode.SQLITE_NOTADB
             }
-    }
-
-    private fun SQLiteException.isLikelyCorruption(): Boolean {
-        if (resultCode == SQLiteErrorCode.SQLITE_CORRUPT ||
-            resultCode == SQLiteErrorCode.SQLITE_CORRUPT_INDEX ||
-            resultCode == SQLiteErrorCode.SQLITE_CORRUPT_SEQUENCE ||
-            resultCode == SQLiteErrorCode.SQLITE_CORRUPT_VTAB ||
-            resultCode == SQLiteErrorCode.SQLITE_NOTADB
-        ) {
-            return true
-        }
-
-        if (messageIndicatesCorruption()) {
-            return true
-        }
-
-        return !messageIndicatesOperationalFailure()
-    }
-
-    private fun SQLException.messageIndicatesCorruption(): Boolean {
-        val normalizedMessage = message?.lowercase(Locale.ROOT) ?: return false
-        return normalizedMessage.contains("database disk image is malformed") ||
-            normalizedMessage.contains("file is not a database") ||
-            normalizedMessage.contains("not a database")
-    }
-
-    private fun SQLException.messageIndicatesOperationalFailure(): Boolean {
-        val normalizedMessage = message?.lowercase(Locale.ROOT) ?: return false
-        return normalizedMessage.contains("database is locked") ||
-            normalizedMessage.contains("database table is locked") ||
-            normalizedMessage.contains("busy") ||
-            normalizedMessage.contains("unable to open database file") ||
-            normalizedMessage.contains("cannot open database") ||
-            normalizedMessage.contains("access is denied") ||
-            normalizedMessage.contains("read-only database") ||
-            normalizedMessage.contains("readonly database")
     }
 
     private fun currentOwner(): Component? = runCatching { MediathekGui.ui() }.getOrNull()
