@@ -101,6 +101,15 @@ public class ListePset extends ArrayList<DatenPset> {
         return MVConfig.get(MVConfig.Configs.SYSTEM_PFAD_FFMPEG);
     }
 
+    /**
+     * Make the specified pset active as the current player. Deactivates all other psets.
+     * @param pset the current pset to activate
+     */
+    public void activateAsPlayer(DatenPset pset) {
+        forEach(set -> set.setAbspielen(false));
+        pset.setAbspielen(true);
+    }
+
     public DatenPset getPsetAbspielen() {
         //liefert die Programmgruppe zum Abspielen
         for (DatenPset datenPset : this) {

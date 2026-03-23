@@ -18,7 +18,7 @@ class DatenPsetTest {
             final DatenPset other = new DatenPset("other");
             Daten.listePset.add(active);
             Daten.listePset.add(other);
-            active.setAbspielen();
+            Daten.listePset.activateAsPlayer(active);
 
             final DatenPset temporary = new DatenPset();
             temporary.set(DatenPset.PROGRAMMSET_IST_ABSPIELEN, Boolean.TRUE.toString());

@@ -19,7 +19,6 @@
  */
 package mediathek.daten;
 
-import mediathek.config.Daten;
 import mediathek.tool.GuiFunktionenProgramme;
 import mediathek.tool.MVMessageDialog;
 import org.apache.commons.lang3.SystemUtils;
@@ -239,10 +238,6 @@ public class DatenPset implements Comparable<DatenPset> {
 
     public void set(int index, String value) {
         final String normalizedValue = value == null ? "" : value;
-        if (index == PROGRAMMSET_IST_ABSPIELEN) {
-            istAbspielen = parseBoolean(normalizedValue);
-            return;
-        }
 
         switch (index) {
             case PROGRAMMSET_NAME -> name = normalizedValue;
@@ -252,6 +247,7 @@ public class DatenPset implements Comparable<DatenPset> {
             case PROGRAMMSET_ZIEL_PFAD -> zielPfad = normalizedValue;
             case PROGRAMMSET_ZIEL_DATEINAME -> zielDateiname = normalizedValue;
             case PROGRAMMSET_THEMA_ANLEGEN -> themaAnlegen = parseBoolean(normalizedValue);
+            case PROGRAMMSET_IST_ABSPIELEN -> istAbspielen = parseBoolean(normalizedValue);
             case PROGRAMMSET_IST_SPEICHERN -> istSpeichern = parseBoolean(normalizedValue);
             case PROGRAMMSET_IST_BUTTON -> istButton = parseBoolean(normalizedValue);
             case PROGRAMMSET_IST_ABO -> istAbo = parseBoolean(normalizedValue);
@@ -418,6 +414,10 @@ public class DatenPset implements Comparable<DatenPset> {
         return Boolean.TRUE.equals(istAbspielen);
     }
 
+    public void setAbspielen(boolean value) {
+        istAbspielen = value;
+    }
+
     public boolean istSpeichern() {
         return Boolean.TRUE.equals(istSpeichern);
     }
@@ -445,13 +445,6 @@ public class DatenPset implements Comparable<DatenPset> {
     public boolean isFreeLine() {
         //Wenn die Programmgruppe keinen Namen hat, leere Zeile
         return getName().isEmpty();
-    }
-
-    public void setAbspielen() {
-        for (DatenPset datenPset : Daten.listePset) {
-            datenPset.istAbspielen = Boolean.FALSE;
-        }
-        istAbspielen = Boolean.TRUE;
     }
 
     public void setSpeichern(boolean set) {

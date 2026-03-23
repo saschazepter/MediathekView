@@ -220,7 +220,7 @@ public class PanelPsetLang extends PanelVorlage {
         jButtonAbspielen.addActionListener(_ -> {
             DatenPset pset = getPset();
             if (pset != null) {
-                pset.setAbspielen();
+                Daten.listePset.activateAsPlayer(pset);
                 nurtabellePset();
                 notifyProgramSetChanged();
             }
