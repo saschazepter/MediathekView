@@ -212,6 +212,10 @@ internal class SeenHistoryStore(
 
     @Throws(SQLException::class)
     private fun ensureUniqueUrlIndex() {
+        if (hasRequiredUniqueUrlIndex()) {
+            return
+        }
+
         connection.createStatement().use { statement ->
             statement.executeUpdate(SeenHistoryMigrator.DROP_INDEX_STMT)
         }
@@ -228,6 +232,21 @@ internal class SeenHistoryStore(
                 statement.executeUpdate(SeenHistoryMigrator.CREATE_INDEX_STMT)
             }
         }
+    }
+
+    @Throws(SQLException::class)
+    private fun hasRequiredUniqueUrlIndex(): Boolean {
+        connection.createStatement().use { statement ->
+            statement.executeQuery("PRAGMA index_list('seen_history')").use { resultSet ->
+                while (resultSet.next()) {
+                    if (resultSet.getString("name") == UNIQUE_URL_INDEX_NAME) {
+                        return resultSet.getInt("unique") == 1
+                    }
+                }
+            }
+        }
+
+        return false
     }
 
     private fun <T> Connection.inTransaction(block: () -> T): T {
@@ -255,6 +274,7 @@ internal class SeenHistoryStore(
         private const val DELETE_LIVESTREAMS_SQL = "DELETE FROM seen_history WHERE thema = 'Livestream'"
         private const val REINDEX_SQL = "REINDEX seen_history"
         private const val VACUUM_SQL = "VACUUM"
+        private const val UNIQUE_URL_INDEX_NAME = "IDX_SEEN_HISTORY_URL"
         private const val CREATE_TEMP_HISTORY_SQL = """
             CREATE TABLE temp_history AS
             SELECT

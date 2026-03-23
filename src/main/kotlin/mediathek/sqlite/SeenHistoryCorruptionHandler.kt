@@ -26,9 +26,11 @@ import org.apache.logging.log4j.LogManager
 import org.sqlite.SQLiteErrorCode
 import org.sqlite.SQLiteException
 import java.awt.Component
+import java.awt.Dialog
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.concurrent.atomic.AtomicBoolean
+import javax.swing.JDialog
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
@@ -97,7 +99,15 @@ internal object SeenHistoryCorruptionHandler {
 
     private fun showMessage(owner: Component?, message: String, messageType: Int) {
         invokeOnEdt {
-            JOptionPane.showMessageDialog(owner, message, Konstanten.PROGRAMMNAME, messageType)
+            val optionPane = JOptionPane(message, messageType)
+            val dialog = optionPane.createDialog(owner, Konstanten.PROGRAMMNAME).apply {
+                modalityType = Dialog.ModalityType.APPLICATION_MODAL
+                isAlwaysOnTop = true
+                defaultCloseOperation = JDialog.DISPOSE_ON_CLOSE
+                toFront()
+                requestFocus()
+            }
+            dialog.isVisible = true
         }
     }
 
