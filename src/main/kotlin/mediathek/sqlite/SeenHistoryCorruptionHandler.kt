@@ -28,6 +28,8 @@ import org.sqlite.SQLiteException
 import java.awt.Component
 import java.nio.file.Files
 import java.nio.file.Path
+import java.sql.SQLException
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
@@ -83,14 +85,27 @@ internal object SeenHistoryCorruptionHandler {
 
     private fun isCorruption(ex: Throwable): Boolean {
         return generateSequence(ex) { it.cause }
-            .filterIsInstance<SQLiteException>()
-            .any { sqliteEx ->
-                sqliteEx.resultCode == SQLiteErrorCode.SQLITE_CORRUPT ||
-                    sqliteEx.resultCode == SQLiteErrorCode.SQLITE_CORRUPT_INDEX ||
-                    sqliteEx.resultCode == SQLiteErrorCode.SQLITE_CORRUPT_SEQUENCE ||
-                    sqliteEx.resultCode == SQLiteErrorCode.SQLITE_CORRUPT_VTAB ||
-                    sqliteEx.resultCode == SQLiteErrorCode.SQLITE_NOTADB
+            .any { throwable ->
+                when (throwable) {
+                    is SQLiteException -> throwable.resultCode == SQLiteErrorCode.SQLITE_CORRUPT ||
+                        throwable.resultCode == SQLiteErrorCode.SQLITE_CORRUPT_INDEX ||
+                        throwable.resultCode == SQLiteErrorCode.SQLITE_CORRUPT_SEQUENCE ||
+                        throwable.resultCode == SQLiteErrorCode.SQLITE_CORRUPT_VTAB ||
+                        throwable.resultCode == SQLiteErrorCode.SQLITE_NOTADB ||
+                        throwable.messageIndicatesCorruption()
+
+                    is SQLException -> throwable.messageIndicatesCorruption()
+
+                    else -> false
+                }
             }
+    }
+
+    private fun SQLException.messageIndicatesCorruption(): Boolean {
+        val normalizedMessage = message?.lowercase(Locale.ROOT) ?: return false
+        return normalizedMessage.contains("database disk image is malformed") ||
+            normalizedMessage.contains("file is not a database") ||
+            normalizedMessage.contains("not a database")
     }
 
     private fun currentOwner(): Component? = runCatching { MediathekGui.ui() }.getOrNull()
