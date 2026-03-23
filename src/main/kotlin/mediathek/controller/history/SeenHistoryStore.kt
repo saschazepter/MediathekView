@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.controller.history
 
 import mediathek.tool.sql.SqlDatabaseConfig
@@ -17,7 +35,7 @@ internal class SeenHistoryStore(
     private val seenStatement: PreparedStatement
 
     init {
-        if (!Files.exists(dbPath)) {
+        if (shouldInitializeDatabase(dbPath)) {
             createEmptyDatabase(dbPath)
         }
 
@@ -125,6 +143,26 @@ internal class SeenHistoryStore(
         }
     }
 
+    @Throws(SQLException::class)
+    fun countDuplicateEntries(): Int {
+        connection.createStatement().use { statement ->
+            statement.executeQuery(COUNT_DUPLICATES_SQL).use { resultSet ->
+                resultSet.next()
+                return resultSet.getInt(1)
+            }
+        }
+    }
+
+    @Throws(SQLException::class)
+    fun normalizeRecoveredDatabase(): Int {
+        val duplicateCount = countDuplicateEntries()
+        if (duplicateCount > 0) {
+            removeDuplicates()
+        }
+        ensureUniqueUrlIndex()
+        return duplicateCount
+    }
+
     override fun close() {
         insertStatement.close()
         deleteStatement.close()
@@ -144,6 +182,18 @@ internal class SeenHistoryStore(
                 statement.executeUpdate(SeenHistoryMigrator.CREATE_TABLE_STMT)
                 statement.executeUpdate(SeenHistoryMigrator.CREATE_INDEX_STMT)
             }
+        }
+    }
+
+    private fun shouldInitializeDatabase(dbPath: Path): Boolean {
+        if (!Files.exists(dbPath)) {
+            return true
+        }
+
+        return try {
+            Files.size(dbPath) == 0L
+        } catch (_: Exception) {
+            false
         }
     }
 
@@ -232,5 +282,13 @@ internal class SeenHistoryStore(
             SELECT datum,thema,titel,url FROM temp_history
         """
         private const val DROP_TEMP_HISTORY_SQL = "DROP TABLE temp_history"
+        private const val COUNT_DUPLICATES_SQL = """
+            SELECT COUNT(*) FROM (
+                SELECT url
+                FROM seen_history
+                GROUP BY url
+                HAVING COUNT(*) > 1
+            )
+        """
     }
 }

@@ -56,6 +56,7 @@ import mediathek.gui.tasks.LuceneIndexWorker;
 import mediathek.gui.tasks.RefreshAboWorker;
 import mediathek.logging.LogDialog;
 import mediathek.res.GetIcon;
+import mediathek.sqlite.RecoverHistoryDbAction;
 import mediathek.swing.IconOnlyButton;
 import mediathek.tool.*;
 import mediathek.tool.notification.GenericNotificationCenter;
@@ -1070,6 +1071,7 @@ public class MediathekGui extends JFrame {
     private void createHelperToolsEntries() {
         var menu = new JMenu("Hilfsmittel");
         menu.add(new OptimizeHistoryDbAction(this));
+        menu.add(new RecoverHistoryDbAction(this));
         jMenuHilfe.add(menu);
     }
 

@@ -45,7 +45,13 @@ object SqlDatabaseConfig {
         }
 
     init {
-        dataSource = SQLiteDataSource(config)
-        dataSource.url = "jdbc:sqlite:" + historyDbPath.toAbsolutePath().toString()
+        dataSource = createDataSource(historyDbPath)
+    }
+
+    @JvmStatic
+    fun createDataSource(databasePath: Path): SQLiteDataSource {
+        return SQLiteDataSource(config).also {
+            it.url = "jdbc:sqlite:" + databasePath.toAbsolutePath()
+        }
     }
 }

@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.controller.history
 
 import kotlinx.coroutines.CoroutineDispatcher
@@ -8,6 +26,7 @@ import mediathek.audiothek.model.AudioEntry
 import mediathek.config.Daten
 import mediathek.daten.DatenFilm
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
+import mediathek.sqlite.SeenHistoryCorruptionHandler
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.MessageBus
 import mediathek.tool.sql.SqlDatabaseConfig
@@ -24,11 +43,7 @@ import java.time.temporal.ChronoUnit
  */
 class SeenHistoryController : AutoCloseable {
     private val databaseDispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(1)
-    private val store = runBlocking {
-        withContext(databaseDispatcher) {
-            SeenHistoryStore(SqlDatabaseConfig.dataSource, SqlDatabaseConfig.historyDbPath)
-        }
-    }
+    private val store = createStore()
 
     fun removeAll() {
         val removed = runStoreCatching("removeAll", false) {
@@ -230,6 +245,24 @@ class SeenHistoryController : AutoCloseable {
     private fun <T> runStore(block: suspend SeenHistoryStore.() -> T): T = runBlocking {
         withContext(databaseDispatcher) {
             store.block()
+        }
+    }
+
+    private fun createStore(): SeenHistoryStore {
+        return try {
+            openStore(SqlDatabaseConfig.historyDbPath)
+        } catch (ex: SeenHistoryCorruptionHandler.CorruptSeenHistoryDatabaseException) {
+            SeenHistoryCorruptionHandler.resolveCorruption(ex.dbPath) { databasePath ->
+                openStore(databasePath)
+            }
+        }
+    }
+
+    private fun openStore(databasePath: java.nio.file.Path): SeenHistoryStore = runBlocking {
+        withContext(databaseDispatcher) {
+            SeenHistoryCorruptionHandler.openStoreOrThrowCorrupt(databasePath) { resolvedPath ->
+                SeenHistoryStore(SqlDatabaseConfig.createDataSource(resolvedPath), resolvedPath)
+            }
         }
     }
 
