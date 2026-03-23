@@ -148,4 +148,60 @@ class SeenHistoryStoreTest {
             }
         }
     }
+
+    @Test
+    fun upgradesLegacyNonUniqueUrlIndexToUniqueIndex() {
+        store?.close()
+        store = null
+
+        DriverManager.getConnection(
+            "jdbc:sqlite:${databaseFile.toAbsolutePath()}",
+            SqlDatabaseConfig.config.toProperties()
+        ).use { connection ->
+            connection.createStatement().use { statement ->
+                statement.executeUpdate("DROP INDEX IF EXISTS IDX_SEEN_HISTORY_URL")
+                statement.executeUpdate("DROP TABLE IF EXISTS seen_history")
+                statement.executeUpdate(
+                    "CREATE TABLE seen_history (" +
+                        "id INTEGER PRIMARY KEY ASC, " +
+                        "datum DATE NOT NULL DEFAULT (date('now')), " +
+                        "thema TEXT, " +
+                        "titel TEXT, " +
+                        "url TEXT NOT NULL" +
+                        ")"
+                )
+                statement.executeUpdate("CREATE INDEX IDX_SEEN_HISTORY_URL ON seen_history(url)")
+                statement.executeUpdate(
+                    "INSERT INTO seen_history(datum,thema,titel,url) VALUES " +
+                        "('2024-03-01','Thema alt','Titel alt','https://example.org/duplicate.mp4')," +
+                        "('2024-03-05','Thema neu','Titel neu','https://example.org/duplicate.mp4')," +
+                        "('2024-02-01','Thema solo','Titel solo','https://example.org/unique.m3u8')"
+                )
+            }
+        }
+
+        store = SeenHistoryStore(dataSource, databaseFile)
+
+        DriverManager.getConnection("jdbc:sqlite:${databaseFile.toAbsolutePath()}").use { connection ->
+            connection.createStatement().use { statement ->
+                statement.executeQuery(
+                    "SELECT COUNT(*) FROM seen_history WHERE url = 'https://example.org/duplicate.mp4'"
+                ).use { resultSet ->
+                    resultSet.next()
+                    assertEquals(1, resultSet.getInt(1))
+                }
+
+                statement.executeQuery("PRAGMA index_list('seen_history')").use { resultSet ->
+                    var foundUniqueUrlIndex = false
+                    while (resultSet.next()) {
+                        if (resultSet.getString("name") == "IDX_SEEN_HISTORY_URL") {
+                            foundUniqueUrlIndex = true
+                            assertEquals(1, resultSet.getInt("unique"))
+                        }
+                    }
+                    assertTrue(foundUniqueUrlIndex)
+                }
+            }
+        }
+    }
 }

@@ -34,16 +34,16 @@ import org.apache.logging.log4j.LogManager
 import java.sql.SQLException
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Database based seen history controller.
  *
  * Public methods remain blocking for compatibility, while all JDBC access is confined
- * to a per-instance coroutine dispatcher with parallelism 1.
+ * to a process-wide coroutine dispatcher with parallelism 1.
  */
 class SeenHistoryController : AutoCloseable {
-    private val databaseDispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(1)
-    private val store = createStore()
+    private val closed = AtomicBoolean(false)
 
     fun removeAll() {
         val removed = runStoreCatching("removeAll", false) {
@@ -237,32 +237,13 @@ class SeenHistoryController : AutoCloseable {
     }
 
     override fun close() {
-        runStoreCatching("close", Unit) {
-            close()
-        }
+        closed.set(true)
     }
 
     private fun <T> runStore(block: suspend SeenHistoryStore.() -> T): T = runBlocking {
         withContext(databaseDispatcher) {
-            store.block()
-        }
-    }
-
-    private fun createStore(): SeenHistoryStore {
-        return try {
-            openStore(SqlDatabaseConfig.historyDbPath)
-        } catch (ex: SeenHistoryCorruptionHandler.CorruptSeenHistoryDatabaseException) {
-            SeenHistoryCorruptionHandler.resolveCorruption(ex.dbPath) { databasePath ->
-                openStore(databasePath)
-            }
-        }
-    }
-
-    private fun openStore(databasePath: java.nio.file.Path): SeenHistoryStore = runBlocking {
-        withContext(databaseDispatcher) {
-            SeenHistoryCorruptionHandler.openStoreOrThrowCorrupt(databasePath) { resolvedPath ->
-                SeenHistoryStore(SqlDatabaseConfig.createDataSource(resolvedPath), resolvedPath)
-            }
+            check(!closed.get()) { "SeenHistoryController is already closed." }
+            sharedStore().block()
         }
     }
 
@@ -287,6 +268,36 @@ class SeenHistoryController : AutoCloseable {
         private val logger = LogManager.getLogger()
         private const val LASTRUN = "database.seen_history.maintenance.lastRun"
         private const val MAX_DAYS: Long = 30
+        private val databaseDispatcher: CoroutineDispatcher = Dispatchers.IO.limitedParallelism(1)
+        private val sharedStoreLock = Any()
+        @Volatile
+        private var sharedStore: SeenHistoryStore? = null
+
+        private fun sharedStore(): SeenHistoryStore {
+            sharedStore?.let { return it }
+
+            synchronized(sharedStoreLock) {
+                return sharedStore ?: createStore().also { createdStore ->
+                    sharedStore = createdStore
+                }
+            }
+        }
+
+        private fun createStore(): SeenHistoryStore {
+            return try {
+                openStore(SqlDatabaseConfig.historyDbPath)
+            } catch (ex: SeenHistoryCorruptionHandler.CorruptSeenHistoryDatabaseException) {
+                SeenHistoryCorruptionHandler.resolveCorruption(ex.dbPath) { databasePath ->
+                    openStore(databasePath)
+                }
+            }
+        }
+
+        private fun openStore(databasePath: java.nio.file.Path): SeenHistoryStore {
+            return SeenHistoryCorruptionHandler.openStoreOrThrowCorrupt(databasePath) { resolvedPath ->
+                SeenHistoryStore(SqlDatabaseConfig.createDataSource(resolvedPath), resolvedPath)
+            }
+        }
 
         @JvmStatic
         fun prepareSharedMemoryCache() {
