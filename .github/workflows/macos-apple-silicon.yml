@@ -262,6 +262,125 @@ jobs:
         run: |
           echo "${{ github.workspace }}\download\install4j\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
 
+      - name: Build sqlite3 ARM64
+        shell: pwsh
+        run: |
+          [xml]$pom = Get-Content pom.xml
+          $sqliteJdbcVersion = $pom.project.properties.'sqlite-jdbc.version'
+          if (-not $sqliteJdbcVersion) {
+            throw "Could not read sqlite-jdbc.version from pom.xml"
+          }
+
+          $sqliteVersion = $sqliteJdbcVersion -replace '\.\d+$', ''
+          $versionParts = $sqliteVersion.Split('.')
+          if ($versionParts.Count -ne 3) {
+            throw "Unexpected SQLite version format: $sqliteVersion"
+          }
+
+          $sqliteEncodedVersion = "{0}{1:D2}{2:D2}00" -f `
+            [int]$versionParts[0], `
+            [int]$versionParts[1], `
+            [int]$versionParts[2]
+
+          $downloadPage = Invoke-WebRequest -Uri "https://sqlite.org/download.html"
+          $relativeAmalgamationUrl = [regex]::Match(
+            $downloadPage.Content,
+            "(?<path>\d{4}/sqlite-amalgamation-$sqliteEncodedVersion\.zip)"
+          ).Groups["path"].Value
+          $relativeSourceUrl = [regex]::Match(
+            $downloadPage.Content,
+            "(?<path>\d{4}/sqlite-src-$sqliteEncodedVersion\.zip)"
+          ).Groups["path"].Value
+          if (-not $relativeAmalgamationUrl) {
+            throw "Could not find sqlite-amalgamation-$sqliteEncodedVersion.zip on sqlite.org/download.html"
+          }
+          if (-not $relativeSourceUrl) {
+            throw "Could not find sqlite-src-$sqliteEncodedVersion.zip on sqlite.org/download.html"
+          }
+
+          $sqliteAmalgamationUrl = "https://sqlite.org/$relativeAmalgamationUrl"
+          $sqliteSourceUrl = "https://sqlite.org/$relativeSourceUrl"
+          $sqliteRoot = Join-Path $env:GITHUB_WORKSPACE "download\sqlite-arm64"
+          $sqliteAmalgamationZip = Join-Path $sqliteRoot "sqlite-amalgamation.zip"
+          $sqliteSourceZip = Join-Path $sqliteRoot "sqlite-src.zip"
+          $sqliteOutDir = Join-Path $env:GITHUB_WORKSPACE "target\res\bin"
+
+          New-Item -ItemType Directory -Path $sqliteRoot -Force | Out-Null
+          New-Item -ItemType Directory -Path $sqliteOutDir -Force | Out-Null
+
+          Write-Host "→ Downloading $sqliteAmalgamationUrl"
+          curl.exe -L $sqliteAmalgamationUrl -o $sqliteAmalgamationZip --progress-bar
+
+          Write-Host "→ Downloading $sqliteSourceUrl"
+          curl.exe -L $sqliteSourceUrl -o $sqliteSourceZip --progress-bar
+
+          $sqliteAmalgamationDir = Join-Path $sqliteRoot "amalgamation"
+          $sqliteSourceRootDir = Join-Path $sqliteRoot "source"
+          Expand-Archive -Path $sqliteAmalgamationZip -DestinationPath $sqliteAmalgamationDir -Force
+          Expand-Archive -Path $sqliteSourceZip -DestinationPath $sqliteSourceRootDir -Force
+
+          $sqliteAmalgamationSourceDir = Get-ChildItem $sqliteAmalgamationDir -Directory | Where-Object Name -like 'sqlite-amalgamation-*' | Select-Object -First 1
+          if (-not $sqliteAmalgamationSourceDir) {
+            throw "Could not locate extracted SQLite amalgamation directory"
+          }
+
+          $sqliteCanonicalSourceDir = Get-ChildItem $sqliteSourceRootDir -Directory | Where-Object Name -like 'sqlite-src-*' | Select-Object -First 1
+          if (-not $sqliteCanonicalSourceDir) {
+            throw "Could not locate extracted SQLite source directory"
+          }
+
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
+          $vsInstallPath = & $vswhere -latest -products * -property installationPath
+          if (-not $vsInstallPath) {
+            throw "Could not find a Visual Studio installation"
+          }
+
+          $vsDevCmd = Join-Path $vsInstallPath "Common7\Tools\VsDevCmd.bat"
+          if (-not (Test-Path $vsDevCmd)) {
+            throw "Could not find VsDevCmd.bat at $vsDevCmd"
+          }
+
+          $sqliteExe = Join-Path $sqliteOutDir "sqlite3.exe"
+          $sqliteRecoverC = Join-Path $sqliteCanonicalSourceDir.FullName "ext\recover\sqlite3recover.c"
+          $sqliteRecoverH = Join-Path $sqliteCanonicalSourceDir.FullName "ext\recover\sqlite3recover.h"
+          $sqliteDbdataC = Join-Path $sqliteCanonicalSourceDir.FullName "ext\recover\dbdata.c"
+          foreach ($requiredFile in @($sqliteRecoverC, $sqliteRecoverH, $sqliteDbdataC)) {
+            if (-not (Test-Path $requiredFile)) {
+              throw "Required SQLite recovery source file missing: $requiredFile"
+            }
+          }
+
+          Push-Location $sqliteAmalgamationSourceDir.FullName
+          try {
+            $compileCmd = @(
+              "`"$vsDevCmd`" -arch=arm64 -host_arch=arm64",
+              "&&",
+              "cl",
+              "/nologo",
+              "/O2",
+              "/DSQLITE_THREADSAFE=1",
+              "/DSQLITE_ENABLE_DBSTAT_VTAB",
+              "/DSQLITE_ENABLE_DBPAGE_VTAB",
+              "/I `"$($sqliteAmalgamationSourceDir.FullName)`"",
+              "/I `"$([System.IO.Path]::GetDirectoryName($sqliteRecoverC))`"",
+              "/Fe:`"$sqliteExe`"",
+              "`"$($sqliteAmalgamationSourceDir.FullName)\shell.c`"",
+              "`"$($sqliteAmalgamationSourceDir.FullName)\sqlite3.c`"",
+              "`"$sqliteRecoverC`"",
+              "`"$sqliteDbdataC`""
+            ) -join ' '
+            cmd.exe /c $compileCmd
+            if ($LASTEXITCODE -ne 0) {
+              throw "sqlite3 ARM64 compilation failed with exit code $LASTEXITCODE"
+            }
+          } finally {
+            Pop-Location
+          }
+
+          if (-not (Test-Path $sqliteExe)) {
+            throw "Expected sqlite3.exe at $sqliteExe"
+          }
+
       - name: Build Windows ARM64 app
         run: mvn -B package -P windows-aarch64,install4j-win-aarch64 -DskipTests
         env:
