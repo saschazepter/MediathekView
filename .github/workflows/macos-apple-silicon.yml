@@ -287,22 +287,13 @@ jobs:
             $downloadPage.Content,
             "(?<path>\d{4}/sqlite-amalgamation-$sqliteEncodedVersion\.zip)"
           ).Groups["path"].Value
-          $relativeSourceUrl = [regex]::Match(
-            $downloadPage.Content,
-            "(?<path>\d{4}/sqlite-src-$sqliteEncodedVersion\.zip)"
-          ).Groups["path"].Value
           if (-not $relativeAmalgamationUrl) {
             throw "Could not find sqlite-amalgamation-$sqliteEncodedVersion.zip on sqlite.org/download.html"
           }
-          if (-not $relativeSourceUrl) {
-            throw "Could not find sqlite-src-$sqliteEncodedVersion.zip on sqlite.org/download.html"
-          }
 
           $sqliteAmalgamationUrl = "https://sqlite.org/$relativeAmalgamationUrl"
-          $sqliteSourceUrl = "https://sqlite.org/$relativeSourceUrl"
           $sqliteRoot = Join-Path $env:GITHUB_WORKSPACE "download\sqlite-arm64"
           $sqliteAmalgamationZip = Join-Path $sqliteRoot "sqlite-amalgamation.zip"
-          $sqliteSourceZip = Join-Path $sqliteRoot "sqlite-src.zip"
           $sqliteOutDir = Join-Path $env:GITHUB_WORKSPACE "target\res\bin"
 
           New-Item -ItemType Directory -Path $sqliteRoot -Force | Out-Null
@@ -311,22 +302,12 @@ jobs:
           Write-Host "→ Downloading $sqliteAmalgamationUrl"
           curl.exe -L $sqliteAmalgamationUrl -o $sqliteAmalgamationZip --progress-bar
 
-          Write-Host "→ Downloading $sqliteSourceUrl"
-          curl.exe -L $sqliteSourceUrl -o $sqliteSourceZip --progress-bar
-
           $sqliteAmalgamationDir = Join-Path $sqliteRoot "amalgamation"
-          $sqliteSourceRootDir = Join-Path $sqliteRoot "source"
           Expand-Archive -Path $sqliteAmalgamationZip -DestinationPath $sqliteAmalgamationDir -Force
-          Expand-Archive -Path $sqliteSourceZip -DestinationPath $sqliteSourceRootDir -Force
 
           $sqliteAmalgamationSourceDir = Get-ChildItem $sqliteAmalgamationDir -Directory | Where-Object Name -like 'sqlite-amalgamation-*' | Select-Object -First 1
           if (-not $sqliteAmalgamationSourceDir) {
             throw "Could not locate extracted SQLite amalgamation directory"
-          }
-
-          $sqliteCanonicalSourceDir = Get-ChildItem $sqliteSourceRootDir -Directory | Where-Object Name -like 'sqlite-src-*' | Select-Object -First 1
-          if (-not $sqliteCanonicalSourceDir) {
-            throw "Could not locate extracted SQLite source directory"
           }
 
           $vswhere = Join-Path ${env:ProgramFiles(x86)} "Microsoft Visual Studio\Installer\vswhere.exe"
@@ -341,15 +322,6 @@ jobs:
           }
 
           $sqliteExe = Join-Path $sqliteOutDir "sqlite3.exe"
-          $sqliteRecoverC = Join-Path $sqliteCanonicalSourceDir.FullName "ext\recover\sqlite3recover.c"
-          $sqliteRecoverH = Join-Path $sqliteCanonicalSourceDir.FullName "ext\recover\sqlite3recover.h"
-          $sqliteDbdataC = Join-Path $sqliteCanonicalSourceDir.FullName "ext\recover\dbdata.c"
-          foreach ($requiredFile in @($sqliteRecoverC, $sqliteRecoverH, $sqliteDbdataC)) {
-            if (-not (Test-Path $requiredFile)) {
-              throw "Required SQLite recovery source file missing: $requiredFile"
-            }
-          }
-
           Push-Location $sqliteAmalgamationSourceDir.FullName
           try {
             $compileCmd = @(
@@ -358,16 +330,12 @@ jobs:
               "cl",
               "/nologo",
               "/O2",
+              "/MT",
               "/DSQLITE_THREADSAFE=1",
-              "/DSQLITE_ENABLE_DBSTAT_VTAB",
               "/DSQLITE_ENABLE_DBPAGE_VTAB",
-              "/I `"$($sqliteAmalgamationSourceDir.FullName)`"",
-              "/I `"$([System.IO.Path]::GetDirectoryName($sqliteRecoverC))`"",
               "/Fe:`"$sqliteExe`"",
               "`"$($sqliteAmalgamationSourceDir.FullName)\shell.c`"",
-              "`"$($sqliteAmalgamationSourceDir.FullName)\sqlite3.c`"",
-              "`"$sqliteRecoverC`"",
-              "`"$sqliteDbdataC`""
+              "`"$($sqliteAmalgamationSourceDir.FullName)\sqlite3.c`""
             ) -join ' '
             cmd.exe /c $compileCmd
             if ($LASTEXITCODE -ne 0) {
