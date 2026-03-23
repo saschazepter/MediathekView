@@ -240,11 +240,7 @@ public class DatenPset implements Comparable<DatenPset> {
     public void set(int index, String value) {
         final String normalizedValue = value == null ? "" : value;
         if (index == PROGRAMMSET_IST_ABSPIELEN) {
-            if (Boolean.parseBoolean(normalizedValue)) {
-                setAbspielen();
-            } else {
-                istAbspielen = Boolean.FALSE;
-            }
+            istAbspielen = parseBoolean(normalizedValue);
             return;
         }
 
