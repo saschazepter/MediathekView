@@ -774,7 +774,7 @@
             <properties>
                 <install4j.platform>windows</install4j.platform>
                 <windows.ffmpeg.url>https://s3.mvorg.de/res/dev/windows/64/bin/ffmpeg.zip</windows.ffmpeg.url>
-                <windows.ffmpeg.outdir>${project.build.directory}/res</windows.ffmpeg.outdir>
+                <windows.bin.dir>${project.build.directory}/res/bin</windows.bin.dir>
             </properties>
             <build>
                 <plugins>
@@ -798,43 +798,32 @@
                                         <argument>-Command</argument>
                                         <argument>
                                             <![CDATA[
-                      $url    = '${windows.ffmpeg.url}'
-                      $outDir = '${windows.ffmpeg.outdir}'
-                      $zip    = Join-Path $outDir 'ffmpeg_new.zip'
+              $url    = '${windows.ffmpeg.url}'
+              $outDir = '${windows.bin.dir}'
+              $zip    = Join-Path $outDir 'ffmpeg.zip'
 
-                      # ensure output dir
-                      New-Item -ItemType Directory -Path $outDir -Force | Out-Null
+              # ensure output dir exists
+              New-Item -ItemType Directory -Path $outDir -Force | Out-Null
 
-                      Write-Host "→ Downloading $url"
-                      # use native curl.exe for a console progress bar
-                      curl.exe -L $url -o $zip --progress-bar
+              Write-Host "→ Downloading $url"
+              # use Windows-native curl.exe for a console progress bar
+              curl.exe -L $url -o $zip --progress-bar
 
-                      Write-Host "→ Unpacking $zip → $outDir"
-                      Expand-Archive -Path $zip -DestinationPath $outDir -Force
+              Write-Host "→ Unpacking $zip → $outDir"
+              Expand-Archive -Path $zip -DestinationPath $outDir -Force
 
-                      Write-Host "→ Deleting $zip"
-                      Remove-Item -Path $zip -Force
+              $inner = Join-Path $outDir 'ffmpeg'
+              if (Test-Path $inner) {
+                Write-Host "→ Fixing ffmpeg unpacking $inner → $outDir"
+                Get-ChildItem $inner -Force | Move-Item -Destination $outDir -Force
+                Remove-Item $inner -Recurse -Force
+              }
+
+              Write-Host "→ Deleting $zip"
+              Remove-Item -Path $zip -Force
                     ]]>
                                         </argument>
                                     </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                    <plugin>
-                        <groupId>com.coderplus.maven.plugins</groupId>
-                        <artifactId>copy-rename-maven-plugin</artifactId>
-                        <version>1.0</version>
-                        <executions>
-                            <execution>
-                                <id>rename-file</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>rename</goal>
-                                </goals>
-                                <configuration>
-                                    <sourceFile>${project.build.directory}/res/ffmpeg/</sourceFile>
-                                    <destinationFile>${project.build.directory}/res/bin/</destinationFile>
                                 </configuration>
                             </execution>
                         </executions>
