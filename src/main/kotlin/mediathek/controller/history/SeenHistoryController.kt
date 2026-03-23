@@ -298,6 +298,13 @@ class SeenHistoryController : AutoCloseable {
                 SeenHistoryCorruptionHandler.resolveCorruption(ex.dbPath) { databasePath ->
                     openStore(databasePath)
                 }
+            } catch (ex: Exception) {
+                if (!SeenHistoryCorruptionHandler.isCorruptionCandidate(ex)) {
+                    throw ex
+                }
+                SeenHistoryCorruptionHandler.resolveCorruption(SqlDatabaseConfig.historyDbPath) { databasePath ->
+                    openStore(databasePath)
+                }
             }
         }
 
