@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  */
 class SeenHistoryController : AutoCloseable {
     private val closed = AtomicBoolean(false)
+    private val store = sharedStore()
 
     fun removeAll() {
         val removed = runStoreCatching("removeAll", false) {
@@ -243,7 +244,7 @@ class SeenHistoryController : AutoCloseable {
     private fun <T> runStore(block: suspend SeenHistoryStore.() -> T): T = runBlocking {
         withContext(databaseDispatcher) {
             check(!closed.get()) { "SeenHistoryController is already closed." }
-            sharedStore().block()
+            store.block()
         }
     }
 
@@ -276,10 +277,17 @@ class SeenHistoryController : AutoCloseable {
         private fun sharedStore(): SeenHistoryStore {
             sharedStore?.let { return it }
 
+            val createdStore = createStore()
+
             synchronized(sharedStoreLock) {
-                return sharedStore ?: createStore().also { createdStore ->
-                    sharedStore = createdStore
+                sharedStore?.let { existingStore ->
+                    runCatching { createdStore.close() }
+                        .onFailure { logger.warn("Failed to close redundant seen history store", it) }
+                    return existingStore
                 }
+
+                sharedStore = createdStore
+                return createdStore
             }
         }
 
