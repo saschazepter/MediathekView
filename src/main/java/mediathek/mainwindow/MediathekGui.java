@@ -132,7 +132,7 @@ public class MediathekGui extends JFrame {
     protected final Daten daten = Daten.getInstance();
     protected final PositionSavingTabbedPane tabbedPane = new PositionSavingTabbedPane();
     protected final JMenu jMenuHilfe = new JMenu();
-    protected final SettingsAction settingsAction = new SettingsAction();
+    protected final SettingsAction settingsAction = new SettingsAction(this);
     /**
      * the global configuration for this app.
      */

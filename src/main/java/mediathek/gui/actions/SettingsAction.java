@@ -12,8 +12,11 @@ import java.awt.event.KeyEvent;
 
 public class SettingsAction extends AbstractAction {
     private DialogEinstellungen dlg;
+    private final MediathekGui mediathekGui;
 
-    public SettingsAction() {
+    public SettingsAction(MediathekGui ui) {
+        this.mediathekGui = ui;
+
         putValue(Action.NAME, "Einstellungen...");
         if (!SystemUtils.IS_OS_MAC_OSX)
             putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F4, 0));
@@ -24,7 +27,7 @@ public class SettingsAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (dlg == null) {
-            dlg = new DialogEinstellungen(MediathekGui.ui());
+            dlg = new DialogEinstellungen(mediathekGui);
         }
         dlg.setVisible(true);
         if (!SystemUtils.IS_OS_LINUX)
