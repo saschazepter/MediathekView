@@ -1,6 +1,7 @@
 package mediathek.gui.actions;
 
 import mediathek.gui.dialogEinstellungen.DialogEinstellungen;
+import mediathek.mainwindow.MediathekGui;
 import mediathek.swing.IconUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
@@ -23,7 +24,7 @@ public class SettingsAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (dlg == null) {
-            dlg = new DialogEinstellungen();
+            dlg = new DialogEinstellungen(MediathekGui.ui());
         }
         dlg.setVisible(true);
         if (!SystemUtils.IS_OS_LINUX)

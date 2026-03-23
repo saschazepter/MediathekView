@@ -19,7 +19,7 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import java.awt.*;
 
-public class DialogEinstellungen extends JFrame {
+public class DialogEinstellungen extends JDialog {
     private final Daten daten;
     public boolean ok;
 
@@ -56,7 +56,8 @@ public class DialogEinstellungen extends JFrame {
     private final DefaultMutableTreeNode treeNodeProgramme = new DefaultMutableTreeNode(NAME_programmset);
     private final DefaultMutableTreeNode treeNodeImportProgramme = new DefaultMutableTreeNode(NAME_programmsetImportieren);
 
-    public DialogEinstellungen() {
+    public DialogEinstellungen(Window owner) {
+        super(owner, ModalityType.MODELESS);
         initComponents();
         daten = Daten.getInstance();
 
