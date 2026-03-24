@@ -170,7 +170,7 @@ public class IoXmlLesen {
                             case DatenPset.TAG -> {
                                 datenPset = readProgramSet(parser);
                                 if (datenPset != null) {
-                                    Daten.listePset.add(datenPset);
+                                    Daten.getInstance().getListePset().add(datenPset);
                                 }
                             }
                             case DatenProg.TAG -> {

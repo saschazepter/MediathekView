@@ -98,7 +98,7 @@ public class IoXmlSchreiben {
         writer.writeCharacters("\n\n");
         writeNewLine(writer);
         //Proggruppen schreiben, bei Konfig-Datei
-        for (DatenPset datenPset : Daten.listePset) {
+        for (DatenPset datenPset : Daten.getInstance().getListePset()) {
             writeProgramSet(writer, datenPset);
             for (DatenProg datenProg : datenPset.getListeProg()) {
                 xmlSchreibenDaten(writer, DatenProg.TAG, DatenProg.XML_NAMES, datenProg.arr, true);

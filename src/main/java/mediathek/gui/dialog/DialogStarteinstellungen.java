@@ -124,16 +124,16 @@ public class DialogStarteinstellungen extends JDialog {
         // Einstellungen zum Ansehen und Speichern der Filme anpassen
         jButtonAnpassen.setVisible(false);
         jCheckBoxAlleEinstellungen.setVisible(true);
-        if (Daten.listePset.isEmpty()) {
+        if (Daten.getInstance().getListePset().isEmpty()) {
             // Standardset hinzufügen
             addStandarSet(parentComponent);
         }
 
         var daten = Daten.getInstance();
         if (jCheckBoxAlleEinstellungen.isSelected()) {
-            jScrollPane1.setViewportView(new PanelPsetLang(daten, parentComponent, Daten.listePset));
+            jScrollPane1.setViewportView(new PanelPsetLang(daten, parentComponent, daten.getListePset()));
         } else {
-            jScrollPane1.setViewportView(new PanelPsetKurz(daten, parentComponent, Daten.listePset));
+            jScrollPane1.setViewportView(new PanelPsetKurz(daten, parentComponent, daten.getListePset()));
         }
         status = State.FERTIG;
         jButtonStandard.setText("Weiter");
@@ -143,7 +143,7 @@ public class DialogStarteinstellungen extends JDialog {
         boolean ret = false;
         ListePset pSet = ListePsetVorlagen.getStandarset(parent, true);
         if (pSet != null) {
-            Daten.listePset.addPset(pSet);
+            Daten.getInstance().getListePset().addPset(pSet);
             MVConfig.add(MVConfig.Configs.SYSTEM_VERSION_PROGRAMMSET, pSet.version);
             ret = true;
         }

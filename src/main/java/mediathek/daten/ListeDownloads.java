@@ -341,7 +341,7 @@ public class ListeDownloads extends LinkedList<DatenDownload> {
 
         // prüfen ob in "alle Filme" oder nur "nach Blacklist" gesucht werden soll
         boolean checkWithBlackList = Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_AUCH_ABO));
-        DatenPset pSet_ = Daten.listePset.getPsetAbo("");
+        DatenPset pSet_ = Daten.getInstance().getListePset().getPsetAbo("");
         var todayDateStr = DateTimeFormatter.ofPattern("dd.MM.yyyy").format(LocalDateTime.now());
 
         var daten = Daten.getInstance();
@@ -370,7 +370,7 @@ public class ListeDownloads extends LinkedList<DatenDownload> {
                 continue;
             }
 
-            DatenPset pSet = abo.getPsetName().isEmpty() ? pSet_ : Daten.listePset.getPsetAbo(abo.getPsetName());
+            DatenPset pSet = abo.getPsetName().isEmpty() ? pSet_ : Daten.getInstance().getListePset().getPsetAbo(abo.getPsetName());
             if (pSet != null) {
                 // mit der tatsächlichen URL prüfen, ob die URL schon in der Downloadliste ist
                 String urlDownload = film.getUrlFuerAufloesung(pSet.getAufloesung());

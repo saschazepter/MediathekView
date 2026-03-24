@@ -1260,7 +1260,7 @@ public class GuiDownloads extends AGuiTabPanel {
             itemPlayer.addActionListener(_ -> {
                 final int nr1 = tabelle.rowAtPoint(p);
                 if (nr1 != -1) {
-                    final Optional<DatenPset> optPSetPlay = Optional.ofNullable(Daten.listePset.getPsetAbspielen());
+                    final Optional<DatenPset> optPSetPlay = Optional.ofNullable(Daten.getInstance().getListePset().getPsetAbspielen());
                     optPSetPlay.ifPresentOrElse(gruppe -> {
                         Optional<DatenDownload> optDL = Optional.ofNullable((DatenDownload) tabelle.getModel().getValueAt(tabelle.convertRowIndexToModel(nr1), DatenDownload.DOWNLOAD_REF));
                         optDL.ifPresent(dl -> {

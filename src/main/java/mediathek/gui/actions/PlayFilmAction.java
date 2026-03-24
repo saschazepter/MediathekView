@@ -32,7 +32,7 @@ public class PlayFilmAction extends AbstractAction {
 
     @Override
     public synchronized void actionPerformed(ActionEvent e) {
-        DatenPset pset = Daten.listePset.getPsetAbspielen();
+        DatenPset pset = Daten.getInstance().getListePset().getPsetAbspielen();
         if (pset != null) {
             guiFilme.playerStarten(pset);
         } else {

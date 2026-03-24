@@ -47,9 +47,9 @@ public class Daten {
      */
     public static final AtomicBoolean dontWriteFilmlistOnStartup = new AtomicBoolean(true);
     private static final Logger logger = LogManager.getLogger(Daten.class);
-    public static ListePset listePset;
     // flags
     private static boolean reset; // Programm auf Starteinstellungen zurücksetzen
+    private final ListePset listePset;
     private final EventList<FilmStatistics> duplicateStatisticsEventList = new BasicEventList<>();
     private final EventList<FilmStatistics> commonStatisticsEventList = new BasicEventList<>();
     private final FilmeLaden filmeLaden; // erledigt das updaten der Filmliste
@@ -148,6 +148,10 @@ public class Daten {
 
     public EventList<FilmStatistics> getCommonStatistics() {
         return commonStatisticsEventList;
+    }
+
+    public ListePset getListePset() {
+        return listePset;
     }
 
     public StarterClass getStarterClass() {

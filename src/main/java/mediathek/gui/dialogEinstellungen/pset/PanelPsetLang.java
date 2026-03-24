@@ -220,7 +220,7 @@ public class PanelPsetLang extends PanelVorlage {
         jButtonAbspielen.addActionListener(_ -> {
             DatenPset pset = getPset();
             if (pset != null) {
-                Daten.listePset.activateAsPlayer(pset);
+                Daten.getInstance().getListePset().activateAsPlayer(pset);
                 nurtabellePset();
                 notifyProgramSetChanged();
             }
@@ -448,7 +448,7 @@ public class PanelPsetLang extends PanelVorlage {
         StringBuilder text = new StringBuilder();
 
         //check only pset which are not label or free line
-        Daten.listePset.stream()
+        Daten.getInstance().getListePset().stream()
                 .filter(pset -> !pset.isFreeLine())
                 .filter(pset -> !pset.isLabel())
                 .forEach(datenPset -> {

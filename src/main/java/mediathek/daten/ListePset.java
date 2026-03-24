@@ -29,6 +29,7 @@ import mediathek.tool.models.NonEditableTableModel;
 import javax.swing.*;
 import javax.swing.table.TableModel;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
@@ -108,6 +109,55 @@ public class ListePset extends ArrayList<DatenPset> {
     public void activateAsPlayer(DatenPset pset) {
         forEach(set -> set.setAbspielen(false));
         pset.setAbspielen(true);
+    }
+
+    private void normalizePlaybackSelection(DatenPset datenPset) {
+        if (datenPset != null && datenPset.istAbspielen()) {
+            forEach(set -> set.setAbspielen(false));
+        }
+    }
+
+    private void normalizePlaybackSelection(Collection<? extends DatenPset> collection) {
+        DatenPset lastActive = null;
+        for (DatenPset datenPset : collection) {
+            if (datenPset.istAbspielen()) {
+                if (lastActive != null) {
+                    lastActive.setAbspielen(false);
+                }
+                lastActive = datenPset;
+            }
+        }
+        normalizePlaybackSelection(lastActive);
+    }
+
+    @Override
+    public boolean add(DatenPset datenPset) {
+        normalizePlaybackSelection(datenPset);
+        return super.add(datenPset);
+    }
+
+    @Override
+    public void add(int index, DatenPset element) {
+        normalizePlaybackSelection(element);
+        super.add(index, element);
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends DatenPset> collection) {
+        normalizePlaybackSelection(collection);
+        return super.addAll(collection);
+    }
+
+    @Override
+    public boolean addAll(int index, Collection<? extends DatenPset> collection) {
+        normalizePlaybackSelection(collection);
+        return super.addAll(index, collection);
+    }
+
+    @Override
+    public DatenPset set(int index, DatenPset element) {
+        normalizePlaybackSelection(element);
+        return super.set(index, element);
     }
 
     public DatenPset getPsetAbspielen() {
@@ -198,33 +248,24 @@ public class ListePset extends ArrayList<DatenPset> {
         return neu;
     }
 
-    public boolean addPset(DatenPset datenPset) {
-        boolean abspielen = false;
-        for (DatenPset datenPset1 : this) {
-            if (datenPset1.istAbspielen()) {
-                abspielen = true;
-                break;
-            }
-        }
-        if (abspielen) {
-            datenPset.set(DatenPset.PROGRAMMSET_IST_ABSPIELEN, Boolean.FALSE.toString());
-        }
-        boolean ret = add(datenPset);
+    public void addPset(DatenPset datenPset) {
+        add(datenPset);
 
         MessageBus.getMessageBus().publishAsync(new ProgramSetChangedEvent());
 
-        return ret;
     }
 
     public boolean addPset(ListePset liste) {
         boolean ret = true;
         for (DatenPset entry : liste) {
-            if (!addPset(entry)) {
+            if (!add(entry)) {
                 ret = false;
             }
         }
 
-        MessageBus.getMessageBus().publishAsync(new ProgramSetChangedEvent());
+        if (ret) {
+            MessageBus.getMessageBus().publishAsync(new ProgramSetChangedEvent());
+        }
 
         return ret;
     }

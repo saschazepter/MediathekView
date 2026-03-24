@@ -201,7 +201,7 @@ public class GuiFunktionenProgramme {
         DialogImportPset dialog = new DialogImportPset(parent, true, daten, pSet);
         dialog.setVisible(true);
         if (dialog.ok) {
-            if (Daten.listePset.addPset(pSet)) {
+            if (Daten.getInstance().getListePset().addPset(pSet)) {
                 if (setVersion) {
                     MVConfig.add(MVConfig.Configs.SYSTEM_VERSION_PROGRAMMSET, pSet.version);
                 }

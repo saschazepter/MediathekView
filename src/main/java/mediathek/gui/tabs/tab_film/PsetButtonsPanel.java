@@ -47,7 +47,7 @@ public class PsetButtonsPanel extends JPanel {
     protected void setupButtonLayout() {
         btnPanel.removeAll();
 
-        for (var pset : Daten.listePset.getListeButton()) {
+        for (var pset : Daten.getInstance().getListePset().getListeButton()) {
             if (!pset.isFreeLine()) {
                 JComponent comp;
 

@@ -494,7 +494,7 @@ public class GuiFilme extends AGuiTabPanel {
      * @param pSet used for downloads or null.
      */
     private synchronized void saveFilm(@Nullable DatenPset pSet) {
-        if (Daten.listePset.getListeSpeichern().isEmpty()) {
+        if (Daten.getInstance().getListePset().getListeSpeichern().isEmpty()) {
             // Satz mit x, war wohl nix
             var dialog = new DialogAboNoSet(mediathekGui);
             dialog.setVisible(true);
@@ -502,7 +502,7 @@ public class GuiFilme extends AGuiTabPanel {
         }
 
         if (pSet == null) {
-            pSet = Daten.listePset.getListeSpeichern().getFirst();
+            pSet = Daten.getInstance().getListePset().getListeSpeichern().getFirst();
         }
 
         var selectedFilmsList = getSelFilme();
@@ -1346,7 +1346,7 @@ public class GuiFilme extends AGuiTabPanel {
         private void createStartWithPsetItems(@NotNull JPopupMenu jPopupMenu) {
             JMenu submenue = new JMenu("Film mit Set starten");
             jPopupMenu.add(submenue);
-            ListePset liste = Daten.listePset.getListeButton();
+            ListePset liste = Daten.getInstance().getListePset().getListeButton();
             for (DatenPset pset : liste) {
                 if (pset.getListeProg().isEmpty() && pset.getName().isEmpty()) {
                     // ein "leeres" Pset, Platzhalter
@@ -1726,7 +1726,7 @@ public class GuiFilme extends AGuiTabPanel {
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                if (Daten.listePset.getListeAbo().isEmpty()) {
+                if (Daten.getInstance().getListePset().getListeAbo().isEmpty()) {
                     new DialogAboNoSet(mediathekGui).setVisible(true);
                 } else {
                     final int nr = tabelle.rowAtPoint(p);

@@ -58,7 +58,7 @@ public class DuplicatePsetNameCheckListener implements DocumentListener {
     }
 
     private void duplicateNameCheck() {
-        var count = Daten.listePset.stream()
+        var count = Daten.getInstance().getListePset().stream()
                 .map(DatenPset::getName)
                 .filter(name -> name.equals(textField.getText()))
                 .count();

@@ -39,7 +39,7 @@ public class ProgramUpdateCheck implements AutoCloseable {
                 ListePset listePsetStandard = ListePsetVorlagen.getStandarset(parent, false);
                 String version = MVConfig.get(MVConfig.Configs.SYSTEM_VERSION_PROGRAMMSET);
                 if (listePsetStandard != null) {
-                    if (!Daten.listePset.isEmpty()) {
+                    if (!Daten.getInstance().getListePset().isEmpty()) {
                         // ansonsten ist die Liste leer und dann gibts immer was
                         if (listePsetStandard.version.isEmpty()) {
                             // dann hat das Laden der aktuellen Standardversion nicht geklappt
@@ -71,7 +71,7 @@ public class ProgramUpdateCheck implements AutoCloseable {
 
                     MVConfig.add(MVConfig.Configs.SYSTEM_VERSION_PROGRAMMSET, listePsetStandard.version);
                     // die Zielpafade anpassen
-                    ListePset listePsetOrgSpeichern = Daten.listePset.getListeSpeichern();
+                    ListePset listePsetOrgSpeichern = Daten.getInstance().getListePset().getListeSpeichern();
                     if (!listePsetOrgSpeichern.isEmpty()) {
                         for (DatenPset psNew : listePsetStandard.getListeSpeichern()) {
                             final var psOrg = listePsetOrgSpeichern.getFirst();
@@ -83,7 +83,7 @@ public class ProgramUpdateCheck implements AutoCloseable {
                             psNew.setMaxLaengeField(psOrg.getMaxLaengeField());
                         }
                     }
-                    if (!Daten.listePset.isEmpty()) {
+                    if (!Daten.getInstance().getListePset().isEmpty()) {
                         // wenn leer, dann gibts immer die neuen und die sind dann auch aktiv
                         for (DatenPset psNew : listePsetStandard) {
                             // die bestehenden Sets sollen nicht gestört werden

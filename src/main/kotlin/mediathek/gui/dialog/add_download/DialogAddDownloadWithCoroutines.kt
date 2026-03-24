@@ -91,7 +91,7 @@ class DialogAddDownloadWithCoroutines(
     private var ffprobePath: Path? = null
     private var orgPfad = ""
     private val appConfig get() = ApplicationConfiguration.getConfiguration()
-    private val listeSpeichern: ListePset = Daten.listePset.listeSpeichern
+    private val listeSpeichern: ListePset = Daten.getInstance().listePset.listeSpeichern
     private lateinit var resolutionButtonLabels: ResolutionButtonLabels
     private lateinit var cbPathTextComponent: JTextComponent
     private lateinit var datenDownload: DatenDownload

@@ -60,7 +60,7 @@ public class DialogFilmBeschreibung extends JDialog {
                     Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_USE_REPLACETABLE)),
                     Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_ONLY_ASCII)));
             String pfad = "";
-            ListePset lp = Daten.listePset.getListeSpeichern();
+            ListePset lp = Daten.getInstance().getListePset().getListeSpeichern();
             if (!lp.isEmpty()) {
                 DatenPset p = lp.getFirst();
                 pfad = p.getZielPfad();

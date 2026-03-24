@@ -58,7 +58,7 @@ public class DialogNewSet extends JDialog {
         jButtonReplace.addActionListener(_ -> {
             int ret = JOptionPane.showConfirmDialog(parent, "Alle Sets zurücksetzen?", "Alle Sets zurücksetzen!", JOptionPane.YES_NO_OPTION);
             if (ret == JOptionPane.OK_OPTION) {
-                Daten.listePset.clear();
+                Daten.getInstance().getListePset().clear();
                 ok = true;
                 beenden();
             }
