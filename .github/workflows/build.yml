@@ -14,7 +14,14 @@ jobs:
           distribution: 'liberica'
           java-version: '25'
           java-package: jdk
-          cache: 'maven'
+      - name: Restore Maven repository cache
+        id: maven-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-java25-maven-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-java25-maven-
       - name: Build and test with Maven
         run: mvn -B package
       - name: SonarCloud Scan
