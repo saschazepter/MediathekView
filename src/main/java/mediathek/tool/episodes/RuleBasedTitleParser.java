@@ -19,13 +19,14 @@
 package mediathek.tool.episodes;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
 public class RuleBasedTitleParser {
-    private final List<Pattern> patterns;
+    private final List<RulePattern> patterns;
 
-    public RuleBasedTitleParser(List<Pattern> patterns) {
+    public RuleBasedTitleParser(List<RulePattern> patterns) {
         this.patterns = patterns;
     }
 
@@ -34,8 +35,13 @@ public class RuleBasedTitleParser {
      * @return Optional.of(SeasonEpisode) if a pattern matches; otherwise Optional.empty().
      */
     public Optional<SeasonEpisode> parse(String title) {
-        for (var pat : patterns) {
-            var m = pat.matcher(title);
+        final String titleLowercase = title.toLowerCase(Locale.ROOT);
+        for (var rulePattern : patterns) {
+            if (!rulePattern.matchesGuards(title, titleLowercase)) {
+                continue;
+            }
+
+            var m = rulePattern.pattern().matcher(title);
             if (m.find()) {
                 int season = Integer.parseInt(m.group("season"));
                 int episode = Integer.parseInt(m.group("episode"));
@@ -43,5 +49,23 @@ public class RuleBasedTitleParser {
             }
         }
         return Optional.empty();
+    }
+
+    record RulePattern(Pattern pattern, String[] requiredMarkers) {
+        boolean matchesGuards(String title, String titleLowercase) {
+            for (String marker : requiredMarkers) {
+                if (!containsMarker(title, titleLowercase, marker)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private boolean containsMarker(String title, String titleLowercase, String marker) {
+            if (marker.equals(marker.toLowerCase(Locale.ROOT))) {
+                return titleLowercase.contains(marker);
+            }
+            return title.contains(marker);
+        }
     }
 }

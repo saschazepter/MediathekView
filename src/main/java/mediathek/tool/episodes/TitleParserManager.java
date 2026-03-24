@@ -25,134 +25,134 @@ public class TitleParserManager {
     private final Map<String, RuleBasedTitleParser> parsers = new HashMap<>();
 
     public TitleParserManager() {
-        register("3Sat",
+        registerRules("3Sat",
                 // 1) Parenthesized "(S2025/E15)"
-                "\\(\\s*[sS](?<season>\\d{4})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{4})/[eE](?<episode>\\d{1,2})\\s*\\)", "(", "/"),
                 // 2) Un-parenthesized "S2025/E15"
-                "[sS](?<season>\\d{4})/[eE](?<episode>\\d{1,2})",
+                rule("[sS](?<season>\\d{4})/[eE](?<episode>\\d{1,2})", "/"),
                 // 3) Continuous "S2024E81"
-                "[sS](?<season>\\d{4})[eE](?<episode>\\d{1,2})",
+                rule("[sS](?<season>\\d{4})[eE](?<episode>\\d{1,2})"),
                 // 4) Parenthesized hyphen "(S2025-E15)"
-                "\\(\\s*[sS](?<season>\\d{4})-[eE](?<episode>\\d{1,2})\\s*\\)"
+                rule("\\(\\s*[sS](?<season>\\d{4})-[eE](?<episode>\\d{1,2})\\s*\\)", "(", "-")
         );
-        register("ARD",
+        registerRules("ARD",
                 // 1) "15. Staffel, 188. Die alte Frau" – dot-number season, comma, dot-number episode
-                "(?<season>\\d{1,2})\\.\\s*Staffel,\\s*(?<episode>\\d{1,3})\\.",
+                rule("(?<season>\\d{1,2})\\.\\s*Staffel,\\s*(?<episode>\\d{1,3})\\.", "staffel"),
                 // 2) "Sturm der Liebe\", Staffel 1, Folge 1 (2005)" – explicit Staffel…Folge
-                "Staffel\\s*(?<season>\\d{1,2})[,\\s]*Folge\\s*(?<episode>\\d{1,3})",
+                rule("Staffel\\s*(?<season>\\d{1,2})[,\\s]*Folge\\s*(?<episode>\\d{1,3})", "staffel", "folge"),
                 // 3) "(S03E27352)" – parenthesized SxxExxxxx
-                "\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,5})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,5})\\s*\\)", "("),
                 // 4) "(S01/E02)" – parenthesized Sxx/Exx
-                "\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,5})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,5})\\s*\\)", "(", "/"),
                 // 5) "S3/E12" – inline Sx/Exx
-                "[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,5})"
+                rule("[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,5})", "/")
         );
-        register("ARD-alpha",
+        registerRules("ARD-alpha",
                 // 1) Parenthesized "(S01/E04)"
-                "\\(\\s*[sS](?<season>\\d{2})/[eE](?<episode>\\d{2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{2})/[eE](?<episode>\\d{2})\\s*\\)", "(", "/"),
                 // 2) Un-parenthesized "S05/E03"
-                "[sS](?<season>\\d{2})/[eE](?<episode>\\d{2})",
+                rule("[sS](?<season>\\d{2})/[eE](?<episode>\\d{2})", "/"),
                 // 3) Continuous "S05E03"
-                "[sS](?<season>\\d{2})[eE](?<episode>\\d{2})"
+                rule("[sS](?<season>\\d{2})[eE](?<episode>\\d{2})")
         );
-        register("BR",
+        registerRules("BR",
                 // 1) Parenthesized "(S03/E05)"
-                "\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)", "(", "/"),
                 // 2) Prefix-colon pattern: "100: ... (S04/E20)"
-                "^(?:\\d{1,3}):[^\\(]*\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("^(?:\\d{1,3}):[^\\(]*\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)", ":", "(", "/"),
                 // 3) "Folge 5: ... (S02/E05)"
-                "Folge\\s*\\d{1,3}[:\\-][^\\(]*\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)"
+                rule("Folge\\s*\\d{1,3}[:\\-][^\\(]*\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)", "folge", "(", "/")
         );
-        register("HR",
+        registerRules("HR",
                 // 1) Parenthesized slash notation, e.g. (S01/E11)
-                "\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,3})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,3})\\s*\\)", "(", "/"),
                 // 2) Staffel X, Folge Y pattern, e.g. Staffel 10, Folge 5
-                "Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})"
+                rule("Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})", "staffel", "folge")
         );
-        register("MDR",
+        registerRules("MDR",
                 // 1) Parenthesized slash notation, e.g. (S04/E03)
-                "\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,3})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,3})\\s*\\)", "(", "/"),
                 // 2) Un-parenthesized slash notation, e.g. S04/E03
-                "[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,3})"
+                rule("[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,3})", "/")
         );
-        register("NDR",
+        registerRules("NDR",
                 // 1) Parenthesized slash notation: (S03x/E07)
-                "\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)");
-        register("ONE",
+                rule("\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)", "(", "/"));
+        registerRules("ONE",
                 // 1) "15. Staffel, 188. Die alte Frau" – dot-number season, comma, dot-number episode
-                "(?<season>\\d{1,2})\\.\\s*Staffel,\\s*(?<episode>\\d{1,3})\\.",
+                rule("(?<season>\\d{1,2})\\.\\s*Staffel,\\s*(?<episode>\\d{1,3})\\.", "staffel"),
                 // 2) "Sturm der Liebe\", Staffel 1, Folge 1 (2005)" – explicit Staffel…Folge
-                "Staffel\\s*(?<season>\\d{1,2})[,\\s]*Folge\\s*(?<episode>\\d{1,3})",
+                rule("Staffel\\s*(?<season>\\d{1,2})[,\\s]*Folge\\s*(?<episode>\\d{1,3})", "staffel", "folge"),
                 // 3) "(S03E27352)" – parenthesized SxxExxxxx
-                "\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,5})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,5})\\s*\\)", "("),
                 // 4) "(S01/E02)" – parenthesized Sxx/Exx
-                "\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,5})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,5})\\s*\\)", "(", "/"),
                 // 5) "S3/E12" – inline Sx/Exx
-                "[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,5})"
+                rule("[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,5})", "/")
         );
-        register("RBB",
+        registerRules("RBB",
                 // 1) Parenthesized S/E pattern, e.g. (S05/E01)
-                "\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})\\s*\\)", "(", "/"),
                 // 2) Parenthesized ratio-only pattern, e.g. (1/4)
-                "\\(\\s*(?<season>\\d{1,2})/(?<episode>\\d{1,2})\\s*\\)"
+                rule("\\(\\s*(?<season>\\d{1,2})/(?<episode>\\d{1,2})\\s*\\)", "(", "/")
         );
-        register("SWR",
+        registerRules("SWR",
                 // 1) Parenthesized slash notation: (S03x/E07)
-                "\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)", "(", "/"),
                 // 2) Parenthesized continuous notation: (S03E07)
-                "\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})\\s*\\)", "("),
                 // 3) Inline slash notation: S03/E07
-                "[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})",
+                rule("[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})", "/"),
                 // 4) Inline continuous notation: S03E07
-                "[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})",
+                rule("[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})"),
                 // 5) German Staffel/Folge: Staffel 2, Folge 5
-                "Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})"
+                rule("Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})", "staffel", "folge")
         );
-        register("WDR",
+        registerRules("WDR",
                 // 1) Parenthesized slash notation: (S03x/E07)
-                "\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)", "(", "/"),
                 // 2) Parenthesized continuous notation: (S03E07)
-                "\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})\\s*\\)", "("),
                 // 3) Inline slash notation: S03/E07
-                "[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})",
+                rule("[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})", "/"),
                 // 4) Inline continuous notation: S03E07
-                "[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})",
+                rule("[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})"),
                 // 5) German Staffel/Folge: Staffel 2, Folge 5
-                "Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})"
+                rule("Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})", "staffel", "folge")
         );
-        register("ZDF",
+        registerRules("ZDF",
                 // Parenthesized slash notation, e.g. (S2025/E11)
-                "\\(\\s*[sS](?<season>\\d{1,4})/[eE](?<episode>\\d{1,4})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,4})/[eE](?<episode>\\d{1,4})\\s*\\)", "(", "/"),
                 // Parenthesized continuous notation, e.g. (S2024E11)
-                "\\(\\s*[sS](?<season>\\d{1,4})[eE](?<episode>\\d{1,4})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,4})[eE](?<episode>\\d{1,4})\\s*\\)", "("),
                 // Un-parenthesized slash notation, e.g. S2025/E102
-                "[sS](?<season>\\d{1,4})/[eE](?<episode>\\d{1,4})",
+                rule("[sS](?<season>\\d{1,4})/[eE](?<episode>\\d{1,4})", "/"),
                 // Un-parenthesized continuous notation, e.g. S01E16
-                "[sS](?<season>\\d{1,4})[eE](?<episode>\\d{1,4})"
+                rule("[sS](?<season>\\d{1,4})[eE](?<episode>\\d{1,4})")
         );
-        register("ZDFneo",
+        registerRules("ZDFneo",
                 // 1) Parenthesized slash notation: (S03x/E07)
-                "\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)", "(", "/"),
                 // 2) Parenthesized continuous notation: (S03E07)
-                "\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})\\s*\\)", "("),
                 // 3) Inline slash notation: S03/E07
-                "[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})",
+                rule("[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})", "/"),
                 // 4) Inline continuous notation: S03E07
-                "[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})",
+                rule("[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})"),
                 // 5) German Staffel/Folge: Staffel 2, Folge 5
-                "Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})"
+                rule("Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})", "staffel", "folge")
         );
-        register("ZDF-tivi",
+        registerRules("ZDF-tivi",
                 // 1) Parenthesized slash notation: (S03x/E07)
-                "\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,3})/[eE](?<episode>\\d{1,2})\\s*\\)", "(", "/"),
                 // 2) Parenthesized continuous notation: (S03E07)
-                "\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})\\s*\\)",
+                rule("\\(\\s*[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})\\s*\\)", "("),
                 // 3) Inline slash notation: S03/E07
-                "[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})",
+                rule("[sS](?<season>\\d{1,2})/[eE](?<episode>\\d{1,2})", "/"),
                 // 4) Inline continuous notation: S03E07
-                "[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})",
+                rule("[sS](?<season>\\d{1,2})[eE](?<episode>\\d{1,2})"),
                 // 5) German Staffel/Folge: Staffel 2, Folge 5
-                "Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})"
+                rule("Staffel\\s*(?<season>\\d{1,2})\\s*,\\s*Folge\\s*(?<episode>\\d{1,3})", "staffel", "folge")
         );
     }
 
@@ -162,12 +162,24 @@ public class TitleParserManager {
      * @param patterns varargs of regex strings with named groups 'season' and 'episode'
      */
     public void register(String sender, String... patterns) {
-        List<Pattern> compiled = new ArrayList<>();
+        List<RuleBasedTitleParser.RulePattern> compiled = new ArrayList<>();
         for (String regex : patterns) {
-            // enable named groups, case-insensitive by default
-            compiled.add(Pattern.compile(regex, Pattern.CASE_INSENSITIVE));
+            compiled.add(rule(regex));
         }
         parsers.put(sender, new RuleBasedTitleParser(compiled));
+    }
+
+    private void registerRules(String sender, RuleBasedTitleParser.RulePattern... patterns) {
+        List<RuleBasedTitleParser.RulePattern> compiled = new ArrayList<>();
+        Collections.addAll(compiled, patterns);
+        parsers.put(sender, new RuleBasedTitleParser(compiled));
+    }
+
+    private RuleBasedTitleParser.RulePattern rule(String regex, String... requiredMarkers) {
+        return new RuleBasedTitleParser.RulePattern(
+                Pattern.compile(regex, Pattern.CASE_INSENSITIVE),
+                requiredMarkers
+        );
     }
 
     /**
