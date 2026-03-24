@@ -260,6 +260,21 @@ jobs:
           ref: develop
 
       - *extract-version-step
+      - &extract-sqlite-version-step
+        name: Extract SQLite version
+        shell: pwsh
+        run: |
+          [xml]$pom = Get-Content pom.xml
+          $sqliteJdbcVersion = $pom.project.properties.'sqlite-jdbc.version'
+          if (-not $sqliteJdbcVersion) {
+            throw "Could not read sqlite-jdbc.version from pom.xml"
+          }
+
+          $sqliteVersion = $sqliteJdbcVersion -replace '\.\d+$', ''
+          Write-Host "Extracted sqlite-jdbc version: $sqliteJdbcVersion"
+          Write-Host "Derived SQLite version: $sqliteVersion"
+          "SQLITE_JDBC_VERSION=$sqliteJdbcVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "SQLITE_VERSION=$sqliteVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Set up Java 25 (Liberica) & cache Maven
         uses: actions/setup-java@v4
@@ -314,16 +329,18 @@ jobs:
         run: |
           echo "${{ github.workspace }}\download\install4j\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
 
+      - name: Restore cached sqlite3 ARM64
+        id: cache-sqlite-arm64
+        uses: actions/cache@v4
+        with:
+          path: target\res\bin\sqlite3.exe
+          key: sqlite3-${{ runner.os }}-arm64-${{ env.SQLITE_VERSION }}
+
       - name: Build sqlite3 ARM64
+        if: steps.cache-sqlite-arm64.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
-          [xml]$pom = Get-Content pom.xml
-          $sqliteJdbcVersion = $pom.project.properties.'sqlite-jdbc.version'
-          if (-not $sqliteJdbcVersion) {
-            throw "Could not read sqlite-jdbc.version from pom.xml"
-          }
-
-          $sqliteVersion = $sqliteJdbcVersion -replace '\.\d+$', ''
+          $sqliteVersion = $env:SQLITE_VERSION
           $versionParts = $sqliteVersion.Split('.')
           if ($versionParts.Count -ne 3) {
             throw "Unexpected SQLite version format: $sqliteVersion"
@@ -451,6 +468,7 @@ jobs:
           ref: develop
 
       - *extract-version-step
+      - *extract-sqlite-version-step
 
       - name: Set up Java 25 (Liberica) & cache Maven
         uses: actions/setup-java@v4
@@ -505,16 +523,18 @@ jobs:
         run: |
           echo "${{ github.workspace }}\download\install4j\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
 
+      - name: Restore cached sqlite3 AMD64
+        id: cache-sqlite-amd64
+        uses: actions/cache@v4
+        with:
+          path: target\res\bin\sqlite3.exe
+          key: sqlite3-${{ runner.os }}-amd64-${{ env.SQLITE_VERSION }}
+
       - name: Build sqlite3 AMD64
+        if: steps.cache-sqlite-amd64.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
-          [xml]$pom = Get-Content pom.xml
-          $sqliteJdbcVersion = $pom.project.properties.'sqlite-jdbc.version'
-          if (-not $sqliteJdbcVersion) {
-            throw "Could not read sqlite-jdbc.version from pom.xml"
-          }
-
-          $sqliteVersion = $sqliteJdbcVersion -replace '\.\d+$', ''
+          $sqliteVersion = $env:SQLITE_VERSION
           $versionParts = $sqliteVersion.Split('.')
           if ($versionParts.Count -ne 3) {
             throw "Unexpected SQLite version format: $sqliteVersion"
