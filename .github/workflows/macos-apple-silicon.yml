@@ -8,6 +8,7 @@ on:
 env:
   # bump this when you upgrade install4j
   INSTALL4J_VERSION: '11_0_5'
+  INSTALL4J_CACHE_VERSION: 'v11'
   AWS_DEFAULT_REGION: us-east-1
 
 jobs:
@@ -59,6 +60,16 @@ jobs:
           key: install4j-app-${{ env.MACOS_ARCH }}-${{ env.INSTALL4J_VERSION }}
           restore-keys: |
             install4j-app-${{ env.MACOS_ARCH }}-
+
+      - name: Restore install4j JRE bundle cache
+        id: cache-install4j-jres
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/install4j/${{ env.INSTALL4J_CACHE_VERSION }}/cached_jres
+          key: install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-${{ env.INSTALL4J_VERSION }}-${{ hashFiles('installers/mac/*.install4j') }}
+          restore-keys: |
+            install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-${{ env.INSTALL4J_VERSION }}-
+            install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-
 
       - name: Restore or download & extract install4j
         run: |
@@ -165,6 +176,16 @@ jobs:
           restore-keys: |
             install4j-app-${{ env.MACOS_ARCH }}-
 
+      - name: Restore install4j JRE bundle cache
+        id: cache-install4j-jres
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Caches/install4j/${{ env.INSTALL4J_CACHE_VERSION }}/cached_jres
+          key: install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-${{ env.INSTALL4J_VERSION }}-${{ hashFiles('installers/mac/*.install4j') }}
+          restore-keys: |
+            install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-${{ env.INSTALL4J_VERSION }}-
+            install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-
+
       - name: Restore or download & extract install4j
         run: |
           mkdir -p download
@@ -261,6 +282,16 @@ jobs:
           path: download/install4j
           key: install4j-windows-arm64-${{ env.INSTALL4J_VERSION }}
           restore-keys: install4j-windows-arm64-
+
+      - name: Restore install4j JRE bundle cache
+        id: cache-install4j-jres
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\install4j\${{ env.INSTALL4J_CACHE_VERSION }}\cached_jres
+          key: install4j-jres-${{ runner.os }}-arm64-${{ env.INSTALL4J_VERSION }}-${{ hashFiles('installers/windows-aarch64/*.install4j') }}
+          restore-keys: |
+            install4j-jres-${{ runner.os }}-arm64-${{ env.INSTALL4J_VERSION }}-
+            install4j-jres-${{ runner.os }}-arm64-
 
       - name: Download or reuse install4j.zip
         shell: pwsh
@@ -442,6 +473,16 @@ jobs:
           path: download/install4j
           key: install4j-windows-amd64-${{ env.INSTALL4J_VERSION }}
           restore-keys: install4j-windows-amd64-
+
+      - name: Restore install4j JRE bundle cache
+        id: cache-install4j-jres
+        uses: actions/cache@v4
+        with:
+          path: ~\AppData\Local\install4j\${{ env.INSTALL4J_CACHE_VERSION }}\cached_jres
+          key: install4j-jres-${{ runner.os }}-x64-${{ env.INSTALL4J_VERSION }}-${{ hashFiles('installers/windows-amd64/*.install4j') }}
+          restore-keys: |
+            install4j-jres-${{ runner.os }}-x64-${{ env.INSTALL4J_VERSION }}-
+            install4j-jres-${{ runner.os }}-x64-
 
       - name: Download or reuse install4j.zip
         shell: pwsh
