@@ -4,46 +4,37 @@ import mediathek.config.MVConfig;
 import mediathek.daten.DatenFilm;
 import mediathek.tool.Filter;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 
 class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
     private static final String[] EMPTY_STRING = {""};
     private final boolean isWhitelist;
-    private final List<BlacklistRule> listeBlacklist;
-    private final Map<BlacklistRule,BlacklistPattern> rulePatternMap;
+    private final List<CompiledBlacklistRule> compiledRules;
 
     public ApplyBlacklistFilterPredicate(List<BlacklistRule> listeBlacklist) {
         isWhitelist = Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_IST_WHITELIST));
-        this.listeBlacklist = listeBlacklist;
-
-        rulePatternMap = new ConcurrentHashMap<>(listeBlacklist.size());
-
-        //pre-create the patterns concurrently before use
-        createPatterns();
+        compiledRules = createPatterns(listeBlacklist);
     }
 
     /**
-     * Create all needed patterns in parallel.
+     * Create all needed patterns once and keep the original rule order.
      */
-    private void createPatterns() {
-        listeBlacklist.parallelStream().forEach(entry -> {
+    private List<CompiledBlacklistRule> createPatterns(List<BlacklistRule> listeBlacklist) {
+        var compiled = new ArrayList<CompiledBlacklistRule>(listeBlacklist.size());
+        for (BlacklistRule entry : listeBlacklist) {
             final String[] pTitel = createPattern(entry.hasTitlePattern(), entry.getTitel());
             final String[] pThema = createPattern(entry.hasThemaPattern(), entry.getThema_titel());
-            var blPattern = new BlacklistPattern(pTitel, pThema);
-            rulePatternMap.putIfAbsent(entry, blPattern);
-        });
+            compiled.add(new CompiledBlacklistRule(entry, pTitel, pThema));
+        }
+        return compiled;
     }
 
     @Override
     public boolean test(DatenFilm film) {
-
-        for (BlacklistRule entry : listeBlacklist) {
-            var blPattern = rulePatternMap.get(entry);
-
-            if (performFiltering(entry, blPattern.pTitel, blPattern.pThema, film)) {
+        for (CompiledBlacklistRule compiledRule : compiledRules) {
+            if (performFiltering(compiledRule.rule(), compiledRule.pTitel(), compiledRule.pThema(), film)) {
                 return isWhitelist;
             }
         }
@@ -109,7 +100,7 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
         return lengthCheck(0, filmLaenge) || filmLaenge > 0;
     }
 
-    record BlacklistPattern(String[] pTitel, String[] pThema) {
+    record CompiledBlacklistRule(BlacklistRule rule, String[] pTitel, String[] pThema) {
 
     }
 }
