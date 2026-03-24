@@ -145,6 +145,7 @@
         <!--suppress UnresolvedMavenProperty -->
         <install4j.license>${env.LICENSE_KEY_11}</install4j.license>
         <install4j.jdk.min-version>25</install4j.jdk.min-version>
+        <skip.mac.binary.download>true</skip.mac.binary.download>
 
         <!-- @formatter:off -->
         <!-- VM Parameters Windows x64 and aarch64 -->
@@ -1221,6 +1222,19 @@
         </profile>
 
         <profile>
+            <id>github-actions</id>
+            <activation>
+                <property>
+                    <name>env.GITHUB_ACTIONS</name>
+                    <value>true</value>
+                </property>
+            </activation>
+            <properties>
+                <skip.mac.binary.download>false</skip.mac.binary.download>
+            </properties>
+        </profile>
+
+        <profile>
             <id>mac_intel</id>
             <activation>
                 <os>
@@ -1246,6 +1260,7 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
+                                    <skip>${skip.mac.binary.download}</skip>
                                     <executable>bash</executable>
                                     <arguments>
                                         <argument>-lc</argument>
@@ -1363,6 +1378,7 @@
                                     <goal>exec</goal>
                                 </goals>
                                 <configuration>
+                                    <skip>${skip.mac.binary.download}</skip>
                                     <executable>bash</executable>
                                     <arguments>
                                         <argument>-lc</argument>
