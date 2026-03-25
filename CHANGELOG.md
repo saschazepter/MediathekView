@@ -1,4 +1,5 @@
 # **14.6.0**
+- **Diese Version ist NICHT abwärtskompatibel mit älteren MediathekView-Versionen.**
 - JetBrains Runtime JBR 25.0.2 wird verwendet
 - **BUGFIX:** Dialog "Film speichern" neu geschrieben um vorhandene Layout-Probleme zu beheben.
 - **BUGFIX:** Das Löschen der Thema-ComboBox mit dem Löschen-Button funktioniert nach Keyboard-Manipulation. Das Thema wird auch weiter angewendet.
@@ -16,6 +17,7 @@
 - **FEATURE:** *Download ändern*-Dialog bietet nun auch die Möglichkeit, Codec-Details abzurufen.
 - **FEATURE:** *Hilfe\Live Programm-Log anzeigen* zeigt die logging-Ausgaben von MediathekView in Echtzeit an. Diese können für die Fehlersuche exportiert werden. Lokale Dateipfade werden automatisch mittels `<redacted>` unkenntlich gemacht.
 - **FEATURE:** Die alte `downloadAbos.txt` wird nun in eine sqlite3-Datenbank `abo-history.db` migriert. Die alte Textdatei bleibt danach als `downloadAbos.txt.migrated` erhalten.
+- **FEATURE:** Farben für light/dark-Mode können in den Einstellungen getrennt konfiguriert werden.
 - interne Optimierungen für mehr Geschwindigkeit.
 - interne Fehler wurden behoben.
 
