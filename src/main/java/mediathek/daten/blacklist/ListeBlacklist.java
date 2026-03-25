@@ -280,17 +280,17 @@ public class ListeBlacklist extends ArrayList<BlacklistRule> {
             return true;
         }
 
-        final boolean bl_is_whitelist = Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_IST_WHITELIST));
+        final BlacklistMode mode = BlacklistMode.fromConfig();
         for (BlacklistRule rule : this) {
             if (Filter.filterAufFilmPruefenWithLength(rule.getSender(),
                     rule.getThema(),
                     makePattern(rule.getTitel()),
                     makePattern(rule.getThema_titel()),
                     EMPTY_STRING_ARRAY, 0, true, film, true)) {
-                return bl_is_whitelist;
+                return mode.keepFilm(true);
             }
         }
-        return !bl_is_whitelist;
+        return mode.keepFilm(false);
     }
     final static private String[] EMPTY_STRING_ARRAY = {""};
 

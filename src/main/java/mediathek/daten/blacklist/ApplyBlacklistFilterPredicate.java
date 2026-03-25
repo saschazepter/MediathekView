@@ -1,6 +1,5 @@
 package mediathek.daten.blacklist;
 
-import mediathek.config.MVConfig;
 import mediathek.daten.DatenFilm;
 import mediathek.tool.Filter;
 
@@ -10,11 +9,11 @@ import java.util.function.Predicate;
 
 class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
     private static final String[] EMPTY_STRING = {""};
-    private final boolean isWhitelist;
+    private final BlacklistMode mode;
     private final List<CompiledBlacklistRule> compiledRules;
 
     public ApplyBlacklistFilterPredicate(List<BlacklistRule> listeBlacklist) {
-        isWhitelist = Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_IST_WHITELIST));
+        mode = BlacklistMode.fromConfig();
         compiledRules = createPatterns(listeBlacklist);
     }
 
@@ -35,12 +34,11 @@ class ApplyBlacklistFilterPredicate implements Predicate<DatenFilm> {
     public boolean test(DatenFilm film) {
         for (CompiledBlacklistRule compiledRule : compiledRules) {
             if (performFiltering(compiledRule.rule(), compiledRule.pTitel(), compiledRule.pThema(), film)) {
-                return isWhitelist;
+                return mode.keepFilm(true);
             }
         }
 
-        //found nothing
-        return !isWhitelist;
+        return mode.keepFilm(false);
     }
 
     protected String[] mySplit(final String inputString) {
