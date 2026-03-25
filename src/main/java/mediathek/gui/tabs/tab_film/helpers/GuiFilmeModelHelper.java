@@ -20,6 +20,7 @@ package mediathek.gui.tabs.tab_film.helpers;
 
 import mediathek.config.Daten;
 import mediathek.controller.history.SeenHistoryController;
+import mediathek.daten.Country;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.tabs.tab_film.SearchFieldData;
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
@@ -82,6 +83,8 @@ public final class GuiFilmeModelHelper implements GuiModelHelper {
     }
 
     private List<PredicateSpec> createPredicateSpecs() {
+        final Country geographicLocation = ApplicationConfiguration.getInstance().getGeographicLocation();
+
         return List.of(
                 predicateSpec(() -> support.state().getShowNewOnly(), DatenFilm::isNew),
                 predicateSpec(() -> support.state().getShowBookMarkedOnly(), DatenFilm::isBookmarked),
@@ -91,7 +94,7 @@ public final class GuiFilmeModelHelper implements GuiModelHelper {
                 predicateSpec(() -> support.state().getDontShowSignLanguage(), film -> !film.isSignLanguage()),
                 predicateSpec(
                         () -> support.state().getDontShowGeoblocked(),
-                        film -> !film.isGeoBlockedForLocation(ApplicationConfiguration.getInstance().getGeographicLocation())),
+                        film -> !film.isGeoBlockedForLocation(geographicLocation)),
                 predicateSpec(() -> support.state().getDontShowAudioVersions(), film -> !film.isAudioVersion()),
                 predicateSpec(() -> support.state().getDontShowAbos(), film -> film.getAbo() == null),
                 predicateSpec(() -> support.state().getDontShowDuplicates(), film -> !film.isDuplicate()),
