@@ -160,7 +160,7 @@ public class DialogAddMoreDownload extends JDialog {
             String s = ((JTextComponent) jComboBoxPath.getEditor().getEditorComponent()).getText();
             var editor = jComboBoxPath.getEditor().getEditorComponent();
             if (!s.equals(FilenameUtils.checkFilenameForIllegalCharacters(s, true))) {
-                editor.setBackground(MVColor.DOWNLOAD_FEHLER.color);
+                editor.setBackground(MVColor.DOWNLOAD_FEHLER.getColor());
             }
             else {
                 editor.setBackground(UIManager.getDefaults().getColor("TextField.background"));

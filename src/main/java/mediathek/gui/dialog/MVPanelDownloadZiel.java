@@ -67,7 +67,7 @@ public class MVPanelDownloadZiel extends JPanel {
                 final String n1 = jTextFieldName.getText();
                 final String n2 = FilenameUtils.checkFilenameForIllegalCharacters(n1, false /*pfad*/);
                 if (!n1.equals(n2)) {
-                    jTextFieldName.setBackground(MVColor.DOWNLOAD_FEHLER.color);
+                    jTextFieldName.setBackground(MVColor.DOWNLOAD_FEHLER.getColor());
                 } else {
                     jTextFieldName.setBackground(javax.swing.UIManager.getDefaults().getColor("TextField.background"));
                 }
@@ -98,7 +98,7 @@ public class MVPanelDownloadZiel extends JPanel {
                 String s = ((JTextComponent) jComboBoxPath.getEditor().getEditorComponent()).getText();
                 var editor = jComboBoxPath.getEditor().getEditorComponent();
                 if (!s.equals(FilenameUtils.checkFilenameForIllegalCharacters(s, true))) {
-                    editor.setBackground(MVColor.DOWNLOAD_FEHLER.color);
+                    editor.setBackground(MVColor.DOWNLOAD_FEHLER.getColor());
                 } else {
                     editor.setBackground(UIManager.getDefaults().getColor("TextField.background"));
                 }
@@ -149,10 +149,10 @@ public class MVPanelDownloadZiel extends JPanel {
                 jLabelExists.setText("Datei existiert schon!");
             } else if (!jTextFieldName.getText().equals(datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_DATEINAME])
                     || !(((JTextComponent) jComboBoxPath.getEditor().getEditorComponent()).getText()).equals(datenDownload.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD])) {
-                jLabelExists.setForeground(MVColor.DOWNLOAD_DATEINAME_NEU.color);
+                jLabelExists.setForeground(MVColor.DOWNLOAD_DATEINAME_NEU.getColor());
                 jLabelExists.setText("Neuer Name");
             } else {
-                jLabelExists.setForeground(MVColor.DOWNLOAD_DATEINAME_ALT.color);
+                jLabelExists.setForeground(MVColor.DOWNLOAD_DATEINAME_ALT.getColor());
                 jLabelExists.setText("");
             }
         } catch (Exception ignored) {

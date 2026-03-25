@@ -32,7 +32,7 @@ public class MVConfig {
             GuiFunktionen.setFilmListUpdateType(FilmListUpdateType.MANUAL);
         }
 
-        logger.debug("User-Agent: " + ApplicationConfiguration.getConfiguration().getString(ApplicationConfiguration.APPLICATION_USER_AGENT));
+        logger.debug("User-Agent: {}", ApplicationConfiguration.getConfiguration().getString(ApplicationConfiguration.APPLICATION_USER_AGENT));
     }
 
     public static synchronized void add(String key, String value) {
@@ -43,12 +43,25 @@ public class MVConfig {
         HASHMAP.put(key.cValue, value);
     }
 
+    public static synchronized void remove(String key) {
+        HASHMAP.remove(key);
+    }
+
+    public static synchronized void remove(Configs key) {
+        HASHMAP.remove(key.cValue);
+    }
+
     public static synchronized String get(Configs key) {
         String s = HASHMAP.get(key.cValue);
         if (s == null) {
             s = key.initValue;
         }
         return s == null ? "" : s;
+    }
+
+    public static synchronized String get(String key) {
+        String value = HASHMAP.get(key);
+        return value == null ? "" : value;
     }
 
     public static synchronized int getInt(Configs key) {
@@ -122,8 +135,6 @@ public class MVConfig {
         SYSTEM_EIGENSCHAFTEN_TABELLE_FILME("Eigenschaften-Tabellen-Filme"),
         SYSTEM_EIGENSCHAFTEN_TABELLE_DOWNLOADS("Eigenschaften-Tabellen-Downloads"),
         SYSTEM_EIGENSCHAFTEN_TABELLE_ABOS("Eigenschaften-Tabellen-Abos"),
-        SYSTEM_MEDUNGSFENSTER_UMBRECHEN_SYSTEMMELDUNGEN("Meldungsfenster-Systemmeldungen"),
-        SYSTEM_MEDUNGSFENSTER_UMBRECHEN_PLAYERMELDUNGEN("Meldungsfenster-Playermeldungen"),
         SYSTEM_ANSICHT_SET_LANG("Ansicht-Set-lang"),
         SYSTEM_TAB_FILME_ICON_ANZEIGEN("system-tab-filme-icon-anzeigen", Boolean.TRUE.toString()),
         SYSTEM_TAB_FILME_LINEBREAK("system-tab-filme-linebreak", Boolean.FALSE.toString()),
@@ -152,33 +163,7 @@ public class MVConfig {
         SYSTEM_DOWNLOAD_ERRORMSG("download-error-msg", Boolean.TRUE.toString()),
         SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN("Pfade-zum-Speichern"), // gesammelten Downloadpfade im Downloaddialog
         // Abo
-        SYSTEM_ABO_MIN_SIZE("Abo-Mindestdauer-Minuten"),
-        //Farben
-        FARBE__FILM_LIVESTREAM("FARBE_FILM_LIVESTREAM"),
-        FARBE__FILM_HISTORY("FARBE_FILM_HISTORY"),
-        FARBE__FILM_NEU("FARBE_FILM_NEU"),
-        FARBE__FILM_GEOBLOCK_BACKGROUND("FARBE_FILM_GEOBLOCK_BACKGROUND"),
-        FARBE__FILM_GEOBLOCK_BACKGROUND_SEL("FARBE_FILM_GEOBLOCK_BACKGROUND_SEL"),
-        FARBE__FILM_BOOKMARKED("FARBE_FILM_BOOKMARKED"),
-        FARBE__FILM_DUPLICATE("FARBE_FILM_DUPLICATE"),
-        FARBE__DOWNLOAD_IST_ABO("FARBE_DOWNLOAD_IST_ABO"),
-        FARBE__DOWNLOAD_IST_DIREKTER_DOWNLOAD("FARBE_DOWNLOAD_IST_DIREKTER_DOWNLOAD"),
-        FARBE__DOWNLOAD_ANSEHEN("FARBE_DOWNLOAD_ANSEHEN"),
-        FARBE__DOWNLOAD_WAIT("FARBE_DOWNLOAD_WAIT"),
-        FARBE__DOWNLOAD_WAIT_SEL("FARBE_DOWNLOAD_WAIT_SEL"),
-        FARBE__DOWNLOAD_RUN("FARBE_DOWNLOAD_RUN"),
-        FARBE__DOWNLOAD_RUN_SEL("FARBE_DOWNLOAD_RUN_SEL"),
-        FARBE__DOWNLOAD_FERTIG("FARBE_DOWNLOAD_FERTIG"),
-        FARBE__DOWNLOAD_FERTIG_SEL("FARBE_DOWNLOAD_FERTIG_SEL"),
-        FARBE__DOWNLOAD_FEHLER("FARBE_DOWNLOAD_FEHLER"),
-        FARBE__DOWNLOAD_FEHLER_SEL("FARBE_DOWNLOAD_FEHLER_SEL"),
-        FARBE__FILTER_REGEX("FARBE_FILTER_REGEX"),
-        FARBE__FILTER_REGEX_FEHLER("FARBE_FILTER_REGEX_FEHLER"),
-        FARBE__BUTTON_SET_ABSPIELEN("FARBE_BUTTON_SET_ABSPIELEN"),
-        FARBE__FILMLISTE_LADEN_AKTIV("FARBE_FILMLISTE_LADEN_AKTIV"),
-        FARBE__DOWNLOAD_DATEINAME_EXISTIERT("FARBE_DOWNLOAD_DATEINAME_EXISTIERT"),
-        FARBE__DOWNLOAD_DATEINAME_NEU("FARBE_DOWNLOAD_DATEINAME_NEU"),
-        FARBE__DOWNLOAD_DATEINAME_ALT("FARBE_DOWNLOAD_DATEINAME_ALT");
+        SYSTEM_ABO_MIN_SIZE("Abo-Mindestdauer-Minuten");
 
         public final String cValue;
         public final String initValue;

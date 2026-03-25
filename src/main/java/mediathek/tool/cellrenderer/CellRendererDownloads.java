@@ -74,27 +74,27 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
             switch (s.status) {
                 case Start.STATUS_INIT -> {
                     if (isSelected)
-                        color = MVColor.DOWNLOAD_WAIT_SEL.color;
+                        color = MVColor.DOWNLOAD_WAIT_SEL.getColor();
                     else
-                        color = MVColor.DOWNLOAD_WAIT.color;
+                        color = MVColor.DOWNLOAD_WAIT.getColor();
                 }
                 case Start.STATUS_RUN -> {
                     if (isSelected)
-                        color = MVColor.DOWNLOAD_RUN_SEL.color;
+                        color = MVColor.DOWNLOAD_RUN_SEL.getColor();
                     else
-                        color = MVColor.DOWNLOAD_RUN.color;
+                        color = MVColor.DOWNLOAD_RUN.getColor();
                 }
                 case Start.STATUS_FERTIG -> {
                     if (isSelected)
-                        color = MVColor.DOWNLOAD_FERTIG_SEL.color;
+                        color = MVColor.DOWNLOAD_FERTIG_SEL.getColor();
                     else
-                        color = MVColor.DOWNLOAD_FERTIG.color;
+                        color = MVColor.DOWNLOAD_FERTIG.getColor();
                 }
                 case Start.STATUS_ERR -> {
                     if (isSelected)
-                        color = MVColor.DOWNLOAD_FEHLER_SEL.color;
+                        color = MVColor.DOWNLOAD_FEHLER_SEL.getColor();
                     else
-                        color = MVColor.DOWNLOAD_FEHLER.color;
+                        color = MVColor.DOWNLOAD_FEHLER.getColor();
                 }
             }
             c.setBackground(color);
@@ -240,9 +240,9 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
 
     private void handleAboColumn(JTextArea a, final DatenDownload datenDownload) {
         if (!datenDownload.arr[DatenDownload.DOWNLOAD_ABO].isEmpty()) {
-            a.setForeground(MVColor.DOWNLOAD_IST_ABO.color);
+            a.setForeground(MVColor.DOWNLOAD_IST_ABO.getColor());
         } else {
-            a.setForeground(MVColor.DOWNLOAD_IST_DIREKTER_DOWNLOAD.color);
+            a.setForeground(MVColor.DOWNLOAD_IST_DIREKTER_DOWNLOAD.getColor());
             a.setText("Download");
         }
     }
@@ -250,9 +250,9 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
     private void handleAboColumn(final DatenDownload datenDownload) {
         setHorizontalAlignment(SwingConstants.CENTER);
         if (!datenDownload.arr[DatenDownload.DOWNLOAD_ABO].isEmpty()) {
-            setForeground(MVColor.DOWNLOAD_IST_ABO.color);
+            setForeground(MVColor.DOWNLOAD_IST_ABO.getColor());
         } else {
-            setForeground(MVColor.DOWNLOAD_IST_DIREKTER_DOWNLOAD.color);
+            setForeground(MVColor.DOWNLOAD_IST_DIREKTER_DOWNLOAD.getColor());
             setText("Download");
         }
     }

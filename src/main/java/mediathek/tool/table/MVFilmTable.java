@@ -21,7 +21,6 @@ import java.util.List;
 
 public class MVFilmTable extends MVTable {
     private static final Logger logger = LogManager.getLogger();
-    private final List<Color> bgList = new ArrayList<>();
     private MyRowSorter<TableModel> sorter;
 
     public MVFilmTable() {
@@ -67,91 +66,90 @@ public class MVFilmTable extends MVTable {
 
     @Override
     public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-        var selected = isRowSelected(row);
-
         var component = super.prepareRenderer(renderer, row, column);
-        if (!selected) {
-            component.setBackground(defaultRowBackground(row));
-            var film = (DatenFilm) getModel().getValueAt(convertRowIndexToModel(row), DatenFilm.FILM_REF);
-            applyNewColorSetting(component, film);
-            applyColorSettings(component, film);
+        if (isRowSelected(row)) {
+            return component;
         }
 
+        decorateUnselectedRow(component, row);
         return component;
     }
 
-    private void applyNewColorSetting(Component c, @NotNull DatenFilm datenFilm) {
-        if (datenFilm.isNew()) {
-            c.setForeground(MVColor.getNewColor());
-        }
+    private void decorateUnselectedRow(Component component, int viewRow) {
+        var film = filmAtViewRow(viewRow);
+        component.setBackground(backgroundForRow(viewRow, film));
+        component.setForeground(foregroundFor(film));
     }
 
-    private void applyColorSettings(Component c, @NotNull DatenFilm datenFilm) {
-        bgList.clear();
-        bgList.add(c.getBackground());
+    private DatenFilm filmAtViewRow(int viewRow) {
+        return (DatenFilm) getModel().getValueAt(convertRowIndexToModel(viewRow), DatenFilm.FILM_REF);
+    }
 
-        if (SeenHistoryController.hasBeenSeenFromSharedCache(datenFilm)) {
-            bgList.add(MVColor.FILM_HISTORY.color);
+    private Color foregroundFor(@NotNull DatenFilm film) {
+        return film.isNew() ? MVColor.NEW_COLOR.getColor() : getForeground();
+    }
+
+    private Color backgroundForRow(int viewRow, @NotNull DatenFilm film) {
+        var backgrounds = new ArrayList<Color>(4);
+        backgrounds.add(defaultRowBackground(viewRow));
+
+        if (SeenHistoryController.hasBeenSeenFromSharedCache(film)) {
+            backgrounds.add(MVColor.FILM_HISTORY.getColor());
         }
-        if (datenFilm.isBookmarked()) {
-            bgList.add(MVColor.FILM_BOOKMARKED.color);
+        if (film.isBookmarked()) {
+            backgrounds.add(MVColor.FILM_BOOKMARKED.getColor());
         }
-        if (datenFilm.isDuplicate()) {
-            bgList.add(MVColor.FILM_DUPLICATE.color);
+        if (film.isDuplicate()) {
+            backgrounds.add(MVColor.FILM_DUPLICATE.getColor());
         }
 
-        if (bgList.size() >= 2)
-            c.setBackground(blend(bgList));
-        else
-            c.setBackground(bgList.getFirst());
+        return backgrounds.size() == 1 ? backgrounds.getFirst() : blend(backgrounds);
     }
 
     @Override
     public String getToolTipText(MouseEvent e) {
-        var p = e.getPoint(); // MouseEvent
-        final int viewColumn = columnAtPoint(p);
-        final int modelColumnIndex = convertColumnIndexToModel(viewColumn);
+        var point = e.getPoint();
+        int viewColumn = columnAtPoint(point);
+        int viewRow = rowAtPoint(point);
 
-        //only show title as tooltip for TITEL column...
-        if (modelColumnIndex != DatenFilm.FILM_TITEL)
+        if (!isTitleColumn(viewColumn)) {
             return super.getToolTipText(e);
-
-        String toolTipText = null;
-        final int viewRow = rowAtPoint(p);
-        var comp = prepareRenderer(getCellRenderer(viewRow, viewColumn), viewRow, viewColumn);
-        var bounds = getCellRect(viewRow, viewColumn, false);
-
+        }
 
         try {
-            //comment row, exclude heading
-            if (comp.getPreferredSize().width > bounds.width) {
-                final int modelRowIndex = convertRowIndexToModel(viewRow);
-                final DatenFilm datenFilm = (DatenFilm) getModel().getValueAt(modelRowIndex, DatenFilm.FILM_REF);
-
-                toolTipText = datenFilm.getTitle();
-            }
+            return isTitleTruncatedAt(viewRow, viewColumn) ? filmAtViewRow(viewRow).getTitle() : null;
+        } catch (RuntimeException ignored) {
+            // catch null pointer exception if mouse is over an empty line
+            return null;
         }
-        catch (RuntimeException ignored) {
-            //catch null pointer exception if mouse is over an empty line
-        }
+    }
 
-        return toolTipText;
+    private boolean isTitleColumn(int viewColumn) {
+        return viewColumn >= 0 && convertColumnIndexToModel(viewColumn) == DatenFilm.FILM_TITEL;
+    }
+
+    private boolean isTitleTruncatedAt(int viewRow, int viewColumn) {
+        var component = prepareRenderer(getCellRenderer(viewRow, viewColumn), viewRow, viewColumn);
+        var bounds = getCellRect(viewRow, viewColumn, false);
+        return component.getPreferredSize().width > bounds.width;
     }
 
     private void resetFilmeTab(int i) {
-        //logger.debug("resetFilmeTab()");
-
         reihe[i] = i;
-        breite[i] = 200;
-        switch (i) {
-            case DatenFilm.FILM_NR -> breite[i] = 75;
-            case DatenFilm.FILM_TITEL -> breite[i] = 300;
+        breite[i] = defaultColumnWidth(i);
+    }
+
+    private int defaultColumnWidth(int column) {
+        return switch (column) {
+            case DatenFilm.FILM_NR -> 75;
+            case DatenFilm.FILM_TITEL -> 300;
             case DatenFilm.FILM_DATUM, DatenFilm.FILM_ZEIT, DatenFilm.FILM_SENDER, DatenFilm.FILM_GROESSE,
-                 DatenFilm.FILM_DAUER, DatenFilm.FILM_GEO -> breite[i] = 100;
-            case DatenFilm.FILM_URL -> breite[i] = 500;
-            case DatenFilm.FILM_ABSPIELEN, DatenFilm.FILM_AUFZEICHNEN, DatenFilm.FILM_MERKEN -> breite[i] = 20;
-            case DatenFilm.FILM_HD, DatenFilm.FILM_UT -> breite[i] = 50;
-        }
+                 DatenFilm.FILM_DAUER, DatenFilm.FILM_GEO -> 100;
+            case DatenFilm.FILM_URL -> 500;
+            case DatenFilm.FILM_ABSPIELEN, DatenFilm.FILM_AUFZEICHNEN, DatenFilm.FILM_MERKEN -> 20;
+            case DatenFilm.FILM_HD, DatenFilm.FILM_UT -> 50;
+            default -> 200;
+        };
     }
 
     @Override
@@ -176,27 +174,19 @@ public class MVFilmTable extends MVTable {
 
     @Override
     public void getSpalten() {
-        //logger.debug("getSpalten()");
-
-        // Einstellungen der Tabelle merken
         saveSelectedTableRows();
 
-        for (int i = 0; i < reihe.length && i < getModel().getColumnCount(); ++i) {
+        int columnCount = getModel().getColumnCount();
+        for (int i = 0; i < reihe.length && i < columnCount; ++i) {
             reihe[i] = convertColumnIndexToModel(i);
         }
 
-        for (int i = 0; i < breite.length && i < getModel().getColumnCount(); ++i) {
+        for (int i = 0; i < breite.length && i < columnCount; ++i) {
             breite[i] = getColumnModel().getColumn(convertColumnIndexToView(i)).getWidth();
         }
 
-        // save sortKeys
         var rowSorter = getRowSorter();
-        if (rowSorter != null) {
-            listeSortKeys = rowSorter.getSortKeys();
-        }
-        else {
-            listeSortKeys = null;
-        }
+        listeSortKeys = rowSorter != null ? rowSorter.getSortKeys() : null;
     }
 
     private void reorderColumns() {
@@ -227,21 +217,14 @@ public class MVFilmTable extends MVTable {
      */
     @Override
     public void setSpalten() {
-        //logger.debug("setSpalten()");
         try {
             changeInternalColumnWidths();
-
             changeTableModelColumnWidths();
-
             reorderColumns();
-
             restoreSortKeys();
-
             restoreSelectedTableRows();
-
             validate();
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             logger.error("setSpalten", ex);
         }
     }
@@ -254,17 +237,19 @@ public class MVFilmTable extends MVTable {
         @Override
         public void setModel(M model) {
             super.setModel(model);
+            configureSortableColumns();
+            configureComparators();
+        }
 
-            //must be set after each model change
-            // do not sort buttons
+        private void configureSortableColumns() {
             setSortable(DatenFilm.FILM_ABSPIELEN, false);
             setSortable(DatenFilm.FILM_AUFZEICHNEN, false);
             setSortable(DatenFilm.FILM_GEO, false);
             setSortable(DatenFilm.FILM_MERKEN, false);
+        }
 
-            //compare to FilmSize->int instead of String
+        private void configureComparators() {
             setComparator(DatenFilm.FILM_GROESSE, (Comparator<FilmSize>) FilmSize::compareTo);
-            // deactivate german collator used in DatenFilm as it slows down sorting as hell...
             setComparator(DatenFilm.FILM_SENDER, (Comparator<String>) String::compareTo);
             setComparator(DatenFilm.FILM_ZEIT, (Comparator<String>) String::compareTo);
             setComparator(DatenFilm.FILM_URL, (Comparator<String>) String::compareTo);
@@ -273,11 +258,10 @@ public class MVFilmTable extends MVTable {
 
         @Override
         public void setSortKeys(List<? extends SortKey> sortKeys) {
-            // MV config stores only ONE sort key
-            // here we make sure that only one will be set on the table...
             if (sortKeys != null) {
-                while (sortKeys.size() > 1)
+                while (sortKeys.size() > 1) {
                     sortKeys.remove(1);
+                }
             }
             super.setSortKeys(sortKeys);
         }

@@ -701,9 +701,7 @@ public class Main {
     }
 
     private static void loadConfigurationData() {
-        var daten = Daten.getInstance();
-
-        if (!daten.allesLaden()) {
+        if (!Daten.getInstance().allesLaden()) {
             // erster Start
             ReplaceList.init(); // einmal ein Muster anlegen, für Linux/OS X ist es bereits aktiv!
             Main.splashScreen.ifPresent(SplashScreen::close);

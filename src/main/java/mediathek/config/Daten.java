@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Daten {
-    public static final MVColor mVColor = new MVColor(); // verwendete Farben
+    private static final MVColor MV_COLOR = new MVColor(); // verwendete Farben
     /**
      * Prevent the unnecessary writing of a filmlist on startup when reading is enough
      */
@@ -111,6 +111,10 @@ public class Daten {
 
     public static Daten getInstance() {
         return DatenHolder.INSTANCE;
+    }
+
+    public static MVColor getMVColor() {
+        return MV_COLOR;
     }
 
     /**
@@ -194,7 +198,7 @@ public class Daten {
             return false;
         }
         logger.info("Konfig wurde gelesen!");
-        mVColor.load(); // Farben einrichten
+        MV_COLOR.load(); // Farben einrichten
 
         return true;
     }

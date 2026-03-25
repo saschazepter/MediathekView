@@ -1133,7 +1133,7 @@ public class GuiFilme extends AGuiTabPanel {
         class ToggleSearchFieldToggleButton extends JToggleButton {
             public ToggleSearchFieldToggleButton() {
                 FlatSVGIcon selectedIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/envelope-open-text.svg");
-                selectedIcon.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> MVColor.getSelectedColor()));
+                selectedIcon.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> MVColor.SELECTED_COLOR.getColor()));
                 FlatSVGIcon normalIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/envelope-open-text.svg");
                 normalIcon.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> Color.GRAY));
                 setIcon(normalIcon);

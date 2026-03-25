@@ -124,7 +124,7 @@ public class DialogEditAbo extends JDialog {
         String s = ((JTextComponent) comboboxPfad.getEditor().getEditorComponent()).getText();
         final var editor = comboboxPfad.getEditor().getEditorComponent();
         if (!s.equals(FilenameUtils.checkFilenameForIllegalCharacters(s, false))) {
-            editor.setBackground(MVColor.DOWNLOAD_FEHLER.color);
+            editor.setBackground(MVColor.DOWNLOAD_FEHLER.getColor());
         } else {
             editor.setBackground(UIManager.getColor(TEXTFIELD_BACKGROUND));
         }
