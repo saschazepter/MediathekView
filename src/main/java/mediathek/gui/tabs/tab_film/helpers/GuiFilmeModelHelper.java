@@ -27,6 +27,7 @@ import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
 import mediathek.tool.ApplicationConfiguration;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.table.TableModel;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -42,7 +43,7 @@ public final class GuiFilmeModelHelper implements GuiModelHelper {
     }
 
     @Override
-    public javax.swing.table.TableModel getFilteredTableModel() {
+    public TableModel getFilteredTableModel() {
         var allFilms = getAllFilms();
         return support.getFilteredTableModel(allFilms, this::filterFilms);
     }
