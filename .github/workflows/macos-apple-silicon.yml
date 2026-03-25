@@ -55,7 +55,7 @@ jobs:
           java-package: jdk
       - name: Restore Maven repository cache
         id: maven-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-java25-maven-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
@@ -64,7 +64,7 @@ jobs:
 
       - name: Cache extracted install4j.app
         id: cache-install4j-app
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: download/install4j.app
           key: install4j-app-${{ env.MACOS_ARCH }}-${{ env.INSTALL4J_VERSION }}
@@ -73,7 +73,7 @@ jobs:
 
       - name: Restore install4j JRE bundle cache
         id: cache-install4j-jres
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Caches/install4j/${{ env.INSTALL4J_CACHE_VERSION }}/cached_jres
           key: install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-${{ env.INSTALL4J_VERSION }}-${{ hashFiles('installers/mac/*.install4j') }}
@@ -83,7 +83,7 @@ jobs:
 
       - name: Restore macOS helper binary cache
         id: cache-mac-binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: target/bin
           key: mac-binaries-${{ env.MACOS_ARCH }}-${{ env.MAC_COMMON_SHUTDOWNHELPER_MD5 }}-${{ env.MAC_APPLE_SILICON_FFMPEG_MD5 }}-${{ env.MAC_APPLE_SILICON_FFPROBE_MD5 }}
@@ -203,7 +203,7 @@ jobs:
           java-package: jdk
       - name: Restore Maven repository cache
         id: maven-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-java25-maven-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
@@ -212,7 +212,7 @@ jobs:
 
       - name: Cache extracted install4j.app
         id: cache-install4j-app
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: download/install4j.app
           key: install4j-app-${{ env.MACOS_ARCH }}-${{ env.INSTALL4J_VERSION }}
@@ -221,7 +221,7 @@ jobs:
 
       - name: Restore install4j JRE bundle cache
         id: cache-install4j-jres
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/Library/Caches/install4j/${{ env.INSTALL4J_CACHE_VERSION }}/cached_jres
           key: install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-${{ env.INSTALL4J_VERSION }}-${{ hashFiles('installers/mac/*.install4j') }}
@@ -231,7 +231,7 @@ jobs:
 
       - name: Restore macOS helper binary cache
         id: cache-mac-binaries
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: target/bin
           key: mac-binaries-${{ env.MACOS_ARCH }}-${{ env.MAC_COMMON_SHUTDOWNHELPER_MD5 }}-${{ env.MAC_INTEL_FFMPEG_MD5 }}-${{ env.MAC_INTEL_FFPROBE_MD5 }}
@@ -331,7 +331,7 @@ jobs:
 
     steps:
       - name: Checkout develop branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: develop
 
@@ -353,14 +353,14 @@ jobs:
           "SQLITE_VERSION=$sqliteVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Set up Java 25 (Liberica) & cache Maven
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: liberica
           java-version: '25'
           java-package: jdk
       - name: Restore Maven repository cache
         id: maven-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-java25-maven-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
@@ -368,7 +368,7 @@ jobs:
             ${{ runner.os }}-java25-maven-
 
       - name: Cache install4j
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: download/install4j
           key: install4j-windows-arm64-${{ env.INSTALL4J_VERSION }}
@@ -376,7 +376,7 @@ jobs:
 
       - name: Restore install4j JRE bundle cache
         id: cache-install4j-jres
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~\AppData\Local\install4j\${{ env.INSTALL4J_CACHE_VERSION }}\cached_jres
           key: install4j-jres-${{ runner.os }}-arm64-${{ env.INSTALL4J_VERSION }}-${{ hashFiles('installers/windows-aarch64/*.install4j') }}
@@ -407,7 +407,7 @@ jobs:
 
       - name: Restore cached Windows ARM64 ffmpeg bundle
         id: cache-win-arm64-ffmpeg
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: download\windows-bin-arm64
           key: ffmpeg-${{ runner.os }}-arm64-${{ env.WINDOWS_ARM64_FFMPEG_MD5 }}
@@ -447,7 +447,7 @@ jobs:
 
       - name: Restore cached sqlite3 ARM64
         id: cache-sqlite-arm64
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: target\res\bin\sqlite3.exe
           key: sqlite3-${{ runner.os }}-arm64-${{ env.SQLITE_VERSION }}
@@ -579,7 +579,7 @@ jobs:
 
     steps:
       - name: Checkout develop branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: develop
 
@@ -587,14 +587,14 @@ jobs:
       - *extract-sqlite-version-step
 
       - name: Set up Java 25 (Liberica) & cache Maven
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: liberica
           java-version: '25'
           java-package: jdk
       - name: Restore Maven repository cache
         id: maven-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-java25-maven-${{ hashFiles('**/pom.xml', '.mvn/wrapper/maven-wrapper.properties') }}
@@ -602,7 +602,7 @@ jobs:
             ${{ runner.os }}-java25-maven-
 
       - name: Cache install4j
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: download/install4j
           key: install4j-windows-amd64-${{ env.INSTALL4J_VERSION }}
@@ -610,7 +610,7 @@ jobs:
 
       - name: Restore install4j JRE bundle cache
         id: cache-install4j-jres
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~\AppData\Local\install4j\${{ env.INSTALL4J_CACHE_VERSION }}\cached_jres
           key: install4j-jres-${{ runner.os }}-x64-${{ env.INSTALL4J_VERSION }}-${{ hashFiles('installers/windows-amd64/*.install4j') }}
@@ -641,7 +641,7 @@ jobs:
 
       - name: Restore cached Windows AMD64 ffmpeg bundle
         id: cache-win-amd64-ffmpeg
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: download\windows-bin-amd64
           key: ffmpeg-${{ runner.os }}-amd64-${{ env.WINDOWS_AMD64_FFMPEG_MD5 }}
@@ -681,7 +681,7 @@ jobs:
 
       - name: Restore cached sqlite3 AMD64
         id: cache-sqlite-amd64
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: target\res\bin\sqlite3.exe
           key: sqlite3-${{ runner.os }}-amd64-${{ env.SQLITE_VERSION }}
