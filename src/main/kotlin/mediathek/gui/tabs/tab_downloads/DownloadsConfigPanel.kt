@@ -28,7 +28,7 @@ class DownloadsConfigPanel : JPanel() {
     }
 
     private fun fireDownloadRateLimitChangedEvent() {
-        val downloadLimit = spinnerMaxBandwidth.value as Int
+        val downloadLimit = (spinnerMaxBandwidth.value as Number).toInt()
         ApplicationConfiguration.getConfiguration()
             .setProperty(ApplicationConfiguration.DownloadRateLimiter.LIMIT, downloadLimit)
         val evt = DownloadRateLimitChangedEvent()
@@ -46,7 +46,7 @@ class DownloadsConfigPanel : JPanel() {
         //restore spinner setting from config
         val oldDownloadLimit =
             ApplicationConfiguration.getConfiguration().getLong(ApplicationConfiguration.DownloadRateLimiter.LIMIT, 0)
-        spinnerMaxBandwidth.value = oldDownloadLimit
+        spinnerMaxBandwidth.value = oldDownloadLimit.toInt()
         spinnerMaxBandwidth.addChangeListener { fireDownloadRateLimitChangedEvent() }
     }
 
