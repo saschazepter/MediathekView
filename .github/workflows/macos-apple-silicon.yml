@@ -10,6 +10,10 @@ env:
   INSTALL4J_VERSION: '11_0_5'
   INSTALL4J_CACHE_VERSION: 'v11'
   AWS_DEFAULT_REGION: us-east-1
+  WINDOWS_AMD64_FFMPEG_URL: https://s3.mvorg.de/res/dev/windows/64/bin/ffmpeg.zip
+  WINDOWS_ARM64_FFMPEG_URL: https://s3.mvorg.de/res/dev/windows/aarch64/ffmpeg.zip
+  WINDOWS_AMD64_FFMPEG_MD5: '20dcf17f298bda808c05d1b9a7a55f9f'
+  WINDOWS_ARM64_FFMPEG_MD5: 'e87254bb878bd1d9190e72e348df8257'
   MAC_BINARIES_BASE_URL: https://s3.mvorg.de/res/dev/mac/bin
   MAC_COMMON_SHUTDOWNHELPER_MD5: 3531e6483f886877e6f32f8345503fd7
   MAC_INTEL_FFMPEG_MD5: dd1b293c38510063f98f733229c526f5
@@ -401,6 +405,46 @@ jobs:
         run: |
           echo "${{ github.workspace }}\download\install4j\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
 
+      - name: Restore cached Windows ARM64 ffmpeg bundle
+        id: cache-win-arm64-ffmpeg
+        uses: actions/cache@v4
+        with:
+          path: download\windows-bin-arm64
+          key: ffmpeg-${{ runner.os }}-arm64-${{ env.WINDOWS_ARM64_FFMPEG_MD5 }}
+
+      - name: Restore or download Windows ARM64 ffmpeg bundle
+        shell: pwsh
+        run: |
+          $bundleDir = Join-Path $env:GITHUB_WORKSPACE "download\windows-bin-arm64"
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE "download\windows-arm64-ffmpeg.zip"
+          $targetDir = Join-Path $env:GITHUB_WORKSPACE "target\res\bin"
+
+          if (-not (Test-Path (Join-Path $bundleDir "ffmpeg.exe"))) {
+            Remove-Item $bundleDir -Recurse -Force -ErrorAction SilentlyContinue
+            New-Item -ItemType Directory -Path $bundleDir -Force | Out-Null
+
+            Write-Host "→ Downloading $env:WINDOWS_ARM64_FFMPEG_URL"
+            curl.exe -L $env:WINDOWS_ARM64_FFMPEG_URL -o $zipPath --progress-bar
+            $actualMd5 = (Get-FileHash $zipPath -Algorithm MD5).Hash.ToLowerInvariant()
+            if ($actualMd5 -ne $env:WINDOWS_ARM64_FFMPEG_MD5.ToLowerInvariant()) {
+              throw "Windows ARM64 ffmpeg zip MD5 mismatch: got $actualMd5 expected $env:WINDOWS_ARM64_FFMPEG_MD5"
+            }
+            Expand-Archive -Path $zipPath -DestinationPath $bundleDir -Force
+
+            $inner = Join-Path $bundleDir "ffmpeg"
+            if (Test-Path $inner) {
+              Get-ChildItem $inner -Force | Move-Item -Destination $bundleDir -Force
+              Remove-Item $inner -Recurse -Force
+            }
+
+            Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+          } else {
+            Write-Host "✔︎ Cached Windows ARM64 ffmpeg bundle"
+          }
+
+          New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+          Copy-Item -Path (Join-Path $bundleDir "*") -Destination $targetDir -Recurse -Force
+
       - name: Restore cached sqlite3 ARM64
         id: cache-sqlite-arm64
         uses: actions/cache@v4
@@ -594,6 +638,46 @@ jobs:
       - name: Install install4j
         run: |
           echo "${{ github.workspace }}\download\install4j\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8
+
+      - name: Restore cached Windows AMD64 ffmpeg bundle
+        id: cache-win-amd64-ffmpeg
+        uses: actions/cache@v4
+        with:
+          path: download\windows-bin-amd64
+          key: ffmpeg-${{ runner.os }}-amd64-${{ env.WINDOWS_AMD64_FFMPEG_MD5 }}
+
+      - name: Restore or download Windows AMD64 ffmpeg bundle
+        shell: pwsh
+        run: |
+          $bundleDir = Join-Path $env:GITHUB_WORKSPACE "download\windows-bin-amd64"
+          $zipPath = Join-Path $env:GITHUB_WORKSPACE "download\windows-amd64-ffmpeg.zip"
+          $targetDir = Join-Path $env:GITHUB_WORKSPACE "target\res\bin"
+
+          if (-not (Test-Path (Join-Path $bundleDir "ffmpeg.exe"))) {
+            Remove-Item $bundleDir -Recurse -Force -ErrorAction SilentlyContinue
+            New-Item -ItemType Directory -Path $bundleDir -Force | Out-Null
+
+            Write-Host "→ Downloading $env:WINDOWS_AMD64_FFMPEG_URL"
+            curl.exe -L $env:WINDOWS_AMD64_FFMPEG_URL -o $zipPath --progress-bar
+            $actualMd5 = (Get-FileHash $zipPath -Algorithm MD5).Hash.ToLowerInvariant()
+            if ($actualMd5 -ne $env:WINDOWS_AMD64_FFMPEG_MD5.ToLowerInvariant()) {
+              throw "Windows AMD64 ffmpeg zip MD5 mismatch: got $actualMd5 expected $env:WINDOWS_AMD64_FFMPEG_MD5"
+            }
+            Expand-Archive -Path $zipPath -DestinationPath $bundleDir -Force
+
+            $inner = Join-Path $bundleDir "ffmpeg"
+            if (Test-Path $inner) {
+              Get-ChildItem $inner -Force | Move-Item -Destination $bundleDir -Force
+              Remove-Item $inner -Recurse -Force
+            }
+
+            Remove-Item $zipPath -Force -ErrorAction SilentlyContinue
+          } else {
+            Write-Host "✔︎ Cached Windows AMD64 ffmpeg bundle"
+          }
+
+          New-Item -ItemType Directory -Path $targetDir -Force | Out-Null
+          Copy-Item -Path (Join-Path $bundleDir "*") -Destination $targetDir -Recurse -Force
 
       - name: Restore cached sqlite3 AMD64
         id: cache-sqlite-amd64

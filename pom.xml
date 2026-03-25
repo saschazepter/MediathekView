@@ -772,61 +772,9 @@
             </activation>
             <properties>
                 <install4j.platform>windows</install4j.platform>
-                <windows.ffmpeg.url>https://s3.mvorg.de/res/dev/windows/64/bin/ffmpeg.zip</windows.ffmpeg.url>
-                <windows.bin.dir>${project.build.directory}/res/bin</windows.bin.dir>
             </properties>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${maven-exec-maven-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>fetch-unpack-clean-ffmpeg</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>powershell</executable>
-                                    <arguments>
-                                        <argument>-NoProfile</argument>
-                                        <argument>-ExecutionPolicy</argument>
-                                        <argument>Bypass</argument>
-                                        <argument>-Command</argument>
-                                        <argument>
-                                            <![CDATA[
-              $url    = '${windows.ffmpeg.url}'
-              $outDir = '${windows.bin.dir}'
-              $zip    = Join-Path $outDir 'ffmpeg.zip'
-
-              # ensure output dir exists
-              New-Item -ItemType Directory -Path $outDir -Force | Out-Null
-
-              Write-Host "→ Downloading $url"
-              # use Windows-native curl.exe for a console progress bar
-              curl.exe -L $url -o $zip --progress-bar
-
-              Write-Host "→ Unpacking $zip → $outDir"
-              Expand-Archive -Path $zip -DestinationPath $outDir -Force
-
-              $inner = Join-Path $outDir 'ffmpeg'
-              if (Test-Path $inner) {
-                Write-Host "→ Fixing ffmpeg unpacking $inner → $outDir"
-                Get-ChildItem $inner -Force | Move-Item -Destination $outDir -Force
-                Remove-Item $inner -Recurse -Force
-              }
-
-              Write-Host "→ Deleting $zip"
-              Remove-Item -Path $zip -Force
-                    ]]>
-                                        </argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
@@ -929,63 +877,8 @@
                     <arch>aarch64</arch>
                 </os>
             </activation>
-            <properties>
-                <windows.ffmpeg.url>https://s3.mvorg.de/res/dev/windows/aarch64/ffmpeg.zip</windows.ffmpeg.url>
-                <windows.bin.dir>${project.build.directory}/res/bin</windows.bin.dir>
-            </properties>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${maven-exec-maven-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>fetch-and-unpack-ffmpeg</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <executable>powershell</executable>
-                                    <arguments>
-                                        <argument>-NoProfile</argument>
-                                        <argument>-ExecutionPolicy</argument>
-                                        <argument>Bypass</argument>
-                                        <argument>-Command</argument>
-                                        <argument>
-                                            <![CDATA[
-              $url    = '${windows.ffmpeg.url}'
-              $outDir = '${windows.bin.dir}'
-              $zip    = Join-Path $outDir 'ffmpeg.zip'
-
-              # ensure output dir exists
-              New-Item -ItemType Directory -Path $outDir -Force | Out-Null
-
-              Write-Host "→ Downloading $url"
-              # use Windows-native curl.exe for a console progress bar
-              curl.exe -L $url -o $zip --progress-bar
-
-              Write-Host "→ Unpacking $zip → $outDir"
-              Expand-Archive -Path $zip -DestinationPath $outDir -Force
-
-              $inner = Join-Path $outDir 'ffmpeg'
-              if (Test-Path $inner) {
-                Write-Host "→ Fixing ffmpeg unpacking $inner → $outDir"
-                Get-ChildItem $inner -Force | Move-Item -Destination $outDir -Force
-                Remove-Item $inner -Recurse -Force
-              }
-
-              Write-Host "→ Deleting $zip"
-              Remove-Item -Path $zip -Force
-            ]]>
-                                        </argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
