@@ -10,6 +10,12 @@ env:
   INSTALL4J_VERSION: '11_0_5'
   INSTALL4J_CACHE_VERSION: 'v11'
   AWS_DEFAULT_REGION: us-east-1
+  MAC_BINARIES_BASE_URL: https://s3.mvorg.de/res/dev/mac/bin
+  MAC_COMMON_SHUTDOWNHELPER_MD5: 3531e6483f886877e6f32f8345503fd7
+  MAC_INTEL_FFMPEG_MD5: dd1b293c38510063f98f733229c526f5
+  MAC_INTEL_FFPROBE_MD5: 4e4d2f0b21770efeb8c69ca321115ed6
+  MAC_APPLE_SILICON_FFMPEG_MD5: 36ec3a0b676d0e344bcca9987d9f2174
+  MAC_APPLE_SILICON_FFPROBE_MD5: e2e1ceb77ab05ceaa9d6054a50de69a0
 
 jobs:
   build-macos-apple-silicon:
@@ -71,6 +77,15 @@ jobs:
             install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-${{ env.INSTALL4J_VERSION }}-
             install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-
 
+      - name: Restore macOS helper binary cache
+        id: cache-mac-binaries
+        uses: actions/cache@v4
+        with:
+          path: target/bin
+          key: mac-binaries-${{ env.MACOS_ARCH }}-${{ env.MAC_COMMON_SHUTDOWNHELPER_MD5 }}-${{ env.MAC_APPLE_SILICON_FFMPEG_MD5 }}-${{ env.MAC_APPLE_SILICON_FFPROBE_MD5 }}
+          restore-keys: |
+            mac-binaries-${{ env.MACOS_ARCH }}-
+
       - name: Restore or download & extract install4j
         run: |
           mkdir -p download
@@ -101,6 +116,30 @@ jobs:
           mkdir -p target/mac
           echo "${{ secrets.MAC_DEV_CERT_2025 }}" \
             | base64 --decode > target/mac/mac_dev_cert_with_password.p12
+
+      - name: Restore or download macOS helper binaries
+        run: |
+          mkdir -p target/bin
+          for pair in \
+            "common/MVShutdownHelper:${MAC_COMMON_SHUTDOWNHELPER_MD5}" \
+            "apple_silicon/ffmpeg:${MAC_APPLE_SILICON_FFMPEG_MD5}" \
+            "apple_silicon/ffprobe:${MAC_APPLE_SILICON_FFPROBE_MD5}"
+          do
+            IFS=":" read -r path md5 <<< "$pair"
+            dest="target/bin/$(basename "$path")"
+            url="${MAC_BINARIES_BASE_URL}/${path}"
+            if [[ -f "$dest" && "$(md5 -q "$dest")" == "$md5" ]]; then
+              echo "Using cached $dest"
+              continue
+            fi
+            echo "Downloading $url"
+            curl -fL "$url" -o "$dest"
+            actual="$(md5 -q "$dest")"
+            if [[ "$actual" != "$md5" ]]; then
+              echo "MD5 mismatch for $dest: got $actual expected $md5" >&2
+              exit 1
+            fi
+          done
 
       - name: Build macOS app
         run: mvn -B package -P${{ env.MVN_PROFILE }},install4j-mac-${{ env.MACOS_ARCH }} -DskipTests
@@ -186,6 +225,15 @@ jobs:
             install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-${{ env.INSTALL4J_VERSION }}-
             install4j-jres-${{ runner.os }}-${{ env.MACOS_ARCH }}-
 
+      - name: Restore macOS helper binary cache
+        id: cache-mac-binaries
+        uses: actions/cache@v4
+        with:
+          path: target/bin
+          key: mac-binaries-${{ env.MACOS_ARCH }}-${{ env.MAC_COMMON_SHUTDOWNHELPER_MD5 }}-${{ env.MAC_INTEL_FFMPEG_MD5 }}-${{ env.MAC_INTEL_FFPROBE_MD5 }}
+          restore-keys: |
+            mac-binaries-${{ env.MACOS_ARCH }}-
+
       - name: Restore or download & extract install4j
         run: |
           mkdir -p download
@@ -216,6 +264,30 @@ jobs:
           mkdir -p target/mac
           echo "${{ secrets.MAC_DEV_CERT_2025 }}" \
             | base64 --decode > target/mac/mac_dev_cert_with_password.p12
+
+      - name: Restore or download macOS helper binaries
+        run: |
+          mkdir -p target/bin
+          for pair in \
+            "common/MVShutdownHelper:${MAC_COMMON_SHUTDOWNHELPER_MD5}" \
+            "intel/ffmpeg:${MAC_INTEL_FFMPEG_MD5}" \
+            "intel/ffprobe:${MAC_INTEL_FFPROBE_MD5}"
+          do
+            IFS=":" read -r path md5 <<< "$pair"
+            dest="target/bin/$(basename "$path")"
+            url="${MAC_BINARIES_BASE_URL}/${path}"
+            if [[ -f "$dest" && "$(md5 -q "$dest")" == "$md5" ]]; then
+              echo "Using cached $dest"
+              continue
+            fi
+            echo "Downloading $url"
+            curl -fL "$url" -o "$dest"
+            actual="$(md5 -q "$dest")"
+            if [[ "$actual" != "$md5" ]]; then
+              echo "MD5 mismatch for $dest: got $actual expected $md5" >&2
+              exit 1
+            fi
+          done
 
       - name: Build macOS app
         run: mvn -B package -P${{ env.MVN_PROFILE }},install4j-mac-${{ env.MACOS_ARCH }} -DskipTests

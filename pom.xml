@@ -145,8 +145,6 @@
         <!--suppress UnresolvedMavenProperty -->
         <install4j.license>${env.LICENSE_KEY_11}</install4j.license>
         <install4j.jdk.min-version>25</install4j.jdk.min-version>
-        <skip.mac.binary.download>true</skip.mac.binary.download>
-
         <!-- @formatter:off -->
         <!-- VM Parameters Windows x64 and aarch64 -->
         <install4j.vmparameters.win.64>-XX:+UseShenandoahGC -XX:ShenandoahGCHeuristics=compact -XX:MaxRAMPercentage=50.0 -XX:+UseStringDeduplication --enable-native-access=ALL-UNNAMED --add-modules jdk.incubator.vector --add-exports=java.desktop/sun.swing=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED -DexternalUpdateCheck</install4j.vmparameters.win.64>
@@ -1222,19 +1220,6 @@
         </profile>
 
         <profile>
-            <id>github-actions</id>
-            <activation>
-                <property>
-                    <name>env.GITHUB_ACTIONS</name>
-                    <value>true</value>
-                </property>
-            </activation>
-            <properties>
-                <skip.mac.binary.download>false</skip.mac.binary.download>
-            </properties>
-        </profile>
-
-        <profile>
             <id>mac_intel</id>
             <activation>
                 <os>
@@ -1242,56 +1227,8 @@
                     <arch>x86_64</arch>
                 </os>
             </activation>
-            <properties>
-                <binaries.base>https://s3.mvorg.de/res/dev/mac/bin</binaries.base>
-                <bin.dir>${project.build.directory}/bin</bin.dir>
-            </properties>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${maven-exec-maven-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>download-mac-intel-binaries</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skip.mac.binary.download}</skip>
-                                    <executable>bash</executable>
-                                    <arguments>
-                                        <argument>-lc</argument>
-                                        <!--suppress UnresolvedMavenProperty -->
-                                        <argument>
-                                            <![CDATA[
-                set -e
-                mkdir -p "${bin.dir}"
-                for pair in \
-                  "common/MVShutdownHelper:3531e6483f886877e6f32f8345503fd7" \
-                  "intel/ffmpeg:dd1b293c38510063f98f733229c526f5" \
-                  "intel/ffprobe:4e4d2f0b21770efeb8c69ca321115ed6"
-                do
-                  IFS=":" read -r path md5 <<< "$pair"
-                  url="${binaries.base}/${path}"
-                  dest="${bin.dir}/$(basename "$path")"
-                  echo "→ Downloading $url"
-                  curl -fL "$url" -o "$dest"
-                  actual=$(md5 -q "$dest")
-                  if [[ "$actual" != "$md5" ]]; then
-                    echo "!! MD5 mismatch for $dest (got $actual, expected $md5)" >&2
-                    exit 1
-                  fi
-                done
-                ]]>
-                                        </argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
@@ -1360,62 +1297,8 @@
                     <arch>aarch64</arch>
                 </os>
             </activation>
-            <properties>
-                <binaries.base>https://s3.mvorg.de/res/dev/mac/bin</binaries.base>
-                <bin.dir>${project.build.directory}/bin</bin.dir>
-            </properties>
             <build>
                 <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <version>${maven-exec-maven-plugin.version}</version>
-                        <executions>
-                            <execution>
-                                <id>download-mac-apple-silicon-binaries</id>
-                                <phase>package</phase>
-                                <goals>
-                                    <goal>exec</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skip.mac.binary.download}</skip>
-                                    <executable>bash</executable>
-                                    <arguments>
-                                        <argument>-lc</argument>
-                                        <!--suppress UnresolvedMavenProperty -->
-                                        <argument>
-                                            <![CDATA[
-set -e
-mkdir -p "${bin.dir}"
-for pair in \
-  "common/MVShutdownHelper:3531e6483f886877e6f32f8345503fd7" \
-  "apple_silicon/ffmpeg:36ec3a0b676d0e344bcca9987d9f2174" \
-  "apple_silicon/ffprobe:e2e1ceb77ab05ceaa9d6054a50de69a0"
-do
-  IFS=":" read -r path md5 <<< "$pair"
-  url="${binaries.base}/${path}"
-  dest="${bin.dir}/$(basename "$path")"
-
-  # if file exists and checksum matches, skip download
-  if [[ -f "$dest" && "$(md5 -q "$dest")" == "$md5" ]]; then
-    echo "→ Using cached $dest"
-  else
-    echo "→ Downloading $url"
-    curl -fL "$url" -o "$dest"
-    actual=$(md5 -q "$dest")
-    if [[ "$actual" != "$md5" ]]; then
-      echo "!! MD5 mismatch for $dest (got $actual, expected $md5)" >&2
-      exit 1
-    fi
-  fi
-done
-]]>
-                                        </argument>
-                                    </arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-shade-plugin</artifactId>
