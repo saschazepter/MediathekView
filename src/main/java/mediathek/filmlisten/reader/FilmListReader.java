@@ -261,10 +261,10 @@ public class FilmListReader implements AutoCloseable {
 
     private void parseDatumLong(JsonParser jp, DatenFilm datenFilm) {
         var str = checkedString(jp);
-        datenFilm.setDatumLong(parseDatumLongValue(str));
+        datenFilm.setDatumLongSeconds(parseSignedLong(str));
     }
 
-    private long parseDatumLongValue(String value) {
+    private long parseSignedLong(String value) {
         if (value == null || value.isEmpty()) {
             return 0;
         }
@@ -304,10 +304,10 @@ public class FilmListReader implements AutoCloseable {
     }
 
     private void parseFilmLength(JsonParser jp, DatenFilm datenFilm) {
-        datenFilm.setFilmLength(parseFilmLengthValue(checkedString(jp)));
+        datenFilm.setFilmLengthSeconds(parseDurationSecondsOrZero(checkedString(jp)));
     }
 
-    private int parseFilmLengthValue(String value) {
+    private int parseDurationSecondsOrZero(String value) {
         if (value == null || value.isEmpty()) {
             return 0;
         }

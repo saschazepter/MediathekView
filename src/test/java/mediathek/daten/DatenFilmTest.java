@@ -51,7 +51,7 @@ class DatenFilmTest {
   void testFilmLengthCalculation(String input, long expected) {
     DatenFilm df = new DatenFilm();
 
-    df.setFilmLength((int) expected);
+    df.setFilmLengthSeconds((int) expected);
     df.init();
 
     Assertions.assertEquals(expected, df.getFilmLength());
@@ -83,7 +83,7 @@ class DatenFilmTest {
     DatenFilm film = new DatenFilm();
 
     film.setSendeDatum("01.01.1966");
-    film.setDatumLong(-122749200L);
+    film.setDatumLongSeconds(-122749200L);
     film.init();
 
     Assertions.assertNotEquals(DatumFilm.UNDEFINED_FILM_DATE, film.getDatumFilm());

@@ -156,7 +156,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
         return filmLength;
     }
 
-    public void setFilmLength(int durationInSeconds) {
+    public void setFilmLengthSeconds(int durationInSeconds) {
         filmLength = Math.max(durationInSeconds, 0);
         filmLengthAsString = "";
     }
@@ -207,9 +207,8 @@ public class DatenFilm implements Comparable<DatenFilm> {
         }
     }
 
-    public void setDatumLong(long datumLong) {
-        long datum_long = datumLong;
-        dataMap.put(MapKeys.TEMP_DATUM_LONG, datum_long);
+    public void setDatumLongSeconds(long datumLongSeconds) {
+        dataMap.put(MapKeys.TEMP_DATUM_LONG, datumLongSeconds);
     }
 
     public boolean isTrailerTeaser() {
