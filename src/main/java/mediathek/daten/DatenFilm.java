@@ -18,7 +18,6 @@
 
 package mediathek.daten;
 
-import mediathek.config.Config;
 import mediathek.daten.abo.DatenAbo;
 import mediathek.gui.bookmark.BookmarkData;
 import mediathek.tool.FileSize;
@@ -157,30 +156,9 @@ public class DatenFilm implements Comparable<DatenFilm> {
         return filmLength;
     }
 
-    /**
-     * Set the film's length or duration.
-     *
-     * @param dauer Input string in format "HH:MM:SS".
-     */
-    public void setFilmLength(String dauer) {
-        filmLength = 0;
+    public void setFilmLengthSeconds(int durationInSeconds) {
+        filmLength = Math.max(durationInSeconds, 0);
         filmLengthAsString = "";
-        //bail out early if there is nothing to split...
-        if (dauer == null || dauer.isEmpty()) {
-            return;
-        }
-        else {
-            final String[] split = dauer.split(":");
-
-            try {
-                filmLength += Integer.parseInt(split[0]) * 3600; //hour
-                filmLength += Integer.parseInt(split[1]) * 60; //minute
-                filmLength += Integer.parseInt(split[2]); //second
-            }
-            catch (Exception e) {
-                filmLength = 0;
-            }
-        }
     }
 
     public Optional<DatenAbo> getAboOptional() {
@@ -229,23 +207,8 @@ public class DatenFilm implements Comparable<DatenFilm> {
         }
     }
 
-    public void setDatumLong(String datumLong) {
-        long datum_long;
-        try {
-            if (!datumLong.isEmpty()) {
-                datum_long = Long.parseLong(datumLong);
-            }
-            else {
-                datum_long = 0;
-            }
-        }
-        catch (Exception e) {
-            if (Config.isDebugModeEnabled()) {
-                logger.error("Failed to parse datum long string: {}", datumLong);
-            }
-            datum_long = 0;
-        }
-        dataMap.put(MapKeys.TEMP_DATUM_LONG, datum_long);
+    public void setDatumLongSeconds(long datumLongSeconds) {
+        dataMap.put(MapKeys.TEMP_DATUM_LONG, datumLongSeconds);
     }
 
     public boolean isTrailerTeaser() {

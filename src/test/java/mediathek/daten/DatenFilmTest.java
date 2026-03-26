@@ -18,6 +18,7 @@
 
 package mediathek.daten;
 
+import mediathek.tool.datum.DatumFilm;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.params.provider.Arguments.arguments;
@@ -49,7 +51,7 @@ class DatenFilmTest {
   void testFilmLengthCalculation(String input, long expected) {
     DatenFilm df = new DatenFilm();
 
-    df.setFilmLength(input);
+    df.setFilmLengthSeconds((int) expected);
     df.init();
 
     Assertions.assertEquals(expected, df.getFilmLength());
@@ -74,6 +76,18 @@ class DatenFilmTest {
 
     Assertions.assertNotEquals(initialHash, updatedHash);
     Assertions.assertSame(updatedHash, film.getSha256());
+  }
+
+  @Test
+  void setDatumLongAcceptsNegativeValues() {
+    DatenFilm film = new DatenFilm();
+
+    film.setSendeDatum("01.01.1966");
+    film.setDatumLongSeconds(-122749200L);
+    film.init();
+
+    Assertions.assertNotEquals(DatumFilm.UNDEFINED_FILM_DATE, film.getDatumFilm());
+    Assertions.assertEquals(TimeUnit.MILLISECONDS.convert(-122749200L, TimeUnit.SECONDS), film.getDatumFilm().getTime());
   }
 
 }

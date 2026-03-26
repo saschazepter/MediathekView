@@ -42,7 +42,6 @@ import okio.Okio;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 import org.tukaani.xz.XZInputStream;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
@@ -262,7 +261,42 @@ public class FilmListReader implements AutoCloseable {
 
     private void parseDatumLong(JsonParser jp, DatenFilm datenFilm) {
         var str = checkedString(jp);
-        datenFilm.setDatumLong(str);
+        datenFilm.setDatumLongSeconds(parseSignedLong(str));
+    }
+
+    private long parseSignedLong(String value) {
+        if (value == null || value.isEmpty()) {
+            return 0;
+        }
+
+        boolean negative = false;
+        int start = 0;
+        if (value.charAt(0) == '-') {
+            negative = true;
+            start = 1;
+        }
+
+        if (start >= value.length()) {
+            logDatumLongParseError(value);
+            return 0;
+        }
+
+        long result = 0;
+        for (int i = start; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c < '0' || c > '9') {
+                logDatumLongParseError(value);
+                return 0;
+            }
+            result = result * 10 + (c - '0');
+        }
+        return negative ? -result : result;
+    }
+
+    private void logDatumLongParseError(String value) {
+        if (Config.isDebugModeEnabled()) {
+            logger.error("Failed to parse datum long string: {}", value);
+        }
     }
 
     private void parseSendedatum(JsonParser jp, DatenFilm datenFilm) {
@@ -270,7 +304,49 @@ public class FilmListReader implements AutoCloseable {
     }
 
     private void parseFilmLength(JsonParser jp, DatenFilm datenFilm) {
-        datenFilm.setFilmLength(checkedString(jp));
+        datenFilm.setFilmLengthSeconds(parseDurationSecondsOrZero(checkedString(jp)));
+    }
+
+    private int parseDurationSecondsOrZero(String value) {
+        if (value == null || value.isEmpty()) {
+            return 0;
+        }
+
+        int firstColon = value.indexOf(':');
+        if (firstColon <= 0) {
+            return 0;
+        }
+
+        int secondColon = value.indexOf(':', firstColon + 1);
+        if (secondColon <= firstColon + 1 || secondColon >= value.length() - 1) {
+            return 0;
+        }
+
+        try {
+            int hours = parsePositiveInt(value, 0, firstColon);
+            int minutes = parsePositiveInt(value, firstColon + 1, secondColon);
+            int seconds = parsePositiveInt(value, secondColon + 1, value.length());
+            return hours * 3600 + minutes * 60 + seconds;
+        }
+        catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private int parsePositiveInt(String value, int start, int end) {
+        if (start >= end) {
+            throw new NumberFormatException("Empty integer segment");
+        }
+
+        int result = 0;
+        for (int i = start; i < end; i++) {
+            char c = value.charAt(i);
+            if (c < '0' || c > '9') {
+                throw new NumberFormatException("Invalid integer segment");
+            }
+            result = result * 10 + (c - '0');
+        }
+        return result;
     }
 
     private void parseGroesse(JsonParser jp, DatenFilm datenFilm) {
@@ -284,6 +360,18 @@ public class FilmListReader implements AutoCloseable {
      */
     private void skipToken(JsonParser jp) {
         jp.nextToken();
+    }
+
+    /**
+     * Skip the remaining values of the current film row once we already know it will be rejected.
+     */
+    private void skipRemainingArray(JsonParser jp) {
+        JsonToken token;
+        while ((token = jp.nextToken()) != null) {
+            if (token == JsonToken.END_ARRAY) {
+                return;
+            }
+        }
     }
 
     private void parseTime(JsonParser jp, DatenFilm datenFilm) {
@@ -361,8 +449,28 @@ public class FilmListReader implements AutoCloseable {
             if (jp.isExpectedStartArrayToken()) {
                 DatenFilm datenFilm = new DatenFilm();
                 parseSender(jp, datenFilm);
+                if (!SenderFilmlistLoadApprover.isApproved(datenFilm.getSender())) {
+                    skipRemainingArray(jp);
+                    continue;
+                }
                 parseThema(jp, datenFilm);
                 parseTitel(jp, datenFilm);
+                if (!loadTrailer && datenFilm.isTrailerTeaser()) {
+                    skipRemainingArray(jp);
+                    continue;
+                }
+                if (!loadAudiodescription && datenFilm.isAudioVersion()) {
+                    skipRemainingArray(jp);
+                    continue;
+                }
+                if (!loadSignLanguage && datenFilm.isSignLanguage()) {
+                    skipRemainingArray(jp);
+                    continue;
+                }
+                if (!loadLivestreams && THEMA_LIVE.equals(datenFilm.getThema())) {
+                    skipRemainingArray(jp);
+                    continue;
+                }
                 parseSendedatum(jp, datenFilm);
                 parseTime(jp, datenFilm);
                 parseFilmLength(jp, datenFilm);
@@ -385,30 +493,6 @@ public class FilmListReader implements AutoCloseable {
                 parseLivestream(datenFilm);
                 checkPlayList(datenFilm);
 
-                //if user specified he doesn´t want to load this sender, skip...
-                if (!SenderFilmlistLoadApprover.isApproved(datenFilm.getSender()))
-                    continue;
-
-                if (!loadTrailer) {
-                    if (datenFilm.isTrailerTeaser())
-                        continue;
-                }
-
-                if (!loadAudiodescription) {
-                    if (datenFilm.isAudioVersion())
-                        continue;
-                }
-
-                if (!loadSignLanguage) {
-                    if (datenFilm.isSignLanguage())
-                        continue;
-                }
-
-                if (!loadLivestreams) {
-                    if (datenFilm.isLivestream())
-                        continue;
-                }
-
                 //just initialize the film object, rest will be done in one of the filters
                 datenFilm.init();
 
@@ -423,12 +507,12 @@ public class FilmListReader implements AutoCloseable {
      *
      * @param datenFilm the film to check.
      */
-    private void checkPlayList(@NotNull DatenFilm datenFilm) {
+    private void checkPlayList(DatenFilm datenFilm) {
         if (datenFilm.getUrlNormalQuality().endsWith(PLAYLIST_SUFFIX))
             datenFilm.setPlayList(true);
     }
 
-    public void readFilmListe(String source, @NotNull ListeFilme listeFilme, int days) {
+    public void readFilmListe(String source, ListeFilme listeFilme, int days) {
         try {
             logger.trace("Liste Filme lesen von: {}", source);
             listeFilme.clear();
@@ -469,7 +553,7 @@ public class FilmListReader implements AutoCloseable {
         notifyFertig(source, listeFilme);
     }
 
-    private void parseSeasonAndEpisode(@NotNull ListeFilme listeFilme) {
+    private void parseSeasonAndEpisode(ListeFilme listeFilme) {
         AtomicInteger counter = new AtomicInteger(0);
         Stopwatch stopwatch = Stopwatch.createStarted();
         listeFilme.parallelStream()
