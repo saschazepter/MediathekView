@@ -261,7 +261,42 @@ public class FilmListReader implements AutoCloseable {
 
     private void parseDatumLong(JsonParser jp, DatenFilm datenFilm) {
         var str = checkedString(jp);
-        datenFilm.setDatumLong(str);
+        datenFilm.setDatumLong(parseDatumLongValue(str));
+    }
+
+    private long parseDatumLongValue(String value) {
+        if (value == null || value.isEmpty()) {
+            return 0;
+        }
+
+        boolean negative = false;
+        int start = 0;
+        if (value.charAt(0) == '-') {
+            negative = true;
+            start = 1;
+        }
+
+        if (start >= value.length()) {
+            logDatumLongParseError(value);
+            return 0;
+        }
+
+        long result = 0;
+        for (int i = start; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c < '0' || c > '9') {
+                logDatumLongParseError(value);
+                return 0;
+            }
+            result = result * 10 + (c - '0');
+        }
+        return negative ? -result : result;
+    }
+
+    private void logDatumLongParseError(String value) {
+        if (Config.isDebugModeEnabled()) {
+            logger.error("Failed to parse datum long string: {}", value);
+        }
     }
 
     private void parseSendedatum(JsonParser jp, DatenFilm datenFilm) {

@@ -83,7 +83,7 @@ class DatenFilmTest {
     DatenFilm film = new DatenFilm();
 
     film.setSendeDatum("01.01.1966");
-    film.setDatumLong("-122749200");
+    film.setDatumLong(-122749200L);
     film.init();
 
     Assertions.assertNotEquals(DatumFilm.UNDEFINED_FILM_DATE, film.getDatumFilm());

@@ -18,7 +18,6 @@
 
 package mediathek.daten;
 
-import mediathek.config.Config;
 import mediathek.daten.abo.DatenAbo;
 import mediathek.gui.bookmark.BookmarkData;
 import mediathek.tool.FileSize;
@@ -237,19 +236,8 @@ public class DatenFilm implements Comparable<DatenFilm> {
         }
     }
 
-    public void setDatumLong(String datumLong) {
-        long datum_long = 0;
-        try {
-            if (datumLong != null && !datumLong.isEmpty()) {
-                datum_long = parsePositiveLong(datumLong);
-            }
-        }
-        catch (Exception e) {
-            if (Config.isDebugModeEnabled()) {
-                logger.error("Failed to parse datum long string: {}", datumLong);
-            }
-            datum_long = 0;
-        }
+    public void setDatumLong(long datumLong) {
+        long datum_long = datumLong;
         dataMap.put(MapKeys.TEMP_DATUM_LONG, datum_long);
     }
 
@@ -720,29 +708,6 @@ public class DatenFilm implements Comparable<DatenFilm> {
             result = result * 10 + (c - '0');
         }
         return result;
-    }
-
-    private static long parsePositiveLong(String value) {
-        boolean negative = false;
-        int start = 0;
-        if (value.charAt(0) == '-') {
-            negative = true;
-            start = 1;
-        }
-
-        if (start >= value.length()) {
-            throw new NumberFormatException("Invalid long value");
-        }
-
-        long result = 0;
-        for (int i = start; i < value.length(); i++) {
-            char c = value.charAt(i);
-            if (c < '0' || c > '9') {
-                throw new NumberFormatException("Invalid long value");
-            }
-            result = result * 10 + (c - '0');
-        }
-        return negative ? -result : result;
     }
 
     public String getSubtitleUrl() {
