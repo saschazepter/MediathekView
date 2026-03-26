@@ -110,13 +110,9 @@ public class DirectHttpDownload extends Thread {
      */
     @Handler
     private void handleRateLimitChanged(@NotNull DownloadRateLimitChangedEvent evt) {
-        final long limit = calculateDownloadLimit(evt);
+        long limit = calcLimit(evt.newLimit, evt.active);
         logger.info("thread changing download speed limit to {} KB", limit);
         rateLimiter.setRate(limit);
-    }
-
-    private long calculateDownloadLimit(@NotNull DownloadRateLimitChangedEvent evt) {
-        return calcLimit(evt.newLimit, evt.active);
     }
 
     private long calcLimit(long limit, boolean active) {

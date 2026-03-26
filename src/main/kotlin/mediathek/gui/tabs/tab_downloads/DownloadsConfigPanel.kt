@@ -16,13 +16,22 @@ import javax.swing.border.TitledBorder
  * @author Christian Franzke
  */
 class DownloadsConfigPanel : JPanel() {
+    private fun scheduleDownloadRateLimitChangedEvent() {
+        if (downloadRateLimitChangeTimer.isRunning) {
+            downloadRateLimitChangeTimer.restart()
+        } else {
+            downloadRateLimitChangeTimer.start()
+        }
+    }
+
     private fun setupDownloadRateLimitCheckBox() {
         val config = ApplicationConfiguration.getConfiguration()
         val active = config.getBoolean(
             ApplicationConfiguration.DownloadRateLimiter.ACTIVE, false)
         cbMaxBandwidth.isSelected = active
-        cbMaxBandwidth.addActionListener {
+            cbMaxBandwidth.addActionListener {
             config.setProperty(ApplicationConfiguration.DownloadRateLimiter.ACTIVE, cbMaxBandwidth.isSelected)
+            downloadRateLimitChangeTimer.stop()
             fireDownloadRateLimitChangedEvent()
         }
     }
@@ -47,7 +56,7 @@ class DownloadsConfigPanel : JPanel() {
         val oldDownloadLimit =
             ApplicationConfiguration.getConfiguration().getLong(ApplicationConfiguration.DownloadRateLimiter.LIMIT, 0)
         spinnerMaxBandwidth.value = oldDownloadLimit.toInt()
-        spinnerMaxBandwidth.addChangeListener { fireDownloadRateLimitChangedEvent() }
+        spinnerMaxBandwidth.addChangeListener { scheduleDownloadRateLimitChangedEvent() }
     }
 
     private fun setupNumDownloadsSpinner() {
@@ -100,6 +109,9 @@ class DownloadsConfigPanel : JPanel() {
     private val spinnerNumDownloads: JSpinner = JSpinner()
     private val cbMaxBandwidth: JCheckBox = JCheckBox()
     private val spinnerMaxBandwidth: JSpinner = JSpinner()
+    private val downloadRateLimitChangeTimer = Timer(300) { fireDownloadRateLimitChangedEvent() }.apply {
+        isRepeats = false
+    }
 
     init {
         initComponents()
