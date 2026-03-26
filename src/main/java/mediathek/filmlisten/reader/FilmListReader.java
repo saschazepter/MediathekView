@@ -304,7 +304,49 @@ public class FilmListReader implements AutoCloseable {
     }
 
     private void parseFilmLength(JsonParser jp, DatenFilm datenFilm) {
-        datenFilm.setFilmLength(checkedString(jp));
+        datenFilm.setFilmLength(parseFilmLengthValue(checkedString(jp)));
+    }
+
+    private int parseFilmLengthValue(String value) {
+        if (value == null || value.isEmpty()) {
+            return 0;
+        }
+
+        int firstColon = value.indexOf(':');
+        if (firstColon <= 0) {
+            return 0;
+        }
+
+        int secondColon = value.indexOf(':', firstColon + 1);
+        if (secondColon <= firstColon + 1 || secondColon >= value.length() - 1) {
+            return 0;
+        }
+
+        try {
+            int hours = parsePositiveInt(value, 0, firstColon);
+            int minutes = parsePositiveInt(value, firstColon + 1, secondColon);
+            int seconds = parsePositiveInt(value, secondColon + 1, value.length());
+            return hours * 3600 + minutes * 60 + seconds;
+        }
+        catch (NumberFormatException e) {
+            return 0;
+        }
+    }
+
+    private int parsePositiveInt(String value, int start, int end) {
+        if (start >= end) {
+            throw new NumberFormatException("Empty integer segment");
+        }
+
+        int result = 0;
+        for (int i = start; i < end; i++) {
+            char c = value.charAt(i);
+            if (c < '0' || c > '9') {
+                throw new NumberFormatException("Invalid integer segment");
+            }
+            result = result * 10 + (c - '0');
+        }
+        return result;
     }
 
     private void parseGroesse(JsonParser jp, DatenFilm datenFilm) {

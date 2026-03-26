@@ -156,38 +156,9 @@ public class DatenFilm implements Comparable<DatenFilm> {
         return filmLength;
     }
 
-    /**
-     * Set the film's length or duration.
-     *
-     * @param dauer Input string in format "HH:MM:SS".
-     */
-    public void setFilmLength(String dauer) {
-        filmLength = 0;
+    public void setFilmLength(int durationInSeconds) {
+        filmLength = Math.max(durationInSeconds, 0);
         filmLengthAsString = "";
-
-        if (dauer == null || dauer.isEmpty()) {
-            return;
-        }
-
-        int firstColon = dauer.indexOf(':');
-        if (firstColon <= 0) {
-            return;
-        }
-
-        int secondColon = dauer.indexOf(':', firstColon + 1);
-        if (secondColon <= firstColon + 1 || secondColon >= dauer.length() - 1) {
-            return;
-        }
-
-        try {
-            int hours = parsePositiveInt(dauer, 0, firstColon);
-            int minutes = parsePositiveInt(dauer, firstColon + 1, secondColon);
-            int seconds = parsePositiveInt(dauer, secondColon + 1, dauer.length());
-            filmLength = hours * 3600 + minutes * 60 + seconds;
-        }
-        catch (NumberFormatException e) {
-            filmLength = 0;
-        }
     }
 
     public Optional<DatenAbo> getAboOptional() {
@@ -692,22 +663,6 @@ public class DatenFilm implements Comparable<DatenFilm> {
         else
             dataMap.put(MapKeys.NORMAL_QUALITY_URL, url_normal_quality);
         invalidateSha256();
-    }
-
-    private static int parsePositiveInt(String value, int start, int end) {
-        if (start >= end) {
-            throw new NumberFormatException("Empty integer segment");
-        }
-
-        int result = 0;
-        for (int i = start; i < end; i++) {
-            char c = value.charAt(i);
-            if (c < '0' || c > '9') {
-                throw new NumberFormatException("Invalid integer segment");
-            }
-            result = result * 10 + (c - '0');
-        }
-        return result;
     }
 
     public String getSubtitleUrl() {

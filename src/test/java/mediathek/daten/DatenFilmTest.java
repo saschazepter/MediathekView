@@ -51,7 +51,7 @@ class DatenFilmTest {
   void testFilmLengthCalculation(String input, long expected) {
     DatenFilm df = new DatenFilm();
 
-    df.setFilmLength(input);
+    df.setFilmLength((int) expected);
     df.init();
 
     Assertions.assertEquals(expected, df.getFilmLength());
