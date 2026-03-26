@@ -723,15 +723,26 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     private static long parsePositiveLong(String value) {
+        boolean negative = false;
+        int start = 0;
+        if (value.charAt(0) == '-') {
+            negative = true;
+            start = 1;
+        }
+
+        if (start >= value.length()) {
+            throw new NumberFormatException("Invalid long value");
+        }
+
         long result = 0;
-        for (int i = 0; i < value.length(); i++) {
+        for (int i = start; i < value.length(); i++) {
             char c = value.charAt(i);
             if (c < '0' || c > '9') {
                 throw new NumberFormatException("Invalid long value");
             }
             result = result * 10 + (c - '0');
         }
-        return result;
+        return negative ? -result : result;
     }
 
     public String getSubtitleUrl() {
