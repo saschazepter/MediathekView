@@ -286,6 +286,18 @@ public class FilmListReader implements AutoCloseable {
         jp.nextToken();
     }
 
+    /**
+     * Skip the remaining values of the current film row once we already know it will be rejected.
+     */
+    private void skipRemainingArray(JsonParser jp) {
+        JsonToken token;
+        while ((token = jp.nextToken()) != null) {
+            if (token == JsonToken.END_ARRAY) {
+                return;
+            }
+        }
+    }
+
     private void parseTime(JsonParser jp, DatenFilm datenFilm) {
         String zeit = checkedString(jp);
         if (!zeit.isEmpty() && zeit.length() < 8) {
@@ -361,8 +373,28 @@ public class FilmListReader implements AutoCloseable {
             if (jp.isExpectedStartArrayToken()) {
                 DatenFilm datenFilm = new DatenFilm();
                 parseSender(jp, datenFilm);
+                if (!SenderFilmlistLoadApprover.isApproved(datenFilm.getSender())) {
+                    skipRemainingArray(jp);
+                    continue;
+                }
                 parseThema(jp, datenFilm);
                 parseTitel(jp, datenFilm);
+                if (!loadTrailer && datenFilm.isTrailerTeaser()) {
+                    skipRemainingArray(jp);
+                    continue;
+                }
+                if (!loadAudiodescription && datenFilm.isAudioVersion()) {
+                    skipRemainingArray(jp);
+                    continue;
+                }
+                if (!loadSignLanguage && datenFilm.isSignLanguage()) {
+                    skipRemainingArray(jp);
+                    continue;
+                }
+                if (!loadLivestreams && THEMA_LIVE.equals(datenFilm.getThema())) {
+                    skipRemainingArray(jp);
+                    continue;
+                }
                 parseSendedatum(jp, datenFilm);
                 parseTime(jp, datenFilm);
                 parseFilmLength(jp, datenFilm);
@@ -384,30 +416,6 @@ public class FilmListReader implements AutoCloseable {
                 //this will check after all data has been read
                 parseLivestream(datenFilm);
                 checkPlayList(datenFilm);
-
-                //if user specified he doesn´t want to load this sender, skip...
-                if (!SenderFilmlistLoadApprover.isApproved(datenFilm.getSender()))
-                    continue;
-
-                if (!loadTrailer) {
-                    if (datenFilm.isTrailerTeaser())
-                        continue;
-                }
-
-                if (!loadAudiodescription) {
-                    if (datenFilm.isAudioVersion())
-                        continue;
-                }
-
-                if (!loadSignLanguage) {
-                    if (datenFilm.isSignLanguage())
-                        continue;
-                }
-
-                if (!loadLivestreams) {
-                    if (datenFilm.isLivestream())
-                        continue;
-                }
 
                 //just initialize the film object, rest will be done in one of the filters
                 datenFilm.init();
