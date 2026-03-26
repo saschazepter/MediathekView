@@ -22,22 +22,27 @@ import java.util.concurrent.locks.LockSupport;
 
 /**
  * Lightweight byte-based rate limiter using a monotonic clock.
- * Replaces Google Guava's RateLimiter.
+ * Uses a smooth-bursty model similar to Guava's RateLimiter so small scheduler differences
+ * between operating systems do not dominate the effective throughput.
  */
 public final class ByteRateLimiter {
     private static final long NANOS_PER_SECOND = 1_000_000_000L;
     private static final long UNLIMITED_THRESHOLD = Long.MAX_VALUE / 2;
+    private static final double MAX_BURST_SECONDS = 1.0d;
 
     private volatile long bytesPerSecond;
     private volatile boolean unlimited;
+    private double storedPermits;
+    private double maxPermits;
+    private double stableNanosPerPermit;
     private long nextAvailableNanos;
 
     public ByteRateLimiter(long bytesPerSecond) {
         setRate(bytesPerSecond);
     }
 
-    private static long nanosForPermits(int permits, long rateBytesPerSecond) {
-        final double nanos = (permits * (double) NANOS_PER_SECOND) / rateBytesPerSecond;
+    private static long nanosForPermits(double permits, double nanosPerPermit) {
+        final double nanos = permits * nanosPerPermit;
         if (!Double.isFinite(nanos) || nanos >= Long.MAX_VALUE) {
             return Long.MAX_VALUE;
         }
@@ -53,19 +58,33 @@ public final class ByteRateLimiter {
 
     public void setRate(long bytesPerSecond) {
         synchronized (this) {
+            final long now = System.nanoTime();
             this.unlimited = bytesPerSecond >= UNLIMITED_THRESHOLD;
             this.bytesPerSecond = bytesPerSecond <= 0 ? 1 : bytesPerSecond;
             if (unlimited) {
+                storedPermits = 0d;
+                maxPermits = 0d;
+                stableNanosPerPermit = 0d;
                 nextAvailableNanos = 0L;
             }
             else {
-                // Apply rate changes quickly and avoid carrying stale delay debt.
-                nextAvailableNanos = Math.min(nextAvailableNanos, System.nanoTime());
+                resync(now);
+
+                final double oldMaxPermits = maxPermits;
+                stableNanosPerPermit = NANOS_PER_SECOND / (double) this.bytesPerSecond;
+                maxPermits = Math.max(1d, this.bytesPerSecond * MAX_BURST_SECONDS);
+
+                if (oldMaxPermits <= 0d || !Double.isFinite(oldMaxPermits)) {
+                    storedPermits = Math.min(storedPermits, maxPermits);
+                }
+                else {
+                    storedPermits = Math.min(maxPermits, storedPermits * maxPermits / oldMaxPermits);
+                }
             }
         }
     }
 
-    public void acquire(int permits) {
+    public void acquire(int permits, long operationStartedNanos, long operationCompletedNanos) {
         if (permits <= 0) {
             return;
         }
@@ -75,15 +94,40 @@ public final class ByteRateLimiter {
             if (unlimited) {
                 return;
             }
-            final long now = System.nanoTime();
-            final long reservationStart = Math.max(now, nextAvailableNanos);
-            final long intervalNanos = nanosForPermits(permits, bytesPerSecond);
-            nextAvailableNanos = safeAdd(reservationStart, intervalNanos);
-            waitNanos = reservationStart - now;
+            final long now = Math.max(operationStartedNanos, operationCompletedNanos);
+            waitNanos = reserveAndGetWaitLength(permits, now);
         }
 
         if (waitNanos > 0) {
             LockSupport.parkNanos(waitNanos);
         }
+    }
+
+    private long reserveAndGetWaitLength(int permits, long nowNanos) {
+        resync(nowNanos);
+
+        final long momentAvailable = nextAvailableNanos;
+        final double permitsToSpendFromStorage = Math.min(permits, storedPermits);
+        final double freshPermits = permits - permitsToSpendFromStorage;
+        final long waitNanos = nanosForPermits(freshPermits, stableNanosPerPermit);
+
+        nextAvailableNanos = safeAdd(nextAvailableNanos, waitNanos);
+        storedPermits -= permitsToSpendFromStorage;
+
+        return Math.max(momentAvailable - nowNanos, 0L);
+    }
+
+    private void resync(long nowNanos) {
+        if (nowNanos <= nextAvailableNanos) {
+            return;
+        }
+        if (stableNanosPerPermit <= 0d) {
+            nextAvailableNanos = nowNanos;
+            return;
+        }
+
+        final double newPermits = (nowNanos - nextAvailableNanos) / stableNanosPerPermit;
+        storedPermits = Math.min(maxPermits, storedPermits + newPermits);
+        nextAvailableNanos = nowNanos;
     }
 }

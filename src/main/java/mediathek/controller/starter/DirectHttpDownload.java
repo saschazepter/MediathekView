@@ -65,7 +65,7 @@ public class DirectHttpDownload extends Thread {
      * Keep the transfer buffer large enough that rate limiting does not depend on sub-millisecond sleep precision.
      * Windows is especially sensitive here when the limiter is driven by many 1 KiB reads per second.
      */
-    private static final int DOWNLOAD_BUFFER_SIZE = 64 * 1024;
+    private static final int DOWNLOAD_BUFFER_SIZE = 256 * 1024;
     private static final boolean DEBUG_FORCE_STREAM_RESET_ONCE = Boolean.getBoolean("mv.debug.forceHttp2ResetOnce");
     private static final long DEBUG_FORCE_STREAM_RESET_AFTER_BYTES = Long.getLong("mv.debug.forceHttp2ResetAfterBytes", 512L * 1024L);
     private static final Logger logger = LogManager.getLogger(DirectHttpDownload.class);

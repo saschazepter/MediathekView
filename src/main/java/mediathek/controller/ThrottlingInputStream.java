@@ -20,27 +20,30 @@ public class ThrottlingInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
+        final long startedAtNanos = System.nanoTime();
         final int value = target.read();
         if (value != -1) {
-            maxBytesPerSecond.acquire(1);
+            maxBytesPerSecond.acquire(1, startedAtNanos, System.nanoTime());
         }
         return value;
     }
 
     @Override
     public int read(byte[] b) throws IOException {
+        final long startedAtNanos = System.nanoTime();
         final int bytesRead = target.read(b);
         if (bytesRead > 0) {
-            maxBytesPerSecond.acquire(bytesRead);
+            maxBytesPerSecond.acquire(bytesRead, startedAtNanos, System.nanoTime());
         }
         return bytesRead;
     }
 
     @Override
     public int read(byte @NotNull [] b, int off, int len) throws IOException {
+        final long startedAtNanos = System.nanoTime();
         final int bytesRead = target.read(b, off, len);
         if (bytesRead > 0) {
-            maxBytesPerSecond.acquire(bytesRead);
+            maxBytesPerSecond.acquire(bytesRead, startedAtNanos, System.nanoTime());
         }
         return bytesRead;
     }
