@@ -10,6 +10,7 @@
 - **BUGFIX:** Programm-Log Autoscroll-Verhalten wurde korrigiert.
 - **BUGFIX:** Der Abo-Historie-Dialog kann nun gleichzeitig mehrere URLs löschen und exportieren. Weiterhin wurde eine Filterfunktion integriert.
 - **BUGFIX:** Die App friert nicht mehr bei einer beschädigten History-Db ein. Es wird eine temporäre Datenbank für den Start genutzt. **In diesem Zustand gehen alle Änderungen verloren.**
+- **BUGFIX(Windows):** Bandbreitenbegrenzung der Downloads funktionierte nicht richtig.
 - **FEATURE:** Eine beschädigte History-Db kann über *Hilfe/Hilfsmittel/History-Datenbank wiederherstellen...* wiederhergestellt werden. Dazu ist das `sqlite3`-Programm erforderlich, welches nur für Windows mitgeliefert wird. Bei Linux reicht eine Installation über den package manager. Für macOS bietet sich `brew install sqlite` an.
 - **FEATURE:** Tab *Audiothek* zur Suche (offline als auch online), Abspielen und Download von Podcasts der ARD Audiothek und via podcastindex.org.
 - **FEATURE:** Filter können nun kopiert werden.
