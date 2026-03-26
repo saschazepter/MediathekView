@@ -61,6 +61,11 @@ public class DirectHttpDownload extends Thread {
     private static final int HTTP_RANGE_NOT_SATISFIABLE = 416;
     private static final int MAX_TRANSIENT_DOWNLOAD_RETRIES = 3;
     private static final long RETRY_DELAY_MILLIS = 1_000L;
+    /**
+     * Keep the transfer buffer large enough that rate limiting does not depend on sub-millisecond sleep precision.
+     * Windows is especially sensitive here when the limiter is driven by many 1 KiB reads per second.
+     */
+    private static final int DOWNLOAD_BUFFER_SIZE = 64 * 1024;
     private static final boolean DEBUG_FORCE_STREAM_RESET_ONCE = Boolean.getBoolean("mv.debug.forceHttp2ResetOnce");
     private static final long DEBUG_FORCE_STREAM_RESET_AFTER_BYTES = Long.getLong("mv.debug.forceHttp2ResetAfterBytes", 512L * 1024L);
     private static final Logger logger = LogManager.getLogger(DirectHttpDownload.class);
@@ -219,7 +224,7 @@ public class DirectHttpDownload extends Thread {
              var mvis = new MVBandwidthCountingInputStream(tis)) {
             start.mVBandwidthCountingInputStream = mvis;
             datenDownload.mVFilmSize.addAktSize(alreadyDownloaded);
-            final byte[] buffer = new byte[1024];
+            final byte[] buffer = new byte[DOWNLOAD_BUFFER_SIZE];
             long p, pp = 0, startProzent = -1;
             int len;
             long aktBandwidth, aktSize = 0;
