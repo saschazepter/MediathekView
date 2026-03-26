@@ -42,7 +42,6 @@ import okio.Okio;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
 import org.tukaani.xz.XZInputStream;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
@@ -431,12 +430,12 @@ public class FilmListReader implements AutoCloseable {
      *
      * @param datenFilm the film to check.
      */
-    private void checkPlayList(@NotNull DatenFilm datenFilm) {
+    private void checkPlayList(DatenFilm datenFilm) {
         if (datenFilm.getUrlNormalQuality().endsWith(PLAYLIST_SUFFIX))
             datenFilm.setPlayList(true);
     }
 
-    public void readFilmListe(String source, @NotNull ListeFilme listeFilme, int days) {
+    public void readFilmListe(String source, ListeFilme listeFilme, int days) {
         try {
             logger.trace("Liste Filme lesen von: {}", source);
             listeFilme.clear();
@@ -477,7 +476,7 @@ public class FilmListReader implements AutoCloseable {
         notifyFertig(source, listeFilme);
     }
 
-    private void parseSeasonAndEpisode(@NotNull ListeFilme listeFilme) {
+    private void parseSeasonAndEpisode(ListeFilme listeFilme) {
         AtomicInteger counter = new AtomicInteger(0);
         Stopwatch stopwatch = Stopwatch.createStarted();
         listeFilme.parallelStream()
