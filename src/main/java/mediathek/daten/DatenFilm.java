@@ -165,21 +165,29 @@ public class DatenFilm implements Comparable<DatenFilm> {
     public void setFilmLength(String dauer) {
         filmLength = 0;
         filmLengthAsString = "";
-        //bail out early if there is nothing to split...
+
         if (dauer == null || dauer.isEmpty()) {
             return;
         }
-        else {
-            final String[] split = dauer.split(":");
 
-            try {
-                filmLength += Integer.parseInt(split[0]) * 3600; //hour
-                filmLength += Integer.parseInt(split[1]) * 60; //minute
-                filmLength += Integer.parseInt(split[2]); //second
-            }
-            catch (Exception e) {
-                filmLength = 0;
-            }
+        int firstColon = dauer.indexOf(':');
+        if (firstColon <= 0) {
+            return;
+        }
+
+        int secondColon = dauer.indexOf(':', firstColon + 1);
+        if (secondColon <= firstColon + 1 || secondColon >= dauer.length() - 1) {
+            return;
+        }
+
+        try {
+            int hours = parsePositiveInt(dauer, 0, firstColon);
+            int minutes = parsePositiveInt(dauer, firstColon + 1, secondColon);
+            int seconds = parsePositiveInt(dauer, secondColon + 1, dauer.length());
+            filmLength = hours * 3600 + minutes * 60 + seconds;
+        }
+        catch (NumberFormatException e) {
+            filmLength = 0;
         }
     }
 
@@ -230,13 +238,10 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     public void setDatumLong(String datumLong) {
-        long datum_long;
+        long datum_long = 0;
         try {
-            if (!datumLong.isEmpty()) {
-                datum_long = Long.parseLong(datumLong);
-            }
-            else {
-                datum_long = 0;
+            if (datumLong != null && !datumLong.isEmpty()) {
+                datum_long = parsePositiveLong(datumLong);
             }
         }
         catch (Exception e) {
@@ -699,6 +704,34 @@ public class DatenFilm implements Comparable<DatenFilm> {
         else
             dataMap.put(MapKeys.NORMAL_QUALITY_URL, url_normal_quality);
         invalidateSha256();
+    }
+
+    private static int parsePositiveInt(String value, int start, int end) {
+        if (start >= end) {
+            throw new NumberFormatException("Empty integer segment");
+        }
+
+        int result = 0;
+        for (int i = start; i < end; i++) {
+            char c = value.charAt(i);
+            if (c < '0' || c > '9') {
+                throw new NumberFormatException("Invalid integer segment");
+            }
+            result = result * 10 + (c - '0');
+        }
+        return result;
+    }
+
+    private static long parsePositiveLong(String value) {
+        long result = 0;
+        for (int i = 0; i < value.length(); i++) {
+            char c = value.charAt(i);
+            if (c < '0' || c > '9') {
+                throw new NumberFormatException("Invalid long value");
+            }
+            result = result * 10 + (c - '0');
+        }
+        return result;
     }
 
     public String getSubtitleUrl() {
