@@ -19,6 +19,7 @@
 package mediathek.daten;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -52,6 +53,27 @@ class DatenFilmTest {
     df.init();
 
     Assertions.assertEquals(expected, df.getFilmLength());
+  }
+
+  @Test
+  void getSha256CachesAndInvalidatesOnIdentityChanges() {
+    DatenFilm film = new DatenFilm();
+    film.setSender("sender");
+    film.setThema("thema");
+    film.setNormalQualityUrl("https://example.org/video.mp4");
+    film.setWebsiteUrl("https://example.org/page");
+
+    String initialHash = film.getSha256();
+    String cachedHash = film.getSha256();
+
+    Assertions.assertSame(initialHash, cachedHash);
+
+    film.setThema("updated thema");
+
+    String updatedHash = film.getSha256();
+
+    Assertions.assertNotEquals(initialHash, updatedHash);
+    Assertions.assertSame(updatedHash, film.getSha256());
   }
 
 }

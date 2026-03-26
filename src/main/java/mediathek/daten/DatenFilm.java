@@ -101,6 +101,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     private String filmLengthAsString = "";
     private int season = 0;
     private int episode = 0;
+    private String sha256;
 
     public DatenFilm() {
         dataMap.put(MapKeys.FILM_NR, FILMNR_GENERATOR.getAndIncrement());
@@ -124,6 +125,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
         this.season = other.season;
         this.episode = other.episode;
         this.availableUntil = other.availableUntil;
+        this.sha256 = other.sha256;
     }
 
     /**
@@ -374,6 +376,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
         else {
             dataMap.put(MapKeys.WEBSITE_URL, link);
         }
+        invalidateSha256();
     }
 
     /**
@@ -514,18 +517,26 @@ public class DatenFilm implements Comparable<DatenFilm> {
      * @return a unique hash
      */
     public String getSha256() {
+        if (sha256 != null) {
+            return sha256;
+        }
         try {
             var digest = MessageDigest.getInstance("SHA-256");
             digest.update(getSender().getBytes(StandardCharsets.UTF_16LE));
             digest.update(getThema().getBytes(StandardCharsets.UTF_16LE));
             digest.update(getUrlNormalQuality().getBytes(StandardCharsets.UTF_16LE));
             digest.update(getWebsiteUrl().getBytes(StandardCharsets.UTF_16LE));
-            return HexFormat.of().formatHex(digest.digest());
+            sha256 = HexFormat.of().formatHex(digest.digest());
+            return sha256;
         }
         catch (NoSuchAlgorithmException e) {
             logger.error("Failed to get SHA-256 hash for film: {}", this, e);
             throw new IllegalStateException("SHA-256 algorithm is unavailable", e);
         }
+    }
+
+    private void invalidateSha256() {
+        sha256 = null;
     }
 
     /**
@@ -626,6 +637,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
 
     public void setSender(String sender) {
         this.sender = sender;
+        invalidateSha256();
     }
 
     public String getThema() {
@@ -634,6 +646,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
 
     public void setThema(String thema) {
         this.thema = thema;
+        invalidateSha256();
     }
 
     public String getTitle() {
@@ -685,6 +698,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
             dataMap.remove(MapKeys.NORMAL_QUALITY_URL);
         else
             dataMap.put(MapKeys.NORMAL_QUALITY_URL, url_normal_quality);
+        invalidateSha256();
     }
 
     public String getSubtitleUrl() {
