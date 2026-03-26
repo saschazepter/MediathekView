@@ -54,6 +54,8 @@ import javax.swing.SwingWorker
 class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: JProgressBar) :
     SwingWorker<Void?, Void?>() {
 
+    private data class IndexingTuning(val queueCapacity: Int, val writeBatchSize: Int)
+
     @Throws(IOException::class)
     private fun createIndexDocument(film: DatenFilm): Document {
         val doc = Document()
@@ -128,6 +130,18 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         return suggested.coerceIn(128.0, 2048.0)
     }
 
+    private fun calculateIndexingTuning(indexingThreads: Int): IndexingTuning {
+        val heapMb = Runtime.getRuntime().maxMemory().toDouble() / (1024.0 * 1024.0)
+        val writeBatchSize = when {
+            heapMb >= 8192.0 -> 4096
+            heapMb >= 4096.0 -> 2048
+            heapMb >= 2048.0 -> 1024
+            else -> 512
+        }
+        val queueCapacity = (indexingThreads * writeBatchSize).coerceAtLeast(writeBatchSize * 2)
+        return IndexingTuning(queueCapacity, writeBatchSize)
+    }
+
     private fun updateProgress(processedCount: Int, totalCount: Int, oldProgress: AtomicInteger) {
         val progress = if (totalCount == 0) 100 else (processedCount * 100) / totalCount
         var previous = oldProgress.get()
@@ -174,19 +188,24 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
 
             //index filmlist after blacklist only
             val filmListe = Daten.getInstance().listeFilmeNachBlackList as IndexedFilmList
+            val indexingThreads = (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(1)
+            val indexingTuning = calculateIndexingTuning(indexingThreads)
             createIndexWriter(filmListe).use { writer ->
                 val watch = Stopwatch.createStarted()
                 val counter = AtomicInteger(0)
                 val totalCount = filmListe.size
                 val oldProgress = AtomicInteger(0)
 
-                val indexingThreads = (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(1)
-                val queueCapacity = (indexingThreads * 256).coerceAtLeast(512)
-                val writeBatchSize = 256
                 val indexingDispatcher = Executors.newFixedThreadPool(indexingThreads).asCoroutineDispatcher()
+                LOG.trace(
+                    "Lucene indexing uses {} worker(s), queue capacity {}, batch size {}",
+                    indexingThreads,
+                    indexingTuning.queueCapacity,
+                    indexingTuning.writeBatchSize
+                )
                 indexingDispatcher.use { indexingDispatcher ->
                     runBlocking {
-                        val filmChannel = Channel<DatenFilm>(queueCapacity)
+                        val filmChannel = Channel<DatenFilm>(indexingTuning.queueCapacity)
 
                         val producer = launch(indexingDispatcher) {
                             try {
@@ -200,11 +219,11 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
 
                         val consumers = List(indexingThreads) {
                             launch(indexingDispatcher) {
-                                val batch = ArrayList<Document>(writeBatchSize)
+                                val batch = ArrayList<Document>(indexingTuning.writeBatchSize)
                                 for (film in filmChannel) {
                                     try {
                                         batch.add(createIndexDocument(film))
-                                        if (batch.size >= writeBatchSize) {
+                                        if (batch.size >= indexingTuning.writeBatchSize) {
                                             flushBatch(writer, batch, counter, totalCount, oldProgress)
                                         }
                                     } catch (ex: IOException) {
@@ -229,13 +248,11 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
                     progLabel.text = "Schreibe Index"
                     progressBar.isIndeterminate = true
                 }
-                writer.commit()
                 watch.stop()
                 LOG.trace("Lucene index creation took {}", watch)
-
-                filmListe.reader?.close()
-                filmListe.reader = DirectoryReader.open(filmListe.luceneDirectory)
             }
+            filmListe.reader?.close()
+            filmListe.reader = DirectoryReader.open(filmListe.luceneDirectory)
         } catch (ex: Exception) {
             LOG.error("Lucene film index most probably damaged, deleting it.")
             try {
