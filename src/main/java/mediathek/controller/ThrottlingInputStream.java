@@ -20,20 +20,29 @@ public class ThrottlingInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        maxBytesPerSecond.acquire(1);
-        return target.read();
+        final int value = target.read();
+        if (value != -1) {
+            maxBytesPerSecond.acquire(1);
+        }
+        return value;
     }
 
     @Override
     public int read(byte[] b) throws IOException {
-        maxBytesPerSecond.acquire(b.length);
-        return target.read(b);
+        final int bytesRead = target.read(b);
+        if (bytesRead > 0) {
+            maxBytesPerSecond.acquire(bytesRead);
+        }
+        return bytesRead;
     }
 
     @Override
     public int read(byte @NotNull [] b, int off, int len) throws IOException {
-        maxBytesPerSecond.acquire(len);
-        return target.read(b, off, len);
+        final int bytesRead = target.read(b, off, len);
+        if (bytesRead > 0) {
+            maxBytesPerSecond.acquire(bytesRead);
+        }
+        return bytesRead;
     }
 
     @Override
