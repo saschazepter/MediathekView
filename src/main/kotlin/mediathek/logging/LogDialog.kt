@@ -16,18 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.logging;
+package mediathek.logging
 
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout
+import javax.swing.JDialog
+import javax.swing.JFrame
 
-public class LogDialog extends JDialog {
-    public LogDialog(JFrame parent) {
-        super(parent);
-        setDefaultCloseOperation(HIDE_ON_CLOSE);
-        setTitle("Programm-Log");
-        setLayout(new BorderLayout());
-        add(new LogPanel(), BorderLayout.CENTER);
-        setSize(800, 400);
+class LogDialog(parent: JFrame) : JDialog(parent) {
+    init {
+        defaultCloseOperation = HIDE_ON_CLOSE
+        title = "Programm-Log"
+        layout = BorderLayout()
+        add(LogPanel(), BorderLayout.CENTER)
+        setSize(800, 400)
     }
 }
