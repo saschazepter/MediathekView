@@ -51,10 +51,9 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Optional;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GuiDownloads extends AGuiTabPanel {
@@ -102,6 +101,9 @@ public class GuiDownloads extends AGuiTabPanel {
     private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
     private final JXStatusBar statusBar = new JXStatusBar();
     private final DownloadStartInfoProperty startInfoProperty = new DownloadStartInfoProperty();
+    private final ExecutorService downloadSizeLookupExecutor = Executors.newSingleThreadExecutor(new DownloadSizeLookupThreadFactory());
+    private final Set<DatenDownload> downloadSizeLookupsInFlight =
+            Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final AboLabel lblAbos = new AboLabel(startInfoProperty);
     private final TotalDownloadsLabel totalDownloadsLabel = new TotalDownloadsLabel(startInfoProperty);
     private final ManualDownloadsInfoLabel manualDownloadsInfoLabel = new ManualDownloadsInfoLabel(startInfoProperty);
@@ -185,41 +187,75 @@ public class GuiDownloads extends AGuiTabPanel {
         }
     }
 
-    private void updateFilmSizes(int[] rows) {
-        boolean updateNeeded = false;
+    private List<DatenDownload> getSelectedDownloadsFromTable() {
+        List<DatenDownload> selectedDownloads = new ArrayList<>();
+        var viewRowCount = tabelle.getRowCount();
+        var tableModel = tabelle.getModel();
+        var modelRowCount = tableModel.getRowCount();
 
-        for (var row : rows) {
-            try {
-                var indexRow = tabelle.convertRowIndexToModel(row);
-                var listeDownloads = daten.getListeDownloads();
-                var dlInfo = listeDownloads.get(indexRow);
-                if (dlInfo != null) {
-                    if (dlInfo.mVFilmSize.getSize() != 0)
-                        continue;
-
-                    if (dlInfo.film != null) {
-                        var oldSize = dlInfo.mVFilmSize.getSize();
-                        dlInfo.queryLiveSize();
-                        if (dlInfo.mVFilmSize.getSize() != oldSize)
-                            updateNeeded = true;
-                    }
-                }
-                else
-                    logger.error("Could not get download object");
+        for (var row : tabelle.getSelectedRows()) {
+            if (row < 0 || row >= viewRowCount) {
+                continue;
             }
-            catch (Exception ignored) {
+            try {
+                var modelRow = tabelle.convertRowIndexToModel(row);
+                if (modelRow < 0 || modelRow >= modelRowCount) {
+                    continue;
+                }
+                var download = (DatenDownload) tableModel.getValueAt(modelRow, DatenDownload.DOWNLOAD_REF);
+                if (download != null) {
+                    selectedDownloads.add(download);
+                }
+            }
+            catch (RuntimeException ex) {
+                logger.debug("Could not resolve selected download for row {}", row, ex);
             }
         }
 
-        if (updateNeeded)
-            reloadTable();
+        return selectedDownloads;
+    }
+
+    private void updateFilmSizesAsync(List<DatenDownload> downloads) {
+        if (downloads.isEmpty()) {
+            return;
+        }
+
+        downloadSizeLookupExecutor.submit(() -> {
+            boolean updateNeeded = false;
+
+            for (var download : downloads) {
+                if (download == null || download.film == null || download.mVFilmSize.getSize() != 0) {
+                    continue;
+                }
+                if (!downloadSizeLookupsInFlight.add(download)) {
+                    continue;
+                }
+
+                try {
+                    var oldSize = download.mVFilmSize.getSize();
+                    download.queryLiveSize();
+                    if (download.mVFilmSize.getSize() != oldSize) {
+                        updateNeeded = true;
+                    }
+                }
+                catch (RuntimeException ex) {
+                    logger.debug("Could not update live size for download {}", download.arr[DatenDownload.DOWNLOAD_TITEL], ex);
+                }
+                finally {
+                    downloadSizeLookupsInFlight.remove(download);
+                }
+            }
+
+            if (updateNeeded) {
+                SwingUtilities.invokeLater(this::reloadTable);
+            }
+        });
     }
 
     private void setupDownloadSizeSelectionUpdater() {
         tabelle.getSelectionModel().addListSelectionListener(l -> {
             if (!l.getValueIsAdjusting()) {
-                var rows = tabelle.getSelectedRows();
-                updateFilmSizes(rows);
+                updateFilmSizesAsync(getSelectedDownloadsFromTable());
             }
         });
     }
@@ -1385,6 +1421,15 @@ public class GuiDownloads extends AGuiTabPanel {
             }
 
             reloadTable();
+        }
+    }
+
+    private static final class DownloadSizeLookupThreadFactory implements ThreadFactory {
+        @Override
+        public Thread newThread(@NotNull Runnable runnable) {
+            Thread thread = new Thread(runnable, "gui-downloads-size-lookup");
+            thread.setDaemon(true);
+            return thread;
         }
     }
 }

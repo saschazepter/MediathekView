@@ -4,7 +4,9 @@ import mediathek.daten.DatenDownload;
 import mediathek.tool.MVFilmSize;
 import mediathek.tool.datum.Datum;
 
-public class TModelDownload extends NonEditableTableModel {
+import javax.swing.table.DefaultTableModel;
+
+public class TModelDownload extends DefaultTableModel {
     @Override
     public Class<?> getColumnClass(int columnIndex) {
         return switch (columnIndex) {
@@ -18,6 +20,11 @@ public class TModelDownload extends NonEditableTableModel {
             case DatenDownload.DOWNLOAD_REF -> DatenDownload.class;
             default -> String.class;
         };
+    }
+
+    @Override
+    public boolean isCellEditable(int i, int j) {
+        return false;
     }
 
     @Override
