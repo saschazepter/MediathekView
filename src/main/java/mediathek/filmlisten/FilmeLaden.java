@@ -40,8 +40,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
 public class FilmeLaden {
+    private record StatusBarWidgets(JLabel label, JProgressBar progressBar) {
+    }
 
     private static final Logger logger = LogManager.getLogger(FilmeLaden.class);
     private static final String NETWORK_NOT_AVAILABLE = "Netzwerk nicht verfügbar";
@@ -53,15 +56,14 @@ public class FilmeLaden {
     private final HashSet<String> hashSet = new HashSet<>();
     private final ListeFilme diffListe = new ListeFilme();
     private final Daten daten;
-    private final ImportFilmliste importFilmliste;
+    private final FilmListReader filmListReader = new FilmListReader();
     private final EventListenerList listeners = new EventListenerList();
     private boolean istAmLaufen;
     private boolean onlyOne;
 
-    public FilmeLaden(Daten aDaten) {
-        daten = aDaten;
-        importFilmliste = new ImportFilmliste();
-        importFilmliste.addAdListener(new ListenerFilmeLaden() {
+    public FilmeLaden(Daten daten) {
+        this.daten = daten;
+        filmListReader.addAdListener(new ListenerFilmeLaden() {
             @Override
             public synchronized void start(ListenerFilmeLadenEvent event) {
                 notifyStart(event);
@@ -74,9 +76,7 @@ public class FilmeLaden {
 
             @Override
             public synchronized void fertig(ListenerFilmeLadenEvent event) {
-                // Ergebnisliste listeFilme eintragen -> Feierabend!
-                logger.trace("Filme laden, ende");
-                undEnde(event);
+                // handled by the async import methods below
             }
         });
     }
@@ -151,25 +151,20 @@ public class FilmeLaden {
      * @return true if we need to load a new list, false if we should not load a remote list
      */
     private boolean performUpdateCheck(ListeFilme listeFilme, String dateiUrl) {
-        boolean result = true;
-
-        //always perform update when list is empty
         if (listeFilme.isEmpty()) {
             return true;
-        } else {
-            //remote download is using an empty file name!...
-            //or somebody put a web adress into the text field
-            if (dateiUrl.isEmpty() || dateiUrl.startsWith("http")) {
-                //perform check only if we don´t want to use DIFF list...
-                if (!listeFilme.getMetaData().canUseDiffList()) {
-                    if (!hasNewRemoteFilmlist())
-                        result = false;
-                }
-            }
-
         }
 
-        return result;
+        //remote download is using an empty file name!...
+        //or somebody put a web adress into the text field
+        if (dateiUrl.isEmpty() || dateiUrl.startsWith("http")) {
+            //perform check only if we don´t want to use DIFF list...
+            if (!listeFilme.getMetaData().canUseDiffList()) {
+                return hasNewRemoteFilmlist();
+            }
+        }
+
+        return true;
     }
 
     private void prepareHashTable() {
@@ -185,7 +180,7 @@ public class FilmeLaden {
 
     public boolean loadFilmlist(String dateiUrl, boolean immerNeuLaden) {
         // damit wird die Filmliste geladen UND auch gleich im Konfig-Ordner gespeichert
-        ListeFilme listeFilme = daten.getListeFilme();
+        final var listeFilme = daten.getListeFilme();
 
         if (!performUpdateCheck(listeFilme, dateiUrl))
             return false;
@@ -194,31 +189,25 @@ public class FilmeLaden {
         logger.info("");
         displayLogInfo(listeFilme);
 
-        if (!istAmLaufen) {
-            // nicht doppelt starten
-            istAmLaufen = true;
+        if (!canStartLoad()) {
+            return true;
+        }
 
-            // Hash mit URLs füllen
-            prepareHashTable();
+        beginLoad();
 
-            if (immerNeuLaden) {
-                // dann die alte löschen, damit immer komplett geladen wird, aber erst nach dem Hash!!
-                listeFilme.clear(); // sonst wird eine "zu kurze" Liste wieder nur mit einer Diff-Liste aufgefüllt, wenn das Alter noch passt
-            }
+        if (immerNeuLaden) {
+            // dann die alte löschen, damit immer komplett geladen wird, aber erst nach dem Hash!!
+            listeFilme.clear(); // sonst wird eine "zu kurze" Liste wieder nur mit einer Diff-Liste aufgefüllt, wenn das Alter noch passt
+        }
 
-            daten.getListeFilmeNachBlackList().clear();
-
-            final int days = ApplicationConfiguration.getConfiguration().getInt(ApplicationConfiguration.FilmList.LOAD_NUM_DAYS, 0);
-            if (dateiUrl.isEmpty()) {
-                // Filme als Liste importieren, Url automatisch ermitteln
-                logger.info("Filmliste laden (Netzwerk)");
-                importFilmliste.importFromUrl(listeFilme, diffListe, days);
-            } else {
-                // Filme als Liste importieren, feste URL/Datei
-                logger.info("Filmliste laden von: {}", dateiUrl);
-                listeFilme.clear();
-                importFilmliste.importFromFile(dateiUrl, listeFilme, days);
-            }
+        final var days = getLoadNumDays();
+        if (dateiUrl.isEmpty()) {
+            logger.info("Filmliste laden (Netzwerk)");
+            importFromUrl(listeFilme, diffListe, days);
+        } else {
+            logger.info("Filmliste laden von: {}", dateiUrl);
+            listeFilme.clear();
+            importFromFile(dateiUrl, listeFilme, days);
         }
         return true;
     }
@@ -230,22 +219,17 @@ public class FilmeLaden {
         logger.info("");
         displayLogInfo(daten.getListeFilme());
 
-        if (!istAmLaufen) {
-            // nicht doppelt starten
-            istAmLaufen = true;
-
-            // Hash mit URLs füllen
-            prepareHashTable();
-
-            daten.getListeFilmeNachBlackList().clear();
-            // Filme als Liste importieren, feste URL/Datei
-            logger.info("Filmliste laden von: {}", dateiUrl);
-            final int num_days = ApplicationConfiguration.getConfiguration().getInt(ApplicationConfiguration.FilmList.LOAD_NUM_DAYS, 0);
-            if (dateiUrl.isEmpty()) {
-                dateiUrl = StandardLocations.getFilmListUrl(FilmListDownloadType.FULL);
-            }
-            importFilmliste.importFromFile(dateiUrl, diffListe, num_days);
+        if (!canStartLoad()) {
+            return;
         }
+
+        beginLoad();
+
+        logger.info("Filmliste laden von: {}", dateiUrl);
+        final var sourceUrl = dateiUrl.isEmpty()
+                ? StandardLocations.getFilmListUrl(FilmListDownloadType.FULL)
+                : dateiUrl;
+        importFromFile(sourceUrl, diffListe, getLoadNumDays());
     }
 
     public void addAdListener(ListenerFilmeLaden listener) {
@@ -254,6 +238,79 @@ public class FilmeLaden {
 
     public void removeAdListener(ListenerFilmeLaden listener) {
         listeners.remove(ListenerFilmeLaden.class, listener);
+    }
+
+    private boolean canStartLoad() {
+        return !istAmLaufen;
+    }
+
+    private void beginLoad() {
+        istAmLaufen = true;
+        prepareHashTable();
+        daten.getListeFilmeNachBlackList().clear();
+    }
+
+    private int getLoadNumDays() {
+        return ApplicationConfiguration.getConfiguration().getInt(ApplicationConfiguration.FilmList.LOAD_NUM_DAYS, 0);
+    }
+
+    private void importFromUrl(ListeFilme listeFilme, ListeFilme listeFilmeDiff, int days) {
+        runImportAsync(() -> importFromUrlSynchronously(listeFilme, listeFilmeDiff, days), "importFromUrl");
+    }
+
+    private void importFromFile(String pfad, ListeFilme listeFilme, int days) {
+        runImportAsync(() -> urlLaden(pfad, listeFilme, days), "importFromFile");
+    }
+
+    private boolean importFromUrlSynchronously(ListeFilme listeFilme, ListeFilme listeFilmeDiff, int days) {
+        if (listeFilme.isEmpty() || !listeFilme.getMetaData().canUseDiffList()) {
+            return ladeKompletteListe(listeFilme, days);
+        }
+
+        if (ladeDiffListe(listeFilmeDiff, days)) {
+            return true;
+        }
+
+        listeFilmeDiff.clear();
+        return ladeKompletteListe(listeFilme, days);
+    }
+
+    private boolean ladeKompletteListe(ListeFilme listeFilme, int days) {
+        listeFilme.clear();
+        return urlLaden(StandardLocations.getFilmListUrl(FilmListDownloadType.FULL), listeFilme, days);
+    }
+
+    private boolean ladeDiffListe(ListeFilme listeFilmeDiff, int days) {
+        return urlLaden(StandardLocations.getFilmListUrl(FilmListDownloadType.DIFF_ONLY), listeFilmeDiff, days)
+                && !listeFilmeDiff.isEmpty();
+    }
+
+    private boolean urlLaden(String dateiUrl, ListeFilme listeFilme, int days) {
+        boolean ret = false;
+        try {
+            if (!dateiUrl.isEmpty()) {
+                logger.trace("Filmliste laden von: {}", dateiUrl);
+                filmListReader.readFilmListe(dateiUrl, listeFilme, days);
+                if (!listeFilme.isEmpty()) {
+                    ret = true;
+                }
+            }
+        } catch (Exception ex) {
+            logger.error("urlLaden", ex);
+        }
+        return ret;
+    }
+
+    private void runImportAsync(Supplier<Boolean> importAction, String operationName) {
+        CompletableFuture.supplyAsync(importAction)
+                .exceptionally(throwable -> {
+                    logger.error(operationName, throwable);
+                    return false;
+                })
+                .thenAccept(ok -> {
+                    logger.trace("Filme laden, ende");
+                    undEnde(new ListenerFilmeLadenEvent("", "", 0, 0, !ok));
+                });
     }
 
     private void undEnde(ListenerFilmeLadenEvent event) {
@@ -315,44 +372,8 @@ public class FilmeLaden {
         logger.info("");
 
         MessageBus.getMessageBus().publishAsync(new FilmListReadStopEvent());
-        JLabel progLabel = MediathekGui.ui().progressLabel;
-        JProgressBar progressBar = MediathekGui.ui().progressBar;
-
-        try {
-            SwingUtilities.invokeAndWait(() -> {
-                ui.swingStatusBar.add(progLabel);
-                ui.swingStatusBar.add(progressBar);
-            });
-        } catch (InterruptedException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-        var workerTask = CompletableFuture.runAsync(new RefreshAboWorker(progLabel, progressBar))
-                .thenRun(new BlacklistFilterWorker(progLabel, progressBar));
-
-        var evaluateDuplicates = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.FILM_EVALUATE_DUPLICATES, true);
-        if (evaluateDuplicates) {
-            workerTask = workerTask.thenRun(new FilmDuplicateEvaluationTask());
-        }
-        workerTask = workerTask.thenRun(new CommonStatsEvaluationTask());
-
-        if (writeFilmList) {
-            workerTask = workerTask.thenRun(new FilmlistWriterWorker(progLabel, progressBar));
-        }
-        if (daten.getListeFilmeNachBlackList() instanceof IndexedFilmList) {
-            workerTask = workerTask.thenRun(new LuceneIndexWorker(progLabel, progressBar));
-        }
-
-        workerTask.thenRun(() -> SwingUtilities.invokeLater(() -> Daten.getInstance().getFilmeLaden().notifyFertig(new ListenerFilmeLadenEvent("", "", 100, 100, false))))
-                .thenRun(() -> {
-                    try {
-                        SwingUtilities.invokeAndWait(() -> {
-                            ui.swingStatusBar.remove(progressBar);
-                            ui.swingStatusBar.remove(progLabel);
-                        });
-                    } catch (InterruptedException | InvocationTargetException e) {
-                        throw new RuntimeException(e);
-                    }
-                });
+        final var statusBarWidgets = attachStatusBarWidgets(ui);
+        startPostLoadWork(writeFilmList, statusBarWidgets, ui);
     }
 
     private void fillHash(ListeFilme listeFilme) {
@@ -377,11 +398,7 @@ public class FilmeLaden {
 
     public void notifyStart(ListenerFilmeLadenEvent e) {
         try {
-            SwingUtilities.invokeLater(() -> {
-                for (ListenerFilmeLaden l : listeners.getListeners(ListenerFilmeLaden.class)) {
-                    l.start(e);
-                }
-            });
+            notifyListenersAsync(listener -> listener.start(e));
         } catch (Exception ex) {
             logger.error(ex);
         }
@@ -389,36 +406,87 @@ public class FilmeLaden {
 
     public void notifyProgress(ListenerFilmeLadenEvent e) {
         try {
-            SwingUtilities.invokeLater(() -> {
-                for (ListenerFilmeLaden l : listeners.getListeners(ListenerFilmeLaden.class)) {
-                    l.progress(e);
-                }
-            });
+            notifyListenersAsync(listener -> listener.progress(e));
         } catch (Exception ex) {
             logger.error(ex);
         }
     }
 
     public void notifyFertig(ListenerFilmeLadenEvent e) {
-        final var listListeners = listeners.getListeners(ListenerFilmeLaden.class);
-
         try {
-            SwingUtilities.invokeLater(() -> {
-                for (ListenerFilmeLaden lst : listListeners) {
-                    lst.fertig(e);
-                }
-            });
+            notifyListenersAsync(listener -> listener.fertig(e));
 
             if (!onlyOne) {
                 onlyOne = true;
-                SwingUtilities.invokeLater(() -> {
-                    for (ListenerFilmeLaden lst : listListeners) {
-                        lst.fertigOnlyOne(e);
-                    }
-                });
+                notifyListenersAsync(listener -> listener.fertigOnlyOne(e));
             }
         } catch (Exception ex) {
             logger.error(ex);
         }
+    }
+
+    private StatusBarWidgets attachStatusBarWidgets(MediathekGui ui) {
+        final var widgets = new StatusBarWidgets(ui.progressLabel, ui.progressBar);
+        invokeOnEdtAndWait(() -> {
+            ui.swingStatusBar.add(widgets.label());
+            ui.swingStatusBar.add(widgets.progressBar());
+        });
+        return widgets;
+    }
+
+    private void detachStatusBarWidgets(MediathekGui ui, StatusBarWidgets widgets) {
+        invokeOnEdtAndWait(() -> {
+            ui.swingStatusBar.remove(widgets.progressBar());
+            ui.swingStatusBar.remove(widgets.label());
+        });
+    }
+
+    private void startPostLoadWork(boolean writeFilmList, StatusBarWidgets widgets, MediathekGui ui) {
+        buildPostLoadWorkerChain(writeFilmList, widgets)
+                .thenRun(() -> SwingUtilities.invokeLater(() ->
+                        Daten.getInstance().getFilmeLaden().notifyFertig(new ListenerFilmeLadenEvent("", "", 100, 100, false))))
+                .thenRun(() -> detachStatusBarWidgets(ui, widgets));
+    }
+
+    private CompletableFuture<Void> buildPostLoadWorkerChain(boolean writeFilmList, StatusBarWidgets widgets) {
+        var workerTask = CompletableFuture.runAsync(new RefreshAboWorker(widgets.label(), widgets.progressBar()))
+                .thenRun(new BlacklistFilterWorker(widgets.label(), widgets.progressBar()));
+
+        if (ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.FILM_EVALUATE_DUPLICATES, true)) {
+            workerTask = workerTask.thenRun(new FilmDuplicateEvaluationTask());
+        }
+
+        workerTask = workerTask.thenRun(new CommonStatsEvaluationTask());
+
+        if (writeFilmList) {
+            workerTask = workerTask.thenRun(new FilmlistWriterWorker(widgets.label(), widgets.progressBar()));
+        }
+        if (daten.getListeFilmeNachBlackList() instanceof IndexedFilmList) {
+            workerTask = workerTask.thenRun(new LuceneIndexWorker(widgets.label(), widgets.progressBar()));
+        }
+
+        return workerTask;
+    }
+
+    private void invokeOnEdtAndWait(Runnable action) {
+        try {
+            SwingUtilities.invokeAndWait(action);
+        } catch (InterruptedException | InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void notifyListenersAsync(ListenerAction action) {
+        final var currentListeners = listeners.getListeners(ListenerFilmeLaden.class);
+        SwingUtilities.invokeLater(() -> {
+            for (var listener : currentListeners) {
+                action.accept(listener);
+            }
+        });
+    }
+
+    @FunctionalInterface
+    private interface ListenerAction {
+        void accept(ListenerFilmeLaden listener);
     }
 }
