@@ -1267,6 +1267,7 @@ public class GuiFilme extends AGuiTabPanel {
         private final ActionListener unseenActionListener = new BeobHistory(false);
         private final ActionListener seenActionListener = new BeobHistory(true);
         private final JDownloadHelper jDownloadHelper = new JDownloadHelper();
+        private final PyLoadHelper pyLoadHelper = new PyLoadHelper();
         private final DownloadSubtitleAction downloadSubtitleAction = new DownloadSubtitleAction(GuiFilme.this);
         private Point p;
 
@@ -1426,6 +1427,8 @@ public class GuiFilme extends AGuiTabPanel {
 
             res.ifPresent(film -> {
                 jDownloadHelper.installContextMenu(film, jPopupMenu);
+                jPopupMenu.addSeparator();
+                pyLoadHelper.installContextMenu(film, jPopupMenu);
                 jPopupMenu.addSeparator();
                 setupCopytoClipboardContextMenu(film, jPopupMenu);
                 jPopupMenu.addSeparator();

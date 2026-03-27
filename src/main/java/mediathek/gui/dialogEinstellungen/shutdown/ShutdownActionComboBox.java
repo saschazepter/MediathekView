@@ -33,7 +33,7 @@ public class ShutdownActionComboBox extends JComboBox<String> {
     private static final String KEY = "shutdownAction";
     private static final String COMMAND = "/usr/bin/defaults";
     private static final List<String> ACTIONS = Arrays.asList("shutdown", "sleep", "restart");
-    private static final Logger logger = LogManager.getLogger();
+    private static final Logger logger = LogManager.getLogger(ShutdownActionComboBox.class);
 
     public ShutdownActionComboBox() {
         super(new DefaultComboBoxModel<>(ACTIONS.toArray(new String[0])));

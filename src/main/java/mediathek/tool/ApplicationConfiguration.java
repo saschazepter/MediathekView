@@ -33,6 +33,9 @@ public class ApplicationConfiguration {
     public static final String APPLICATION_USER_AGENT = "application.user_agent";
     public static final String APPLICATION_USE_MODERN_SEARCH = "application.use.modern_search";
     public static final String APPLICATION_JDOWNLOADER_URL = "application.jdownloader.url";
+    public static final String APPLICATION_PYLOAD_URL = "application.pyload.url";
+    public static final String APPLICATION_PYLOAD_USER = "application.pyload.user";
+    public static final String APPLICATION_PYLOAD_PASSWORD = "application.pyload.password";
     public static final String APPLICATION_INSTALL_TAB_SWITCH_LISTENER =
             "application.ui.install_tab_listeners";
     public static final String APPLICATION_RESTORE_SELECTED_TAB = "application.ui.restore_selected_tab";

@@ -73,24 +73,52 @@ public class PanelEinstellungenErweitert extends JPanel {
         handler = new TextCopyPasteHandler<>(jTextFieldProgrammShutdown);
         jTextFieldProgrammShutdown.setComponentPopupMenu(handler.getPopupMenu());
 
+        setupJDownloaderFields();
+        setupPyLoadFields();
+        hideOsSpecificFields();
+
+        MessageBus.getMessageBus().subscribe(this);
+    }
+
+    private void setupJDownloaderFields() {
         jTextFieldJDownloaderUrl.setText(ApplicationConfiguration.getConfiguration().getString(
                 ApplicationConfiguration.APPLICATION_JDOWNLOADER_URL,
                 Konstanten.JDOWNLOADER_URL));
         jTextFieldJDownloaderUrl.getDocument().addDocumentListener(new BeobAppConfigDoc(
                 ApplicationConfiguration.APPLICATION_JDOWNLOADER_URL, jTextFieldJDownloaderUrl));
-        handler = new TextCopyPasteHandler<>(jTextFieldJDownloaderUrl);
+        var handler = new TextCopyPasteHandler<>(jTextFieldJDownloaderUrl);
         jTextFieldJDownloaderUrl.setComponentPopupMenu(handler.getPopupMenu());
+    }
 
+    private void setupPyLoadFields() {
+        var config = ApplicationConfiguration.getConfiguration();
+        jTextFieldPyLoadUrl.setText(config.getString(ApplicationConfiguration.APPLICATION_PYLOAD_URL, ""));
+        jTextFieldPyLoadUrl.getDocument().addDocumentListener(new BeobAppConfigDoc(
+                ApplicationConfiguration.APPLICATION_PYLOAD_URL, jTextFieldPyLoadUrl));
+        var handler = new TextCopyPasteHandler<>(jTextFieldPyLoadUrl);
+        jTextFieldPyLoadUrl.setComponentPopupMenu(handler.getPopupMenu());
+
+        jTextFieldPyLoadUser.setText(config.getString(ApplicationConfiguration.APPLICATION_PYLOAD_USER, ""));
+        jTextFieldPyLoadUser.getDocument().addDocumentListener(new BeobAppConfigDoc(
+                ApplicationConfiguration.APPLICATION_PYLOAD_USER, jTextFieldPyLoadUser));
+        handler = new TextCopyPasteHandler<>(jTextFieldPyLoadUser);
+        jTextFieldPyLoadUser.setComponentPopupMenu(handler.getPopupMenu());
+
+        jPasswordFieldPyLoadPassword.setText(config.getString(ApplicationConfiguration.APPLICATION_PYLOAD_PASSWORD, ""));
+        jPasswordFieldPyLoadPassword.getDocument().addDocumentListener(new PyLoadPasswordDocumentListener());
+    }
+
+    private void hideOsSpecificFields() {
         if (!SystemUtils.IS_OS_LINUX) {
             jTextFieldProgrammShutdown.setEnabled(false);
             jButtonProgrammShutdown.setEnabled(false);
+            pnlLinuxShutdownCommand.setVisible(false);
         }
 
         if (!SystemUtils.IS_OS_MAC_OSX) {
             cbDefaultShutdownHelperCommand.setEnabled(false);
+            pnlMacShutdownBehaviour.setVisible(false);
         }
-
-        MessageBus.getMessageBus().subscribe(this);
     }
 
     private String getWebBrowserLocation() {
@@ -168,6 +196,29 @@ public class PanelEinstellungenErweitert extends JPanel {
 
         private void tus() {
             ApplicationConfiguration.getConfiguration().setProperty(configKey, txt.getText());
+        }
+    }
+
+    private class PyLoadPasswordDocumentListener implements DocumentListener {
+        private void update() {
+            ApplicationConfiguration.getConfiguration().setProperty(
+                    ApplicationConfiguration.APPLICATION_PYLOAD_PASSWORD,
+                    new String(jPasswordFieldPyLoadPassword.getPassword()));
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            update();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            update();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            update();
         }
     }
 
@@ -256,11 +307,19 @@ public class PanelEinstellungenErweitert extends JPanel {
         jTextFieldProgrammUrl = new JTextField();
         jButtonProgrammUrl = new JButton();
         var jPanelJDownloader = new JPanel();
+        var label1 = new JLabel();
         jTextFieldJDownloaderUrl = new JTextField();
-        var jPanel3 = new JPanel();
+        var jPanelPyLoad = new JPanel();
+        var label2 = new JLabel();
+        jTextFieldPyLoadUrl = new JTextField();
+        var label3 = new JLabel();
+        jTextFieldPyLoadUser = new JTextField();
+        var label4 = new JLabel();
+        jPasswordFieldPyLoadPassword = new JPasswordField();
+        pnlLinuxShutdownCommand = new JPanel();
         jButtonProgrammShutdown = new JButton();
         jTextFieldProgrammShutdown = new JTextField();
-        var panel1 = new JPanel();
+        pnlMacShutdownBehaviour = new JPanel();
         cbDefaultShutdownHelperCommand = new ShutdownActionComboBox();
 
         //======== this ========
@@ -359,27 +418,71 @@ public class PanelEinstellungenErweitert extends JPanel {
 
         //======== jPanelJDownloader ========
         {
-            jPanelJDownloader.setBorder(new TitledBorder("URL zum JDownloader"));
+            jPanelJDownloader.setBorder(new TitledBorder("JDownloader"));
             jPanelJDownloader.setLayout(new MigLayout(
                 new LC().insets("5").hideMode(3).gridGap("5", "5"),
                 // columns
                 new AC()
-                    .grow().fill(),
+                    .grow().fill().gap()
+                    .fill(),
                 // rows
                 new AC()
+                    .fill().gap()
                     .fill()));
+
+            //---- label1 ----
+            label1.setText("JDownloader-URL:");
+            jPanelJDownloader.add(label1, new CC().cell(0, 0, 2, 1));
 
             //---- jTextFieldJDownloaderUrl ----
             jTextFieldJDownloaderUrl.setToolTipText("<html>Wenn jDownloader nicht auf dem lokalen Host installiert ist oder unter einem anderen Port reagieren soll, hier bitte angeben.<br>Default: http://127.0.0.1:9666/flash/add</html>");
-            jPanelJDownloader.add(jTextFieldJDownloaderUrl, new CC().cell(0, 0));
+            jPanelJDownloader.add(jTextFieldJDownloaderUrl, new CC().cell(0, 1));
         }
         add(jPanelJDownloader);
 
-        //======== jPanel3 ========
+        //======== jPanelPyLoad ========
         {
-            jPanel3.setBorder(new TitledBorder("Linux: Aufruf zum Shutdown"));
-            jPanel3.setToolTipText("<html>Unter Linux wird das ausgew\u00e4hlte Programm/Script ausgef\u00fchrt um den Recher herunter zu fahren.<br>M\u00f6gliche Aufrufe sind:<br>\n<ul>\n<li>systemctl poweroff</li>\n<li>poweroff</li>\n<li>sudo shutdown -P now</li>\n<li><b>shutdown -h now</b></li>\n</ul>\n</html>");
-            jPanel3.setLayout(new MigLayout(
+            jPanelPyLoad.setBorder(new TitledBorder("pyLoad"));
+            jPanelPyLoad.setLayout(new MigLayout(
+                new LC().insets("5").hideMode(3).gridGap("5", "5"),
+                // columns
+                new AC()
+                    .grow().fill().gap()
+                    .fill(),
+                // rows
+                new AC()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill()));
+
+            //---- label2 ----
+            label2.setText("pyLoad-URL:");
+            jPanelPyLoad.add(label2, new CC().cell(0, 0, 2, 1));
+
+            //---- jTextFieldPyLoadUrl ----
+            jTextFieldPyLoadUrl.setToolTipText("PyLoad-URL komplett angeben (z.B.: http://127.0.0.1:8000)");
+            jPanelPyLoad.add(jTextFieldPyLoadUrl, new CC().cell(0, 1));
+
+            //---- label3 ----
+            label3.setText("Benutzer:");
+            jPanelPyLoad.add(label3, new CC().cell(0, 2, 2, 1));
+            jPanelPyLoad.add(jTextFieldPyLoadUser, new CC().cell(0, 3));
+
+            //---- label4 ----
+            label4.setText("Passwort:");
+            jPanelPyLoad.add(label4, new CC().cell(0, 4, 2, 1));
+            jPanelPyLoad.add(jPasswordFieldPyLoadPassword, new CC().cell(0, 5));
+        }
+        add(jPanelPyLoad);
+
+        //======== pnlLinuxShutdownCommand ========
+        {
+            pnlLinuxShutdownCommand.setBorder(new TitledBorder("Linux: Aufruf zum Shutdown"));
+            pnlLinuxShutdownCommand.setToolTipText("<html>Unter Linux wird das ausgew\u00e4hlte Programm/Script ausgef\u00fchrt um den Recher herunter zu fahren.<br>M\u00f6gliche Aufrufe sind:<br>\n<ul>\n<li>systemctl poweroff</li>\n<li>poweroff</li>\n<li>sudo shutdown -P now</li>\n<li><b>shutdown -h now</b></li>\n</ul>\n</html>");
+            pnlLinuxShutdownCommand.setLayout(new MigLayout(
                 new LC().insets("5").hideMode(3).gridGap("5", "5"),
                 // columns
                 new AC()
@@ -392,18 +495,18 @@ public class PanelEinstellungenErweitert extends JPanel {
             //---- jButtonProgrammShutdown ----
             jButtonProgrammShutdown.setIcon(new ImageIcon(getClass().getResource("/mediathek/res/muster/button-file-open.png")));
             jButtonProgrammShutdown.setToolTipText("Programm/Script ausw\u00e4hlen");
-            jPanel3.add(jButtonProgrammShutdown, new CC().cell(1, 0));
+            pnlLinuxShutdownCommand.add(jButtonProgrammShutdown, new CC().cell(1, 0));
 
             //---- jTextFieldProgrammShutdown ----
             jTextFieldProgrammShutdown.setText("shutdown -h now");
-            jPanel3.add(jTextFieldProgrammShutdown, new CC().cell(0, 0));
+            pnlLinuxShutdownCommand.add(jTextFieldProgrammShutdown, new CC().cell(0, 0));
         }
-        add(jPanel3);
+        add(pnlLinuxShutdownCommand);
 
-        //======== panel1 ========
+        //======== pnlMacShutdownBehaviour ========
         {
-            panel1.setBorder(new TitledBorder("macOS: Standardverhalten des Hilfsprogramms"));
-            panel1.setLayout(new MigLayout(
+            pnlMacShutdownBehaviour.setBorder(new TitledBorder("macOS: Standardverhalten des Hilfsprogramms"));
+            pnlMacShutdownBehaviour.setLayout(new MigLayout(
                 new LC().insets("5").hideMode(3).gridGap("5", "5"),
                 // columns
                 new AC()
@@ -411,9 +514,9 @@ public class PanelEinstellungenErweitert extends JPanel {
                 // rows
                 new AC()
                     ));
-            panel1.add(cbDefaultShutdownHelperCommand, new CC().cell(0, 0));
+            pnlMacShutdownBehaviour.add(cbDefaultShutdownHelperCommand, new CC().cell(0, 0));
         }
-        add(panel1);
+        add(pnlMacShutdownBehaviour);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -427,8 +530,13 @@ public class PanelEinstellungenErweitert extends JPanel {
     private JTextField jTextFieldProgrammUrl;
     private JButton jButtonProgrammUrl;
     private JTextField jTextFieldJDownloaderUrl;
+    private JTextField jTextFieldPyLoadUrl;
+    private JTextField jTextFieldPyLoadUser;
+    private JPasswordField jPasswordFieldPyLoadPassword;
+    private JPanel pnlLinuxShutdownCommand;
     private JButton jButtonProgrammShutdown;
     private JTextField jTextFieldProgrammShutdown;
+    private JPanel pnlMacShutdownBehaviour;
     private ShutdownActionComboBox cbDefaultShutdownHelperCommand;
     // End of variables declaration//GEN-END:variables
 }
