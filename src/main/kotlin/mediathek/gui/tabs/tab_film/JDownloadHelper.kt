@@ -29,12 +29,11 @@ class JDownloadHelper {
                 .add("urls", url.toString())
                 .build()
             val request = Request.Builder()
-                .url(
-                    ApplicationConfiguration.getConfiguration().getString(
+                .url(ApplicationConfiguration.getConfiguration().getString(
                         ApplicationConfiguration.APPLICATION_JDOWNLOADER_URL,
-                        Konstanten.JDOWNLOADER_URL
-                    )
-                )
+                        Konstanten.JDOWNLOADER_URL))
+                .header("Referer", "https://mediathekview")
+                .header("Origin", "https://mediathekview")
                 .post(formBody)
                 .build()
             val builder = MVHttpClient.getInstance().httpClient.newBuilder()
@@ -46,18 +45,17 @@ class JDownloadHelper {
                         historyController.markSeen(film)
                     }
             }
-        }
-        catch (e: ConnectException) {
+        } catch (_: ConnectException) {
             showErrorMessage()
-        }
-        catch (e: SocketTimeoutException) {
+        } catch (_: SocketTimeoutException) {
             showErrorMessage()
-        }
-        catch (e: Exception) {
+        } catch (e: Exception) {
             logger.error("downloadUrl", e)
-            SwingErrorDialog.showExceptionMessage(MediathekGui.ui(),
-                                                  "<html>Die URL konnte nicht mit JDownloader geladen werden.<br>" +
-                                                          "Bitte wenden Sie sich bei Bedarf an das Forum.</html>", e)
+            SwingErrorDialog.showExceptionMessage(
+                MediathekGui.ui(),
+                "<html>Die URL konnte nicht mit JDownloader geladen werden.<br>" +
+                        "Bitte wenden Sie sich bei Bedarf an das Forum.</html>", e
+            )
         }
     }
 
@@ -67,7 +65,8 @@ class JDownloadHelper {
             "Verbindung mit JDownloader nicht möglich.\n" +
                     "Bitte stellen Sie sicher, dass JDownloader gestartet wurde.",
             Konstanten.PROGRAMMNAME,
-            JOptionPane.ERROR_MESSAGE)
+            JOptionPane.ERROR_MESSAGE
+        )
     }
 
     fun installContextMenu(film: DatenFilm, jPopupMenu: JPopupMenu) {
@@ -99,8 +98,7 @@ class JDownloadHelper {
             try {
                 val webSiteUrl = film.websiteUrl.toHttpUrl()
                 downloadUrl(webSiteUrl, film)
-            }
-            catch (e: IllegalArgumentException) {
+            } catch (_: IllegalArgumentException) {
                 logger.error("Illegal Website URL found: {}", film.websiteUrl)
             }
         }
