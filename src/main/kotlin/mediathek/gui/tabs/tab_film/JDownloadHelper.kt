@@ -5,6 +5,7 @@ import mediathek.controller.history.SeenHistoryController
 import mediathek.daten.DatenFilm
 import mediathek.daten.FilmResolution
 import mediathek.mainwindow.MediathekGui
+import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.SwingErrorDialog
 import mediathek.tool.http.MVHttpClient
 import okhttp3.FormBody
@@ -23,14 +24,19 @@ import javax.swing.JPopupMenu
 
 class JDownloadHelper {
     private fun downloadUrl(url: HttpUrl, film: DatenFilm) {
-        val formBody: RequestBody = FormBody.Builder()
-            .add("urls", url.toString())
-            .build()
-        val request = Request.Builder()
-            .url("http://127.0.0.1:9666/flash/add")
-            .post(formBody)
-            .build()
         try {
+            val formBody: RequestBody = FormBody.Builder()
+                .add("urls", url.toString())
+                .build()
+            val request = Request.Builder()
+                .url(
+                    ApplicationConfiguration.getConfiguration().getString(
+                        ApplicationConfiguration.APPLICATION_JDOWNLOADER_URL,
+                        Konstanten.JDOWNLOADER_URL
+                    )
+                )
+                .post(formBody)
+                .build()
             val builder = MVHttpClient.getInstance().httpClient.newBuilder()
             builder.connectTimeout(125, TimeUnit.MILLISECONDS)
             val client = builder.build()

@@ -32,6 +32,7 @@ public class ApplicationConfiguration {
     public static final String APPLICATION_USE_SYSTEM_DARK_MODE = "application.use_system_dark_mode";
     public static final String APPLICATION_USER_AGENT = "application.user_agent";
     public static final String APPLICATION_USE_MODERN_SEARCH = "application.use.modern_search";
+    public static final String APPLICATION_JDOWNLOADER_URL = "application.jdownloader.url";
     public static final String APPLICATION_INSTALL_TAB_SWITCH_LISTENER =
             "application.ui.install_tab_listeners";
     public static final String APPLICATION_RESTORE_SELECTED_TAB = "application.ui.restore_selected_tab";
@@ -189,6 +190,7 @@ public class ApplicationConfiguration {
     private void createDefaultConfigSettings() {
         try {
             config.setProperty(APPLICATION_USER_AGENT, Konstanten.PROGRAMMNAME);
+            config.setProperty(APPLICATION_JDOWNLOADER_URL, Konstanten.JDOWNLOADER_URL);
             config.setProperty(LUCENE_DIRECTORY_MODE, "auto");
             setGeographicLocation(Country.DE);
 
@@ -208,6 +210,9 @@ public class ApplicationConfiguration {
         }
         if (!config.containsKey(APPLICATION_INSTALL_TAB_SWITCH_LISTENER)) {
             config.setProperty(APPLICATION_INSTALL_TAB_SWITCH_LISTENER, !SystemUtils.IS_OS_MAC_OSX);
+        }
+        if (!config.containsKey(APPLICATION_JDOWNLOADER_URL)) {
+            config.setProperty(APPLICATION_JDOWNLOADER_URL, Konstanten.JDOWNLOADER_URL);
         }
         if (!config.containsKey(LUCENE_DIRECTORY_MODE)) {
             config.setProperty(LUCENE_DIRECTORY_MODE, "auto");

@@ -5,10 +5,7 @@ import mediathek.config.MVConfig;
 import mediathek.gui.dialogEinstellungen.shutdown.ShutdownActionComboBox;
 import mediathek.gui.messages.ProgramLocationChangedEvent;
 import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.MVMessageDialog;
-import mediathek.tool.MessageBus;
-import mediathek.tool.SVGIconUtilities;
-import mediathek.tool.TextCopyPasteHandler;
+import mediathek.tool.*;
 import net.engio.mbassy.listener.Handler;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
@@ -76,6 +73,14 @@ public class PanelEinstellungenErweitert extends JPanel {
         handler = new TextCopyPasteHandler<>(jTextFieldProgrammShutdown);
         jTextFieldProgrammShutdown.setComponentPopupMenu(handler.getPopupMenu());
 
+        jTextFieldJDownloaderUrl.setText(ApplicationConfiguration.getConfiguration().getString(
+                ApplicationConfiguration.APPLICATION_JDOWNLOADER_URL,
+                Konstanten.JDOWNLOADER_URL));
+        jTextFieldJDownloaderUrl.getDocument().addDocumentListener(new BeobAppConfigDoc(
+                ApplicationConfiguration.APPLICATION_JDOWNLOADER_URL, jTextFieldJDownloaderUrl));
+        handler = new TextCopyPasteHandler<>(jTextFieldJDownloaderUrl);
+        jTextFieldJDownloaderUrl.setComponentPopupMenu(handler.getPopupMenu());
+
         if (!SystemUtils.IS_OS_LINUX) {
             jTextFieldProgrammShutdown.setEnabled(false);
             jButtonProgrammShutdown.setEnabled(false);
@@ -134,6 +139,36 @@ public class PanelEinstellungenErweitert extends JPanel {
             MVConfig.add(config, txt.getText());
         }
 
+    }
+
+    static private class BeobAppConfigDoc implements DocumentListener {
+
+        final String configKey;
+        final JTextField txt;
+
+        public BeobAppConfigDoc(String configKey, JTextField txt) {
+            this.configKey = configKey;
+            this.txt = txt;
+        }
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            tus();
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            tus();
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
+            tus();
+        }
+
+        private void tus() {
+            ApplicationConfiguration.getConfiguration().setProperty(configKey, txt.getText());
+        }
     }
 
     static private class BeobPfad implements ActionListener {
@@ -220,6 +255,8 @@ public class PanelEinstellungenErweitert extends JPanel {
         var jPanel4 = new JPanel();
         jTextFieldProgrammUrl = new JTextField();
         jButtonProgrammUrl = new JButton();
+        var jPanelJDownloader = new JPanel();
+        jTextFieldJDownloaderUrl = new JTextField();
         var jPanel3 = new JPanel();
         jButtonProgrammShutdown = new JButton();
         jTextFieldProgrammShutdown = new JTextField();
@@ -320,6 +357,24 @@ public class PanelEinstellungenErweitert extends JPanel {
         }
         add(jPanel4);
 
+        //======== jPanelJDownloader ========
+        {
+            jPanelJDownloader.setBorder(new TitledBorder("URL zum JDownloader"));
+            jPanelJDownloader.setLayout(new MigLayout(
+                new LC().insets("5").hideMode(3).gridGap("5", "5"),
+                // columns
+                new AC()
+                    .grow().fill(),
+                // rows
+                new AC()
+                    .fill()));
+
+            //---- jTextFieldJDownloaderUrl ----
+            jTextFieldJDownloaderUrl.setToolTipText("<html>Wenn jDownloader nicht auf dem lokalen Host installiert ist oder unter einem anderen Port reagieren soll, hier bitte angeben.<br>Default: http://127.0.0.1:9666/flash/add</html>");
+            jPanelJDownloader.add(jTextFieldJDownloaderUrl, new CC().cell(0, 0));
+        }
+        add(jPanelJDownloader);
+
         //======== jPanel3 ========
         {
             jPanel3.setBorder(new TitledBorder("Linux: Aufruf zum Shutdown"));
@@ -371,6 +426,7 @@ public class PanelEinstellungenErweitert extends JPanel {
     private JButton jButtonProgrammVideoplayer;
     private JTextField jTextFieldProgrammUrl;
     private JButton jButtonProgrammUrl;
+    private JTextField jTextFieldJDownloaderUrl;
     private JButton jButtonProgrammShutdown;
     private JTextField jTextFieldProgrammShutdown;
     private ShutdownActionComboBox cbDefaultShutdownHelperCommand;

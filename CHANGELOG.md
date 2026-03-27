@@ -19,6 +19,7 @@
 - **FEATURE:** *Hilfe\Live Programm-Log anzeigen* zeigt die logging-Ausgaben von MediathekView in Echtzeit an. Diese können für die Fehlersuche exportiert werden. Lokale Dateipfade werden automatisch mittels `<redacted>` unkenntlich gemacht.
 - **FEATURE:** Die alte `downloadAbos.txt` wird nun in eine sqlite3-Datenbank `abo-history.db` migriert. Die alte Textdatei bleibt danach als `downloadAbos.txt.migrated` erhalten.
 - **FEATURE:** Farben für light/dark-Mode können in den Einstellungen getrennt konfiguriert werden.
+- **FEATURE:** URL zum JDownloader kann in *Einstellungen/Erweitert* konfiguriert werden. Vielen Dank an @robNice.
 - interne Optimierungen für mehr Geschwindigkeit.
 - interne Fehler wurden behoben.
 

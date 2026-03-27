@@ -84,6 +84,7 @@ public class Konstanten {
     public static final String JSON_DATEI_FILME = "filme.json";
     public static final String BOOKMARK_FILE = "bookmarks.json";
     public final static String SHUTDOWN_LINUX = "shutdown -h now";
+    public static final String JDOWNLOADER_URL = "http://127.0.0.1:9666/flash/add";
 
     /**
      * Minimum file size which won´t be regarded as an error.
