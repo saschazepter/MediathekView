@@ -130,9 +130,6 @@ public class MVConfig {
         SYSTEM_URL_OEFFNEN("Programm-Url-oeffnen"),
         SYSTEM_LINUX_SHUTDOWN("Programm-Linux-Shutdown"),
         SYSTEM_PLAYER_ABSPIELEN("Player-zum-Abspielen"),
-        SYSTEM_PYLOAD_URL("system-pyload-url"),
-        SYSTEM_PYLOAD_USER("system-pyload-user"),
-        SYSTEM_PYLOAD_PASSWORD("system-pyload-password"),
         // Fenstereinstellungen
 
         SYSTEM_EIGENSCHAFTEN_TABELLE_FILME("Eigenschaften-Tabellen-Filme"),
