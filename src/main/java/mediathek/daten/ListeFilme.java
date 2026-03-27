@@ -124,10 +124,10 @@ public class ListeFilme extends ArrayList<DatenFilm> {
     public synchronized void updateFromFilmList(@NotNull ListeFilme newFilmsList) {
         // In die vorhandene Liste soll eine andere Filmliste einsortiert werden
         // es werden nur Filme, die noch nicht vorhanden sind, einsortiert
-        var hashNewFilms = new HashSet<String>(newFilmsList.size() + 1, 1);
-        newFilmsList.forEach(newFilm -> hashNewFilms.add(newFilm.getSha256()));
+        var hashNewFilms = new HashSet<DatenFilm.FilmIdentity>(newFilmsList.size() + 1, 1);
+        newFilmsList.forEach(newFilm -> hashNewFilms.add(newFilm.getFilmIdentity()));
 
-        this.removeIf(currentFilm -> hashNewFilms.contains(currentFilm.getSha256()));
+        this.removeIf(currentFilm -> hashNewFilms.contains(currentFilm.getFilmIdentity()));
 
         hashNewFilms.clear();
 

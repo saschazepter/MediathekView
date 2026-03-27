@@ -40,6 +40,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DatenFilm implements Comparable<DatenFilm> {
+    public record FilmIdentity(String sender, String thema, String normalQualityUrl, String websiteUrl) {
+    }
+
     public static final int FILM_NR = 0;      // wird vor dem Speichern gelöscht!
     public static final int FILM_SENDER = 1;
     public static final int FILM_THEMA = 2;
@@ -101,6 +104,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     private int season = 0;
     private int episode = 0;
     private String sha256;
+    private FilmIdentity filmIdentity;
 
     public DatenFilm() {
         dataMap.put(MapKeys.FILM_NR, FILMNR_GENERATOR.getAndIncrement());
@@ -125,6 +129,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
         this.episode = other.episode;
         this.availableUntil = other.availableUntil;
         this.sha256 = other.sha256;
+        this.filmIdentity = other.filmIdentity;
     }
 
     /**
@@ -498,8 +503,18 @@ public class DatenFilm implements Comparable<DatenFilm> {
         }
     }
 
+    public FilmIdentity getFilmIdentity() {
+        if (filmIdentity != null) {
+            return filmIdentity;
+        }
+
+        filmIdentity = new FilmIdentity(getSender(), getThema(), getUrlNormalQuality(), getWebsiteUrl());
+        return filmIdentity;
+    }
+
     private void invalidateSha256() {
         sha256 = null;
+        filmIdentity = null;
     }
 
     /**
