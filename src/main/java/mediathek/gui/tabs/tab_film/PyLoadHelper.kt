@@ -92,8 +92,6 @@ class PyLoadHelper {
     }
 
     fun installContextMenu(film: DatenFilm, jPopupMenu: JPopupMenu) {
-        jPopupMenu.addSeparator()
-
         val pyLoadUrl = ApplicationConfiguration.getConfiguration()
             .getString(ApplicationConfiguration.APPLICATION_PYLOAD_URL, "")
         val pyLoadConfigured = pyLoadUrl.isNotBlank()
@@ -119,22 +117,6 @@ class PyLoadHelper {
             mJD.add(miLow)
         }
         jPopupMenu.add(mJD)
-
-        val miWebsiteToJd = JMenuItem("Webseiten-URL an pyLoad übergeben")
-        miWebsiteToJd.isEnabled = pyLoadConfigured
-        miWebsiteToJd.addActionListener {
-            try {
-                val webSiteUrl = film.websiteUrl.toHttpUrl()
-                downloadUrl(webSiteUrl, film)
-            }
-            catch (_: IllegalArgumentException) {
-                logger.error("Illegal Website URL found: {}", film.websiteUrl)
-            }
-        }
-        jPopupMenu.add(miWebsiteToJd)
-        if (film.websiteUrl.isBlank()) {
-            miWebsiteToJd.isEnabled = false
-        }
     }
 
     companion object {
