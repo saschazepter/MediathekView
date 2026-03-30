@@ -78,6 +78,7 @@ public class DirectHttpDownload extends Thread {
     private final ByteRateLimiter rateLimiter;
     private final MBassador<BaseEvent> messageBus;
     private final OkHttpClient httpClient;
+    private final OkHttpClient http11Client;
     private HttpDownloadState state = HttpDownloadState.DOWNLOAD;
     /**
      * number of bytes already downloaded.
@@ -95,6 +96,7 @@ public class DirectHttpDownload extends Thread {
         super();
 
         httpClient = MVHttpClient.getInstance().getHttpClient();
+        http11Client = httpClient.newBuilder().protocols(List.of(Protocol.HTTP_1_1)).build();
         rateLimiter = new ByteRateLimiter(getDownloadLimit());
         messageBus = MessageBus.getMessageBus();
         messageBus.subscribe(this);
@@ -152,14 +154,14 @@ public class DirectHttpDownload extends Thread {
      * @param url {@link java.net.URL} to the specified content.
      * @return Length in bytes or -1 on error.
      */
-    private long getContentLength(@NotNull HttpUrl url) throws IOException {
+    private long getContentLength(@NotNull HttpUrl url, @NotNull OkHttpClient client) throws IOException {
         long contentSize = -1;
 
         final Request request = new Request.Builder().url(url).head()
                 .header("User-Agent", getUserAgent())
                 .build();
 
-        try (Response response = MVHttpClient.getInstance().getHttpClient().newCall(request).execute()) {
+        try (Response response = client.newCall(request).execute()) {
             if (response.isSuccessful()) {
                 contentSize = FileSize.getContentLength(response);
 
@@ -171,6 +173,20 @@ public class DirectHttpDownload extends Thread {
         }
 
         return contentSize;
+    }
+
+    private long getContentLengthWithFallback(@NotNull HttpUrl url) throws IOException {
+        try {
+            return getContentLength(url, httpClient);
+        }
+        catch (IOException ex) {
+            if (!isRetryableStreamException(ex)) {
+                throw ex;
+            }
+
+            logger.info("HEAD request failed for {}, retrying with HTTP/1.1", url, ex);
+            return getContentLength(url, http11Client);
+        }
     }
 
     private String getUserAgent() {
@@ -401,7 +417,8 @@ public class DirectHttpDownload extends Thread {
         return lower.contains("stream was reset")
                 || lower.contains("unexpected end of stream")
                 || lower.contains("connection reset")
-                || lower.contains("broken pipe");
+                || lower.contains("broken pipe")
+                || lower.contains("remote host terminated handshake");
     }
 
     private void waitForRetry(int retryCount, @NotNull IOException ex) {
@@ -428,15 +445,13 @@ public class DirectHttpDownload extends Thread {
             if (!cancelDownload()) {
                 HttpUrl url = HttpUrl.parse(datenDownload.arr[DatenDownload.DOWNLOAD_URL]);
                 assert url != null;
-                datenDownload.mVFilmSize.setSize(getContentLength(url));
+                datenDownload.mVFilmSize.setSize(getContentLengthWithFallback(url));
                 datenDownload.mVFilmSize.setAktSize(0);
                 int retryCount = 0;
                 boolean forceHttp11 = false;
 
                 while (!start.stoppen) {
-                    final OkHttpClient client = forceHttp11
-                            ? httpClient.newBuilder().protocols(List.of(Protocol.HTTP_1_1)).build()
-                            : httpClient;
+                    final OkHttpClient client = forceHttp11 ? http11Client : httpClient;
                     try {
                         if (executeDownloadRequest(url, client)) {
                             break;
@@ -446,9 +461,8 @@ public class DirectHttpDownload extends Thread {
                     }
                     catch (IOException ex) {
                         if (isRetryableStreamException(ex) && retryCount < MAX_TRANSIENT_DOWNLOAD_RETRIES) {
-                            //logger.error("Received stream exception, retrying forcing HTTP1.1 download");
                             retryCount++;
-                            forceHttp11 = forceHttp11 || isHttp2InternalStreamReset(ex);
+                            forceHttp11 = true;
                             waitForRetry(retryCount, ex);
                             continue;
                         }
