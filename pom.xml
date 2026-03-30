@@ -140,10 +140,10 @@
 
         <mainclass>mediathek.Main</mainclass>
 
-        <install4j.version>11.0.5</install4j.version>
+        <install4j.version>12.0.3</install4j.version>
         <install4j.home>./install4j${install4j.version}</install4j.home>
         <!--suppress UnresolvedMavenProperty -->
-        <install4j.license>${env.LICENSE_KEY_11}</install4j.license>
+        <install4j.license>${env.LICENSE_KEY_12}</install4j.license>
         <install4j.jdk.min-version>25</install4j.jdk.min-version>
         <!-- @formatter:off -->
         <!-- VM Parameters Windows x64 and aarch64 -->
@@ -842,7 +842,7 @@
             <properties>
                 <install4j.home>download\install4j</install4j.home>
                 <!--suppress UnresolvedMavenProperty -->
-                <install4j.license>${env.INSTALL4J_11_LICENSE_KEY}</install4j.license>
+                <install4j.license>${env.INSTALL4J_LICENSE_KEY}</install4j.license>
             </properties>
             <build>
                 <plugins>
@@ -946,7 +946,7 @@
             <properties>
                 <install4j.home>download\install4j</install4j.home>
                 <!--suppress UnresolvedMavenProperty -->
-                <install4j.license>${env.INSTALL4J_11_LICENSE_KEY}</install4j.license>
+                <install4j.license>${env.INSTALL4J_LICENSE_KEY}</install4j.license>
             </properties>
             <build>
                 <plugins>
@@ -1289,7 +1289,7 @@
                 <install4j.disableNotarization>false</install4j.disableNotarization>
                 <install4j.disableSigning>false</install4j.disableSigning>
                 <!--suppress UnresolvedMavenProperty -->
-                <install4j.license>${env.INSTALL4J_11_LICENSE_KEY}</install4j.license>
+                <install4j.license>${env.INSTALL4J_LICENSE_KEY}</install4j.license>
             </properties>
             <build>
                 <plugins>
@@ -1324,7 +1324,7 @@
                 <install4j.disableNotarization>false</install4j.disableNotarization>
                 <install4j.disableSigning>false</install4j.disableSigning>
                 <!--suppress UnresolvedMavenProperty -->
-                <install4j.license>${env.INSTALL4J_11_LICENSE_KEY}</install4j.license>
+                <install4j.license>${env.INSTALL4J_LICENSE_KEY}</install4j.license>
             </properties>
             <build>
                 <plugins>
