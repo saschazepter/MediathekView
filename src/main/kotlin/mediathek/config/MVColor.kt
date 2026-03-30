@@ -19,6 +19,7 @@
 package mediathek.config
 
 import com.formdev.flatlaf.FlatLaf
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import mediathek.tool.MVC
@@ -39,8 +40,9 @@ class MVColor {
 
         private val logger = LogManager.getLogger(MVColor::class.java)
         private val darkBlue = rgb(137, 192, 255)
-        private const val storageFileName = "app-colors.json"
-        private const val fileVersion = 1
+        private const val STORAGE_FILENAME = "app-colors.json"
+        private const val FILE_VERSION = 1
+        @OptIn(ExperimentalSerializationApi::class)
         private val json = Json {
             prettyPrint = true
             prettyPrintIndent = "  "
@@ -179,7 +181,7 @@ class MVColor {
             return Color.getHSBColor(hsb[0], hsb[1], min(1f, hsb[2] + factor))
         }
 
-        private fun storagePath() = StandardLocations.getSettingsDirectory().resolve(storageFileName)
+        private fun storagePath() = StandardLocations.getSettingsDirectory().resolve(STORAGE_FILENAME)
     }
 
     fun load() {
@@ -214,7 +216,7 @@ class MVColor {
 
     private fun serializeOverrides(): AppColorsFile =
         AppColorsFile(
-            version = fileVersion,
+            version = FILE_VERSION,
             colors = colors
                 .filter(MVC::hasOverride)
                 .associate { mvc ->
@@ -290,7 +292,7 @@ class MVColor {
 
     @Serializable
     private data class AppColorsFile(
-        val version: Int = fileVersion,
+        val version: Int = FILE_VERSION,
         val colors: Map<String, ColorOverride> = emptyMap()
     )
 
