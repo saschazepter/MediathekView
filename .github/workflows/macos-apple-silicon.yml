@@ -7,8 +7,9 @@ on:
 
 env:
   # bump this when you upgrade install4j
-  INSTALL4J_VERSION: '11_0_5'
-  INSTALL4J_CACHE_VERSION: 'v11'
+  INSTALL4J_VERSION: '12_0_3'
+  INSTALL4J_CACHE_VERSION: 'v12'
+  INSTALL4J_LICENSE_KEY: ${{ secrets.INSTALL4J_12_LICENSE_KEY }}
   AWS_DEFAULT_REGION: us-east-1
   WINDOWS_AMD64_FFMPEG_URL: https://s3.mvorg.de/res/dev/windows/64/bin/ffmpeg.zip
   WINDOWS_ARM64_FFMPEG_URL: https://s3.mvorg.de/res/dev/windows/aarch64/ffmpeg.zip
@@ -148,7 +149,6 @@ jobs:
       - name: Build macOS app
         run: mvn -B package -P${{ env.MVN_PROFILE }},install4j-mac-${{ env.MACOS_ARCH }} -DskipTests
         env:
-          INSTALL4J_11_LICENSE_KEY: ${{ secrets.INSTALL4J_11_LICENSE_KEY }}
           MAC_KEYSTORE_PASSWORD:       ${{ secrets.MAC_KEYSTORE_PASSWORD }}
 
       - name: Configure AWS CLI for MinIO
@@ -296,7 +296,6 @@ jobs:
       - name: Build macOS app
         run: mvn -B package -P${{ env.MVN_PROFILE }},install4j-mac-${{ env.MACOS_ARCH }} -DskipTests
         env:
-          INSTALL4J_11_LICENSE_KEY: ${{ secrets.INSTALL4J_11_LICENSE_KEY }}
           MAC_KEYSTORE_PASSWORD:       ${{ secrets.MAC_KEYSTORE_PASSWORD }}
 
       - name: Configure AWS CLI for MinIO
@@ -536,8 +535,6 @@ jobs:
 
       - name: Build Windows ARM64 app
         run: mvn -B package -P windows-aarch64,install4j-win-aarch64 -DskipTests
-        env:
-          INSTALL4J_11_LICENSE_KEY: ${{ secrets.INSTALL4J_11_LICENSE_KEY }}
 
       - name: Upload to S3
         env:
@@ -770,8 +767,6 @@ jobs:
 
       - name: Build Windows AMD64 app
         run: mvn -B package -P windows_64bit,install4j-win-amd64 -DskipTests
-        env:
-          INSTALL4J_11_LICENSE_KEY: ${{ secrets.INSTALL4J_11_LICENSE_KEY }}
 
       - name: Upload to S3
         env:
