@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  */
 public class ApplicationConfiguration {
     public static final String TOOLBAR_BLACKLIST_ICON_WITH_TEXT = "toolbar.blacklist_icon.text";
-
+    public static final String UI_TAB_FILME_TIME_USE_LONG_FORMAT = "ui.tab.filme.time_use_long_format";
     public static final String APPLICATION_DARK_MODE = "application.dark_mode";
     public static final String APPLICATION_USE_SYSTEM_DARK_MODE = "application.use_system_dark_mode";
     public static final String APPLICATION_USER_AGENT = "application.user_agent";

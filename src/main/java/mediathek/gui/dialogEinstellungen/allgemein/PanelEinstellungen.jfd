@@ -4,8 +4,8 @@ new FormModel {
 	contentType: "form/swing"
 	root: new FormRoot {
 		add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
-			"$horizontalGroup": "par l {seq l {space :::p, par l {comp jPanel3:::::x, comp jPanel5::t:::x, seq {par l {comp jPanel4:::p::p, comp panel1:::p::p}, space :0:18:x}, comp modernSearchTitlePanel::l:::x}, space :::p}}"
-			"$verticalGroup": "par l {seq l {space :::p, comp jPanel5:::p::p, space :::p, comp jPanel3:::p::p, space :::p, comp jPanel4:::p::p, space :::p, comp panel1:::p::p, space :::p, comp modernSearchTitlePanel::::62:x, space :::p}}"
+			"$horizontalGroup": "par l {seq l {space :::p, par l {comp jPanel3:::::x, comp jPanel5::t:::x, seq {par l {comp jPanel4:::p::p, comp panel1:::p::p}, space :0:0:x}, comp modernSearchTitlePanel::l:::x}, space :::p}}"
+			"$verticalGroup": "par l {seq l {space :::p, comp jPanel5:::p::p, space :::p, comp jPanel3:::p::p, space :::p, comp jPanel4:::p::p, space :::p, comp panel1:::p::p, space :::p, comp modernSearchTitlePanel:::::x, space :::p}}"
 		} ) {
 			name: "this"
 			"maximumSize": new java.awt.Dimension( 10, 10 )
@@ -122,7 +122,7 @@ new FormModel {
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 				"$layoutConstraints": "insets 0,hidemode 3,gap 5 0"
 				"$columnConstraints": "[grow,left][fill]"
-				"$rowConstraints": "[fill][fill][fill][][fill]"
+				"$rowConstraints": "[fill][fill][fill][][fill][]"
 			} ) {
 				name: "panel1"
 				auxiliary() {
@@ -168,6 +168,12 @@ new FormModel {
 					}
 				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 					"value": "cell 0 4 2 1"
+				} )
+				add( new FormComponent( "javax.swing.JCheckBox" ) {
+					name: "cbTabFilmeTimeUseLongFormat"
+					"text": "Langes Zeitformat (HH:mm:ss) im Tab Filme für Zeit verwenden"
+				}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+					"value": "cell 0 5"
 				} )
 			} )
 			add( new FormComponent( "org.jdesktop.swingx.JXTitledPanel" ) {

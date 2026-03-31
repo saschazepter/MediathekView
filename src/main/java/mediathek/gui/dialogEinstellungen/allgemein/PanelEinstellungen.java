@@ -9,6 +9,9 @@ import mediathek.tool.cellrenderer.CellRendererBaseWithStart;
 import mediathek.tool.sender_icon_cache.MVSenderIconCache;
 import mediathek.x11.DesktopEnvDetector;
 import net.engio.mbassy.listener.Handler;
+import net.miginfocom.layout.AC;
+import net.miginfocom.layout.CC;
+import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
 import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.SystemUtils;
@@ -165,6 +168,14 @@ public class PanelEinstellungen extends JPanel {
         cbUseSystemDarkMode.setSelected(useSystemDarkMode);
         cbUseSystemDarkMode.addActionListener(_ -> ApplicationConfiguration.getConfiguration()
                 .setProperty(ApplicationConfiguration.APPLICATION_USE_SYSTEM_DARK_MODE, cbUseSystemDarkMode.isSelected()));
+
+        var useLongTimeFormat = ApplicationConfiguration.getConfiguration()
+                .getBoolean(ApplicationConfiguration.UI_TAB_FILME_TIME_USE_LONG_FORMAT, false);
+        cbTabFilmeTimeUseLongFormat.setSelected(useLongTimeFormat);
+        cbTabFilmeTimeUseLongFormat.addActionListener(_ -> {
+            ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.UI_TAB_FILME_TIME_USE_LONG_FORMAT, cbTabFilmeTimeUseLongFormat.isSelected());
+            MediathekGui.ui().repaint();
+        });
     }
 
     private static final String NO_INFLUENCE_TEXT = "Einstellung hat unter macOS keine Auswirkung";
@@ -226,6 +237,7 @@ public class PanelEinstellungen extends JPanel {
         cbAutomaticUpdateChecks = new JCheckBox();
         cbDrawListIconsRight = new JCheckBox();
         cbUseSystemDarkMode = new JCheckBox();
+        cbTabFilmeTimeUseLongFormat = new JCheckBox();
         modernSearchTitlePanel = new JXTitledPanel();
 
         //======== this ========
@@ -235,32 +247,34 @@ public class PanelEinstellungen extends JPanel {
         {
             jPanel5.setBorder(new TitledBorder("Tab-Verhalten"));
             jPanel5.setLayout(new MigLayout(
-                "insets 0,hidemode 3,gap 5 5",
+                new LC().insets("0").hideMode(3).gridGap("5", "5"),
                 // columns
-                "[fill]" +
-                "[fill]" +
-                "[fill]",
+                new AC()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill(),
                 // rows
-                "[]" +
-                "[fill]"));
+                new AC()
+                    .gap()
+                    .fill()));
 
             //---- jCheckBoxTabsTop ----
             jCheckBoxTabsTop.setText("Tabs oben anzeigen");
-            jPanel5.add(jCheckBoxTabsTop, "cell 0 0");
+            jPanel5.add(jCheckBoxTabsTop, new CC().cell(0, 0));
 
             //---- jCheckBoxTabIcon ----
             jCheckBoxTabIcon.setText("Icons anzeigen");
             jCheckBoxTabIcon.setToolTipText("Im Tab keine Icons anzeigen");
-            jPanel5.add(jCheckBoxTabIcon, "cell 1 0");
+            jPanel5.add(jCheckBoxTabIcon, new CC().cell(1, 0));
 
             //---- cbAutomaticMenuTabSwitching ----
             cbAutomaticMenuTabSwitching.setText("Tabs schalten automatisch bei Men\u00fcnutzung um");
-            jPanel5.add(cbAutomaticMenuTabSwitching, "cell 2 0");
+            jPanel5.add(cbAutomaticMenuTabSwitching, new CC().cell(2, 0));
 
             //---- cbRestoreSelectedTab ----
             cbRestoreSelectedTab.setText("Letzte Auswahl beim Start wiederherstellen");
             cbRestoreSelectedTab.setToolTipText("Wenn gew\u00e4hlt wird beim Start des Programms automatisch das zuletzt genutzte Tab aktiviert.");
-            jPanel5.add(cbRestoreSelectedTab, "cell 0 1 3 1");
+            jPanel5.add(cbRestoreSelectedTab, new CC().cell(0, 1, 3, 1));
         }
 
         //======== jPanel3 ========
@@ -362,42 +376,49 @@ public class PanelEinstellungen extends JPanel {
         //======== panel1 ========
         {
             panel1.setLayout(new MigLayout(
-                "insets 0,hidemode 3,gap 5 0",
+                new LC().insets("0").hideMode(3).gridGap("5", "0"),
                 // columns
-                "[grow,left]" +
-                "[fill]",
+                new AC()
+                    .grow().align("left").gap()
+                    .fill(),
                 // rows
-                "[fill]" +
-                "[fill]" +
-                "[fill]" +
-                "[]" +
-                "[fill]"));
+                new AC()
+                    .fill().gap()
+                    .fill().gap()
+                    .fill().gap()
+                    .gap()
+                    .fill().gap()
+                    ));
 
             //---- jCheckBoxTray ----
             jCheckBoxTray.setText("Programm ins Tray minimieren");
-            panel1.add(jCheckBoxTray, "cell 0 0");
+            panel1.add(jCheckBoxTray, new CC().cell(0, 0));
 
             //---- cbShowBlacklistIconWithText ----
             cbShowBlacklistIconWithText.setText("Blacklist-Filter-Icon mit Text anzeigen");
             cbShowBlacklistIconWithText.setToolTipText("Neustart erforderlich");
-            panel1.add(cbShowBlacklistIconWithText, "cell 1 0");
+            panel1.add(cbShowBlacklistIconWithText, new CC().cell(1, 0));
 
             //---- cbUseWikipediaSenderLogos ----
             cbUseWikipediaSenderLogos.setText("Senderlogos von Wikipedia verwenden");
-            panel1.add(cbUseWikipediaSenderLogos, "cell 0 1");
+            panel1.add(cbUseWikipediaSenderLogos, new CC().cell(0, 1));
 
             //---- cbAutomaticUpdateChecks ----
             cbAutomaticUpdateChecks.setText("Programmupdates t\u00e4glich suchen");
-            panel1.add(cbAutomaticUpdateChecks, "cell 0 2");
+            panel1.add(cbAutomaticUpdateChecks, new CC().cell(0, 2));
 
             //---- cbDrawListIconsRight ----
             cbDrawListIconsRight.setText("Info-Icons der Listen rechts darstellen");
-            panel1.add(cbDrawListIconsRight, "cell 0 3");
+            panel1.add(cbDrawListIconsRight, new CC().cell(0, 3));
 
             //---- cbUseSystemDarkMode ----
             cbUseSystemDarkMode.setText("Erscheinungsbild des Betriebssystems verwenden");
             cbUseSystemDarkMode.setToolTipText("Stellt den Hell-/Dunkelmodus der App beim Programmstart nach den aktuellen Einstellungen des Betriebssystem ein.");
-            panel1.add(cbUseSystemDarkMode, "cell 0 4 2 1");
+            panel1.add(cbUseSystemDarkMode, new CC().cell(0, 4, 2, 1));
+
+            //---- cbTabFilmeTimeUseLongFormat ----
+            cbTabFilmeTimeUseLongFormat.setText("Langes Zeitformat (HH:mm:ss) im Tab Filme f\u00fcr Zeit verwenden");
+            panel1.add(cbTabFilmeTimeUseLongFormat, new CC().cell(0, 5));
         }
 
         //---- modernSearchTitlePanel ----
@@ -416,7 +437,7 @@ public class PanelEinstellungen extends JPanel {
                             .addGroup(layout.createParallelGroup()
                                 .addComponent(jPanel4, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                                 .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                            .addGap(0, 18, Short.MAX_VALUE))
+                            .addGap(0, 0, Short.MAX_VALUE))
                         .addComponent(modernSearchTitlePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addContainerGap())
         );
@@ -432,7 +453,7 @@ public class PanelEinstellungen extends JPanel {
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                     .addComponent(panel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(modernSearchTitlePanel, GroupLayout.DEFAULT_SIZE, 62, Short.MAX_VALUE)
+                    .addComponent(modernSearchTitlePanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -453,6 +474,7 @@ public class PanelEinstellungen extends JPanel {
     private JCheckBox cbAutomaticUpdateChecks;
     private JCheckBox cbDrawListIconsRight;
     private JCheckBox cbUseSystemDarkMode;
+    private JCheckBox cbTabFilmeTimeUseLongFormat;
     private JXTitledPanel modernSearchTitlePanel;
     // End of variables declaration//GEN-END:variables
 }

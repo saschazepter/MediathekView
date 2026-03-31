@@ -5,6 +5,7 @@ import mediathek.controller.starter.Start;
 import mediathek.daten.DatenDownload;
 import mediathek.daten.DatenFilm;
 import mediathek.swing.IconUtils;
+import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.table.MVTable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -23,7 +24,6 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
     private static final DateTimeFormatter PARSER = DateTimeFormatter.ofPattern("H:mm[:ss]");
     private static final DateTimeFormatter SHORT = DateTimeFormatter.ofPattern("HH:mm");
     private static final DateTimeFormatter LONG = DateTimeFormatter.ofPattern("HH:mm:ss");
-    private static final int SECONDS_VARIANCE = 10;
     private final FontIcon selectedStopIcon;
     private final FontIcon normalStopIcon;
     private final FontIcon selectedDownloadIcon;
@@ -144,7 +144,9 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
         zeit = zeit.trim();
         try {
             var t = LocalTime.parse(zeit, PARSER);
-            setText((t.getSecond() < SECONDS_VARIANCE ? SHORT : LONG).format(t));
+            var longFormat = ApplicationConfiguration.getConfiguration()
+                    .getBoolean(ApplicationConfiguration.UI_TAB_FILME_TIME_USE_LONG_FORMAT, false);
+            setText((longFormat ? LONG : SHORT).format(t));
         }
         catch (DateTimeParseException ex) {
             setText(zeit);
