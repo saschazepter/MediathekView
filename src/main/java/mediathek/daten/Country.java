@@ -18,12 +18,6 @@
 
 package mediathek.daten;
 
-import java.util.EnumSet;
-
 public enum Country {
     DE, AT, CH, EU, FR, OTHER
-
-    ;
-
-    public static final EnumSet<Country> EU_COUNTRIES = EnumSet.of(DE, AT, FR);
 }

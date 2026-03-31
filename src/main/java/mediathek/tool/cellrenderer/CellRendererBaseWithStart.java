@@ -19,7 +19,6 @@
 package mediathek.tool.cellrenderer;
 
 import com.formdev.flatlaf.extras.FlatSVGIcon;
-import mediathek.daten.Country;
 import mediathek.daten.DatenFilm;
 import mediathek.swing.CompoundIcon;
 import mediathek.swing.IconUtils;
@@ -125,13 +124,7 @@ public class CellRendererBaseWithStart extends CellRendererBase {
 
     private boolean filmIsCountryUnlocked(@NotNull DatenFilm film) {
         var curLocation = ApplicationConfiguration.getInstance().getGeographicLocation();
-        //EU consists of many states therefore we have to extend the country test...
-        if (film.hasCountry(Country.EU)) {
-            return film.hasCountry(curLocation) || Country.EU_COUNTRIES.contains(curLocation);
-        }
-        else {
-            return film.hasCountry(curLocation);
-        }
+        return !film.isGeoBlockedForLocation(curLocation);
     }
 
     protected void resetComponent() {

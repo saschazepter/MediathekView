@@ -40,6 +40,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DatenFilm implements Comparable<DatenFilm> {
+    public static final EnumSet<Country> EU_COUNTRIES = EnumSet.of(Country.DE, Country.AT, Country.FR);
+
     public record FilmIdentity(String sender, String thema, String normalQualityUrl, String websiteUrl) {
     }
 
@@ -438,7 +440,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
             return false;
         }
         if (hasCountry(Country.EU)) {
-            return !(hasCountry(location) || Country.EU_COUNTRIES.contains(location));
+            return !(hasCountry(location) || EU_COUNTRIES.contains(location));
         }
         return !hasCountry(location);
     }

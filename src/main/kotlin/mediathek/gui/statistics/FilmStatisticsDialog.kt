@@ -21,7 +21,6 @@ package mediathek.gui.statistics
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
-import mediathek.daten.Country
 import mediathek.daten.DatenFilm
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.EscapeKeyHandler
@@ -159,7 +158,7 @@ class FilmStatisticsDialog(
             filmsWithoutLivestreams.count(DatenFilm::isTrailerTeaser).toLong()
         }
         val geoBlockedFilmsDeferred = async {
-            filmsWithoutLivestreams.count { film -> isGeoBlockedForLocation(film, currentGeoLocation) }.toLong()
+            filmsWithoutLivestreams.count { film -> film.isGeoBlockedForLocation(currentGeoLocation) }.toLong()
         }
         val themaCountDeferred = async {
             filmsWithoutLivestreams.asSequence()
@@ -205,16 +204,6 @@ class FilmStatisticsDialog(
             geoBlockedFilms = geoBlockedFilmsDeferred.await(),
             intervalCounts = intervalCounts
         )
-    }
-
-    private fun isGeoBlockedForLocation(film: DatenFilm, currentGeoLocation: Country): Boolean {
-        if (!film.hasCountries()) {
-            return false
-        }
-        if (film.hasCountry(Country.EU)) {
-            return !(film.hasCountry(currentGeoLocation) || Country.EU_COUNTRIES.contains(currentGeoLocation))
-        }
-        return !film.hasCountry(currentGeoLocation)
     }
 
     private fun getFilmAgeInDays(film: DatenFilm, today: LocalDate, zoneId: ZoneId): Long {
