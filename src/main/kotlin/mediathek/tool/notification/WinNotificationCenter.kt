@@ -1,6 +1,5 @@
 package mediathek.tool.notification
 
-import mediathek.config.Icons
 import mediathek.config.Konstanten
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
@@ -38,7 +37,7 @@ class WinNotificationCenter : INotificationCenter {
             logger.error("System Tray is not supported!")
         } else {
             val tray = SystemTray.getSystemTray()
-            trayIcon = TrayIcon(Icons.ICON_TRAY, "MediathekView ${Konstanten.MVVERSION}")
+            trayIcon = TrayIcon(Konstanten.ICON_TRAY, "MediathekView ${Konstanten.MVVERSION}")
             trayIcon!!.isImageAutoSize = true
 
             tray.add(trayIcon)

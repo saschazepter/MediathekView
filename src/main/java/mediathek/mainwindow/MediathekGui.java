@@ -906,8 +906,8 @@ public class MediathekGui extends JFrame {
         }
         else {
             //setup icons for each tab here
-            setTabIcon(tabFilme, Icons.ICON_TAB_FILM);
-            setTabIcon(tabDownloads, Icons.ICON_TAB_DOWNLOAD);
+            setTabIcon(tabFilme, GetIcon.getProgramIcon("tab-film.png", 32, 32));
+            setTabIcon(tabDownloads, GetIcon.getProgramIcon("tab-download.png", 32, 32));
         }
     }
 

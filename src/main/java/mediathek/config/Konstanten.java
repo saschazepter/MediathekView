@@ -17,14 +17,17 @@
  */
 package mediathek.config;
 
+import mediathek.res.GetIcon;
 import mediathek.tool.FileUtils;
 import mediathek.tool.Version;
 import okhttp3.HttpUrl;
 
+import java.awt.*;
 import java.util.concurrent.TimeUnit;
 
 
 public class Konstanten {
+    public static final Image ICON_TRAY = GetIcon.getProgramIcon("tray.png", 256, 256).getImage();
     public static final int TABLE_DEFAULT_ROW_HEIGHT = 24;
     public static final int TABLE_DEFAULT_LARGE_ICON_ROW_HEIGHT = TABLE_DEFAULT_ROW_HEIGHT + 12;
     public static final String JSOUP_USER_AGENT = "Mozilla/5.0";

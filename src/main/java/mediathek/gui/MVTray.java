@@ -1,11 +1,12 @@
 package mediathek.gui;
 
 import mediathek.config.Daten;
-import mediathek.config.Icons;
+import mediathek.config.Konstanten;
 import mediathek.daten.DownloadStartInfo;
 import mediathek.gui.messages.TimerEvent;
 import mediathek.gui.messages.TrayIconEvent;
 import mediathek.mainwindow.MediathekGui;
+import mediathek.res.GetIcon;
 import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.MessageBus;
 import mediathek.tool.notification.MessageType;
@@ -46,17 +47,17 @@ public final class MVTray {
                 // es gibt welche mit Fehler
                 if (trayState != 2) {
                     trayState = 2;
-                    trayIcon.setImage(Icons.ICON_TRAY_ERROR);
+                    trayIcon.setImage(GetIcon.getProgramIcon("tray-fehler.png", 256, 256).getImage());
                 }
             } else if (info.running > 0) {
                 // es laufen welche
                 if (trayState != 1) {
                     trayState = 1;
-                    trayIcon.setImage(Icons.ICON_TRAY_DOWNLOAD);
+                    trayIcon.setImage(GetIcon.getProgramIcon("tray-download.png", 256, 256).getImage());
                 }
             } else if (trayState != 0) {
                 trayState = 0;
-                trayIcon.setImage(Icons.ICON_TRAY);
+                trayIcon.setImage(Konstanten.ICON_TRAY);
             }
         });
     }
@@ -73,7 +74,7 @@ public final class MVTray {
             return null;
         } else {
             tray = SystemTray.getSystemTray();
-            trayIcon = new TrayIcon(Icons.ICON_TRAY);
+            trayIcon = new TrayIcon(Konstanten.ICON_TRAY);
             trayIcon.setImageAutoSize(true);
             trayIcon.setToolTip(getInfoTextDownloads());
             addListener();
