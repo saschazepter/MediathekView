@@ -4,7 +4,6 @@ import mediathek.config.Daten;
 import mediathek.controller.starter.Start;
 import mediathek.daten.DatenDownload;
 import mediathek.daten.DatenFilm;
-import mediathek.daten.IndexedFilmList;
 import mediathek.swing.IconUtils;
 import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.table.MVTable;
@@ -142,25 +141,12 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
             return;
         }
 
-        drawTime(zeit);
-    }
-
-    protected void drawTime(String zeit) {
         zeit = zeit.trim();
         try {
             var t = LocalTime.parse(zeit, PARSER);
-            var msg = "";
-            if (Daten.getInstance().getListeFilmeNachBlackList() instanceof IndexedFilmList) {
-                // lucene
-                msg = LONG.format(t);
-            }
-            else {
-                // regular selection
-                var longFormat = ApplicationConfiguration.getConfiguration()
-                        .getBoolean(ApplicationConfiguration.UI_TAB_FILME_TIME_USE_LONG_FORMAT, false);
-                msg = (longFormat ? LONG : SHORT).format(t);
-            }
-            setText(msg);
+            var longFormat = ApplicationConfiguration.getConfiguration()
+                    .getBoolean(ApplicationConfiguration.UI_TAB_FILME_TIME_USE_LONG_FORMAT, false);
+            setText((longFormat ? LONG : SHORT).format(t));
         }
         catch (DateTimeParseException ex) {
             setText(zeit);
