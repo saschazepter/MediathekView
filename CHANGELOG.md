@@ -21,7 +21,7 @@
 - **FEATURE:** Farben für light/dark-Mode können in den Einstellungen getrennt konfiguriert werden.
 - **FEATURE:** URL zum JDownloader kann in *Einstellungen/Erweitert* konfiguriert werden. Vielen Dank an @robNice.
 - **FEATURE:** Filme können an *pyLoad* zum Laden übergeben werden. Vielen Dank an @robNice.
-- **FEATURE:** Das Format der Zeitdarstellung im Tab Filme kann via *Einstellungen\Allgemein* konfiguriert werden.
+- **FEATURE:** Das Format der Zeitdarstellung im Tab Filme kann via *Einstellungen\Allgemein* konfiguriert werden. Dies gilt nicht für den Lucene-Modus.
 - interne Optimierungen für mehr Geschwindigkeit.
 - interne Fehler wurden behoben.
 

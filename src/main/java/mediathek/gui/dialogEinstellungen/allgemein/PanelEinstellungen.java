@@ -1,5 +1,7 @@
 package mediathek.gui.dialogEinstellungen.allgemein;
 
+import mediathek.config.Daten;
+import mediathek.daten.IndexedFilmList;
 import mediathek.gui.messages.*;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.ApplicationConfiguration;
@@ -176,6 +178,10 @@ public class PanelEinstellungen extends JPanel {
             ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.UI_TAB_FILME_TIME_USE_LONG_FORMAT, cbTabFilmeTimeUseLongFormat.isSelected());
             MediathekGui.ui().repaint();
         });
+        if (Daten.getInstance().getListeFilmeNachBlackList() instanceof IndexedFilmList) {
+            cbTabFilmeTimeUseLongFormat.setEnabled(false);
+            cbTabFilmeTimeUseLongFormat.setToolTipText("Diese Option hat bei Nutzung von Lucene keine Auswirkung.");
+        }
     }
 
     private static final String NO_INFLUENCE_TEXT = "Einstellung hat unter macOS keine Auswirkung";
