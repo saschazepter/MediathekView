@@ -346,7 +346,7 @@ public class DirectHttpDownload extends Thread {
         Request request = buildDownloadRequest(url);
         try (Response response = client.newCall(request).execute()) {
             ResponseBody body = response.body();
-            if (response.isSuccessful() && body != null) {
+            if (response.isSuccessful()) {
                 downloadContent(body.byteStream());
                 return true;
             }
@@ -358,7 +358,7 @@ public class DirectHttpDownload extends Thread {
                 Request retryRequest = buildDownloadRequest(url);
                 try (Response retryResponse = client.newCall(retryRequest).execute()) {
                     ResponseBody retryBody = retryResponse.body();
-                    if (retryResponse.isSuccessful() && retryBody != null) {
+                    if (retryResponse.isSuccessful()) {
                         downloadContent(retryBody.byteStream());
                         return true;
                     }
