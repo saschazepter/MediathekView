@@ -64,7 +64,6 @@ public class BrDirectDownload extends Thread {
     private static final int DOWNLOAD_BUFFER_SIZE = 256 * 1024;
     private static final Logger logger = LogManager.getLogger(BrDirectDownload.class);
     private static final Dispatcher brHttp11Dispatcher = createBrHttp11Dispatcher();
-    private final Daten daten;
     private final DatenDownload datenDownload;
     private final Start start;
     private final ByteRateLimiter rateLimiter;
@@ -78,7 +77,7 @@ public class BrDirectDownload extends Thread {
     private CompletableFuture<Void> infoFuture;
     private CompletableFuture<Void> subtitleFuture;
 
-    public BrDirectDownload(Daten daten, DatenDownload d) {
+    public BrDirectDownload(DatenDownload d) {
         super();
 
         http11Client = MVHttpClient.getInstance().getHttpClient().newBuilder()
@@ -89,7 +88,6 @@ public class BrDirectDownload extends Thread {
         messageBus = MessageBus.getMessageBus();
         messageBus.subscribe(this);
 
-        this.daten = daten;
         datenDownload = d;
         start = datenDownload.start;
         setName("BR DIRECT DL THREAD_" + d.arr[DatenDownload.DOWNLOAD_TITEL]);
@@ -259,7 +257,7 @@ public class BrDirectDownload extends Thread {
             if (datenDownload.quelle == DatenDownload.QUELLE_BUTTON) {
                 start.status = Start.STATUS_FERTIG;
             }
-            else if (StarterClass.pruefen(daten, datenDownload, start)) {
+            else if (StarterClass.pruefen(Daten.getInstance(), datenDownload, start)) {
                 start.status = Start.STATUS_FERTIG;
             }
             else {
@@ -290,7 +288,7 @@ public class BrDirectDownload extends Thread {
                 .build();
     }
 
-    private boolean executeChunkedDownloadRequest(@NotNull HttpUrl url, long totalSize) throws IOException {
+    private void executeChunkedDownloadRequest(@NotNull HttpUrl url, long totalSize) throws IOException {
         int retryCount = 0;
         while (!start.stoppen && alreadyDownloaded < totalSize) {
             final long chunkStart = alreadyDownloaded;
@@ -317,7 +315,7 @@ public class BrDirectDownload extends Thread {
                 else {
                     printHttpErrorMessage(response);
                 }
-                return false;
+                return;
             }
             catch (IOException ex) {
                 if (isRetryableStreamException(ex) && alreadyDownloaded > chunkStart) {
@@ -340,7 +338,6 @@ public class BrDirectDownload extends Thread {
         if (alreadyDownloaded >= totalSize) {
             finishSuccessfulDownload();
         }
-        return true;
     }
 
     private boolean isHttp2InternalStreamReset(@NotNull IOException ex) {
