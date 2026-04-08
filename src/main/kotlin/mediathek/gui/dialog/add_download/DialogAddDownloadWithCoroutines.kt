@@ -427,22 +427,18 @@ class DialogAddDownloadWithCoroutines(
     }
 
     private fun setNameFilm() {
-        // beim ersten Mal werden die Standardpfade gesucht
-        if (!nameGeaendert) {
-            // nur wenn vom Benutzer noch nicht geändert!
-            pausePathObservation {
-                datenDownload = DatenDownload(
-                    activeProgramSet,
-                    film,
-                    DatenDownload.QUELLE_DOWNLOAD,
-                    null,
-                    "",
-                    "",
-                    getFilmResolution().toString()
-                )
+        pausePathObservation {
+            datenDownload = DatenDownload(
+                activeProgramSet,
+                film,
+                DatenDownload.QUELLE_DOWNLOAD,
+                null,
+                "",
+                "",
+                getFilmResolution().toString()
+            )
 
-                applyDownloadTargetFields(datenDownload)
-            }
+            applyDownloadTargetFields(datenDownload)
         }
     }
 
@@ -457,10 +453,12 @@ class DialogAddDownloadWithCoroutines(
         }
 
         setTargetInputsEnabled(true)
-        jTextFieldName.text = generatedName
         val targetPath = download.arr[DatenDownload.DOWNLOAD_ZIEL_PFAD]
         setModelPfad(targetPath, jComboBoxPfad)
         orgPfad = targetPath
+        if (!nameGeaendert) {
+            jTextFieldName.text = generatedName
+        }
     }
 
     private fun setTargetInputsEnabled(enabled: Boolean) {
@@ -759,6 +757,7 @@ class DialogAddDownloadWithCoroutines(
     private fun startPathObservation() {
         uiScope.launch {
             cbPathTextComponent.textChanges()
+                .drop(1)
                 .debounce(250.milliseconds)
                 .distinctUntilChanged()
                 .collectLatest(::handlePathChange)
@@ -780,7 +779,6 @@ class DialogAddDownloadWithCoroutines(
         if (stopBeob) {
             return
         }
-        nameGeaendert = true
         if (!SystemUtils.IS_OS_WINDOWS) {
             updatePathValidationColor(currentPath)
         }
