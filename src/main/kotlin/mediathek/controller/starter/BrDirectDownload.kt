@@ -50,6 +50,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.util.*
 import javax.swing.SwingUtilities
+import kotlin.time.Duration.Companion.milliseconds
 
 class BrDirectDownload(
     private val datenDownload: DatenDownload
@@ -199,24 +200,21 @@ class BrDirectDownload(
 
             try {
                 http11Client.newCall(request).execute().use { response ->
-                    when {
-                        response.code == HTTP_PARTIAL_CONTENT -> {
-                            val body = response.body ?: throw IOException("Missing BR chunk response body")
+                    when (response.code) {
+                        HTTP_PARTIAL_CONTENT -> {
+                            val body = response.body
                             transferContent(body.byteStream())
                             retryCount = 0
                         }
-
-                        response.code == HTTP_RANGE_NOT_SATISFIABLE && alreadyDownloaded >= totalSize -> {
+                        HTTP_RANGE_NOT_SATISFIABLE if alreadyDownloaded >= totalSize -> {
                             break
                         }
-
-                        response.code == HttpURLConnection.HTTP_NOT_FOUND -> {
+                        HttpURLConnection.HTTP_NOT_FOUND -> {
                             logger.error("HTTP error 404 received for URL: {}", request.url)
                             state = HttpDownloadState.ERROR
                             start.status = Start.STATUS_ERR
                             return
                         }
-
                         else -> {
                             printHttpErrorMessage(response)
                             return
@@ -404,7 +402,7 @@ class BrDirectDownload(
             alreadyDownloaded,
             ex
         )
-        delay(RETRY_DELAY_MILLIS)
+        delay(RETRY_DELAY_MILLIS.milliseconds)
     }
 
     private suspend fun awaitAncillaryDownloads() {

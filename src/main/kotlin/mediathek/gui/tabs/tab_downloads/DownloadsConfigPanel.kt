@@ -71,6 +71,18 @@ class DownloadsConfigPanel : JPanel() {
         }
     }
 
+    private fun setupBrDirectDownloadCheckBox() {
+        val config = ApplicationConfiguration.getConfiguration()
+        cbUseBrDirectDownload.isSelected =
+            config.getBoolean(ApplicationConfiguration.DOWNLOAD_USE_BR_DIRECT_DOWNLOAD, false)
+        cbUseBrDirectDownload.addActionListener {
+            config.setProperty(
+                ApplicationConfiguration.DOWNLOAD_USE_BR_DIRECT_DOWNLOAD,
+                cbUseBrDirectDownload.isSelected
+            )
+        }
+    }
+
     @Suppress("UNUSED_PARAMETER")
     @Handler
     private fun handleParallelDownloadNumberChange(e: ParallelDownloadNumberChangedEvent) {
@@ -82,32 +94,48 @@ class DownloadsConfigPanel : JPanel() {
     }
 
     private fun initComponents() {
-        border = TitledBorder("Downloads")
         layout = MigLayout(
-            LC().insets("0").hideMode(3).align("center", "center"),
-            // columns
+            LC().insets("0").hideMode(3).fillX(),
+            AC().grow().fill(),
             AC()
-                .align("center").gap()
-                .align("label").gap()
-                .align("left").gap()
-                .align("center"),
-            // rows
-            AC()
-                .gap()
+                .gap("0")
+                .gap("rel")
         )
 
-        add(JLabel("gleichzeitig:"), CC().cell(1, 0))
-        add(spinnerNumDownloads, CC().cell(2, 0).width("80:100")) //NON-NLS
-        add(cbMaxBandwidth, CC().cell(0, 1))
+        val downloadsPanel = JPanel().apply {
+            border = TitledBorder("Downloads")
+            layout = MigLayout(
+                LC().insets("0").hideMode(3).align("center", "center"),
+                // columns
+                AC()
+                    .align("center").gap()
+                    .align("label").gap()
+                    .align("left").gap()
+                    .align("center"),
+                // rows
+                AC()
+                    .gap()
+            )
 
-        add(JLabel("max. Bandbreite:"), CC().cell(1, 1))
-        add(spinnerMaxBandwidth, CC().cell(2, 1).width("80:100")) //NON-NLS
+            add(JLabel("gleichzeitig:"), CC().cell(1, 0))
+            add(spinnerNumDownloads, CC().cell(2, 0).width("80:100")) //NON-NLS
+            add(cbMaxBandwidth, CC().cell(0, 1))
 
-        add(JLabel("KiB/s"), CC().cell(3, 1))
+            add(JLabel("max. Bandbreite:"), CC().cell(1, 1))
+            add(spinnerMaxBandwidth, CC().cell(2, 1).width("80:100")) //NON-NLS
+
+            add(JLabel("KiB/s"), CC().cell(3, 1))
+        }
+
+        cbUseBrDirectDownload.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
+
+        add(downloadsPanel, CC().cell(0, 0).growX())
+        add(cbUseBrDirectDownload, CC().cell(0, 1).alignX("left"))
     }
 
     private val spinnerNumDownloads: JSpinner = JSpinner()
     private val cbMaxBandwidth: JCheckBox = JCheckBox()
+    private val cbUseBrDirectDownload: JCheckBox = JCheckBox("BR Spezial-Downloader verwenden")
     private val spinnerMaxBandwidth: JSpinner = JSpinner()
     private val downloadRateLimitChangeTimer = Timer(300) { fireDownloadRateLimitChangedEvent() }.apply {
         isRepeats = false
@@ -116,9 +144,12 @@ class DownloadsConfigPanel : JPanel() {
     init {
         initComponents()
         cbMaxBandwidth.toolTipText = "Bandbreitenbegrenzung aktiviert?"
+        cbUseBrDirectDownload.toolTipText =
+            "Verwendet für BR einen dedizierten HTTP/1.1-Downloader mit Chunk-Retries."
         setupNumDownloadsSpinner()
         setupDownloadRateLimitCheckBox()
         setupDownloadRateLimitSpinner()
+        setupBrDirectDownloadCheckBox()
         messageBus.subscribe(this)
     }
 }
