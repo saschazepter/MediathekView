@@ -72,6 +72,8 @@ class BrDirectDownload(
     private var dialogAbbrechenIsVis = false
     private var infoJob: Deferred<Unit>? = null
     private var subtitleJob: Deferred<Unit>? = null
+    private var previousProgress = 0L
+    private var startProgress = -1L
 
     init {
         messageBus.subscribe(this)
@@ -271,9 +273,7 @@ class BrDirectDownload(
                     MVBandwidthCountingInputStream(throttledInput).use { bandwidthInput ->
                         start.mVBandwidthCountingInputStream = bandwidthInput
                         val buffer = ByteArray(DOWNLOAD_BUFFER_SIZE)
-                        var previousProgress = 0L
-                        var startProgress = -1L
-                        var displayedBytes = 0L
+                        var displayedBytes = datenDownload.mVFilmSize.aktSize
                         var notifyProgress = false
 
                         while (!start.stoppen) {
