@@ -56,7 +56,6 @@ public class BrDirectDownload extends Thread {
 
     private static final int HTTP_RANGE_NOT_SATISFIABLE = 416;
     private static final int HTTP_PARTIAL_CONTENT = 206;
-    private static final int MAX_TRANSIENT_DOWNLOAD_RETRIES = 3;
     private static final long RETRY_DELAY_MILLIS = 1_000L;
     private static final int BR_MAX_CONCURRENT_REQUESTS = 1;
     private static final int BR_MAX_CONCURRENT_REQUESTS_PER_HOST = 1;
@@ -70,7 +69,6 @@ public class BrDirectDownload extends Thread {
     private final Start start;
     private final ByteRateLimiter rateLimiter;
     private final MBassador<BaseEvent> messageBus;
-    private final OkHttpClient httpClient;
     private final OkHttpClient http11Client;
     private HttpDownloadState state = HttpDownloadState.DOWNLOAD;
     private long alreadyDownloaded;
@@ -83,8 +81,7 @@ public class BrDirectDownload extends Thread {
     public BrDirectDownload(Daten daten, DatenDownload d) {
         super();
 
-        httpClient = MVHttpClient.getInstance().getHttpClient();
-        http11Client = httpClient.newBuilder()
+        http11Client = MVHttpClient.getInstance().getHttpClient().newBuilder()
                 .protocols(List.of(Protocol.HTTP_1_1))
                 .dispatcher(brHttp11Dispatcher)
                 .build();
