@@ -51,6 +51,7 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.text.JTextComponent
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.time.Duration.Companion.milliseconds
 
 class DialogAddDownloadWithCoroutines(
     parent: Frame,
@@ -758,7 +759,7 @@ class DialogAddDownloadWithCoroutines(
     private fun startPathObservation() {
         uiScope.launch {
             cbPathTextComponent.textChanges()
-                .debounce(250)
+                .debounce(250.milliseconds)
                 .distinctUntilChanged()
                 .collectLatest(::handlePathChange)
         }
@@ -769,7 +770,7 @@ class DialogAddDownloadWithCoroutines(
         uiScope.launch {
             jTextFieldName.textChanges()
                 .drop(1)
-                .debounce(100)
+                .debounce(100.milliseconds)
                 .distinctUntilChanged()
                 .collect(::handleNameChange)
         }
