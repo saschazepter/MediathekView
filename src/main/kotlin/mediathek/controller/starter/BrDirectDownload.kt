@@ -364,34 +364,12 @@ class BrDirectDownload(
     }
 
     private fun isRetryableStreamException(ex: IOException): Boolean {
-        if (isHttp2InternalStreamReset(ex)) {
-            return true
-        }
-
         val lower = ex.message?.lowercase(Locale.ROOT) ?: return false
         return lower.contains("stream was reset") ||
             lower.contains("unexpected end of stream") ||
             lower.contains("connection reset") ||
             lower.contains("broken pipe") ||
             lower.contains("remote host terminated handshake")
-    }
-
-    private fun isHttp2InternalStreamReset(ex: IOException): Boolean {
-        var current: Throwable? = ex
-        while (current != null) {
-            if (current.javaClass.name == "okhttp3.internal.http2.StreamResetException") {
-                if (current.message.orEmpty().contains("INTERNAL_ERROR")) {
-                    return true
-                }
-            }
-
-            val lower = current.message?.lowercase(Locale.ROOT)
-            if (lower != null && lower.contains("stream was reset") && lower.contains("internal_error")) {
-                return true
-            }
-            current = current.cause
-        }
-        return false
     }
 
     private suspend fun waitForRetry(retryCount: Int, ex: IOException) {
