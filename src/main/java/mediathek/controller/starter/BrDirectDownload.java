@@ -52,33 +52,27 @@ import java.util.Locale;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
-
-public class DirectHttpDownload extends Thread {
+public class BrDirectDownload extends Thread {
 
     private static final int HTTP_RANGE_NOT_SATISFIABLE = 416;
+    private static final int HTTP_PARTIAL_CONTENT = 206;
     private static final int MAX_TRANSIENT_DOWNLOAD_RETRIES = 3;
     private static final long RETRY_DELAY_MILLIS = 1_000L;
-    /**
-     * Keep the transfer buffer large enough that rate limiting does not depend on sub-millisecond sleep precision.
-     * Windows is especially sensitive here when the limiter is driven by many 1 KiB reads per second.
-     */
+    private static final int BR_MAX_CONCURRENT_REQUESTS = 1;
+    private static final int BR_MAX_CONCURRENT_REQUESTS_PER_HOST = 1;
+    private static final int BR_MAX_CHUNK_RETRIES = 25;
+    private static final long BR_DOWNLOAD_CHUNK_SIZE = 16L * 1024L * 1024L;
     private static final int DOWNLOAD_BUFFER_SIZE = 256 * 1024;
-    private static final Logger logger = LogManager.getLogger(DirectHttpDownload.class);
+    private static final Logger logger = LogManager.getLogger(BrDirectDownload.class);
+    private static final Dispatcher brHttp11Dispatcher = createBrHttp11Dispatcher();
     private final Daten daten;
     private final DatenDownload datenDownload;
     private final Start start;
-    /**
-     * Instance which will limit the download speed
-     */
     private final ByteRateLimiter rateLimiter;
     private final MBassador<BaseEvent> messageBus;
     private final OkHttpClient httpClient;
     private final OkHttpClient http11Client;
     private HttpDownloadState state = HttpDownloadState.DOWNLOAD;
-    /**
-     * number of bytes already downloaded.
-     * 0 if nothing has been downloaded before.
-     */
     private long alreadyDownloaded;
     private File file;
     private boolean retAbbrechen;
@@ -86,11 +80,14 @@ public class DirectHttpDownload extends Thread {
     private CompletableFuture<Void> infoFuture;
     private CompletableFuture<Void> subtitleFuture;
 
-    public DirectHttpDownload(Daten daten, DatenDownload d) {
+    public BrDirectDownload(Daten daten, DatenDownload d) {
         super();
 
         httpClient = MVHttpClient.getInstance().getHttpClient();
-        http11Client = httpClient.newBuilder().protocols(List.of(Protocol.HTTP_1_1)).build();
+        http11Client = httpClient.newBuilder()
+                .protocols(List.of(Protocol.HTTP_1_1))
+                .dispatcher(brHttp11Dispatcher)
+                .build();
         rateLimiter = new ByteRateLimiter(getDownloadLimit());
         messageBus = MessageBus.getMessageBus();
         messageBus.subscribe(this);
@@ -98,17 +95,19 @@ public class DirectHttpDownload extends Thread {
         this.daten = daten;
         datenDownload = d;
         start = datenDownload.start;
-        setName("DIRECT DL THREAD_" + d.arr[DatenDownload.DOWNLOAD_TITEL]);
+        setName("BR DIRECT DL THREAD_" + d.arr[DatenDownload.DOWNLOAD_TITEL]);
 
         start.status = Start.STATUS_RUN;
         StarterClass.notifyStartEvent(datenDownload);
     }
 
-    /**
-     * Handles the rate limit change launched somewhere in the UI
-     *
-     * @param evt the new limit
-     */
+    private static Dispatcher createBrHttp11Dispatcher() {
+        Dispatcher dispatcher = new Dispatcher();
+        dispatcher.setMaxRequests(BR_MAX_CONCURRENT_REQUESTS);
+        dispatcher.setMaxRequestsPerHost(BR_MAX_CONCURRENT_REQUESTS_PER_HOST);
+        return dispatcher;
+    }
+
     @Handler
     private void handleRateLimitChanged(@NotNull DownloadRateLimitChangedEvent evt) {
         long limit = calcLimit(evt.newLimit, evt.active);
@@ -117,14 +116,10 @@ public class DirectHttpDownload extends Thread {
     }
 
     private long calcLimit(long limit, boolean active) {
-        long newLimit;
-
-        if (limit <= 0 || !active)
-            newLimit = Long.MAX_VALUE;
-        else
-            newLimit = limit * FileUtils.ONE_KB;
-
-        return newLimit;
+        if (limit <= 0 || !active) {
+            return Long.MAX_VALUE;
+        }
+        return limit * FileUtils.ONE_KB;
     }
 
     private long calculateDownloadLimit(long limit) {
@@ -132,54 +127,27 @@ public class DirectHttpDownload extends Thread {
         return calcLimit(limit, active);
     }
 
-    /**
-     * Try to read the download limit from config file, other set to artificial limit 1GB/s!
-     *
-     * @return the limit in KB/s
-     */
     private long getDownloadLimit() {
         final long downloadLimit = ApplicationConfiguration.getConfiguration().getLong(ApplicationConfiguration.DownloadRateLimiter.LIMIT, 0);
         return calculateDownloadLimit(downloadLimit);
     }
 
-    /**
-     * Return the content length of the requested Url.
-     *
-     * @param url {@link java.net.URL} to the specified content.
-     * @return Length in bytes or -1 on error.
-     */
-    private long getContentLength(@NotNull HttpUrl url, @NotNull OkHttpClient client) throws IOException {
-        long contentSize = -1;
-
+    private long getContentLength(@NotNull HttpUrl url) throws IOException {
         final Request request = new Request.Builder().url(url).head()
                 .header("User-Agent", getUserAgent())
+                .header("Connection", "close")
                 .build();
 
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful()) {
-                contentSize = FileSize.getContentLength(response);
-
-                // alles unter 300k sind Playlisten, ...
-                if (contentSize < 300_000) {
-                    contentSize = -1;
-                }
-            }
-        }
-
-        return contentSize;
-    }
-
-    private long getContentLengthWithFallback(@NotNull HttpUrl url) throws IOException {
-        try {
-            return getContentLength(url, httpClient);
-        }
-        catch (IOException ex) {
-            if (!isRetryableStreamException(ex)) {
-                throw ex;
+        try (Response response = http11Client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                return -1;
             }
 
-            logger.info("HEAD request failed for {}, retrying with HTTP/1.1", url, ex);
-            return getContentLength(url, http11Client);
+            long contentSize = FileSize.getContentLength(response);
+            if (contentSize < 300_000) {
+                return -1;
+            }
+            return contentSize;
         }
     }
 
@@ -211,21 +179,21 @@ public class DirectHttpDownload extends Thread {
         }
     }
 
-    /**
-     * Start the actual download process here.
-     *
-     * @throws IOException the io errors that may occur.
-     */
-    private void downloadContent(InputStream inputStream) throws IOException {
+    private void prepareDownloadContent() {
         startInfoFileDownload();
         downloadSubtitleFile();
         datenDownload.interruptRestart();
         datenDownload.mVFilmSize.setAktSize(alreadyDownloaded);
+    }
+
+    private void transferContent(InputStream inputStream) throws IOException {
         OutputStream fileSink;
-        if (alreadyDownloaded != 0)
+        if (alreadyDownloaded != 0) {
             fileSink = Files.newOutputStream(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
-        else
+        } else {
             fileSink = Files.newOutputStream(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+        }
+
         try (fileSink;
              var bufferedSink = new BufferedOutputStream(fileSink, DOWNLOAD_BUFFER_SIZE);
              var tis = new ThrottlingInputStream(inputStream, rateLimiter);
@@ -234,7 +202,8 @@ public class DirectHttpDownload extends Thread {
             final byte[] buffer = new byte[DOWNLOAD_BUFFER_SIZE];
             long p, pp = 0, startProzent = -1;
             int len;
-            long aktBandwidth, aktSize = 0;
+            long aktBandwidth;
+            long aktSize = 0;
             boolean melden = false;
 
             while (!start.stoppen) {
@@ -246,7 +215,6 @@ public class DirectHttpDownload extends Thread {
                 bufferedSink.write(buffer, 0, len);
                 datenDownload.mVFilmSize.addAktSize(len);
 
-                //für die Anzeige prüfen ob sich was geändert hat
                 if (aktSize != datenDownload.mVFilmSize.getAktSize()) {
                     aktSize = datenDownload.mVFilmSize.getAktSize();
                     melden = true;
@@ -256,7 +224,6 @@ public class DirectHttpDownload extends Thread {
                     if (startProzent == -1) {
                         startProzent = p;
                     }
-                    // p muss zwischen 1 und 999 liegen
                     if (p == 0) {
                         p = Start.PROGRESS_GESTARTET;
                     }
@@ -266,17 +233,15 @@ public class DirectHttpDownload extends Thread {
                     start.percent = (int) p;
                     if (p != pp) {
                         pp = p;
-                        // Restzeit ermitteln
                         if (p > 2 && p > startProzent) {
-                            // sonst macht es noch keinen Sinn
                             final var diffZeit = Duration.between(start.startTime, LocalDateTime.now()).toSeconds();
                             final long restProzent = 1000L - p;
-                            start.restSekunden = (diffZeit * restProzent / (p - startProzent));
+                            start.restSekunden = diffZeit * restProzent / (p - startProzent);
                         }
                         melden = true;
                     }
                 }
-                aktBandwidth = start.mVBandwidthCountingInputStream.getBandwidth(); // bytes per second
+                aktBandwidth = start.mVBandwidthCountingInputStream.getBandwidth();
                 if (aktBandwidth != start.bandbreite) {
                     start.bandbreite = aktBandwidth;
                     melden = true;
@@ -295,15 +260,12 @@ public class DirectHttpDownload extends Thread {
     private void finishSuccessfulDownload() {
         if (!start.stoppen) {
             if (datenDownload.quelle == DatenDownload.QUELLE_BUTTON) {
-                // direkter Start mit dem Button
                 start.status = Start.STATUS_FERTIG;
             }
             else if (StarterClass.pruefen(daten, datenDownload, start)) {
-                //Anzeige ändern - fertig
                 start.status = Start.STATUS_FERTIG;
             }
             else {
-                //Anzeige ändern - bei Fehler fehlt der Eintrag
                 start.status = Start.STATUS_ERR;
             }
         }
@@ -323,50 +285,65 @@ public class DirectHttpDownload extends Thread {
         start.status = Start.STATUS_ERR;
     }
 
-    private Request buildDownloadRequest(@NotNull HttpUrl url) {
-        var request = new Request.Builder().url(url).get()
-                .header("User-Agent", getUserAgent());
-        if (alreadyDownloaded != 0)
-            request.header("Range", "bytes=" + alreadyDownloaded + '-');
-
-        return request.build();
+    private Request buildChunkRequest(@NotNull HttpUrl url, long rangeStart, long rangeEnd) {
+        return new Request.Builder().url(url).get()
+                .header("User-Agent", getUserAgent())
+                .header("Connection", "close")
+                .header("Range", "bytes=" + rangeStart + '-' + rangeEnd)
+                .build();
     }
 
-    private boolean executeDownloadRequest(@NotNull HttpUrl url, @NotNull OkHttpClient client) throws IOException {
-        Request request = buildDownloadRequest(url);
-        try (Response response = client.newCall(request).execute()) {
-            ResponseBody body = response.body();
-            if (response.isSuccessful()) {
-                downloadContent(body.byteStream());
-                return true;
-            }
+    private boolean executeChunkedDownloadRequest(@NotNull HttpUrl url, long totalSize) throws IOException {
+        int retryCount = 0;
+        while (!start.stoppen && alreadyDownloaded < totalSize) {
+            final long chunkStart = alreadyDownloaded;
+            final long chunkEnd = Math.min(chunkStart + BR_DOWNLOAD_CHUNK_SIZE - 1, totalSize - 1);
+            final Request request = buildChunkRequest(url, chunkStart, chunkEnd);
 
-            final int responseCode = response.code();
-            if (responseCode == HTTP_RANGE_NOT_SATISFIABLE) {
-                // Reset and try once again without range.
-                alreadyDownloaded = 0;
-                Request retryRequest = buildDownloadRequest(url);
-                try (Response retryResponse = client.newCall(retryRequest).execute()) {
-                    ResponseBody retryBody = retryResponse.body();
-                    if (retryResponse.isSuccessful()) {
-                        downloadContent(retryBody.byteStream());
-                        return true;
-                    }
-                    printHttpErrorMessage(retryResponse);
-                    return false;
+            try (Response response = http11Client.newCall(request).execute()) {
+                final ResponseBody body = response.body();
+                if (response.code() == HTTP_PARTIAL_CONTENT) {
+                    transferContent(body.byteStream());
+                    retryCount = 0;
+                    continue;
                 }
-            }
 
-            if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
-                logger.error("HTTP error 404 received for URL: {}", request.url().toString());
-                state = HttpDownloadState.ERROR;
-                start.status = Start.STATUS_ERR;
+                if (response.code() == HTTP_RANGE_NOT_SATISFIABLE && alreadyDownloaded >= totalSize) {
+                    break;
+                }
+
+                if (response.code() == HttpURLConnection.HTTP_NOT_FOUND) {
+                    logger.error("HTTP error 404 received for URL: {}", request.url());
+                    state = HttpDownloadState.ERROR;
+                    start.status = Start.STATUS_ERR;
+                }
+                else {
+                    printHttpErrorMessage(response);
+                }
+                return false;
             }
-            else {
-                printHttpErrorMessage(response);
+            catch (IOException ex) {
+                if (isRetryableStreamException(ex) && alreadyDownloaded > chunkStart) {
+                    logger.warn("Transient BR chunk error after partial progress, resuming at byte {}",
+                            alreadyDownloaded, ex);
+                    retryCount = 0;
+                    waitForRetry(0, ex);
+                    continue;
+                }
+
+                if (isRetryableStreamException(ex) && retryCount < BR_MAX_CHUNK_RETRIES) {
+                    retryCount++;
+                    waitForRetry(retryCount, ex);
+                    continue;
+                }
+                throw ex;
             }
-            return false;
         }
+
+        if (alreadyDownloaded >= totalSize) {
+            finishSuccessfulDownload();
+        }
+        return true;
     }
 
     private boolean isHttp2InternalStreamReset(@NotNull IOException ex) {
@@ -410,8 +387,8 @@ public class DirectHttpDownload extends Thread {
     }
 
     private void waitForRetry(int retryCount, @NotNull IOException ex) {
-        logger.warn("Transient download error (retry {}/{}), resuming at byte {}",
-                retryCount, MAX_TRANSIENT_DOWNLOAD_RETRIES, alreadyDownloaded, ex);
+        logger.warn("Transient BR chunk error (retry {}/{}), resuming at byte {}",
+                retryCount, BR_MAX_CHUNK_RETRIES, alreadyDownloaded, ex);
         try {
             Thread.sleep(RETRY_DELAY_MILLIS);
         }
@@ -433,29 +410,16 @@ public class DirectHttpDownload extends Thread {
             if (!cancelDownload()) {
                 HttpUrl url = HttpUrl.parse(datenDownload.arr[DatenDownload.DOWNLOAD_URL]);
                 assert url != null;
-                datenDownload.mVFilmSize.setSize(getContentLengthWithFallback(url));
-                datenDownload.mVFilmSize.setAktSize(0);
-                int retryCount = 0;
-                boolean forceHttp11 = false;
+                logger.info("Using dedicated BR HTTP/1.1 chunked downloader for sender {}", datenDownload.arr[DatenDownload.DOWNLOAD_SENDER]);
+                final long contentLength = getContentLength(url);
+                datenDownload.mVFilmSize.setSize(contentLength);
+                prepareDownloadContent();
 
-                while (!start.stoppen) {
-                    final OkHttpClient client = forceHttp11 ? http11Client : httpClient;
-                    try {
-                        if (executeDownloadRequest(url, client)) {
-                            break;
-                        }
-                        // Non-successful HTTP response was handled already.
-                        break;
-                    }
-                    catch (IOException ex) {
-                        if (isRetryableStreamException(ex) && retryCount < MAX_TRANSIENT_DOWNLOAD_RETRIES) {
-                            retryCount++;
-                            forceHttp11 = true;
-                            waitForRetry(retryCount, ex);
-                            continue;
-                        }
-                        throw ex;
-                    }
+                if (contentLength > 0) {
+                    executeChunkedDownloadRequest(url, contentLength);
+                }
+                else {
+                    throw new IOException("Could not determine content length for BR download");
                 }
             }
         }
@@ -488,12 +452,12 @@ public class DirectHttpDownload extends Thread {
 
     private void waitForPendingDownloads() {
         try {
-            if (infoFuture != null)
+            if (infoFuture != null) {
                 infoFuture.get();
-
-            if (subtitleFuture != null)
+            }
+            if (subtitleFuture != null) {
                 subtitleFuture.get();
-
+            }
         }
         catch (InterruptedException | ExecutionException e) {
             logger.error("waitForPendingDownloads().", e);
@@ -502,7 +466,6 @@ public class DirectHttpDownload extends Thread {
 
     private boolean cancelDownload() {
         if (!file.exists()) {
-            // dann ist alles OK
             return false;
         }
 
@@ -522,7 +485,6 @@ public class DirectHttpDownload extends Thread {
                 wait(100);
             }
             catch (Exception ignored) {
-
             }
         }
         return retAbbrechen;
@@ -539,12 +501,11 @@ public class DirectHttpDownload extends Thread {
     private boolean abbrechen_() {
         boolean result = false;
         if (file.exists()) {
-            DialogContinueDownload dialogContinueDownload = new DialogContinueDownload(MediathekGui.ui(), datenDownload, true /*weiterführen*/);
+            DialogContinueDownload dialogContinueDownload = new DialogContinueDownload(MediathekGui.ui(), datenDownload, true);
             dialogContinueDownload.setVisible(true);
 
             switch (dialogContinueDownload.getResult()) {
                 case CANCELLED:
-                    // dann wars das
                     state = HttpDownloadState.CANCEL;
                     result = true;
                     break;
@@ -564,5 +525,4 @@ public class DirectHttpDownload extends Thread {
         }
         return result;
     }
-
 }

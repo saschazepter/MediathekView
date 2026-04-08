@@ -411,7 +411,13 @@ public class StarterClass {
                 downloadThread.start();
             }
             case DatenDownload.ART_DOWNLOAD -> {
-                downloadThread = new DirectHttpDownload(daten, datenDownload);
+                if ("BR".equals(datenDownload.arr[DatenDownload.DOWNLOAD_SENDER])) {
+                    // BR's CloudFront/Akamai path truncates some large transfers, so use the dedicated chunked downloader.
+                    downloadThread = new BrDirectDownload(daten, datenDownload);
+                }
+                else {
+                    downloadThread = new DirectHttpDownload(daten, datenDownload);
+                }
                 downloadThread.start();
             }
             default -> logger.error("StarterClass.Starten - Switch-default");
