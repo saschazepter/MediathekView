@@ -74,6 +74,11 @@ class BrDirectDownload(
     private var subtitleJob: Deferred<Unit>? = null
     private var previousProgress = 0L
     private var startProgress = -1L
+    private val bandwidthStartedAtNanos = System.nanoTime()
+    private var bandwidthWindowStartNanos = bandwidthStartedAtNanos
+    private var totalBytesRead = 0L
+    private var bandwidthWindowBytesRead = 0L
+    private var currentBandwidth = 0L
 
     init {
         messageBus.subscribe(this)
@@ -285,6 +290,7 @@ class BrDirectDownload(
                             alreadyDownloaded += len
                             bufferedSink.write(buffer, 0, len)
                             datenDownload.mVFilmSize.addAktSize(len.toLong())
+                            val liveBandwidth = updateBandwidth(len.toLong())
 
                             if (displayedBytes != datenDownload.mVFilmSize.aktSize) {
                                 displayedBytes = datenDownload.mVFilmSize.aktSize
@@ -313,9 +319,8 @@ class BrDirectDownload(
                                 }
                             }
 
-                            val currentBandwidth = bandwidthInput.bandwidth
-                            if (currentBandwidth != start.bandbreite) {
-                                start.bandbreite = currentBandwidth
+                            if (liveBandwidth != start.bandbreite) {
+                                start.bandbreite = liveBandwidth
                                 notifyProgress = true
                             }
 
@@ -326,11 +331,47 @@ class BrDirectDownload(
                         }
 
                         bufferedSink.flush()
-                        start.bandbreite = bandwidthInput.sumBandwidth
+                        start.bandbreite = overallAverageBandwidth()
                     }
                 }
             }
         }
+    }
+
+    private fun updateBandwidth(bytesRead: Long): Long {
+        totalBytesRead += bytesRead
+        bandwidthWindowBytesRead += bytesRead
+        refreshCurrentBandwidth(System.nanoTime())
+        return currentBandwidth
+    }
+
+    private fun overallAverageBandwidth(): Long {
+        if (totalBytesRead <= 0L) {
+            return 0L
+        }
+
+        val elapsedNanos = System.nanoTime() - bandwidthStartedAtNanos
+        if (elapsedNanos <= 0L) {
+            return 0L
+        }
+
+        return totalBytesRead * NANOS_PER_SECOND / elapsedNanos
+    }
+
+    private fun refreshCurrentBandwidth(nowNanos: Long) {
+        val elapsedNanos = nowNanos - bandwidthWindowStartNanos
+        if (elapsedNanos < NANOS_PER_SECOND) {
+            return
+        }
+
+        currentBandwidth = if (bandwidthWindowBytesRead > 0L) {
+            bandwidthWindowBytesRead * NANOS_PER_SECOND / elapsedNanos
+        } else {
+            0L
+        }
+
+        bandwidthWindowBytesRead = 0L
+        bandwidthWindowStartNanos = nowNanos
     }
 
     private fun finishSuccessfulDownload() {
@@ -487,6 +528,7 @@ class BrDirectDownload(
         private const val BR_MAX_CHUNK_RETRIES = 25
         private const val BR_DOWNLOAD_CHUNK_SIZE = 16L * 1024L * 1024L
         private const val DOWNLOAD_BUFFER_SIZE = 256 * 1024
+        private const val NANOS_PER_SECOND = 1_000_000_000L
 
         private val brHttp11Dispatcher: Dispatcher = Dispatcher().apply {
             maxRequests = BR_MAX_CONCURRENT_REQUESTS
