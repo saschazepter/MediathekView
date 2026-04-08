@@ -35,19 +35,16 @@ import mediathek.tool.subtitles.MVSubtitle;
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.listener.Handler;
 import okhttp3.*;
-import okio.Okio;
-import okio.Sink;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -229,13 +226,13 @@ public class DirectHttpDownload extends Thread {
 
         datenDownload.interruptRestart();
 
-        Sink fileSink;
+        OutputStream fileSink;
         if (alreadyDownloaded != 0)
-            fileSink = Okio.appendingSink(file);
+            fileSink = Files.newOutputStream(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
         else
-            fileSink = Okio.sink(file);
+            fileSink = Files.newOutputStream(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
         try (fileSink;
-             var bufferedSink = Okio.buffer(fileSink);
+             var bufferedSink = new BufferedOutputStream(fileSink, DOWNLOAD_BUFFER_SIZE);
              var tis = new ThrottlingInputStream(inputStream, rateLimiter);
              var mvis = new MVBandwidthCountingInputStream(tis)) {
             start.mVBandwidthCountingInputStream = mvis;
@@ -302,6 +299,7 @@ public class DirectHttpDownload extends Thread {
                     melden = false;
                 }
             }
+            bufferedSink.flush();
         }
 
         start.bandbreite = start.mVBandwidthCountingInputStream.getSumBandwidth();
