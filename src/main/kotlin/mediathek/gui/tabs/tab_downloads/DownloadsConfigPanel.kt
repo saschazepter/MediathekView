@@ -135,7 +135,7 @@ class DownloadsConfigPanel : JPanel() {
 
     private val spinnerNumDownloads: JSpinner = JSpinner()
     private val cbMaxBandwidth: JCheckBox = JCheckBox()
-    private val cbUseBrDirectDownload: JCheckBox = JCheckBox("BR Spezial-Downloader verwenden")
+    private val cbUseBrDirectDownload: JCheckBox = JCheckBox("BR Alternativ-Downloader verwenden")
     private val spinnerMaxBandwidth: JSpinner = JSpinner()
     private val downloadRateLimitChangeTimer = Timer(300) { fireDownloadRateLimitChangedEvent() }.apply {
         isRepeats = false
@@ -145,7 +145,7 @@ class DownloadsConfigPanel : JPanel() {
         initComponents()
         cbMaxBandwidth.toolTipText = "Bandbreitenbegrenzung aktiviert?"
         cbUseBrDirectDownload.toolTipText =
-            "Verwendet für BR einen dedizierten HTTP/1.1-Downloader mit Chunk-Retries."
+            "Verwendet für BR einen dedizierten Downloader mit Chunk-Retries. Dies kann erheblich langsamer als ein normaler Download sein."
         setupNumDownloadsSpinner()
         setupDownloadRateLimitCheckBox()
         setupDownloadRateLimitSpinner()
