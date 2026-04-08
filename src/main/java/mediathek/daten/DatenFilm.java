@@ -616,7 +616,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     public void setSender(String sender) {
-        this.sender = sender;
+        this.sender = sender == null ? "" : sender;
         invalidateSha256();
     }
 
@@ -625,7 +625,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     public void setThema(String thema) {
-        this.thema = thema;
+        this.thema = thema == null ? "" : thema;
         invalidateSha256();
     }
 

@@ -38,7 +38,6 @@ import mediathek.tool.time.Stopwatch;
 import okhttp3.Request;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
-import okio.Okio;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,6 +48,7 @@ import tools.jackson.core.ObjectReadContext;
 import tools.jackson.core.json.JsonFactory;
 
 import javax.swing.event.EventListenerList;
+import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -585,13 +585,11 @@ public class FilmListReader implements AutoCloseable {
 
             final ProgressMonitor monitor = new ProgressMonitor(source);
 
-            //windows doesn´t like mem-mapped files...causes FileSystemExceptions :(
-            try (var sourceFile = Okio.source(filePath);
-                 var bufferedSource = Okio.buffer(sourceFile);
-                 var is = bufferedSource.inputStream();
-                 InputStream input = new ProgressMonitorInputStream(is, fileSize, monitor);
-                 InputStream in = selectDecompressor(source, input);
-                 JsonParser jp = new JsonFactory().createParser(ObjectReadContext.empty(), in)) {
+            try (var sourceFile = Files.newInputStream(filePath);
+                 var bufferedSource = new BufferedInputStream(sourceFile, 64 * 1024);
+                 var input = new ProgressMonitorInputStream(bufferedSource, fileSize, monitor);
+                 var in = selectDecompressor(source, input);
+                 var jp = new JsonFactory().createParser(ObjectReadContext.empty(), in)) {
                 readData(jp, listeFilme);
             }
         }

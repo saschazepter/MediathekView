@@ -60,7 +60,7 @@ public class ListeFilme extends ArrayList<DatenFilm> {
     }
 
     private static String normalizeKey(String value) {
-        return value.toLowerCase(Locale.ROOT);
+        return value == null ? "" : value.toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -82,7 +82,7 @@ public class ListeFilme extends ArrayList<DatenFilm> {
             mystream = mystream.filter(f -> f.getSender().equals(sender));
 
         return mystream.map(DatenFilm::getThema)
-                .filter(distinctByKey(String::toLowerCase))
+                .filter(distinctByKey(ListeFilme::normalizeKey))
                 .sorted(GermanStringSorter.getInstance()).toList();
     }
 
