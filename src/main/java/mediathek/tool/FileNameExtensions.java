@@ -23,8 +23,21 @@ public final class FileNameExtensions {
     }
 
     public static int getLikelyExtensionDotIndex(String fileName) {
-        final int suffixEnd = getSuffixEnd(fileName);
-        final int lastSeparator = getLastPathSeparator(fileName, suffixEnd);
+        final int lastSeparator = getLastPathSeparator(fileName);
+        final int suffixEnd = getSuffixEnd(fileName, lastSeparator);
+        int lastDot = getLikelyExtensionDotIndex(fileName, suffixEnd, lastSeparator);
+        if (lastDot >= 0) {
+            return lastDot;
+        }
+
+        if (suffixEnd < fileName.length() && looksLikeUrl(fileName, suffixEnd)) {
+            return -1;
+        }
+
+        return getLikelyExtensionDotIndex(fileName, fileName.length(), lastSeparator);
+    }
+
+    private static int getLikelyExtensionDotIndex(String fileName, int suffixEnd, int lastSeparator) {
         final int lastDot = fileName.lastIndexOf('.', suffixEnd - 1);
         if (lastDot < 0 || lastDot <= lastSeparator) {
             return -1;
@@ -46,9 +59,9 @@ public final class FileNameExtensions {
         );
     }
 
-    private static int getSuffixEnd(String fileName) {
-        final int queryIndex = fileName.indexOf('?');
-        final int fragmentIndex = fileName.indexOf('#');
+    private static int getSuffixEnd(String fileName, int lastSeparator) {
+        final int queryIndex = fileName.indexOf('?', lastSeparator + 1);
+        final int fragmentIndex = fileName.indexOf('#', lastSeparator + 1);
         int suffixEnd = fileName.length();
         if (queryIndex >= 0) {
             suffixEnd = Math.min(suffixEnd, queryIndex);
@@ -57,6 +70,11 @@ public final class FileNameExtensions {
             suffixEnd = Math.min(suffixEnd, fragmentIndex);
         }
         return suffixEnd;
+    }
+
+    private static boolean looksLikeUrl(String fileName, int delimiterIndex) {
+        final int schemeIndex = fileName.indexOf("://");
+        return schemeIndex > 0 && schemeIndex < delimiterIndex;
     }
 
     public static boolean looksLikeExtension(String suffix) {

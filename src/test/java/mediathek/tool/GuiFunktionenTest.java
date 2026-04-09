@@ -39,6 +39,15 @@ class GuiFunktionenTest {
     }
 
     @Test
+    void getFileNameWithoutExtension_fileWithQuestionMark() {
+        final var testStr = "/Users/derreisende/Downloads/mediathek/Die Nordreportage/Die Nordreportage-Wie geht das? Fertigung eines Windrades-0143177029.mp4";
+        final var expected = "/Users/derreisende/Downloads/mediathek/Die Nordreportage/Die Nordreportage-Wie geht das? Fertigung eines Windrades-0143177029";
+        var res = GuiFunktionen.getFileNameWithoutExtension(testStr);
+
+        Assertions.assertEquals(expected, res);
+    }
+
+    @Test
     void concatPaths() {
         String sep = java.io.File.separator;
         Assertions.assertEquals("", GuiFunktionen.concatPaths(null, null));
