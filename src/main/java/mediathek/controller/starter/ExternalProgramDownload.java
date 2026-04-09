@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 
 /**
@@ -41,7 +42,6 @@ public class ExternalProgramDownload extends Thread {
     private final Start start;
     private File file;
     private boolean retAbbrechen;
-    private boolean dialogAbbrechenIsVis;
     private HttpDownloadState state = HttpDownloadState.DOWNLOAD;
     private CompletableFuture<Void> infoFuture;
     private CompletableFuture<Void> subtitleFuture;
@@ -120,8 +120,9 @@ public class ExternalProgramDownload extends Thread {
                                 }
                             } catch (Exception ex) {
                                 try {
-                                    this.wait(2000);
+                                    Thread.sleep(2000);
                                 } catch (InterruptedException ignored) {
+                                    Thread.currentThread().interrupt();
                                 }
                             }
                             break;
@@ -256,21 +257,24 @@ public class ExternalProgramDownload extends Thread {
             return false;
         }
 
-        dialogAbbrechenIsVis = true;
         retAbbrechen = true;
         if (SwingUtilities.isEventDispatchThread()) {
             retAbbrechen = abbrechen_();
         } else {
+            CountDownLatch dialogFinished = new CountDownLatch(1);
             SwingUtilities.invokeLater(() ->
             {
-                retAbbrechen = abbrechen_();
-                dialogAbbrechenIsVis = false;
+                try {
+                    retAbbrechen = abbrechen_();
+                } finally {
+                    dialogFinished.countDown();
+                }
             });
-        }
-        while (dialogAbbrechenIsVis) {
             try {
-                wait(100);
-            } catch (Exception ignored) {
+                dialogFinished.await();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                return true;
             }
         }
         return retAbbrechen;
