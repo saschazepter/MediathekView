@@ -145,7 +145,7 @@ class DownloadsConfigPanel : JPanel() {
         initComponents()
         cbMaxBandwidth.toolTipText = "Bandbreitenbegrenzung aktiviert?"
         cbUseBrDirectDownload.toolTipText =
-            "Verwendet für BR einen dedizierten Downloader mit Chunk-Retries. Dies kann erheblich langsamer als ein normaler Download sein."
+            "<html>Aktiviert für BR einen alternative Downloader.<br/>Dies kann erheblich langsamer als ein normaler Download sein.</html>"
         setupNumDownloadsSpinner()
         setupDownloadRateLimitCheckBox()
         setupDownloadRateLimitSpinner()
