@@ -61,9 +61,9 @@ class BrDirectDownload(
     private val start = datenDownload.start
     private val rateLimiter = ByteRateLimiter(downloadLimit())
     private val messageBus: MBassador<BaseEvent> = MessageBus.messageBus
-    private val http11Client: OkHttpClient = MVHttpClient.getInstance().httpClient.newBuilder()
+    private val client: OkHttpClient = MVHttpClient.getInstance().httpClient.newBuilder()
         .protocols(listOf(Protocol.HTTP_1_1))
-        .dispatcher(brHttp11Dispatcher)
+        .dispatcher(dispatcher)
         .build()
 
     private var state = HttpDownloadState.DOWNLOAD
@@ -158,7 +158,7 @@ class BrDirectDownload(
             .header("Connection", "close")
             .build()
 
-        http11Client.newCall(request).execute().use { response ->
+        client.newCall(request).execute().use { response ->
             if (!response.isSuccessful) {
                 return -1
             }
@@ -207,7 +207,7 @@ class BrDirectDownload(
             val request = buildChunkRequest(url, chunkStart, chunkEnd)
 
             try {
-                http11Client.newCall(request).execute().use { response ->
+                client.newCall(request).execute().use { response ->
                     when (response.code) {
                         HTTP_PARTIAL_CONTENT -> {
                             val body = response.body
@@ -550,7 +550,7 @@ class BrDirectDownload(
         private const val DOWNLOAD_BUFFER_SIZE = 256 * 1024
         private const val NANOS_PER_SECOND = 1_000_000_000L
 
-        private val brHttp11Dispatcher: Dispatcher = Dispatcher().apply {
+        private val dispatcher: Dispatcher = Dispatcher().apply {
             maxRequests = BR_MAX_CONCURRENT_REQUESTS
             maxRequestsPerHost = BR_MAX_CONCURRENT_REQUESTS_PER_HOST
         }
