@@ -63,8 +63,6 @@ public class DirectHttpDownload extends Thread {
      * Windows is especially sensitive here when the limiter is driven by many 1 KiB reads per second.
      */
     private static final int DOWNLOAD_BUFFER_SIZE = 256 * 1024;
-    private static final boolean DEBUG_FORCE_STREAM_RESET_ONCE = Boolean.getBoolean("mv.debug.forceHttp2ResetOnce");
-    private static final long DEBUG_FORCE_STREAM_RESET_AFTER_BYTES = Long.getLong("mv.debug.forceHttp2ResetAfterBytes", 512L * 1024L);
     private static final Logger logger = LogManager.getLogger(DirectHttpDownload.class);
     private final Daten daten;
     private final DatenDownload datenDownload;
@@ -83,7 +81,6 @@ public class DirectHttpDownload extends Thread {
      */
     private long alreadyDownloaded;
     private File file;
-    private boolean debugStreamResetInjected;
     private boolean retAbbrechen;
     private boolean dialogAbbrechenIsVis;
     private CompletableFuture<Void> infoFuture;
@@ -221,11 +218,9 @@ public class DirectHttpDownload extends Thread {
      */
     private void downloadContent(InputStream inputStream) throws IOException {
         startInfoFileDownload();
-
         downloadSubtitleFile();
-
         datenDownload.interruptRestart();
-
+        datenDownload.mVFilmSize.setAktSize(alreadyDownloaded);
         OutputStream fileSink;
         if (alreadyDownloaded != 0)
             fileSink = Files.newOutputStream(file.toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
@@ -236,7 +231,6 @@ public class DirectHttpDownload extends Thread {
              var tis = new ThrottlingInputStream(inputStream, rateLimiter);
              var mvis = new MVBandwidthCountingInputStream(tis)) {
             start.mVBandwidthCountingInputStream = mvis;
-            datenDownload.mVFilmSize.addAktSize(alreadyDownloaded);
             final byte[] buffer = new byte[DOWNLOAD_BUFFER_SIZE];
             long p, pp = 0, startProzent = -1;
             int len;
@@ -244,13 +238,6 @@ public class DirectHttpDownload extends Thread {
             boolean melden = false;
 
             while (!start.stoppen) {
-                if (DEBUG_FORCE_STREAM_RESET_ONCE
-                        && !debugStreamResetInjected
-                        && alreadyDownloaded >= DEBUG_FORCE_STREAM_RESET_AFTER_BYTES) {
-                    debugStreamResetInjected = true;
-                    throw new IOException("stream was reset: INTERNAL_ERROR (debug injection)");
-                }
-
                 len = start.mVBandwidthCountingInputStream.read(buffer);
                 if (len == -1) {
                     break;
@@ -303,6 +290,10 @@ public class DirectHttpDownload extends Thread {
         }
 
         start.bandbreite = start.mVBandwidthCountingInputStream.getSumBandwidth();
+        finishSuccessfulDownload();
+    }
+
+    private void finishSuccessfulDownload() {
         if (!start.stoppen) {
             if (datenDownload.quelle == DatenDownload.QUELLE_BUTTON) {
                 // direkter Start mit dem Button

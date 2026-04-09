@@ -28,10 +28,7 @@ import mediathek.daten.DatenPset;
 import mediathek.gui.messages.ButtonStartEvent;
 import mediathek.gui.messages.StartEvent;
 import mediathek.mac.FinderCommentService;
-import mediathek.tool.ApplicationConfiguration;
-import mediathek.tool.BandwidthFormatter;
-import mediathek.tool.FileUtils;
-import mediathek.tool.MessageBus;
+import mediathek.tool.*;
 import mediathek.tool.notification.MessageType;
 import mediathek.tool.notification.NotificationMessage;
 import org.apache.commons.lang3.SystemUtils;
@@ -394,6 +391,26 @@ public class StarterClass {
         return download;
     }
 
+    protected Thread selectDirectDownload(DatenDownload datenDownload) {
+        Thread downloadThread;
+
+        var useCdnAwareDirectDownload = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.DOWNLOAD_USE_CDN_AWARE_DIRECT_DOWNLOAD, true);
+        var result = CdnDetector.detect(datenDownload.arr[DatenDownload.DOWNLOAD_URL]);
+        if (useCdnAwareDirectDownload && CdnDetector.isCdn(result)) {
+            logger.trace("CDN detected: {}", result);
+            downloadThread = new CdnAwareDirectDownloadThread(datenDownload);
+        }
+        else {
+            if (!useCdnAwareDirectDownload)
+                logger.info("CDN detection is disabled");
+            else
+                logger.trace("Not a CDN detected: {}", result);
+            downloadThread = new DirectHttpDownload(daten, datenDownload);
+        }
+
+        return downloadThread;
+    }
+
     /**
      * This will start the download process.
      *
@@ -411,7 +428,7 @@ public class StarterClass {
                 downloadThread.start();
             }
             case DatenDownload.ART_DOWNLOAD -> {
-                downloadThread = new DirectHttpDownload(daten, datenDownload);
+                downloadThread = selectDirectDownload(datenDownload);
                 downloadThread.start();
             }
             default -> logger.error("StarterClass.Starten - Switch-default");
