@@ -71,7 +71,7 @@ public class ExternalProgramDownload extends Thread {
     }
 
     @Override
-    public synchronized void run() {
+    public void run() {
         long filesize = -1;
         int stat = STAT_START;
 
