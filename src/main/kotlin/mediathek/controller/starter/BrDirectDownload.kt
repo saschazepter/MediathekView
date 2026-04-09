@@ -19,6 +19,7 @@
 package mediathek.controller.starter
 
 import kotlinx.coroutines.*
+import mediathek.config.Config
 import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.controller.ByteRateLimiter
@@ -213,15 +214,18 @@ class BrDirectDownload(
                             transferContent(body.byteStream())
                             retryCount = 0
                         }
+
                         HTTP_RANGE_NOT_SATISFIABLE if alreadyDownloaded >= totalSize -> {
                             break
                         }
+
                         HttpURLConnection.HTTP_NOT_FOUND -> {
                             logger.error("HTTP error 404 received for URL: {}", request.url)
                             state = HttpDownloadState.ERROR
                             start.status = Start.STATUS_ERR
                             return
                         }
+
                         else -> {
                             printHttpErrorMessage(response)
                             return
@@ -231,11 +235,18 @@ class BrDirectDownload(
             } catch (ex: IOException) {
                 when {
                     isRetryableStreamException(ex) && alreadyDownloaded > chunkStart -> {
-                        logger.warn(
-                            "Transient BR chunk error after partial progress, resuming at byte {}",
-                            alreadyDownloaded,
-                            ex
-                        )
+                        if (Config.isDebugModeEnabled())
+                            logger.warn(
+                                "Transient BR chunk error after partial progress, resuming at byte {}",
+                                alreadyDownloaded,
+                                ex
+                            )
+                        else {
+                            logger.warn(
+                                "Transient BR chunk error after partial progress, resuming at byte {}",
+                                alreadyDownloaded
+                            )
+                        }
                         retryCount = 0
                         waitForRetry(0, ex)
                     }
@@ -407,20 +418,29 @@ class BrDirectDownload(
     private fun isRetryableStreamException(ex: IOException): Boolean {
         val lower = ex.message?.lowercase(Locale.ROOT) ?: return false
         return lower.contains("stream was reset") ||
-            lower.contains("unexpected end of stream") ||
-            lower.contains("connection reset") ||
-            lower.contains("broken pipe") ||
-            lower.contains("remote host terminated handshake")
+                lower.contains("unexpected end of stream") ||
+                lower.contains("connection reset") ||
+                lower.contains("broken pipe") ||
+                lower.contains("remote host terminated handshake")
     }
 
     private suspend fun waitForRetry(retryCount: Int, ex: IOException) {
-        logger.warn(
-            "Transient BR chunk error (retry {}/{}), resuming at byte {}",
-            retryCount,
-            BR_MAX_CHUNK_RETRIES,
-            alreadyDownloaded,
-            ex
-        )
+        if (Config.isDebugModeEnabled()) {
+            logger.warn(
+                "Transient BR chunk error (retry {}/{}), resuming at byte {}",
+                retryCount,
+                BR_MAX_CHUNK_RETRIES,
+                alreadyDownloaded,
+                ex
+            )
+        } else {
+            logger.warn(
+                "Transient BR chunk error (retry {}/{}), resuming at byte {}",
+                retryCount,
+                BR_MAX_CHUNK_RETRIES,
+                alreadyDownloaded
+            )
+        }
         delay(RETRY_DELAY_MILLIS.milliseconds)
     }
 
