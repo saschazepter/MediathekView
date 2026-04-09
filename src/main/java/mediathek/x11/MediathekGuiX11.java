@@ -76,6 +76,7 @@ public class MediathekGuiX11 extends MediathekGui {
         }
     }
 
+    @SuppressWarnings("java:S2095")
     @Override
     protected INotificationCenter getNotificationCenter() {
         var notificationCenter = new LinuxNotificationCenter();
