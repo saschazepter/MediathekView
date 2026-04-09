@@ -412,7 +412,7 @@ public class StarterClass {
             }
             case DatenDownload.ART_DOWNLOAD -> {
                 if ("BR".equals(datenDownload.arr[DatenDownload.DOWNLOAD_SENDER])
-                        && ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.DOWNLOAD_USE_BR_DIRECT_DOWNLOAD, false)) {
+                        && ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.DOWNLOAD_USE_BR_DIRECT_DOWNLOAD, true)) {
                     // BR's CloudFront/Akamai path truncates some large transfers, so use the dedicated chunked downloader.
                     downloadThread = new BrDirectDownload(datenDownload);
                 }

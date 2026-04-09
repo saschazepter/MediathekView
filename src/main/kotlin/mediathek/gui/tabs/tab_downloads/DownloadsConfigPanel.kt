@@ -74,7 +74,7 @@ class DownloadsConfigPanel : JPanel() {
     private fun setupBrDirectDownloadCheckBox() {
         val config = ApplicationConfiguration.getConfiguration()
         cbUseBrDirectDownload.isSelected =
-            config.getBoolean(ApplicationConfiguration.DOWNLOAD_USE_BR_DIRECT_DOWNLOAD, false)
+            config.getBoolean(ApplicationConfiguration.DOWNLOAD_USE_BR_DIRECT_DOWNLOAD, true)
         cbUseBrDirectDownload.addActionListener {
             config.setProperty(
                 ApplicationConfiguration.DOWNLOAD_USE_BR_DIRECT_DOWNLOAD,
