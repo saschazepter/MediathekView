@@ -145,6 +145,8 @@ public class ListePsetVorlagen extends ArrayList<String[]> {
             XMLStreamReader parser = null;
             XMLInputFactory inFactory = XMLInputFactory.newInstance();
             inFactory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
+            inFactory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+            inFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
 
             var url = Konstanten.URL_MEDIATHEKVIEW_RESOURCES.resolve(Konstanten.PSET_PROGRAM_GROUP_LIST_PATH);
             assert url != null;
@@ -236,6 +238,8 @@ public class ListePsetVorlagen extends ArrayList<String[]> {
         try {
             XMLInputFactory inFactory = XMLInputFactory.newInstance();
             inFactory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
+            inFactory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+            inFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
             parser = inFactory.createXMLStreamReader(in);
             while (parser.hasNext()) {
                 int event = parser.next();

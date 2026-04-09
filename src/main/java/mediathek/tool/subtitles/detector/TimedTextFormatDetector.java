@@ -86,6 +86,8 @@ public final class TimedTextFormatDetector {
         try (InputStream in = Files.newInputStream(path)) {
             XMLInputFactory factory = XMLInputFactory.newFactory();
             factory.setProperty(XMLInputFactory.IS_NAMESPACE_AWARE, true);
+            factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+            factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
 
             var reader = factory.createXMLStreamReader(in);
 

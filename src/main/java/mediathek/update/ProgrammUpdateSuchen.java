@@ -132,6 +132,8 @@ public class ProgrammUpdateSuchen {
 
         XMLInputFactory inFactory = XMLInputFactory.newInstance();
         inFactory.setProperty(XMLInputFactory.IS_COALESCING, Boolean.FALSE);
+        inFactory.setProperty(XMLInputFactory.SUPPORT_DTD, Boolean.FALSE);
+        inFactory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, Boolean.FALSE);
 
         var url = Konstanten.URL_MEDIATHEKVIEW_RESOURCES.resolve(Konstanten.PROGRAM_VERSION_PATH);
         assert url != null;
