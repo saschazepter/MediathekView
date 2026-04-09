@@ -124,6 +124,7 @@ final class AboHistoryDatabaseBootstrapper {
         }
     }
 
+    @SuppressWarnings("java:S2077")
     private void setSchemaVersion(Statement statement, int version) throws SQLException {
         statement.executeUpdate("PRAGMA user_version=" + version);
     }
