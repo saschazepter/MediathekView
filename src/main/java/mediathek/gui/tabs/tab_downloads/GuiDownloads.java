@@ -59,22 +59,12 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GuiDownloads extends AGuiTabPanel {
     public static final String NAME = "Downloads";
-    private static final String COMBO_DISPLAY_ALL = "alle";
-    private static final String COMBO_DISPLAY_DOWNLOADS_ONLY = "nur Downloads";
-    private static final String COMBO_DISPLAY_ABOS_ONLY = "nur Abos";
-    private static final String COMBO_VIEW_ALL = "alle";
-    private static final String COMBO_VIEW_NOT_STARTED = "nicht gestartet";
-    private static final String COMBO_VIEW_STARTED = "gestartet";
-    private static final String COMBO_VIEW_WAITING = "nur wartende";
-    private static final String COMBO_VIEW_RUN_ONLY = "nur laufende";
-    private static final String COMBO_VIEW_FINISHED_ONLY = "nur abgeschlossene";
     private static final String ACTION_MAP_KEY_EDIT_DOWNLOAD = "dl_aendern";
     private static final String ACTION_MAP_KEY_DELETE_DOWNLOAD = "dl_delete";
     private static final String ACTION_MAP_KEY_MARK_AS_SEEN = "seen";
@@ -227,18 +217,18 @@ public class GuiDownloads extends AGuiTabPanel {
     }
 
     private void setupDisplayCategories() {
-        final EventList<String> displaySelectionList = GlazedLists.eventListOf(COMBO_DISPLAY_ALL, COMBO_DISPLAY_DOWNLOADS_ONLY, COMBO_DISPLAY_ABOS_ONLY);
+        final EventList<String> displaySelectionList = GlazedLists.eventListOf(DisplayFilter.ALL, DisplayFilter.DOWNLOADS_ONLY, DisplayFilter.ABOS_ONLY);
         cbDisplayCategories.setModel(GlazedListsSwing.eventComboBoxModelWithThreadProxyList(displaySelectionList));
-        displayFilter = DisplayFilter.from(config.getString(ApplicationConfiguration.DOWNLOAD_DISPLAY_FILTER, COMBO_DISPLAY_ALL));
+        displayFilter = DisplayFilter.from(config.getString(ApplicationConfiguration.DOWNLOAD_DISPLAY_FILTER, DisplayFilter.ALL));
         cbDisplayCategories.getModel().setSelectedItem(displayFilter.selectedItem());
         cbDisplayCategories.addActionListener(new DisplayCategoryListener());
     }
 
     private void setupCheckboxView() {
-        EventList<String> viewSelectionList = GlazedLists.eventListOf(COMBO_VIEW_ALL, COMBO_VIEW_NOT_STARTED,
-                COMBO_VIEW_STARTED, COMBO_VIEW_WAITING, COMBO_VIEW_RUN_ONLY, COMBO_VIEW_FINISHED_ONLY);
+        EventList<String> viewSelectionList = GlazedLists.eventListOf(ViewFilter.ALL, ViewFilter.NOT_STARTED,
+                ViewFilter.STARTED, ViewFilter.WAITING, ViewFilter.RUN_ONLY, ViewFilter.FINISHED_ONLY);
         cbView.setModel(GlazedListsSwing.eventComboBoxModelWithThreadProxyList(viewSelectionList));
-        viewFilter = ViewFilter.from(config.getString(ApplicationConfiguration.DOWNLOAD_VIEW_FILTER, COMBO_VIEW_ALL));
+        viewFilter = ViewFilter.from(config.getString(ApplicationConfiguration.DOWNLOAD_VIEW_FILTER, ViewFilter.ALL));
         cbView.getModel().setSelectedItem(viewFilter.selectedItem());
         cbView.addActionListener(new ViewCategoryListener());
     }
@@ -979,69 +969,4 @@ public class GuiDownloads extends AGuiTabPanel {
         }
     }
 
-    private record ViewFilter(
-            boolean onlyNotStarted,
-            boolean onlyStarted,
-            boolean onlyWaiting,
-            boolean onlyFinished,
-            boolean onlyRun) {
-
-        static ViewFilter all() {
-            return new ViewFilter(false, false, false, false, false);
-        }
-
-        String selectedItem() {
-            if (onlyNotStarted) {
-                return COMBO_VIEW_NOT_STARTED;
-            }
-            if (onlyStarted) {
-                return COMBO_VIEW_STARTED;
-            }
-            if (onlyWaiting) {
-                return COMBO_VIEW_WAITING;
-            }
-            if (onlyFinished) {
-                return COMBO_VIEW_FINISHED_ONLY;
-            }
-            if (onlyRun) {
-                return COMBO_VIEW_RUN_ONLY;
-            }
-            return COMBO_VIEW_ALL;
-        }
-
-        static ViewFilter from(Object selectedItem) {
-            return switch (Objects.toString(selectedItem, COMBO_VIEW_ALL)) {
-                case COMBO_VIEW_NOT_STARTED -> new ViewFilter(true, false, false, false, false);
-                case COMBO_VIEW_STARTED -> new ViewFilter(false, true, false, false, false);
-                case COMBO_VIEW_WAITING -> new ViewFilter(false, false, true, false, false);
-                case COMBO_VIEW_FINISHED_ONLY -> new ViewFilter(false, false, false, true, false);
-                case COMBO_VIEW_RUN_ONLY -> new ViewFilter(false, false, false, false, true);
-                default -> all();
-            };
-        }
-    }
-
-    private record DisplayFilter(boolean onlyAbos, boolean onlyDownloads) {
-        static DisplayFilter all() {
-            return new DisplayFilter(false, false);
-        }
-
-        String selectedItem() {
-            if (onlyDownloads) {
-                return COMBO_DISPLAY_DOWNLOADS_ONLY;
-            }
-            if (onlyAbos) {
-                return COMBO_DISPLAY_ABOS_ONLY;
-            }
-            return COMBO_DISPLAY_ALL;
-        }
-
-        static DisplayFilter from(Object selectedItem) {
-            return switch (Objects.toString(selectedItem, COMBO_DISPLAY_ALL)) {
-                case COMBO_DISPLAY_DOWNLOADS_ONLY -> new DisplayFilter(false, true);
-                case COMBO_DISPLAY_ABOS_ONLY -> new DisplayFilter(true, false);
-                default -> all();
-            };
-        }
-    }
 }
