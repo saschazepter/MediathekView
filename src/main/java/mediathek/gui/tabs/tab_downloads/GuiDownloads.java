@@ -18,9 +18,6 @@
 
 package mediathek.gui.tabs.tab_downloads;
 
-import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.swing.GlazedListsSwing;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.config.MVConfig;
@@ -51,7 +48,10 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.awt.event.KeyEvent;
 import java.io.File;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -104,13 +104,11 @@ public class GuiDownloads extends AGuiTabPanel {
     private final Configuration config = ApplicationConfiguration.getConfiguration();
     private final MarkFilmAsSeenAction markFilmAsSeenAction = new MarkFilmAsSeenAction();
     private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
+    private final DownloadsFilterController filterController =
+            new DownloadsFilterController(displayFilterToolBar, config, this::reloadTable);
     private final DownloadStartInfoProperty startInfoProperty = new DownloadStartInfoProperty();
     private final DownloadsStatusBar statusBar = new DownloadsStatusBar(startInfoProperty);
     private final DownloadSizeLookupService downloadSizeLookupService = new DownloadSizeLookupService(this::reloadTable);
-    private final JComboBox<String> cbDisplayCategories = displayFilterToolBar.getDisplayCategoriesComboBox();
-    private final JComboBox<String> cbView = displayFilterToolBar.getViewComboBox();
-    private DisplayFilter displayFilter = DisplayFilter.all();
-    private ViewFilter viewFilter = ViewFilter.all();
     private boolean loadFilmlist;
     /**
      * The internally used model.
@@ -140,9 +138,7 @@ public class GuiDownloads extends AGuiTabPanel {
         initTable();
 
         addListenerMediathekView();
-        setupDisplayCategories();
-
-        setupCheckboxView();
+        filterController.install();
 
         if (Taskbar.isTaskbarSupported())
             setupTaskbarMenu();
@@ -214,23 +210,6 @@ public class GuiDownloads extends AGuiTabPanel {
     private void setupDownloadListTable() {
         tabelle = new MVDownloadsTable();
         downloadListScrollPane.setViewportView(tabelle);
-    }
-
-    private void setupDisplayCategories() {
-        final EventList<String> displaySelectionList = GlazedLists.eventListOf(DisplayFilter.ALL, DisplayFilter.DOWNLOADS_ONLY, DisplayFilter.ABOS_ONLY);
-        cbDisplayCategories.setModel(GlazedListsSwing.eventComboBoxModelWithThreadProxyList(displaySelectionList));
-        displayFilter = DisplayFilter.from(config.getString(ApplicationConfiguration.DOWNLOAD_DISPLAY_FILTER, DisplayFilter.ALL));
-        cbDisplayCategories.getModel().setSelectedItem(displayFilter.selectedItem());
-        cbDisplayCategories.addActionListener(new DisplayCategoryListener());
-    }
-
-    private void setupCheckboxView() {
-        EventList<String> viewSelectionList = GlazedLists.eventListOf(ViewFilter.ALL, ViewFilter.NOT_STARTED,
-                ViewFilter.STARTED, ViewFilter.WAITING, ViewFilter.RUN_ONLY, ViewFilter.FINISHED_ONLY);
-        cbView.setModel(GlazedListsSwing.eventComboBoxModelWithThreadProxyList(viewSelectionList));
-        viewFilter = ViewFilter.from(config.getString(ApplicationConfiguration.DOWNLOAD_VIEW_FILTER, ViewFilter.ALL));
-        cbView.getModel().setSelectedItem(viewFilter.selectedItem());
-        cbView.addActionListener(new ViewCategoryListener());
     }
 
     private void initTable() {
@@ -449,6 +428,8 @@ public class GuiDownloads extends AGuiTabPanel {
         // nur Downloads die schon in der Liste sind werden geladen
         tabelle.getSpalten();
 
+        var displayFilter = filterController.getDisplayFilter();
+        var viewFilter = filterController.getViewFilter();
         daten.getListeDownloads().getModel(model,
                 displayFilter.onlyAbos(),
                 displayFilter.onlyDownloads(),
@@ -941,32 +922,6 @@ public class GuiDownloads extends AGuiTabPanel {
                 }
             }
         });
-    }
-
-    /**
-     * This class filters the shown table items based on the made selection.
-     */
-    private final class ViewCategoryListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JComboBox<?> source = (JComboBox<?>) e.getSource();
-            viewFilter = ViewFilter.from(source.getModel().getSelectedItem());
-            config.setProperty(ApplicationConfiguration.DOWNLOAD_VIEW_FILTER, viewFilter.selectedItem());
-            reloadTable();
-        }
-    }
-
-    /**
-     * This class filters the shown table items based on the made selection.
-     */
-    private final class DisplayCategoryListener implements ActionListener {
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            JComboBox<?> source = (JComboBox<?>) e.getSource();
-            displayFilter = DisplayFilter.from(source.getModel().getSelectedItem());
-            config.setProperty(ApplicationConfiguration.DOWNLOAD_DISPLAY_FILTER, displayFilter.selectedItem());
-            reloadTable();
-        }
     }
 
 }
