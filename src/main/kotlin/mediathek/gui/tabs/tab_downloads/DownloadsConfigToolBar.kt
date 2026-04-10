@@ -23,17 +23,10 @@ import mediathek.gui.messages.ParallelDownloadNumberChangedEvent
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.MessageBus.messageBus
 import net.engio.mbassy.listener.Handler
-import net.miginfocom.layout.AC
-import net.miginfocom.layout.CC
-import net.miginfocom.layout.LC
-import net.miginfocom.swing.MigLayout
+import java.awt.Dimension
 import javax.swing.*
-import javax.swing.border.TitledBorder
 
-/**
- * @author Christian Franzke
- */
-class DownloadsConfigPanel : JPanel() {
+class DownloadsConfigToolBar : JToolBar() {
     private fun scheduleDownloadRateLimitChangedEvent() {
         if (downloadRateLimitChangeTimer.isRunning) {
             downloadRateLimitChangeTimer.restart()
@@ -47,7 +40,7 @@ class DownloadsConfigPanel : JPanel() {
         val active = config.getBoolean(
             ApplicationConfiguration.DownloadRateLimiter.ACTIVE, false)
         cbMaxBandwidth.isSelected = active
-            cbMaxBandwidth.addActionListener {
+        cbMaxBandwidth.addActionListener {
             config.setProperty(ApplicationConfiguration.DownloadRateLimiter.ACTIVE, cbMaxBandwidth.isSelected)
             downloadRateLimitChangeTimer.stop()
             fireDownloadRateLimitChangedEvent()
@@ -67,6 +60,7 @@ class DownloadsConfigPanel : JPanel() {
     private fun setupDownloadRateLimitSpinner() {
         spinnerMaxBandwidth.putClientProperty("JComponent.roundRect", true)
         spinnerMaxBandwidth.model = SpinnerNumberModel(0, 0, 1048576, 1)
+        spinnerMaxBandwidth.limitToolbarWidth(100)
         spinnerMaxBandwidth.toolTipText =
             "<html>Bandbreitenbegrenzung eines Downloads in XX Kilobytes pro Sekunde.\n<b><br><u>WICHTIG:</u><br>ENTWEDER<br>den Wert \u00fcber die Pfeiltasten \u00e4ndern<br>ODER<br>Zahlen eingeben UND ENTER-Taste dr\u00fccken!</b>\n</html>" //NON-NLS
 
@@ -81,6 +75,8 @@ class DownloadsConfigPanel : JPanel() {
         val config = ApplicationConfiguration.getConfiguration()
         spinnerNumDownloads.putClientProperty("JComponent.roundRect", true)
         spinnerNumDownloads.model = SpinnerNumberModel(1, 1, 9, 1)
+        spinnerNumDownloads.limitToolbarWidth(80)
+        spinnerNumDownloads.toolTipText = "Anzahl der gleichzeitig möglichen Downloads"
         spinnerNumDownloads.value = config.getInt(ApplicationConfiguration.DOWNLOAD_MAX_SIMULTANEOUS_NUM, 1)
         spinnerNumDownloads.addChangeListener {
             val maxNumDownloads = (spinnerNumDownloads.model.value as Number).toInt()
@@ -91,12 +87,12 @@ class DownloadsConfigPanel : JPanel() {
 
     private fun setupBrDirectDownloadCheckBox() {
         val config = ApplicationConfiguration.getConfiguration()
-        cbUseBrDirectDownload.isSelected =
+        cbUseCdnAwareDirectDownloader.isSelected =
             config.getBoolean(ApplicationConfiguration.DOWNLOAD_USE_CDN_AWARE_DIRECT_DOWNLOAD, true)
-        cbUseBrDirectDownload.addActionListener {
+        cbUseCdnAwareDirectDownloader.addActionListener {
             config.setProperty(
                 ApplicationConfiguration.DOWNLOAD_USE_CDN_AWARE_DIRECT_DOWNLOAD,
-                cbUseBrDirectDownload.isSelected
+                cbUseCdnAwareDirectDownloader.isSelected
             )
         }
     }
@@ -112,48 +108,23 @@ class DownloadsConfigPanel : JPanel() {
     }
 
     private fun initComponents() {
-        layout = MigLayout(
-            LC().insets("0").hideMode(3).fillX(),
-            AC().grow().fill(),
-            AC()
-                .gap("0")
-                .gap("rel")
-        )
+        isFloatable = true
+        name = "Download-Einstellungen"
+        setDownloadsToolBarId("config")
 
-        val downloadsPanel = JPanel().apply {
-            border = TitledBorder("Downloads")
-            layout = MigLayout(
-                LC().insets("0").hideMode(3).align("center", "center"),
-                // columns
-                AC()
-                    .align("center").gap()
-                    .align("label").gap()
-                    .align("left").gap()
-                    .align("center"),
-                // rows
-                AC()
-                    .gap()
-            )
-
-            add(JLabel("gleichzeitig:"), CC().cell(1, 0))
-            add(spinnerNumDownloads, CC().cell(2, 0).width("80:100")) //NON-NLS
-            add(cbMaxBandwidth, CC().cell(0, 1))
-
-            add(JLabel("max. Bandbreite:"), CC().cell(1, 1))
-            add(spinnerMaxBandwidth, CC().cell(2, 1).width("80:100")) //NON-NLS
-
-            add(JLabel("KiB/s"), CC().cell(3, 1))
-        }
-
-        cbUseBrDirectDownload.border = BorderFactory.createEmptyBorder(0, 4, 0, 0)
-
-        add(downloadsPanel, CC().cell(0, 0).growX())
-        add(cbUseBrDirectDownload, CC().cell(0, 1).alignX("left"))
+        add(JLabel("Downloads:"))
+        add(spinnerNumDownloads)
+        addSeparator()
+        add(cbMaxBandwidth)
+        add(spinnerMaxBandwidth)
+        add(JLabel("KiB/s"))
+        addSeparator()
+        add(cbUseCdnAwareDirectDownloader)
     }
 
     private val spinnerNumDownloads: JSpinner = JSpinner()
     private val cbMaxBandwidth: JCheckBox = JCheckBox()
-    private val cbUseBrDirectDownload: JCheckBox = JCheckBox("CDN-aware Downloader verwenden")
+    private val cbUseCdnAwareDirectDownloader: JCheckBox = JCheckBox("CDN-aware Downloader verwenden")
     private val spinnerMaxBandwidth: JSpinner = JSpinner()
     private val downloadRateLimitChangeTimer = Timer(300) { fireDownloadRateLimitChangedEvent() }.apply {
         isRepeats = false
@@ -161,16 +132,29 @@ class DownloadsConfigPanel : JPanel() {
 
     init {
         initComponents()
-        cbMaxBandwidth.toolTipText = "Bandbreitenbegrenzung aktiviert?"
-        cbUseBrDirectDownload.toolTipText =
-            "<html>Aktivieren Sie dies falls direkte Downloads häufig fehlerhaft sind.<br/>" +
-                    "Dies kann jedoch erheblich langsamer als ein normaler Download sein.<br/><br/>" +
-                    "Das Umschalten wird nur <b>vor</b> Downloadstart berücksichtigt!" +
-                    "</html>"
+        cbMaxBandwidth.apply {
+            toolTipText = "Bandbreitenbegrenzung aktiviert?"
+            text = "Limit:"
+            isFocusable = false
+        }
+        cbUseCdnAwareDirectDownloader.apply {
+            isFocusable = false
+            toolTipText =
+                "<html>Aktivieren Sie dies falls direkte Downloads häufig fehlerhaft sind.<br/>" +
+                        "Dies kann jedoch erheblich langsamer als ein normaler Download sein.<br/><br/>" +
+                        "Das Umschalten wird nur <b>vor</b> Downloadstart berücksichtigt!" +
+                        "</html>"
+        }
         setupNumDownloadsSpinner()
         setupDownloadRateLimitCheckBox()
         setupDownloadRateLimitSpinner()
         setupBrDirectDownloadCheckBox()
         messageBus.subscribe(this)
+    }
+
+    private fun JSpinner.limitToolbarWidth(width: Int) {
+        preferredSize = Dimension(width, preferredSize.height)
+        minimumSize = preferredSize
+        maximumSize = preferredSize
     }
 }
