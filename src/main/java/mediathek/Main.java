@@ -516,8 +516,6 @@ public class Main {
                 deleteOldFilmDatabaseFiles();
                 deleteOldUserAgentsDatabase();
 
-                checkMemoryRequirements();
-
                 installSingleInstanceHandler();
 
                 printVersionInformation();
@@ -789,18 +787,6 @@ public class Main {
         final var osxOfficialApp = System.getProperty(Konstanten.MACOS_OFFICIAL_APP);
         if (osxOfficialApp == null || osxOfficialApp.isEmpty() || osxOfficialApp.equalsIgnoreCase("false")) {
             logger.warn("WARN: macOS app NOT launched from official launcher!");
-        }
-    }
-
-    private static void checkMemoryRequirements() {
-        final var maxMem = Runtime.getRuntime().maxMemory();
-        if (maxMem < Konstanten.MINIMUM_MEMORY_THRESHOLD) {
-            JOptionPane.showMessageDialog(null,
-                    "Es werden mindestens 768MB RAM zum Betrieb benötigt.\n" +
-                            "Das Programm wird nun beendet.",
-                    Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE);
-
-            System.exit(3);
         }
     }
 
