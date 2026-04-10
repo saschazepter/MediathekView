@@ -34,7 +34,6 @@ import org.apache.commons.configuration2.Configuration;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdesktop.swingx.JXStatusBar;
 import org.jetbrains.annotations.NotNull;
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 
@@ -101,18 +100,11 @@ public class GuiDownloads extends AGuiTabPanel {
     private final Configuration config = ApplicationConfiguration.getConfiguration();
     private final MarkFilmAsSeenAction markFilmAsSeenAction = new MarkFilmAsSeenAction();
     private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
-    private final JXStatusBar statusBar = new JXStatusBar();
     private final DownloadStartInfoProperty startInfoProperty = new DownloadStartInfoProperty();
+    private final DownloadsStatusBar statusBar = new DownloadsStatusBar(startInfoProperty);
     private final ExecutorService downloadSizeLookupExecutor = Executors.newSingleThreadExecutor(new DownloadSizeLookupThreadFactory());
     private final Set<DatenDownload> downloadSizeLookupsInFlight =
             Collections.newSetFromMap(new ConcurrentHashMap<>());
-    private final AboLabel lblAbos = new AboLabel(startInfoProperty);
-    private final TotalDownloadsLabel totalDownloadsLabel = new TotalDownloadsLabel(startInfoProperty);
-    private final ManualDownloadsInfoLabel manualDownloadsInfoLabel = new ManualDownloadsInfoLabel(startInfoProperty);
-    private final WaitingDownloadsInfoLabel waitingDownloadsInfoLabel = new WaitingDownloadsInfoLabel(startInfoProperty);
-    private final ActiveDownloadsInfoLabel activeDownloadsInfoLabel = new ActiveDownloadsInfoLabel(startInfoProperty);
-    private final FinishedDownloadsInfoLabel finishedDownloadsInfoLabel = new FinishedDownloadsInfoLabel(startInfoProperty);
-    private final FailedDownloadsInfoLabel failedDownloadsInfoLabel = new FailedDownloadsInfoLabel(startInfoProperty);
     private final JComboBox<String> cbDisplayCategories = displayFilterToolBar.getDisplayCategoriesComboBox();
     private final JComboBox<String> cbView = displayFilterToolBar.getViewComboBox();
     private boolean onlyAbos;
@@ -138,7 +130,6 @@ public class GuiDownloads extends AGuiTabPanel {
 
 
         initComponents();
-        setupDownloadListStatusBar();
 
         setupDownloadListTable();
 
@@ -160,16 +151,6 @@ public class GuiDownloads extends AGuiTabPanel {
             setupTaskbarMenu();
 
         tabelle.getTableHeader().setReorderingAllowed(false);
-    }
-
-    private void setupDownloadListStatusBar() {
-        statusBar.add(totalDownloadsLabel);
-        statusBar.add(lblAbos);
-        statusBar.add(manualDownloadsInfoLabel);
-        statusBar.add(activeDownloadsInfoLabel);
-        statusBar.add(waitingDownloadsInfoLabel);
-        statusBar.add(finishedDownloadsInfoLabel);
-        statusBar.add(failedDownloadsInfoLabel);
     }
 
     @Override
