@@ -22,7 +22,8 @@
 - **FEATURE:** URL zum JDownloader kann in *Einstellungen/Erweitert* konfiguriert werden. Vielen Dank an @robNice.
 - **FEATURE:** Filme können an *pyLoad* zum Laden übergeben werden. Vielen Dank an @robNice.
 - **FEATURE:** Das Format der Zeitdarstellung im Tab Filme kann via *Einstellungen\Allgemein* konfiguriert werden.
-- **FEATURE:** Einige Sender wie BR, MDR, NDR verwenden Content Delivery Networks, welche zu fehlerhaften Downloads mit MV führen. MV versucht CDN-Server zu erkennen und einen entsprechend angepassten Downloader zu verwenden. Dies kann je nach Konfiguration des Servers die Downloadgeschwindigkeit erheblich reduzieren, jedoch überwiegen die Vorteile bei der Nutzung die Nachteile. Die Funktion kann im Tab *Download* via *Filter anzeigen/ausblenden* und der Checkbox *CDN-aware Downloader verwenden* deaktiviert werden. 
+- **FEATURE:** Einige Sender wie BR, MDR, NDR verwenden Content Delivery Networks, welche zu fehlerhaften Downloads mit MV führen. MV versucht CDN-Server zu erkennen und einen entsprechend angepassten Downloader zu verwenden. Dies kann je nach Konfiguration des Servers die Downloadgeschwindigkeit erheblich reduzieren, jedoch überwiegen die Vorteile bei der Nutzung die Nachteile. Die Funktion kann im Tab *Download* via *Filter anzeigen/ausblenden* und der Checkbox *CDN-aware Downloader verwenden* deaktiviert werden.
+- **FEATURE:** Im Tab *Downloads* wurde das Seitenpanel entfernt und in Toolbars ausgelagert. Die Filtereinstellungen sowie der Zustand der Toolbars ist persistent über Neustarts hinweg. Schwebende Toolbars werden nur angezeigt wenn das Tab aktiv ist.
 - interne Optimierungen für mehr Geschwindigkeit.
 - interne Fehler wurden behoben.
 
