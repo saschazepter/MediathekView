@@ -1,0 +1,142 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+package mediathek.gui.tabs.tab_downloads
+
+import mediathek.tool.ApplicationConfiguration
+import java.awt.Point
+import java.awt.event.HierarchyEvent
+import javax.swing.*
+import javax.swing.plaf.basic.BasicToolBarUI
+
+internal const val DOWNLOADS_TOOLBAR_ID_PROPERTY = "mediathek.downloads.toolbar.id"
+
+internal fun JComponent.setDownloadsToolBarId(id: String) {
+    putClientProperty(DOWNLOADS_TOOLBAR_ID_PROPERTY, id)
+}
+
+internal class DownloadsToolBarStatePersistence(
+    private val toolBarRow: JPanel,
+    toolBars: List<JToolBar>
+) {
+    private val config = ApplicationConfiguration.getConfiguration()
+    private val persistedToolBars = toolBars.mapIndexed { index, toolBar ->
+        PersistedToolBar(toolBar, (toolBar.getClientProperty(DOWNLOADS_TOOLBAR_ID_PROPERTY) as? String) ?: "toolbar-$index")
+    }
+    private val snapshots = mutableMapOf<String, Snapshot>()
+    private val saveTimer = Timer(750) { saveChangedSnapshots() }.apply {
+        isRepeats = true
+    }
+
+    fun restoreLater() {
+        toolBarRow.addHierarchyListener { event ->
+            if ((event.changeFlags and HierarchyEvent.SHOWING_CHANGED.toLong()) != 0L) {
+                updateFloatingWindowVisibility()
+            }
+        }
+        SwingUtilities.invokeLater {
+            restore()
+            updateFloatingWindowVisibility()
+            saveChangedSnapshots()
+            saveTimer.start()
+        }
+    }
+
+    private fun restore() {
+        persistedToolBars.forEach { persistedToolBar ->
+            val snapshot = readSnapshot(persistedToolBar.id)
+            snapshots[persistedToolBar.id] = snapshot
+            val ui = persistedToolBar.toolBar.ui as? BasicToolBarUI ?: return@forEach
+            ui.setOrientation(snapshot.orientation)
+            if (snapshot.floating) {
+                val location = Point(snapshot.x, snapshot.y)
+                ui.setFloatingLocation(location.x, location.y)
+                ui.setFloating(true, location)
+            }
+        }
+    }
+
+    private fun updateFloatingWindowVisibility() {
+        val visible = toolBarRow.isShowing
+        persistedToolBars.forEach { persistedToolBar ->
+            val ui = persistedToolBar.toolBar.ui as? BasicToolBarUI ?: return@forEach
+            if (ui.isFloating) {
+                SwingUtilities.getWindowAncestor(persistedToolBar.toolBar)?.isVisible = visible
+            }
+        }
+    }
+
+    private fun saveChangedSnapshots() {
+        if (!toolBarRow.isShowing) {
+            return
+        }
+
+        persistedToolBars.forEach { persistedToolBar ->
+            val snapshot = currentSnapshot(persistedToolBar.toolBar)
+            if (snapshots[persistedToolBar.id] != snapshot) {
+                snapshots[persistedToolBar.id] = snapshot
+                writeSnapshot(persistedToolBar.id, snapshot)
+            }
+        }
+    }
+
+    private fun currentSnapshot(toolBar: JToolBar): Snapshot {
+        val ui = toolBar.ui as? BasicToolBarUI
+        val floating = ui?.isFloating ?: false
+        val location = if (floating) {
+            SwingUtilities.getWindowAncestor(toolBar)?.locationOnScreen ?: toolBar.locationOnScreen
+        } else {
+            Point(0, 0)
+        }
+        return Snapshot(
+            floating = floating,
+            x = location.x,
+            y = location.y,
+            orientation = toolBar.orientation
+        )
+    }
+
+    private fun readSnapshot(id: String): Snapshot =
+        Snapshot(
+            floating = config.getBoolean(key(id, "floating"), false),
+            x = config.getInt(key(id, "x"), 0),
+            y = config.getInt(key(id, "y"), 0),
+            orientation = config.getInt(key(id, "orientation"), JToolBar.HORIZONTAL)
+                .takeIf { it == JToolBar.HORIZONTAL || it == JToolBar.VERTICAL }
+                ?: JToolBar.HORIZONTAL
+        )
+
+    private fun writeSnapshot(id: String, snapshot: Snapshot) {
+        config.setProperty(key(id, "floating"), snapshot.floating)
+        config.setProperty(key(id, "x"), snapshot.x)
+        config.setProperty(key(id, "y"), snapshot.y)
+        config.setProperty(key(id, "orientation"), snapshot.orientation)
+    }
+
+    private fun key(id: String, property: String): String =
+        "${ApplicationConfiguration.DOWNLOAD_TOOLBAR_STATE_PREFIX}$id.$property"
+
+    private data class PersistedToolBar(val toolBar: JToolBar, val id: String)
+
+    private data class Snapshot(
+        val floating: Boolean,
+        val x: Int,
+        val y: Int,
+        val orientation: Int
+    )
+}

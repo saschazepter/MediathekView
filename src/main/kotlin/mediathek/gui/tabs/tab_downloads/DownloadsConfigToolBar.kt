@@ -26,9 +26,6 @@ import net.engio.mbassy.listener.Handler
 import java.awt.Dimension
 import javax.swing.*
 
-/**
- * @author Christian Franzke
- */
 class DownloadsConfigToolBar : JToolBar() {
     private fun scheduleDownloadRateLimitChangedEvent() {
         if (downloadRateLimitChangeTimer.isRunning) {
@@ -112,6 +109,7 @@ class DownloadsConfigToolBar : JToolBar() {
     private fun initComponents() {
         isFloatable = true
         name = "Download-Einstellungen"
+        setDownloadsToolBarId("config")
 
         add(JLabel("gleichzeitig:"))
         add(spinnerNumDownloads)

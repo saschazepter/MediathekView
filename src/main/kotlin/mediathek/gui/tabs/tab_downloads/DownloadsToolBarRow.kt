@@ -1,3 +1,21 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.gui.tabs.tab_downloads
 
 import com.jidesoft.popup.JidePopup
@@ -12,6 +30,7 @@ import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.JToolBar
 import javax.swing.SwingUtilities
+import javax.swing.plaf.basic.BasicToolBarUI
 
 class DownloadsToolBarRow(
     private val primaryToolBar: JToolBar,
@@ -41,6 +60,7 @@ class DownloadsToolBarRow(
     }
     private var visibleOverflowToolBarCount = overflowToolBars.size
     private var updatePending = false
+    private val statePersistence = DownloadsToolBarStatePersistence(this, listOf(primaryToolBar, *overflowToolBars))
 
     init {
         add(primaryToolBar)
@@ -50,6 +70,7 @@ class DownloadsToolBarRow(
                 updateOverflowStateLater()
             }
         })
+        statePersistence.restoreLater()
     }
 
     override fun doLayout() {
@@ -82,7 +103,9 @@ class DownloadsToolBarRow(
         visibleOverflowToolBarCount = newVisibleOverflowToolBarCount
         overflowPopup.hidePopup()
         removeAll()
-        add(primaryToolBar)
+        if (!primaryToolBar.isFloating()) {
+            add(primaryToolBar)
+        }
         visibleOverflowToolBars().forEach(::add)
         if (hiddenOverflowToolBars().isNotEmpty()) {
             add(overflowButton)
@@ -93,15 +116,16 @@ class DownloadsToolBarRow(
     }
 
     private fun calculateVisibleOverflowToolBarCount(): Int {
-        val fullWidth = primaryToolBar.preferredSize.width +
-                overflowToolBars.sumOf { it.preferredSize.width }
+        val dockedOverflowToolBars = dockedOverflowToolBars()
+        val fullWidth = primaryToolBar.dockedPreferredWidth() +
+                dockedOverflowToolBars.sumOf { it.preferredSize.width }
         if (fullWidth <= width) {
-            return overflowToolBars.size
+            return dockedOverflowToolBars.size
         }
 
         var visibleToolBarCount = 0
-        var usedWidth = primaryToolBar.preferredSize.width + overflowButton.preferredSize.width
-        for (toolbar in overflowToolBars) {
+        var usedWidth = primaryToolBar.dockedPreferredWidth() + overflowButton.preferredSize.width
+        for (toolbar in dockedOverflowToolBars) {
             if (usedWidth + toolbar.preferredSize.width > width) {
                 break
             }
@@ -124,8 +148,17 @@ class DownloadsToolBarRow(
     }
 
     private fun visibleOverflowToolBars(): List<JToolBar> =
-        overflowToolBars.take(visibleOverflowToolBarCount)
+        dockedOverflowToolBars().take(visibleOverflowToolBarCount)
 
     private fun hiddenOverflowToolBars(): List<JToolBar> =
-        overflowToolBars.drop(visibleOverflowToolBarCount)
+        dockedOverflowToolBars().drop(visibleOverflowToolBarCount)
+
+    private fun dockedOverflowToolBars(): List<JToolBar> =
+        overflowToolBars.filterNot { it.isFloating() }
+
+    private fun JToolBar.dockedPreferredWidth(): Int =
+        if (isFloating()) 0 else preferredSize.width
+
+    private fun JToolBar.isFloating(): Boolean =
+        (ui as? BasicToolBarUI)?.isFloating == true
 }
