@@ -115,6 +115,7 @@ public class GuiDownloads extends AGuiTabPanel {
      */
     private TModelDownload model;
     private MVDownloadsTable tabelle;
+    private DownloadsTableSelection tableSelection;
     private JScrollPane downloadListScrollPane;
 
     public GuiDownloads(Daten aDaten, MediathekGui mediathekGui) {
@@ -154,31 +155,7 @@ public class GuiDownloads extends AGuiTabPanel {
     }
 
     private List<DatenDownload> getSelectedDownloadsFromTable() {
-        List<DatenDownload> selectedDownloads = new ArrayList<>();
-        var viewRowCount = tabelle.getRowCount();
-        var tableModel = tabelle.getModel();
-        var modelRowCount = tableModel.getRowCount();
-
-        for (var row : tabelle.getSelectedRows()) {
-            if (row < 0 || row >= viewRowCount) {
-                continue;
-            }
-            try {
-                var modelRow = tabelle.convertRowIndexToModel(row);
-                if (modelRow < 0 || modelRow >= modelRowCount) {
-                    continue;
-                }
-                var download = (DatenDownload) tableModel.getValueAt(modelRow, DatenDownload.DOWNLOAD_REF);
-                if (download != null) {
-                    selectedDownloads.add(download);
-                }
-            }
-            catch (RuntimeException ex) {
-                logger.debug("Could not resolve selected download for row {}", row, ex);
-            }
-        }
-
-        return selectedDownloads;
+        return tableSelection.selectedDownloadsForLookup();
     }
 
     private void setupDownloadSizeSelectionUpdater() {
@@ -209,6 +186,7 @@ public class GuiDownloads extends AGuiTabPanel {
 
     private void setupDownloadListTable() {
         tabelle = new MVDownloadsTable();
+        tableSelection = new DownloadsTableSelection(tabelle, this);
         downloadListScrollPane.setViewportView(tabelle);
     }
 
@@ -479,54 +457,16 @@ public class GuiDownloads extends AGuiTabPanel {
     }
 
     private ArrayList<DatenDownload> getSelDownloads() {
-        ArrayList<DatenDownload> arrayDownloads = new ArrayList<>();
-        final int[] rows = tabelle.getSelectedRows();
-        final var model = tabelle.getModel();
-        if (rows.length > 0) {
-            for (int row : rows) {
-                DatenDownload datenDownload = (DatenDownload) model.getValueAt(tabelle.convertRowIndexToModel(row), DatenDownload.DOWNLOAD_REF);
-                arrayDownloads.add(datenDownload);
-            }
-        }
-        else {
-            NoSelectionErrorDialog.show(this);
-        }
-        return arrayDownloads;
+        return tableSelection.selectedDownloadsOrShowError();
     }
 
     @Override
     public Optional<DatenFilm> getCurrentlySelectedFilm() {
-        try {
-            final int selectedTableRow = tabelle.getSelectedRow();
-            if (selectedTableRow != -1) {
-                Optional<DatenFilm> optRet;
-                int modelIndex = tabelle.convertRowIndexToModel(selectedTableRow);
-                final DatenDownload download = (DatenDownload) tabelle.getModel().getValueAt(modelIndex, DatenDownload.DOWNLOAD_REF);
-                if (download.film == null)
-                    optRet = Optional.empty();
-                else
-                    optRet = Optional.of(download.film);
-                return optRet;
-            }
-            else {
-                return Optional.empty();
-            }
-        }
-        catch (Exception e) {
-            return Optional.empty();
-        }
+        return tableSelection.currentlySelectedFilm();
     }
 
     private DatenDownload getSelDownload() {
-        DatenDownload datenDownload = null;
-        final int row = tabelle.getSelectedRow();
-        if (row != -1) {
-            datenDownload = (DatenDownload) tabelle.getModel().getValueAt(tabelle.convertRowIndexToModel(row), DatenDownload.DOWNLOAD_REF);
-        }
-        else {
-            NoSelectionErrorDialog.show(this);
-        }
-        return datenDownload;
+        return tableSelection.selectedDownloadOrShowError();
     }
 
     public synchronized void editDownload() {
@@ -869,20 +809,7 @@ public class GuiDownloads extends AGuiTabPanel {
 
     @Override
     protected List<DatenFilm> getSelFilme() {
-        ArrayList<DatenFilm> arrayFilme = new ArrayList<>();
-        final int[] rows = tabelle.getSelectedRows();
-        if (rows.length > 0) {
-            for (int row : rows) {
-                DatenDownload datenDownload = (DatenDownload) tabelle.getModel().getValueAt(tabelle.convertRowIndexToModel(row), DatenDownload.DOWNLOAD_REF);
-                if (datenDownload.film != null) {
-                    arrayFilme.add(datenDownload.film);
-                }
-            }
-        }
-        else {
-            NoSelectionErrorDialog.show(this);
-        }
-        return arrayFilme;
+        return tableSelection.selectedFilmsOrShowError();
     }
 
     private void initComponents() {
