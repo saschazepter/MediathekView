@@ -442,6 +442,13 @@
             <version>${log4j2.version}</version>
         </dependency>
 
+        <!-- jaffree needs this -->
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j2.version}</version>
+        </dependency>
+
         <!-- for TimedTextMarkupParserTest -->
         <dependency>
             <groupId>commons-io</groupId>
