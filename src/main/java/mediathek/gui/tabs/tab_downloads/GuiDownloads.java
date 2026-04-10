@@ -57,11 +57,10 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -117,10 +116,7 @@ public class GuiDownloads extends AGuiTabPanel {
     private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
     private final DownloadStartInfoProperty startInfoProperty = new DownloadStartInfoProperty();
     private final DownloadsStatusBar statusBar = new DownloadsStatusBar(startInfoProperty);
-    private final ExecutorService downloadSizeLookupExecutor = Executors.newSingleThreadExecutor(
-            Thread.ofPlatform().daemon().name("gui-downloads-size-lookup").factory());
-    private final Set<DatenDownload> downloadSizeLookupsInFlight =
-            Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final DownloadSizeLookupService downloadSizeLookupService = new DownloadSizeLookupService(this::reloadTable);
     private final JComboBox<String> cbDisplayCategories = displayFilterToolBar.getDisplayCategoriesComboBox();
     private final JComboBox<String> cbView = displayFilterToolBar.getViewComboBox();
     private DisplayFilter displayFilter = DisplayFilter.all();
@@ -199,47 +195,10 @@ public class GuiDownloads extends AGuiTabPanel {
         return selectedDownloads;
     }
 
-    private void updateFilmSizesAsync(List<DatenDownload> downloads) {
-        if (downloads.isEmpty()) {
-            return;
-        }
-
-        downloadSizeLookupExecutor.submit(() -> {
-            boolean updateNeeded = false;
-
-            for (var download : downloads) {
-                if (download == null || download.film == null || download.mVFilmSize.getSize() != 0) {
-                    continue;
-                }
-                if (!downloadSizeLookupsInFlight.add(download)) {
-                    continue;
-                }
-
-                try {
-                    var oldSize = download.mVFilmSize.getSize();
-                    download.queryLiveSize();
-                    if (download.mVFilmSize.getSize() != oldSize) {
-                        updateNeeded = true;
-                    }
-                }
-                catch (RuntimeException ex) {
-                    logger.debug("Could not update live size for download {}", download.arr[DatenDownload.DOWNLOAD_TITEL], ex);
-                }
-                finally {
-                    downloadSizeLookupsInFlight.remove(download);
-                }
-            }
-
-            if (updateNeeded) {
-                SwingUtilities.invokeLater(this::reloadTable);
-            }
-        });
-    }
-
     private void setupDownloadSizeSelectionUpdater() {
         tabelle.getSelectionModel().addListSelectionListener(l -> {
             if (!l.getValueIsAdjusting()) {
-                updateFilmSizesAsync(getSelectedDownloadsFromTable());
+                downloadSizeLookupService.updateFilmSizes(getSelectedDownloadsFromTable());
             }
         });
     }
