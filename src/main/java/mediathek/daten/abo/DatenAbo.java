@@ -19,6 +19,7 @@
 package mediathek.daten.abo;
 
 import mediathek.tool.GermanStringSorter;
+import mediathek.tool.table.ColumnVisibilityStore;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -52,7 +53,7 @@ public class DatenAbo implements Comparable<DatenAbo> {
     public static final String TAG = "Abonnement";
     private static final Logger logger = LogManager.getLogger(DatenAbo.class);
     private static final GermanStringSorter sorter = GermanStringSorter.getInstance();
-    public static final boolean[] spaltenAnzeigen = new boolean[MAX_ELEM];
+    private static final ColumnVisibilityStore columnVisibilityStore = ColumnVisibilityStore.create(MAX_ELEM);
     private String[] irgendwoFilterPattern;
     private String[] themaFilterPattern;
     private String[] titelFilterPattern;
@@ -92,7 +93,11 @@ public class DatenAbo implements Comparable<DatenAbo> {
     }
 
     public static boolean anzeigen(int i) {
-        return spaltenAnzeigen == null || spaltenAnzeigen[i];
+        return columnVisibilityStore.isVisible(i);
+    }
+
+    public static @NotNull ColumnVisibilityStore getColumnVisibilityStore() {
+        return columnVisibilityStore;
     }
 
     public String[] getTitelFilterPattern() {

@@ -28,7 +28,7 @@ public abstract class MVTable extends JTable {
     protected final int[] breite;
     protected final int[] reihe;
     protected final int maxSpalten;
-    protected final boolean[] spaltenAnzeigen;
+    protected final ColumnVisibilityStore spaltenAnzeigen;
     protected final Optional<MVConfig.Configs> columnConfigurationDataConfigKey;
     protected final Optional<MVConfig.Configs> showIconsConfigKey;
     protected final Optional<MVConfig.Configs> smallSenderIconConfigKey;
@@ -42,7 +42,7 @@ public abstract class MVTable extends JTable {
     private boolean showSenderIcon;
     private boolean lineBreak = true;
 
-    public MVTable(int maxColumns, boolean @NotNull [] visibleColumStore,
+    public MVTable(int maxColumns, @NotNull ColumnVisibilityStore visibleColumnStore,
                    @NotNull Optional<MVConfig.Configs> showIconsConfigKey,
                    @NotNull Optional<MVConfig.Configs> smallSenderIconConfigKey,
                    @NotNull Optional<MVConfig.Configs> columnConfigurationDataConfigKey) {
@@ -50,9 +50,9 @@ public abstract class MVTable extends JTable {
         this.showIconsConfigKey = showIconsConfigKey;
         this.smallSenderIconConfigKey = smallSenderIconConfigKey;
         this.columnConfigurationDataConfigKey = columnConfigurationDataConfigKey;
-        spaltenAnzeigen = visibleColumStore;
+        spaltenAnzeigen = visibleColumnStore;
         // make all columns visible by default in column store
-        Arrays.fill(spaltenAnzeigen, true);
+        spaltenAnzeigen.fill(true);
 
         setAutoCreateRowSorter(true);
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -212,12 +212,12 @@ public abstract class MVTable extends JTable {
     }
 
     private boolean isColumnVisible(int index) {
-        return spaltenAnzeigen[index];
+        return spaltenAnzeigen.isVisible(index);
     }
 
     protected void setSpaltenEinAus(int[] nr) {
-        for (int i = 0; i < spaltenAnzeigen.length; ++i) {
-            spaltenAnzeigen[i] = nr[i] > 0;
+        for (int i = 0; i < spaltenAnzeigen.length(); ++i) {
+            spaltenAnzeigen.setVisible(i, nr[i] > 0);
         }
     }
 

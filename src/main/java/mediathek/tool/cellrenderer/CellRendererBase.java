@@ -165,13 +165,13 @@ public class CellRendererBase extends DefaultTableCellRenderer {
      *
      * @param table            where it will be displayed.
      * @param row              the used row index.
-     * @param columnModelIndex the used column index.
+     * @param column           the used view column index.
      * @return the calculated dimension of the available table cell.
      */
-    protected Dimension getSenderCellDimension(@NotNull JTable table, int row, int columnModelIndex) {
+    protected Dimension getSenderCellDimension(@NotNull JTable table, int row, int column) {
         Dimension targetDim = new Dimension();
         targetDim.height = table.getRowHeight(row);
-        targetDim.width = table.getColumnModel().getColumn(columnModelIndex).getWidth();
+        targetDim.width = table.getColumnModel().getColumn(column).getWidth();
         targetDim.height -= 4;
         targetDim.width -= 4;
         return targetDim;

@@ -21,7 +21,7 @@ import java.util.Optional;
 
 public class MVDownloadsTable extends MVTable {
     public MVDownloadsTable() {
-        super(DatenDownload.MAX_ELEM, DatenDownload.spaltenAnzeigen,
+        super(DatenDownload.MAX_ELEM, DatenDownload.getColumnVisibilityStore(),
                 Optional.of(MVConfig.Configs.SYSTEM_TAB_DOWNLOAD_ICON_ANZEIGEN),
                 Optional.of(MVConfig.Configs.SYSTEM_TAB_DOWNLOAD_ICON_KLEIN),
                 Optional.of(MVConfig.Configs.SYSTEM_EIGENSCHAFTEN_TABELLE_DOWNLOADS));

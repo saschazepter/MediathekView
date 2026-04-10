@@ -1,6 +1,7 @@
 package mediathek.tool.listener;
 
 import mediathek.config.MVConfig;
+import mediathek.tool.table.ColumnVisibilityStore;
 import mediathek.tool.table.MVTable;
 import org.jetbrains.annotations.NotNull;
 
@@ -14,7 +15,7 @@ import java.awt.event.MouseEvent;
 public class BeobTableHeader extends MouseAdapter {
     protected final MVTable tabelle;
     private final String[] columns;
-    private final boolean[] spaltenAnzeigen;
+    private final ColumnVisibilityStore spaltenAnzeigen;
     /**
      * Column indices which should NOT be displayed
      */
@@ -38,7 +39,7 @@ public class BeobTableHeader extends MouseAdapter {
      * @param configKey If not NULL, store config setting for LINEBREAK in this key.
      *                  If NULL, do not store/restore values and do not show LINEBREAK context menu entries.
      */
-    public BeobTableHeader(@NotNull MVTable tabelle, boolean[] spalten, int[] hiddenColumns, int[] bbutton, boolean displaySenderIconMenus, MVConfig.Configs configKey) {
+    public BeobTableHeader(@NotNull MVTable tabelle, @NotNull ColumnVisibilityStore spalten, int[] hiddenColumns, int[] bbutton, boolean displaySenderIconMenus, MVConfig.Configs configKey) {
         this.tabelle = tabelle;
         this.displaySenderIconMenus = displaySenderIconMenus;
         spaltenAnzeigen = spalten;
@@ -161,13 +162,13 @@ public class BeobTableHeader extends MouseAdapter {
     }
 
     private boolean anzeigen(int i) {
-        return spaltenAnzeigen == null || spaltenAnzeigen[i];
+        return spaltenAnzeigen.isVisible(i);
     }
 
     private void setSpalten() {
         for (int i = 0; i < box.length; ++i) {
             if (box[i] != null) {
-                spaltenAnzeigen[i] = box[i].isSelected();
+                spaltenAnzeigen.setVisible(i, box[i].isSelected());
             }
         }
         tabelle.spaltenEinAus();
@@ -175,7 +176,7 @@ public class BeobTableHeader extends MouseAdapter {
     }
 
     protected void setSpalten(int k, boolean anz) {
-        spaltenAnzeigen[k] = anz;
+        spaltenAnzeigen.setVisible(k, anz);
         tabelle.spaltenEinAus();
     }
 

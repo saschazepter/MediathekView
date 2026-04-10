@@ -186,7 +186,7 @@ public class CellRendererDownloads extends CellRendererBaseWithStart {
                 case DatenDownload.DOWNLOAD_ABO -> handleAboColumn(datenDownload);
                 case DatenDownload.DOWNLOAD_SENDER -> {
                     if (mvTable.showSenderIcons()) {
-                        Dimension targetDim = getSenderCellDimension(table, row, columnModelIndex);
+                        Dimension targetDim = getSenderCellDimension(table, row, column);
                         setSenderIcon(value.toString(), targetDim, isSelected);
                     }
                 }

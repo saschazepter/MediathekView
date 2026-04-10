@@ -305,7 +305,7 @@ public class GuiDownloads extends AGuiTabPanel {
 
         tabelle.setLineBreak(MVConfig.getBool(MVConfig.Configs.SYSTEM_TAB_DOWNLOAD_LINEBREAK));
         tabelle.getTableHeader().addMouseListener(new BeobTableHeader(tabelle,
-                DatenDownload.spaltenAnzeigen,
+                DatenDownload.getColumnVisibilityStore(),
                 COLUMNS_DISABLED,
                 new int[]{DatenDownload.DOWNLOAD_BUTTON_START, DatenDownload.DOWNLOAD_BUTTON_DEL},
                 true, MVConfig.Configs.SYSTEM_TAB_DOWNLOAD_LINEBREAK));

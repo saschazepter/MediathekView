@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public class MVAbosTable extends MVTable {
     public MVAbosTable() {
-        super(DatenAbo.MAX_ELEM, DatenAbo.spaltenAnzeigen,
+        super(DatenAbo.MAX_ELEM, DatenAbo.getColumnVisibilityStore(),
                 Optional.of(MVConfig.Configs.SYSTEM_TAB_ABO_ICON_ANZEIGEN),
                 Optional.of(MVConfig.Configs.SYSTEM_TAB_ABO_ICON_KLEIN),
                 Optional.of(MVConfig.Configs.SYSTEM_EIGENSCHAFTEN_TABELLE_ABOS));

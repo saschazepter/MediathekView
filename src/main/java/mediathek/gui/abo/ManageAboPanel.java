@@ -262,7 +262,7 @@ public class ManageAboPanel extends JPanel {
         tabelle.setModel(new TModelAbo(new Object[][]{}));
         tabelle.setLineBreak(false);
         tabelle.getTableHeader().addMouseListener(new BeobTableHeader(tabelle,
-                DatenAbo.spaltenAnzeigen,
+                DatenAbo.getColumnVisibilityStore(),
                 new int[]{DatenAbo.ABO_EINGESCHALTET, DatenAbo.ABO_REF},
                 new int[]{},
                 true,

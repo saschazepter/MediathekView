@@ -24,7 +24,7 @@ public class MVFilmTable extends MVTable {
     private MyRowSorter<TableModel> sorter;
 
     public MVFilmTable() {
-        super(DatenFilm.MAX_ELEM, GuiFilme.VISIBLE_COLUMNS,
+        super(DatenFilm.MAX_ELEM, ColumnVisibilityStore.of(GuiFilme.VISIBLE_COLUMNS),
                 Optional.of(MVConfig.Configs.SYSTEM_TAB_FILME_ICON_ANZEIGEN),
                 Optional.of(MVConfig.Configs.SYSTEM_TAB_FILME_ICON_KLEIN),
                 Optional.of(MVConfig.Configs.SYSTEM_EIGENSCHAFTEN_TABELLE_FILME));

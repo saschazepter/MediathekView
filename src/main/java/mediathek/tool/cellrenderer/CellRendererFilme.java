@@ -109,7 +109,7 @@ public class CellRendererFilme extends CellRendererBaseWithStart {
                         handleButtonBookmarkColumn(datenFilm.isBookmarked(), isSelected, datenFilm.isLivestream());
                 case DatenFilm.FILM_SENDER -> {
                     if (mvTable.showSenderIcons()) {
-                        Dimension targetDim = getSenderCellDimension(table, row, columnModelIndex);
+                        Dimension targetDim = getSenderCellDimension(table, row, column);
                         setSenderIcon(value.toString(), targetDim, isSelected);
                     }
                 }

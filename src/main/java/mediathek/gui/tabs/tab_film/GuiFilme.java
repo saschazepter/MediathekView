@@ -56,6 +56,7 @@ import mediathek.tool.cellrenderer.CellRendererFilme;
 import mediathek.tool.datum.DatumFilm;
 import mediathek.tool.listener.BeobTableHeader;
 import mediathek.tool.models.TModelFilm;
+import mediathek.tool.table.ColumnVisibilityStore;
 import mediathek.tool.table.MVFilmTable;
 import net.engio.mbassy.listener.Handler;
 import org.apache.commons.lang3.SystemUtils;
@@ -456,7 +457,7 @@ public class GuiFilme extends AGuiTabPanel {
         final var headerListener =
                 new BeobTableHeader(
                         tabelle,
-                        VISIBLE_COLUMNS,
+                        ColumnVisibilityStore.of(VISIBLE_COLUMNS),
                         HIDDEN_COLUMNS,
                         BUTTON_COLUMNS,
                         true,

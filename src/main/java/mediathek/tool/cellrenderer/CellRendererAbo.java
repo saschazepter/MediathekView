@@ -62,8 +62,7 @@ public class CellRendererAbo extends CellRendererBase {
 
                     case SENDER:
                         if (((MVTable) table).showSenderIcons()) {
-                            final int columnModelIndex = table.convertColumnIndexToModel(column);
-                            Dimension targetDim = getSenderCellDimension(table, row,columnModelIndex);
+                            Dimension targetDim = getSenderCellDimension(table, row, column);
                             setSenderIcon(abo.getSender(), targetDim, isSelected);
                         }
                         else {

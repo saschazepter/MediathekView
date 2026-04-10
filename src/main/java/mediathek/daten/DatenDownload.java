@@ -28,6 +28,7 @@ import mediathek.gui.messages.RestartDownloadEvent;
 import mediathek.gui.messages.StartEvent;
 import mediathek.tool.*;
 import mediathek.tool.datum.Datum;
+import mediathek.tool.table.ColumnVisibilityStore;
 import okhttp3.HttpUrl;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.apache.logging.log4j.LogManager;
@@ -106,7 +107,7 @@ public class DatenDownload implements Comparable<DatenDownload> {
     public static final int DOWNLOAD_REF = 39;
     public static final String TAG = "Downlad";
     public static final int MAX_ELEM = 40;
-    public static final boolean[] spaltenAnzeigen = new boolean[MAX_ELEM];
+    private static final ColumnVisibilityStore columnVisibilityStore = ColumnVisibilityStore.create(MAX_ELEM);
     public static final String[] XML_NAMES = {"Nr", "Filmnr", "Abo", "Sender", "Thema", "Titel", "Button-Start", "Button-Del",
             "Fortschritt", "Restzeit", "Geschwindigkeit", "Groesse"/*DOWNLOAD_GROESSE*/,
             "Datum", "Zeit", "Dauer", "HD", "UT",
@@ -234,11 +235,11 @@ public class DatenDownload implements Comparable<DatenDownload> {
     }
 
     public static boolean anzeigen(int i) {
-        if (spaltenAnzeigen == null) {
-            return true;
-        } else {
-            return spaltenAnzeigen[i];
-        }
+        return columnVisibilityStore.isVisible(i);
+    }
+
+    public static @NotNull ColumnVisibilityStore getColumnVisibilityStore() {
+        return columnVisibilityStore;
     }
 
     /**

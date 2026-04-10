@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public class MVPsetTable extends MVTable {
     public MVPsetTable() {
-        super(DatenPset.MAX_ELEM, new boolean[DatenPset.MAX_ELEM],
+        super(DatenPset.MAX_ELEM, ColumnVisibilityStore.create(DatenPset.MAX_ELEM),
                 Optional.empty(),
                 Optional.empty(),
                 Optional.empty());
