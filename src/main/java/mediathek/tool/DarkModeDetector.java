@@ -32,6 +32,10 @@ import java.util.concurrent.TimeUnit;
  * Based on java code from <a href="https://gist.github.com/HanSolo/7cf10b86efff8ca2845bf5ec2dd0fe1d">this gist</a>.
  */
 public class DarkModeDetector {
+    private DarkModeDetector() {
+        /* This utility class should not be instantiated */
+    }
+
     private static final String REGDWORD_TOKEN = "REG_DWORD";
     private static final String[] DARK_THEME_CMD = {
             "reg", "query", "HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize",
@@ -87,7 +91,10 @@ public class DarkModeDetector {
                 return false;
             }
             return result.equals("'prefer-dark'");
-        } catch (IOException | InterruptedException e) {
+        } catch (InterruptedException _) {
+            Thread.currentThread().interrupt();
+            return false;
+        } catch (IOException _) {
             return false;
         }
     }
@@ -108,7 +115,11 @@ public class DarkModeDetector {
             int rc = process.waitFor();  // Wait for the process to complete
             return 0 == rc && isDarkMode;
         }
-        catch (IOException | InterruptedException e) {
+        catch (InterruptedException _) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+        catch (IOException _) {
             return false;
         }
     }
@@ -132,9 +143,13 @@ public class DarkModeDetector {
 
             // 1 == Light Mode, 0 == Dark Mode
             String temp = result.substring(p + REGDWORD_TOKEN.length()).trim();
-            return ((Integer.parseInt(temp.substring("0x".length()), 16))) == 0;
+            return Integer.parseInt(temp.substring("0x".length()), 16) == 0;
         }
-        catch (Exception e) {
+        catch (InterruptedException _) {
+            Thread.currentThread().interrupt();
+            return false;
+        }
+        catch (IOException | NumberFormatException | StringIndexOutOfBoundsException _) {
             return false;
         }
     }
