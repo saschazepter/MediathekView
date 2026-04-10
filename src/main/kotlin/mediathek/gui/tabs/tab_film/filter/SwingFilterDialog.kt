@@ -41,6 +41,7 @@ import java.awt.event.*
 import javax.swing.*
 import javax.swing.event.ListDataEvent
 import javax.swing.event.ListDataListener
+import kotlin.time.Duration.Companion.milliseconds
 
 class SwingFilterDialog @JvmOverloads internal constructor(
     owner: Window,
@@ -430,7 +431,7 @@ class SwingFilterDialog @JvmOverloads internal constructor(
     private fun restartDebouncedJob(job: Job?, delayMs: Long, action: suspend () -> Unit): Job {
         job?.cancel()
         return uiScope.launch {
-            delay(delayMs)
+            delay(delayMs.milliseconds)
             action()
         }
     }

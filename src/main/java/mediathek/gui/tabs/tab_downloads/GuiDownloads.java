@@ -95,7 +95,7 @@ public class GuiDownloads extends AGuiTabPanel {
             cleanupDownloadListAction);
     private final JToolBar configToolBar = new DownloadsConfigToolBar();
     private final DownloadsDisplayFilterToolBar displayFilterToolBar = new DownloadsDisplayFilterToolBar();
-    private final JPanel toolBarRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+    private final JPanel toolBarRow = new DownloadsToolBarRow(swingToolBar, displayFilterToolBar, configToolBar);
     private final AtomicLong _lastUpdate = new AtomicLong(0);
     private final JCheckBoxMenuItem cbShowDownloadDescription = new JCheckBoxMenuItem("Filmbeschreibung anzeigen");
     private final Configuration config = ApplicationConfiguration.getConfiguration();
@@ -967,7 +967,6 @@ public class GuiDownloads extends AGuiTabPanel {
         tempPanel.add(statusBar, BorderLayout.SOUTH);
         downloadListArea.add(tempPanel, BorderLayout.CENTER);
         downloadListArea.add(descriptionTab, BorderLayout.SOUTH);
-        createToolBarRow();
 
         add(downloadListArea, BorderLayout.CENTER);
         add(toolBarRow, BorderLayout.NORTH);
@@ -992,12 +991,6 @@ public class GuiDownloads extends AGuiTabPanel {
                 }
             }
         });
-    }
-
-    private void createToolBarRow() {
-        toolBarRow.add(swingToolBar);
-        toolBarRow.add(displayFilterToolBar);
-        toolBarRow.add(configToolBar);
     }
 
     public class BeobMausTabelle extends MouseAdapter {
