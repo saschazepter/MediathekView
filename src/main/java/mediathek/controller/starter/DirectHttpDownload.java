@@ -35,6 +35,7 @@ import mediathek.tool.subtitles.MVSubtitle;
 import net.engio.mbassy.bus.MBassador;
 import net.engio.mbassy.listener.Handler;
 import okhttp3.*;
+import okhttp3.internal.http2.StreamResetException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -373,7 +374,7 @@ public class DirectHttpDownload extends Thread {
     private boolean isHttp2InternalStreamReset(@NotNull IOException ex) {
         Throwable current = ex;
         while (current != null) {
-            if ("okhttp3.internal.http2.StreamResetException".equals(current.getClass().getName())) {
+            if (current instanceof StreamResetException) {
                 final String msg = String.valueOf(current.getMessage());
                 if (msg.contains("INTERNAL_ERROR")) {
                     return true;
@@ -496,7 +497,11 @@ public class DirectHttpDownload extends Thread {
                 subtitleFuture.get();
 
         }
-        catch (InterruptedException | ExecutionException e) {
+        catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logger.error("waitForPendingDownloads().", e);
+        }
+        catch (ExecutionException e) {
             logger.error("waitForPendingDownloads().", e);
         }
     }
