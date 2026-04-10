@@ -76,6 +76,7 @@ class DownloadsConfigToolBar : JToolBar() {
         spinnerNumDownloads.putClientProperty("JComponent.roundRect", true)
         spinnerNumDownloads.model = SpinnerNumberModel(1, 1, 9, 1)
         spinnerNumDownloads.limitToolbarWidth(80)
+        spinnerNumDownloads.toolTipText = "Anzahl der gleichzeitig möglichen Downloads"
         spinnerNumDownloads.value = config.getInt(ApplicationConfiguration.DOWNLOAD_MAX_SIMULTANEOUS_NUM, 1)
         spinnerNumDownloads.addChangeListener {
             val maxNumDownloads = (spinnerNumDownloads.model.value as Number).toInt()
@@ -86,12 +87,12 @@ class DownloadsConfigToolBar : JToolBar() {
 
     private fun setupBrDirectDownloadCheckBox() {
         val config = ApplicationConfiguration.getConfiguration()
-        cbUseBrDirectDownload.isSelected =
+        cbUseCdnAwareDirectDownloader.isSelected =
             config.getBoolean(ApplicationConfiguration.DOWNLOAD_USE_CDN_AWARE_DIRECT_DOWNLOAD, true)
-        cbUseBrDirectDownload.addActionListener {
+        cbUseCdnAwareDirectDownloader.addActionListener {
             config.setProperty(
                 ApplicationConfiguration.DOWNLOAD_USE_CDN_AWARE_DIRECT_DOWNLOAD,
-                cbUseBrDirectDownload.isSelected
+                cbUseCdnAwareDirectDownloader.isSelected
             )
         }
     }
@@ -111,20 +112,19 @@ class DownloadsConfigToolBar : JToolBar() {
         name = "Download-Einstellungen"
         setDownloadsToolBarId("config")
 
-        add(JLabel("gleichzeitig:"))
+        add(JLabel("Downloads:"))
         add(spinnerNumDownloads)
         addSeparator()
         add(cbMaxBandwidth)
-        add(JLabel("max. Bandbreite:"))
         add(spinnerMaxBandwidth)
         add(JLabel("KiB/s"))
         addSeparator()
-        add(cbUseBrDirectDownload)
+        add(cbUseCdnAwareDirectDownloader)
     }
 
     private val spinnerNumDownloads: JSpinner = JSpinner()
     private val cbMaxBandwidth: JCheckBox = JCheckBox()
-    private val cbUseBrDirectDownload: JCheckBox = JCheckBox("CDN-aware Downloader verwenden")
+    private val cbUseCdnAwareDirectDownloader: JCheckBox = JCheckBox("CDN-aware Downloader verwenden")
     private val spinnerMaxBandwidth: JSpinner = JSpinner()
     private val downloadRateLimitChangeTimer = Timer(300) { fireDownloadRateLimitChangedEvent() }.apply {
         isRepeats = false
@@ -132,14 +132,19 @@ class DownloadsConfigToolBar : JToolBar() {
 
     init {
         initComponents()
-        cbMaxBandwidth.toolTipText = "Bandbreitenbegrenzung aktiviert?"
-        cbMaxBandwidth.isFocusable = false
-        cbUseBrDirectDownload.isFocusable = false
-        cbUseBrDirectDownload.toolTipText =
-            "<html>Aktivieren Sie dies falls direkte Downloads häufig fehlerhaft sind.<br/>" +
-                    "Dies kann jedoch erheblich langsamer als ein normaler Download sein.<br/><br/>" +
-                    "Das Umschalten wird nur <b>vor</b> Downloadstart berücksichtigt!" +
-                    "</html>"
+        cbMaxBandwidth.apply {
+            toolTipText = "Bandbreitenbegrenzung aktiviert?"
+            text = "Limit:"
+            isFocusable = false
+        }
+        cbUseCdnAwareDirectDownloader.apply {
+            isFocusable = false
+            toolTipText =
+                "<html>Aktivieren Sie dies falls direkte Downloads häufig fehlerhaft sind.<br/>" +
+                        "Dies kann jedoch erheblich langsamer als ein normaler Download sein.<br/><br/>" +
+                        "Das Umschalten wird nur <b>vor</b> Downloadstart berücksichtigt!" +
+                        "</html>"
+        }
         setupNumDownloadsSpinner()
         setupDownloadRateLimitCheckBox()
         setupDownloadRateLimitSpinner()
