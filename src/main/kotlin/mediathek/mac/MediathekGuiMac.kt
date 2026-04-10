@@ -29,7 +29,6 @@ import mediathek.gui.messages.ShowSettingsDialogEvent
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.MessageBus
-import mediathek.tool.notification.INotificationCenter
 import mediathek.tool.notification.MacNotificationCenter
 import mediathek.tool.threads.IndicatorThread
 import mediathek.tool.timer.TimerPool
@@ -56,7 +55,7 @@ import kotlin.io.path.absolutePathString
 class MediathekGuiMac : MediathekGui {
     private val powerManager = OsxPowerManager()
 
-    constructor() : super() {
+    constructor() : super(::MacNotificationCenter) {
         TimerPool.timerPool.schedule({ checkForCorrectArchitecture() }, 15, TimeUnit.SECONDS)
     }
 
@@ -190,10 +189,6 @@ class MediathekGuiMac : MediathekGui {
 
     override fun initializeSystemTray() {
         //we don´t use it on macOS
-    }
-
-    override fun getNotificationCenter(): INotificationCenter {
-        return MacNotificationCenter()
     }
 
     override fun shutdownComputer() {

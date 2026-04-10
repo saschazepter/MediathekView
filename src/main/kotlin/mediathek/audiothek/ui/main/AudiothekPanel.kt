@@ -32,7 +32,6 @@ import mediathek.audiothek.repository.OnlineSearchProxyRepository
 import mediathek.audiothek.ui.download.AudioDownloadManagerPanel
 import mediathek.audiothek.ui.download.DownloadSummary
 import mediathek.audiothek.ui.table.AudiothekTable
-import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.controller.history.SeenHistoryController
 import mediathek.gui.actions.ShowAudiothekSearchHelpAction
@@ -48,6 +47,7 @@ import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.http.MVHttpClient
 import mediathek.tool.notification.MessageType
 import mediathek.tool.notification.NotificationMessage
+import mediathek.tool.notification.NotificationService
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
 import org.jdesktop.swingx.VerticalLayout
@@ -550,7 +550,7 @@ class AudiothekPanel(
     }
 
     private fun showDownloadNotification(title: String, message: String, type: MessageType) {
-        Daten.getInstance().notificationCenter().displayNotification(
+        NotificationService.displayNotification(
             NotificationMessage().apply {
                 this.title = title
                 this.message = message

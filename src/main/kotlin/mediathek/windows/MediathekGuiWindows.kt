@@ -1,13 +1,12 @@
 package mediathek.windows
 
 import mediathek.mainwindow.MediathekGui
-import mediathek.tool.notification.INotificationCenter
 import mediathek.tool.notification.WinNotificationCenter
 import mediathek.tool.threads.IndicatorThread
 import org.apache.logging.log4j.LogManager
 import java.io.IOException
 
-class MediathekGuiWindows : MediathekGui() {
+class MediathekGuiWindows : MediathekGui(::WinNotificationCenter) {
     private val logger = LogManager.getLogger()
 
     override fun createDarkModeToggleButton() {
@@ -32,7 +31,4 @@ class MediathekGuiWindows : MediathekGui() {
         return TaskbarIndicatorThread(this)
     }
 
-    override fun getNotificationCenter(): INotificationCenter {
-        return WinNotificationCenter()
-    }
 }

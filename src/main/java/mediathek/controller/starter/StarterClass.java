@@ -31,6 +31,7 @@ import mediathek.mac.FinderCommentService;
 import mediathek.tool.*;
 import mediathek.tool.notification.MessageType;
 import mediathek.tool.notification.NotificationMessage;
+import mediathek.tool.notification.NotificationService;
 import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -231,7 +232,7 @@ public class StarterClass {
         }
         msg.setMessage(message);
 
-        Daten.getInstance().notificationCenter().displayNotification(msg);
+        NotificationService.displayNotification(msg);
     }
 
     private static void writeSpotlightComment(DatenDownload datenDownload, HttpDownloadState state) {

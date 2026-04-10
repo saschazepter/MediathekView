@@ -61,7 +61,7 @@ import mediathek.swing.IconOnlyButton;
 import mediathek.tool.*;
 import mediathek.tool.notification.GenericNotificationCenter;
 import mediathek.tool.notification.INotificationCenter;
-import mediathek.tool.notification.NullNotificationCenter;
+import mediathek.tool.notification.NotificationService;
 import mediathek.tool.threads.IndicatorThread;
 import mediathek.tool.timer.TimerPool;
 import mediathek.update.AutomaticFilmlistUpdate;
@@ -81,15 +81,16 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntConsumer;
+import java.util.function.Supplier;
 
 import static mediathek.tool.ApplicationConfiguration.CONFIG_AUTOMATIC_UPDATE_CHECK;
 
@@ -177,8 +178,14 @@ public class MediathekGui extends JFrame {
     private IndicatorThread progressIndicatorThread;
     private AutomaticFilmlistUpdate automaticFilmlistUpdate;
     private boolean shutdownRequested;
+    private final Supplier<INotificationCenter> notificationCenterFactory;
 
     public MediathekGui() {
+        this(GenericNotificationCenter::new);
+    }
+
+    protected MediathekGui(Supplier<INotificationCenter> notificationCenterFactory) {
+        this.notificationCenterFactory = Objects.requireNonNull(notificationCenterFactory);
         ui = this;
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -459,33 +466,8 @@ public class MediathekGui extends JFrame {
      * Create either a native or a java notification center depending on platform
      */
     private void setupNotificationCenter() {
-        final var notificationCenter = daten.notificationCenter();
         final boolean showNotifications = config.getBoolean(ApplicationConfiguration.APPLICATION_SHOW_NOTIFICATIONS, true);
-
-        if (notificationCenter != null) {
-            try {
-                notificationCenter.close();
-            }
-            catch (IOException e) {
-                logger.error("Failed to close old notification center", e);
-            }
-        }
-
-        if (!showNotifications) {
-            daten.setNotificationCenter(new NullNotificationCenter());
-        }
-        else {
-            daten.setNotificationCenter(getNotificationCenter());
-        }
-    }
-
-    /**
-     * Return the platform-specific notification implementation.
-     *
-     * @return generic or platform-specific notification implementation.
-     */
-    protected INotificationCenter getNotificationCenter() {
-        return new GenericNotificationCenter();
+        NotificationService.configure(notificationCenterFactory, showNotifications);
     }
 
     @Handler
@@ -494,13 +476,7 @@ public class MediathekGui extends JFrame {
     }
 
     protected void closeNotificationCenter() {
-        try {
-            var center = daten.notificationCenter();
-            if (center != null)
-                center.close();
-        }
-        catch (Exception ignored) {
-        }
+        NotificationService.INSTANCE.close();
     }
 
     /**

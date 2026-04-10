@@ -11,6 +11,7 @@ import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.MessageBus;
 import mediathek.tool.notification.MessageType;
 import mediathek.tool.notification.NotificationMessage;
+import mediathek.tool.notification.NotificationService;
 import net.engio.mbassy.listener.Handler;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -176,7 +177,7 @@ public final class MVTray {
         msg.setTitle("Programminfos");
         msg.setMessage(meldung);
         msg.setType(MessageType.INFO);
-        Daten.getInstance().notificationCenter().displayNotification(msg);
+        NotificationService.displayNotification(msg);
     }
 
 }

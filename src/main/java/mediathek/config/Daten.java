@@ -17,7 +17,6 @@ import mediathek.gui.duplicates.FilmStatistics;
 import mediathek.tool.GermanStringSorter;
 import mediathek.tool.ReplaceList;
 import mediathek.tool.SenderListBoxModel;
-import mediathek.tool.notification.INotificationCenter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -70,7 +69,6 @@ public class Daten {
      * Defaults to no lucene index unless changed at startup.
      */
     private ListeFilme listeFilmeNachBlackList = new ListeFilme();
-    private INotificationCenter notificationCenter;
     /**
      * erfolgreich geladene Abos.
      */
@@ -172,14 +170,6 @@ public class Daten {
         var zdt = ZonedDateTime.of(todayMidnight, ZoneId.systemDefault());
 
         return zdt.toInstant().toEpochMilli();
-    }
-
-    public INotificationCenter notificationCenter() {
-        return notificationCenter;
-    }
-
-    public void setNotificationCenter(INotificationCenter center) {
-        notificationCenter = center;
     }
 
     public void setAboHistoryList(AboHistoryController controller) {
