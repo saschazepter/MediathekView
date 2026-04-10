@@ -896,6 +896,7 @@ public class DatenDownload implements Comparable<DatenDownload> {
         }
     }
 
+    @SuppressWarnings("java:S2676")
     private String getHash(String pfad) {
         //Hash eines Dateinamens zB. 1433245578
         final int h = Math.abs(pfad.hashCode());

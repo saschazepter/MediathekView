@@ -302,7 +302,7 @@ public class InfiniteProgressPanel extends JComponent implements MouseListener
         Point2D.Double center = new Point2D.Double((double) getWidth() / 2, (double) getHeight() / 2);
         double fixedAngle = 2.0 * Math.PI / ((double) barsCount);
 
-        for (double i = 0.0; i < (double) barsCount; i++)
+        for (double i = 0.0; i < (double) barsCount; i += 1.0)
         {
             Area primitive = buildPrimitive();
 
