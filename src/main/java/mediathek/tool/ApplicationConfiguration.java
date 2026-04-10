@@ -52,6 +52,8 @@ public class ApplicationConfiguration {
             "application.ui.mainwindow.tab_icons";
     public static final String APPLICATION_UI_BANDWIDTH_MONITOR_VISIBLE =
             "application.ui.bandwidth_monitor.visible";
+    public static final String APPLICATION_UI_EXIT_DIALOG_ACTION =
+            "application.ui.exit_dialog.action";
     public static final String APPLICATION_UI_USE_TRAY = "application.ui.tray.use";
     public static final String APPLICATION_UI_DOWNLOAD_TAB_DIVIDER_LOCATION =
             "application.ui.download_tab.divider.location";

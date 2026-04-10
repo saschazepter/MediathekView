@@ -1,17 +1,41 @@
+/*
+ * Copyright (c) 2026 derreisende77.
+ * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package mediathek.gui.dialog
 
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.mainwindow.MediathekGui
 import mediathek.swing.AppTerminationIndefiniteProgress
+import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.EscapeKeyHandler
 import mediathek.tool.GetFile
 import mediathek.tool.SVGIconUtilities
+import net.miginfocom.layout.AC
+import net.miginfocom.layout.CC
+import net.miginfocom.layout.LC
+import net.miginfocom.swing.MigLayout
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
-import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.swing.*
+import kotlin.time.Duration.Companion.milliseconds
 
 class DialogBeenden(parent: JFrame, shouldDownloadAndQuit: Boolean) : JDialog(parent, true) {
     /**
@@ -26,10 +50,9 @@ class DialogBeenden(parent: JFrame, shouldDownloadAndQuit: Boolean) : JDialog(pa
     var isShutdownRequested = false
         private set
 
-    /**
-     * The download monitoring [javax.swing.SwingWorker].
-     */
-    private val downloadMonitorWorker: WaitForDownloadsWorker = WaitForDownloadsWorker()
+    private val job = SupervisorJob()
+    private val coroutineScope = CoroutineScope(job + Dispatchers.Swing)
+    private var downloadMonitorJob: Job? = null
     private val comboActions: JComboBox<String> = JComboBox(comboBoxModel)
     private val btnContinue: JButton = JButton("Weiter")
     private val cbShutdownComputer: JCheckBox = JCheckBox("Rechner herunterfahren")
@@ -53,8 +76,7 @@ class DialogBeenden(parent: JFrame, shouldDownloadAndQuit: Boolean) : JDialog(pa
      * This will reset all necessary variables to default and cancel app termination.
      */
     private fun escapeHandler() {
-        downloadMonitorWorker.cancel(true)
-        glassPane?.isVisible = false
+        cancelDownloadMonitoring()
         applicationCanTerminate = false
         dispose()
     }
@@ -65,98 +87,93 @@ class DialogBeenden(parent: JFrame, shouldDownloadAndQuit: Boolean) : JDialog(pa
      * @param waitForRunningDownloadsOnly if true stop all waiting DL and wait only for those running.
      */
     private fun waitUntilDownloadsHaveFinished(waitForRunningDownloadsOnly: Boolean = false) {
+        cancelDownloadMonitoring()
         glassPane = AppTerminationIndefiniteProgress(isShutdownRequested)
         glassPane?.isVisible = true
 
         if (waitForRunningDownloadsOnly)
             MediathekGui.ui().tabDownloads.stopAllWaitingDownloads()
 
-        downloadMonitorWorker.execute()
+        downloadMonitorJob = coroutineScope.launch {
+            try {
+                withContext(Dispatchers.IO) {
+                    while (Daten.getInstance().listeDownloads.unfinishedDownloads() > 0) {
+                        ensureActive()
+                        delay(1_000.milliseconds)
+                    }
+                }
+
+                applicationCanTerminate = true
+                dispose()
+            } catch (_: CancellationException) {
+                // Dialog closure cancels the monitoring job as part of the normal lifecycle.
+            } finally {
+                glassPane?.isVisible = false
+                downloadMonitorJob = null
+            }
+        }
     }
 
-    private inner class WaitForDownloadsWorker : SwingWorker<Void, Void>() {
-        override fun doInBackground(): Void? {
-            while (Daten.getInstance().listeDownloads.unfinishedDownloads() > 0 && !isCancelled)
-                TimeUnit.SECONDS.sleep(1)
-            return null
-        }
+    private fun cancelDownloadMonitoring() {
+        downloadMonitorJob?.cancel()
+        downloadMonitorJob = null
+        glassPane?.isVisible = false
+    }
 
-        override fun done() {
-            applicationCanTerminate = true
-            glassPane?.isVisible = false
-            dispose()
+    private fun selectedAction(): String = comboActions.selectedItem as? String ?: CANCEL_AND_TERMINATE_PROGRAM
+
+    private fun updateActionControls() {
+        when (selectedAction()) {
+            WAIT_FOR_DOWNLOADS_AND_TERMINATE, WAIT_FOR_RUNNING_DOWNLOADS_AND_TERMINATE -> {
+                jButtonHilfe.isEnabled = true
+                cbShutdownComputer.isEnabled = true
+            }
+
+            else -> {
+                jButtonHilfe.isEnabled = false
+                cbShutdownComputer.isEnabled = false
+                cbShutdownComputer.isSelected = false
+                isShutdownRequested = false
+            }
         }
+    }
+
+    private fun restoreSelectedAction() {
+        val savedAction = ApplicationConfiguration.getConfiguration().getString(
+            ApplicationConfiguration.APPLICATION_UI_EXIT_DIALOG_ACTION,
+            null
+        ) ?: return
+
+        for (index in 0 until comboActions.itemCount) {
+            if (comboActions.getItemAt(index) == savedAction) {
+                comboActions.selectedIndex = index
+                return
+            }
+        }
+    }
+
+    override fun dispose() {
+        cancelDownloadMonitoring()
+        job.cancel()
+        super.dispose()
     }
 
     private fun initComponents() {
         jButtonHilfe.toolTipText = "Hilfe anzeigen"
 
-        val contentPaneLayout = GroupLayout(contentPane)
-        contentPane.layout = contentPaneLayout
-
         val jLabel1 =
-            JLabel("<html>Es sind noch nicht alle Downloads fertig.<br>Wie m\u00f6chten Sie fortfahren?</html>")
-
-        contentPaneLayout.setHorizontalGroup(
-            contentPaneLayout.createParallelGroup()
-                .addGroup(
-                    contentPaneLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(
-                            contentPaneLayout.createParallelGroup()
-                                .addComponent(jLabel1, GroupLayout.DEFAULT_SIZE, 521, Short.MAX_VALUE.toInt())
-                                .addComponent(comboActions, GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE.toInt())
-                                .addGroup(
-                                    GroupLayout.Alignment.TRAILING, contentPaneLayout.createSequentialGroup()
-                                        .addGap(0, 0, Short.MAX_VALUE.toInt())
-                                        .addComponent(jButtonHilfe)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnCancel)
-                                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(btnContinue)
-                                )
-                                .addGroup(
-                                    contentPaneLayout.createSequentialGroup().addComponent(cbShutdownComputer)
-                                        .addGap(0, 351, Short.MAX_VALUE.toInt())
-                                )
-                        )
-                        .addContainerGap()
-                )
+            JLabel("<html>Es sind noch nicht alle Downloads fertig.<br>Wie möchten Sie fortfahren?</html>")
+        contentPane.layout = MigLayout(
+            LC().insets("dialog").fillX(),
+            AC().grow().fill().gap().gap().gap(),
+            AC()
         )
-
-        contentPaneLayout.setVerticalGroup(
-            contentPaneLayout.createParallelGroup()
-                .addGroup(
-                    GroupLayout.Alignment.TRAILING, contentPaneLayout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(
-                            jLabel1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-                            GroupLayout.PREFERRED_SIZE
-                        )
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(
-                            comboActions, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-                            GroupLayout.PREFERRED_SIZE
-                        )
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cbShutdownComputer)
-                        .addPreferredGap(
-                            LayoutStyle.ComponentPlacement.RELATED,
-                            GroupLayout.DEFAULT_SIZE,
-                            Short.MAX_VALUE.toInt()
-                        )
-                        .addGroup(
-                            contentPaneLayout.createParallelGroup(GroupLayout.Alignment.TRAILING)
-                                .addGroup(
-                                    contentPaneLayout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-                                        .addComponent(btnContinue)
-                                        .addComponent(btnCancel)
-                                )
-                                .addComponent(jButtonHilfe)
-                        )
-                        .addContainerGap()
-                )
-        )
+        contentPane.add(jLabel1, CC().spanX().growX().wrap())
+        contentPane.add(comboActions, CC().spanX().growX().wrap())
+        contentPane.add(cbShutdownComputer, CC().spanX().wrap())
+        contentPane.add(jButtonHilfe, CC().cell(1, 3))
+        contentPane.add(btnCancel, CC().cell(2, 3))
+        contentPane.add(btnContinue, CC().cell(3, 3))
 
         pack()
         setLocationRelativeTo(owner)
@@ -191,24 +208,17 @@ class DialogBeenden(parent: JFrame, shouldDownloadAndQuit: Boolean) : JDialog(pa
         cbShutdownComputer.isEnabled = false
 
         comboActions.addActionListener {
-            when (Objects.requireNonNull(comboActions.selectedItem) as String) {
-                WAIT_FOR_DOWNLOADS_AND_TERMINATE, WAIT_FOR_RUNNING_DOWNLOADS_AND_TERMINATE -> {
-                    jButtonHilfe.isEnabled = true
-                    cbShutdownComputer.isEnabled = true
-                }
-                else -> {
-                    jButtonHilfe.isEnabled = false
-                    cbShutdownComputer.isEnabled = false
-                    cbShutdownComputer.isSelected = false
-                    isShutdownRequested = false
-                }
-            }
+            ApplicationConfiguration.getConfiguration().setProperty(
+                ApplicationConfiguration.APPLICATION_UI_EXIT_DIALOG_ACTION,
+                selectedAction()
+            )
+            updateActionControls()
         }
 
         cbShutdownComputer.addActionListener { isShutdownRequested = cbShutdownComputer.isSelected }
 
         btnContinue.addActionListener {
-            when (Objects.requireNonNull(comboActions.selectedItem) as String) {
+            when (selectedAction()) {
                 WAIT_FOR_DOWNLOADS_AND_TERMINATE -> waitUntilDownloadsHaveFinished()
                 WAIT_FOR_RUNNING_DOWNLOADS_AND_TERMINATE -> waitUntilDownloadsHaveFinished(true)
                 CANCEL_AND_TERMINATE_PROGRAM -> {
@@ -222,6 +232,8 @@ class DialogBeenden(parent: JFrame, shouldDownloadAndQuit: Boolean) : JDialog(pa
 
         pack()
         getRootPane().defaultButton = btnContinue
+        restoreSelectedAction()
+        updateActionControls()
 
         if (shouldDownloadAndQuit) {
             applicationCanTerminate = true
