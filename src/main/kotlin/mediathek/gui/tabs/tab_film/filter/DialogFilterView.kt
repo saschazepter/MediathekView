@@ -53,7 +53,7 @@ class DialogFilterView(
             filmLengthRangeSlider.lowValue = state.filmLengthMin
             filmLengthRangeSlider.highValue = state.filmLengthMax
         }
-        minFilmLengthValueLabel.text = filmLengthRangeSlider.lowValue.toString()
+        minFilmLengthValueLabel.text = filmLengthRangeSlider.lowValueText
         maxFilmLengthValueLabel.text = filmLengthRangeSlider.highValueText
 
         zeitraumSpinner.restoreValue(state.zeitraum, zeitraumFallbackWriter)

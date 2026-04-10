@@ -16,38 +16,43 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.tabs.tab_film.filter;
+package mediathek.gui.tabs.tab_film.filter
 
-import com.jidesoft.swing.RangeSlider;
+import com.jidesoft.swing.RangeSlider
+import java.util.*
+import javax.swing.JComponent
+import javax.swing.JLabel
 
-import javax.swing.*;
-import java.util.Hashtable;
-
-public class FilmLengthSlider extends RangeSlider {
-    private static final int MIN_FILM_LENGTH = 0;
-    private static final int MAX_FILM_LENGTH = 240;
-    public static final int UNLIMITED_VALUE = MAX_FILM_LENGTH;
-    private static final int TICK_SPACING = 30;
-    private static final String UNLIMITED_TEXT = "∞";
-
-    public FilmLengthSlider() {
-        super(MIN_FILM_LENGTH, MAX_FILM_LENGTH);
-
-        setPaintLabels(true);
-        setPaintTicks(true);
-        setPaintTrack(true);
-        setMajorTickSpacing(TICK_SPACING);
-        setLabelTable(new Hashtable<Integer, JComponent>() {
-            {
-                for (int filmLength = MIN_FILM_LENGTH; filmLength < MAX_FILM_LENGTH; filmLength += TICK_SPACING) {
-                    put(filmLength, new JLabel(Integer.toString(filmLength)));
-                }
-                put(MAX_FILM_LENGTH, new JLabel(UNLIMITED_TEXT));
-            }
-        });
+open class FilmLengthSlider : RangeSlider(MIN_FILM_LENGTH, MAX_FILM_LENGTH) {
+    init {
+        paintLabels = true
+        paintTicks = true
+        paintTrack = true
+        majorTickSpacing = TICK_SPACING
+        labelTable = createLabelTable()
     }
 
-    public String getHighValueText() {
-        return getHighValue() == UNLIMITED_VALUE ? UNLIMITED_TEXT : Integer.toString(getHighValue());
+    val lowValueText: String
+        get() = lowValue.toString()
+
+    val highValueText: String
+        get() = valueText(highValue)
+
+    private fun createLabelTable(): Hashtable<Int, JComponent> = Hashtable<Int, JComponent>().apply {
+        for (filmLength in MIN_FILM_LENGTH until MAX_FILM_LENGTH step TICK_SPACING) {
+            put(filmLength, JLabel(valueText(filmLength)))
+        }
+        put(MAX_FILM_LENGTH, JLabel(UNLIMITED_TEXT))
+    }
+
+    private fun valueText(value: Int): String =
+        if (value == UNLIMITED_VALUE) UNLIMITED_TEXT else value.toString()
+
+    companion object {
+        private const val MIN_FILM_LENGTH = 0
+        private const val MAX_FILM_LENGTH = 240
+        const val UNLIMITED_VALUE = MAX_FILM_LENGTH
+        private const val TICK_SPACING = 30
+        private const val UNLIMITED_TEXT = "\u221e"
     }
 }

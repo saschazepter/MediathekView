@@ -355,11 +355,11 @@ class SwingFilterDialog @JvmOverloads internal constructor(
     private fun setupFilmLengthSlider() {
         val slider = filmLengthRangeSlider
 
-        lblMinFilmLengthValue.text = slider.lowValue.toString()
+        lblMinFilmLengthValue.text = slider.lowValueText
         lblMaxFilmLengthValue.text = slider.highValueText
 
         slider.addChangeListener {
-            lblMinFilmLengthValue.text = slider.lowValue.toString()
+            lblMinFilmLengthValue.text = slider.lowValueText
             lblMaxFilmLengthValue.text = slider.highValueText
 
             if (!slider.valueIsAdjusting) {
