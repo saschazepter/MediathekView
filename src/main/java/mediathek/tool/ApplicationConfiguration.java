@@ -72,6 +72,8 @@ public class ApplicationConfiguration {
     public static final String DOWNLOAD_SHOW_LAST_USED_PATH = "download.path.last_used.show";
     public static final String DOWNLOAD_SOUND_BEEP = "download.sound.beep";
     public static final String DOWNLOAD_SHOW_DESCRIPTION = "download.show_description";
+    public static final String DOWNLOAD_DISPLAY_FILTER = "download.display_filter";
+    public static final String DOWNLOAD_VIEW_FILTER = "download.view_filter";
     public static final String DOWNLOAD_MAX_SIMULTANEOUS_NUM = "download.max_simultaneous.number";
     public static final String DOWNLOAD_FETCH_FILE_SIZE = "download.fetch_file_size";
     public static final String DOWNLOAD_CONTINUATION_TIME = "download.continuation.time";

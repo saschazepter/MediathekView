@@ -10,19 +10,15 @@ import mediathek.controller.history.MVUsedUrl;
 import mediathek.controller.starter.Start;
 import mediathek.daten.DatenDownload;
 import mediathek.daten.DatenFilm;
-import mediathek.daten.DatenPset;
-import mediathek.daten.abo.DatenAbo;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
 import mediathek.gui.actions.*;
 import mediathek.gui.dialog.DialogBeendenZeit;
-import mediathek.gui.dialog.DialogEditAbo;
 import mediathek.gui.dialog.edit_download.DialogEditDownload;
 import mediathek.gui.messages.*;
 import mediathek.gui.tabs.AGuiTabPanel;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
-import mediathek.swing.IconUtils;
 import mediathek.tool.*;
 import mediathek.tool.cellrenderer.CellRendererDownloads;
 import mediathek.tool.datum.Datum;
@@ -31,11 +27,9 @@ import mediathek.tool.models.TModelDownload;
 import mediathek.tool.table.MVDownloadsTable;
 import net.engio.mbassy.listener.Handler;
 import org.apache.commons.configuration2.Configuration;
-import org.apache.commons.lang3.SystemUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 
 import javax.swing.*;
 import java.awt.*;
@@ -47,7 +41,10 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class GuiDownloads extends AGuiTabPanel {
@@ -102,18 +99,14 @@ public class GuiDownloads extends AGuiTabPanel {
     private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
     private final DownloadStartInfoProperty startInfoProperty = new DownloadStartInfoProperty();
     private final DownloadsStatusBar statusBar = new DownloadsStatusBar(startInfoProperty);
-    private final ExecutorService downloadSizeLookupExecutor = Executors.newSingleThreadExecutor(new DownloadSizeLookupThreadFactory());
+    private final ExecutorService downloadSizeLookupExecutor = Executors.newSingleThreadExecutor(
+            Thread.ofPlatform().daemon().name("gui-downloads-size-lookup").factory());
     private final Set<DatenDownload> downloadSizeLookupsInFlight =
             Collections.newSetFromMap(new ConcurrentHashMap<>());
     private final JComboBox<String> cbDisplayCategories = displayFilterToolBar.getDisplayCategoriesComboBox();
     private final JComboBox<String> cbView = displayFilterToolBar.getViewComboBox();
-    private boolean onlyAbos;
-    private boolean onlyDownloads;
-    private boolean onlyWaiting;
-    private boolean onlyNotStarted;
-    private boolean onlyStarted;
-    private boolean onlyFinished;
-    private boolean onlyRun;
+    private DisplayFilter displayFilter = DisplayFilter.all();
+    private ViewFilter viewFilter = ViewFilter.all();
     private boolean loadFilmlist;
     /**
      * The internally used model.
@@ -259,7 +252,8 @@ public class GuiDownloads extends AGuiTabPanel {
     private void setupDisplayCategories() {
         final EventList<String> displaySelectionList = GlazedLists.eventListOf(COMBO_DISPLAY_ALL, COMBO_DISPLAY_DOWNLOADS_ONLY, COMBO_DISPLAY_ABOS_ONLY);
         cbDisplayCategories.setModel(GlazedListsSwing.eventComboBoxModelWithThreadProxyList(displaySelectionList));
-        cbDisplayCategories.getModel().setSelectedItem(COMBO_DISPLAY_ALL);
+        displayFilter = DisplayFilter.from(config.getString(ApplicationConfiguration.DOWNLOAD_DISPLAY_FILTER, COMBO_DISPLAY_ALL));
+        cbDisplayCategories.getModel().setSelectedItem(displayFilter.selectedItem());
         cbDisplayCategories.addActionListener(new DisplayCategoryListener());
     }
 
@@ -267,7 +261,8 @@ public class GuiDownloads extends AGuiTabPanel {
         EventList<String> viewSelectionList = GlazedLists.eventListOf(COMBO_VIEW_ALL, COMBO_VIEW_NOT_STARTED,
                 COMBO_VIEW_STARTED, COMBO_VIEW_WAITING, COMBO_VIEW_RUN_ONLY, COMBO_VIEW_FINISHED_ONLY);
         cbView.setModel(GlazedListsSwing.eventComboBoxModelWithThreadProxyList(viewSelectionList));
-        cbView.getModel().setSelectedItem(COMBO_VIEW_ALL);
+        viewFilter = ViewFilter.from(config.getString(ApplicationConfiguration.DOWNLOAD_VIEW_FILTER, COMBO_VIEW_ALL));
+        cbView.getModel().setSelectedItem(viewFilter.selectedItem());
         cbView.addActionListener(new ViewCategoryListener());
     }
 
@@ -377,7 +372,7 @@ public class GuiDownloads extends AGuiTabPanel {
 
         model = new TModelDownload();
         tabelle.setModel(model);
-        tabelle.addMouseListener(new BeobMausTabelle());
+        tabelle.addMouseListener(new DownloadsTableMouseHandler(this, tabelle, daten, mediathekGui));
         tabelle.getSelectionModel().addListSelectionListener(event -> {
             if (!event.getValueIsAdjusting()) {
                 updateFilmData();
@@ -487,7 +482,14 @@ public class GuiDownloads extends AGuiTabPanel {
         // nur Downloads die schon in der Liste sind werden geladen
         tabelle.getSpalten();
 
-        daten.getListeDownloads().getModel(model, onlyAbos, onlyDownloads, onlyNotStarted, onlyStarted, onlyWaiting, onlyRun, onlyFinished);
+        daten.getListeDownloads().getModel(model,
+                displayFilter.onlyAbos(),
+                displayFilter.onlyDownloads(),
+                viewFilter.onlyNotStarted(),
+                viewFilter.onlyStarted(),
+                viewFilter.onlyWaiting(),
+                viewFilter.onlyRun(),
+                viewFilter.onlyFinished());
         tabelle.setSpalten();
         updateFilmData();
         updateStartInfoProperty();
@@ -522,7 +524,7 @@ public class GuiDownloads extends AGuiTabPanel {
         daten.getListeDownloads().listePutzen();
     }
 
-    private synchronized void downloadsAufraeumen(DatenDownload datenDownload) {
+    synchronized void downloadsAufraeumen(DatenDownload datenDownload) {
         // abgeschlossene Downloads werden aus der Tabelle/Liste entfernt
         // die Starts dafür werden auch gelöscht
         daten.getListeDownloads().listePutzen(datenDownload);
@@ -787,9 +789,9 @@ public class GuiDownloads extends AGuiTabPanel {
         reloadTable();
     }
 
-    private void filmStartenWiederholenStoppen(boolean processAllDownloads, boolean starten /* starten/wiederstarten oder stoppen */,
-                                               boolean restartFinishedDownloads /*auch fertige wieder starten*/,
-                                               boolean skipManualDownloads) {
+    void filmStartenWiederholenStoppen(boolean processAllDownloads, boolean starten /* starten/wiederstarten oder stoppen */,
+                                       boolean restartFinishedDownloads /*auch fertige wieder starten*/,
+                                       boolean skipManualDownloads) {
         // bezieht sich immer auf "alle" oder nur die markierten
         // Film der noch keinen Starts hat wird gestartet
         // Film dessen Start schon auf fertig/fehler steht wird wieder gestartet
@@ -974,228 +976,6 @@ public class GuiDownloads extends AGuiTabPanel {
         });
     }
 
-    public class BeobMausTabelle extends MouseAdapter {
-        private DatenDownload datenDownload;
-        private Point p;
-
-        @Override
-        public void mouseClicked(MouseEvent arg0) {
-            if (arg0.getButton() == MouseEvent.BUTTON1) {
-                if (arg0.getClickCount() == 1) {
-                    p = arg0.getPoint();
-                    int row = tabelle.rowAtPoint(p);
-                    int column = tabelle.columnAtPoint(p);
-                    if (row >= 0) {
-                        buttonTable(row, column);
-                    }
-                }
-                else if (arg0.getClickCount() > 1) {
-                    editDownload();
-                }
-            }
-        }
-
-        @Override
-        public void mousePressed(MouseEvent arg0) {
-            p = arg0.getPoint();
-            int row = tabelle.rowAtPoint(p);
-            if (row >= 0) {
-                datenDownload = (DatenDownload) tabelle.getModel().getValueAt(tabelle.convertRowIndexToModel(row), DatenDownload.DOWNLOAD_REF);
-            }
-            if (arg0.isPopupTrigger()) {
-                showMenu(arg0);
-            }
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent arg0) {
-            p = arg0.getPoint();
-            int row = tabelle.rowAtPoint(p);
-            if (row >= 0) {
-                datenDownload = (DatenDownload) tabelle.getModel().getValueAt(tabelle.convertRowIndexToModel(row), DatenDownload.DOWNLOAD_REF);
-            }
-            if (arg0.isPopupTrigger()) {
-                showMenu(arg0);
-            }
-        }
-
-        private void buttonTable(int row, int column) {
-            if (row != -1) {
-                datenDownload = (DatenDownload) tabelle.getModel().getValueAt(tabelle.convertRowIndexToModel(row), DatenDownload.DOWNLOAD_REF);
-                if (tabelle.convertColumnIndexToModel(column) == DatenDownload.DOWNLOAD_BUTTON_START) {
-                    if (datenDownload.start != null && !datenDownload.isDownloadManager()) {
-                        if (datenDownload.start.status == Start.STATUS_FERTIG) {
-                            filmAbspielen();
-                        }
-                        else
-                            filmStartenWiederholenStoppen(false, datenDownload.start.status == Start.STATUS_ERR, true, false);
-                    }
-                    else {
-                        // Download starten
-                        filmStartenWiederholenStoppen(false, true, true, false);
-                    }
-                }
-                else if (tabelle.convertColumnIndexToModel(column) == DatenDownload.DOWNLOAD_BUTTON_DEL) {
-                    if (datenDownload.start != null) {
-                        if (datenDownload.start.status >= Start.STATUS_FERTIG) {
-                            downloadsAufraeumen(datenDownload);
-                        }
-                        else {
-                            // Download dauerhaft löschen
-                            downloadLoeschen(true);
-                        }
-                    }
-                    else {
-                        // Download dauerhaft löschen
-                        downloadLoeschen(true);
-                    }
-                }
-            }
-        }
-
-        private void showMenu(MouseEvent evt) {
-            p = evt.getPoint();
-            final int nr = tabelle.rowAtPoint(p);
-            if (nr != -1) {
-                tabelle.setRowSelectionInterval(nr, nr);
-            }
-            JPopupMenu jPopupMenu = new JPopupMenu();
-
-            //Film vorziehen
-            boolean wartenOderLaufen = false;
-            final int row = tabelle.getSelectedRow();
-            if (row != -1) {
-                DatenDownload download = (DatenDownload) tabelle.getModel().getValueAt(tabelle.convertRowIndexToModel(row), DatenDownload.DOWNLOAD_REF);
-                if (download.start != null) {
-                    if (download.start.status <= Start.STATUS_RUN) {
-                        wartenOderLaufen = true;
-                    }
-                }
-            }
-            // Download starten
-            JMenuItem itemStarten = new JMenuItem("Download starten");
-            itemStarten.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/caret-down.svg"));
-            itemStarten.setEnabled(!wartenOderLaufen);
-            jPopupMenu.add(itemStarten);
-            itemStarten.addActionListener(_ -> filmStartenWiederholenStoppen(false, true, true, false));
-
-            // Download stoppen
-            JMenuItem itemStoppen = new JMenuItem("Download stoppen");
-            itemStoppen.setEnabled(wartenOderLaufen);
-            jPopupMenu.add(itemStoppen);
-            itemStoppen.addActionListener(_ -> filmStartenWiederholenStoppen(false, false, true, false));
-
-            jPopupMenu.addSeparator();
-            jPopupMenu.add(advanceDownloadsAction);
-            jPopupMenu.add(deferDownloadsAction);
-            jPopupMenu.add(deleteDownloadsAction);
-            jPopupMenu.add(editDownloadAction);
-
-            jPopupMenu.addSeparator();
-            jPopupMenu.add(startAllDownloadsAction);
-            jPopupMenu.add(stopAllDownloadsAction);
-
-            JMenuItem itemWartendeStoppen = new JMenuItem("Wartende Downloads stoppen");
-            jPopupMenu.add(itemWartendeStoppen);
-            itemWartendeStoppen.addActionListener(_ -> stopAllWaitingDownloads());
-
-            jPopupMenu.add(refreshDownloadListAction);
-            jPopupMenu.add(cleanupDownloadListAction);
-            jPopupMenu.addSeparator();
-            jPopupMenu.add(playDownloadAction);
-            jPopupMenu.add(deleteDownloadAction);
-            jPopupMenu.add(openTargetFolderAction);
-            jPopupMenu.addSeparator();
-
-            //Abo ändern
-            JMenu submenueAbo = new JMenu("Abo");
-            JMenuItem itemChangeAbo = new JMenuItem("Abo ändern");
-            JMenuItem itemDelAbo = new JMenuItem("Abo löschen");
-            if (datenDownload == null) {
-                submenueAbo.setEnabled(false);
-                itemChangeAbo.setEnabled(false);
-                itemDelAbo.setEnabled(false);
-            }
-            else if (datenDownload.film == null) {
-                submenueAbo.setEnabled(false);
-                itemChangeAbo.setEnabled(false);
-                itemDelAbo.setEnabled(false);
-            }
-            else {
-                final DatenAbo datenAbo = daten.getListeAbo().getAboFuerFilm_schnell(datenDownload.film, false /*die Länge nicht prüfen*/);
-                if (datenAbo == null) {
-                    submenueAbo.setEnabled(false);
-                    itemChangeAbo.setEnabled(false);
-                    itemDelAbo.setEnabled(false);
-                }
-                else {
-                    // dann können wir auch ändern
-                    itemDelAbo.addActionListener(_ -> daten.getListeAbo().aboLoeschen(datenAbo));
-                    itemChangeAbo.addActionListener(_ -> {
-                        DialogEditAbo dialog = new DialogEditAbo(mediathekGui, datenAbo, false/*onlyOne*/);
-                        dialog.setVisible(true);
-                        if (dialog.successful()) {
-                            daten.getListeAbo().aenderungMelden();
-                        }
-                    });
-                }
-            }
-            submenueAbo.add(itemDelAbo);
-            submenueAbo.add(itemChangeAbo);
-            jPopupMenu.add(submenueAbo);
-
-            jPopupMenu.addSeparator();
-
-            JMenuItem itemPlayer = new JMenuItem("Film (URL) abspielen");
-            itemPlayer.setIcon(IconUtils.of(FontAwesomeSolid.PLAY_CIRCLE));
-            itemPlayer.addActionListener(_ -> {
-                final int nr1 = tabelle.rowAtPoint(p);
-                if (nr1 != -1) {
-                    final Optional<DatenPset> optPSetPlay = Optional.ofNullable(Daten.getInstance().getListePset().getPsetAbspielen());
-                    optPSetPlay.ifPresentOrElse(gruppe -> {
-                        Optional<DatenDownload> optDL = Optional.ofNullable((DatenDownload) tabelle.getModel().getValueAt(tabelle.convertRowIndexToModel(nr1), DatenDownload.DOWNLOAD_REF));
-                        optDL.ifPresent(dl -> {
-                            if (dl.film != null) {
-                                DatenFilm filmClone = new DatenFilm(dl.film);
-                                // und jetzt die tatsächlichen URLs des Downloads eintragen
-                                filmClone.setNormalQualityUrl(dl.arr[DatenDownload.DOWNLOAD_URL]);
-                                filmClone.setLowQualityUrl("");
-                                // und starten
-                                daten.getStarterClass().urlMitProgrammStarten(gruppe, filmClone, "");
-                            }
-                        });
-                    }, () -> {
-                        final String menuPath;
-                        if (SystemUtils.IS_OS_MAC_OSX) {
-                            menuPath = "MediathekView->Einstellungen…->Aufzeichnen und Abspielen->Set bearbeiten";
-                        }
-                        else {
-                            menuPath = "Datei->Einstellungen->Set bearbeiten";
-                        }
-                        JOptionPane.showMessageDialog(mediathekGui, "Bitte legen Sie im Menü \"" + menuPath + "\" ein Programm zum Abspielen fest.",
-                                "Kein Videoplayer!", JOptionPane.INFORMATION_MESSAGE);
-                    });
-                }
-            });
-            jPopupMenu.add(itemPlayer);
-
-            JMenuItem itemUrl = new JMenuItem("URL kopieren");
-            itemUrl.addActionListener(_ -> {
-                int nr1 = tabelle.rowAtPoint(p);
-                if (nr1 != -1) {
-                    GuiFunktionen.copyToClipboard(
-                            tabelle.getModel().getValueAt(tabelle.convertRowIndexToModel(nr1),
-                                    DatenDownload.DOWNLOAD_URL).toString());
-                }
-            });
-            jPopupMenu.add(itemUrl);
-
-            jPopupMenu.add(mediathekGui.showFilmInformationAction);
-
-            jPopupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-        }
-    }
-
     /**
      * This class filters the shown table items based on the made selection.
      */
@@ -1203,52 +983,8 @@ public class GuiDownloads extends AGuiTabPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             JComboBox<?> source = (JComboBox<?>) e.getSource();
-
-            switch ((String) source.getModel().getSelectedItem()) {
-                case COMBO_VIEW_ALL -> {
-                    onlyNotStarted = false;
-                    onlyStarted = false;
-                    onlyWaiting = false;
-                    onlyFinished = false;
-                    onlyRun = false;
-                }
-                case COMBO_VIEW_NOT_STARTED -> {
-                    onlyNotStarted = true;
-                    onlyStarted = false;
-                    onlyWaiting = false;
-                    onlyFinished = false;
-                    onlyRun = false;
-                }
-                case COMBO_VIEW_STARTED -> {
-                    onlyNotStarted = false;
-                    onlyStarted = true;
-                    onlyWaiting = false;
-                    onlyFinished = false;
-                    onlyRun = false;
-                }
-                case COMBO_VIEW_WAITING -> {
-                    onlyNotStarted = false;
-                    onlyStarted = false;
-                    onlyWaiting = true;
-                    onlyFinished = false;
-                    onlyRun = false;
-                }
-                case COMBO_VIEW_FINISHED_ONLY -> {
-                    onlyNotStarted = false;
-                    onlyStarted = false;
-                    onlyWaiting = false;
-                    onlyFinished = true;
-                    onlyRun = false;
-                }
-                case COMBO_VIEW_RUN_ONLY -> {
-                    onlyNotStarted = false;
-                    onlyStarted = false;
-                    onlyWaiting = false;
-                    onlyFinished = false;
-                    onlyRun = true;
-                }
-            }
-
+            viewFilter = ViewFilter.from(source.getModel().getSelectedItem());
+            config.setProperty(ApplicationConfiguration.DOWNLOAD_VIEW_FILTER, viewFilter.selectedItem());
             reloadTable();
         }
     }
@@ -1260,31 +996,75 @@ public class GuiDownloads extends AGuiTabPanel {
         @Override
         public void actionPerformed(ActionEvent e) {
             JComboBox<?> source = (JComboBox<?>) e.getSource();
-            switch ((String) source.getModel().getSelectedItem()) {
-                case COMBO_DISPLAY_ALL -> {
-                    onlyAbos = false;
-                    onlyDownloads = false;
-                }
-                case COMBO_DISPLAY_DOWNLOADS_ONLY -> {
-                    onlyAbos = false;
-                    onlyDownloads = true;
-                }
-                case COMBO_DISPLAY_ABOS_ONLY -> {
-                    onlyAbos = true;
-                    onlyDownloads = false;
-                }
-            }
-
+            displayFilter = DisplayFilter.from(source.getModel().getSelectedItem());
+            config.setProperty(ApplicationConfiguration.DOWNLOAD_DISPLAY_FILTER, displayFilter.selectedItem());
             reloadTable();
         }
     }
 
-    private static final class DownloadSizeLookupThreadFactory implements ThreadFactory {
-        @Override
-        public Thread newThread(@NotNull Runnable runnable) {
-            Thread thread = new Thread(runnable, "gui-downloads-size-lookup");
-            thread.setDaemon(true);
-            return thread;
+    private record ViewFilter(
+            boolean onlyNotStarted,
+            boolean onlyStarted,
+            boolean onlyWaiting,
+            boolean onlyFinished,
+            boolean onlyRun) {
+
+        static ViewFilter all() {
+            return new ViewFilter(false, false, false, false, false);
+        }
+
+        String selectedItem() {
+            if (onlyNotStarted) {
+                return COMBO_VIEW_NOT_STARTED;
+            }
+            if (onlyStarted) {
+                return COMBO_VIEW_STARTED;
+            }
+            if (onlyWaiting) {
+                return COMBO_VIEW_WAITING;
+            }
+            if (onlyFinished) {
+                return COMBO_VIEW_FINISHED_ONLY;
+            }
+            if (onlyRun) {
+                return COMBO_VIEW_RUN_ONLY;
+            }
+            return COMBO_VIEW_ALL;
+        }
+
+        static ViewFilter from(Object selectedItem) {
+            return switch (Objects.toString(selectedItem, COMBO_VIEW_ALL)) {
+                case COMBO_VIEW_NOT_STARTED -> new ViewFilter(true, false, false, false, false);
+                case COMBO_VIEW_STARTED -> new ViewFilter(false, true, false, false, false);
+                case COMBO_VIEW_WAITING -> new ViewFilter(false, false, true, false, false);
+                case COMBO_VIEW_FINISHED_ONLY -> new ViewFilter(false, false, false, true, false);
+                case COMBO_VIEW_RUN_ONLY -> new ViewFilter(false, false, false, false, true);
+                default -> all();
+            };
+        }
+    }
+
+    private record DisplayFilter(boolean onlyAbos, boolean onlyDownloads) {
+        static DisplayFilter all() {
+            return new DisplayFilter(false, false);
+        }
+
+        String selectedItem() {
+            if (onlyDownloads) {
+                return COMBO_DISPLAY_DOWNLOADS_ONLY;
+            }
+            if (onlyAbos) {
+                return COMBO_DISPLAY_ABOS_ONLY;
+            }
+            return COMBO_DISPLAY_ALL;
+        }
+
+        static DisplayFilter from(Object selectedItem) {
+            return switch (Objects.toString(selectedItem, COMBO_DISPLAY_ALL)) {
+                case COMBO_DISPLAY_DOWNLOADS_ONLY -> new DisplayFilter(false, true);
+                case COMBO_DISPLAY_ABOS_ONLY -> new DisplayFilter(true, false);
+                default -> all();
+            };
         }
     }
 }
