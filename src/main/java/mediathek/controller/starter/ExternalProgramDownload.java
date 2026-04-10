@@ -70,6 +70,7 @@ public class ExternalProgramDownload extends Thread {
         }
     }
 
+    @SuppressWarnings("java:S6881")
     @Override
     public void run() {
         long filesize = -1;
