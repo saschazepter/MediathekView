@@ -86,7 +86,13 @@ public class GuiDownloads extends AGuiTabPanel {
     protected final DeleteDownloadAction deleteDownloadAction = new DeleteDownloadAction(this);
     protected final OpenTargetFolderAction openTargetFolderAction = new OpenTargetFolderAction(this);
     protected final MergeSubtitleWithVideoAction mergeSubtitleWithVideoAction = new MergeSubtitleWithVideoAction(MediathekGui.ui());
-    protected final JToolBar swingToolBar = new JToolBar();
+    protected final JToolBar swingToolBar = new DownloadsToolBar(
+            refreshDownloadListAction,
+            startAllDownloadsAction,
+            playDownloadAction,
+            deferDownloadsAction,
+            deleteDownloadsAction,
+            cleanupDownloadListAction);
     private final JToolBar configToolBar = new DownloadsConfigToolBar();
     private final DownloadsDisplayFilterToolBar displayFilterToolBar = new DownloadsDisplayFilterToolBar();
     private final JPanel toolBarRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
@@ -107,7 +113,6 @@ public class GuiDownloads extends AGuiTabPanel {
     private final ActiveDownloadsInfoLabel activeDownloadsInfoLabel = new ActiveDownloadsInfoLabel(startInfoProperty);
     private final FinishedDownloadsInfoLabel finishedDownloadsInfoLabel = new FinishedDownloadsInfoLabel(startInfoProperty);
     private final FailedDownloadsInfoLabel failedDownloadsInfoLabel = new FailedDownloadsInfoLabel(startInfoProperty);
-    private final JButton btnClear = displayFilterToolBar.getClearButton();
     private final JComboBox<String> cbDisplayCategories = displayFilterToolBar.getDisplayCategoriesComboBox();
     private final JComboBox<String> cbView = displayFilterToolBar.getViewComboBox();
     private boolean onlyAbos;
@@ -404,11 +409,6 @@ public class GuiDownloads extends AGuiTabPanel {
                 COLUMNS_DISABLED,
                 new int[]{DatenDownload.DOWNLOAD_BUTTON_START, DatenDownload.DOWNLOAD_BUTTON_DEL},
                 true, MVConfig.Configs.SYSTEM_TAB_DOWNLOAD_LINEBREAK));
-
-        btnClear.addActionListener(_ -> {
-            cbDisplayCategories.setSelectedIndex(0);
-            cbView.setSelectedIndex(0);
-        });
     }
 
     @Handler
@@ -967,7 +967,6 @@ public class GuiDownloads extends AGuiTabPanel {
         tempPanel.add(statusBar, BorderLayout.SOUTH);
         downloadListArea.add(tempPanel, BorderLayout.CENTER);
         downloadListArea.add(descriptionTab, BorderLayout.SOUTH);
-        createSwingToolBar();
         createToolBarRow();
 
         add(downloadListArea, BorderLayout.CENTER);
@@ -993,18 +992,6 @@ public class GuiDownloads extends AGuiTabPanel {
                 }
             }
         });
-    }
-
-    protected void createSwingToolBar() {
-        swingToolBar.setFloatable(true);
-        swingToolBar.setName("Downloads");
-
-        swingToolBar.add(refreshDownloadListAction);
-        swingToolBar.add(startAllDownloadsAction);
-        swingToolBar.add(playDownloadAction);
-        swingToolBar.add(deferDownloadsAction);
-        swingToolBar.add(deleteDownloadsAction);
-        swingToolBar.add(cleanupDownloadListAction);
     }
 
     private void createToolBarRow() {
