@@ -38,6 +38,7 @@ import net.miginfocom.swing.MigLayout
 import org.apache.commons.configuration2.sync.LockMode
 import org.apache.logging.log4j.LogManager
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
+import org.kordamp.ikonli.materialdesign2.MaterialDesignM
 import java.awt.Color
 import java.awt.Component
 import java.awt.Dimension
@@ -80,6 +81,7 @@ class DialogEditDownload(
     private var urlField: JTextField? = null
     private var programmAufrufField: JTextField? = null
     private var programmAufrufArrayField: JTextField? = null
+    private var btnQuerCodecDetailsForLocalUrl: JButton? = null
 
     init {
         mVPanelDownloadZiel.border = BorderFactory.createLineBorder(Color(204, 204, 204))
@@ -281,17 +283,35 @@ class DialogEditDownload(
         val executablePath = ffprobePath ?: return
         val film = datenDownload.film ?: return
 
+        val selectedResolution = selectedResolution()
+        requestLiveInfo {
+            DownloadQualitySupport.fetchLiveInfo(executablePath, film, selectedResolution)
+        }
+    }
+
+    private fun requestLiveInfoForUrl(url: String) {
+        val executablePath = ffprobePath ?: return
+        if (url.isBlank()) {
+            showLiveInfoError("Keine URL vorhanden.")
+            return
+        }
+
+        requestLiveInfo {
+            DownloadQualitySupport.fetchLiveInfo(executablePath, url)
+        }
+    }
+
+    private fun requestLiveInfo(loadLiveInfo: () -> DownloadQualityLiveInfoText) {
         liveInfoJob?.cancel()
-        jButtonRequestLiveInfo.isEnabled = false
+        setLiveInfoButtonsEnabled(false)
         jLabelBusyIndicator.isVisible = true
         jLabelBusyIndicator.isBusy = true
         showLiveInfo(DownloadQualityLiveInfoText())
 
-        val selectedResolution = selectedResolution()
         liveInfoJob = uiScope.launch {
             try {
                 val liveInfo = runInterruptible(Dispatchers.IO) {
-                    DownloadQualitySupport.fetchLiveInfo(executablePath, film, selectedResolution)
+                    loadLiveInfo()
                 }
                 showLiveInfo(liveInfo)
             } catch (_: CancellationException) {
@@ -302,9 +322,14 @@ class DialogEditDownload(
                 showLiveInfoError("Unbekannter Fehler aufgetreten.")
             } finally {
                 resetBusyIndicator()
-                jButtonRequestLiveInfo.isEnabled = ffprobePath != null
+                setLiveInfoButtonsEnabled(ffprobePath != null)
             }
         }
+    }
+
+    private fun setLiveInfoButtonsEnabled(enabled: Boolean) {
+        jButtonRequestLiveInfo.isEnabled = enabled
+        btnQuerCodecDetailsForLocalUrl?.isEnabled = enabled
     }
 
     private fun resetBusyIndicator() {
@@ -316,7 +341,7 @@ class DialogEditDownload(
         liveInfoJob?.cancel()
         resetBusyIndicator()
         showLiveInfo(DownloadQualityLiveInfoText())
-        jButtonRequestLiveInfo.isEnabled = ffprobePath != null
+        setLiveInfoButtonsEnabled(ffprobePath != null)
     }
 
     private fun showLiveInfo(liveInfoText: DownloadQualityLiveInfoText) {
@@ -681,7 +706,28 @@ class DialogEditDownload(
 
             DatenDownload.DOWNLOAD_RESTZEIT -> textField.text = datenDownload.textRestzeit
         }
+        if (index == DatenDownload.DOWNLOAD_URL) {
+            addValueComponent(label, createDownloadUrlPanel(textField))
+            return
+        }
         addValueComponent(label, textField)
+    }
+
+    private fun createDownloadUrlPanel(textField: JTextField) = JPanel().apply {
+        layout = MigLayout("insets 0, fillx", "[grow,fill][]", "")
+        makeShrinkable(textField)
+
+        val queryCodecDetailsButton = JButton("").apply {
+            name = "btnQuerCodecDetailsForLocalUrl"
+            icon = IconUtils.of(MaterialDesignM.MOVIE_SEARCH)
+            toolTipText = "Codec-Details für URL abfragen"
+            isEnabled = ffprobePath != null
+            addActionListener { requestLiveInfoForUrl(textField.text.trim()) }
+        }
+        btnQuerCodecDetailsForLocalUrl = queryCodecDetailsButton
+
+        add(textField, "growx, pushx, wmin 0")
+        add(queryCodecDetailsButton, "gapleft 5")
     }
 
     private fun createValueLabel(text: String) = JLabel(text).apply(::makeShrinkable)

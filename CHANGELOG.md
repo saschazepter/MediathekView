@@ -52,6 +52,7 @@
 - **FEATURE:** Neue integrierte Lucene-Hilfsdokumentation, die über den *?*-Button bzw. *Hilfe/Lucene-Suchsyntax anzeigen..* aufgerufen werden kann. Der Menüeintrag ist auch bei deaktivierter Lucene-Suche aufrufbar
 - **FEATURE(macOS):** Verbesserte Steuerung des IINA Players. Hierzu werden seitens macOS Berechtigungen zur Fernsteuerung benötigt.
 - **FEATURE:** zapp Livestream-Einträge haben nun auch ein Kontextmenü um das Abspielen der Einträge zu ermöglichen. Die Livestreams können weiterhin per Doppelklick gestartet werden.
+- **FEATURE:** Im *Download ändern*-Dialog kann über den Button rechts neben dem Feld `URL` die Codec-Details für eine manuell geänderte URL abgefragt werden.
 - Große Datenbank-Maintenance der Filmhistorie wird nur noch alle 30 Tage ausgeführt, nicht bei jedem Beenden. Kann manuell über das Hilfe-Menü gestartet werden.
 - Untertitel-Format-Support wurde vollständig neu implementiert und unterstützt nun auch TTML2-Standard.
 - Lucene-Index-Erstellung wurde für multi-core-Systeme optimiert.

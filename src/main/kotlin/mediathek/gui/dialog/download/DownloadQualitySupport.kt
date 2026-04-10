@@ -97,9 +97,17 @@ object DownloadQualitySupport {
         film: DatenFilm,
         resolution: FilmResolution.Enum
     ): DownloadQualityLiveInfoText {
+        return fetchLiveInfo(ffprobePath, film.getUrlFuerAufloesung(resolution))
+    }
+
+    @Throws(JaffreeAbnormalExitException::class)
+    fun fetchLiveInfo(
+        ffprobePath: Path,
+        url: String
+    ): DownloadQualityLiveInfoText {
         val result = FFprobe.atPath(ffprobePath)
             .setShowStreams(true)
-            .setInput(film.getUrlFuerAufloesung(resolution))
+            .setInput(url)
             .execute()
         return buildLiveInfoText(result)
     }
