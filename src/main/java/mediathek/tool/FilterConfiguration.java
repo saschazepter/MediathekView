@@ -21,13 +21,12 @@ package mediathek.tool;
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider;
 import mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner;
 import org.apache.commons.configuration2.Configuration;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.regex.Matcher;
@@ -38,7 +37,7 @@ public class FilterConfiguration {
     protected static final String FILTER_PANEL_AVAILABLE_FILTERS = "filter.available.filters.filter_";
     protected static final String FILTER_PANEL_LOCKED = "filter.filter_%s.locked";
     private static final Pattern JSON_STRING_PATTERN = Pattern.compile("\"((?:\\\\.|[^\"])*)\"");
-    private static final Logger LOG = LoggerFactory.getLogger(FilterConfiguration.class);
+    private static final Logger LOG = LogManager.getLogger(FilterConfiguration.class);
     private final Configuration configuration;
     private final CopyOnWriteArraySet<Runnable> availableFiltersChangedCallbacks = new CopyOnWriteArraySet<>();
     private final CopyOnWriteArraySet<Consumer<FilterDTO>> currentFilterChangedCallbacks = new CopyOnWriteArraySet<>();
@@ -123,35 +122,6 @@ public class FilterConfiguration {
             }
         }
         return false;
-    }
-
-    public boolean noFiltersAreSet() {
-        /*
-         * If conditions are met, no filmlength filter is set.
-         * return true if filtering is not needed, false if needed.
-         */
-        final BooleanSupplier filmLengthFilterIsNotSet = () -> {
-            var filmLengthMin = (int) getFilmLengthMin();
-            var filmLengthMax = (int) getFilmLengthMax();
-            return filmLengthMin == 0 && filmLengthMax == FilmLengthSlider.UNLIMITED_VALUE;
-        };
-
-        return getCheckedChannels().isEmpty()
-                && getThema().isEmpty()
-                && filmLengthFilterIsNotSet.getAsBoolean()
-                && !isDontShowAbos()
-                && !isShowUnseenOnly()
-                && !isShowHighQualityOnly()
-                && !isShowSubtitlesOnly()
-                && !isShowLivestreamsOnly()
-                && !isShowNewOnly()
-                && !isShowBookMarkedOnly()
-                && !isDontShowTrailers()
-                && !isDontShowSignLanguage()
-                && !isDontShowGeoblocked()
-                && !isDontShowAudioVersions()
-                && !isDontShowDuplicates()
-                && getZeitraum().equalsIgnoreCase(ZeitraumSpinner.INFINITE_TEXT);
     }
 
     public boolean isShowHighQualityOnly() {
