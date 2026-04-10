@@ -22,10 +22,13 @@ import com.jidesoft.popup.JidePopup
 import mediathek.swing.IconUtils
 import org.kordamp.ikonli.materialdesign2.MaterialDesignC
 import java.awt.BorderLayout
+import java.awt.Component
 import java.awt.FlowLayout
 import java.awt.Insets
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import java.awt.event.ContainerAdapter
+import java.awt.event.ContainerEvent
 import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.JToolBar
@@ -70,6 +73,11 @@ class DownloadsToolBarRow(
                 updateOverflowStateLater()
             }
         })
+        addContainerListener(object : ContainerAdapter() {
+            override fun componentAdded(e: ContainerEvent?) {
+                updateOverflowStateLater()
+            }
+        })
         statePersistence.restoreLater()
     }
 
@@ -95,28 +103,23 @@ class DownloadsToolBarRow(
             return
         }
 
-        val newVisibleOverflowToolBarCount = calculateVisibleOverflowToolBarCount()
-        if (newVisibleOverflowToolBarCount == visibleOverflowToolBarCount) {
+        val dockedOverflowToolBars = dockedOverflowToolBars()
+        val newVisibleOverflowToolBarCount = calculateVisibleOverflowToolBarCount(dockedOverflowToolBars)
+        val expectedComponents = expectedComponents(dockedOverflowToolBars, newVisibleOverflowToolBarCount)
+        if (newVisibleOverflowToolBarCount == visibleOverflowToolBarCount && components.toList() == expectedComponents) {
             return
         }
 
         visibleOverflowToolBarCount = newVisibleOverflowToolBarCount
         overflowPopup.hidePopup()
         removeAll()
-        if (!primaryToolBar.isFloating()) {
-            add(primaryToolBar)
-        }
-        visibleOverflowToolBars().forEach(::add)
-        if (hiddenOverflowToolBars().isNotEmpty()) {
-            add(overflowButton)
-        }
+        expectedComponents.forEach(::add)
 
         revalidate()
         repaint()
     }
 
-    private fun calculateVisibleOverflowToolBarCount(): Int {
-        val dockedOverflowToolBars = dockedOverflowToolBars()
+    private fun calculateVisibleOverflowToolBarCount(dockedOverflowToolBars: List<JToolBar>): Int {
         val fullWidth = primaryToolBar.dockedPreferredWidth() +
                 dockedOverflowToolBars.sumOf { it.preferredSize.width }
         if (fullWidth <= width) {
@@ -138,7 +141,7 @@ class DownloadsToolBarRow(
 
     private fun showOverflowPopup() {
         overflowContent.removeAll()
-        hiddenOverflowToolBars().forEach { toolbar ->
+        hiddenOverflowToolBars(dockedOverflowToolBars(), visibleOverflowToolBarCount).forEach { toolbar ->
             overflowContent.add(toolbar)
         }
         overflowContent.revalidate()
@@ -147,11 +150,19 @@ class DownloadsToolBarRow(
         overflowPopup.showPopup(overflowButton)
     }
 
-    private fun visibleOverflowToolBars(): List<JToolBar> =
-        dockedOverflowToolBars().take(visibleOverflowToolBarCount)
+    private fun hiddenOverflowToolBars(dockedOverflowToolBars: List<JToolBar>, visibleToolBarCount: Int): List<JToolBar> =
+        dockedOverflowToolBars.drop(visibleToolBarCount)
 
-    private fun hiddenOverflowToolBars(): List<JToolBar> =
-        dockedOverflowToolBars().drop(visibleOverflowToolBarCount)
+    private fun expectedComponents(dockedOverflowToolBars: List<JToolBar>, visibleToolBarCount: Int): List<Component> =
+        buildList {
+            if (!primaryToolBar.isFloating()) {
+                add(primaryToolBar)
+            }
+            addAll(dockedOverflowToolBars.take(visibleToolBarCount))
+            if (hiddenOverflowToolBars(dockedOverflowToolBars, visibleToolBarCount).isNotEmpty()) {
+                add(overflowButton)
+            }
+        }
 
     private fun dockedOverflowToolBars(): List<JToolBar> =
         overflowToolBars.filterNot { it.isFloating() }
