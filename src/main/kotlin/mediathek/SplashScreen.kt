@@ -2,7 +2,6 @@ package mediathek
 
 import mediathek.config.Konstanten
 import mediathek.tool.UIProgressState
-import mediathek.tool.timer.TimerPool.timerPool
 import org.apache.commons.lang3.SystemUtils
 import org.jdesktop.swingx.StackLayout
 import java.awt.Color
@@ -10,7 +9,6 @@ import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.Font
 import java.util.*
-import java.util.concurrent.TimeUnit
 import javax.swing.*
 import kotlin.math.roundToInt
 
@@ -52,7 +50,10 @@ class SplashScreen : JWindow() {
     }
 
     fun close() {
-        timerPool.schedule({ SwingUtilities.invokeLater { isVisible = false } }, 2, TimeUnit.SECONDS)
+        SwingUtilities.invokeLater {
+            isVisible = false
+            dispose()
+        }
         Main.splashScreen = Optional.empty()
     }
 
