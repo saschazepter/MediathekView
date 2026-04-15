@@ -8,13 +8,10 @@ import java.awt.Color
 import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.Font
-import java.util.*
 import javax.swing.*
-import kotlin.math.roundToInt
 
 class SplashScreen : JWindow() {
     private val versionLabel = JLabel()
-    private var curSteps = 0.0
     private val appTitleLabel = JLabel()
     private val imageLabel = JLabel()
     private val progressBar = JProgressBar()
@@ -44,17 +41,18 @@ class SplashScreen : JWindow() {
     }
 
     fun update(state: UIProgressState) {
-        curSteps++
-        val pct = (100 * (curSteps / MAXIMUM_STEPS)).roundToInt()
-        updateStatus(state.toString(), pct)
+        runOnEdt {
+            val percentComplete = state.toProgressPercent()
+            updateStatus(state.toString(), percentComplete)
+        }
     }
 
     fun close() {
-        SwingUtilities.invokeLater {
+        runOnEdt {
             isVisible = false
             dispose()
         }
-        Main.splashScreen = Optional.empty()
+        Main.splashScreen = java.util.Optional.empty()
     }
 
     /**
@@ -74,16 +72,29 @@ class SplashScreen : JWindow() {
      * @param statusText      The new status text to display.
      * @param percentComplete The new percentage.
      */
-    private fun updateStatus(statusText: String?, percentComplete: Int) {
-        if (!SystemUtils.IS_OS_MAC_OSX)
-            backgroundPanel.paintImmediately(0,0, width, height)
-        appTitleLabel.paintImmediately(0, 0, appTitleLabel.width, appTitleLabel.height)
-        imageLabel.paintImmediately(0, 0, imageLabel.width, imageLabel.height)
-        versionLabel.paintImmediately(0, 0, versionLabel.width, versionLabel.height)
-        statusLabel.text = statusText
-        statusLabel.paintImmediately(0, 0, statusLabel.width, statusLabel.height)
-        progressBar.value = percentComplete
-        progressBar.paintImmediately(0, 0, progressBar.width, progressBar.height)
+    private fun updateStatus(statusText: String, percentComplete: Int) {
+        if (statusLabel.text != statusText) {
+            statusLabel.text = statusText
+        }
+        if (progressBar.value != percentComplete) {
+            progressBar.value = percentComplete
+        }
+        stackPanel.paintImmediately(0, 0, width, height)
+    }
+
+    private inline fun runOnEdt(crossinline block: () -> Unit) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            block()
+        } else {
+            SwingUtilities.invokeLater { block() }
+        }
+    }
+
+    private fun UIProgressState.toProgressPercent(): Int {
+        if (MAXIMUM_STATE_INDEX == 0) {
+            return 100
+        }
+        return (ordinal * 100) / MAXIMUM_STATE_INDEX
     }
 
     private fun initComponents() {
@@ -173,6 +184,6 @@ class SplashScreen : JWindow() {
     }
 
     companion object {
-        private val MAXIMUM_STEPS = EnumSet.allOf(UIProgressState::class.java).size - 1.0
+        private val MAXIMUM_STATE_INDEX = UIProgressState.values().lastIndex
     }
 }
