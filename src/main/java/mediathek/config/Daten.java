@@ -203,15 +203,15 @@ public class Daten {
     }
 
     private CompletableFuture<AboHistoryController> launchAboHistoryController(ExecutorService decoratedPool) {
-        var aboHistoryFuture = CompletableFuture.supplyAsync(AboHistoryController::new, decoratedPool);
-        aboHistoryFuture.whenCompleteAsync((aboHistoryController, throwable) -> {
+        var future = CompletableFuture.supplyAsync(AboHistoryController::new, decoratedPool);
+        future.whenCompleteAsync((aboHistoryController, throwable) -> {
             if (throwable != null) {
                 logger.error("launchAboHistoryController", throwable);
                 return;
             }
             setAboHistoryList(aboHistoryController);
         }, decoratedPool);
-        return aboHistoryFuture;
+        return future;
     }
 
     public void waitForHistoryDataLoadingToComplete() throws ExecutionException, InterruptedException {
