@@ -22,10 +22,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 public final class Main {
+    private static final String LOG4J_SHUTDOWN_CALLBACK_REGISTRY = "mediathek.tool.Log4jShutdownCallbackRegistry";
+    private static final String STARTUP_CLASS_NAME = "mediathek.MainStartup";
     public static Optional<SplashScreen> splashScreen = Optional.empty();
 
     static {
-        System.setProperty("log4j.shutdownCallbackRegistry", "mediathek.tool.Log4jShutdownCallbackRegistry");
+        System.setProperty("log4j.shutdownCallbackRegistry", LOG4J_SHUTDOWN_CALLBACK_REGISTRY);
     }
 
     private Main() {
@@ -33,8 +35,7 @@ public final class Main {
 
     public static void main(String... args) {
         try {
-            Class<?> startupClass = Class.forName("mediathek.MainStartup");
-            startupClass.getMethod("main", String[].class).invoke(null, (Object) args);
+            startKotlinMain(args);
         }
         catch (InvocationTargetException ex) {
             Throwable cause = ex.getCause();
@@ -49,5 +50,13 @@ public final class Main {
         catch (ReflectiveOperationException ex) {
             throw new IllegalStateException("Failed to start MediathekView", ex);
         }
+    }
+
+    /**
+     * Keep a Java entrypoint type for mixed Java/Kotlin compilation while delegating the real startup flow to Kotlin.
+     */
+    private static void startKotlinMain(String... args) throws ReflectiveOperationException {
+        Class<?> startupClass = Class.forName(STARTUP_CLASS_NAME);
+        startupClass.getMethod("main", String[].class).invoke(null, (Object) args);
     }
 }
