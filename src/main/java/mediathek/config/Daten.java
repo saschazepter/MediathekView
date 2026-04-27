@@ -3,8 +3,7 @@ package mediathek.config;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.SortedList;
-import mediathek.Main;
-import mediathek.SplashScreen;
+import mediathek.SplashScreenLifecycle;
 import mediathek.controller.IoXmlLesen;
 import mediathek.controller.IoXmlSchreiben;
 import mediathek.controller.history.AboHistoryController;
@@ -280,7 +279,7 @@ public class Daten {
             return false;
         }
 
-        Main.splashScreen.ifPresent(SplashScreen::close);
+        SplashScreenLifecycle.close();
         // dann gibts ein Backup
         logger.info("Es gibt ein Backup");
 

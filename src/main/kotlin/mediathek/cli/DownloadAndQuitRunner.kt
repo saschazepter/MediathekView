@@ -59,6 +59,7 @@ object DownloadAndQuitRunner {
         }
 
         logger.info("Loading downloads from abos...")
+        prepareAboSearch(daten)
         daten.listeDownloads.abosAuffrischen()
         daten.listeDownloads.abosSuchen(null)
 
@@ -131,6 +132,11 @@ object DownloadAndQuitRunner {
             return@withContext true
         }
         completion.get()
+    }
+
+    private suspend fun prepareAboSearch(daten: Daten) = withContext(Dispatchers.Default) {
+        logger.info("Preparing abo matches for {} film(s)...", daten.listeFilme.size)
+        daten.listeAbo.setAboFuerFilm(daten.listeFilme, false)
     }
 
     private fun loadLocalFilmlist(daten: Daten) {

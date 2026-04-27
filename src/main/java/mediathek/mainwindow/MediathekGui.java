@@ -19,7 +19,7 @@
 package mediathek.mainwindow;
 
 import com.formdev.flatlaf.extras.components.FlatButton;
-import mediathek.Main;
+import mediathek.SplashScreenLifecycle;
 import mediathek.audiothek.repository.AudioRepository;
 import mediathek.audiothek.ui.main.AudiothekPanel;
 import mediathek.config.*;
@@ -204,7 +204,7 @@ public class MediathekGui extends JFrame {
         loadFilmListAction = new LoadFilmListAction(this);
         searchProgramUpdateAction = new SearchProgramUpdateAction();
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.LOAD_MAINWINDOW));
+        SplashScreenLifecycle.update(UIProgressState.LOAD_MAINWINDOW);
 
         getContentPane().setLayout(new BorderLayout());
 
@@ -214,7 +214,7 @@ public class MediathekGui extends JFrame {
 
         remapF10Key();
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.WAIT_FOR_HISTORY_DATA));
+        SplashScreenLifecycle.update(UIProgressState.WAIT_FOR_HISTORY_DATA);
         try {
             daten.waitForHistoryDataLoadingToComplete();
         }
@@ -226,19 +226,19 @@ public class MediathekGui extends JFrame {
             logger.error("waitForHistoryDataLoadingToComplete()", e);
         }
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.CREATE_STATUS_BAR));
+        SplashScreenLifecycle.update(UIProgressState.CREATE_STATUS_BAR);
         createStatusBar();
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.SETUP_FILM_LISTENERS));
+        SplashScreenLifecycle.update(UIProgressState.SETUP_FILM_LISTENERS);
         setupFilmListListener();
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.LOAD_TABS));
+        SplashScreenLifecycle.update(UIProgressState.LOAD_TABS);
         initTabs();
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.INIT_MENUS));
+        SplashScreenLifecycle.update(UIProgressState.INIT_MENUS);
         initMenus();
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.LOAD_MEMORY_MONITOR));
+        SplashScreenLifecycle.update(UIProgressState.LOAD_MEMORY_MONITOR);
         createMemoryMonitor();
 
         setupNotificationCenter();
@@ -246,7 +246,7 @@ public class MediathekGui extends JFrame {
         createCommonToolBar();
         installToolBar();
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.FINISHED));
+        SplashScreenLifecycle.update(UIProgressState.FINISHED);
 
         subscribeTableModelChangeEvent();
 
@@ -777,13 +777,13 @@ public class MediathekGui extends JFrame {
         Container contentPane = getContentPane();
         contentPane.add(tabbedPane, BorderLayout.CENTER);
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.LOAD_DOWNLOAD_TAB));
+        SplashScreenLifecycle.update(UIProgressState.LOAD_DOWNLOAD_TAB);
         tabDownloads = (GuiDownloads) createTabDownloads(daten);
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.LOAD_FILM_TAB));
+        SplashScreenLifecycle.update(UIProgressState.LOAD_FILM_TAB);
         tabFilme = (GuiFilme) createTabFilme(daten);
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.ADD_TABS_TO_UI));
+        SplashScreenLifecycle.update(UIProgressState.ADD_TABS_TO_UI);
         tabbedPane.addTab(GuiFilme.NAME, tabFilme);
         tabbedPane.addTab(GuiDownloads.NAME, tabDownloads);
         installLivestreamsTab();
@@ -793,7 +793,7 @@ public class MediathekGui extends JFrame {
             tabbedPane.restoreSavedTabPosition();
         tabbedPane.installChangeListener();
 
-        Main.splashScreen.ifPresent(s -> s.update(UIProgressState.CONFIGURE_TABS));
+        SplashScreenLifecycle.update(UIProgressState.CONFIGURE_TABS);
         configureTabPlacement();
         configureTabIcons();
     }
