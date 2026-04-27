@@ -157,6 +157,10 @@ object StandardLocations {
         }
     }
 
+    fun getFilmlistMetadataFilePath(): Path {
+        return Paths.get(getFilmlistFilePathString()).resolveSibling(Konstanten.JSON_DATEI_FILME + ".properties")
+    }
+
     /**
      * Return the location of the lucene film index.
      */

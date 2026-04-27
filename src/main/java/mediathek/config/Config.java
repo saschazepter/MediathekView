@@ -70,6 +70,8 @@ public class Config {
     private static boolean disableJvmParameterChecks;
     @CommandLine.Option(names = {"-ns", "--no-splash"}, description = "Splash-Screen nicht anzeigen")
     private static boolean disableSplashScreen;
+    @CommandLine.Option(names = "--download-and-quit", description = "Filmliste aktualisieren, Abo-Downloads starten und danach beenden")
+    private static boolean downloadAndQuit;
     public static boolean isDisableFlatLafDecorations() {
         return disableFlatLafDecorations;
     }
@@ -83,6 +85,10 @@ public class Config {
     }
 
     public static boolean isSplashScreenDisabled() { return disableSplashScreen;}
+
+    public static boolean isDownloadAndQuit() {
+        return downloadAndQuit;
+    }
 
     public static boolean isDisableJvmParameterChecks() {
         return disableJvmParameterChecks;

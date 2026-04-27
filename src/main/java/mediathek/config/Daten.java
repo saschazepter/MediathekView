@@ -253,6 +253,10 @@ public class Daten {
     }
 
     private boolean askForBackupRestore() {
+        if (Config.isDownloadAndQuit()) {
+            logger.error("CLI download mode does not support interactive backup restore.");
+            return false;
+        }
         var text = """
                 Die Einstellungen sind beschädigt und können nicht geladen werden.
                 Soll versucht werden diese aus einem Backup wiederherzustellen?

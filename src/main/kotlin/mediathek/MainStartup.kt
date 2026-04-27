@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
+import mediathek.cli.DownloadAndQuitRunner
 import mediathek.config.*
 import mediathek.controller.SenderFilmlistLoadApprover
 import mediathek.controller.history.SeenHistoryMigrator
@@ -82,21 +83,39 @@ class MainStartup private constructor() {
          */
         @JvmStatic
         fun main(args: Array<String>) = runBlocking {
-            if (GraphicsEnvironment.isHeadless()) {
-                System.err.println("Diese Version von MediathekView unterstützt keine Kommandozeilenausführung.")
-                exitProcess(1)
-            }
-
             setupEnvironmentProperties()
 
             val parseResult = parseCommandLine(args)
+            if (GraphicsEnvironment.isHeadless() && !Config.isDownloadAndQuit()) {
+                System.err.println("Diese Version von MediathekView unterstützt keine Kommandozeilenausführung.")
+                exitProcess(1)
+            }
             configureStartup(parseResult, args)
+            printDirectoryPaths()
+
+            if (Config.isDownloadAndQuit()) {
+                installSingleInstanceHandler(false)
+                performBackgroundStartup(cleanupMediaDb = !GraphicsEnvironment.isHeadless())
+                loadConfigurationDataCli()
+                migrateSeenHistory()
+                Daten.getInstance().launchHistoryDataLoading()
+                Daten.getInstance().waitForHistoryDataLoadingToComplete()
+                withContext(Dispatchers.IO) {
+                    Daten.getInstance().listeBookmarkList.loadFromFile()
+                }
+                val exitCode = try {
+                    DownloadAndQuitRunner.run()
+                } finally {
+                    Daten.getInstance().starterClass.shutdown()
+                    ApplicationConfiguration.getInstance().writeConfiguration()
+                }
+                exitProcess(exitCode)
+            }
 
             initializeSwingEnvironment()
-            printDirectoryPaths()
             showSplashScreenIfEnabled()
 
-            performBackgroundStartup()
+            performBackgroundStartup(cleanupMediaDb = true)
 
             loadConfigurationData()
             activateNewSenders()
@@ -138,13 +157,17 @@ class MainStartup private constructor() {
             } catch (ex: CommandLine.ParameterException) {
                 cmd.err.use { err ->
                     val errStr = ex.message + "\n\n" + ex.commandLine.usageMessage
-                    withContext(Dispatchers.Swing) {
-                        JOptionPane.showMessageDialog(
-                            null,
-                            errStr,
-                            "Fehlerhafte Kommandozeilenparameter",
-                            JOptionPane.ERROR_MESSAGE
-                        )
+                    if (GraphicsEnvironment.isHeadless()) {
+                        err.println(errStr)
+                    } else {
+                        withContext(Dispatchers.Swing) {
+                            JOptionPane.showMessageDialog(
+                                null,
+                                errStr,
+                                "Fehlerhafte Kommandozeilenparameter",
+                                JOptionPane.ERROR_MESSAGE
+                            )
+                        }
                     }
                     err.println(ex.message)
                     if (!CommandLine.UnmatchedArgumentException.printSuggestions(ex, err)) {
@@ -222,11 +245,20 @@ class MainStartup private constructor() {
             Main.splashScreen.ifPresent { splash -> splash.isVisible = true }
         }
 
-        private suspend fun performBackgroundStartup() = withContext(Dispatchers.IO) {
+        private suspend fun performBackgroundStartup(cleanupMediaDb: Boolean) = withContext(Dispatchers.IO) {
             migrateOldConfigSettings()
-            removeMediaDb()
+            if (cleanupMediaDb) {
+                removeMediaDb()
+            }
             deleteOldFilmDatabaseFiles()
             deleteOldUserAgentsDatabase()
+        }
+
+        private fun loadConfigurationDataCli() {
+            if (!Daten.getInstance().allesLaden()) {
+                logger.error("CLI download mode requires an existing valid configuration and does not support interactive setup or repair.")
+                exitProcess(1)
+            }
         }
 
         /**
@@ -696,16 +728,20 @@ class MainStartup private constructor() {
             } catch (e: Exception) {
                 logger.error("migrateSeenHistory", e)
                 Main.splashScreen.ifPresent(SplashScreen::close)
-                withContext(Dispatchers.Swing) {
-                    SwingErrorDialog.showExceptionMessage(
-                        null,
-                        """
-                            <html>Bei der Migration der Historie der Filme ist ein Fehler aufgetreten.<br>
-                            Das Programm kann nicht fortfahren und wird beendet.<br><br>
-                            Bitte überprüfen Sie die Fehlermeldung und suchen Sie Hilfe im Forum.</html>
-                        """.trimIndent(),
-                        e
-                    )
+                if (Config.isDownloadAndQuit() || GraphicsEnvironment.isHeadless()) {
+                    logger.error("Die Migration der Historie ist fehlgeschlagen. Das Programm wird beendet.")
+                } else {
+                    withContext(Dispatchers.Swing) {
+                        SwingErrorDialog.showExceptionMessage(
+                            null,
+                            """
+                                <html>Bei der Migration der Historie der Filme ist ein Fehler aufgetreten.<br>
+                                Das Programm kann nicht fortfahren und wird beendet.<br><br>
+                                Bitte überprüfen Sie die Fehlermeldung und suchen Sie Hilfe im Forum.</html>
+                            """.trimIndent(),
+                            e
+                        )
+                    }
                 }
                 exitProcess(99)
             }
@@ -788,16 +824,21 @@ class MainStartup private constructor() {
         /**
          * Prevent startup of multiple instances of the app.
          */
-        private fun installSingleInstanceHandler() {
+        private fun installSingleInstanceHandler(showDialog: Boolean = true) {
             singleInstanceWatcher = SingleInstance()
             if (singleInstanceWatcher?.isAppAlreadyActive() == true) {
-                JOptionPane.showMessageDialog(
-                    null,
-                    "Es dürfen nicht mehrere MediathekView-Instanzen gleichzeitig laufen.\n" +
-                        "Bitte beenden Sie zuerst das andere Programm.",
-                    Konstanten.PROGRAMMNAME,
-                    JOptionPane.ERROR_MESSAGE
-                )
+                val message = "Es dürfen nicht mehrere MediathekView-Instanzen gleichzeitig laufen.\n" +
+                    "Bitte beenden Sie zuerst das andere Programm."
+                if (showDialog) {
+                    JOptionPane.showMessageDialog(
+                        null,
+                        message,
+                        Konstanten.PROGRAMMNAME,
+                        JOptionPane.ERROR_MESSAGE
+                    )
+                } else {
+                    logger.error(message)
+                }
                 exitProcess(1)
             }
         }

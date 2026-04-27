@@ -1,5 +1,6 @@
 package mediathek.filmlisten;
 
+import mediathek.config.Config;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.config.StandardLocations;
@@ -29,6 +30,7 @@ import org.jspecify.annotations.NonNull;
 
 import javax.swing.*;
 import javax.swing.event.EventListenerList;
+import java.awt.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.UnknownHostException;
@@ -82,36 +84,41 @@ public class FilmeLaden {
     }
 
     private void showNoUpdateAvailableDialog() {
-        JOptionPane.showMessageDialog(MediathekGui.ui(),
-                NO_UPDATE_AVAILABLE,
-                Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
+        final var ui = MediathekGui.ui();
+        if (ui != null && !Config.isDownloadAndQuit() && !GraphicsEnvironment.isHeadless()) {
+            JOptionPane.showMessageDialog(ui,
+                    NO_UPDATE_AVAILABLE,
+                    Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
+        } else {
+            logger.info(NO_UPDATE_AVAILABLE);
+        }
     }
 
-    /**
-     * Check if a newer filmlist id is available on the remote server in order to prevent unnecessary filmlist downloads...
-     *
-     * @return true if newer is availble, otherwise false.
-     */
-    private boolean hasNewRemoteFilmlist() {
+    private boolean hasNewRemoteFilmlist(String sourceUrl) {
         boolean result = false;
         logger.trace("hasNewRemoteFilmList()");
-
-        final String id = Daten.getInstance().getListeFilme().getMetaData().getId();
         boolean showDialogs = GuiFunktionen.getFilmListUpdateType() != FilmListUpdateType.AUTOMATIC;
 
-        HttpUrl filmListUrl = Konstanten.ROUTER_BASE_URL.resolve("filmliste.id");
-        final Request request = new Request.Builder().url(Objects.requireNonNull(filmListUrl)).build();
+        HttpUrl filmListUrl = HttpUrl.get(sourceUrl);
+        final String storedEtag = FilmListMetadataStore.readEtag(sourceUrl);
+        final Request.Builder requestBuilder = new Request.Builder()
+                .url(Objects.requireNonNull(filmListUrl))
+                .head();
+        if (storedEtag != null && !storedEtag.isBlank()) {
+            requestBuilder.header("If-None-Match", storedEtag);
+        }
+
+        final Request request = requestBuilder.build();
         try (Response response = MVHttpClient.getInstance().getHttpClient().newCall(request).execute();
-             ResponseBody body = response.body()) {
-            if (response.isSuccessful()) {
-                String remoteId = body.string();
-                if (!remoteId.isEmpty() && !remoteId.equalsIgnoreCase(id))
-                    result = true; // we have an update...
+             ResponseBody _ = response.body()) {
+            if (response.code() == 304) {
+                result = false;
+            } else if (response.isSuccessful()) {
+                final String remoteEtag = response.header("ETag");
+                result = storedEtag == null || storedEtag.isBlank() || !storedEtag.equals(remoteEtag);
             } else {
-                //we were not successful to load the id file
-                //if not found, pretend we need to update
                 logger.warn("hasNewRemoteFilmlist HTTP Response Code: {} for {}", response.code(), response.request().url());
-                if (response.code() == HTTP_NOT_FOUND)
+                if (response.code() == HTTP_NOT_FOUND || response.code() == 405)
                     result = true;
             }
 
@@ -123,17 +130,19 @@ public class FilmeLaden {
             }
         } catch (UnknownHostException ex) {
             logger.debug(ex);
-            if (showDialogs) {
+            if (showDialogs && MediathekGui.ui() != null && !Config.isDownloadAndQuit() && !GraphicsEnvironment.isHeadless()) {
                 SwingErrorDialog.showExceptionMessage(MediathekGui.ui(), NETWORK_NOT_AVAILABLE, ex);
             } else
                 logger.warn(NETWORK_NOT_AVAILABLE);
 
         } catch (IOException ex) {
             logger.error("IOxception:", ex);
-            SwingErrorDialog.showExceptionMessage(MediathekGui.ui(), "Netzwerkfehler aufgetreten!", ex);
+            if (MediathekGui.ui() != null && !Config.isDownloadAndQuit() && !GraphicsEnvironment.isHeadless()) {
+                SwingErrorDialog.showExceptionMessage(MediathekGui.ui(), "Netzwerkfehler aufgetreten!", ex);
+            }
         } catch (Exception ex) {
-            logger.error("check for filmliste.id failed", ex);
-            if (showDialogs) {
+            logger.error("Filmlist update check failed", ex);
+            if (showDialogs && MediathekGui.ui() != null && !Config.isDownloadAndQuit() && !GraphicsEnvironment.isHeadless()) {
                 SwingErrorDialog.showExceptionMessage(MediathekGui.ui(), "Ein unbekannter Fehler ist aufgetreten.", ex);
             }
         }
@@ -158,10 +167,11 @@ public class FilmeLaden {
         //remote download is using an empty file name!...
         //or somebody put a web adress into the text field
         if (dateiUrl.isEmpty() || dateiUrl.startsWith("http")) {
-            //perform check only if we don´t want to use DIFF list...
-            if (!listeFilme.getMetaData().canUseDiffList()) {
-                return hasNewRemoteFilmlist();
-            }
+            final String remoteSource = dateiUrl.isEmpty()
+                    ? StandardLocations.getFilmListUrl(
+                    listeFilme.getMetaData().canUseDiffList() ? FilmListDownloadType.DIFF_ONLY : FilmListDownloadType.FULL)
+                    : dateiUrl;
+            return hasNewRemoteFilmlist(remoteSource);
         }
 
         return true;
@@ -346,10 +356,12 @@ public class FilmeLaden {
         if (event.fehler) {
             logger.info("");
             logger.info("Filmliste laden war fehlerhaft, alte Liste wird wieder geladen");
-            SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(MediathekGui.ui(),
-                    "Das Laden der Filmliste hat nicht geklappt!",
-                    Konstanten.PROGRAMMNAME,
-                    JOptionPane.ERROR_MESSAGE));
+            if (ui != null && !Config.isDownloadAndQuit() && !GraphicsEnvironment.isHeadless()) {
+                SwingUtilities.invokeLater(() -> JOptionPane.showMessageDialog(MediathekGui.ui(),
+                        "Das Laden der Filmliste hat nicht geklappt!",
+                        Konstanten.PROGRAMMNAME,
+                        JOptionPane.ERROR_MESSAGE));
+            }
 
             // dann die alte Liste wieder laden
             listeFilme.clear();
@@ -426,6 +438,9 @@ public class FilmeLaden {
     }
 
     private StatusBarWidgets attachStatusBarWidgets(MediathekGui ui) {
+        if (ui == null) {
+            return new StatusBarWidgets(new JLabel(), new JProgressBar());
+        }
         final var widgets = new StatusBarWidgets(ui.progressLabel, ui.progressBar);
         invokeOnEdtAndWait(() -> {
             ui.swingStatusBar.add(widgets.label());
@@ -435,6 +450,9 @@ public class FilmeLaden {
     }
 
     private void detachStatusBarWidgets(MediathekGui ui, StatusBarWidgets widgets) {
+        if (ui == null) {
+            return;
+        }
         invokeOnEdtAndWait(() -> {
             ui.swingStatusBar.remove(widgets.progressBar());
             ui.swingStatusBar.remove(widgets.label());
@@ -481,11 +499,16 @@ public class FilmeLaden {
 
     private void notifyListenersAsync(ListenerAction action) {
         final var currentListeners = listeners.getListeners(ListenerFilmeLaden.class);
-        SwingUtilities.invokeLater(() -> {
+        final var runnable = (Runnable) () -> {
             for (var listener : currentListeners) {
                 action.accept(listener);
             }
-        });
+        };
+        if (Config.isDownloadAndQuit() || GraphicsEnvironment.isHeadless()) {
+            runnable.run();
+        } else {
+            SwingUtilities.invokeLater(runnable);
+        }
     }
 
     @FunctionalInterface
