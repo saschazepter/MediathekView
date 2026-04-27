@@ -275,53 +275,6 @@ public class MediathekGui extends JFrame {
 
         mapFilmUrlCopyCommands();
 
-        if (Config.shouldDownloadAndQuit()) {
-            var future = CompletableFuture.supplyAsync(() -> {
-                try {
-                    TimeUnit.SECONDS.sleep(10);
-                    logger.info("Auto DL and Quit: Updating filmlist...");
-                    daten.getListeFilme().clear(); // sonst wird evtl. nur eine Diff geladen
-                    daten.getFilmeLaden().loadFilmlist("", false);
-                    logger.info("Auto DL and Quit: Filmlist update done.");
-                    logger.info("Auto DL and Quit: Loading Abos...");
-                    daten.getListeAbo().setAboFuerFilm(daten.getListeFilme(), false);
-                    logger.info("Auto DL and Quit: Loading Abos done.");
-                    logger.info("Auto DL and Quit: Applying Blacklist...");
-                    daten.getListeBlacklist().filterListe();
-                    logger.info("Auto DL and Quit: Applying Blacklist...done.");
-                    logger.info("Auto DL and Quit: Starting all downloads...");
-                    SwingUtilities.invokeAndWait(() -> tabDownloads.starten(true));
-                    return true;
-
-                }
-                catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    logger.error("Auto DL and Quit: error starting downloads", e);
-                    return false;
-                }
-                catch (Exception e) {
-                    logger.error("Auto DL and Quit: error starting downloads", e);
-                    return false;
-                }
-            }, Daten.getInstance().getDecoratedPool());
-            future.whenCompleteAsync((_, throwable) -> {
-                if (throwable == null) {
-                    try {
-                        SwingUtilities.invokeAndWait(() -> quitApplication(true));
-                    }
-                    catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        logger.error("Auto DL and Quit: Error in callback...", e);
-                    }
-                    catch (Exception e) {
-                        logger.error("Auto DL and Quit: Error in callback...", e);
-                    }
-                } else {
-                    logger.error("Auto DL and Quit: Error in callback...", throwable);
-                }
-            }, Daten.getInstance().getDecoratedPool());
-        }
-
         resetTabPlacement();
 
         //setup Raven Notification library
@@ -349,19 +302,12 @@ public class MediathekGui extends JFrame {
     }
 
     private void performAustrianVlcCheck() {
-        //perform check only when we are not in download-only mode...
-        if (!Config.shouldDownloadAndQuit()) {
-            //show a link to tutorial if we are in Austria and have never used MV before...
-            AustrianVlcCheck vlcCheck = new AustrianVlcCheck(this);
-            vlcCheck.perform();
-        }
+        //show a link to tutorial if we are in Austria and have never used MV before...
+        new AustrianVlcCheck(this).perform();
     }
 
     private void performGeoCountryStartupCheck() {
-        if (!Config.shouldDownloadAndQuit()) {
-            GeoCountryStartupCheck geoCountryStartupCheck = new GeoCountryStartupCheck(this, this::performAustrianVlcCheck);
-            geoCountryStartupCheck.perform();
-        }
+        new GeoCountryStartupCheck(this, this::performAustrianVlcCheck).perform();
     }
 
     private void loadBandwidthMonitor() {
@@ -1181,13 +1127,18 @@ public class MediathekGui extends JFrame {
     }
 
     public boolean quitApplication() {
-        return quitApplication(false);
+        if (!confirmApplicationQuit()) {
+            return false;
+        }
+
+        performApplicationShutdown();
+        return true;
     }
 
-    public boolean quitApplication(boolean shouldDownloadAndQuit) {
+    private boolean confirmApplicationQuit() {
         if (daten.getListeDownloads().unfinishedDownloads() > 0) {
             // erst mal prüfen ob noch Downloads laufen
-            DialogBeenden dialogBeenden = new DialogBeenden(this, shouldDownloadAndQuit);
+            DialogBeenden dialogBeenden = new DialogBeenden(this);
             dialogBeenden.setVisible(true);
             if (!dialogBeenden.getApplicationCanTerminate()) {
                 return false;
@@ -1212,75 +1163,77 @@ public class MediathekGui extends JFrame {
             tabAudiothek.pauseDownloadsForShutdown();
         }
 
+        return true;
+    }
+
+    private void performApplicationShutdown() {
         setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            if (automaticFilmlistUpdate != null)
+                automaticFilmlistUpdate.close();
 
-        if (automaticFilmlistUpdate != null)
-            automaticFilmlistUpdate.close();
+            endProgramUpdateChecker();
 
-        endProgramUpdateChecker();
+            showMemoryMonitorAction.closeMemoryMonitor();
 
-        showMemoryMonitorAction.closeMemoryMonitor();
+            showBandwidthUsageAction.getDialogOptional().ifPresent(dlg -> {
+                dlg.dispose();
+                //little hack, we must preserve the visible state since it was open when app quits...
+                config.setProperty(ApplicationConfiguration.APPLICATION_UI_BANDWIDTH_MONITOR_VISIBLE, true);
+            });
 
-        showBandwidthUsageAction.getDialogOptional().ifPresent(dlg -> {
-            dlg.dispose();
-            //little hack, we must preserve the visible state since it was open when app quits...
-            config.setProperty(ApplicationConfiguration.APPLICATION_UI_BANDWIDTH_MONITOR_VISIBLE, true);
-        });
+            manageAboAction.closeDialog();
 
-        manageAboAction.closeDialog();
+            logger.trace("Perform history maintenance.");
+            try (SeenHistoryController history = new SeenHistoryController()) {
+                history.performMaintenance();
+            }
 
-        logger.trace("Perform history maintenance.");
-        try (SeenHistoryController history = new SeenHistoryController()) {
-            history.performMaintenance();
+            logger.trace("Save bookmark list.");
+            daten.getListeBookmarkList().saveToFile();
+
+            // stop the download thread
+            logger.trace("Stop Starter Thread.");
+            daten.getStarterClass().shutdown();
+
+            logger.trace("Close Notification center.");
+            closeNotificationCenter();
+
+            // Tabelleneinstellungen merken
+            logger.trace("Save Tab Filme data.");
+            tabFilme.disposePanel();
+
+            logger.trace("Save Tab Download data.");
+            tabDownloads.tabelleSpeichern();
+
+            logger.trace("Disposing Tab Audiothek");
+            tabAudiothek.disposePanel();
+
+            logger.trace("Stop all downloads.");
+            stopDownloads();
+
+            logger.trace("Save app data.");
+            daten.allesSpeichern();
+
+            logger.trace("Shutdown pools.");
+            shutdownTimerPool();
+            waitForCommonPoolToComplete();
+
+            //close main window
+            logger.trace("Close main window.");
+            dispose();
+
+            //write all settings if not done already...
+            logger.trace("Write app config.");
+            ApplicationConfiguration.getInstance().writeConfiguration();
+
+            RuntimeStatistics.INSTANCE.printRuntimeStatistics();
+            if (Config.isEnhancedLoggingEnabled()) {
+                RuntimeStatistics.INSTANCE.printDataUsageStatistics();
+            }
+        } finally {
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         }
-
-        logger.trace("Save bookmark list.");
-        daten.getListeBookmarkList().saveToFile();
-
-        // stop the download thread
-        logger.trace("Stop Starter Thread.");
-        daten.getStarterClass().shutdown();
-
-        logger.trace("Close Notification center.");
-        closeNotificationCenter();
-
-        // Tabelleneinstellungen merken
-        logger.trace("Save Tab Filme data.");
-        tabFilme.disposePanel();
-
-        logger.trace("Save Tab Download data.");
-        tabDownloads.tabelleSpeichern();
-
-        logger.trace("Disposing Tab Audiothek");
-        tabAudiothek.disposePanel();
-
-        logger.trace("Stop all downloads.");
-        stopDownloads();
-
-        logger.trace("Save app data.");
-        daten.allesSpeichern();
-
-        logger.trace("Shutdown pools.");
-        shutdownTimerPool();
-        waitForCommonPoolToComplete();
-
-        //close main window
-        logger.trace("Close main window.");
-        dispose();
-
-        logger.trace("Write bookmarks");
-        daten.getListeBookmarkList().saveToFile();
-
-        //write all settings if not done already...
-        logger.trace("Write app config.");
-        ApplicationConfiguration.getInstance().writeConfiguration();
-
-        RuntimeStatistics.INSTANCE.printRuntimeStatistics();
-        if (Config.isEnhancedLoggingEnabled()) {
-            RuntimeStatistics.INSTANCE.printDataUsageStatistics();
-        }
-
-        setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 
         if (isShutdownRequested()) {
             logger.info("Requesting computer shutdown.");
@@ -1288,8 +1241,6 @@ public class MediathekGui extends JFrame {
         }
 
         System.exit(0);
-
-        return true;
     }
 
     private void shutdownTimerPool() {
