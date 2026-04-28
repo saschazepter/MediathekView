@@ -424,7 +424,7 @@ public class MediathekGui extends JFrame {
                             "<b>Sie müssen diese korrigieren, ansonsten funktioniert das Programm nicht fehlerfrei!</b><br/><br/>" +
                             "Nachfolgende Ausdrücke sind fehlerbehaftet: <br/>%s</html>", regexStr);
 
-            TimerPool.getTimerPool().schedule(() -> SwingUtilities.invokeLater(
+            TimerPool.schedule(() -> SwingUtilities.invokeLater(
                     () -> JOptionPane.showMessageDialog(this,
                             message,
                             Konstanten.PROGRAMMNAME,
@@ -1246,25 +1246,15 @@ public class MediathekGui extends JFrame {
     private void shutdownTimerPool() {
         logger.trace("Entering shutdownTimerPool()");
 
-        var timerPool = TimerPool.getTimerPool();
         try {
-            TimerPool.getRepeatingTimerFuture().cancel(true);
-            timerPool.shutdown();
-            if (!timerPool.awaitTermination(500, TimeUnit.MILLISECONDS)) {
-                if (Config.isDebugModeEnabled()) {
-                    logger.warn("Time out occured before pool final termination");
-                }
+            var taskList = TimerPool.shutdown(500, TimeUnit.MILLISECONDS);
+            if (Config.isDebugModeEnabled() && !taskList.isEmpty()) {
+                logger.trace("timerPool taskList was not empty: {}", taskList.toString());
             }
         }
         catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             logger.error("timerPool shutdown exception", e);
-        }
-        var taskList = timerPool.shutdownNow();
-        if (Config.isDebugModeEnabled()) {
-            if (!taskList.isEmpty()) {
-                logger.trace("timerPool taskList was not empty: {}", taskList.toString());
-            }
         }
 
         logger.trace("Leaving shutdownTimerPool()");
