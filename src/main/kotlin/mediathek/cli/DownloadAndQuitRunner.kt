@@ -33,11 +33,18 @@ import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.BandwidthFormatter
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.CompletableFuture
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
 object DownloadAndQuitRunner {
+    const val INTERRUPTED_EXIT_CODE = 130
+
     private val logger = LogManager.getLogger()
+    private val shutdownRequested = AtomicBoolean(false)
+
+    @Volatile
+    private var activeDownloads: List<DatenDownload> = emptyList()
 
     suspend fun run(): Int {
         val daten = Daten.getInstance()
@@ -51,9 +58,26 @@ object DownloadAndQuitRunner {
         }
     }
 
+    fun requestShutdown(): Boolean {
+        if (!shutdownRequested.compareAndSet(false, true)) {
+            logger.info("CLI shutdown is already in progress.")
+            return false
+        }
+
+        logger.info("Ctrl-C received. Stopping CLI download mode gracefully...")
+        stopDownloads(activeDownloads)
+        return true
+    }
+
     private suspend fun runInternal(daten: Daten): Int {
         if (!updateFilmlistWithProgress(daten)) {
             return 1
+        }
+
+        if (shutdownRequested.get()) {
+            logger.info("CLI shutdown requested before abo download search.")
+            persistState(daten)
+            return INTERRUPTED_EXIT_CODE
         }
 
         logger.info("Loading downloads from abos...")
@@ -62,6 +86,14 @@ object DownloadAndQuitRunner {
         daten.listeDownloads.abosSuchen(null)
 
         val downloadsToStart = collectDownloadsToStart(daten)
+        activeDownloads = downloadsToStart
+        if (shutdownRequested.get()) {
+            logger.info("CLI shutdown requested before downloads were started.")
+            markDownloadsInterrupted(downloadsToStart)
+            persistState(daten)
+            return INTERRUPTED_EXIT_CODE
+        }
+
         if (downloadsToStart.isEmpty()) {
             logger.info("No abo downloads to start.")
             persistState(daten)
@@ -70,9 +102,17 @@ object DownloadAndQuitRunner {
 
         logger.info("Starting {} abo download(s)...", downloadsToStart.size)
         DatenDownload.startenDownloads(downloadsToStart)
+        if (shutdownRequested.get()) {
+            stopDownloads(downloadsToStart)
+        }
         val failedDownloads = monitorDownloads(downloadsToStart)
 
         persistState(daten)
+
+        if (shutdownRequested.get()) {
+            logger.info("CLI shutdown completed after stopping downloads.")
+            return INTERRUPTED_EXIT_CODE
+        }
 
         if (failedDownloads > 0) {
             logger.error("{} download(s) finished with errors.", failedDownloads)
@@ -221,6 +261,33 @@ object DownloadAndQuitRunner {
 
             delay(1.seconds)
         }
+    }
+
+    private fun stopDownloads(downloads: List<DatenDownload>) {
+        if (downloads.isEmpty()) {
+            return
+        }
+
+        Daten.getInstance().starterClass.delayNewStarts()
+        for (download in downloads) {
+            val start = download.start
+            if (start == null) {
+                download.interrupt()
+                continue
+            }
+
+            if (start.status < Start.STATUS_FERTIG) {
+                start.stoppen = true
+                download.interrupt()
+                if (start.status == Start.STATUS_INIT) {
+                    start.status = Start.STATUS_ERR
+                }
+            }
+        }
+    }
+
+    private fun markDownloadsInterrupted(downloads: List<DatenDownload>) {
+        downloads.forEach(DatenDownload::interrupt)
     }
 
     private fun persistState(daten: Daten) {

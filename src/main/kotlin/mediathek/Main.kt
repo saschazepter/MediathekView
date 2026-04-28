@@ -24,6 +24,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
+import mediathek.cli.CliShutdownSignal
 import mediathek.cli.DownloadAndQuitRunner
 import mediathek.config.*
 import mediathek.controller.SenderFilmlistLoadApprover
@@ -94,22 +95,24 @@ object Main {
         printDirectoryPaths()
 
         if (Config.isDownloadAndQuit()) {
-            installSingleInstanceHandler(false)
-            performBackgroundStartup(cleanupMediaDb = !GraphicsEnvironment.isHeadless())
-            loadConfigurationDataCli()
-            migrateSeenHistory()
-            Daten.getInstance().launchHistoryDataLoading()
-            Daten.getInstance().waitForHistoryDataLoadingToComplete()
-            withContext(Dispatchers.IO) {
-                Daten.getInstance().listeBookmarkList.loadFromFile()
+            CliShutdownSignal.install(DownloadAndQuitRunner::requestShutdown).use {
+                installSingleInstanceHandler(false)
+                performBackgroundStartup(cleanupMediaDb = !GraphicsEnvironment.isHeadless())
+                loadConfigurationDataCli()
+                migrateSeenHistory()
+                Daten.getInstance().launchHistoryDataLoading()
+                Daten.getInstance().waitForHistoryDataLoadingToComplete()
+                withContext(Dispatchers.IO) {
+                    Daten.getInstance().listeBookmarkList.loadFromFile()
+                }
+                val exitCode = try {
+                    DownloadAndQuitRunner.run()
+                } finally {
+                    Daten.getInstance().starterClass.shutdown()
+                    ApplicationConfiguration.getInstance().writeConfiguration()
+                }
+                exitProcess(exitCode)
             }
-            val exitCode = try {
-                DownloadAndQuitRunner.run()
-            } finally {
-                Daten.getInstance().starterClass.shutdown()
-                ApplicationConfiguration.getInstance().writeConfiguration()
-            }
-            exitProcess(exitCode)
         }
 
         initializeSwingEnvironment()
