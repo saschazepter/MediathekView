@@ -20,13 +20,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileTime;
-import java.time.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -61,7 +56,7 @@ public class Daten {
      * erfolgreich geladene Abos.
      */
     private AboHistoryController erledigteAbos;
-    private boolean alreadyMadeBackup;
+    private boolean backupAlreadyHandled;
     private CompletableFuture<AboHistoryController> aboHistoryFuture;
     private EventList<String> allSenderList;
 
@@ -129,18 +124,6 @@ public class Daten {
 
     public StarterClass getStarterClass() {
         return starterClass;
-    }
-
-    /**
-     * Return the number of milliseconds from today´s midnight.
-     *
-     * @return Number of milliseconds from today´s midnight.
-     */
-    private long getHeute_0Uhr() {
-        LocalDateTime todayMidnight = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);
-        var zdt = ZonedDateTime.of(todayMidnight, ZoneId.systemDefault());
-
-        return zdt.toInstant().toEpochMilli();
     }
 
     public void setAboHistoryList(AboHistoryController controller) {
@@ -273,55 +256,12 @@ public class Daten {
     }
 
     public void allesSpeichern() {
-        createConfigurationBackupCopies();
+        if (!backupAlreadyHandled) {
+            backupAlreadyHandled = ConfigurationBackupService.createConfigurationBackupCopies();
+        }
 
         final IoXmlSchreiben configWriter = new IoXmlSchreiben();
         configWriter.writeConfigurationFile(StandardLocations.getMediathekXmlFile());
-    }
-
-    /**
-     * Create backup copies of settings file.
-     */
-    private void createConfigurationBackupCopies() {
-        if (!alreadyMadeBackup) {
-            // nur einmal pro Programmstart machen
-            logger.info("-------------------------------------------------------");
-            logger.info("Einstellungen sichern");
-
-            try {
-                final Path xmlFilePath = StandardLocations.getMediathekXmlFile();
-                long creatTime = -1;
-
-                Path xmlFilePathCopy_1 = StandardLocations.getSettingsDirectory().resolve(Konstanten.CONFIG_FILE_COPY + 1);
-                if (Files.exists(xmlFilePathCopy_1)) {
-                    BasicFileAttributes attrs = Files.readAttributes(xmlFilePathCopy_1, BasicFileAttributes.class);
-                    FileTime d = attrs.lastModifiedTime();
-                    creatTime = d.toMillis();
-                }
-
-                if (creatTime == -1 || creatTime < getHeute_0Uhr()) {
-                    // nur dann ist die letzte Kopie älter als einen Tag
-                    for (int i = Konstanten.MAX_NUM_BACKUP_FILE_COPIES; i > 1; --i) {
-                        xmlFilePathCopy_1 = StandardLocations.getSettingsDirectory().resolve(Konstanten.CONFIG_FILE_COPY + (i - 1));
-                        final Path xmlFilePathCopy_2 = StandardLocations.getSettingsDirectory().resolve(Konstanten.CONFIG_FILE_COPY + i);
-                        if (Files.exists(xmlFilePathCopy_1)) {
-                            Files.move(xmlFilePathCopy_1, xmlFilePathCopy_2, StandardCopyOption.REPLACE_EXISTING);
-                        }
-                    }
-                    if (Files.exists(xmlFilePath)) {
-                        Files.move(xmlFilePath, StandardLocations.getSettingsDirectory().resolve(Konstanten.CONFIG_FILE_COPY + 1), StandardCopyOption.REPLACE_EXISTING);
-                    }
-                    logger.info("Einstellungen wurden gesichert");
-                } else {
-                    logger.info("Einstellungen wurden heute schon gesichert");
-                }
-            } catch (IOException e) {
-                logger.error("Die Einstellungen konnten nicht komplett gesichert werden!", e);
-            }
-
-            alreadyMadeBackup = true;
-            logger.info("-------------------------------------------------------");
-        }
     }
 
     public FilmeLaden getFilmeLaden() {
