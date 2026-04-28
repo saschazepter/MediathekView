@@ -189,13 +189,18 @@ public class FilmeLaden {
     }
 
     public boolean loadFilmlist(String dateiUrl, boolean immerNeuLaden) {
+        return loadFilmlist(dateiUrl, immerNeuLaden, FilmListLoadOptions.normal());
+    }
+
+    public boolean loadFilmlist(String dateiUrl, boolean immerNeuLaden, FilmListLoadOptions options) {
         // damit wird die Filmliste geladen UND auch gleich im Konfig-Ordner gespeichert
+        options = Objects.requireNonNull(options);
         final var listeFilme = daten.getListeFilme();
 
         if (!performUpdateCheck(listeFilme, dateiUrl))
             return false;
 
-        logger.trace("loadFilmlist(String,boolean)");
+        logger.trace("loadFilmlist(String,boolean,FilmListLoadOptions)");
         logger.info("");
         displayLogInfo(listeFilme);
 
@@ -213,11 +218,11 @@ public class FilmeLaden {
         final var days = getLoadNumDays();
         if (dateiUrl.isEmpty()) {
             logger.info("Filmliste laden (Netzwerk)");
-            importFromUrl(listeFilme, diffListe, days);
+            importFromUrl(listeFilme, diffListe, days, options);
         } else {
             logger.info("Filmliste laden von: {}", dateiUrl);
             listeFilme.clear();
-            importFromFile(dateiUrl, listeFilme, days);
+            importFromFile(dateiUrl, listeFilme, days, options);
         }
         return true;
     }
@@ -239,7 +244,7 @@ public class FilmeLaden {
         final var sourceUrl = dateiUrl.isEmpty()
                 ? StandardLocations.getFilmListUrl(FilmListDownloadType.FULL)
                 : dateiUrl;
-        importFromFile(sourceUrl, diffListe, getLoadNumDays());
+        importFromFile(sourceUrl, diffListe, getLoadNumDays(), FilmListLoadOptions.normal());
     }
 
     public void addAdListener(ListenerFilmeLaden listener) {
@@ -264,12 +269,12 @@ public class FilmeLaden {
         return ApplicationConfiguration.getConfiguration().getInt(ApplicationConfiguration.FilmList.LOAD_NUM_DAYS, 0);
     }
 
-    private void importFromUrl(ListeFilme listeFilme, ListeFilme listeFilmeDiff, int days) {
-        runImportAsync(() -> importFromUrlSynchronously(listeFilme, listeFilmeDiff, days), "importFromUrl");
+    private void importFromUrl(ListeFilme listeFilme, ListeFilme listeFilmeDiff, int days, FilmListLoadOptions options) {
+        runImportAsync(() -> importFromUrlSynchronously(listeFilme, listeFilmeDiff, days), "importFromUrl", options);
     }
 
-    private void importFromFile(String pfad, ListeFilme listeFilme, int days) {
-        runImportAsync(() -> urlLaden(pfad, listeFilme, days), "importFromFile");
+    private void importFromFile(String pfad, ListeFilme listeFilme, int days, FilmListLoadOptions options) {
+        runImportAsync(() -> urlLaden(pfad, listeFilme, days), "importFromFile", options);
     }
 
     private boolean importFromUrlSynchronously(ListeFilme listeFilme, ListeFilme listeFilmeDiff, int days) {
@@ -311,7 +316,7 @@ public class FilmeLaden {
         return ret;
     }
 
-    private void runImportAsync(Supplier<Boolean> importAction, String operationName) {
+    private void runImportAsync(Supplier<Boolean> importAction, String operationName, FilmListLoadOptions options) {
         CompletableFuture.supplyAsync(importAction)
                 .exceptionally(throwable -> {
                     logger.error(operationName, throwable);
@@ -319,11 +324,11 @@ public class FilmeLaden {
                 })
                 .thenAccept(ok -> {
                     logger.trace("Filme laden, ende");
-                    undEnde(new ListenerFilmeLadenEvent("", "", 0, 0, !ok));
+                    undEnde(new ListenerFilmeLadenEvent("", "", 0, 0, !ok), options);
                 });
     }
 
-    private void undEnde(ListenerFilmeLadenEvent event) {
+    private void undEnde(ListenerFilmeLadenEvent event, FilmListLoadOptions options) {
         // Abos eintragen in der gesamten Liste vor Blacklist da das nur beim Ändern der Filmliste oder
         // beim Ändern von Abos gemacht wird
 
@@ -374,7 +379,7 @@ public class FilmeLaden {
 
             writeFilmList = false;
         } else {
-            writeFilmList = !Daten.dontWriteFilmlistOnStartup.get();
+            writeFilmList = options.writeAfterLoad();
         }
 
         logger.info("");

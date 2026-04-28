@@ -132,7 +132,7 @@ object Main {
         val useModernSearch = ApplicationConfiguration.getConfiguration()
             .getBoolean(ApplicationConfiguration.APPLICATION_USE_MODERN_SEARCH, false)
         if (useModernSearch) {
-            Daten.getInstance().setListeFilmeNachBlackList(IndexedFilmList())
+            Daten.getInstance().listeFilmeNachBlackList = IndexedFilmList()
         }
 
         startGuiMode()

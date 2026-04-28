@@ -29,6 +29,7 @@ import mediathek.daten.DatenDownload;
 import mediathek.daten.IndexedFilmList;
 import mediathek.filmeSuchen.ListenerFilmeLaden;
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
+import mediathek.filmlisten.FilmListLoadOptions;
 import mediathek.filmlisten.FilmeLaden;
 import mediathek.filmlisten.reader.FilmListReader;
 import mediathek.gui.MVTray;
@@ -548,10 +549,6 @@ public class MediathekGui extends JFrame {
      * Read a local filmlist or load a new one in auto mode.
      */
     private void loadFilmlist() {
-        //don´t write filmlist when we are reading only...
-        var writeCondition = !(GuiFunktionen.getFilmListUpdateType() == FilmListUpdateType.AUTOMATIC && daten.getListeFilme().needsUpdate());
-        Daten.dontWriteFilmlistOnStartup.set(writeCondition);
-
         swingStatusBar.add(progressLabel);
         swingStatusBar.add(progressBar);
 
@@ -570,7 +567,7 @@ public class MediathekGui extends JFrame {
                 .thenRun(() -> {
                     logger.trace("Check for filmlist updates");
                     if (GuiFunktionen.getFilmListUpdateType() == FilmListUpdateType.AUTOMATIC && daten.getListeFilme().needsUpdate()) {
-                        daten.getFilmeLaden().loadFilmlist("", true);
+                        daten.getFilmeLaden().loadFilmlist("", true, FilmListLoadOptions.normal());
                     }
                 });
 
@@ -587,7 +584,6 @@ public class MediathekGui extends JFrame {
         }
 
         worker.thenRun(() -> SwingUtilities.invokeLater(() -> Daten.getInstance().getFilmeLaden().notifyFertig(new ListenerFilmeLadenEvent("", "", 100, 100, false))))
-                .thenRun(() -> Daten.dontWriteFilmlistOnStartup.set(false))
                 .thenRun(() -> SwingUtilities.invokeLater(() -> {
                     swingStatusBar.remove(progressBar);
                     swingStatusBar.remove(progressLabel);

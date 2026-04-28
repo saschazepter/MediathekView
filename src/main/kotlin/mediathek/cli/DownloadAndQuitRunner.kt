@@ -43,8 +43,6 @@ object DownloadAndQuitRunner {
         val daten = Daten.getInstance()
 
         logger.info("CLI download mode started.")
-        Daten.dontWriteFilmlistOnStartup.set(false)
-
         try {
             return runInternal(daten)
         } catch (ex: Exception) {

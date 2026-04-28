@@ -36,14 +36,9 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Daten {
     private static final MVColor MV_COLOR = new MVColor(); // verwendete Farben
-    /**
-     * Prevent the unnecessary writing of a filmlist on startup when reading is enough
-     */
-    public static final AtomicBoolean dontWriteFilmlistOnStartup = new AtomicBoolean(true);
     private static final Logger logger = LogManager.getLogger(Daten.class);
     // flags
     private static boolean reset; // Programm auf Starteinstellungen zurücksetzen
