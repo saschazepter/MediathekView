@@ -160,7 +160,6 @@ class MVColor {
         @JvmStatic
         fun getRegExPatternColor(): Color = REGEX_PATTERN_COLOR.color
 
-        @JvmStatic
         fun getBlueColor(): Color = getRegExPatternColor()
 
         @JvmStatic
