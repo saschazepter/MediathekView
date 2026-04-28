@@ -35,7 +35,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 public class Daten {
-    private static final MVColor MV_COLOR = new MVColor(); // verwendete Farben
     private static final Logger logger = LogManager.getLogger(Daten.class);
     private final ListePset listePset;
     private final EventList<FilmStatistics> duplicateStatisticsEventList = new BasicEventList<>();
@@ -85,10 +84,6 @@ public class Daten {
 
     public static Daten getInstance() {
         return DatenHolder.INSTANCE;
-    }
-
-    public static MVColor getMVColor() {
-        return MV_COLOR;
     }
 
     /**
@@ -164,7 +159,7 @@ public class Daten {
             return false;
         }
         logger.info("Konfig wurde gelesen!");
-        MV_COLOR.load(); // Farben einrichten
+        MVColor.load(); // Farben einrichten
 
         return true;
     }
