@@ -179,6 +179,7 @@ public class MediathekGui extends JFrame {
     private IndicatorThread progressIndicatorThread;
     private AutomaticFilmlistUpdate automaticFilmlistUpdate;
     private boolean shutdownRequested;
+    private boolean resetSettingsOnQuit;
     private final Supplier<INotificationCenter> notificationCenterFactory;
 
     public MediathekGui() {
@@ -1122,6 +1123,10 @@ public class MediathekGui extends JFrame {
         this.shutdownRequested = shutdownRequested;
     }
 
+    public void requestSettingsResetOnQuit() {
+        resetSettingsOnQuit = true;
+    }
+
     public boolean quitApplication() {
         if (!confirmApplicationQuit()) {
             return false;
@@ -1222,6 +1227,11 @@ public class MediathekGui extends JFrame {
             //write all settings if not done already...
             logger.trace("Write app config.");
             ApplicationConfiguration.getInstance().writeConfiguration();
+
+            if (resetSettingsOnQuit) {
+                logger.trace("Move settings directory aside for reset.");
+                SettingsResetService.moveSettingsDirectoryAside();
+            }
 
             RuntimeStatistics.INSTANCE.printRuntimeStatistics();
             if (Config.isEnhancedLoggingEnabled()) {
