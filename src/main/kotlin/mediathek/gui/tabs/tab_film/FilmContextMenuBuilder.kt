@@ -20,8 +20,6 @@ package mediathek.gui.tabs.tab_film
 
 import mediathek.config.Daten
 import mediathek.daten.DatenFilm
-import mediathek.daten.blacklist.BlacklistRule
-import java.awt.event.ActionListener
 import java.util.Optional
 import javax.swing.JMenu
 import javax.swing.JMenuItem
@@ -29,10 +27,7 @@ import javax.swing.JPopupMenu
 
 class FilmContextMenuBuilder(
     private val host: TableContextMenuHandler.Host,
-    private val daten: Daten,
-    private val aboWithoutTitleAction: ActionListener,
-    private val aboWithTitleAction: ActionListener,
-    private val addBlacklistRuleForSelectedFilm: ((DatenFilm) -> Unit) -> Unit,
+    private val aboAndBlacklistContextActions: FilmAboAndBlacklistContextActions,
     private val filmSpecificContextMenuBuilder: FilmSpecificContextMenuBuilder,
     private val addPrintAndInfoActions: (JPopupMenu, Optional<DatenFilm>) -> Unit,
     private val addFileAndDuplicateActions: (JPopupMenu, DatenFilm) -> Unit,
@@ -41,7 +36,7 @@ class FilmContextMenuBuilder(
         JPopupMenu().apply {
             addPrimaryContextActions(this, selectedFilm)
             addFilmProgramsMenu(this)
-            addBlacklistMenu(this)
+            aboAndBlacklistContextActions.addBlacklistMenu(this)
             selectedFilm.ifPresent { film -> filmSpecificContextMenuBuilder.addFilmSpecificContextActions(this, film) }
             addPrintAndInfoActions(this, selectedFilm)
             selectedFilm.ifPresent { film -> addFileAndDuplicateActions(this, film) }
@@ -55,35 +50,8 @@ class FilmContextMenuBuilder(
         val bookmarkMenuItem = JMenuItem(actions.bookmarkAddFilm)
         popupMenu.add(bookmarkMenuItem)
         popupMenu.addSeparator()
-        addAboMenu(popupMenu, selectedFilm)
+        aboAndBlacklistContextActions.addAboMenu(popupMenu, selectedFilm)
         updateBookmarkMenuItem(popupMenu, bookmarkMenuItem, selectedFilm)
-    }
-
-    private fun addAboMenu(popupMenu: JPopupMenu, selectedFilm: Optional<DatenFilm>) {
-        val submenuAbo = JMenu("Abo")
-        popupMenu.add(submenuAbo)
-
-        val itemAbo = JMenuItem("Abo mit Sender und Thema anlegen")
-        val itemAboMitTitel = JMenuItem("Abo mit Sender und Thema und Titel anlegen")
-
-        selectedFilm.ifPresent { film -> configureAboMenuItems(film, itemAbo, itemAboMitTitel) }
-
-        submenuAbo.add(itemAbo)
-        submenuAbo.add(itemAboMitTitel)
-    }
-
-    private fun configureAboMenuItems(
-        film: DatenFilm,
-        itemAbo: JMenuItem,
-        itemAboMitTitel: JMenuItem,
-    ) {
-        if (daten.listeAbo.getAboFuerFilm_schnell(film, false) != null) {
-            itemAbo.isEnabled = false
-            itemAboMitTitel.isEnabled = false
-        } else {
-            itemAbo.addActionListener(aboWithoutTitleAction)
-            itemAboMitTitel.addActionListener(aboWithTitleAction)
-        }
     }
 
     private fun updateBookmarkMenuItem(
@@ -120,42 +88,5 @@ class FilmContextMenuBuilder(
             }
             submenu.add(item)
         }
-    }
-
-    private fun addBlacklistMenu(popupMenu: JPopupMenu) {
-        val submenuBlack = JMenu("Blacklist")
-        popupMenu.add(submenuBlack)
-
-        val itemBlackSender = JMenuItem("Sender in die Blacklist einfügen")
-        itemBlackSender.addActionListener {
-            addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule(film.sender, "", "", ""))
-            }
-        }
-        submenuBlack.add(itemBlackSender)
-
-        val itemBlackThema = JMenuItem("Thema in die Blacklist einfügen")
-        itemBlackThema.addActionListener {
-            addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule("", film.thema, "", ""))
-            }
-        }
-        submenuBlack.add(itemBlackThema)
-
-        val itemAddTitleToBlacklist = JMenuItem("Titel in die Blacklist einfügen")
-        itemAddTitleToBlacklist.addActionListener {
-            addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule("", "", film.title, ""))
-            }
-        }
-        submenuBlack.add(itemAddTitleToBlacklist)
-
-        val itemBlackSenderThema = JMenuItem("Sender und Thema in die Blacklist einfügen")
-        itemBlackSenderThema.addActionListener {
-            addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule(film.sender, film.thema, "", ""))
-            }
-        }
-        submenuBlack.add(itemBlackSenderThema)
     }
 }

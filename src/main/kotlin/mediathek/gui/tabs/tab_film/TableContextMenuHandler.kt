@@ -24,9 +24,7 @@ import mediathek.config.Daten
 import mediathek.controller.starter.Start
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
-import mediathek.gui.actions.CreateNewAboAction
 import mediathek.mainwindow.MediathekGui
-import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.table.MVFilmTable
 import java.awt.Point
 import java.awt.event.*
@@ -53,9 +51,8 @@ class TableContextMenuHandler(
 
     private val daten = Daten.getInstance()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
-    private val createAboAction = CreateNewAboAction(daten.listeAbo) { host.gui() }
-    private val beobAbo = BeobAbo(false)
-    private val beobAboMitTitel = BeobAbo(true)
+    private val filmAboAndBlacklistContextActions =
+        FilmAboAndBlacklistContextActions(host, daten, this::selectedFilmAtPopupPoint)
     private val jDownloadHelper = JDownloadHelper()
     private val pyLoadHelper = PyLoadHelper()
     private val filmSpecificContextMenuBuilder = FilmSpecificContextMenuBuilder(host, jDownloadHelper, pyLoadHelper)
@@ -64,10 +61,7 @@ class TableContextMenuHandler(
         FilmPrintAndHistoryContextActions(host, this::selectedFilmAtPopupPoint)
     private val contextMenuBuilder = FilmContextMenuBuilder(
         host,
-        daten,
-        beobAbo,
-        beobAboMitTitel,
-        this::addBlacklistRuleForSelectedFilm,
+        filmAboAndBlacklistContextActions,
         filmSpecificContextMenuBuilder,
         filmPrintAndHistoryContextActions::addActions,
         filmFileAndDuplicateContextActions::addActions,
@@ -157,42 +151,6 @@ class TableContextMenuHandler(
             return null
         }
         return host.getFilm(row).orElse(null)
-    }
-
-    private inner class BeobAbo(
-        private val mitTitel: Boolean,
-    ) : ActionListener {
-        override fun actionPerformed(event: ActionEvent?) {
-            selectedFilmAtPopupPoint()?.let { film ->
-                host.setSelectionUpdatesSuspended(true)
-                try {
-                    val datenAbo = daten.listeAbo.getAboFuerFilm_schnell(film, false)
-                    if (datenAbo != null) {
-                        daten.listeAbo.aboLoeschen(datenAbo)
-                    } else {
-                        createAboAction.createAbo(
-                            aboname = film.thema,
-                            filmSender = film.sender,
-                            filmThema = film.thema,
-                            filmTitel = if (mitTitel) film.title else "",
-                        )
-                    }
-                } finally {
-                    host.setSelectionUpdatesSuspended(false)
-                }
-            }
-        }
-    }
-
-    private fun turnOnBlacklist() {
-        ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.BLACKLIST_IS_ON, true)
-    }
-
-    private fun addBlacklistRuleForSelectedFilm(blacklistRuleAppender: (DatenFilm) -> Unit) {
-        selectedFilmAtPopupPoint()?.let { film ->
-            turnOnBlacklist()
-            blacklistRuleAppender(film)
-        }
     }
 
 }
