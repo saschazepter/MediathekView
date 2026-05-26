@@ -33,7 +33,7 @@ class FilmViewHostAdapter(
     private val showButtonsMenuItem: Supplier<JCheckBoxMenuItem>,
     private val showDescriptionMenuItem: Supplier<JCheckBoxMenuItem>,
     private val actions: Supplier<FilmUiActions>,
-    private val makeDescriptionTabVisible: Consumer<Boolean>,
+    private val setDescriptionTabVisible: Consumer<Boolean>,
     private val startFilmWithPset: Consumer<DatenPset>,
 ) : FilmViewController.Host {
     override fun psetButtonsTab(): JTabbedPane = psetButtonsTab
@@ -50,8 +50,8 @@ class FilmViewHostAdapter(
 
     override fun actions(): FilmUiActions = actions.get()
 
-    override fun makeDescriptionTabVisible(visible: Boolean) {
-        makeDescriptionTabVisible.accept(visible)
+    override fun setDescriptionTabVisible(visible: Boolean) {
+        setDescriptionTabVisible.accept(visible)
     }
 
     override fun startFilmWithPset(pset: DatenPset) {

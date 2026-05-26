@@ -29,6 +29,7 @@ import mediathek.gui.bookmark.BookmarkDialog;
 import mediathek.gui.messages.*;
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent;
 import mediathek.gui.tabs.AGuiTabPanel;
+import mediathek.gui.tabs.DescriptionTabController;
 import mediathek.gui.tabs.actions.MarkFilmAsSeenAction;
 import mediathek.gui.tabs.actions.MarkFilmAsUnseenAction;
 import mediathek.gui.tabs.tab_film.actions.*;
@@ -64,6 +65,7 @@ public class GuiFilme extends AGuiTabPanel {
     private final SwingFilterDialog swingFilterDialog;
     private final ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction;
     private final JTabbedPane psetButtonsTab = new JTabbedPane();
+    private final DescriptionTabController descriptionTabController = new DescriptionTabController();
     private final SearchField searchField;
     private final DeleteBookmarksAction deleteBookmarksAction = new DeleteBookmarksAction(MediathekGui.ui());
     private final FilterConfiguration filterConfiguration = new FilterConfiguration();
@@ -83,7 +85,6 @@ public class GuiFilme extends AGuiTabPanel {
     public GuiFilme(Daten aDaten, MediathekGui mediathekGui) {
         daten = aDaten;
         this.mediathekGui = mediathekGui;
-        descriptionPanel = new FilmDescriptionPanel();
         var controllerSetup = createControllerSetup(mediathekGui);
         selectionController = controllerSetup.selectionController();
         bookmarkController = controllerSetup.bookmarkController();
@@ -235,7 +236,7 @@ public class GuiFilme extends AGuiTabPanel {
                 () -> cbShowButtons,
                 () -> cbkShowDescription,
                 () -> filmUiActions,
-                this::makeDescriptionTabVisible,
+                descriptionTabController::setVisible,
                 selectionController::startFilm);
         var tableContextMenuHost = new TableContextMenuHostAdapter(
                 () -> tabelle,
@@ -285,12 +286,13 @@ public class GuiFilme extends AGuiTabPanel {
             searchField = new RegularSearchField(searchFieldHost);
 
         // add film description panel
-        extensionArea.add(descriptionTab);
+        extensionArea.add(descriptionTabController.getTabbedPane());
         extensionArea.add(psetButtonsTab);
 
         tableInstaller.setupFilmListTable();
         tableInstaller.setupFilmSelectionPropertyListener();
-        setupDescriptionTab(
+        viewController.setupShowFilmDescriptionMenuItem();
+        descriptionTabController.install(
                 tabelle,
                 cbkShowDescription,
                 ApplicationConfiguration.FILM_SHOW_DESCRIPTION,
@@ -456,11 +458,6 @@ public class GuiFilme extends AGuiTabPanel {
     @Handler
     private void handleBookmarkRefreshCompletedEvent(BookmarkRefreshCompletedEvent e) {
         lifecycleController.handleBookmarkRefreshCompletedEvent(e);
-    }
-
-    @Override
-    protected void setupShowFilmDescriptionMenuItem() {
-        viewController.setupShowFilmDescriptionMenuItem();
     }
 
     private void loadTable() {

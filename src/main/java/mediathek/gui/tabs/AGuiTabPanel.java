@@ -19,69 +19,20 @@
 package mediathek.gui.tabs;
 
 import mediathek.config.Daten;
-import mediathek.daten.DatenFilm;
 import mediathek.gui.messages.UpdateStatusBarLeftDisplayEvent;
-import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.MessageBus;
 import org.jspecify.annotations.NonNull;
 
 import javax.swing.*;
-import java.util.Optional;
-import java.util.function.IntConsumer;
-import java.util.function.Supplier;
 
 public abstract class AGuiTabPanel extends JPanel {
-    protected final JTabbedPane descriptionTab = new JTabbedPane();
     protected Daten daten;
     protected MediathekGui mediathekGui;
-    protected FilmDescriptionPanel descriptionPanel;
-
-    /**
-     * Show description panel based on settings.
-     */
-    protected void makeDescriptionTabVisible(boolean visible) {
-        if (visible) {
-            if (descriptionTab.indexOfComponent(descriptionPanel) == -1) {
-                descriptionTab.add(descriptionPanel, 0);
-                descriptionTab.setTitleAt(0, "Beschreibung");
-            }
-        }
-        else {
-            if (descriptionTab.indexOfComponent(descriptionPanel) != -1) {
-                descriptionTab.remove(descriptionPanel);
-            }
-        }
-    }
-
-    protected void setupDescriptionTab(@NonNull JTable table, @NonNull JCheckBoxMenuItem cbmi,
-                                       @NonNull String configKey,
-                                       @NonNull Supplier<Optional<DatenFilm>> datenFilmSupplier) {
-        descriptionPanel.install(descriptionTab, table, datenFilmSupplier);
-        descriptionTab.putClientProperty("JTabbedPane.tabClosable", true);
-        descriptionTab.putClientProperty("JTabbedPane.tabCloseCallback",
-                (IntConsumer) _ -> {
-                    // close description tab here
-                    // must use doClick to trigger model change
-                    cbmi.doClick();
-                });
-
-        setupShowFilmDescriptionMenuItem();
-        initDescriptionTabVisibility(configKey);
-    }
 
     protected void updateSelectedListItemsCount(@NonNull JTable table) {
         final int sel = table.getSelectedRowCount();
         mediathekGui.selectedListItemsProperty.setSelectedItems(sel);
-    }
-
-    protected abstract void setupShowFilmDescriptionMenuItem();
-
-    protected void initDescriptionTabVisibility(@NonNull String configKey) {
-        boolean visible = ApplicationConfiguration.getConfiguration().getBoolean(configKey, true);
-
-        makeDescriptionTabVisible(visible);
     }
 
     public abstract void tabelleSpeichern();

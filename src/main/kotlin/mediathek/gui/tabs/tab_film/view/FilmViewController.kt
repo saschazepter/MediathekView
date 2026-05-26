@@ -39,7 +39,7 @@ class FilmViewController(private val host: Host) {
         fun showButtonsMenuItem(): JCheckBoxMenuItem
         fun showDescriptionMenuItem(): JCheckBoxMenuItem
         fun actions(): FilmUiActions
-        fun makeDescriptionTabVisible(visible: Boolean)
+        fun setDescriptionTabVisible(visible: Boolean)
         fun startFilmWithPset(pset: DatenPset)
     }
 
@@ -112,7 +112,7 @@ class FilmViewController(private val host: Host) {
             config.getBoolean(ApplicationConfiguration.FILM_SHOW_DESCRIPTION, true)
         host.showDescriptionMenuItem().addActionListener {
             val visible = host.showDescriptionMenuItem().isSelected
-            host.makeDescriptionTabVisible(visible)
+            host.setDescriptionTabVisible(visible)
             config.setProperty(ApplicationConfiguration.FILM_SHOW_DESCRIPTION, visible)
         }
     }
