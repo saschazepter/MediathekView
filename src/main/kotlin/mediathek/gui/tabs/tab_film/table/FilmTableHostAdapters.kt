@@ -102,8 +102,6 @@ class TableContextMenuHostAdapter(
 
 class FilmTableInstallerHostAdapter(
     private val tableProvider: () -> MVFilmTable,
-    private val tableOrNullProvider: () -> MVFilmTable?,
-    private val setTableAction: (MVFilmTable) -> Unit,
     private val filmListScrollPane: JScrollPane,
     private val ownerComponent: Component,
     private val tableContextMenuHostProvider: () -> TableContextMenuHandler.Host,
@@ -115,12 +113,6 @@ class FilmTableInstallerHostAdapter(
     private val selectionUpdatesSuspendedProvider: () -> Boolean,
 ) : FilmTableInstaller.Host {
     override fun table(): MVFilmTable = tableProvider()
-
-    override fun tableOrNull(): MVFilmTable? = tableOrNullProvider()
-
-    override fun setTable(table: MVFilmTable) {
-        setTableAction(table)
-    }
 
     override fun filmListScrollPane(): JScrollPane = filmListScrollPane
 

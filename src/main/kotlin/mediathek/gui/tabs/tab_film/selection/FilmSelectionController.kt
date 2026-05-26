@@ -32,14 +32,13 @@ import java.util.Optional
 class FilmSelectionController(private val host: Host) {
     interface Host {
         fun table(): MVFilmTable
-        fun tableOrNull(): MVFilmTable?
         fun parentComponent(): Component
         fun mediathekGui(): MediathekGui
         fun daten(): Daten
         fun showHighQualityOnly(): Boolean
     }
 
-    fun getTableRowCount(): Int = host.tableOrNull()?.model?.rowCount ?: 0
+    fun getTableRowCount(): Int = host.table().model.rowCount
 
     @Synchronized
     fun saveFilm(pSet: DatenPset?) {

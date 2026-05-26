@@ -25,15 +25,12 @@ import java.awt.Component
 
 class FilmSelectionHostAdapter(
     private val tableProvider: () -> MVFilmTable,
-    private val tableOrNullProvider: () -> MVFilmTable?,
     private val parentComponent: Component,
     private val mediathekGui: MediathekGui,
     private val datenProvider: () -> Daten,
     private val showHighQualityOnlyProvider: () -> Boolean,
 ) : FilmSelectionController.Host {
     override fun table(): MVFilmTable = tableProvider()
-
-    override fun tableOrNull(): MVFilmTable? = tableOrNullProvider()
 
     override fun parentComponent(): Component = parentComponent
 

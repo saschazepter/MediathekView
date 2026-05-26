@@ -103,16 +103,13 @@ class GuiFilme(
     private val bookmarkController: FilmBookmarkController
     private var psetButtonsPanel: PsetButtonsPanel? = null
     private var stopBeob = false
-    private var tabelle: MVFilmTable? = null
+    private val tabelle = MVFilmTable()
     private val lifecycleController: FilmLifecycleController
     private val viewController: FilmViewController
     private val selectionController: FilmSelectionController
     private val tableReloader: FilmTableReloader
     private val tableInstaller: FilmTableInstaller
     private var reloadTableDataJob: Job? = null
-
-    private val currentTable: MVFilmTable
-        get() = tabelle ?: error("Film table has not been initialized")
 
     private data class SelectionComponents(
         val selectionController: FilmSelectionController,
@@ -207,7 +204,6 @@ class GuiFilme(
 
     private fun createSelectionComponents(filterConfiguration: FilterConfiguration): SelectionComponents {
         val selectionHost = FilmSelectionHostAdapter(
-            { currentTable },
             { tabelle },
             this,
             mediathekGui,
@@ -379,7 +375,7 @@ class GuiFilme(
             }
         }
         val tableContextMenuHost = TableContextMenuHostAdapter(
-            { currentTable },
+            { tabelle },
             selectionController::getCurrentlySelectedFilm,
             selectionController::getFilm,
             { filmActions.playFilmAction.actionPerformed(null) },
@@ -390,15 +386,13 @@ class GuiFilme(
             { filmUiActions },
         )
         val tableInstallerHost = FilmTableInstallerHostAdapter(
-            { currentTable },
             { tabelle },
-            { table -> tabelle = table },
             filmListScrollPane,
             this,
             { tableContextMenuHost },
             selectionComponents.filmActionHost,
             { filmUiActions },
-            { updateSelectedListItemsCount(currentTable) },
+            { updateSelectedListItemsCount(tabelle) },
             ::onComponentShown,
             selectionController::updateFilmData,
             { stopBeob },
@@ -439,7 +433,7 @@ class GuiFilme(
         viewComponents.tableInstaller.setupFilmSelectionPropertyListener()
         viewComponents.viewController.setupShowFilmDescriptionMenuItem()
         descriptionTabController.install(
-            currentTable,
+            tabelle,
             cbkShowDescription,
             ApplicationConfiguration.FILM_SHOW_DESCRIPTION,
         ) { selectionComponents.selectionController.getCurrentlySelectedFilm() }
@@ -473,7 +467,7 @@ class GuiFilme(
         filterController: FilmFilterController,
     ): FilmTableReloader {
         val tableReloadHost = FilmTableReloadHostAdapter(
-            { currentTable },
+            { tabelle },
             {
                 SearchFieldData(searchField.text, searchField.getSearchMode())
             },
@@ -497,7 +491,7 @@ class GuiFilme(
         val lifecycleHost = FilmLifecycleHostAdapter(
             this,
             daten,
-            { currentTable },
+            { tabelle },
             filterConfiguration,
             bookmarkStartupReloadCoordinator,
             { installedUi.swingFilterDialog },

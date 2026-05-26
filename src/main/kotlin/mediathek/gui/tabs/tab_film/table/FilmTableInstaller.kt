@@ -41,8 +41,6 @@ import javax.swing.ListSelectionModel
 class FilmTableInstaller(private val host: Host) {
     interface Host {
         fun table(): MVFilmTable
-        fun tableOrNull(): MVFilmTable?
-        fun setTable(table: MVFilmTable)
         fun filmListScrollPane(): JScrollPane
         fun ownerComponent(): Component
         fun tableContextMenuHost(): TableContextMenuHandler.Host
@@ -55,13 +53,11 @@ class FilmTableInstaller(private val host: Host) {
     }
 
     fun writeTableConfigurationData() {
-        host.tableOrNull()?.writeTableConfigurationData()
+        host.table().writeTableConfigurationData()
     }
 
     fun setupFilmListTable() {
-        val table = MVFilmTable()
-        host.setTable(table)
-        host.filmListScrollPane().setViewportView(table)
+        host.filmListScrollPane().setViewportView(host.table())
     }
 
     fun setupFilmSelectionPropertyListener() {
