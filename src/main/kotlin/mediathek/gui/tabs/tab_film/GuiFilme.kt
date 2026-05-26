@@ -80,6 +80,7 @@ import mediathek.tool.table.MVFilmTable
 import net.engio.mbassy.listener.Handler
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.BorderLayout
+import java.util.function.Consumer
 import kotlin.time.Duration.Companion.milliseconds
 import javax.swing.Action
 import javax.swing.JCheckBoxMenuItem
@@ -101,7 +102,6 @@ class GuiFilme(
     private val reloadTableScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val filterController: FilmFilterController
     private val bookmarkController: FilmBookmarkController
-    private var psetButtonsPanel: PsetButtonsPanel? = null
     private var stopBeob = false
     private val tabelle = MVFilmTable()
     private val lifecycleController: FilmLifecycleController
@@ -351,14 +351,11 @@ class GuiFilme(
     ): ViewComponents {
         val selectionController = selectionComponents.selectionController
         val filmUiActions = filmActions.filmUiActions
+        val psetButtonsPanel = PsetButtonsPanel { pset -> selectionController.startFilm(pset) }
         val viewHost = object : FilmViewController.Host {
             override fun psetButtonsTab() = psetButtonsTab
 
-            override fun psetButtonsPanel() = this@GuiFilme.psetButtonsPanel
-
-            override fun setPsetButtonsPanel(panel: PsetButtonsPanel) {
-                this@GuiFilme.psetButtonsPanel = panel
-            }
+            override fun psetButtonsPanel() = psetButtonsPanel
 
             override fun showButtonsMenuItem() = cbShowButtons
 
@@ -370,9 +367,6 @@ class GuiFilme(
                 descriptionTabController.setVisible(visible)
             }
 
-            override fun startFilmWithPset(pset: DatenPset) {
-                selectionController.startFilm(pset)
-            }
         }
         val tableContextMenuHost = TableContextMenuHostAdapter(
             { tabelle },

@@ -18,13 +18,11 @@
 
 package mediathek.gui.tabs.tab_film.view
 
-import mediathek.daten.DatenPset
 import mediathek.gui.tabs.tab_film.PsetButtonsPanel
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.tool.ApplicationConfiguration
 import org.apache.commons.lang3.SystemUtils
 import java.awt.event.KeyEvent
-import java.util.function.Consumer
 import java.util.function.IntConsumer
 import javax.swing.JCheckBoxMenuItem
 import javax.swing.JMenu
@@ -34,13 +32,11 @@ import javax.swing.KeyStroke
 class FilmViewController(private val host: Host) {
     interface Host {
         fun psetButtonsTab(): JTabbedPane
-        fun psetButtonsPanel(): PsetButtonsPanel?
-        fun setPsetButtonsPanel(panel: PsetButtonsPanel)
+        fun psetButtonsPanel(): PsetButtonsPanel
         fun showButtonsMenuItem(): JCheckBoxMenuItem
         fun showDescriptionMenuItem(): JCheckBoxMenuItem
         fun actions(): FilmUiActions
         fun setDescriptionTabVisible(visible: Boolean)
-        fun startFilmWithPset(pset: DatenPset)
     }
 
     fun installViewMenuEntry(menu: JMenu) {
@@ -48,7 +44,7 @@ class FilmViewController(private val host: Host) {
     }
 
     fun makeButtonsTabVisible(visible: Boolean) {
-        val panel = host.psetButtonsPanel() ?: return
+        val panel = host.psetButtonsPanel()
         if (visible) {
             if (host.psetButtonsTab().indexOfComponent(panel) == -1) {
                 host.psetButtonsTab().add(panel, 0)
@@ -81,8 +77,7 @@ class FilmViewController(private val host: Host) {
             .getBoolean(ApplicationConfiguration.APPLICATION_BUTTONS_PANEL_VISIBLE, false)
         setupButtonsMenuItem(initialVisibility)
 
-        val panel = PsetButtonsPanel(Consumer { pset -> host.startFilmWithPset(pset) })
-        host.setPsetButtonsPanel(panel)
+        val panel = host.psetButtonsPanel()
         panel.putClientProperty("JTabbedPane.tabClosable", true)
         panel.putClientProperty("JTabbedPane.tabCloseCallback", IntConsumer { host.showButtonsMenuItem().doClick() })
         panel.install(host.psetButtonsTab())
