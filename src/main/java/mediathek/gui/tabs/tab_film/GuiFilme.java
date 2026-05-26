@@ -18,20 +18,12 @@
 
 package mediathek.gui.tabs.tab_film;
 
-import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
-import com.formdev.flatlaf.FlatClientProperties;
-import com.formdev.flatlaf.extras.FlatSVGIcon;
-import com.formdev.flatlaf.icons.FlatSearchWithHistoryIcon;
 import mediathek.config.Daten;
-import mediathek.config.MVColor;
-import mediathek.config.MVConfig;
 import mediathek.daten.DatenFilm;
 import mediathek.daten.DatenPset;
 import mediathek.daten.FilmResolution;
 import mediathek.daten.IndexedFilmList;
-import mediathek.filmeSuchen.ListenerFilmeLaden;
-import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
 import mediathek.gui.actions.DeleteBookmarksAction;
 import mediathek.gui.actions.ManageBookmarkAction;
 import mediathek.gui.actions.PlayFilmAction;
@@ -42,78 +34,50 @@ import mediathek.gui.tabs.AGuiTabPanel;
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
-import mediathek.gui.tabs.tab_film.helpers.GuiModelHelper;
-import mediathek.gui.tabs.tab_film.helpers.GuiModelHelperFactory;
 import mediathek.mainwindow.MediathekGui;
-import mediathek.swing.IconUtils;
 import mediathek.tool.*;
-import mediathek.tool.cellrenderer.CellRendererFilme;
-import mediathek.tool.datum.DatumFilm;
-import mediathek.tool.listener.BeobTableHeader;
-import mediathek.tool.models.TModelFilm;
-import mediathek.tool.table.ColumnVisibilityStore;
 import mediathek.tool.table.MVFilmTable;
 import net.engio.mbassy.listener.Handler;
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jdesktop.swingx.VerticalLayout;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
-import org.kordamp.ikonli.materialdesign2.MaterialDesignF;
 
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.table.TableModel;
-import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.function.Consumer;
-import java.util.function.IntConsumer;
+import java.util.concurrent.Executor;
 
 public class GuiFilme extends AGuiTabPanel {
 
     public static final String NAME = "Filme";
     public static final boolean[] VISIBLE_COLUMNS = new boolean[DatenFilm.MAX_ELEM];
-    private static final String ACTION_MAP_KEY_PLAY_FILM = "film_abspielen";
-    private static final String ACTION_MAP_KEY_SAVE_FILM = "download_film";
-    private static final String ACTION_MAP_KEY_BOOKMARK_FILM = "bookmark_film";
-    private static final String ACTION_MAP_KEY_COPY_NORMAL_URL = "copy_url";
-    private static final String ACTION_MAP_KEY_COPY_HD_URL = "copy_url_hd";
-    private static final String ACTION_MAP_KEY_COPY_KLEIN_URL = "copy_url_klein";
-    private static final String ACTION_MAP_KEY_MARK_SEEN = "seen";
-    private static final String ACTION_MAP_KEY_MARK_UNSEEN = "unseen";
-    private static final int[] HIDDEN_COLUMNS = {DatenFilm.FILM_ABSPIELEN, DatenFilm.FILM_AUFZEICHNEN,
-            DatenFilm.FILM_MERKEN};
-    private static final Logger logger = LogManager.getLogger();
-    private static final int[] BUTTON_COLUMNS = {DatenFilm.FILM_ABSPIELEN, DatenFilm.FILM_AUFZEICHNEN,
-            DatenFilm.FILM_MERKEN};
+    private final FilmActionHost filmActionHost = new FilmActionHostAdapter(
+            this::saveFilm,
+            this::getSelFilme,
+            this::updateBookmarkListAndRefresh,
+            this::getCurrentlySelectedFilm,
+            this::toggleFilterDialogVisibility);
     public final PlayFilmAction playFilmAction = new PlayFilmAction(this);
-    public final SaveFilmAction saveFilmAction = new SaveFilmAction();
-    public final CopyUrlToClipboardAction copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.HIGH_QUALITY);
-    public final CopyUrlToClipboardAction copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(FilmResolution.Enum.NORMAL);
+    public final SaveFilmAction saveFilmAction = new SaveFilmAction(filmActionHost);
+    public final CopyUrlToClipboardAction copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY);
+    public final CopyUrlToClipboardAction copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL);
     public final SwingFilterDialog swingFilterDialog;
-    public final ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction();
+    public final ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction(filmActionHost);
     protected final JTabbedPane psetButtonsTab = new JTabbedPane();
     protected final SearchField searchField;
     protected final DeleteBookmarksAction deleteBookmarksAction = new DeleteBookmarksAction(MediathekGui.ui());
     private final FilterConfiguration filterConfiguration = new FilterConfiguration();
     private final BookmarkStartupReloadCoordinator bookmarkStartupReloadCoordinator = new BookmarkStartupReloadCoordinator();
-    private final BookmarkAddFilmAction bookmarkAddFilmAction = new BookmarkAddFilmAction();
-    private final BookmarkRemoveFilmAction bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction();
+    private final BookmarkAddFilmAction bookmarkAddFilmAction = new BookmarkAddFilmAction(filmActionHost);
+    private final BookmarkRemoveFilmAction bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction(filmActionHost);
     private final ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(MediathekGui.ui());
     private final MarkFilmAsSeenAction markFilmAsSeenAction = new MarkFilmAsSeenAction();
     private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
     private final DownloadSubtitleAction downloadSubtitleAction = new DownloadSubtitleAction(this);
+    private FilmUiActions filmUiActions;
     private final JScrollPane filmListScrollPane = new JScrollPane();
     private final JCheckBoxMenuItem cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
     private final JCheckBoxMenuItem cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
@@ -148,16 +112,128 @@ public class GuiFilme extends AGuiTabPanel {
                     filterController::isFilterLocked,
                     filterController.selectionObserverRegistry());
     private final FilmToolBar filmToolBar;
-    protected BookmarkDialog bookmarkDialog;
+    private final FilmBookmarkController bookmarkController;
+    private final FilmBookmarkController.Host bookmarkHost;
     protected PsetButtonsPanel psetButtonsPanel;
     private boolean stopBeob;
     private MVFilmTable tabelle;
-    /**
-     * We perform model filtering in the background the keep UI thread alive.
-     */
-    private CompletableFuture<TableModel> modelFuture;
-    private boolean pendingTableReload;
-    private boolean pendingTableReloadFromSearchField;
+    private final FilmLifecycleController lifecycleController;
+    private final FilmLifecycleController.Host lifecycleHost = new FilmLifecycleController.Host() {
+        @Override
+        public @NonNull Object messageBusSubscriber() {
+            return GuiFilme.this;
+        }
+
+        @Override
+        public @NonNull Daten daten() {
+            return daten;
+        }
+
+        @Override
+        public @NonNull MVFilmTable table() {
+            return tabelle;
+        }
+
+        @Override
+        public @NonNull FilterConfiguration filterConfiguration() {
+            return filterConfiguration;
+        }
+
+        @Override
+        public @NonNull BookmarkStartupReloadCoordinator bookmarkStartupReloadCoordinator() {
+            return bookmarkStartupReloadCoordinator;
+        }
+
+        @Override
+        public @NonNull SwingFilterDialog swingFilterDialog() {
+            return swingFilterDialog;
+        }
+
+        @Override
+        public @NonNull FilmToolBar filmToolBar() {
+            return filmToolBar;
+        }
+
+        @Override
+        public @NonNull SearchField searchField() {
+            return searchField;
+        }
+
+        @Override
+        public @NonNull FilmUiActions actions() {
+            return filmUiActions;
+        }
+
+        @Override
+        public void requestTableReload() {
+            GuiFilme.this.requestTableReload();
+        }
+
+        @Override
+        public void updateStartInfoProperty() {
+            GuiFilme.this.updateStartInfoProperty();
+        }
+
+        @Override
+        public void saveTableConfiguration() {
+            GuiFilme.this.tabelleSpeichern();
+        }
+
+        @Override
+        public void closeFilterSelectionModel() {
+            filterSelectionComboBoxModel.close();
+        }
+    };
+    private final FilmViewController viewController;
+    private final FilmViewController.Host viewHost = new FilmViewHostAdapter(
+            this,
+            psetButtonsTab,
+            () -> psetButtonsPanel,
+            panel -> psetButtonsPanel = panel,
+            () -> cbShowButtons,
+            () -> cbkShowDescription,
+            () -> filmUiActions,
+            this::makeDescriptionTabVisible);
+    private final FilmSelectionController selectionController;
+    private final FilmSelectionController.Host selectionHost;
+    private final FilmTableReloader tableReloader;
+    private final FilmTableReloader.Host tableReloadHost = new FilmTableReloader.Host() {
+        @Override
+        public MVFilmTable table() {
+            return tabelle;
+        }
+
+        @Override
+        public SearchFieldData searchFieldData() {
+            return new SearchFieldData(searchField.getText(), searchField.getSearchMode());
+        }
+
+        @Override
+        public FilmFilterController filterController() {
+            return filterController;
+        }
+
+        @Override
+        public Executor tableModelExecutor() {
+            return daten.getDecoratedPool();
+        }
+
+        @Override
+        public void setSelectionUpdatesSuspended(boolean suspended) {
+            stopBeob = suspended;
+        }
+
+        @Override
+        public void updateStartInfoProperty() {
+            GuiFilme.this.updateStartInfoProperty();
+        }
+
+        @Override
+        public void updateFilmData() {
+            GuiFilme.this.updateFilmData();
+        }
+    };
+    private final SearchField.Host searchFieldHost;
     private final TableContextMenuHandler.Host tableContextMenuHost = new TableContextMenuHandler.Host() {
         @Override
         public @NonNull MVFilmTable table() {
@@ -200,40 +276,107 @@ public class GuiFilme extends AGuiTabPanel {
         }
 
         @Override
-        public @NonNull Action playFilmAction() {
-            return playFilmAction;
-        }
-
-        @Override
-        public @NonNull Action saveFilmAction() {
-            return saveFilmAction;
-        }
-
-        @Override
-        public @NonNull Action bookmarkAddFilmAction() {
-            return bookmarkAddFilmAction;
-        }
-
-        @Override
-        public @NonNull Action bookmarkRemoveFilmAction() {
-            return bookmarkRemoveFilmAction;
-        }
-
-        @Override
-        public @NonNull Action showFilmInformationAction() {
-            return mediathekGui.showFilmInformationAction;
-        }
-
-        @Override
-        public @NonNull Action downloadSubtitleAction() {
-            return downloadSubtitleAction;
+        public @NonNull FilmUiActions actions() {
+            return filmUiActions;
         }
     };
+    private final FilmTableInstaller.Host tableInstallerHost = new FilmTableInstaller.Host() {
+        @Override
+        public @NonNull MVFilmTable table() {
+            return tabelle;
+        }
+
+        @Override
+        public @Nullable MVFilmTable tableOrNull() {
+            return tabelle;
+        }
+
+        @Override
+        public void setTable(@NonNull MVFilmTable table) {
+            tabelle = table;
+        }
+
+        @Override
+        public @NonNull JScrollPane filmListScrollPane() {
+            return filmListScrollPane;
+        }
+
+        @Override
+        public @NonNull Component ownerComponent() {
+            return GuiFilme.this;
+        }
+
+        @Override
+        public TableContextMenuHandler.Host tableContextMenuHost() {
+            return tableContextMenuHost;
+        }
+
+        @Override
+        public @NonNull FilmActionHost filmActionHost() {
+            return filmActionHost;
+        }
+
+        @Override
+        public @NonNull FilmUiActions actions() {
+            return filmUiActions;
+        }
+
+        @Override
+        public void updateSelectedListItemsCount() {
+            GuiFilme.this.updateSelectedListItemsCount(tabelle);
+        }
+
+        @Override
+        public void onComponentShown() {
+            GuiFilme.this.onComponentShown();
+        }
+
+        @Override
+        public void updateFilmData() {
+            GuiFilme.this.updateFilmData();
+        }
+
+        @Override
+        public boolean selectionUpdatesSuspended() {
+            return stopBeob;
+        }
+    };
+    private final FilmTableInstaller tableInstaller = new FilmTableInstaller(tableInstallerHost);
 
     public GuiFilme(Daten aDaten, MediathekGui mediathekGui) {
         daten = aDaten;
         this.mediathekGui = mediathekGui;
         descriptionPanel = new FilmDescriptionPanel();
+        bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
+        selectionHost = new FilmSelectionHostAdapter(
+                () -> tabelle,
+                () -> tabelle,
+                this,
+                mediathekGui,
+                () -> daten,
+                () -> filterConfiguration.isShowHighQualityOnly());
+        searchFieldHost = new SearchFieldHostAdapter(
+                mediathekGui,
+                this::loadTable,
+                this::loadTable);
+        filmUiActions = new FilmUiActions(
+                playFilmAction,
+                saveFilmAction,
+                bookmarkAddFilmAction,
+                bookmarkRemoveFilmAction,
+                deleteBookmarksAction,
+                manageBookmarkAction,
+                copyNormalUrlToClipboardAction,
+                copyHqUrlToClipboardAction,
+                markFilmAsSeenAction,
+                markFilmAsUnseenAction,
+                mediathekGui.toggleBlacklistAction,
+                mediathekGui.editBlacklistAction,
+                mediathekGui.showFilmInformationAction,
+                downloadSubtitleAction);
+        bookmarkController = new FilmBookmarkController(bookmarkHost);
+        viewController = new FilmViewController(viewHost);
+        selectionController = new FilmSelectionController(selectionHost);
 
         setLayout(new BorderLayout());
         add(filmListScrollPane, BorderLayout.CENTER);
@@ -241,18 +384,18 @@ public class GuiFilme extends AGuiTabPanel {
         add(extensionArea, BorderLayout.SOUTH);
 
         if (daten.getListeFilmeNachBlackList() instanceof IndexedFilmList)
-            searchField = new LuceneSearchField();
+            searchField = new LuceneSearchField(searchFieldHost);
         else
-            searchField = new RegularSearchField();
+            searchField = new RegularSearchField(searchFieldHost);
 
         // add film description panel
         extensionArea.add(descriptionTab);
         extensionArea.add(psetButtonsTab);
 
-        setupFilmListTable();
-        setupFilmSelectionPropertyListener();
+        tableInstaller.setupFilmListTable();
+        tableInstaller.setupFilmSelectionPropertyListener();
         setupDescriptionTab(tabelle, cbkShowDescription, ApplicationConfiguration.FILM_SHOW_DESCRIPTION, this::getCurrentlySelectedFilm);
-        setupPsetButtonsTab();
+        viewController.setupPsetButtonsTab();
 
         filmToolBar = new FilmToolBar(filterSelectionComboBoxModel,
                 bookmarkAddFilmAction,
@@ -269,32 +412,19 @@ public class GuiFilme extends AGuiTabPanel {
                 filmToolBar.getToggleFilterDialogVisibilityButton(),
                 filterController);
 
-        setupTable();
+        tableInstaller.setupTable();
 
+        tableReloader = new FilmTableReloader(tableReloadHost);
         reloadTableDataTimer = new NonRepeatingTimer(_ -> loadTable());
+        lifecycleController = new FilmLifecycleController(lifecycleHost);
+        lifecycleController.start();
 
-        // register message bus handler
-        MessageBus.getMessageBus().subscribe(this);
-        ListenerFilmeLaden filmListReloadListener = new ListenerFilmeLaden() {
-            @Override
-            public void start(ListenerFilmeLadenEvent event) {
-                SwingUtilities.invokeLater(swingFilterDialog::onFilmDataLoadingStarted);
-                bookmarkStartupReloadCoordinator.onFilmListLoadingStarted();
-            }
+    }
 
-            @Override
-            public void fertig(ListenerFilmeLadenEvent event) {
-                SwingUtilities.invokeLater(() -> {
-                    swingFilterDialog.onFilmDataLoaded();
-                    if (bookmarkStartupReloadCoordinator.onFilmListLoaded(filterConfiguration.isShowBookMarkedOnly())) {
-                        GuiFilme.this.requestTableReload();
-                    }
-                });
-            }
-        };
-        daten.getFilmeLaden().addAdListener(filmListReloadListener);
-        SwingUtilities.invokeLater(this::requestTableReload);
-
+    private void toggleFilterDialogVisibility() {
+        var visible = swingFilterDialog.isVisible();
+        visible = !visible;
+        swingFilterDialog.setVisible(visible);
     }
 
     private void requestTableReload() {
@@ -310,9 +440,7 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     public void disposePanel() {
-        tabelleSpeichern();
-        swingFilterDialog.dispose();
-        filterSelectionComboBoxModel.close();
+        lifecycleController.disposePanel();
     }
 
     public FilterConfiguration getFilterConfiguration() {
@@ -323,133 +451,34 @@ public class GuiFilme extends AGuiTabPanel {
         return filterController.state().getZeitraum();
     }
 
-    /**
-     * Convenience function to update bookmark list and refresh UI.
-     * @param filmList the data list
-     */
-    private void updateBookmarkListAndRefresh(List<DatenFilm> filmList)
-    {
-        var bookmarkList = Daten.getInstance().getListeBookmarkList();
-        bookmarkList.checkAndBookmarkMovies(filmList);
-        bookmarkList.saveToFile();
-        repaint();
+    private void updateBookmarkListAndRefresh(List<DatenFilm> films) {
+        bookmarkController.updateBookmarkListAndRefresh(films);
     }
 
     @Handler
     public void handleTableModelChange(TableModelChangeEvent e) {
-        final Consumer<Boolean> function = (Boolean flag) -> {
-            playFilmAction.setEnabled(flag);
-            saveFilmAction.setEnabled(flag);
-            bookmarkAddFilmAction.setEnabled(flag);
-            bookmarkRemoveFilmAction.setEnabled(flag);
-            deleteBookmarksAction.setEnabled(flag);
-            manageBookmarkAction.setEnabled(flag);
-            filmToolBar.setEnabled(flag);
-        };
-        if (e.getActive()) {
-            SwingUtilities.invokeLater(() -> function.accept(false));
-        } else {
-            SwingUtilities.invokeLater(() -> {
-                function.accept(true);
-                if (e.getFromSearchField())
-                    searchField.requestFocusInWindow();
-            });
-        }
-
-        swingFilterDialog.onTableModelChangeEvent(e);
+        lifecycleController.handleTableModelChange(e);
     }
 
     @Override
     public void tabelleSpeichern() {
-        if (tabelle != null) {
-            tabelle.writeTableConfigurationData();
-        }
-    }
-
-    private void setupFilmListTable() {
-        tabelle = new MVFilmTable();
-        filmListScrollPane.setViewportView(tabelle);
-    }
-
-    /**
-     * Update the property with the current number of selected entries from the JTable.
-     */
-    private void setupFilmSelectionPropertyListener() {
-        tabelle.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                updateSelectedListItemsCount(tabelle);
-                final int sel = tabelle.getSelectedRowCount();
-                playFilmAction.setEnabled(sel <= 1);
-            }
-        });
-
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentShown(ComponentEvent e) {
-                updateSelectedListItemsCount(tabelle);
-                onComponentShown();
-            }
-        });
+        tableInstaller.writeTableConfigurationData();
     }
 
     public void installViewMenuEntry(JMenu jMenuAnsicht) {
-        jMenuAnsicht.add(cbShowButtons, 0);
+        viewController.installViewMenuEntry(jMenuAnsicht);
     }
 
     /**
      * Show description panel based on settings.
      */
     protected void makeButtonsTabVisible(boolean visible) {
-        if (visible) {
-            if (psetButtonsTab.indexOfComponent(psetButtonsPanel) == -1) {
-                psetButtonsTab.add(psetButtonsPanel, 0);
-                psetButtonsTab.setTitleAt(0, "Buttons");
-            }
-        } else {
-            if (psetButtonsTab.indexOfComponent(psetButtonsPanel) != -1) {
-                psetButtonsTab.remove(psetButtonsPanel);
-            }
-        }
+        viewController.makeButtonsTabVisible(visible);
     }
 
     @Override
     public void installMenuEntries(JMenu menu) {
-        menu.add(playFilmAction);
-        menu.add(saveFilmAction);
-        menu.add(bookmarkAddFilmAction);
-        menu.addSeparator();
-        menu.add(markFilmAsSeenAction);
-        menu.add(markFilmAsUnseenAction);
-        menu.addSeparator();
-        menu.add(mediathekGui.toggleBlacklistAction);
-        menu.add(mediathekGui.editBlacklistAction);
-        menu.addSeparator();
-        menu.add(cbkShowDescription);
-    }
-
-    private void setupPsetButtonsTab() {
-        var initialVisibility = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.APPLICATION_BUTTONS_PANEL_VISIBLE, false);
-        setupButtonsMenuItem(initialVisibility);
-
-        psetButtonsPanel = new PsetButtonsPanel(this);
-        psetButtonsPanel.putClientProperty("JTabbedPane.tabClosable", true);
-        psetButtonsPanel.putClientProperty("JTabbedPane.tabCloseCallback", (IntConsumer) _ -> cbShowButtons.doClick());
-        psetButtonsPanel.install(psetButtonsTab);
-
-        makeButtonsTabVisible(initialVisibility);
-    }
-
-    private void setupButtonsMenuItem(boolean initialVisibility) {
-        var config = ApplicationConfiguration.getConfiguration();
-
-        if (!SystemUtils.IS_OS_MAC_OSX)
-            cbShowButtons.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0));
-        cbShowButtons.setSelected(initialVisibility);
-        cbShowButtons.addActionListener(_ -> {
-            boolean visible = cbShowButtons.isSelected();
-            makeButtonsTabVisible(visible);
-            config.setProperty(ApplicationConfiguration.APPLICATION_BUTTONS_PANEL_VISIBLE, visible);
-        });
+        viewController.installMenuEntries(menu);
     }
 
     private void onComponentShown() {
@@ -458,103 +487,22 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     public int getTableRowCount() {
-        if (tabelle != null) {
-            return tabelle.getModel().getRowCount();
-        } else {
-            return 0;
-        }
-    }
-
-    private void setupKeyMapping() {
-        final InputMap focusedWindowMap = tabelle.getInputMap();
-
-        focusedWindowMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_P, 0), ACTION_MAP_KEY_PLAY_FILM);
-        focusedWindowMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), ACTION_MAP_KEY_PLAY_FILM);
-        focusedWindowMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_D, 0), ACTION_MAP_KEY_SAVE_FILM);
-        focusedWindowMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_B, 0), ACTION_MAP_KEY_BOOKMARK_FILM);
-        focusedWindowMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_H, 0), ACTION_MAP_KEY_COPY_HD_URL);
-        focusedWindowMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_N, 0), ACTION_MAP_KEY_COPY_NORMAL_URL);
-        focusedWindowMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_K, 0), ACTION_MAP_KEY_COPY_KLEIN_URL);
-        focusedWindowMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_G, 0), ACTION_MAP_KEY_MARK_SEEN);
-        focusedWindowMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_U, 0), ACTION_MAP_KEY_MARK_UNSEEN);
-
-        final ActionMap actionMap = tabelle.getActionMap();
-        actionMap.put(ACTION_MAP_KEY_PLAY_FILM, playFilmAction);
-        actionMap.put(ACTION_MAP_KEY_SAVE_FILM, saveFilmAction);
-        actionMap.put(ACTION_MAP_KEY_BOOKMARK_FILM, bookmarkAddFilmAction);
-        actionMap.put(ACTION_MAP_KEY_COPY_NORMAL_URL, copyNormalUrlToClipboardAction);
-        actionMap.put(ACTION_MAP_KEY_COPY_HD_URL, copyHqUrlToClipboardAction);
-        actionMap.put(ACTION_MAP_KEY_COPY_KLEIN_URL, new CopyUrlToClipboardAction(FilmResolution.Enum.LOW));
-        actionMap.put(ACTION_MAP_KEY_MARK_SEEN, markFilmAsSeenAction);
-        actionMap.put(ACTION_MAP_KEY_MARK_UNSEEN, markFilmAsUnseenAction);
-    }
-
-    private void setupCellRenderer() {
-        CellRendererFilme cellRenderer = new CellRendererFilme();
-        tabelle.setDefaultRenderer(Object.class, cellRenderer);
-        tabelle.setDefaultRenderer(DatumFilm.class, cellRenderer);
-        tabelle.setDefaultRenderer(Integer.class, cellRenderer);
-    }
-
-    private void setupTable() {
-        setupKeyMapping();
-
-        tabelle.setModel(new TModelFilm());
-        tabelle.addMouseListener(new TableContextMenuHandler(tableContextMenuHost));
-        tabelle.getSelectionModel().addListSelectionListener(event -> {
-            final ListSelectionModel m = (ListSelectionModel) event.getSource();
-            if (!m.isSelectionEmpty() && !m.getValueIsAdjusting() && !stopBeob) {
-                updateFilmData();
-            }
-        });
-
-        setupCellRenderer();
-
-        tabelle.setLineBreak(MVConfig.getBool(MVConfig.Configs.SYSTEM_TAB_FILME_LINEBREAK));
-
-        setupHeaderPopupMenu();
-
-        tabelle.readColumnConfigurationData();
-        if (tabelle.getRowCount() > 0) {
-            tabelle.setRowSelectionInterval(0, 0);
-        }
-    }
-
-    private void setupHeaderPopupMenu() {
-        final var headerListener =
-                new BeobTableHeader(
-                        tabelle,
-                        ColumnVisibilityStore.of(VISIBLE_COLUMNS),
-                        HIDDEN_COLUMNS,
-                        BUTTON_COLUMNS,
-                        true,
-                        MVConfig.Configs.SYSTEM_TAB_FILME_LINEBREAK);
-
-        tabelle.getTableHeader().addMouseListener(headerListener);
+        return selectionController.getTableRowCount();
     }
 
     @Handler
     private void handleDownloadHistoryChangedEvent(DownloadHistoryChangedEvent e) {
-        SwingUtilities.invokeLater(() -> {
-            if (filterConfiguration.isShowUnseenOnly()) {
-                requestTableReload();
-            } else {
-                tabelle.fireTableDataChanged(true);
-            }
-        });
+        lifecycleController.handleDownloadHistoryChangedEvent(e);
     }
 
     @Handler
     private void handleButtonStart(ButtonStartEvent e) {
-        SwingUtilities.invokeLater(() -> {
-            tabelle.fireTableDataChanged(true);
-            updateStartInfoProperty();
-        });
+        lifecycleController.handleButtonStart(e);
     }
 
     @Handler
     private void handleStartEvent(StartEvent msg) {
-        SwingUtilities.invokeLater(this::updateStartInfoProperty);
+        lifecycleController.handleStartEvent(msg);
     }
 
     /**
@@ -562,46 +510,22 @@ public class GuiFilme extends AGuiTabPanel {
      * @param pSet used for downloads or null.
      */
     private synchronized void saveFilm(@Nullable DatenPset pSet) {
-        FilmResolution.Enum requestedResolution =
-                filterConfiguration.isShowHighQualityOnly() ? FilmResolution.Enum.HIGH_QUALITY : null;
-        FilmDownloadStarter.startDownloads(mediathekGui, getSelFilme(), pSet, requestedResolution);
+        selectionController.saveFilm(pSet);
     }
 
     /**
      * If necessary instantiate and show the bookmark window
      */
     public void showManageBookmarkWindow() {
-        if (bookmarkDialog == null) {
-            bookmarkDialog = new BookmarkDialog(mediathekGui);
-            bookmarkDialog.setVisible(true);
-        }
-        else {
-            bookmarkDialog.setVisible(true);
-        }
+        bookmarkController.showManageBookmarkWindow();
     }
 
     public BookmarkDialog getBookmarkDialog() {
-        return bookmarkDialog;
+        return bookmarkController.getBookmarkDialog();
     }
 
     public void playerStarten(DatenPset pSet) {
-        // Url mit Prognr. starten
-        if (tabelle.getSelectedRow() == -1) {
-            NoSelectionErrorDialog.show(this);
-        } else if (pSet.istSpeichern()) {
-            // wenn das pSet zum Speichern (über die Button) gewählt wurde,
-            // weiter mit dem Dialog "Speichern"
-            saveFilm(pSet);
-        } else {
-            // mit dem flvstreamer immer nur einen Filme starten
-            final String aufloesung;
-            if (filterConfiguration.isShowHighQualityOnly()) {
-                aufloesung = FilmResolution.Enum.HIGH_QUALITY.toString();
-            } else aufloesung = "";
-
-            getCurrentlySelectedFilm().ifPresent(
-                    film -> daten.getStarterClass().urlMitProgrammStarten(pSet, film, aufloesung));
-        }
+        selectionController.startFilm(pSet);
     }
 
     /**
@@ -612,55 +536,24 @@ public class GuiFilme extends AGuiTabPanel {
      * @return Optional object to a film object.
      */
     private Optional<DatenFilm> getFilm(final int zeileTabelle) {
-        if (zeileTabelle >= 0 && zeileTabelle < tabelle.getRowCount()) {
-            return Optional.of((DatenFilm) tabelle.getModel()
-                    .getValueAt(tabelle.convertRowIndexToModel(zeileTabelle), DatenFilm.FILM_REF));
-        } else {
-            return Optional.empty();
-        }
+        return selectionController.getFilm(zeileTabelle);
     }
 
     @Override
     public Optional<DatenFilm> getCurrentlySelectedFilm() {
-        final int selectedTableRow = tabelle.getSelectedRow();
-        if (selectedTableRow != -1) {
-            try {
-                final int modelIndex = tabelle.convertRowIndexToModel(selectedTableRow);
-                return Optional.of((DatenFilm) tabelle.getModel().getValueAt(modelIndex, DatenFilm.FILM_REF));
-            }
-            catch (Exception _) {
-                return Optional.empty();
-            }
-        } else {
-            return Optional.empty();
-        }
+        return selectionController.getCurrentlySelectedFilm();
     }
 
     @Override
     protected List<DatenFilm> getSelFilme() {
-        ArrayList<DatenFilm> arrayFilme = new ArrayList<>();
-        int[] rows = tabelle.getSelectedRows();
-        if (rows.length > 0) {
-            for (int row : rows) {
-                DatenFilm datenFilm = (DatenFilm) tabelle.getModel()
-                        .getValueAt(tabelle.convertRowIndexToModel(row), DatenFilm.FILM_REF);
-                arrayFilme.add(datenFilm);
-            }
-        } else {
-            NoSelectionErrorDialog.show(this);
-        }
-        return arrayFilme;
+        return selectionController.getSelectedFilms();
     }
 
     /**
      * Update Film Information and description panel with updated film...
      */
     private void updateFilmData() {
-        var infoDialog = mediathekGui.getFilmInfoDialog();
-        if (infoDialog != null) {
-            final Optional<DatenFilm> filmSelection = getCurrentlySelectedFilm();
-            filmSelection.ifPresent(infoDialog::updateCurrentFilm);
-        }
+        selectionController.updateFilmData();
     }
 
     /**
@@ -669,93 +562,25 @@ public class GuiFilme extends AGuiTabPanel {
      */
     @Handler
     private void handleReloadTableDataEvent(ReloadTableDataEvent e) {
-        requestTableReload();
+        lifecycleController.handleReloadTableDataEvent(e);
     }
 
     @Handler
     private void handleBookmarkRefreshCompletedEvent(BookmarkRefreshCompletedEvent e) {
-        if (bookmarkStartupReloadCoordinator.onBookmarkRefreshCompleted(filterConfiguration.isShowBookMarkedOnly())) {
-            requestTableReload();
-        }
+        lifecycleController.handleBookmarkRefreshCompletedEvent(e);
     }
 
     @Override
     protected void setupShowFilmDescriptionMenuItem() {
-        var config = ApplicationConfiguration.getConfiguration();
-
-        cbkShowDescription.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_F10, 0));
-        cbkShowDescription.setSelected(config.getBoolean(ApplicationConfiguration.FILM_SHOW_DESCRIPTION, true));
-        cbkShowDescription.addActionListener(_ -> {
-            boolean visible = cbkShowDescription.isSelected();
-            makeDescriptionTabVisible(visible);
-            config.setProperty(ApplicationConfiguration.FILM_SHOW_DESCRIPTION, visible);
-        });
+        viewController.setupShowFilmDescriptionMenuItem();
     }
 
     private void loadTable() {
-        loadTable(false);
+        tableReloader.loadTable();
     }
 
     private void loadTable(boolean from_search_field) {
-        if (modelFuture != null) {
-            if (!modelFuture.isDone()) {
-                pendingTableReload = true;
-                pendingTableReloadFromSearchField |= from_search_field;
-                return;
-            }
-        }
-
-        final var messageBus = MessageBus.getMessageBus();
-        messageBus.publish(new TableModelChangeEvent(true, from_search_field));
-
-        stopBeob = true;
-        tabelle.getSpalten();
-        tabelle.setEnabled(false);
-
-        var decoratedPool = daten.getDecoratedPool();
-        modelFuture = CompletableFuture.supplyAsync(() -> {
-            var searchFieldData = new SearchFieldData(searchField.getText(), searchField.getSearchMode());
-            GuiModelHelper helper = GuiModelHelperFactory.createGuiModelHelper(
-                    searchFieldData, filterController);
-            return helper.getFilteredTableModel();
-        }, decoratedPool);
-        modelFuture.whenCompleteAsync((model, thrown) -> {
-            if (thrown == null) {
-                SwingUtilities.invokeLater(() -> {
-                    tabelle.setModel(model);
-                    tabelle.setEnabled(true);
-                    updateStartInfoProperty();
-                    tabelle.setSpalten();
-                    updateFilmData();
-                    stopBeob = false;
-                    tabelle.scrollToSelection();
-                    messageBus.publish(new TableModelChangeEvent(false, from_search_field));
-                    triggerPendingTableReloadIfNecessary();
-                });
-            } else {
-                logger.error("Model filtering failed!", thrown);
-                SwingUtilities.invokeLater(() -> {
-                    tabelle.setEnabled(true);
-                    updateStartInfoProperty();
-                    tabelle.setSpalten();
-                    updateFilmData();
-                    stopBeob = false;
-                    messageBus.publish(new TableModelChangeEvent(false, from_search_field));
-                    triggerPendingTableReloadIfNecessary();
-                });
-            }
-        }, decoratedPool);
-    }
-
-    private void triggerPendingTableReloadIfNecessary() {
-        if (!pendingTableReload) {
-            return;
-        }
-
-        boolean reloadFromSearchField = pendingTableReloadFromSearchField;
-        pendingTableReload = false;
-        pendingTableReloadFromSearchField = false;
-        loadTable(reloadFromSearchField);
+        tableReloader.loadTable(from_search_field);
     }
 
     static class NonRepeatingTimer extends Timer {
@@ -764,505 +589,6 @@ public class GuiFilme extends AGuiTabPanel {
 
             setRepeats(false);
             setCoalesce(true);
-        }
-    }
-
-    public class ToggleFilterDialogVisibilityAction extends AbstractAction {
-        public ToggleFilterDialogVisibilityAction() {
-            putValue(Action.NAME, "Filterdialog anzeigen");
-            putValue(Action.SHORT_DESCRIPTION, "Filter anzeigen");
-            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeSolid.FILTER));
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_F12, 0));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            var visible = swingFilterDialog.isVisible();
-            visible = !visible;
-            swingFilterDialog.setVisible(visible);
-        }
-    }
-
-    public abstract class SearchField extends JTextField {
-        private static final Dimension DEFAULT_DIMENSION = new Dimension(500, 100);
-        private static final String SEARCHMODE_PROPERTY_STRING = "searchMode";
-        protected final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-        protected SearchControlFieldMode searchMode;
-
-        protected SearchField() {
-            super("", 40);
-            setMaximumSize(DEFAULT_DIMENSION);
-
-            //show clear icon when text is entered
-            putClientProperty(FlatClientProperties.TEXT_FIELD_SHOW_CLEAR_BUTTON, true);
-            putClientProperty("JTextField.clearCallback", (Consumer<JTextComponent>) _ -> clearSearchField());
-
-            addKeyListener(new EscapeKeyAdapter());
-            addActionListener(_ -> performSearch());
-
-            createTrailingComponents();
-
-            setupContextMenu();
-        }
-
-        private void setupContextMenu() {
-            var handler = new TextCopyPasteHandler<>(this);
-            setComponentPopupMenu(handler.getPopupMenu());
-        }
-
-        protected abstract void createTrailingComponents();
-
-        protected abstract void performSearch();
-
-        protected void clearSearchField() {
-            setText("");
-            fireActionPerformed();
-        }
-
-        public void addSearchModeChangeListener(PropertyChangeListener listener) {
-            this.pcs.addPropertyChangeListener(SEARCHMODE_PROPERTY_STRING, listener);
-        }
-
-        public SearchControlFieldMode getSearchMode() {
-            return searchMode;
-        }
-
-        public void setSearchMode(SearchControlFieldMode mode) {
-            var oldValue = searchMode;
-            searchMode = mode;
-            pcs.firePropertyChange(SEARCHMODE_PROPERTY_STRING, oldValue, mode);
-        }
-
-        /**
-         * Clear searchfield on escape key press.
-         */
-        class EscapeKeyAdapter extends KeyAdapter {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
-                    clearSearchField();
-                }
-            }
-        }
-
-        public class SearchHistoryButton extends JButton {
-            private static final Logger logger = LogManager.getLogger();
-            private final EventList<String> historyList = new BasicEventList<>();
-            private final JMenuItem miClearHistory = new JMenuItem("Alles löschen");
-            private final JMenuItem miEditHistory = new JMenuItem("Einträge bearbeiten");
-            private String SEARCH_HISTORY_CONFIG = "search.history.items";
-
-            public SearchHistoryButton(@Nullable SearchControlFieldMode mode) {
-                super(new FlatSearchWithHistoryIcon(true));
-                setToolTipText("Vorherige Suchen");
-
-                if (mode != null) {
-                    if (mode == SearchControlFieldMode.LUCENE) {
-                        SEARCH_HISTORY_CONFIG += "_lucene";
-                    }
-                }
-
-                miClearHistory.addActionListener(_ -> {
-                    historyList.clear();
-                    saveHistory();
-                });
-
-                miEditHistory.addActionListener(_ -> {
-                    EditHistoryDialog dlg = new EditHistoryDialog(mediathekGui , miEditHistory, historyList);
-                    dlg.setVisible(true);
-                });
-
-                addActionListener(_ -> {
-                    JPopupMenu popupMenu = new JPopupMenu();
-                    popupMenu.add(miClearHistory);
-                    popupMenu.add(miEditHistory);
-                    historyList.getReadWriteLock().readLock().lock();
-                    try {
-                        if (!historyList.isEmpty()) {
-                            popupMenu.addSeparator();
-                            for (var item : historyList) {
-                                JMenuItem historyItem = new JMenuItem(item);
-                                historyItem.addActionListener(_ -> {
-                                    searchField.setText(item);
-                                    searchField.fireActionPerformed();
-                                });
-                                popupMenu.add(historyItem);
-                            }
-                        }
-                    }
-                    finally {
-                        historyList.getReadWriteLock().readLock().unlock();
-                    }
-                    popupMenu.show(this, 0, this.getHeight());
-                });
-
-                loadHistory();
-                historyList.addListEventListener(_ -> saveHistory());
-            }
-
-            public void addHistoryEntry(String text) {
-                historyList.getReadWriteLock().writeLock().lock();
-                try {
-                    historyList.remove(text);
-                    historyList.addFirst(text);
-                }
-                finally {
-                    historyList.getReadWriteLock().writeLock().unlock();
-                }
-            }
-
-            private void loadHistory() {
-                try {
-                    List<String> entries = readHistoryEntries();
-                    if (!entries.isEmpty()) {
-                        historyList.getReadWriteLock().writeLock().lock();
-                        try {
-                            historyList.addAll(entries);
-                        }
-                        finally {
-                            historyList.getReadWriteLock().writeLock().unlock();
-                        }
-                    }
-                }
-                catch (Exception ex) {
-                    logger.error("Failed to load search history", ex);
-                }
-            }
-
-            private void saveHistory() {
-                try {
-                    historyList.getReadWriteLock().readLock().lock();
-                    try {
-                        String json = JsonStringUtils.toJsonStringArray(new ArrayList<>(historyList));
-                        ApplicationConfiguration.getConfiguration().setProperty(SEARCH_HISTORY_CONFIG, json);
-                    }
-                    finally {
-                        historyList.getReadWriteLock().readLock().unlock();
-                    }
-                }
-                catch (Exception e) {
-                    logger.error("Failed to write search history", e);
-                }
-            }
-
-            private List<String> readHistoryEntries() {
-                var config = ApplicationConfiguration.getConfiguration();
-                Object rawValue = config.getProperty(SEARCH_HISTORY_CONFIG);
-                switch (rawValue) {
-                    case null -> {
-                        return List.of();
-                    }
-                    case Collection<?> collection -> {
-                        List<String> entries = new ArrayList<>();
-                        for (Object value : collection) {
-                            if (value != null) {
-                                entries.add(value.toString());
-                            }
-                        }
-                        // Normalize legacy key back to JSON string format for old-version compatibility.
-                        config.setProperty(SEARCH_HISTORY_CONFIG, JsonStringUtils.toJsonStringArray(entries));
-                        return entries;
-                    }
-                    case String json -> {
-                        var parsed = parseLegacyJsonArray(json);
-                        if (!parsed.isEmpty() || "[]".equals(json.trim())) {
-                            return new ArrayList<>(parsed);
-                        }
-                        if (!json.isBlank()) {
-                            return List.of(json);
-                        }
-                    }
-                    default -> {
-                    }
-                }
-
-                return List.of();
-            }
-
-            private List<String> parseLegacyJsonArray(String json) {
-                String trimmed = json == null ? "" : json.trim();
-                if (!trimmed.startsWith("[") || !trimmed.endsWith("]")) {
-                    return List.of();
-                }
-
-                List<String> entries = new ArrayList<>();
-                for (int i = 1; i < trimmed.length() - 1; i++) {
-                    if (trimmed.charAt(i) != '"') {
-                        continue;
-                    }
-                    var parsed = JsonStringUtils.parseQuotedJsonString(trimmed, i);
-                    if (parsed != null) {
-                        entries.add(parsed.getValue());
-                        i = parsed.getEndIndex();
-                    }
-                }
-                return entries;
-            }
-
-        }
-    }
-
-    public class LuceneSearchField extends SearchField {
-        private static final Dimension LUCENE_DEFAULT_DIMENSION = new Dimension(700, 100);
-        private final SearchHistoryButton luceneSearchHistoryButton = new SearchHistoryButton(SearchControlFieldMode.LUCENE);
-
-        public LuceneSearchField() {
-            setMaximumSize(LUCENE_DEFAULT_DIMENSION);
-            setSearchMode(SearchControlFieldMode.LUCENE);
-
-            putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Lucene Search Query");
-            putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_COMPONENT, luceneSearchHistoryButton);
-        }
-
-        @Override
-        protected void createTrailingComponents() {
-            JToolBar searchToolbar = new JToolBar();
-            searchToolbar.addSeparator();
-
-            var luceneBtn = new JButton(mediathekGui.getShowLuceneTutorialAction());
-            luceneBtn.setText(null);
-            searchToolbar.add(luceneBtn);
-            putClientProperty(FlatClientProperties.TEXT_FIELD_TRAILING_COMPONENT, searchToolbar);
-        }
-
-        @Override
-        protected void performSearch() {
-            String searchText = getText();
-            if (!searchText.isEmpty()) {
-                luceneSearchHistoryButton.addHistoryEntry(searchText);
-            }
-
-            loadTable(true);
-        }
-    }
-
-    public class RegularSearchField extends SearchField {
-        private final SearchHistoryButton regularSearchHistoryButton = new SearchHistoryButton(null);
-
-        public RegularSearchField() {
-            addSearchModeChangeListener(_ -> setupHelperTexts());
-            setupPlaceholderText();
-
-            putClientProperty(FlatClientProperties.TEXT_FIELD_LEADING_COMPONENT, regularSearchHistoryButton);
-
-            installDocumentListener();
-        }
-
-        protected void setupPlaceholderText() {
-            //put placeholder text
-            boolean bSearchThroughDescription = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.SEARCH_USE_FILM_DESCRIPTIONS, false);
-            if (bSearchThroughDescription)
-                setSearchMode(SearchControlFieldMode.IRGENDWO);
-            else
-                setSearchMode(SearchControlFieldMode.THEMA_TITEL);
-        }
-
-        @Override
-        protected void performSearch() {
-            String searchText = getText();
-            if (!searchText.isEmpty()) {
-                regularSearchHistoryButton.addHistoryEntry(searchText);
-            }
-
-            loadTable(true);
-        }
-
-        private void installDocumentListener() {
-            getDocument().addDocumentListener(new DocumentListener() {
-                @Override
-                public void insertUpdate(DocumentEvent e) {
-                    doCheck();
-                }
-
-                @Override
-                public void removeUpdate(DocumentEvent e) {
-                    doCheck();
-                }
-
-                @Override
-                public void changedUpdate(DocumentEvent e) {
-                    doCheck();
-                }
-
-                private void doCheck() {
-                    var searchText = getText();
-                    checkPatternValidity(searchText);
-                    setForegroundTextColor(searchText);
-                }
-            });
-        }
-
-        private void setForegroundTextColor(String text) {
-            if (Filter.isPattern(text))
-                setForeground(MVColor.getRegExPatternColor());
-            else
-                setForeground(UIManager.getColor("TextField.foreground"));
-        }
-
-        private boolean isPatternValid(String text) {
-            return Filter.makePatternNoCache(text) != null;
-        }
-
-        private void checkPatternValidity(String text) {
-            if (Filter.isPattern(text))
-                GuiFunktionen.showErrorIndication(this, !isPatternValid(text));
-            else
-                GuiFunktionen.showErrorIndication(this, false);
-        }
-
-        /**
-         * Sets tooltip and placeholder texts according to {@link RegularSearchField#searchMode}.
-         */
-        private void setupHelperTexts() {
-            String text;
-            switch (searchMode) {
-                case IRGENDWO -> text = "Thema/Titel/Beschreibung";
-                case THEMA_TITEL -> text = "Thema/Titel";
-                case LUCENE -> text = "Lucene Query";
-                default -> {
-                    logger.error("Illegal search mode");
-                    text = "";
-                }
-
-            }
-            putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, text);
-
-            if (searchMode == SearchControlFieldMode.IRGENDWO || searchMode == SearchControlFieldMode.THEMA_TITEL) {
-                setToolTipText(text + " durchsuchen");
-            } else {
-                setToolTipText("Lucene Query Syntax für die Suche");
-            }
-        }
-
-        @Override
-        protected void createTrailingComponents() {
-            JToolBar searchToolbar = new JToolBar();
-            searchToolbar.addSeparator();
-            searchToolbar.add(new ToggleSearchFieldToggleButton());
-            putClientProperty(FlatClientProperties.TEXT_FIELD_TRAILING_COMPONENT, searchToolbar);
-        }
-
-        class ToggleSearchFieldToggleButton extends JToggleButton {
-            public ToggleSearchFieldToggleButton() {
-                FlatSVGIcon selectedIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/envelope-open-text.svg");
-                selectedIcon.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> MVColor.SELECTED_COLOR.getColor()));
-                FlatSVGIcon normalIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/envelope-open-text.svg");
-                normalIcon.setColorFilter(new FlatSVGIcon.ColorFilter(_ -> Color.GRAY));
-                setIcon(normalIcon);
-                setSelectedIcon(selectedIcon);
-
-                boolean bSearchThroughDescription = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.SEARCH_USE_FILM_DESCRIPTIONS, false);
-                setSelected(bSearchThroughDescription);
-                setupToolTip(bSearchThroughDescription);
-
-                addActionListener(_ -> {
-                    switch (getSearchMode()) {
-                        case IRGENDWO -> {
-                            setSearchMode(SearchControlFieldMode.THEMA_TITEL);
-                            setupToolTip(false);
-                        }
-                        case THEMA_TITEL -> {
-                            setSearchMode(SearchControlFieldMode.IRGENDWO);
-                            setupToolTip(true);
-                        }
-                    }
-                    //update config
-                    ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.SEARCH_USE_FILM_DESCRIPTIONS, getSearchMode() == SearchControlFieldMode.IRGENDWO);
-
-                    loadTable();
-                });
-            }
-
-            private void setupToolTip(boolean active) {
-                if (active)
-                    setToolTipText("Suche in Beschreibung aktiviert");
-                else
-                    setToolTipText("Suche in Beschreibung deaktiviert");
-            }
-        }
-    }
-
-    public class SaveFilmAction extends AbstractAction {
-        public SaveFilmAction() {
-            putValue(Action.SHORT_DESCRIPTION, "Film downloaden");
-            putValue(Action.NAME, "Film downloaden");
-            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeSolid.DOWNLOAD));
-            KeyStroke keyStroke;
-            if (SystemUtils.IS_OS_MAC_OSX) {
-                keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F7, GuiFunktionen.getPlatformControlKey());
-            } else
-                keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_D, GuiFunktionen.getPlatformControlKey());
-            putValue(Action.ACCELERATOR_KEY, keyStroke);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            saveFilm(null);
-        }
-    }
-
-    public class BookmarkAddFilmAction extends AbstractAction {
-        public BookmarkAddFilmAction() {
-            KeyStroke keyStroke;
-            if (SystemUtils.IS_OS_MAC_OSX) {
-                keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_F8, GuiFunktionen.getPlatformControlKey());
-            } else {
-                keyStroke = KeyStroke.getKeyStroke(KeyEvent.VK_B, GuiFunktionen.getPlatformControlKey());
-            }
-            putValue(Action.ACCELERATOR_KEY, keyStroke);
-            putValue(Action.SHORT_DESCRIPTION, "Ausgewählte Filme in der Merkliste speichern");
-            putValue(Action.NAME, "Ausgewählte Filme merken");
-            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(MaterialDesignF.FILE_DOCUMENT_PLUS));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            var selectedFilms = getSelFilme();
-            if (!selectedFilms.isEmpty()) {
-                var tbdFilms = selectedFilms.parallelStream()
-                        .filter(f -> !f.isBookmarked())
-                        .filter(f -> !f.isLivestream())
-                        .toList();
-                if (!tbdFilms.isEmpty()) {
-                    updateBookmarkListAndRefresh(tbdFilms);
-                }
-            }
-        }
-    }
-
-    public class BookmarkRemoveFilmAction extends AbstractAction {
-        public BookmarkRemoveFilmAction() {
-            putValue(Action.SHORT_DESCRIPTION, "Ausgewählte Filme aus der Merkliste löschen");
-            putValue(Action.NAME, "Ausgewählte Filme aus der Merkliste löschen");
-            putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(MaterialDesignF.FILE_DOCUMENT_MINUS));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            var selectedFilms = getSelFilme();
-            if (!selectedFilms.isEmpty()) {
-                var tbdFilms = selectedFilms.parallelStream()
-                        .filter(DatenFilm::isBookmarked)
-                        .toList();
-                if (!tbdFilms.isEmpty()) {
-                    updateBookmarkListAndRefresh(tbdFilms);
-                }
-            }
-        }
-    }
-
-    public class CopyUrlToClipboardAction extends AbstractAction {
-        private final FilmResolution.Enum resolution;
-
-        CopyUrlToClipboardAction(FilmResolution.Enum resolution) {
-            this.resolution = resolution;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            Optional<DatenFilm> filmSelection = getCurrentlySelectedFilm();
-            filmSelection.ifPresent(
-                    film -> GuiFunktionen.copyToClipboard(film.getUrlFuerAufloesung(resolution)));
         }
     }
 

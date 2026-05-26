@@ -63,12 +63,7 @@ class TableContextMenuHandler(
         fun startFilmWithPset(pSet: DatenPset)
         fun setSelectionUpdatesSuspended(suspended: Boolean)
         fun gui(): MediathekGui
-        fun playFilmAction(): Action
-        fun saveFilmAction(): Action
-        fun bookmarkAddFilmAction(): Action
-        fun bookmarkRemoveFilmAction(): Action
-        fun showFilmInformationAction(): Action
-        fun downloadSubtitleAction(): Action
+        fun actions(): FilmUiActions
     }
 
     private val daten = Daten.getInstance()
@@ -137,9 +132,9 @@ class TableContextMenuHandler(
             DatenFilm.FILM_MERKEN -> host.getCurrentlySelectedFilm().ifPresent { film ->
                 if (!film.isLivestream) {
                     if (film.isBookmarked) {
-                        host.bookmarkRemoveFilmAction().actionPerformed(null)
+                        host.actions().bookmarkRemoveFilm.actionPerformed(null)
                     } else {
-                        host.bookmarkAddFilmAction().actionPerformed(null)
+                        host.actions().bookmarkAddFilm.actionPerformed(null)
                     }
                 }
             }
@@ -185,13 +180,14 @@ class TableContextMenuHandler(
             selectedFilm.ifPresent { film -> addFilmSpecificContextActions(this, film) }
             addPrintAndInfoActions(this, selectedFilm)
             selectedFilm.ifPresent { film -> addFileAndDuplicateActions(this, film) }
-        }
+    }
 
     private fun addPrimaryContextActions(popupMenu: JPopupMenu, selectedFilm: Optional<DatenFilm>) {
-        popupMenu.add(host.playFilmAction())
-        popupMenu.add(host.saveFilmAction())
+        val actions = host.actions()
+        popupMenu.add(actions.playFilm)
+        popupMenu.add(actions.saveFilm)
 
-        val bookmarkMenuItem = JMenuItem(host.bookmarkAddFilmAction())
+        val bookmarkMenuItem = JMenuItem(actions.bookmarkAddFilm)
         popupMenu.add(bookmarkMenuItem)
         popupMenu.addSeparator()
         addAboMenu(popupMenu, selectedFilm)
@@ -295,7 +291,7 @@ class TableContextMenuHandler(
         setupSearchEntries(popupMenu, film)
 
         if (film.hasSubtitle()) {
-            popupMenu.add(host.downloadSubtitleAction())
+            popupMenu.add(host.actions().downloadSubtitle)
             popupMenu.addSeparator()
         }
     }
@@ -305,7 +301,7 @@ class TableContextMenuHandler(
         printTableMenuItem.addActionListener(beobPrint)
         popupMenu.add(printTableMenuItem)
 
-        popupMenu.add(host.showFilmInformationAction())
+        popupMenu.add(host.actions().showFilmInformation)
         selectedFilm.ifPresent { film -> setupHistoryContextActions(popupMenu, film) }
     }
 

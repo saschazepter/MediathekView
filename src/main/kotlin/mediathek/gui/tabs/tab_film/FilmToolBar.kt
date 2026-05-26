@@ -32,14 +32,14 @@ import javax.swing.JToolBar
 
 class FilmToolBar(
     filterModel: FilterSelectionComboBoxModel,
-    bookmarkAddFilmAction: GuiFilme.BookmarkAddFilmAction,
-    bookmarkRemoveFilmAction: GuiFilme.BookmarkRemoveFilmAction,
+    bookmarkAddFilmAction: BookmarkAddFilmAction,
+    bookmarkRemoveFilmAction: BookmarkRemoveFilmAction,
     bookmarkClearListAction: DeleteBookmarksAction,
     manageBookmarkAction: ManageBookmarkAction,
     playFilmAction: PlayFilmAction,
-    saveFilmAction: GuiFilme.SaveFilmAction,
-    private val searchField: GuiFilme.SearchField,
-    private val toggleFilterDialogVisibilityAction: GuiFilme.ToggleFilterDialogVisibilityAction
+    saveFilmAction: SaveFilmAction,
+    private val searchField: SearchField,
+    private val toggleFilterDialogVisibilityAction: ToggleFilterDialogVisibilityAction
 ) : JToolBar() {
     private val lblSearch = JLabel("Suche:")
     private val filterSelectionComboBox = FilterSelectionComboBox(filterModel)
