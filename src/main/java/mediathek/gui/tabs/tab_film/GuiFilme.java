@@ -82,12 +82,27 @@ public class GuiFilme extends JPanel {
     public GuiFilme(Daten aDaten, MediathekGui mediathekGui) {
         daten = aDaten;
         this.mediathekGui = mediathekGui;
-        var controllerSetup = createControllerSetup(mediathekGui);
+        var controllerSetup = FilmControllerSetup.create(
+                () -> tabelle,
+                () -> tabelle,
+                this,
+                mediathekGui,
+                () -> daten,
+                filterConfiguration::isShowHighQualityOnly,
+                this,
+                this::repaint,
+                this::toggleFilterDialogVisibility);
         selectionController = controllerSetup.selectionController();
         bookmarkController = controllerSetup.bookmarkController();
         var saveSelectedFilm = controllerSetup.saveSelectedFilm();
         var filmActionHost = controllerSetup.filmActionHost();
-        var filmActions = createFilmActions(filmActionHost);
+        var filmActions = FilmActionSetup.create(
+                filmActionHost,
+                selectionController::startFilm,
+                mediathekGui,
+                deleteBookmarksAction,
+                selectionController::getSelectedFilms,
+                selectionController::getCurrentlySelectedFilm);
         playFilmAction = filmActions.playFilmAction();
         saveFilmAction = filmActions.saveFilmAction();
         copyHqUrlToClipboardAction = filmActions.copyHqUrlToClipboardAction();
@@ -141,29 +156,6 @@ public class GuiFilme extends JPanel {
         lifecycleController = runtimeSetup.lifecycleController();
         lifecycleController.start();
 
-    }
-
-    private FilmControllerSetup createControllerSetup(MediathekGui mediathekGui) {
-        return FilmControllerSetup.create(
-                () -> tabelle,
-                () -> tabelle,
-                this,
-                mediathekGui,
-                () -> daten,
-                filterConfiguration::isShowHighQualityOnly,
-                this,
-                this::repaint,
-                this::toggleFilterDialogVisibility);
-    }
-
-    private FilmActionSetup createFilmActions(FilmActionHost filmActionHost) {
-        return FilmActionSetup.create(
-                filmActionHost,
-                selectionController::startFilm,
-                mediathekGui,
-                deleteBookmarksAction,
-                selectionController::getSelectedFilms,
-                selectionController::getCurrentlySelectedFilm);
     }
 
     private FilmViewAndTableSetup createViewAndTableSetup(
