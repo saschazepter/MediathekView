@@ -57,75 +57,95 @@ class FilmUiSetup(
     fun filmToolBar(): FilmToolBar = filmToolBar
     fun swingFilterDialog(): SwingFilterDialog = swingFilterDialog
 
+    data class LayoutDependencies(
+        val hostPanel: JPanel,
+        val filmListScrollPane: JScrollPane,
+        val showDescriptionMenuItem: JCheckBoxMenuItem,
+        val descriptionTabController: DescriptionTabController,
+        val psetButtonsTab: JTabbedPane,
+    )
+
+    data class SearchDependencies(
+        val daten: Daten,
+        val searchFieldHost: SearchField.Host,
+    )
+
+    data class FilterDependencies(
+        val mediathekGui: MediathekGui,
+        val filterSelectionComboBoxModel: FilterSelectionComboBoxModel,
+        val filterController: FilmFilterController,
+    )
+
+    data class ToolBarActions(
+        val bookmarkAddFilmAction: BookmarkAddFilmAction,
+        val bookmarkRemoveFilmAction: BookmarkRemoveFilmAction,
+        val deleteBookmarksAction: DeleteBookmarksAction,
+        val manageBookmarkAction: ManageBookmarkAction,
+        val playFilmAction: PlayFilmAction,
+        val saveFilmAction: SaveFilmAction,
+        val toggleFilterDialogVisibilityAction: ToggleFilterDialogVisibilityAction,
+    )
+
+    data class TableHooks(
+        val table: Supplier<JTable>,
+        val setupFilmListTable: Runnable,
+        val setupFilmSelectionPropertyListener: Runnable,
+        val viewController: FilmViewController,
+        val selectedFilm: Supplier<Optional<DatenFilm>>,
+    )
+
     companion object {
         @JvmStatic
         fun create(
-            hostPanel: JPanel,
-            daten: Daten,
-            mediathekGui: MediathekGui,
-            filterSelectionComboBoxModel: FilterSelectionComboBoxModel,
-            filterController: FilmFilterController,
-            filmListScrollPane: JScrollPane,
-            showDescriptionMenuItem: JCheckBoxMenuItem,
-            searchFieldHost: SearchField.Host,
-            bookmarkAddFilmAction: BookmarkAddFilmAction,
-            bookmarkRemoveFilmAction: BookmarkRemoveFilmAction,
-            deleteBookmarksAction: DeleteBookmarksAction,
-            manageBookmarkAction: ManageBookmarkAction,
-            playFilmAction: PlayFilmAction,
-            saveFilmAction: SaveFilmAction,
-            toggleFilterDialogVisibilityAction: ToggleFilterDialogVisibilityAction,
-            descriptionTabController: DescriptionTabController,
-            psetButtonsTab: JTabbedPane,
-            table: Supplier<JTable>,
-            setupFilmListTable: Runnable,
-            setupFilmSelectionPropertyListener: Runnable,
-            viewController: FilmViewController,
-            selectedFilm: Supplier<Optional<DatenFilm>>,
+            layout: LayoutDependencies,
+            search: SearchDependencies,
+            filter: FilterDependencies,
+            actions: ToolBarActions,
+            tableHooks: TableHooks,
         ): FilmUiSetup {
-            hostPanel.layout = BorderLayout()
-            hostPanel.add(filmListScrollPane, BorderLayout.CENTER)
+            layout.hostPanel.layout = BorderLayout()
+            layout.hostPanel.add(layout.filmListScrollPane, BorderLayout.CENTER)
             val extensionArea = JPanel(VerticalLayout())
-            hostPanel.add(extensionArea, BorderLayout.SOUTH)
+            layout.hostPanel.add(extensionArea, BorderLayout.SOUTH)
 
-            val searchField = if (daten.listeFilmeNachBlackList is IndexedFilmList) {
-                LuceneSearchField(searchFieldHost)
+            val searchField = if (search.daten.listeFilmeNachBlackList is IndexedFilmList) {
+                LuceneSearchField(search.searchFieldHost)
             } else {
-                RegularSearchField(searchFieldHost)
+                RegularSearchField(search.searchFieldHost)
             }
 
-            extensionArea.add(descriptionTabController.tabbedPane)
-            extensionArea.add(psetButtonsTab)
+            extensionArea.add(layout.descriptionTabController.tabbedPane)
+            extensionArea.add(layout.psetButtonsTab)
 
-            setupFilmListTable.run()
-            setupFilmSelectionPropertyListener.run()
-            viewController.setupShowFilmDescriptionMenuItem()
-            descriptionTabController.install(
-                table.get(),
-                showDescriptionMenuItem,
+            tableHooks.setupFilmListTable.run()
+            tableHooks.setupFilmSelectionPropertyListener.run()
+            tableHooks.viewController.setupShowFilmDescriptionMenuItem()
+            layout.descriptionTabController.install(
+                tableHooks.table.get(),
+                layout.showDescriptionMenuItem,
                 ApplicationConfiguration.FILM_SHOW_DESCRIPTION,
-                selectedFilm,
+                tableHooks.selectedFilm,
             )
-            viewController.setupPsetButtonsTab()
+            tableHooks.viewController.setupPsetButtonsTab()
 
             val filmToolBar = FilmToolBar(
-                filterSelectionComboBoxModel,
-                bookmarkAddFilmAction,
-                bookmarkRemoveFilmAction,
-                deleteBookmarksAction,
-                manageBookmarkAction,
-                playFilmAction,
-                saveFilmAction,
+                filter.filterSelectionComboBoxModel,
+                actions.bookmarkAddFilmAction,
+                actions.bookmarkRemoveFilmAction,
+                actions.deleteBookmarksAction,
+                actions.manageBookmarkAction,
+                actions.playFilmAction,
+                actions.saveFilmAction,
                 searchField,
-                toggleFilterDialogVisibilityAction,
+                actions.toggleFilterDialogVisibilityAction,
             )
-            hostPanel.add(filmToolBar, BorderLayout.NORTH)
+            layout.hostPanel.add(filmToolBar, BorderLayout.NORTH)
 
             val swingFilterDialog = SwingFilterDialog(
-                mediathekGui,
-                filterSelectionComboBoxModel,
+                filter.mediathekGui,
+                filter.filterSelectionComboBoxModel,
                 filmToolBar.toggleFilterDialogVisibilityButton,
-                filterController,
+                filter.filterController,
             )
 
             return FilmUiSetup(searchField, filmToolBar, swingFilterDialog)

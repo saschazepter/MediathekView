@@ -153,28 +153,31 @@ public class GuiFilme extends JPanel {
         viewController = viewAndTableSetup.viewController();
 
         var filmUiSetup = FilmUiSetup.create(
-                this,
-                daten,
-                mediathekGui,
-                filterSelectionComboBoxModel,
-                filterController,
-                filmListScrollPane,
-                cbkShowDescription,
-                searchFieldHost,
-                bookmarkAddFilmAction,
-                bookmarkRemoveFilmAction,
-                deleteBookmarksAction,
-                manageBookmarkAction,
-                playFilmAction,
-                saveFilmAction,
-                toggleFilterDialogVisibilityAction,
-                descriptionTabController,
-                psetButtonsTab,
-                () -> tabelle,
-                tableInstaller::setupFilmListTable,
-                tableInstaller::setupFilmSelectionPropertyListener,
-                viewController,
-                selectionController::getCurrentlySelectedFilm);
+                new FilmUiSetup.LayoutDependencies(
+                        this,
+                        filmListScrollPane,
+                        cbkShowDescription,
+                        descriptionTabController,
+                        psetButtonsTab),
+                new FilmUiSetup.SearchDependencies(daten, searchFieldHost),
+                new FilmUiSetup.FilterDependencies(
+                        mediathekGui,
+                        filterSelectionComboBoxModel,
+                        filterController),
+                new FilmUiSetup.ToolBarActions(
+                        bookmarkAddFilmAction,
+                        bookmarkRemoveFilmAction,
+                        deleteBookmarksAction,
+                        manageBookmarkAction,
+                        playFilmAction,
+                        saveFilmAction,
+                        toggleFilterDialogVisibilityAction),
+                new FilmUiSetup.TableHooks(
+                        () -> tabelle,
+                        tableInstaller::setupFilmListTable,
+                        tableInstaller::setupFilmSelectionPropertyListener,
+                        viewController,
+                        selectionController::getCurrentlySelectedFilm));
         searchField = filmUiSetup.searchField();
         var filmToolBar = filmUiSetup.filmToolBar();
         swingFilterDialog = filmUiSetup.swingFilterDialog();
