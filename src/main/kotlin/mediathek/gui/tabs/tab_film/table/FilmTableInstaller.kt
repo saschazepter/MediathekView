@@ -133,7 +133,7 @@ class FilmTableInstaller(private val host: Host) {
         val cellRenderer = CellRendererFilme()
         host.table().setDefaultRenderer(Any::class.java, cellRenderer)
         host.table().setDefaultRenderer(DatumFilm::class.java, cellRenderer)
-        host.table().setDefaultRenderer(Integer::class.java, cellRenderer)
+        host.table().setDefaultRenderer(Int::class.javaObjectType, cellRenderer)
     }
 
     private fun setupHeaderPopupMenu() {
