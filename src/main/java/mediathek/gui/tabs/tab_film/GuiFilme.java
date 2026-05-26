@@ -120,43 +120,16 @@ public class GuiFilme extends AGuiTabPanel {
         tableInstaller = viewAndTableSetup.tableInstaller();
         viewController = viewAndTableSetup.viewController();
 
-        setLayout(new BorderLayout());
-        add(filmListScrollPane, BorderLayout.CENTER);
-        var extensionArea = new JPanel(new VerticalLayout());
-        add(extensionArea, BorderLayout.SOUTH);
-
-        if (daten.getListeFilmeNachBlackList() instanceof IndexedFilmList)
-            searchField = new LuceneSearchField(searchFieldHost);
-        else
-            searchField = new RegularSearchField(searchFieldHost);
-
-        // add film description panel
-        extensionArea.add(descriptionTab);
-        extensionArea.add(psetButtonsTab);
-
-        tableInstaller.setupFilmListTable();
-        tableInstaller.setupFilmSelectionPropertyListener();
-        setupDescriptionTab(
-                tabelle,
+        var filmUiSetup = createFilmUi(
+                filmListScrollPane,
                 cbkShowDescription,
-                ApplicationConfiguration.FILM_SHOW_DESCRIPTION,
-                selectionController::getCurrentlySelectedFilm);
-        viewController.setupPsetButtonsTab();
-
-        var filmToolBar = new FilmToolBar(filterSelectionComboBoxModel,
+                searchFieldHost,
                 bookmarkAddFilmAction,
                 bookmarkRemoveFilmAction,
-                deleteBookmarksAction,
-                manageBookmarkAction,
-                playFilmAction,
-                saveFilmAction,
-                searchField,
-                toggleFilterDialogVisibilityAction);
-        add(filmToolBar, BorderLayout.NORTH);
-
-        swingFilterDialog = new SwingFilterDialog(mediathekGui, filterSelectionComboBoxModel,
-                filmToolBar.getToggleFilterDialogVisibilityButton(),
-                filterController);
+                manageBookmarkAction);
+        searchField = filmUiSetup.searchField();
+        var filmToolBar = filmUiSetup.filmToolBar();
+        swingFilterDialog = filmUiSetup.swingFilterDialog();
 
         tableInstaller.setupTable();
 
@@ -187,6 +160,55 @@ public class GuiFilme extends AGuiTabPanel {
         lifecycleController = new FilmLifecycleController(lifecycleHost);
         lifecycleController.start();
 
+    }
+
+    private FilmUiSetup createFilmUi(
+            JScrollPane filmListScrollPane,
+            JCheckBoxMenuItem cbkShowDescription,
+            SearchField.Host searchFieldHost,
+            BookmarkAddFilmAction bookmarkAddFilmAction,
+            BookmarkRemoveFilmAction bookmarkRemoveFilmAction,
+            ManageBookmarkAction manageBookmarkAction) {
+        setLayout(new BorderLayout());
+        add(filmListScrollPane, BorderLayout.CENTER);
+        var extensionArea = new JPanel(new VerticalLayout());
+        add(extensionArea, BorderLayout.SOUTH);
+
+        SearchField searchField;
+        if (daten.getListeFilmeNachBlackList() instanceof IndexedFilmList)
+            searchField = new LuceneSearchField(searchFieldHost);
+        else
+            searchField = new RegularSearchField(searchFieldHost);
+
+        // add film description panel
+        extensionArea.add(descriptionTab);
+        extensionArea.add(psetButtonsTab);
+
+        tableInstaller.setupFilmListTable();
+        tableInstaller.setupFilmSelectionPropertyListener();
+        setupDescriptionTab(
+                tabelle,
+                cbkShowDescription,
+                ApplicationConfiguration.FILM_SHOW_DESCRIPTION,
+                selectionController::getCurrentlySelectedFilm);
+        viewController.setupPsetButtonsTab();
+
+        var filmToolBar = new FilmToolBar(filterSelectionComboBoxModel,
+                bookmarkAddFilmAction,
+                bookmarkRemoveFilmAction,
+                deleteBookmarksAction,
+                manageBookmarkAction,
+                playFilmAction,
+                saveFilmAction,
+                searchField,
+                toggleFilterDialogVisibilityAction);
+        add(filmToolBar, BorderLayout.NORTH);
+
+        var swingFilterDialog = new SwingFilterDialog(mediathekGui, filterSelectionComboBoxModel,
+                filmToolBar.getToggleFilterDialogVisibilityButton(),
+                filterController);
+
+        return new FilmUiSetup(searchField, filmToolBar, swingFilterDialog);
     }
 
     private FilmControllerSetup createControllerSetup(MediathekGui mediathekGui) {
@@ -451,6 +473,12 @@ public class GuiFilme extends AGuiTabPanel {
             FilmBookmarkController bookmarkController,
             FilmActionHost filmActionHost,
             Consumer<DatenPset> saveSelectedFilm) {
+    }
+
+    private record FilmUiSetup(
+            SearchField searchField,
+            FilmToolBar filmToolBar,
+            SwingFilterDialog swingFilterDialog) {
     }
 
     static class NonRepeatingTimer extends Timer {
