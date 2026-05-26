@@ -150,7 +150,24 @@ public class GuiFilme extends JPanel {
 
         tableInstaller.setupTable();
 
-        var runtimeSetup = createRuntimeSetup(bookmarkStartupReloadCoordinator, filmToolBar, filmUiActions);
+        var runtimeSetup = FilmRuntimeSetup.create(
+                this,
+                daten,
+                () -> tabelle,
+                filterConfiguration,
+                bookmarkStartupReloadCoordinator,
+                () -> swingFilterDialog,
+                () -> filmToolBar,
+                () -> searchField,
+                () -> filmUiActions,
+                filterController,
+                suspended -> stopBeob = suspended,
+                this::updateStartInfoProperty,
+                selectionController::updateFilmData,
+                this::requestTableReload,
+                this::tabelleSpeichern,
+                filterSelectionComboBoxModel::close,
+                NonRepeatingTimer::new);
         tableReloader = runtimeSetup.tableReloader();
         reloadTableDataTimer = runtimeSetup.reloadTableDataTimer();
         lifecycleController = runtimeSetup.lifecycleController();
@@ -222,30 +239,6 @@ public class GuiFilme extends JPanel {
                 tableInstaller::setupFilmSelectionPropertyListener,
                 viewController,
                 selectionController::getCurrentlySelectedFilm);
-    }
-
-    private FilmRuntimeSetup createRuntimeSetup(
-            BookmarkStartupReloadCoordinator bookmarkStartupReloadCoordinator,
-            FilmToolBar filmToolBar,
-            FilmUiActions filmUiActions) {
-        return FilmRuntimeSetup.create(
-                this,
-                daten,
-                () -> tabelle,
-                filterConfiguration,
-                bookmarkStartupReloadCoordinator,
-                () -> swingFilterDialog,
-                () -> filmToolBar,
-                () -> searchField,
-                () -> filmUiActions,
-                filterController,
-                suspended -> stopBeob = suspended,
-                this::updateStartInfoProperty,
-                selectionController::updateFilmData,
-                this::requestTableReload,
-                this::tabelleSpeichern,
-                filterSelectionComboBoxModel::close,
-                NonRepeatingTimer::new);
     }
 
     private void toggleFilterDialogVisibility() {
