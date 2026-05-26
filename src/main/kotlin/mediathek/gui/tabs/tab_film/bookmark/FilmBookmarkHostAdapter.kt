@@ -16,21 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.tabs.tab_film.helpers
+package mediathek.gui.tabs.tab_film.bookmark
 
-import mediathek.config.Daten
-import mediathek.daten.IndexedFilmList
-import mediathek.gui.tabs.tab_film.search.SearchFieldData
-import mediathek.gui.tabs.tab_film.filter.FilmFilterController
+import mediathek.mainwindow.MediathekGui
 
-object GuiModelHelperFactory {
-    @JvmStatic
-    fun createGuiModelHelper(
-        searchFieldData: SearchFieldData,
-        filterController: FilmFilterController
-    ): GuiModelHelper = if (Daten.getInstance().listeFilmeNachBlackList is IndexedFilmList) {
-        LuceneGuiFilmeModelHelper(searchFieldData, filterController)
-    } else {
-        GuiFilmeModelHelper(searchFieldData, filterController)
+class FilmBookmarkHostAdapter(
+    private val mediathekGui: MediathekGui,
+    private val repaintOwner: Runnable,
+) : FilmBookmarkController.Host {
+    override fun mediathekGui(): MediathekGui = mediathekGui
+
+    override fun repaintOwner() {
+        repaintOwner.run()
     }
 }

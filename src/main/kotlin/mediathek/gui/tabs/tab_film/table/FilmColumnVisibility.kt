@@ -16,21 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.tabs.tab_film.helpers
+package mediathek.gui.tabs.tab_film.table
 
-import mediathek.config.Daten
-import mediathek.daten.IndexedFilmList
-import mediathek.gui.tabs.tab_film.search.SearchFieldData
-import mediathek.gui.tabs.tab_film.filter.FilmFilterController
+import mediathek.daten.DatenFilm
+import mediathek.tool.table.ColumnVisibilityStore
 
-object GuiModelHelperFactory {
-    @JvmStatic
-    fun createGuiModelHelper(
-        searchFieldData: SearchFieldData,
-        filterController: FilmFilterController
-    ): GuiModelHelper = if (Daten.getInstance().listeFilmeNachBlackList is IndexedFilmList) {
-        LuceneGuiFilmeModelHelper(searchFieldData, filterController)
-    } else {
-        GuiFilmeModelHelper(searchFieldData, filterController)
-    }
+object FilmColumnVisibility {
+    private val columnVisibilityStore = ColumnVisibilityStore.create(DatenFilm.MAX_ELEM)
+
+    fun store(): ColumnVisibilityStore = columnVisibilityStore
 }

@@ -22,7 +22,7 @@ import mediathek.config.Daten;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.Country;
 import mediathek.daten.DatenFilm;
-import mediathek.gui.tabs.tab_film.SearchFieldData;
+import mediathek.gui.tabs.tab_film.search.SearchFieldData;
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
 import mediathek.tool.ApplicationConfiguration;
 import org.jspecify.annotations.NonNull;

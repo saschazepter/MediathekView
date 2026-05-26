@@ -22,7 +22,7 @@ import mediathek.config.MVColor
 import mediathek.config.MVConfig
 import mediathek.controller.history.SeenHistoryController
 import mediathek.daten.DatenFilm
-import mediathek.gui.tabs.tab_film.FilmColumnVisibility
+import mediathek.gui.tabs.tab_film.table.FilmColumnVisibility
 import mediathek.tool.FilmSize
 import org.apache.logging.log4j.LogManager
 import java.awt.Color

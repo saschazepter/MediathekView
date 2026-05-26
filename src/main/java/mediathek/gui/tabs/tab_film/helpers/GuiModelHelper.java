@@ -21,7 +21,7 @@ package mediathek.gui.tabs.tab_film.helpers;
 import mediathek.controller.SenderFilmlistLoadApprover;
 import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.DatenFilm;
-import mediathek.gui.tabs.tab_film.SearchFieldData;
+import mediathek.gui.tabs.tab_film.search.SearchFieldData;
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
 import mediathek.gui.tabs.tab_film.filter.FilmFilterState;
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider;

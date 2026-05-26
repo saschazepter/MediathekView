@@ -16,21 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.tabs.tab_film.helpers
+package mediathek.gui.tabs.tab_film.actions
 
-import mediathek.config.Daten
-import mediathek.daten.IndexedFilmList
-import mediathek.gui.tabs.tab_film.search.SearchFieldData
-import mediathek.gui.tabs.tab_film.filter.FilmFilterController
+import javax.swing.Action
 
-object GuiModelHelperFactory {
-    @JvmStatic
-    fun createGuiModelHelper(
-        searchFieldData: SearchFieldData,
-        filterController: FilmFilterController
-    ): GuiModelHelper = if (Daten.getInstance().listeFilmeNachBlackList is IndexedFilmList) {
-        LuceneGuiFilmeModelHelper(searchFieldData, filterController)
-    } else {
-        GuiFilmeModelHelper(searchFieldData, filterController)
-    }
-}
+class FilmUiActions(
+    val playFilm: Action,
+    val saveFilm: Action,
+    val bookmarkAddFilm: Action,
+    val bookmarkRemoveFilm: Action,
+    val deleteBookmarks: Action,
+    val manageBookmarks: Action,
+    val copyNormalUrlToClipboard: Action,
+    val copyHqUrlToClipboard: Action,
+    val markFilmAsSeen: Action,
+    val markFilmAsUnseen: Action,
+    val toggleBlacklist: Action,
+    val editBlacklist: Action,
+    val showFilmInformation: Action,
+    val downloadSubtitle: Action,
+)

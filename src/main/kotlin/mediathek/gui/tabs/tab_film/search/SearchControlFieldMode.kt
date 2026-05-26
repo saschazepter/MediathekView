@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2026 derreisende77.
+ * Copyright (c) 2025 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,21 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.tabs.tab_film.helpers
+package mediathek.gui.tabs.tab_film.search
 
-import mediathek.config.Daten
-import mediathek.daten.IndexedFilmList
-import mediathek.gui.tabs.tab_film.search.SearchFieldData
-import mediathek.gui.tabs.tab_film.filter.FilmFilterController
-
-object GuiModelHelperFactory {
-    @JvmStatic
-    fun createGuiModelHelper(
-        searchFieldData: SearchFieldData,
-        filterController: FilmFilterController
-    ): GuiModelHelper = if (Daten.getInstance().listeFilmeNachBlackList is IndexedFilmList) {
-        LuceneGuiFilmeModelHelper(searchFieldData, filterController)
-    } else {
-        GuiFilmeModelHelper(searchFieldData, filterController)
-    }
+enum class SearchControlFieldMode {
+    THEMA_TITEL, IRGENDWO, LUCENE
 }

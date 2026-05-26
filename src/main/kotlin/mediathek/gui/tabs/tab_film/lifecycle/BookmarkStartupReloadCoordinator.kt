@@ -16,21 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.tabs.tab_film.helpers
+package mediathek.gui.tabs.tab_film.lifecycle
 
-import mediathek.config.Daten
-import mediathek.daten.IndexedFilmList
-import mediathek.gui.tabs.tab_film.search.SearchFieldData
-import mediathek.gui.tabs.tab_film.filter.FilmFilterController
+class BookmarkStartupReloadCoordinator {
+    private var waitingForBookmarkRefresh = false
 
-object GuiModelHelperFactory {
-    @JvmStatic
-    fun createGuiModelHelper(
-        searchFieldData: SearchFieldData,
-        filterController: FilmFilterController
-    ): GuiModelHelper = if (Daten.getInstance().listeFilmeNachBlackList is IndexedFilmList) {
-        LuceneGuiFilmeModelHelper(searchFieldData, filterController)
-    } else {
-        GuiFilmeModelHelper(searchFieldData, filterController)
+    fun onFilmListLoadingStarted() {
+        waitingForBookmarkRefresh = false
+    }
+
+    fun onFilmListLoaded(showBookMarkedOnly: Boolean): Boolean {
+        waitingForBookmarkRefresh = showBookMarkedOnly
+        return !showBookMarkedOnly
+    }
+
+    fun onBookmarkRefreshCompleted(showBookMarkedOnly: Boolean): Boolean {
+        if (!waitingForBookmarkRefresh || !showBookMarkedOnly) {
+            return false
+        }
+
+        waitingForBookmarkRefresh = false
+        return true
     }
 }
