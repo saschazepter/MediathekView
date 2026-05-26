@@ -20,7 +20,6 @@ package mediathek.gui.tabs.tab_film;
 
 import mediathek.config.Daten;
 import mediathek.daten.DatenPset;
-import mediathek.daten.IndexedFilmList;
 import mediathek.gui.actions.DeleteBookmarksAction;
 import mediathek.gui.actions.ManageBookmarkAction;
 import mediathek.gui.actions.PlayFilmAction;
@@ -44,7 +43,6 @@ import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import mediathek.tool.table.MVFilmTable;
 import net.engio.mbassy.listener.Handler;
-import org.jdesktop.swingx.VerticalLayout;
 import org.jspecify.annotations.NonNull;
 
 import javax.swing.*;
@@ -220,47 +218,29 @@ public class GuiFilme extends JPanel {
             BookmarkAddFilmAction bookmarkAddFilmAction,
             BookmarkRemoveFilmAction bookmarkRemoveFilmAction,
             ManageBookmarkAction manageBookmarkAction) {
-        setLayout(new BorderLayout());
-        add(filmListScrollPane, BorderLayout.CENTER);
-        var extensionArea = new JPanel(new VerticalLayout());
-        add(extensionArea, BorderLayout.SOUTH);
-
-        SearchField searchField;
-        if (daten.getListeFilmeNachBlackList() instanceof IndexedFilmList)
-            searchField = new LuceneSearchField(searchFieldHost);
-        else
-            searchField = new RegularSearchField(searchFieldHost);
-
-        // add film description panel
-        extensionArea.add(descriptionTabController.getTabbedPane());
-        extensionArea.add(psetButtonsTab);
-
-        tableInstaller.setupFilmListTable();
-        tableInstaller.setupFilmSelectionPropertyListener();
-        viewController.setupShowFilmDescriptionMenuItem();
-        descriptionTabController.install(
-                tabelle,
+        return FilmUiSetup.create(
+                this,
+                daten,
+                mediathekGui,
+                filterSelectionComboBoxModel,
+                filterController,
+                filmListScrollPane,
                 cbkShowDescription,
-                ApplicationConfiguration.FILM_SHOW_DESCRIPTION,
-                selectionController::getCurrentlySelectedFilm);
-        viewController.setupPsetButtonsTab();
-
-        var filmToolBar = new FilmToolBar(filterSelectionComboBoxModel,
+                searchFieldHost,
                 bookmarkAddFilmAction,
                 bookmarkRemoveFilmAction,
                 deleteBookmarksAction,
                 manageBookmarkAction,
                 playFilmAction,
                 saveFilmAction,
-                searchField,
-                toggleFilterDialogVisibilityAction);
-        add(filmToolBar, BorderLayout.NORTH);
-
-        var swingFilterDialog = new SwingFilterDialog(mediathekGui, filterSelectionComboBoxModel,
-                filmToolBar.getToggleFilterDialogVisibilityButton(),
-                filterController);
-
-        return new FilmUiSetup(searchField, filmToolBar, swingFilterDialog);
+                toggleFilterDialogVisibilityAction,
+                descriptionTabController,
+                psetButtonsTab,
+                () -> tabelle,
+                tableInstaller::setupFilmListTable,
+                tableInstaller::setupFilmSelectionPropertyListener,
+                viewController,
+                selectionController::getCurrentlySelectedFilm);
     }
 
     private FilmRuntimeSetup createRuntimeSetup(
