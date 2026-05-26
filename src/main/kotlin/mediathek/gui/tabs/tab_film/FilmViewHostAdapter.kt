@@ -18,13 +18,13 @@
 
 package mediathek.gui.tabs.tab_film
 
+import mediathek.daten.DatenPset
 import java.util.function.Consumer
 import java.util.function.Supplier
 import javax.swing.JCheckBoxMenuItem
 import javax.swing.JTabbedPane
 
 class FilmViewHostAdapter(
-    private val guiFilme: GuiFilme,
     private val psetButtonsTab: JTabbedPane,
     private val psetButtonsPanel: Supplier<PsetButtonsPanel?>,
     private val setPsetButtonsPanel: Consumer<PsetButtonsPanel>,
@@ -32,9 +32,8 @@ class FilmViewHostAdapter(
     private val showDescriptionMenuItem: Supplier<JCheckBoxMenuItem>,
     private val actions: Supplier<FilmUiActions>,
     private val makeDescriptionTabVisible: Consumer<Boolean>,
+    private val startFilmWithPset: Consumer<DatenPset>,
 ) : FilmViewController.Host {
-    override fun guiFilme(): GuiFilme = guiFilme
-
     override fun psetButtonsTab(): JTabbedPane = psetButtonsTab
 
     override fun psetButtonsPanel(): PsetButtonsPanel? = psetButtonsPanel.get()
@@ -51,5 +50,9 @@ class FilmViewHostAdapter(
 
     override fun makeDescriptionTabVisible(visible: Boolean) {
         makeDescriptionTabVisible.accept(visible)
+    }
+
+    override fun startFilmWithPset(pset: DatenPset) {
+        startFilmWithPset.accept(pset)
     }
 }

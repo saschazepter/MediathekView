@@ -3,7 +3,6 @@ package mediathek.gui.actions;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.daten.DatenPset;
-import mediathek.gui.tabs.tab_film.GuiFilme;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.swing.IconUtils;
 import mediathek.tool.GuiFunktionen;
@@ -13,12 +12,13 @@ import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid;
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
+import java.util.function.Consumer;
 
 public class PlayFilmAction extends AbstractAction {
-    private final GuiFilme guiFilme;
+    private final Consumer<DatenPset> startFilm;
 
-    public PlayFilmAction(GuiFilme guiFilme) {
-        this.guiFilme = guiFilme;
+    public PlayFilmAction(Consumer<DatenPset> startFilm) {
+        this.startFilm = startFilm;
         putValue(Action.NAME, "Film abspielen");
         putValue(Action.SHORT_DESCRIPTION, "Film abspielen");
         putValue(Action.SMALL_ICON, IconUtils.toolbarIcon(FontAwesomeSolid.PLAY));
@@ -34,7 +34,7 @@ public class PlayFilmAction extends AbstractAction {
     public synchronized void actionPerformed(ActionEvent e) {
         DatenPset pset = Daten.getInstance().getListePset().getPsetAbspielen();
         if (pset != null) {
-            guiFilme.playerStarten(pset);
+            startFilm.accept(pset);
         } else {
             JOptionPane.showMessageDialog(MediathekGui.ui(),
                     "Es wurde kein Videoplayer eingerichtet.\n" +

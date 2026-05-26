@@ -19,7 +19,6 @@
 package mediathek.gui.tabs.tab_film;
 
 import mediathek.config.Daten;
-import mediathek.daten.DatenFilm;
 import mediathek.daten.DatenPset;
 import mediathek.daten.FilmResolution;
 import mediathek.daten.IndexedFilmList;
@@ -41,13 +40,11 @@ import mediathek.tool.table.MVFilmTable;
 import net.engio.mbassy.listener.Handler;
 import org.jdesktop.swingx.VerticalLayout;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.List;
-import java.util.Optional;
+import java.util.function.Consumer;
 
 public class GuiFilme extends AGuiTabPanel {
 
@@ -87,13 +84,20 @@ public class GuiFilme extends AGuiTabPanel {
                 () -> daten,
                 filterConfiguration::isShowHighQualityOnly);
         selectionController = new FilmSelectionController(selectionHost);
+        var bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
+        bookmarkController = new FilmBookmarkController(bookmarkHost);
+        Consumer<DatenPset> saveSelectedFilm = pSet -> {
+            synchronized (this) {
+                selectionController.saveFilm(pSet);
+            }
+        };
         var filmActionHost = new FilmActionHostAdapter(
-                this::saveFilm,
+                saveSelectedFilm,
                 selectionController::getSelectedFilms,
-                this::updateBookmarkListAndRefresh,
+                bookmarkController::updateBookmarkListAndRefresh,
                 selectionController::getCurrentlySelectedFilm,
                 this::toggleFilterDialogVisibility);
-        playFilmAction = new PlayFilmAction(this);
+        playFilmAction = new PlayFilmAction(selectionController::startFilm);
         saveFilmAction = new SaveFilmAction(filmActionHost);
         copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY);
         copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL);
@@ -119,7 +123,6 @@ public class GuiFilme extends AGuiTabPanel {
                 filterController::availableFilters,
                 filterController::isFilterLocked,
                 filterController.selectionObserverRegistry());
-        var bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
         var searchFieldHost = new SearchFieldHostAdapter(
                 mediathekGui,
                 this::loadTable,
@@ -140,21 +143,21 @@ public class GuiFilme extends AGuiTabPanel {
                 mediathekGui.showFilmInformationAction,
                 downloadSubtitleAction);
         var viewHost = new FilmViewHostAdapter(
-                this,
                 psetButtonsTab,
                 () -> psetButtonsPanel,
                 panel -> psetButtonsPanel = panel,
                 () -> cbShowButtons,
                 () -> cbkShowDescription,
                 () -> filmUiActions,
-                this::makeDescriptionTabVisible);
+                this::makeDescriptionTabVisible,
+                selectionController::startFilm);
         var tableContextMenuHost = new TableContextMenuHostAdapter(
                 () -> tabelle,
                 selectionController::getCurrentlySelectedFilm,
-                this::getFilm,
+                selectionController::getFilm,
                 () -> playFilmAction.actionPerformed(null),
-                () -> saveFilm(null),
-                this::playerStarten,
+                () -> saveSelectedFilm.accept(null),
+                selectionController::startFilm,
                 suspended -> stopBeob = suspended,
                 mediathekGui,
                 () -> filmUiActions);
@@ -169,10 +172,9 @@ public class GuiFilme extends AGuiTabPanel {
                 () -> filmUiActions,
                 () -> updateSelectedListItemsCount(tabelle),
                 this::onComponentShown,
-                this::updateFilmData,
+                selectionController::updateFilmData,
                 () -> stopBeob);
         tableInstaller = new FilmTableInstaller(tableInstallerHost);
-        bookmarkController = new FilmBookmarkController(bookmarkHost);
         viewController = new FilmViewController(viewHost);
 
         setLayout(new BorderLayout());
@@ -222,7 +224,7 @@ public class GuiFilme extends AGuiTabPanel {
                 () -> daten.getDecoratedPool(),
                 suspended -> stopBeob = suspended,
                 this::updateStartInfoProperty,
-                this::updateFilmData);
+                selectionController::updateFilmData);
         tableReloader = new FilmTableReloader(tableReloadHost);
         reloadTableDataTimer = new NonRepeatingTimer(_ -> loadTable());
         var lifecycleHost = new FilmLifecycleHostAdapter(
@@ -286,10 +288,6 @@ public class GuiFilme extends AGuiTabPanel {
         return filterController.state().getZeitraum();
     }
 
-    private void updateBookmarkListAndRefresh(List<DatenFilm> films) {
-        bookmarkController.updateBookmarkListAndRefresh(films);
-    }
-
     @Handler
     public void handleTableModelChange(TableModelChangeEvent e) {
         lifecycleController.handleTableModelChange(e);
@@ -310,7 +308,7 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     private void onComponentShown() {
-        updateFilmData();
+        selectionController.updateFilmData();
         updateStartInfoProperty();
     }
 
@@ -334,14 +332,6 @@ public class GuiFilme extends AGuiTabPanel {
     }
 
     /**
-     * Handle single or multi film downloads.
-     * @param pSet used for downloads or null.
-     */
-    private synchronized void saveFilm(@Nullable DatenPset pSet) {
-        selectionController.saveFilm(pSet);
-    }
-
-    /**
      * If necessary instantiate and show the bookmark window
      */
     public void showManageBookmarkWindow() {
@@ -350,28 +340,6 @@ public class GuiFilme extends AGuiTabPanel {
 
     public BookmarkDialog getBookmarkDialog() {
         return bookmarkController.getBookmarkDialog();
-    }
-
-    public void playerStarten(DatenPset pSet) {
-        selectionController.startFilm(pSet);
-    }
-
-    /**
-     * Return the film object from a table row. As this can also be null we will return an Optional to
-     * prevent NPEs inside the caller.
-     *
-     * @param zeileTabelle table row.
-     * @return Optional object to a film object.
-     */
-    private Optional<DatenFilm> getFilm(final int zeileTabelle) {
-        return selectionController.getFilm(zeileTabelle);
-    }
-
-    /**
-     * Update Film Information and description panel with updated film...
-     */
-    private void updateFilmData() {
-        selectionController.updateFilmData();
     }
 
     /**

@@ -18,9 +18,11 @@
 
 package mediathek.gui.tabs.tab_film
 
+import mediathek.daten.DatenPset
 import mediathek.tool.ApplicationConfiguration
 import org.apache.commons.lang3.SystemUtils
 import java.awt.event.KeyEvent
+import java.util.function.Consumer
 import java.util.function.IntConsumer
 import javax.swing.JCheckBoxMenuItem
 import javax.swing.JMenu
@@ -29,7 +31,6 @@ import javax.swing.KeyStroke
 
 class FilmViewController(private val host: Host) {
     interface Host {
-        fun guiFilme(): GuiFilme
         fun psetButtonsTab(): JTabbedPane
         fun psetButtonsPanel(): PsetButtonsPanel?
         fun setPsetButtonsPanel(panel: PsetButtonsPanel)
@@ -37,6 +38,7 @@ class FilmViewController(private val host: Host) {
         fun showDescriptionMenuItem(): JCheckBoxMenuItem
         fun actions(): FilmUiActions
         fun makeDescriptionTabVisible(visible: Boolean)
+        fun startFilmWithPset(pset: DatenPset)
     }
 
     fun installViewMenuEntry(menu: JMenu) {
@@ -77,7 +79,7 @@ class FilmViewController(private val host: Host) {
             .getBoolean(ApplicationConfiguration.APPLICATION_BUTTONS_PANEL_VISIBLE, false)
         setupButtonsMenuItem(initialVisibility)
 
-        val panel = PsetButtonsPanel(host.guiFilme())
+        val panel = PsetButtonsPanel(Consumer { pset -> host.startFilmWithPset(pset) })
         host.setPsetButtonsPanel(panel)
         panel.putClientProperty("JTabbedPane.tabClosable", true)
         panel.putClientProperty("JTabbedPane.tabCloseCallback", IntConsumer { host.showButtonsMenuItem().doClick() })
