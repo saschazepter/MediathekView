@@ -20,7 +20,6 @@ package mediathek.gui.tabs.tab_film;
 
 import mediathek.config.Daten;
 import mediathek.gui.actions.DeleteBookmarksAction;
-import mediathek.gui.actions.ManageBookmarkAction;
 import mediathek.gui.actions.PlayFilmAction;
 import mediathek.gui.bookmark.BookmarkDialog;
 import mediathek.gui.messages.*;
@@ -153,13 +152,29 @@ public class GuiFilme extends JPanel {
         tableInstaller = viewAndTableSetup.tableInstaller();
         viewController = viewAndTableSetup.viewController();
 
-        var filmUiSetup = createFilmUi(
+        var filmUiSetup = FilmUiSetup.create(
+                this,
+                daten,
+                mediathekGui,
+                filterSelectionComboBoxModel,
+                filterController,
                 filmListScrollPane,
                 cbkShowDescription,
                 searchFieldHost,
                 bookmarkAddFilmAction,
                 bookmarkRemoveFilmAction,
-                manageBookmarkAction);
+                deleteBookmarksAction,
+                manageBookmarkAction,
+                playFilmAction,
+                saveFilmAction,
+                toggleFilterDialogVisibilityAction,
+                descriptionTabController,
+                psetButtonsTab,
+                () -> tabelle,
+                tableInstaller::setupFilmListTable,
+                tableInstaller::setupFilmSelectionPropertyListener,
+                viewController,
+                selectionController::getCurrentlySelectedFilm);
         searchField = filmUiSetup.searchField();
         var filmToolBar = filmUiSetup.filmToolBar();
         swingFilterDialog = filmUiSetup.swingFilterDialog();
@@ -189,38 +204,6 @@ public class GuiFilme extends JPanel {
         lifecycleController = runtimeSetup.lifecycleController();
         lifecycleController.start();
 
-    }
-
-    private FilmUiSetup createFilmUi(
-            JScrollPane filmListScrollPane,
-            JCheckBoxMenuItem cbkShowDescription,
-            SearchField.Host searchFieldHost,
-            BookmarkAddFilmAction bookmarkAddFilmAction,
-            BookmarkRemoveFilmAction bookmarkRemoveFilmAction,
-            ManageBookmarkAction manageBookmarkAction) {
-        return FilmUiSetup.create(
-                this,
-                daten,
-                mediathekGui,
-                filterSelectionComboBoxModel,
-                filterController,
-                filmListScrollPane,
-                cbkShowDescription,
-                searchFieldHost,
-                bookmarkAddFilmAction,
-                bookmarkRemoveFilmAction,
-                deleteBookmarksAction,
-                manageBookmarkAction,
-                playFilmAction,
-                saveFilmAction,
-                toggleFilterDialogVisibilityAction,
-                descriptionTabController,
-                psetButtonsTab,
-                () -> tabelle,
-                tableInstaller::setupFilmListTable,
-                tableInstaller::setupFilmSelectionPropertyListener,
-                viewController,
-                selectionController::getCurrentlySelectedFilm);
     }
 
     private void toggleFilterDialogVisibility() {
