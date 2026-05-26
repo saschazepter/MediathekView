@@ -23,6 +23,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
@@ -60,6 +61,13 @@ class FilmTableReloader(private val host: Host) {
 
     fun loadTable() {
         loadTable(false)
+    }
+
+    fun dispose() {
+        uiScope.cancel()
+        modelJob = null
+        pendingTableReload = false
+        pendingTableReloadFromSearchField = false
     }
 
     fun loadTable(fromSearchField: Boolean) {

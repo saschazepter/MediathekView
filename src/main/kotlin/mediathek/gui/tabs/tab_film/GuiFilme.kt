@@ -28,7 +28,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.gui.actions.DeleteBookmarksAction
-import mediathek.gui.actions.PlayFilmAction
 import mediathek.gui.bookmark.BookmarkDialog
 import mediathek.gui.messages.BookmarkRefreshCompletedEvent
 import mediathek.gui.messages.ButtonStartEvent
@@ -40,17 +39,14 @@ import mediathek.gui.messages.history.DownloadHistoryChangedEvent
 import mediathek.gui.tabs.DescriptionTabController
 import mediathek.gui.tabs.tab_film.actions.CopyUrlToClipboardAction
 import mediathek.gui.tabs.tab_film.actions.FilmActionSetup
-import mediathek.gui.tabs.tab_film.actions.SaveFilmAction
 import mediathek.gui.tabs.tab_film.actions.ToggleFilterDialogVisibilityAction
 import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkController
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.filter.FilmFilterSetup
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog
-import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.gui.tabs.tab_film.lifecycle.BookmarkStartupReloadCoordinator
 import mediathek.gui.tabs.tab_film.lifecycle.FilmLifecycleController
 import mediathek.gui.tabs.tab_film.lifecycle.FilmRuntimeSetup
-import mediathek.gui.tabs.tab_film.search.SearchField
 import mediathek.gui.tabs.tab_film.search.SearchFieldHostAdapter
 import mediathek.gui.tabs.tab_film.selection.FilmControllerSetup
 import mediathek.gui.tabs.tab_film.selection.FilmSelectionController
@@ -78,20 +74,12 @@ class GuiFilme(
     private val mediathekGui: MediathekGui,
 ) : JPanel() {
     private val daten: Daten = aDaten
-    private val playFilmActionValue: PlayFilmAction
-    private val saveFilmActionValue: SaveFilmAction
     private val copyHqUrlToClipboardActionValue: CopyUrlToClipboardAction
     private val copyNormalUrlToClipboardActionValue: CopyUrlToClipboardAction
     private val swingFilterDialog: SwingFilterDialog
     private val toggleFilterDialogVisibilityActionValue: ToggleFilterDialogVisibilityAction
-    private val psetButtonsTab = JTabbedPane()
-    private val descriptionTabController = DescriptionTabController()
-    private val searchField: SearchField
-    private val deleteBookmarksAction = DeleteBookmarksAction(MediathekGui.ui())
-    private val filterConfiguration = FilterConfiguration()
     private val reloadTableScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val filterController: FilmFilterController
-    private val filterSelectionComboBoxModel: FilterSelectionComboBoxModel
     private val bookmarkController: FilmBookmarkController
     private var psetButtonsPanel: PsetButtonsPanel? = null
     private var stopBeob = false
@@ -107,6 +95,10 @@ class GuiFilme(
         get() = tabelle ?: error("Film table has not been initialized")
 
     init {
+        val psetButtonsTab = JTabbedPane()
+        val descriptionTabController = DescriptionTabController()
+        val deleteBookmarksAction = DeleteBookmarksAction(MediathekGui.ui())
+        val filterConfiguration = FilterConfiguration()
         val controllerSetup = FilmControllerSetup.create(
             { currentTable },
             { tabelle },
@@ -130,8 +122,8 @@ class GuiFilme(
             selectionController::getSelectedFilms,
             selectionController::getCurrentlySelectedFilm,
         )
-        playFilmActionValue = filmActions.playFilmAction
-        saveFilmActionValue = filmActions.saveFilmAction
+        val playFilmAction = filmActions.playFilmAction
+        val saveFilmAction = filmActions.saveFilmAction
         copyHqUrlToClipboardActionValue = filmActions.copyHqUrlToClipboardAction
         copyNormalUrlToClipboardActionValue = filmActions.copyNormalUrlToClipboardAction
         toggleFilterDialogVisibilityActionValue = filmActions.toggleFilterDialogVisibilityAction
@@ -149,7 +141,7 @@ class GuiFilme(
             ::requestZeitraumReload,
         )
         filterController = filterSetup.filterController
-        filterSelectionComboBoxModel = filterSetup.filterSelectionComboBoxModel
+        val filterSelectionComboBoxModel = filterSetup.filterSelectionComboBoxModel
         val searchFieldHost = SearchFieldHostAdapter(
             mediathekGui,
             ::loadTable,
@@ -177,7 +169,7 @@ class GuiFilme(
                 { filmUiActions },
                 selectionController::getCurrentlySelectedFilm,
                 selectionController::getFilm,
-                { playFilmActionValue.actionPerformed(null) },
+                { playFilmAction.actionPerformed(null) },
                 { saveSelectedFilm.accept(null) },
                 selectionController::startFilm,
                 { suspended -> stopBeob = suspended },
@@ -212,8 +204,8 @@ class GuiFilme(
                 bookmarkRemoveFilmAction,
                 deleteBookmarksAction,
                 manageBookmarkAction,
-                playFilmActionValue,
-                saveFilmActionValue,
+                playFilmAction,
+                saveFilmAction,
                 toggleFilterDialogVisibilityActionValue,
             ),
             FilmUiSetup.TableHooks(
@@ -224,7 +216,7 @@ class GuiFilme(
                 selectionController::getCurrentlySelectedFilm,
             ),
         )
-        searchField = filmUiSetup.searchField
+        val searchField = filmUiSetup.searchField
         val filmToolBar = filmUiSetup.filmToolBar
         swingFilterDialog = filmUiSetup.swingFilterDialog
 
@@ -282,6 +274,7 @@ class GuiFilme(
 
     fun disposePanel() {
         reloadTableScope.cancel()
+        tableReloader.dispose()
         lifecycleController.disposePanel()
     }
 
