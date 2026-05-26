@@ -27,7 +27,10 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
+import mediathek.daten.FilmResolution
 import mediathek.gui.actions.DeleteBookmarksAction
+import mediathek.gui.actions.ManageBookmarkAction
+import mediathek.gui.actions.PlayFilmAction
 import mediathek.gui.bookmark.BookmarkDialog
 import mediathek.gui.messages.BookmarkRefreshCompletedEvent
 import mediathek.gui.messages.ButtonStartEvent
@@ -37,8 +40,14 @@ import mediathek.gui.messages.TableModelChangeEvent
 import mediathek.gui.messages.UpdateStatusBarLeftDisplayEvent
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
 import mediathek.gui.tabs.DescriptionTabController
+import mediathek.gui.tabs.actions.MarkFilmAsSeenAction
+import mediathek.gui.tabs.actions.MarkFilmAsUnseenAction
+import mediathek.gui.tabs.tab_film.actions.BookmarkAddFilmAction
+import mediathek.gui.tabs.tab_film.actions.BookmarkRemoveFilmAction
 import mediathek.gui.tabs.tab_film.actions.CopyUrlToClipboardAction
-import mediathek.gui.tabs.tab_film.actions.FilmActionSetup
+import mediathek.gui.tabs.tab_film.actions.DownloadSubtitleAction
+import mediathek.gui.tabs.tab_film.actions.FilmUiActions
+import mediathek.gui.tabs.tab_film.actions.SaveFilmAction
 import mediathek.gui.tabs.tab_film.actions.ToggleFilterDialogVisibilityAction
 import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkController
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
@@ -62,6 +71,8 @@ import mediathek.tool.FilterConfiguration
 import mediathek.tool.MessageBus
 import mediathek.tool.table.MVFilmTable
 import net.engio.mbassy.listener.Handler
+import java.util.function.Consumer
+import java.util.function.Supplier
 import kotlin.time.Duration.Companion.milliseconds
 import javax.swing.Action
 import javax.swing.JCheckBoxMenuItem
@@ -116,23 +127,23 @@ class GuiFilme(
         bookmarkController = controllerSetup.bookmarkController
         val saveSelectedFilm = controllerSetup.saveSelectedFilm
         val filmActionHost = controllerSetup.filmActionHost
-        val filmActions = FilmActionSetup.create(
-            filmActionHost,
-            selectionController::startFilm,
-            mediathekGui,
-            deleteBookmarksAction,
-            selectionController::getSelectedFilms,
-            selectionController::getCurrentlySelectedFilm,
-        )
-        val playFilmAction = filmActions.playFilmAction
-        val saveFilmAction = filmActions.saveFilmAction
-        copyHqUrlToClipboardActionValue = filmActions.copyHqUrlToClipboardAction
-        copyNormalUrlToClipboardActionValue = filmActions.copyNormalUrlToClipboardAction
-        toggleFilterDialogVisibilityActionValue = filmActions.toggleFilterDialogVisibilityAction
+        val playFilmAction = PlayFilmAction(Consumer { selectionController.startFilm(it) })
+        val saveFilmAction = SaveFilmAction(filmActionHost)
+        copyHqUrlToClipboardActionValue =
+            CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY)
+        copyNormalUrlToClipboardActionValue =
+            CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL)
+        toggleFilterDialogVisibilityActionValue = ToggleFilterDialogVisibilityAction(filmActionHost)
         val bookmarkStartupReloadCoordinator = BookmarkStartupReloadCoordinator()
-        val bookmarkAddFilmAction = filmActions.bookmarkAddFilmAction
-        val bookmarkRemoveFilmAction = filmActions.bookmarkRemoveFilmAction
-        val manageBookmarkAction = filmActions.manageBookmarkAction
+        val bookmarkAddFilmAction = BookmarkAddFilmAction(filmActionHost)
+        val bookmarkRemoveFilmAction = BookmarkRemoveFilmAction(filmActionHost)
+        val manageBookmarkAction = ManageBookmarkAction(MediathekGui.ui())
+        val markFilmAsSeenAction =
+            MarkFilmAsSeenAction(Supplier { selectionController.getSelectedFilms() })
+        val markFilmAsUnseenAction =
+            MarkFilmAsUnseenAction(Supplier { selectionController.getSelectedFilms() })
+        val downloadSubtitleAction =
+            DownloadSubtitleAction(Supplier { selectionController.getCurrentlySelectedFilm() })
         val filmListScrollPane = JScrollPane()
         val cbkShowDescription = JCheckBoxMenuItem("Beschreibung anzeigen")
         val cbShowButtons = JCheckBoxMenuItem("Buttons anzeigen")
@@ -149,7 +160,22 @@ class GuiFilme(
             ::loadTable,
             ::loadTable,
         )
-        val filmUiActions = filmActions.filmUiActions
+        val filmUiActions = FilmUiActions(
+            playFilmAction,
+            saveFilmAction,
+            bookmarkAddFilmAction,
+            bookmarkRemoveFilmAction,
+            deleteBookmarksAction,
+            manageBookmarkAction,
+            copyNormalUrlToClipboardActionValue,
+            copyHqUrlToClipboardActionValue,
+            markFilmAsSeenAction,
+            markFilmAsUnseenAction,
+            mediathekGui.toggleBlacklistAction,
+            mediathekGui.editBlacklistAction,
+            mediathekGui.showFilmInformationAction,
+            downloadSubtitleAction,
+        )
         val viewAndTableSetup = FilmViewAndTableSetup.create(
             FilmViewAndTableSetup.ViewDependencies(
                 psetButtonsTab,
