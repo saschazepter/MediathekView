@@ -62,7 +62,7 @@ public abstract class AGuiTabPanel extends JPanel {
         descriptionPanel.install(descriptionTab, table, datenFilmSupplier);
         descriptionTab.putClientProperty("JTabbedPane.tabClosable", true);
         descriptionTab.putClientProperty("JTabbedPane.tabCloseCallback",
-                (IntConsumer) tabIndex -> {
+                (IntConsumer) _ -> {
                     // close description tab here
                     // must use doClick to trigger model change
                     cbmi.doClick();
