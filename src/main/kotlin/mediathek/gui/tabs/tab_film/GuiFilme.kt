@@ -48,6 +48,7 @@ import mediathek.gui.tabs.tab_film.actions.BookmarkAddFilmAction
 import mediathek.gui.tabs.tab_film.actions.BookmarkRemoveFilmAction
 import mediathek.gui.tabs.tab_film.actions.CopyUrlToClipboardAction
 import mediathek.gui.tabs.tab_film.actions.DownloadSubtitleAction
+import mediathek.gui.tabs.tab_film.actions.FilmActionHost
 import mediathek.gui.tabs.tab_film.actions.FilmActionHostAdapter
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.actions.SaveFilmAction
@@ -64,6 +65,7 @@ import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import mediathek.gui.tabs.tab_film.search.SearchFieldHostAdapter
 import mediathek.gui.tabs.tab_film.search.LuceneSearchField
 import mediathek.gui.tabs.tab_film.search.RegularSearchField
+import mediathek.gui.tabs.tab_film.search.SearchField
 import mediathek.gui.tabs.tab_film.selection.FilmSelectionController
 import mediathek.gui.tabs.tab_film.selection.FilmSelectionHostAdapter
 import mediathek.gui.tabs.tab_film.table.FilmTableInstaller
@@ -117,11 +119,102 @@ class GuiFilme(
     private val currentTable: MVFilmTable
         get() = tabelle ?: error("Film table has not been initialized")
 
+    private data class SelectionComponents(
+        val selectionController: FilmSelectionController,
+        val bookmarkController: FilmBookmarkController,
+        val saveSelectedFilm: (DatenPset?) -> Unit,
+        val filmActionHost: FilmActionHost,
+    )
+
+    private data class FilmActions(
+        val playFilmAction: PlayFilmAction,
+        val saveFilmAction: SaveFilmAction,
+        val copyHqUrlToClipboardAction: CopyUrlToClipboardAction,
+        val copyNormalUrlToClipboardAction: CopyUrlToClipboardAction,
+        val toggleFilterDialogVisibilityAction: ToggleFilterDialogVisibilityAction,
+        val bookmarkAddFilmAction: BookmarkAddFilmAction,
+        val bookmarkRemoveFilmAction: BookmarkRemoveFilmAction,
+        val deleteBookmarksAction: DeleteBookmarksAction,
+        val manageBookmarkAction: ManageBookmarkAction,
+        val filmUiActions: FilmUiActions,
+    )
+
+    private data class FilterComponents(
+        val filterController: FilmFilterController,
+        val filterSelectionComboBoxModel: FilterSelectionComboBoxModel,
+    )
+
+    private data class ViewComponents(
+        val tableInstaller: FilmTableInstaller,
+        val viewController: FilmViewController,
+    )
+
+    private data class InstalledUi(
+        val searchField: SearchField,
+        val filmToolBar: FilmToolBar,
+        val swingFilterDialog: SwingFilterDialog,
+    )
+
     init {
         val psetButtonsTab = JTabbedPane()
         val descriptionTabController = DescriptionTabController()
         val deleteBookmarksAction = DeleteBookmarksAction(MediathekGui.ui())
         val filterConfiguration = FilterConfiguration()
+        val selectionComponents = createSelectionComponents(filterConfiguration)
+        selectionController = selectionComponents.selectionController
+        bookmarkController = selectionComponents.bookmarkController
+        val filmActions = createFilmActions(deleteBookmarksAction, selectionComponents)
+        copyHqUrlToClipboardActionValue = filmActions.copyHqUrlToClipboardAction
+        copyNormalUrlToClipboardActionValue = filmActions.copyNormalUrlToClipboardAction
+        toggleFilterDialogVisibilityActionValue = filmActions.toggleFilterDialogVisibilityAction
+        val bookmarkStartupReloadCoordinator = BookmarkStartupReloadCoordinator()
+        val filmListScrollPane = JScrollPane()
+        val cbkShowDescription = JCheckBoxMenuItem("Beschreibung anzeigen")
+        val cbShowButtons = JCheckBoxMenuItem("Buttons anzeigen")
+        val filterComponents = createFilterComponents(filterConfiguration)
+        filterController = filterComponents.filterController
+        val searchFieldHost = SearchFieldHostAdapter(
+            mediathekGui,
+            ::loadTable,
+            ::loadTable,
+        )
+        val viewComponents = createViewComponents(
+            psetButtonsTab,
+            cbShowButtons,
+            cbkShowDescription,
+            descriptionTabController,
+            filmListScrollPane,
+            selectionComponents,
+            filmActions,
+        )
+        tableInstaller = viewComponents.tableInstaller
+        viewController = viewComponents.viewController
+        val installedUi = installUi(
+            filmListScrollPane,
+            descriptionTabController,
+            psetButtonsTab,
+            filterComponents,
+            selectionComponents,
+            filmActions,
+            viewComponents,
+            cbkShowDescription,
+            searchFieldHost,
+        )
+        swingFilterDialog = installedUi.swingFilterDialog
+
+        tableInstaller.setupTable()
+        tableReloader = createTableReloader(installedUi.searchField, filterComponents.filterController)
+        lifecycleController = createLifecycleController(
+            filterConfiguration,
+            bookmarkStartupReloadCoordinator,
+            installedUi,
+            filmActions,
+            filterComponents,
+        )
+        lifecycleController.start()
+    }
+
+    private fun createSelectionComponents(filterConfiguration: FilterConfiguration): SelectionComponents {
         val selectionHost = FilmSelectionHostAdapter(
             { currentTable },
             { tabelle },
@@ -130,9 +223,9 @@ class GuiFilme(
             { daten },
             { filterConfiguration.isShowHighQualityOnly },
         )
-        selectionController = FilmSelectionController(selectionHost)
+        val selectionController = FilmSelectionController(selectionHost)
         val bookmarkHost = FilmBookmarkHostAdapter(mediathekGui, ::repaint)
-        bookmarkController = FilmBookmarkController(bookmarkHost)
+        val bookmarkController = FilmBookmarkController(bookmarkHost)
         val saveSelectedFilm = { pset: DatenPset? ->
             synchronized(this) {
                 selectionController.saveFilm(pset)
@@ -145,14 +238,28 @@ class GuiFilme(
             selectionController::getCurrentlySelectedFilm,
             ::toggleFilterDialogVisibility,
         )
+
+        return SelectionComponents(
+            selectionController,
+            bookmarkController,
+            saveSelectedFilm,
+            filmActionHost,
+        )
+    }
+
+    private fun createFilmActions(
+        deleteBookmarksAction: DeleteBookmarksAction,
+        selectionComponents: SelectionComponents,
+    ): FilmActions {
+        val selectionController = selectionComponents.selectionController
+        val filmActionHost = selectionComponents.filmActionHost
         val playFilmAction = PlayFilmAction(Consumer { selectionController.startFilm(it) })
         val saveFilmAction = SaveFilmAction(filmActionHost)
-        copyHqUrlToClipboardActionValue =
+        val copyHqUrlToClipboardAction =
             CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY)
-        copyNormalUrlToClipboardActionValue =
+        val copyNormalUrlToClipboardAction =
             CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL)
-        toggleFilterDialogVisibilityActionValue = ToggleFilterDialogVisibilityAction(filmActionHost)
-        val bookmarkStartupReloadCoordinator = BookmarkStartupReloadCoordinator()
+        val toggleFilterDialogVisibilityAction = ToggleFilterDialogVisibilityAction(filmActionHost)
         val bookmarkAddFilmAction = BookmarkAddFilmAction(filmActionHost)
         val bookmarkRemoveFilmAction = BookmarkRemoveFilmAction(filmActionHost)
         val manageBookmarkAction = ManageBookmarkAction(MediathekGui.ui())
@@ -162,10 +269,39 @@ class GuiFilme(
             MarkFilmAsUnseenAction(Supplier { selectionController.getSelectedFilms() })
         val downloadSubtitleAction =
             DownloadSubtitleAction(Supplier { selectionController.getCurrentlySelectedFilm() })
-        val filmListScrollPane = JScrollPane()
-        val cbkShowDescription = JCheckBoxMenuItem("Beschreibung anzeigen")
-        val cbShowButtons = JCheckBoxMenuItem("Buttons anzeigen")
-        filterController = FilmFilterController(
+        val filmUiActions = FilmUiActions(
+            playFilmAction,
+            saveFilmAction,
+            bookmarkAddFilmAction,
+            bookmarkRemoveFilmAction,
+            deleteBookmarksAction,
+            manageBookmarkAction,
+            copyNormalUrlToClipboardAction,
+            copyHqUrlToClipboardAction,
+            markFilmAsSeenAction,
+            markFilmAsUnseenAction,
+            mediathekGui.toggleBlacklistAction,
+            mediathekGui.editBlacklistAction,
+            mediathekGui.showFilmInformationAction,
+            downloadSubtitleAction,
+        )
+
+        return FilmActions(
+            playFilmAction,
+            saveFilmAction,
+            copyHqUrlToClipboardAction,
+            copyNormalUrlToClipboardAction,
+            toggleFilterDialogVisibilityAction,
+            bookmarkAddFilmAction,
+            bookmarkRemoveFilmAction,
+            deleteBookmarksAction,
+            manageBookmarkAction,
+            filmUiActions,
+        )
+    }
+
+    private fun createFilterComponents(filterConfiguration: FilterConfiguration): FilterComponents {
+        val filterController = FilmFilterController(
             filterConfiguration,
             FilmFilterDataProviderAdapter { daten },
             FilmFilterReloadRequesterAdapter(::requestTableReload, ::requestZeitraumReload),
@@ -176,27 +312,21 @@ class GuiFilme(
             filterController::isFilterLocked,
             filterController.selectionObserverRegistry(),
         )
-        val searchFieldHost = SearchFieldHostAdapter(
-            mediathekGui,
-            ::loadTable,
-            ::loadTable,
-        )
-        val filmUiActions = FilmUiActions(
-            playFilmAction,
-            saveFilmAction,
-            bookmarkAddFilmAction,
-            bookmarkRemoveFilmAction,
-            deleteBookmarksAction,
-            manageBookmarkAction,
-            copyNormalUrlToClipboardActionValue,
-            copyHqUrlToClipboardActionValue,
-            markFilmAsSeenAction,
-            markFilmAsUnseenAction,
-            mediathekGui.toggleBlacklistAction,
-            mediathekGui.editBlacklistAction,
-            mediathekGui.showFilmInformationAction,
-            downloadSubtitleAction,
-        )
+
+        return FilterComponents(filterController, filterSelectionComboBoxModel)
+    }
+
+    private fun createViewComponents(
+        psetButtonsTab: JTabbedPane,
+        cbShowButtons: JCheckBoxMenuItem,
+        cbkShowDescription: JCheckBoxMenuItem,
+        descriptionTabController: DescriptionTabController,
+        filmListScrollPane: JScrollPane,
+        selectionComponents: SelectionComponents,
+        filmActions: FilmActions,
+    ): ViewComponents {
+        val selectionController = selectionComponents.selectionController
+        val filmUiActions = filmActions.filmUiActions
         val viewHost = FilmViewHostAdapter(
             psetButtonsTab,
             { psetButtonsPanel },
@@ -211,8 +341,8 @@ class GuiFilme(
             { currentTable },
             selectionController::getCurrentlySelectedFilm,
             selectionController::getFilm,
-            { playFilmAction.actionPerformed(null) },
-            { saveSelectedFilm(null) },
+            { filmActions.playFilmAction.actionPerformed(null) },
+            { selectionComponents.saveSelectedFilm(null) },
             selectionController::startFilm,
             { suspended -> stopBeob = suspended },
             mediathekGui,
@@ -225,16 +355,31 @@ class GuiFilme(
             filmListScrollPane,
             this,
             { tableContextMenuHost },
-            filmActionHost,
+            selectionComponents.filmActionHost,
             { filmUiActions },
             { updateSelectedListItemsCount(currentTable) },
             ::onComponentShown,
             selectionController::updateFilmData,
             { stopBeob },
         )
-        tableInstaller = FilmTableInstaller(tableInstallerHost)
-        viewController = FilmViewController(viewHost)
 
+        return ViewComponents(
+            FilmTableInstaller(tableInstallerHost),
+            FilmViewController(viewHost),
+        )
+    }
+
+    private fun installUi(
+        filmListScrollPane: JScrollPane,
+        descriptionTabController: DescriptionTabController,
+        psetButtonsTab: JTabbedPane,
+        filterComponents: FilterComponents,
+        selectionComponents: SelectionComponents,
+        filmActions: FilmActions,
+        viewComponents: ViewComponents,
+        cbkShowDescription: JCheckBoxMenuItem,
+        searchFieldHost: SearchField.Host,
+    ): InstalledUi {
         layout = BorderLayout()
         add(filmListScrollPane, BorderLayout.CENTER)
         val extensionArea = JPanel(VerticalLayout())
@@ -249,39 +394,44 @@ class GuiFilme(
         extensionArea.add(descriptionTabController.tabbedPane)
         extensionArea.add(psetButtonsTab)
 
-        tableInstaller.setupFilmListTable()
-        tableInstaller.setupFilmSelectionPropertyListener()
-        viewController.setupShowFilmDescriptionMenuItem()
+        viewComponents.tableInstaller.setupFilmListTable()
+        viewComponents.tableInstaller.setupFilmSelectionPropertyListener()
+        viewComponents.viewController.setupShowFilmDescriptionMenuItem()
         descriptionTabController.install(
             currentTable,
             cbkShowDescription,
             ApplicationConfiguration.FILM_SHOW_DESCRIPTION,
-            Supplier { selectionController.getCurrentlySelectedFilm() },
+            Supplier { selectionComponents.selectionController.getCurrentlySelectedFilm() },
         )
-        viewController.setupPsetButtonsTab()
+        viewComponents.viewController.setupPsetButtonsTab()
 
         val filmToolBar = FilmToolBar(
-            filterSelectionComboBoxModel,
-            bookmarkAddFilmAction,
-            bookmarkRemoveFilmAction,
-            deleteBookmarksAction,
-            manageBookmarkAction,
-            playFilmAction,
-            saveFilmAction,
+            filterComponents.filterSelectionComboBoxModel,
+            filmActions.bookmarkAddFilmAction,
+            filmActions.bookmarkRemoveFilmAction,
+            filmActions.deleteBookmarksAction,
+            filmActions.manageBookmarkAction,
+            filmActions.playFilmAction,
+            filmActions.saveFilmAction,
             searchField,
-            toggleFilterDialogVisibilityActionValue,
+            filmActions.toggleFilterDialogVisibilityAction,
         )
         add(filmToolBar, BorderLayout.NORTH)
 
-        swingFilterDialog = SwingFilterDialog(
+        val swingFilterDialog = SwingFilterDialog(
             mediathekGui,
-            filterSelectionComboBoxModel,
+            filterComponents.filterSelectionComboBoxModel,
             filmToolBar.toggleFilterDialogVisibilityButton,
-            filterController,
+            filterComponents.filterController,
         )
 
-        tableInstaller.setupTable()
+        return InstalledUi(searchField, filmToolBar, swingFilterDialog)
+    }
 
+    private fun createTableReloader(
+        searchField: SearchField,
+        filterController: FilmFilterController,
+    ): FilmTableReloader {
         val tableReloadHost = FilmTableReloadHostAdapter(
             { currentTable },
             {
@@ -293,24 +443,34 @@ class GuiFilme(
             ::updateStartInfoProperty,
             selectionController::updateFilmData,
         )
-        tableReloader = FilmTableReloader(tableReloadHost)
+
+        return FilmTableReloader(tableReloadHost)
+    }
+
+    private fun createLifecycleController(
+        filterConfiguration: FilterConfiguration,
+        bookmarkStartupReloadCoordinator: BookmarkStartupReloadCoordinator,
+        installedUi: InstalledUi,
+        filmActions: FilmActions,
+        filterComponents: FilterComponents,
+    ): FilmLifecycleController {
         val lifecycleHost = FilmLifecycleHostAdapter(
             this,
             daten,
             { currentTable },
             filterConfiguration,
             bookmarkStartupReloadCoordinator,
-            { swingFilterDialog },
-            { filmToolBar },
-            { searchField },
-            { filmUiActions },
+            { installedUi.swingFilterDialog },
+            { installedUi.filmToolBar },
+            { installedUi.searchField },
+            { filmActions.filmUiActions },
             ::requestTableReload,
             ::updateStartInfoProperty,
             ::tabelleSpeichern,
-            filterSelectionComboBoxModel::close,
+            filterComponents.filterSelectionComboBoxModel::close,
         )
-        lifecycleController = FilmLifecycleController(lifecycleHost)
-        lifecycleController.start()
+
+        return FilmLifecycleController(lifecycleHost)
     }
 
     private fun toggleFilterDialogVisibility() {
