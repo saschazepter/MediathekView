@@ -18,7 +18,6 @@
 
 package mediathek.gui.tabs.tab_film;
 
-import ca.odell.glazedlists.EventList;
 import mediathek.config.Daten;
 import mediathek.daten.DatenFilm;
 import mediathek.daten.DatenPset;
@@ -45,7 +44,6 @@ import org.jspecify.annotations.Nullable;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -81,35 +79,8 @@ public class GuiFilme extends AGuiTabPanel {
     private final JCheckBoxMenuItem cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
     private final JCheckBoxMenuItem cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
     private final NonRepeatingTimer reloadTableDataTimer;
-    private final FilmFilterController filterController = new FilmFilterController(filterConfiguration,
-            new FilmFilterController.DataProvider() {
-                @Override
-                public @NonNull EventList<String> senderList() {
-                    return new ca.odell.glazedlists.FilterList<>(daten.getAllSendersList(), mediathek.controller.SenderFilmlistLoadApprover::isApproved);
-                }
-
-                @Override
-                public @NonNull List<String> getThemen(@NonNull Collection<String> senders) {
-                    return daten.getListeFilmeNachBlackList().getThemen(senders);
-                }
-            },
-            new FilmFilterController.ReloadRequester() {
-                @Override
-                public void requestTableReload() {
-                    GuiFilme.this.requestTableReload();
-                }
-
-                @Override
-                public void requestZeitraumReload() {
-                    GuiFilme.this.requestZeitraumReload();
-                }
-            });
-    protected final FilterSelectionComboBoxModel filterSelectionComboBoxModel =
-            new FilterSelectionComboBoxModel(
-                    filterController::currentFilter,
-                    filterController::availableFilters,
-                    filterController::isFilterLocked,
-                    filterController.selectionObserverRegistry());
+    private final FilmFilterController filterController;
+    protected final FilterSelectionComboBoxModel filterSelectionComboBoxModel;
     private final FilmToolBar filmToolBar;
     private final FilmBookmarkController bookmarkController;
     private final FilmBookmarkController.Host bookmarkHost;
@@ -141,6 +112,17 @@ public class GuiFilme extends AGuiTabPanel {
         daten = aDaten;
         this.mediathekGui = mediathekGui;
         descriptionPanel = new FilmDescriptionPanel();
+        filterController = new FilmFilterController(
+                filterConfiguration,
+                new FilmFilterDataProviderAdapter(() -> daten),
+                new FilmFilterReloadRequesterAdapter(
+                        this::requestTableReload,
+                        this::requestZeitraumReload));
+        filterSelectionComboBoxModel = new FilterSelectionComboBoxModel(
+                filterController::currentFilter,
+                filterController::availableFilters,
+                filterController::isFilterLocked,
+                filterController.selectionObserverRegistry());
         bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
         selectionHost = new FilmSelectionHostAdapter(
                 () -> tabelle,

@@ -18,7 +18,10 @@
 
 package mediathek.gui.tabs.tab_film
 
+import ca.odell.glazedlists.EventList
+import ca.odell.glazedlists.FilterList
 import mediathek.config.Daten
+import mediathek.controller.SenderFilmlistLoadApprover
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
@@ -137,6 +140,29 @@ class FilmViewHostAdapter(
 
     override fun makeDescriptionTabVisible(visible: Boolean) {
         makeDescriptionTabVisible.accept(visible)
+    }
+}
+
+class FilmFilterDataProviderAdapter(
+    private val daten: Supplier<Daten>,
+) : FilmFilterController.DataProvider {
+    override fun senderList(): EventList<String> =
+        FilterList(daten.get().allSendersList, SenderFilmlistLoadApprover::isApproved)
+
+    override fun getThemen(senders: Collection<String>): List<String> =
+        daten.get().listeFilmeNachBlackList.getThemen(senders)
+}
+
+class FilmFilterReloadRequesterAdapter(
+    private val requestTableReload: Runnable,
+    private val requestZeitraumReload: Runnable,
+) : FilmFilterController.ReloadRequester {
+    override fun requestTableReload() {
+        requestTableReload.run()
+    }
+
+    override fun requestZeitraumReload() {
+        requestZeitraumReload.run()
     }
 }
 
