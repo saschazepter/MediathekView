@@ -40,6 +40,7 @@ import mediathek.gui.tabs.tab_film.selection.*;
 import mediathek.gui.tabs.tab_film.table.*;
 import mediathek.gui.tabs.tab_film.view.*;
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController;
+import mediathek.gui.tabs.tab_film.filter.FilmFilterSetup;
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog;
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel;
 import mediathek.mainwindow.MediathekGui;
@@ -104,17 +105,13 @@ public class GuiFilme extends JPanel {
         var filmListScrollPane = new JScrollPane();
         var cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
         var cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
-        filterController = new FilmFilterController(
+        var filterSetup = new FilmFilterSetup(
                 filterConfiguration,
-                new FilmFilterDataProviderAdapter(() -> daten),
-                new FilmFilterReloadRequesterAdapter(
-                        this::requestTableReload,
-                        this::requestZeitraumReload));
-        filterSelectionComboBoxModel = new FilterSelectionComboBoxModel(
-                filterController::currentFilter,
-                filterController::availableFilters,
-                filterController::isFilterLocked,
-                filterController.selectionObserverRegistry());
+                () -> daten,
+                this::requestTableReload,
+                this::requestZeitraumReload);
+        filterController = filterSetup.getFilterController();
+        filterSelectionComboBoxModel = filterSetup.getFilterSelectionComboBoxModel();
         var searchFieldHost = new SearchFieldHostAdapter(
                 mediathekGui,
                 this::loadTable,
