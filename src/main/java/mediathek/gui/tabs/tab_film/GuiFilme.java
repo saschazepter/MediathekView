@@ -48,7 +48,6 @@ import java.awt.event.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 
 public class GuiFilme extends AGuiTabPanel {
 
@@ -118,72 +117,7 @@ public class GuiFilme extends AGuiTabPanel {
     private boolean stopBeob;
     private MVFilmTable tabelle;
     private final FilmLifecycleController lifecycleController;
-    private final FilmLifecycleController.Host lifecycleHost = new FilmLifecycleController.Host() {
-        @Override
-        public @NonNull Object messageBusSubscriber() {
-            return GuiFilme.this;
-        }
-
-        @Override
-        public @NonNull Daten daten() {
-            return daten;
-        }
-
-        @Override
-        public @NonNull MVFilmTable table() {
-            return tabelle;
-        }
-
-        @Override
-        public @NonNull FilterConfiguration filterConfiguration() {
-            return filterConfiguration;
-        }
-
-        @Override
-        public @NonNull BookmarkStartupReloadCoordinator bookmarkStartupReloadCoordinator() {
-            return bookmarkStartupReloadCoordinator;
-        }
-
-        @Override
-        public @NonNull SwingFilterDialog swingFilterDialog() {
-            return swingFilterDialog;
-        }
-
-        @Override
-        public @NonNull FilmToolBar filmToolBar() {
-            return filmToolBar;
-        }
-
-        @Override
-        public @NonNull SearchField searchField() {
-            return searchField;
-        }
-
-        @Override
-        public @NonNull FilmUiActions actions() {
-            return filmUiActions;
-        }
-
-        @Override
-        public void requestTableReload() {
-            GuiFilme.this.requestTableReload();
-        }
-
-        @Override
-        public void updateStartInfoProperty() {
-            GuiFilme.this.updateStartInfoProperty();
-        }
-
-        @Override
-        public void saveTableConfiguration() {
-            GuiFilme.this.tabelleSpeichern();
-        }
-
-        @Override
-        public void closeFilterSelectionModel() {
-            filterSelectionComboBoxModel.close();
-        }
-    };
+    private final FilmLifecycleController.Host lifecycleHost;
     private final FilmViewController viewController;
     private final FilmViewController.Host viewHost = new FilmViewHostAdapter(
             this,
@@ -197,151 +131,11 @@ public class GuiFilme extends AGuiTabPanel {
     private final FilmSelectionController selectionController;
     private final FilmSelectionController.Host selectionHost;
     private final FilmTableReloader tableReloader;
-    private final FilmTableReloader.Host tableReloadHost = new FilmTableReloader.Host() {
-        @Override
-        public @NonNull MVFilmTable table() {
-            return tabelle;
-        }
-
-        @Override
-        public @NonNull SearchFieldData searchFieldData() {
-            return new SearchFieldData(searchField.getText(), searchField.getSearchMode());
-        }
-
-        @Override
-        public @NonNull FilmFilterController filterController() {
-            return filterController;
-        }
-
-        @Override
-        public @NonNull Executor tableModelExecutor() {
-            return daten.getDecoratedPool();
-        }
-
-        @Override
-        public void setSelectionUpdatesSuspended(boolean suspended) {
-            stopBeob = suspended;
-        }
-
-        @Override
-        public void updateStartInfoProperty() {
-            GuiFilme.this.updateStartInfoProperty();
-        }
-
-        @Override
-        public void updateFilmData() {
-            GuiFilme.this.updateFilmData();
-        }
-    };
+    private final FilmTableReloader.Host tableReloadHost;
     private final SearchField.Host searchFieldHost;
-    private final TableContextMenuHandler.Host tableContextMenuHost = new TableContextMenuHandler.Host() {
-        @Override
-        public @NonNull MVFilmTable table() {
-            return tabelle;
-        }
-
-        @Override
-        public @NonNull Optional<DatenFilm> getCurrentlySelectedFilm() {
-            return GuiFilme.this.getCurrentlySelectedFilm();
-        }
-
-        @Override
-        public @NonNull Optional<DatenFilm> getFilm(int row) {
-            return GuiFilme.this.getFilm(row);
-        }
-
-        @Override
-        public void playSelectedFilm() {
-            playFilmAction.actionPerformed(null);
-        }
-
-        @Override
-        public void saveSelectedFilm() {
-            saveFilm(null);
-        }
-
-        @Override
-        public void startFilmWithPset(@NonNull DatenPset pSet) {
-            playerStarten(pSet);
-        }
-
-        @Override
-        public void setSelectionUpdatesSuspended(boolean suspended) {
-            stopBeob = suspended;
-        }
-
-        @Override
-        public @NonNull MediathekGui gui() {
-            return mediathekGui;
-        }
-
-        @Override
-        public @NonNull FilmUiActions actions() {
-            return filmUiActions;
-        }
-    };
-    private final FilmTableInstaller.Host tableInstallerHost = new FilmTableInstaller.Host() {
-        @Override
-        public @NonNull MVFilmTable table() {
-            return tabelle;
-        }
-
-        @Override
-        public @Nullable MVFilmTable tableOrNull() {
-            return tabelle;
-        }
-
-        @Override
-        public void setTable(@NonNull MVFilmTable table) {
-            tabelle = table;
-        }
-
-        @Override
-        public @NonNull JScrollPane filmListScrollPane() {
-            return filmListScrollPane;
-        }
-
-        @Override
-        public @NonNull Component ownerComponent() {
-            return GuiFilme.this;
-        }
-
-        @Override
-        public TableContextMenuHandler.@NonNull Host tableContextMenuHost() {
-            return tableContextMenuHost;
-        }
-
-        @Override
-        public @NonNull FilmActionHost filmActionHost() {
-            return filmActionHost;
-        }
-
-        @Override
-        public @NonNull FilmUiActions actions() {
-            return filmUiActions;
-        }
-
-        @Override
-        public void updateSelectedListItemsCount() {
-            GuiFilme.this.updateSelectedListItemsCount(tabelle);
-        }
-
-        @Override
-        public void onComponentShown() {
-            GuiFilme.this.onComponentShown();
-        }
-
-        @Override
-        public void updateFilmData() {
-            GuiFilme.this.updateFilmData();
-        }
-
-        @Override
-        public boolean selectionUpdatesSuspended() {
-            return stopBeob;
-        }
-    };
-    private final FilmTableInstaller tableInstaller = new FilmTableInstaller(tableInstallerHost);
+    private final TableContextMenuHandler.Host tableContextMenuHost;
+    private final FilmTableInstaller.Host tableInstallerHost;
+    private final FilmTableInstaller tableInstaller;
 
     public GuiFilme(Daten aDaten, MediathekGui mediathekGui) {
         daten = aDaten;
@@ -374,6 +168,30 @@ public class GuiFilme extends AGuiTabPanel {
                 mediathekGui.editBlacklistAction,
                 mediathekGui.showFilmInformationAction,
                 downloadSubtitleAction);
+        tableContextMenuHost = new TableContextMenuHostAdapter(
+                () -> tabelle,
+                this::getCurrentlySelectedFilm,
+                this::getFilm,
+                () -> playFilmAction.actionPerformed(null),
+                () -> saveFilm(null),
+                this::playerStarten,
+                suspended -> stopBeob = suspended,
+                mediathekGui,
+                () -> filmUiActions);
+        tableInstallerHost = new FilmTableInstallerHostAdapter(
+                () -> tabelle,
+                () -> tabelle,
+                table -> tabelle = table,
+                filmListScrollPane,
+                this,
+                () -> tableContextMenuHost,
+                filmActionHost,
+                () -> filmUiActions,
+                () -> updateSelectedListItemsCount(tabelle),
+                this::onComponentShown,
+                this::updateFilmData,
+                () -> stopBeob);
+        tableInstaller = new FilmTableInstaller(tableInstallerHost);
         bookmarkController = new FilmBookmarkController(bookmarkHost);
         viewController = new FilmViewController(viewHost);
         selectionController = new FilmSelectionController(selectionHost);
@@ -414,8 +232,30 @@ public class GuiFilme extends AGuiTabPanel {
 
         tableInstaller.setupTable();
 
+        tableReloadHost = new FilmTableReloadHostAdapter(
+                () -> tabelle,
+                () -> new SearchFieldData(searchField.getText(), searchField.getSearchMode()),
+                filterController,
+                () -> daten.getDecoratedPool(),
+                suspended -> stopBeob = suspended,
+                this::updateStartInfoProperty,
+                this::updateFilmData);
         tableReloader = new FilmTableReloader(tableReloadHost);
         reloadTableDataTimer = new NonRepeatingTimer(_ -> loadTable());
+        lifecycleHost = new FilmLifecycleHostAdapter(
+                this,
+                daten,
+                () -> tabelle,
+                filterConfiguration,
+                bookmarkStartupReloadCoordinator,
+                () -> swingFilterDialog,
+                () -> filmToolBar,
+                () -> searchField,
+                () -> filmUiActions,
+                this::requestTableReload,
+                this::updateStartInfoProperty,
+                this::tabelleSpeichern,
+                filterSelectionComboBoxModel::close);
         lifecycleController = new FilmLifecycleController(lifecycleHost);
         lifecycleController.start();
 
