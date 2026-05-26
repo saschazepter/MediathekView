@@ -71,7 +71,7 @@ public class GuiFilme extends JPanel {
     private final SearchField searchField;
     private final DeleteBookmarksAction deleteBookmarksAction = new DeleteBookmarksAction(MediathekGui.ui());
     private final FilterConfiguration filterConfiguration = new FilterConfiguration();
-    private final NonRepeatingTimer reloadTableDataTimer;
+    private final Timer reloadTableDataTimer;
     private final FilmFilterController filterController;
     private final FilterSelectionComboBoxModel filterSelectionComboBoxModel;
     private final FilmBookmarkController bookmarkController;
@@ -470,42 +470,6 @@ public class GuiFilme extends JPanel {
 
     private void loadTable(boolean from_search_field) {
         tableReloader.loadTable(from_search_field);
-    }
-
-    private record FilmControllerSetup(
-            FilmSelectionController selectionController,
-            FilmBookmarkController bookmarkController,
-            FilmActionHost filmActionHost,
-            Consumer<DatenPset> saveSelectedFilm) {
-    }
-
-    private record FilmActionSetup(
-            PlayFilmAction playFilmAction,
-            SaveFilmAction saveFilmAction,
-            CopyUrlToClipboardAction copyHqUrlToClipboardAction,
-            CopyUrlToClipboardAction copyNormalUrlToClipboardAction,
-            ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction,
-            BookmarkAddFilmAction bookmarkAddFilmAction,
-            BookmarkRemoveFilmAction bookmarkRemoveFilmAction,
-            ManageBookmarkAction manageBookmarkAction,
-            FilmUiActions filmUiActions) {
-    }
-
-    private record FilmViewAndTableSetup(
-            FilmTableInstaller tableInstaller,
-            FilmViewController viewController) {
-    }
-
-    private record FilmUiSetup(
-            SearchField searchField,
-            FilmToolBar filmToolBar,
-            SwingFilterDialog swingFilterDialog) {
-    }
-
-    private record FilmRuntimeSetup(
-            FilmTableReloader tableReloader,
-            NonRepeatingTimer reloadTableDataTimer,
-            FilmLifecycleController lifecycleController) {
     }
 
     static class NonRepeatingTimer extends Timer {
