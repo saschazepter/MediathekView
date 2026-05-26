@@ -79,11 +79,19 @@ public class GuiFilme extends AGuiTabPanel {
         daten = aDaten;
         this.mediathekGui = mediathekGui;
         descriptionPanel = new FilmDescriptionPanel();
+        var selectionHost = new FilmSelectionHostAdapter(
+                () -> tabelle,
+                () -> tabelle,
+                this,
+                mediathekGui,
+                () -> daten,
+                filterConfiguration::isShowHighQualityOnly);
+        selectionController = new FilmSelectionController(selectionHost);
         var filmActionHost = new FilmActionHostAdapter(
                 this::saveFilm,
-                this::getSelFilme,
+                selectionController::getSelectedFilms,
                 this::updateBookmarkListAndRefresh,
-                this::getCurrentlySelectedFilm,
+                selectionController::getCurrentlySelectedFilm,
                 this::toggleFilterDialogVisibility);
         playFilmAction = new PlayFilmAction(this);
         saveFilmAction = new SaveFilmAction(filmActionHost);
@@ -94,9 +102,9 @@ public class GuiFilme extends AGuiTabPanel {
         var bookmarkAddFilmAction = new BookmarkAddFilmAction(filmActionHost);
         var bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction(filmActionHost);
         var manageBookmarkAction = new ManageBookmarkAction(MediathekGui.ui());
-        var markFilmAsSeenAction = new MarkFilmAsSeenAction(this::getSelFilme);
-        var markFilmAsUnseenAction = new MarkFilmAsUnseenAction(this::getSelFilme);
-        var downloadSubtitleAction = new DownloadSubtitleAction(this);
+        var markFilmAsSeenAction = new MarkFilmAsSeenAction(selectionController::getSelectedFilms);
+        var markFilmAsUnseenAction = new MarkFilmAsUnseenAction(selectionController::getSelectedFilms);
+        var downloadSubtitleAction = new DownloadSubtitleAction(selectionController::getCurrentlySelectedFilm);
         var filmListScrollPane = new JScrollPane();
         var cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
         var cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
@@ -112,13 +120,6 @@ public class GuiFilme extends AGuiTabPanel {
                 filterController::isFilterLocked,
                 filterController.selectionObserverRegistry());
         var bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
-        var selectionHost = new FilmSelectionHostAdapter(
-                () -> tabelle,
-                () -> tabelle,
-                this,
-                mediathekGui,
-                () -> daten,
-                filterConfiguration::isShowHighQualityOnly);
         var searchFieldHost = new SearchFieldHostAdapter(
                 mediathekGui,
                 this::loadTable,
@@ -149,7 +150,7 @@ public class GuiFilme extends AGuiTabPanel {
                 this::makeDescriptionTabVisible);
         var tableContextMenuHost = new TableContextMenuHostAdapter(
                 () -> tabelle,
-                this::getCurrentlySelectedFilm,
+                selectionController::getCurrentlySelectedFilm,
                 this::getFilm,
                 () -> playFilmAction.actionPerformed(null),
                 () -> saveFilm(null),
@@ -173,7 +174,6 @@ public class GuiFilme extends AGuiTabPanel {
         tableInstaller = new FilmTableInstaller(tableInstallerHost);
         bookmarkController = new FilmBookmarkController(bookmarkHost);
         viewController = new FilmViewController(viewHost);
-        selectionController = new FilmSelectionController(selectionHost);
 
         setLayout(new BorderLayout());
         add(filmListScrollPane, BorderLayout.CENTER);
@@ -191,7 +191,11 @@ public class GuiFilme extends AGuiTabPanel {
 
         tableInstaller.setupFilmListTable();
         tableInstaller.setupFilmSelectionPropertyListener();
-        setupDescriptionTab(tabelle, cbkShowDescription, ApplicationConfiguration.FILM_SHOW_DESCRIPTION, this::getCurrentlySelectedFilm);
+        setupDescriptionTab(
+                tabelle,
+                cbkShowDescription,
+                ApplicationConfiguration.FILM_SHOW_DESCRIPTION,
+                selectionController::getCurrentlySelectedFilm);
         viewController.setupPsetButtonsTab();
 
         var filmToolBar = new FilmToolBar(filterSelectionComboBoxModel,
@@ -361,16 +365,6 @@ public class GuiFilme extends AGuiTabPanel {
      */
     private Optional<DatenFilm> getFilm(final int zeileTabelle) {
         return selectionController.getFilm(zeileTabelle);
-    }
-
-    @Override
-    public Optional<DatenFilm> getCurrentlySelectedFilm() {
-        return selectionController.getCurrentlySelectedFilm();
-    }
-
-    @Override
-    protected List<DatenFilm> getSelFilme() {
-        return selectionController.getSelectedFilms();
     }
 
     /**

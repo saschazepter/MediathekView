@@ -21,6 +21,7 @@ package mediathek.gui.tabs.tab_film
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Konstanten
+import mediathek.daten.DatenFilm
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.FileDialogs
 import mediathek.tool.FileUtils
@@ -35,11 +36,15 @@ import java.awt.event.ActionEvent
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.Optional
+import java.util.function.Supplier
 import javax.swing.AbstractAction
 import javax.swing.Action
 import javax.swing.JOptionPane
 
-class DownloadSubtitleAction(private val guiFilme: GuiFilme) : AbstractAction() {
+class DownloadSubtitleAction(
+    private val currentlySelectedFilm: Supplier<Optional<DatenFilm>>,
+) : AbstractAction() {
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
 
     init {
@@ -47,7 +52,7 @@ class DownloadSubtitleAction(private val guiFilme: GuiFilme) : AbstractAction() 
     }
 
     override fun actionPerformed(e: ActionEvent?) {
-        val film = guiFilme.currentlySelectedFilm.orElse(null) ?: return
+        val film = currentlySelectedFilm.get().orElse(null) ?: return
         val selectedFile = FileDialogs.chooseSaveFileLocation(MediathekGui.ui(), "Untertitel speichern", "")
 
         if (selectedFile == null) {

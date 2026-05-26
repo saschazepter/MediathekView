@@ -28,7 +28,6 @@ import mediathek.tool.MessageBus;
 import org.jspecify.annotations.NonNull;
 
 import javax.swing.*;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.IntConsumer;
 import java.util.function.Supplier;
@@ -86,15 +85,6 @@ public abstract class AGuiTabPanel extends JPanel {
     }
 
     public abstract void tabelleSpeichern();
-
-    /**
-     * Get the list of currently selected films.
-     *
-     * @return List of Films
-     */
-    protected abstract List<DatenFilm> getSelFilme();
-
-    public abstract Optional<DatenFilm> getCurrentlySelectedFilm();
 
     protected void updateStartInfoProperty() {
         MessageBus.getMessageBus().publishAsync(new UpdateStatusBarLeftDisplayEvent());

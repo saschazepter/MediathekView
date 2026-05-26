@@ -463,7 +463,6 @@ public class GuiDownloads extends AGuiTabPanel {
         return tableSelection.selectedDownloadsOrShowError();
     }
 
-    @Override
     public Optional<DatenFilm> getCurrentlySelectedFilm() {
         return tableSelection.currentlySelectedFilm();
     }
@@ -836,7 +835,6 @@ public class GuiDownloads extends AGuiTabPanel {
         }
     }
 
-    @Override
     protected List<DatenFilm> getSelFilme() {
         return tableSelection.selectedFilmsOrShowError();
     }
