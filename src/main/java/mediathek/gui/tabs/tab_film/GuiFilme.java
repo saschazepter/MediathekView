@@ -247,17 +247,7 @@ public class GuiFilme extends JPanel {
             BookmarkStartupReloadCoordinator bookmarkStartupReloadCoordinator,
             FilmToolBar filmToolBar,
             FilmUiActions filmUiActions) {
-        var tableReloadHost = new FilmTableReloadHostAdapter(
-                () -> tabelle,
-                () -> new SearchFieldData(searchField.getText(), searchField.getSearchMode()),
-                filterController,
-                daten::getDecoratedPool,
-                suspended -> stopBeob = suspended,
-                this::updateStartInfoProperty,
-                selectionController::updateFilmData);
-        var tableReloader = new FilmTableReloader(tableReloadHost);
-        var reloadTableDataTimer = new NonRepeatingTimer(_ -> loadTable());
-        var lifecycleHost = new FilmLifecycleHostAdapter(
+        return FilmRuntimeSetup.create(
                 this,
                 daten,
                 () -> tabelle,
@@ -267,13 +257,14 @@ public class GuiFilme extends JPanel {
                 () -> filmToolBar,
                 () -> searchField,
                 () -> filmUiActions,
-                this::requestTableReload,
+                filterController,
+                suspended -> stopBeob = suspended,
                 this::updateStartInfoProperty,
+                selectionController::updateFilmData,
+                this::requestTableReload,
                 this::tabelleSpeichern,
-                filterSelectionComboBoxModel::close);
-        var lifecycleController = new FilmLifecycleController(lifecycleHost);
-
-        return new FilmRuntimeSetup(tableReloader, reloadTableDataTimer, lifecycleController);
+                filterSelectionComboBoxModel::close,
+                NonRepeatingTimer::new);
     }
 
     private void toggleFilterDialogVisibility() {

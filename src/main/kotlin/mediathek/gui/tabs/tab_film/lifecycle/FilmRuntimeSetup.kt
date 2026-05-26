@@ -18,7 +18,19 @@
 
 package mediathek.gui.tabs.tab_film.lifecycle
 
+import mediathek.config.Daten
+import mediathek.gui.tabs.tab_film.FilmToolBar
+import mediathek.gui.tabs.tab_film.actions.FilmUiActions
+import mediathek.gui.tabs.tab_film.filter.FilmFilterController
+import mediathek.gui.tabs.tab_film.search.SearchField
+import mediathek.gui.tabs.tab_film.search.SearchFieldData
+import mediathek.gui.tabs.tab_film.table.FilmTableReloadHostAdapter
 import mediathek.gui.tabs.tab_film.table.FilmTableReloader
+import mediathek.tool.FilterConfiguration
+import mediathek.tool.table.MVFilmTable
+import java.awt.event.ActionListener
+import java.util.function.Consumer
+import java.util.function.Supplier
 import javax.swing.Timer
 
 class FilmRuntimeSetup(
@@ -29,4 +41,60 @@ class FilmRuntimeSetup(
     fun tableReloader(): FilmTableReloader = tableReloader
     fun reloadTableDataTimer(): Timer = reloadTableDataTimer
     fun lifecycleController(): FilmLifecycleController = lifecycleController
+
+    companion object {
+        @JvmStatic
+        fun create(
+            messageBusSubscriber: Any,
+            daten: Daten,
+            table: Supplier<MVFilmTable>,
+            filterConfiguration: FilterConfiguration,
+            bookmarkStartupReloadCoordinator: BookmarkStartupReloadCoordinator,
+            swingFilterDialog: Supplier<mediathek.gui.tabs.tab_film.filter.SwingFilterDialog>,
+            filmToolBar: Supplier<FilmToolBar>,
+            searchField: Supplier<SearchField>,
+            filmUiActions: Supplier<FilmUiActions>,
+            filterController: FilmFilterController,
+            setSelectionUpdatesSuspended: Consumer<Boolean>,
+            updateStartInfoProperty: Runnable,
+            updateFilmData: Runnable,
+            requestTableReload: Runnable,
+            saveTableConfiguration: Runnable,
+            closeFilterSelectionModel: Runnable,
+            timerFactory: java.util.function.Function<ActionListener, Timer>,
+        ): FilmRuntimeSetup {
+            val tableReloadHost = FilmTableReloadHostAdapter(
+                table,
+                Supplier {
+                    val field = searchField.get()
+                    SearchFieldData(field.text, field.getSearchMode())
+                },
+                filterController,
+                daten::getDecoratedPool,
+                setSelectionUpdatesSuspended,
+                updateStartInfoProperty,
+                updateFilmData,
+            )
+            val tableReloader = FilmTableReloader(tableReloadHost)
+            val reloadTableDataTimer = timerFactory.apply(ActionListener { tableReloader.loadTable() })
+            val lifecycleHost = FilmLifecycleHostAdapter(
+                messageBusSubscriber,
+                daten,
+                table,
+                filterConfiguration,
+                bookmarkStartupReloadCoordinator,
+                swingFilterDialog,
+                filmToolBar,
+                searchField,
+                filmUiActions,
+                requestTableReload,
+                updateStartInfoProperty,
+                saveTableConfiguration,
+                closeFilterSelectionModel,
+            )
+            val lifecycleController = FilmLifecycleController(lifecycleHost)
+
+            return FilmRuntimeSetup(tableReloader, reloadTableDataTimer, lifecycleController)
+        }
+    }
 }
