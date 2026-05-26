@@ -76,27 +76,11 @@ public class GuiFilme extends AGuiTabPanel {
         daten = aDaten;
         this.mediathekGui = mediathekGui;
         descriptionPanel = new FilmDescriptionPanel();
-        var selectionHost = new FilmSelectionHostAdapter(
-                () -> tabelle,
-                () -> tabelle,
-                this,
-                mediathekGui,
-                () -> daten,
-                filterConfiguration::isShowHighQualityOnly);
-        selectionController = new FilmSelectionController(selectionHost);
-        var bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
-        bookmarkController = new FilmBookmarkController(bookmarkHost);
-        Consumer<DatenPset> saveSelectedFilm = pSet -> {
-            synchronized (this) {
-                selectionController.saveFilm(pSet);
-            }
-        };
-        var filmActionHost = new FilmActionHostAdapter(
-                saveSelectedFilm,
-                selectionController::getSelectedFilms,
-                bookmarkController::updateBookmarkListAndRefresh,
-                selectionController::getCurrentlySelectedFilm,
-                this::toggleFilterDialogVisibility);
+        var controllerSetup = createControllerSetup(mediathekGui);
+        selectionController = controllerSetup.selectionController();
+        bookmarkController = controllerSetup.bookmarkController();
+        var saveSelectedFilm = controllerSetup.saveSelectedFilm();
+        var filmActionHost = controllerSetup.filmActionHost();
         var filmActions = createFilmActions(filmActionHost);
         playFilmAction = filmActions.playFilmAction();
         saveFilmAction = filmActions.saveFilmAction();
@@ -203,6 +187,36 @@ public class GuiFilme extends AGuiTabPanel {
         lifecycleController = new FilmLifecycleController(lifecycleHost);
         lifecycleController.start();
 
+    }
+
+    private FilmControllerSetup createControllerSetup(MediathekGui mediathekGui) {
+        var selectionHost = new FilmSelectionHostAdapter(
+                () -> tabelle,
+                () -> tabelle,
+                this,
+                mediathekGui,
+                () -> daten,
+                filterConfiguration::isShowHighQualityOnly);
+        var selectionController = new FilmSelectionController(selectionHost);
+        var bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
+        var bookmarkController = new FilmBookmarkController(bookmarkHost);
+        Consumer<DatenPset> saveSelectedFilm = pSet -> {
+            synchronized (this) {
+                selectionController.saveFilm(pSet);
+            }
+        };
+        var filmActionHost = new FilmActionHostAdapter(
+                saveSelectedFilm,
+                selectionController::getSelectedFilms,
+                bookmarkController::updateBookmarkListAndRefresh,
+                selectionController::getCurrentlySelectedFilm,
+                this::toggleFilterDialogVisibility);
+
+        return new FilmControllerSetup(
+                selectionController,
+                bookmarkController,
+                filmActionHost,
+                saveSelectedFilm);
     }
 
     private FilmViewAndTableSetup createViewAndTableSetup(
@@ -430,6 +444,13 @@ public class GuiFilme extends AGuiTabPanel {
     private record FilmViewAndTableSetup(
             FilmTableInstaller tableInstaller,
             FilmViewController viewController) {
+    }
+
+    private record FilmControllerSetup(
+            FilmSelectionController selectionController,
+            FilmBookmarkController bookmarkController,
+            FilmActionHost filmActionHost,
+            Consumer<DatenPset> saveSelectedFilm) {
     }
 
     static class NonRepeatingTimer extends Timer {
