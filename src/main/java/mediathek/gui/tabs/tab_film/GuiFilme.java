@@ -276,10 +276,6 @@ public class GuiFilme extends AGuiTabPanel {
         lifecycleController.disposePanel();
     }
 
-    public FilterConfiguration getFilterConfiguration() {
-        return filterConfiguration;
-    }
-
     public @NonNull String getCurrentZeitraumFilterValue() {
         return filterController.state().getZeitraum();
     }
@@ -300,13 +296,6 @@ public class GuiFilme extends AGuiTabPanel {
 
     public void installViewMenuEntry(JMenu jMenuAnsicht) {
         viewController.installViewMenuEntry(jMenuAnsicht);
-    }
-
-    /**
-     * Show description panel based on settings.
-     */
-    protected void makeButtonsTabVisible(boolean visible) {
-        viewController.makeButtonsTabVisible(visible);
     }
 
     @Override
