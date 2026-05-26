@@ -51,67 +51,54 @@ public class GuiFilme extends AGuiTabPanel {
 
     public static final String NAME = "Filme";
     public static final boolean[] VISIBLE_COLUMNS = new boolean[DatenFilm.MAX_ELEM];
-    private final FilmActionHost filmActionHost = new FilmActionHostAdapter(
-            this::saveFilm,
-            this::getSelFilme,
-            this::updateBookmarkListAndRefresh,
-            this::getCurrentlySelectedFilm,
-            this::toggleFilterDialogVisibility);
-    public final PlayFilmAction playFilmAction = new PlayFilmAction(this);
-    public final SaveFilmAction saveFilmAction = new SaveFilmAction(filmActionHost);
-    public final CopyUrlToClipboardAction copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY);
-    public final CopyUrlToClipboardAction copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL);
+    public final PlayFilmAction playFilmAction;
+    public final SaveFilmAction saveFilmAction;
+    public final CopyUrlToClipboardAction copyHqUrlToClipboardAction;
+    public final CopyUrlToClipboardAction copyNormalUrlToClipboardAction;
     public final SwingFilterDialog swingFilterDialog;
-    public final ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction(filmActionHost);
+    public final ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction;
     protected final JTabbedPane psetButtonsTab = new JTabbedPane();
     protected final SearchField searchField;
     protected final DeleteBookmarksAction deleteBookmarksAction = new DeleteBookmarksAction(MediathekGui.ui());
     private final FilterConfiguration filterConfiguration = new FilterConfiguration();
-    private final BookmarkStartupReloadCoordinator bookmarkStartupReloadCoordinator = new BookmarkStartupReloadCoordinator();
-    private final BookmarkAddFilmAction bookmarkAddFilmAction = new BookmarkAddFilmAction(filmActionHost);
-    private final BookmarkRemoveFilmAction bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction(filmActionHost);
-    private final ManageBookmarkAction manageBookmarkAction = new ManageBookmarkAction(MediathekGui.ui());
-    private final MarkFilmAsSeenAction markFilmAsSeenAction = new MarkFilmAsSeenAction();
-    private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
-    private final DownloadSubtitleAction downloadSubtitleAction = new DownloadSubtitleAction(this);
-    private FilmUiActions filmUiActions;
-    private final JScrollPane filmListScrollPane = new JScrollPane();
-    private final JCheckBoxMenuItem cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
-    private final JCheckBoxMenuItem cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
     private final NonRepeatingTimer reloadTableDataTimer;
     private final FilmFilterController filterController;
     protected final FilterSelectionComboBoxModel filterSelectionComboBoxModel;
-    private final FilmToolBar filmToolBar;
     private final FilmBookmarkController bookmarkController;
-    private final FilmBookmarkController.Host bookmarkHost;
     protected PsetButtonsPanel psetButtonsPanel;
     private boolean stopBeob;
     private MVFilmTable tabelle;
     private final FilmLifecycleController lifecycleController;
-    private final FilmLifecycleController.Host lifecycleHost;
     private final FilmViewController viewController;
-    private final FilmViewController.Host viewHost = new FilmViewHostAdapter(
-            this,
-            psetButtonsTab,
-            () -> psetButtonsPanel,
-            panel -> psetButtonsPanel = panel,
-            () -> cbShowButtons,
-            () -> cbkShowDescription,
-            () -> filmUiActions,
-            this::makeDescriptionTabVisible);
     private final FilmSelectionController selectionController;
-    private final FilmSelectionController.Host selectionHost;
     private final FilmTableReloader tableReloader;
-    private final FilmTableReloader.Host tableReloadHost;
-    private final SearchField.Host searchFieldHost;
-    private final TableContextMenuHandler.Host tableContextMenuHost;
-    private final FilmTableInstaller.Host tableInstallerHost;
     private final FilmTableInstaller tableInstaller;
 
     public GuiFilme(Daten aDaten, MediathekGui mediathekGui) {
         daten = aDaten;
         this.mediathekGui = mediathekGui;
         descriptionPanel = new FilmDescriptionPanel();
+        var filmActionHost = new FilmActionHostAdapter(
+                this::saveFilm,
+                this::getSelFilme,
+                this::updateBookmarkListAndRefresh,
+                this::getCurrentlySelectedFilm,
+                this::toggleFilterDialogVisibility);
+        playFilmAction = new PlayFilmAction(this);
+        saveFilmAction = new SaveFilmAction(filmActionHost);
+        copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY);
+        copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL);
+        toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction(filmActionHost);
+        var bookmarkStartupReloadCoordinator = new BookmarkStartupReloadCoordinator();
+        var bookmarkAddFilmAction = new BookmarkAddFilmAction(filmActionHost);
+        var bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction(filmActionHost);
+        var manageBookmarkAction = new ManageBookmarkAction(MediathekGui.ui());
+        var markFilmAsSeenAction = new MarkFilmAsSeenAction();
+        var markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
+        var downloadSubtitleAction = new DownloadSubtitleAction(this);
+        var filmListScrollPane = new JScrollPane();
+        var cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
+        var cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
         filterController = new FilmFilterController(
                 filterConfiguration,
                 new FilmFilterDataProviderAdapter(() -> daten),
@@ -123,19 +110,19 @@ public class GuiFilme extends AGuiTabPanel {
                 filterController::availableFilters,
                 filterController::isFilterLocked,
                 filterController.selectionObserverRegistry());
-        bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
-        selectionHost = new FilmSelectionHostAdapter(
+        var bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
+        var selectionHost = new FilmSelectionHostAdapter(
                 () -> tabelle,
                 () -> tabelle,
                 this,
                 mediathekGui,
                 () -> daten,
                 filterConfiguration::isShowHighQualityOnly);
-        searchFieldHost = new SearchFieldHostAdapter(
+        var searchFieldHost = new SearchFieldHostAdapter(
                 mediathekGui,
                 this::loadTable,
                 this::loadTable);
-        filmUiActions = new FilmUiActions(
+        var filmUiActions = new FilmUiActions(
                 playFilmAction,
                 saveFilmAction,
                 bookmarkAddFilmAction,
@@ -150,7 +137,16 @@ public class GuiFilme extends AGuiTabPanel {
                 mediathekGui.editBlacklistAction,
                 mediathekGui.showFilmInformationAction,
                 downloadSubtitleAction);
-        tableContextMenuHost = new TableContextMenuHostAdapter(
+        var viewHost = new FilmViewHostAdapter(
+                this,
+                psetButtonsTab,
+                () -> psetButtonsPanel,
+                panel -> psetButtonsPanel = panel,
+                () -> cbShowButtons,
+                () -> cbkShowDescription,
+                () -> filmUiActions,
+                this::makeDescriptionTabVisible);
+        var tableContextMenuHost = new TableContextMenuHostAdapter(
                 () -> tabelle,
                 this::getCurrentlySelectedFilm,
                 this::getFilm,
@@ -160,7 +156,7 @@ public class GuiFilme extends AGuiTabPanel {
                 suspended -> stopBeob = suspended,
                 mediathekGui,
                 () -> filmUiActions);
-        tableInstallerHost = new FilmTableInstallerHostAdapter(
+        var tableInstallerHost = new FilmTableInstallerHostAdapter(
                 () -> tabelle,
                 () -> tabelle,
                 table -> tabelle = table,
@@ -197,7 +193,7 @@ public class GuiFilme extends AGuiTabPanel {
         setupDescriptionTab(tabelle, cbkShowDescription, ApplicationConfiguration.FILM_SHOW_DESCRIPTION, this::getCurrentlySelectedFilm);
         viewController.setupPsetButtonsTab();
 
-        filmToolBar = new FilmToolBar(filterSelectionComboBoxModel,
+        var filmToolBar = new FilmToolBar(filterSelectionComboBoxModel,
                 bookmarkAddFilmAction,
                 bookmarkRemoveFilmAction,
                 deleteBookmarksAction,
@@ -214,7 +210,7 @@ public class GuiFilme extends AGuiTabPanel {
 
         tableInstaller.setupTable();
 
-        tableReloadHost = new FilmTableReloadHostAdapter(
+        var tableReloadHost = new FilmTableReloadHostAdapter(
                 () -> tabelle,
                 () -> new SearchFieldData(searchField.getText(), searchField.getSearchMode()),
                 filterController,
@@ -224,7 +220,7 @@ public class GuiFilme extends AGuiTabPanel {
                 this::updateFilmData);
         tableReloader = new FilmTableReloader(tableReloadHost);
         reloadTableDataTimer = new NonRepeatingTimer(_ -> loadTable());
-        lifecycleHost = new FilmLifecycleHostAdapter(
+        var lifecycleHost = new FilmLifecycleHostAdapter(
                 this,
                 daten,
                 () -> tabelle,
