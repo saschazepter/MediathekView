@@ -19,7 +19,6 @@
 package mediathek.gui.tabs.tab_film;
 
 import mediathek.config.Daten;
-import mediathek.daten.DatenPset;
 import mediathek.gui.actions.DeleteBookmarksAction;
 import mediathek.gui.actions.ManageBookmarkAction;
 import mediathek.gui.actions.PlayFilmAction;
@@ -48,7 +47,6 @@ import org.jspecify.annotations.NonNull;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.function.Consumer;
 
 public class GuiFilme extends JPanel {
 
@@ -127,13 +125,31 @@ public class GuiFilme extends JPanel {
                 this::loadTable,
                 this::loadTable);
         var filmUiActions = filmActions.filmUiActions();
-        var viewAndTableSetup = createViewAndTableSetup(
-                cbShowButtons,
-                cbkShowDescription,
+        var viewAndTableSetup = FilmViewAndTableSetup.create(
+                psetButtonsTab,
+                () -> psetButtonsPanel,
+                panel -> psetButtonsPanel = panel,
+                () -> cbShowButtons,
+                () -> cbkShowDescription,
                 filmListScrollPane,
+                this,
+                () -> tabelle,
+                () -> tabelle,
+                table -> tabelle = table,
                 filmActionHost,
-                filmUiActions,
-                saveSelectedFilm);
+                () -> filmUiActions,
+                selectionController::getCurrentlySelectedFilm,
+                selectionController::getFilm,
+                () -> playFilmAction.actionPerformed(null),
+                () -> saveSelectedFilm.accept(null),
+                selectionController::startFilm,
+                suspended -> stopBeob = suspended,
+                mediathekGui,
+                () -> updateSelectedListItemsCount(tabelle),
+                this::onComponentShown,
+                selectionController::updateFilmData,
+                () -> stopBeob,
+                descriptionTabController);
         tableInstaller = viewAndTableSetup.tableInstaller();
         viewController = viewAndTableSetup.viewController();
 
@@ -173,40 +189,6 @@ public class GuiFilme extends JPanel {
         lifecycleController = runtimeSetup.lifecycleController();
         lifecycleController.start();
 
-    }
-
-    private FilmViewAndTableSetup createViewAndTableSetup(
-            JCheckBoxMenuItem cbShowButtons,
-            JCheckBoxMenuItem cbkShowDescription,
-            JScrollPane filmListScrollPane,
-            FilmActionHost filmActionHost,
-            FilmUiActions filmUiActions,
-            Consumer<DatenPset> saveSelectedFilm) {
-        return FilmViewAndTableSetup.create(
-                psetButtonsTab,
-                () -> psetButtonsPanel,
-                panel -> psetButtonsPanel = panel,
-                () -> cbShowButtons,
-                () -> cbkShowDescription,
-                filmListScrollPane,
-                this,
-                () -> tabelle,
-                () -> tabelle,
-                table -> tabelle = table,
-                filmActionHost,
-                () -> filmUiActions,
-                selectionController::getCurrentlySelectedFilm,
-                selectionController::getFilm,
-                () -> playFilmAction.actionPerformed(null),
-                () -> saveSelectedFilm.accept(null),
-                selectionController::startFilm,
-                suspended -> stopBeob = suspended,
-                mediathekGui,
-                () -> updateSelectedListItemsCount(tabelle),
-                this::onComponentShown,
-                selectionController::updateFilmData,
-                () -> stopBeob,
-                descriptionTabController);
     }
 
     private FilmUiSetup createFilmUi(
