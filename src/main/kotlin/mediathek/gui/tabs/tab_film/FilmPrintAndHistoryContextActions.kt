@@ -18,13 +18,16 @@
 
 package mediathek.gui.tabs.tab_film
 
-import mediathek.controller.history.SeenHistoryController
 import mediathek.daten.DatenFilm
+import mediathek.gui.tabs.MarkSingleFilmAsSeenAction
+import mediathek.gui.tabs.MarkSingleFilmAsUnseenAction
+import mediathek.gui.tabs.hasBeenSeenInHistory
 import org.apache.logging.log4j.LogManager
 import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.awt.print.PrinterException
 import java.util.Optional
+import java.util.function.Supplier
 import javax.swing.JMenuItem
 import javax.swing.JPopupMenu
 
@@ -32,8 +35,8 @@ class FilmPrintAndHistoryContextActions(
     private val host: TableContextMenuHandler.Host,
     private val selectedFilmAtPopupPoint: () -> DatenFilm?,
 ) {
-    private val unseenActionListener = HistoryActionListener(false)
-    private val seenActionListener = HistoryActionListener(true)
+    private val unseenAction = MarkSingleFilmAsUnseenAction(Supplier { selectedFilmAtPopupPoint() })
+    private val seenAction = MarkSingleFilmAsSeenAction(Supplier { selectedFilmAtPopupPoint() })
     private val printActionListener = PrintActionListener()
 
     fun addActions(popupMenu: JPopupMenu, selectedFilm: Optional<DatenFilm>) {
@@ -47,36 +50,12 @@ class FilmPrintAndHistoryContextActions(
 
     private fun setupHistoryContextActions(popupMenu: JPopupMenu, film: DatenFilm) {
         if (!film.isLivestream) {
-            SeenHistoryController().use { history ->
-                val historyMenuItem = if (history.hasBeenSeen(film)) {
-                    JMenuItem("Film als ungesehen markieren").apply {
-                        addActionListener(unseenActionListener)
-                    }
-                } else {
-                    JMenuItem("Film als gesehen markieren").apply {
-                        addActionListener(seenActionListener)
-                    }
-                }
-                popupMenu.add(historyMenuItem)
+            val historyMenuItem = if (hasBeenSeenInHistory(film)) {
+                JMenuItem(unseenAction)
+            } else {
+                JMenuItem(seenAction)
             }
-        }
-    }
-
-    private inner class HistoryActionListener(
-        private val seen: Boolean,
-    ) : ActionListener {
-        private fun updateHistory(film: DatenFilm) {
-            SeenHistoryController().use { history ->
-                if (seen) {
-                    history.markSeen(film)
-                } else {
-                    history.markUnseen(film)
-                }
-            }
-        }
-
-        override fun actionPerformed(event: ActionEvent?) {
-            selectedFilmAtPopupPoint()?.let(::updateHistory)
+            popupMenu.add(historyMenuItem)
         }
     }
 

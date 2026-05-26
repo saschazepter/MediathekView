@@ -19,7 +19,6 @@
 package mediathek.gui.tabs;
 
 import mediathek.config.Daten;
-import mediathek.controller.history.SeenHistoryController;
 import mediathek.daten.DatenFilm;
 import mediathek.gui.messages.UpdateStatusBarLeftDisplayEvent;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
@@ -29,8 +28,6 @@ import mediathek.tool.MessageBus;
 import org.jspecify.annotations.NonNull;
 
 import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.IntConsumer;
@@ -104,34 +101,4 @@ public abstract class AGuiTabPanel extends JPanel {
     }
 
     public abstract void installMenuEntries(JMenu menu);
-
-    public class MarkFilmAsSeenAction extends AbstractAction {
-        public MarkFilmAsSeenAction() {
-            super("Filme als gesehen markieren");
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            var listFilms = getSelFilme();
-            try (var controller = new SeenHistoryController()) {
-                controller.markSeen(listFilms);
-            }
-        }
-    }
-
-    public class MarkFilmAsUnseenAction extends AbstractAction {
-        public MarkFilmAsUnseenAction() {
-            super("Filme als ungesehen markieren");
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK));
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            var listFilms = getSelFilme();
-            try (var controller = new SeenHistoryController()) {
-                controller.markUnseen(listFilms);
-            }
-        }
-    }
 }

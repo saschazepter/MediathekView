@@ -33,6 +33,8 @@ import mediathek.gui.dialog.DialogBeendenZeit;
 import mediathek.gui.dialog.edit_download.DialogEditDownload;
 import mediathek.gui.messages.*;
 import mediathek.gui.tabs.AGuiTabPanel;
+import mediathek.gui.tabs.MarkFilmAsSeenAction;
+import mediathek.gui.tabs.MarkFilmAsUnseenAction;
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
@@ -103,8 +105,8 @@ public class GuiDownloads extends AGuiTabPanel {
     private final AtomicLong _lastUpdate = new AtomicLong(0);
     private final JCheckBoxMenuItem cbShowDownloadDescription = new JCheckBoxMenuItem("Filmbeschreibung anzeigen");
     private final Configuration config = ApplicationConfiguration.getConfiguration();
-    private final MarkFilmAsSeenAction markFilmAsSeenAction = new MarkFilmAsSeenAction();
-    private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction();
+    private final MarkFilmAsSeenAction markFilmAsSeenAction = new MarkFilmAsSeenAction(this::getSelFilme);
+    private final MarkFilmAsUnseenAction markFilmAsUnseenAction = new MarkFilmAsUnseenAction(this::getSelFilme);
     private final DownloadsFilterController filterController =
             new DownloadsFilterController(displayFilterToolBar, config, this::reloadTable);
     private final DownloadStartInfoProperty startInfoProperty = new DownloadStartInfoProperty();
