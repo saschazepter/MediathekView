@@ -28,7 +28,6 @@ import mediathek.gui.actions.PlayFilmAction;
 import mediathek.gui.bookmark.BookmarkDialog;
 import mediathek.gui.messages.*;
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent;
-import mediathek.gui.tabs.AGuiTabPanel;
 import mediathek.gui.tabs.DescriptionTabController;
 import mediathek.gui.tabs.actions.MarkFilmAsSeenAction;
 import mediathek.gui.tabs.actions.MarkFilmAsUnseenAction;
@@ -55,9 +54,11 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.function.Consumer;
 
-public class GuiFilme extends AGuiTabPanel {
+public class GuiFilme extends JPanel {
 
     public static final String NAME = "Filme";
+    private final Daten daten;
+    private final MediathekGui mediathekGui;
     private final PlayFilmAction playFilmAction;
     private final SaveFilmAction saveFilmAction;
     private final CopyUrlToClipboardAction copyHqUrlToClipboardAction;
@@ -325,7 +326,7 @@ public class GuiFilme extends AGuiTabPanel {
                 () -> tabelle,
                 () -> new SearchFieldData(searchField.getText(), searchField.getSearchMode()),
                 filterController,
-                () -> daten.getDecoratedPool(),
+                daten::getDecoratedPool,
                 suspended -> stopBeob = suspended,
                 this::updateStartInfoProperty,
                 selectionController::updateFilmData);
@@ -397,7 +398,6 @@ public class GuiFilme extends AGuiTabPanel {
         lifecycleController.handleTableModelChange(e);
     }
 
-    @Override
     public void tabelleSpeichern() {
         tableInstaller.writeTableConfigurationData();
     }
@@ -406,7 +406,6 @@ public class GuiFilme extends AGuiTabPanel {
         viewController.installViewMenuEntry(jMenuAnsicht);
     }
 
-    @Override
     public void installMenuEntries(JMenu menu) {
         viewController.installMenuEntries(menu);
     }
@@ -414,6 +413,14 @@ public class GuiFilme extends AGuiTabPanel {
     private void onComponentShown() {
         selectionController.updateFilmData();
         updateStartInfoProperty();
+    }
+
+    private void updateSelectedListItemsCount(JTable table) {
+        mediathekGui.selectedListItemsProperty.setSelectedItems(table.getSelectedRowCount());
+    }
+
+    private void updateStartInfoProperty() {
+        MessageBus.getMessageBus().publishAsync(new UpdateStatusBarLeftDisplayEvent());
     }
 
     public int getTableRowCount() {
