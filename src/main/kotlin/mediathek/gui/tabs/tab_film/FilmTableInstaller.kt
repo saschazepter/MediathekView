@@ -25,7 +25,6 @@ import mediathek.tool.cellrenderer.CellRendererFilme
 import mediathek.tool.datum.DatumFilm
 import mediathek.tool.listener.BeobTableHeader
 import mediathek.tool.models.TModelFilm
-import mediathek.tool.table.ColumnVisibilityStore
 import mediathek.tool.table.MVFilmTable
 import java.awt.Component
 import java.awt.event.ComponentAdapter
@@ -140,7 +139,7 @@ class FilmTableInstaller(private val host: Host) {
     private fun setupHeaderPopupMenu() {
         val headerListener = BeobTableHeader(
             host.table(),
-            ColumnVisibilityStore.of(GuiFilme.VISIBLE_COLUMNS),
+            FilmColumnVisibility.store(),
             HIDDEN_COLUMNS,
             BUTTON_COLUMNS,
             true,

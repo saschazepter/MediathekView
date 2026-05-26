@@ -50,7 +50,6 @@ import java.util.Optional;
 public class GuiFilme extends AGuiTabPanel {
 
     public static final String NAME = "Filme";
-    public static final boolean[] VISIBLE_COLUMNS = new boolean[DatenFilm.MAX_ELEM];
     public final PlayFilmAction playFilmAction;
     public final SaveFilmAction saveFilmAction;
     public final CopyUrlToClipboardAction copyHqUrlToClipboardAction;
