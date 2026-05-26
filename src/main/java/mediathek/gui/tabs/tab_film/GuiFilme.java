@@ -50,21 +50,21 @@ import java.util.Optional;
 public class GuiFilme extends AGuiTabPanel {
 
     public static final String NAME = "Filme";
-    public final PlayFilmAction playFilmAction;
-    public final SaveFilmAction saveFilmAction;
-    public final CopyUrlToClipboardAction copyHqUrlToClipboardAction;
-    public final CopyUrlToClipboardAction copyNormalUrlToClipboardAction;
-    public final SwingFilterDialog swingFilterDialog;
-    public final ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction;
-    protected final JTabbedPane psetButtonsTab = new JTabbedPane();
-    protected final SearchField searchField;
-    protected final DeleteBookmarksAction deleteBookmarksAction = new DeleteBookmarksAction(MediathekGui.ui());
+    private final PlayFilmAction playFilmAction;
+    private final SaveFilmAction saveFilmAction;
+    private final CopyUrlToClipboardAction copyHqUrlToClipboardAction;
+    private final CopyUrlToClipboardAction copyNormalUrlToClipboardAction;
+    private final SwingFilterDialog swingFilterDialog;
+    private final ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction;
+    private final JTabbedPane psetButtonsTab = new JTabbedPane();
+    private final SearchField searchField;
+    private final DeleteBookmarksAction deleteBookmarksAction = new DeleteBookmarksAction(MediathekGui.ui());
     private final FilterConfiguration filterConfiguration = new FilterConfiguration();
     private final NonRepeatingTimer reloadTableDataTimer;
     private final FilmFilterController filterController;
-    protected final FilterSelectionComboBoxModel filterSelectionComboBoxModel;
+    private final FilterSelectionComboBoxModel filterSelectionComboBoxModel;
     private final FilmBookmarkController bookmarkController;
-    protected PsetButtonsPanel psetButtonsPanel;
+    private PsetButtonsPanel psetButtonsPanel;
     private boolean stopBeob;
     private MVFilmTable tabelle;
     private final FilmLifecycleController lifecycleController;
@@ -254,6 +254,22 @@ public class GuiFilme extends AGuiTabPanel {
     private void requestZeitraumReload() {
         daten.getListeBlacklist().filterListe();
         requestTableReload();
+    }
+
+    public Action copyHqUrlToClipboardAction() {
+        return copyHqUrlToClipboardAction;
+    }
+
+    public Action copyNormalUrlToClipboardAction() {
+        return copyNormalUrlToClipboardAction;
+    }
+
+    public Action toggleFilterDialogVisibilityAction() {
+        return toggleFilterDialogVisibilityAction;
+    }
+
+    public void resetFilterDialogPosition() {
+        swingFilterDialog.setLocation(100, 100);
     }
 
     public void disposePanel() {
