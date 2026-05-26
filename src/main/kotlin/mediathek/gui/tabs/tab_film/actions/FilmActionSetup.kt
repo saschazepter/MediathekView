@@ -18,8 +18,18 @@
 
 package mediathek.gui.tabs.tab_film.actions
 
+import mediathek.daten.DatenFilm
+import mediathek.daten.DatenPset
+import mediathek.daten.FilmResolution
+import mediathek.gui.actions.DeleteBookmarksAction
 import mediathek.gui.actions.ManageBookmarkAction
 import mediathek.gui.actions.PlayFilmAction
+import mediathek.gui.tabs.actions.MarkFilmAsSeenAction
+import mediathek.gui.tabs.actions.MarkFilmAsUnseenAction
+import mediathek.mainwindow.MediathekGui
+import java.util.*
+import java.util.function.Consumer
+import java.util.function.Supplier
 
 class FilmActionSetup(
     private val playFilmAction: PlayFilmAction,
@@ -41,4 +51,58 @@ class FilmActionSetup(
     fun bookmarkRemoveFilmAction(): BookmarkRemoveFilmAction = bookmarkRemoveFilmAction
     fun manageBookmarkAction(): ManageBookmarkAction = manageBookmarkAction
     fun filmUiActions(): FilmUiActions = filmUiActions
+
+    companion object {
+        @JvmStatic
+        fun create(
+            filmActionHost: FilmActionHost,
+            startFilm: Consumer<DatenPset>,
+            mediathekGui: MediathekGui,
+            deleteBookmarksAction: DeleteBookmarksAction,
+            selectedFilms: Supplier<List<DatenFilm>>,
+            currentlySelectedFilm: Supplier<Optional<DatenFilm>>,
+        ): FilmActionSetup {
+            val playFilmAction = PlayFilmAction(startFilm)
+            val saveFilmAction = SaveFilmAction(filmActionHost)
+            val copyHqUrlToClipboardAction =
+                CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY)
+            val copyNormalUrlToClipboardAction =
+                CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL)
+            val toggleFilterDialogVisibilityAction = ToggleFilterDialogVisibilityAction(filmActionHost)
+            val bookmarkAddFilmAction = BookmarkAddFilmAction(filmActionHost)
+            val bookmarkRemoveFilmAction = BookmarkRemoveFilmAction(filmActionHost)
+            val manageBookmarkAction = ManageBookmarkAction(MediathekGui.ui())
+            val markFilmAsSeenAction = MarkFilmAsSeenAction(selectedFilms)
+            val markFilmAsUnseenAction = MarkFilmAsUnseenAction(selectedFilms)
+            val downloadSubtitleAction = DownloadSubtitleAction(currentlySelectedFilm)
+            val filmUiActions = FilmUiActions(
+                playFilmAction,
+                saveFilmAction,
+                bookmarkAddFilmAction,
+                bookmarkRemoveFilmAction,
+                deleteBookmarksAction,
+                manageBookmarkAction,
+                copyNormalUrlToClipboardAction,
+                copyHqUrlToClipboardAction,
+                markFilmAsSeenAction,
+                markFilmAsUnseenAction,
+                mediathekGui.toggleBlacklistAction,
+                mediathekGui.editBlacklistAction,
+                mediathekGui.showFilmInformationAction,
+                downloadSubtitleAction,
+            )
+
+            return FilmActionSetup(
+                playFilmAction,
+                saveFilmAction,
+                copyHqUrlToClipboardAction,
+                copyNormalUrlToClipboardAction,
+                toggleFilterDialogVisibilityAction,
+                bookmarkAddFilmAction,
+                bookmarkRemoveFilmAction,
+                manageBookmarkAction,
+                filmUiActions,
+            )
+        }
+    }
 }

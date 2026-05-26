@@ -20,7 +20,6 @@ package mediathek.gui.tabs.tab_film;
 
 import mediathek.config.Daten;
 import mediathek.daten.DatenPset;
-import mediathek.daten.FilmResolution;
 import mediathek.daten.IndexedFilmList;
 import mediathek.gui.actions.DeleteBookmarksAction;
 import mediathek.gui.actions.ManageBookmarkAction;
@@ -29,8 +28,6 @@ import mediathek.gui.bookmark.BookmarkDialog;
 import mediathek.gui.messages.*;
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent;
 import mediathek.gui.tabs.DescriptionTabController;
-import mediathek.gui.tabs.actions.MarkFilmAsSeenAction;
-import mediathek.gui.tabs.actions.MarkFilmAsUnseenAction;
 import mediathek.gui.tabs.tab_film.actions.*;
 import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkController;
 import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkHostAdapter;
@@ -179,45 +176,13 @@ public class GuiFilme extends JPanel {
     }
 
     private FilmActionSetup createFilmActions(FilmActionHost filmActionHost) {
-        var playFilmAction = new PlayFilmAction(selectionController::startFilm);
-        var saveFilmAction = new SaveFilmAction(filmActionHost);
-        var copyHqUrlToClipboardAction =
-                new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY);
-        var copyNormalUrlToClipboardAction =
-                new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL);
-        var toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction(filmActionHost);
-        var bookmarkAddFilmAction = new BookmarkAddFilmAction(filmActionHost);
-        var bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction(filmActionHost);
-        var manageBookmarkAction = new ManageBookmarkAction(MediathekGui.ui());
-        var markFilmAsSeenAction = new MarkFilmAsSeenAction(selectionController::getSelectedFilms);
-        var markFilmAsUnseenAction = new MarkFilmAsUnseenAction(selectionController::getSelectedFilms);
-        var downloadSubtitleAction = new DownloadSubtitleAction(selectionController::getCurrentlySelectedFilm);
-        var filmUiActions = new FilmUiActions(
-                playFilmAction,
-                saveFilmAction,
-                bookmarkAddFilmAction,
-                bookmarkRemoveFilmAction,
+        return FilmActionSetup.create(
+                filmActionHost,
+                selectionController::startFilm,
+                mediathekGui,
                 deleteBookmarksAction,
-                manageBookmarkAction,
-                copyNormalUrlToClipboardAction,
-                copyHqUrlToClipboardAction,
-                markFilmAsSeenAction,
-                markFilmAsUnseenAction,
-                mediathekGui.toggleBlacklistAction,
-                mediathekGui.editBlacklistAction,
-                mediathekGui.showFilmInformationAction,
-                downloadSubtitleAction);
-
-        return new FilmActionSetup(
-                playFilmAction,
-                saveFilmAction,
-                copyHqUrlToClipboardAction,
-                copyNormalUrlToClipboardAction,
-                toggleFilterDialogVisibilityAction,
-                bookmarkAddFilmAction,
-                bookmarkRemoveFilmAction,
-                manageBookmarkAction,
-                filmUiActions);
+                selectionController::getSelectedFilms,
+                selectionController::getCurrentlySelectedFilm);
     }
 
     private FilmViewAndTableSetup createViewAndTableSetup(
