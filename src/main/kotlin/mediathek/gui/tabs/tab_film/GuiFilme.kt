@@ -27,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
+import mediathek.daten.DatenPset
 import mediathek.daten.FilmResolution
 import mediathek.gui.actions.DeleteBookmarksAction
 import mediathek.gui.actions.ManageBookmarkAction
@@ -46,20 +47,22 @@ import mediathek.gui.tabs.tab_film.actions.BookmarkAddFilmAction
 import mediathek.gui.tabs.tab_film.actions.BookmarkRemoveFilmAction
 import mediathek.gui.tabs.tab_film.actions.CopyUrlToClipboardAction
 import mediathek.gui.tabs.tab_film.actions.DownloadSubtitleAction
+import mediathek.gui.tabs.tab_film.actions.FilmActionHostAdapter
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.actions.SaveFilmAction
 import mediathek.gui.tabs.tab_film.actions.ToggleFilterDialogVisibilityAction
 import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkController
+import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkHostAdapter
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
-import mediathek.gui.tabs.tab_film.filter.FilmFilterSetup
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog
+import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.gui.tabs.tab_film.lifecycle.BookmarkStartupReloadCoordinator
 import mediathek.gui.tabs.tab_film.lifecycle.FilmLifecycleController
 import mediathek.gui.tabs.tab_film.lifecycle.FilmLifecycleHostAdapter
 import mediathek.gui.tabs.tab_film.search.SearchFieldHostAdapter
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
-import mediathek.gui.tabs.tab_film.selection.FilmControllerSetup
 import mediathek.gui.tabs.tab_film.selection.FilmSelectionController
+import mediathek.gui.tabs.tab_film.selection.FilmSelectionHostAdapter
 import mediathek.gui.tabs.tab_film.table.FilmTableInstaller
 import mediathek.gui.tabs.tab_film.table.FilmTableReloadHostAdapter
 import mediathek.gui.tabs.tab_film.table.FilmTableReloader
@@ -112,21 +115,29 @@ class GuiFilme(
         val descriptionTabController = DescriptionTabController()
         val deleteBookmarksAction = DeleteBookmarksAction(MediathekGui.ui())
         val filterConfiguration = FilterConfiguration()
-        val controllerSetup = FilmControllerSetup.create(
+        val selectionHost = FilmSelectionHostAdapter(
             { currentTable },
             { tabelle },
             this,
             mediathekGui,
             { daten },
             { filterConfiguration.isShowHighQualityOnly },
-            this,
-            ::repaint,
+        )
+        selectionController = FilmSelectionController(selectionHost)
+        val bookmarkHost = FilmBookmarkHostAdapter(mediathekGui, ::repaint)
+        bookmarkController = FilmBookmarkController(bookmarkHost)
+        val saveSelectedFilm = { pset: DatenPset? ->
+            synchronized(this) {
+                selectionController.saveFilm(pset)
+            }
+        }
+        val filmActionHost = FilmActionHostAdapter(
+            saveSelectedFilm,
+            selectionController::getSelectedFilms,
+            bookmarkController::updateBookmarkListAndRefresh,
+            selectionController::getCurrentlySelectedFilm,
             ::toggleFilterDialogVisibility,
         )
-        selectionController = controllerSetup.selectionController
-        bookmarkController = controllerSetup.bookmarkController
-        val saveSelectedFilm = controllerSetup.saveSelectedFilm
-        val filmActionHost = controllerSetup.filmActionHost
         val playFilmAction = PlayFilmAction(Consumer { selectionController.startFilm(it) })
         val saveFilmAction = SaveFilmAction(filmActionHost)
         copyHqUrlToClipboardActionValue =
@@ -147,14 +158,17 @@ class GuiFilme(
         val filmListScrollPane = JScrollPane()
         val cbkShowDescription = JCheckBoxMenuItem("Beschreibung anzeigen")
         val cbShowButtons = JCheckBoxMenuItem("Buttons anzeigen")
-        val filterSetup = FilmFilterSetup(
+        filterController = FilmFilterController(
             filterConfiguration,
-            { daten },
-            ::requestTableReload,
-            ::requestZeitraumReload,
+            FilmFilterDataProviderAdapter { daten },
+            FilmFilterReloadRequesterAdapter(::requestTableReload, ::requestZeitraumReload),
         )
-        filterController = filterSetup.filterController
-        val filterSelectionComboBoxModel = filterSetup.filterSelectionComboBoxModel
+        val filterSelectionComboBoxModel = FilterSelectionComboBoxModel(
+            filterController::currentFilter,
+            filterController::availableFilters,
+            filterController::isFilterLocked,
+            filterController.selectionObserverRegistry(),
+        )
         val searchFieldHost = SearchFieldHostAdapter(
             mediathekGui,
             ::loadTable,
