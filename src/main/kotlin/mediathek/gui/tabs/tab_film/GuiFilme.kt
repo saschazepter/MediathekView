@@ -27,6 +27,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
+import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.daten.FilmResolution
 import mediathek.daten.IndexedFilmList
@@ -49,7 +50,6 @@ import mediathek.gui.tabs.tab_film.actions.BookmarkRemoveFilmAction
 import mediathek.gui.tabs.tab_film.actions.CopyUrlToClipboardAction
 import mediathek.gui.tabs.tab_film.actions.DownloadSubtitleAction
 import mediathek.gui.tabs.tab_film.actions.FilmActionHost
-import mediathek.gui.tabs.tab_film.actions.FilmActionHostAdapter
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.actions.SaveFilmAction
 import mediathek.gui.tabs.tab_film.actions.ToggleFilterDialogVisibilityAction
@@ -74,7 +74,6 @@ import mediathek.gui.tabs.tab_film.table.FilmTableReloadHostAdapter
 import mediathek.gui.tabs.tab_film.table.FilmTableReloader
 import mediathek.gui.tabs.tab_film.view.FilmViewController
 import mediathek.gui.tabs.tab_film.table.TableContextMenuHostAdapter
-import mediathek.gui.tabs.tab_film.view.FilmViewHostAdapter
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.FilterConfiguration
@@ -231,13 +230,23 @@ class GuiFilme(
                 selectionController.saveFilm(pset)
             }
         }
-        val filmActionHost = FilmActionHostAdapter(
-            saveSelectedFilm,
-            selectionController::getSelectedFilms,
-            bookmarkController::updateBookmarkListAndRefresh,
-            selectionController::getCurrentlySelectedFilm,
-            ::toggleFilterDialogVisibility,
-        )
+        val filmActionHost = object : FilmActionHost {
+            override fun saveFilm(pSet: DatenPset?) {
+                saveSelectedFilm(pSet)
+            }
+
+            override fun selectedFilms() = selectionController.getSelectedFilms()
+
+            override fun updateBookmarkListAndRefresh(films: List<DatenFilm>) {
+                bookmarkController.updateBookmarkListAndRefresh(films)
+            }
+
+            override fun currentlySelectedFilm() = selectionController.getCurrentlySelectedFilm()
+
+            override fun toggleFilterDialogVisibility() {
+                this@GuiFilme.toggleFilterDialogVisibility()
+            }
+        }
 
         return SelectionComponents(
             selectionController,
@@ -253,7 +262,7 @@ class GuiFilme(
     ): FilmActions {
         val selectionController = selectionComponents.selectionController
         val filmActionHost = selectionComponents.filmActionHost
-        val playFilmAction = PlayFilmAction(Consumer { selectionController.startFilm(it) })
+        val playFilmAction = PlayFilmAction { selectionController.startFilm(it) }
         val saveFilmAction = SaveFilmAction(filmActionHost)
         val copyHqUrlToClipboardAction =
             CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY)
@@ -264,11 +273,11 @@ class GuiFilme(
         val bookmarkRemoveFilmAction = BookmarkRemoveFilmAction(filmActionHost)
         val manageBookmarkAction = ManageBookmarkAction(MediathekGui.ui())
         val markFilmAsSeenAction =
-            MarkFilmAsSeenAction(Supplier { selectionController.getSelectedFilms() })
+            MarkFilmAsSeenAction { selectionController.getSelectedFilms() }
         val markFilmAsUnseenAction =
-            MarkFilmAsUnseenAction(Supplier { selectionController.getSelectedFilms() })
+            MarkFilmAsUnseenAction { selectionController.getSelectedFilms() }
         val downloadSubtitleAction =
-            DownloadSubtitleAction(Supplier { selectionController.getCurrentlySelectedFilm() })
+            DownloadSubtitleAction { selectionController.getCurrentlySelectedFilm() }
         val filmUiActions = FilmUiActions(
             playFilmAction,
             saveFilmAction,
@@ -327,16 +336,29 @@ class GuiFilme(
     ): ViewComponents {
         val selectionController = selectionComponents.selectionController
         val filmUiActions = filmActions.filmUiActions
-        val viewHost = FilmViewHostAdapter(
-            psetButtonsTab,
-            { psetButtonsPanel },
-            { panel -> psetButtonsPanel = panel },
-            { cbShowButtons },
-            { cbkShowDescription },
-            { filmUiActions },
-            descriptionTabController::setVisible,
-            selectionController::startFilm,
-        )
+        val viewHost = object : FilmViewController.Host {
+            override fun psetButtonsTab() = psetButtonsTab
+
+            override fun psetButtonsPanel() = this@GuiFilme.psetButtonsPanel
+
+            override fun setPsetButtonsPanel(panel: PsetButtonsPanel) {
+                this@GuiFilme.psetButtonsPanel = panel
+            }
+
+            override fun showButtonsMenuItem() = cbShowButtons
+
+            override fun showDescriptionMenuItem() = cbkShowDescription
+
+            override fun actions() = filmUiActions
+
+            override fun setDescriptionTabVisible(visible: Boolean) {
+                descriptionTabController.setVisible(visible)
+            }
+
+            override fun startFilmWithPset(pset: DatenPset) {
+                selectionController.startFilm(pset)
+            }
+        }
         val tableContextMenuHost = TableContextMenuHostAdapter(
             { currentTable },
             selectionController::getCurrentlySelectedFilm,
@@ -401,8 +423,7 @@ class GuiFilme(
             currentTable,
             cbkShowDescription,
             ApplicationConfiguration.FILM_SHOW_DESCRIPTION,
-            Supplier { selectionComponents.selectionController.getCurrentlySelectedFilm() },
-        )
+        ) { selectionComponents.selectionController.getCurrentlySelectedFilm() }
         viewComponents.viewController.setupPsetButtonsTab()
 
         val filmToolBar = FilmToolBar(
