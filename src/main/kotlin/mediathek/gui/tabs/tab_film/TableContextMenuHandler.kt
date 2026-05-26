@@ -21,7 +21,6 @@ package mediathek.gui.tabs.tab_film
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
-import mediathek.controller.history.SeenHistoryController
 import mediathek.controller.starter.Start
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
@@ -29,10 +28,8 @@ import mediathek.gui.actions.CreateNewAboAction
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.table.MVFilmTable
-import org.apache.logging.log4j.LogManager
 import java.awt.Point
 import java.awt.event.*
-import java.awt.print.PrinterException
 import java.util.*
 import javax.swing.*
 
@@ -57,15 +54,14 @@ class TableContextMenuHandler(
     private val daten = Daten.getInstance()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val createAboAction = CreateNewAboAction(daten.listeAbo) { host.gui() }
-    private val beobPrint = BeobPrint()
     private val beobAbo = BeobAbo(false)
     private val beobAboMitTitel = BeobAbo(true)
-    private val unseenActionListener = BeobHistory(false)
-    private val seenActionListener = BeobHistory(true)
     private val jDownloadHelper = JDownloadHelper()
     private val pyLoadHelper = PyLoadHelper()
     private val filmSpecificContextMenuBuilder = FilmSpecificContextMenuBuilder(host, jDownloadHelper, pyLoadHelper)
     private val filmFileAndDuplicateContextActions = FilmFileAndDuplicateContextActions(host, daten, uiScope)
+    private val filmPrintAndHistoryContextActions =
+        FilmPrintAndHistoryContextActions(host, this::selectedFilmAtPopupPoint)
     private val contextMenuBuilder = FilmContextMenuBuilder(
         host,
         daten,
@@ -73,7 +69,7 @@ class TableContextMenuHandler(
         beobAboMitTitel,
         this::addBlacklistRuleForSelectedFilm,
         filmSpecificContextMenuBuilder,
-        this::addPrintAndInfoActions,
+        filmPrintAndHistoryContextActions::addActions,
         filmFileAndDuplicateContextActions::addActions,
     )
     private var popupPoint: Point? = null
@@ -154,32 +150,6 @@ class TableContextMenuHandler(
         popupMenu.show(event.component, event.x, event.y)
     }
 
-    private fun addPrintAndInfoActions(popupMenu: JPopupMenu, selectedFilm: Optional<DatenFilm>) {
-        val printTableMenuItem = JMenuItem("Tabelle drucken")
-        printTableMenuItem.addActionListener(beobPrint)
-        popupMenu.add(printTableMenuItem)
-
-        popupMenu.add(host.actions().showFilmInformation)
-        selectedFilm.ifPresent { film -> setupHistoryContextActions(popupMenu, film) }
-    }
-
-    private fun setupHistoryContextActions(popupMenu: JPopupMenu, film: DatenFilm) {
-        if (!film.isLivestream) {
-            SeenHistoryController().use { history ->
-                val historyMenuItem = if (history.hasBeenSeen(film)) {
-                    JMenuItem("Film als ungesehen markieren").apply {
-                        addActionListener(unseenActionListener)
-                    }
-                } else {
-                    JMenuItem("Film als gesehen markieren").apply {
-                        addActionListener(seenActionListener)
-                    }
-                }
-                popupMenu.add(historyMenuItem)
-            }
-        }
-    }
-
     private fun selectedFilmAtPopupPoint(): DatenFilm? {
         val point = popupPoint ?: return null
         val row = host.table().rowAtPoint(point)
@@ -187,34 +157,6 @@ class TableContextMenuHandler(
             return null
         }
         return host.getFilm(row).orElse(null)
-    }
-
-    private inner class BeobHistory(
-        private val seen: Boolean,
-    ) : ActionListener {
-        private fun updateHistory(film: DatenFilm) {
-            SeenHistoryController().use { history ->
-                if (seen) {
-                    history.markSeen(film)
-                } else {
-                    history.markUnseen(film)
-                }
-            }
-        }
-
-        override fun actionPerformed(event: ActionEvent?) {
-            selectedFilmAtPopupPoint()?.let(::updateHistory)
-        }
-    }
-
-    private inner class BeobPrint : ActionListener {
-        override fun actionPerformed(event: ActionEvent?) {
-            try {
-                host.table().print()
-            } catch (ex: PrinterException) {
-                logger.error(ex)
-            }
-        }
     }
 
     private inner class BeobAbo(
@@ -253,7 +195,4 @@ class TableContextMenuHandler(
         }
     }
 
-    companion object {
-        private val logger = LogManager.getLogger()
-    }
 }
