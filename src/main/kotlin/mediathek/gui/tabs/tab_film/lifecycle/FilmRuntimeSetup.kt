@@ -28,20 +28,13 @@ import mediathek.gui.tabs.tab_film.table.FilmTableReloadHostAdapter
 import mediathek.gui.tabs.tab_film.table.FilmTableReloader
 import mediathek.tool.FilterConfiguration
 import mediathek.tool.table.MVFilmTable
-import java.awt.event.ActionListener
 import java.util.function.Consumer
 import java.util.function.Supplier
-import javax.swing.Timer
 
 class FilmRuntimeSetup(
-    private val tableReloader: FilmTableReloader,
-    private val reloadTableDataTimer: Timer,
-    private val lifecycleController: FilmLifecycleController,
+    val tableReloader: FilmTableReloader,
+    val lifecycleController: FilmLifecycleController,
 ) {
-    fun tableReloader(): FilmTableReloader = tableReloader
-    fun reloadTableDataTimer(): Timer = reloadTableDataTimer
-    fun lifecycleController(): FilmLifecycleController = lifecycleController
-
     companion object {
         @JvmStatic
         fun create(
@@ -61,7 +54,6 @@ class FilmRuntimeSetup(
             requestTableReload: Runnable,
             saveTableConfiguration: Runnable,
             closeFilterSelectionModel: Runnable,
-            timerFactory: java.util.function.Function<ActionListener, Timer>,
         ): FilmRuntimeSetup {
             val tableReloadHost = FilmTableReloadHostAdapter(
                 table,
@@ -76,7 +68,6 @@ class FilmRuntimeSetup(
                 updateFilmData,
             )
             val tableReloader = FilmTableReloader(tableReloadHost)
-            val reloadTableDataTimer = timerFactory.apply(ActionListener { tableReloader.loadTable() })
             val lifecycleHost = FilmLifecycleHostAdapter(
                 messageBusSubscriber,
                 daten,
@@ -94,7 +85,7 @@ class FilmRuntimeSetup(
             )
             val lifecycleController = FilmLifecycleController(lifecycleHost)
 
-            return FilmRuntimeSetup(tableReloader, reloadTableDataTimer, lifecycleController)
+            return FilmRuntimeSetup(tableReloader, lifecycleController)
         }
     }
 }

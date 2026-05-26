@@ -31,16 +31,11 @@ import java.util.function.Consumer
 import java.util.function.Supplier
 
 class FilmControllerSetup(
-    private val selectionController: FilmSelectionController,
-    private val bookmarkController: FilmBookmarkController,
-    private val filmActionHost: FilmActionHost,
-    private val saveSelectedFilm: Consumer<DatenPset?>,
+    val selectionController: FilmSelectionController,
+    val bookmarkController: FilmBookmarkController,
+    val filmActionHost: FilmActionHost,
+    val saveSelectedFilm: Consumer<DatenPset?>,
 ) {
-    fun selectionController(): FilmSelectionController = selectionController
-    fun bookmarkController(): FilmBookmarkController = bookmarkController
-    fun filmActionHost(): FilmActionHost = filmActionHost
-    fun saveSelectedFilm(): Consumer<DatenPset?> = saveSelectedFilm
-
     companion object {
         @JvmStatic
         fun create(

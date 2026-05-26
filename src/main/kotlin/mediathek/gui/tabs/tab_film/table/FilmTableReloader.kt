@@ -18,6 +18,14 @@
 
 package mediathek.gui.tabs.tab_film.table
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.withContext
 import mediathek.gui.messages.TableModelChangeEvent
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelperFactory
@@ -25,9 +33,7 @@ import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import mediathek.tool.MessageBus
 import mediathek.tool.table.MVFilmTable
 import org.apache.logging.log4j.LogManager
-import java.util.concurrent.CompletableFuture
 import java.util.concurrent.Executor
-import javax.swing.SwingUtilities
 import javax.swing.table.TableModel
 
 class FilmTableReloader(private val host: Host) {
@@ -47,7 +53,8 @@ class FilmTableReloader(private val host: Host) {
         fun updateFilmData()
     }
 
-    private var modelFuture: CompletableFuture<TableModel>? = null
+    private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+    private var modelJob: Job? = null
     private var pendingTableReload = false
     private var pendingTableReloadFromSearchField = false
 
@@ -56,8 +63,7 @@ class FilmTableReloader(private val host: Host) {
     }
 
     fun loadTable(fromSearchField: Boolean) {
-        val currentModelFuture = modelFuture
-        if (currentModelFuture != null && !currentModelFuture.isDone) {
+        if (modelJob?.isActive == true) {
             pendingTableReload = true
             pendingTableReloadFromSearchField = pendingTableReloadFromSearchField or fromSearchField
             return
@@ -71,42 +77,46 @@ class FilmTableReloader(private val host: Host) {
         host.table().isEnabled = false
 
         val decoratedPool = host.tableModelExecutor()
-        modelFuture = CompletableFuture.supplyAsync(
-            {
-                val helper = GuiModelHelperFactory.createGuiModelHelper(host.searchFieldData(), host.filterController())
-                helper.filteredTableModel
-            },
-            decoratedPool
-        )
-        modelFuture?.whenCompleteAsync(
-            { model, thrown ->
-                if (thrown == null) {
-                    SwingUtilities.invokeLater {
-                        host.table().model = model
-                        host.table().isEnabled = true
-                        host.updateStartInfoProperty()
-                        host.table().setSpalten()
-                        host.updateFilmData()
-                        host.setSelectionUpdatesSuspended(false)
-                        host.table().scrollToSelection()
-                        messageBus.publish(TableModelChangeEvent(false, fromSearchField))
-                        triggerPendingTableReloadIfNecessary()
-                    }
-                } else {
-                    logger.error("Model filtering failed!", thrown)
-                    SwingUtilities.invokeLater {
-                        host.table().isEnabled = true
-                        host.updateStartInfoProperty()
-                        host.table().setSpalten()
-                        host.updateFilmData()
-                        host.setSelectionUpdatesSuspended(false)
-                        messageBus.publish(TableModelChangeEvent(false, fromSearchField))
-                        triggerPendingTableReloadIfNecessary()
-                    }
+        modelJob = uiScope.launch {
+            val result = runCatching {
+                withContext(decoratedPool.asCoroutineDispatcher()) {
+                    val helper = GuiModelHelperFactory.createGuiModelHelper(host.searchFieldData(), host.filterController())
+                    helper.filteredTableModel
                 }
-            },
-            decoratedPool
-        )
+            }
+
+            result.fold(
+                onSuccess = { model -> applyFilteredModel(model, fromSearchField) },
+                onFailure = { thrown ->
+                    logger.error("Model filtering failed!", thrown)
+                    restoreTableAfterFiltering(fromSearchField, scrollToSelection = false)
+                },
+            )
+        }
+    }
+
+    private fun applyFilteredModel(
+        model: TableModel,
+        fromSearchField: Boolean,
+    ) {
+        host.table().model = model
+        restoreTableAfterFiltering(fromSearchField, scrollToSelection = true)
+    }
+
+    private fun restoreTableAfterFiltering(
+        fromSearchField: Boolean,
+        scrollToSelection: Boolean,
+    ) {
+        host.table().isEnabled = true
+        host.updateStartInfoProperty()
+        host.table().setSpalten()
+        host.updateFilmData()
+        host.setSelectionUpdatesSuspended(false)
+        if (scrollToSelection) {
+            host.table().scrollToSelection()
+        }
+        MessageBus.messageBus.publish(TableModelChangeEvent(false, fromSearchField))
+        triggerPendingTableReloadIfNecessary()
     }
 
     private fun triggerPendingTableReloadIfNecessary() {

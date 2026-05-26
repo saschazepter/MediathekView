@@ -49,14 +49,10 @@ import javax.swing.JScrollPane
 import javax.swing.JTabbedPane
 
 class FilmUiSetup(
-    private val searchField: SearchField,
-    private val filmToolBar: FilmToolBar,
-    private val swingFilterDialog: SwingFilterDialog,
+    val searchField: SearchField,
+    val filmToolBar: FilmToolBar,
+    val swingFilterDialog: SwingFilterDialog,
 ) {
-    fun searchField(): SearchField = searchField
-    fun filmToolBar(): FilmToolBar = filmToolBar
-    fun swingFilterDialog(): SwingFilterDialog = swingFilterDialog
-
     data class LayoutDependencies(
         val hostPanel: JPanel,
         val filmListScrollPane: JScrollPane,

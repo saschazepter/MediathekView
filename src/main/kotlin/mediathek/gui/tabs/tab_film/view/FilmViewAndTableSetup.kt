@@ -39,74 +39,87 @@ import javax.swing.JScrollPane
 import javax.swing.JTabbedPane
 
 class FilmViewAndTableSetup(
-    private val tableInstaller: FilmTableInstaller,
-    private val viewController: FilmViewController,
+    val tableInstaller: FilmTableInstaller,
+    val viewController: FilmViewController,
 ) {
-    fun tableInstaller(): FilmTableInstaller = tableInstaller
-    fun viewController(): FilmViewController = viewController
+    data class ViewDependencies(
+        val psetButtonsTab: JTabbedPane,
+        val psetButtonsPanel: Supplier<PsetButtonsPanel?>,
+        val setPsetButtonsPanel: Consumer<PsetButtonsPanel>,
+        val showButtonsMenuItem: Supplier<JCheckBoxMenuItem>,
+        val showDescriptionMenuItem: Supplier<JCheckBoxMenuItem>,
+        val descriptionTabController: DescriptionTabController,
+    )
+
+    data class TableDependencies(
+        val filmListScrollPane: JScrollPane,
+        val ownerComponent: Component,
+        val table: Supplier<MVFilmTable>,
+        val tableOrNull: Supplier<MVFilmTable?>,
+        val setTable: Consumer<MVFilmTable>,
+    )
+
+    data class ActionDependencies(
+        val filmActionHost: FilmActionHost,
+        val filmUiActions: Supplier<FilmUiActions>,
+        val selectedFilm: Supplier<Optional<DatenFilm>>,
+        val filmAtRow: IntFunction<Optional<DatenFilm>>,
+        val playSelectedFilm: Runnable,
+        val saveSelectedFilm: Runnable,
+        val startFilmWithPset: Consumer<DatenPset>,
+        val setSelectionUpdatesSuspended: Consumer<Boolean>,
+    )
+
+    data class RuntimeHooks(
+        val mediathekGui: MediathekGui,
+        val updateSelectedListItemsCount: Runnable,
+        val onComponentShown: Runnable,
+        val updateFilmData: Runnable,
+        val selectionUpdatesSuspended: Supplier<Boolean>,
+    )
 
     companion object {
         @JvmStatic
         fun create(
-            psetButtonsTab: JTabbedPane,
-            psetButtonsPanel: Supplier<PsetButtonsPanel?>,
-            setPsetButtonsPanel: Consumer<PsetButtonsPanel>,
-            showButtonsMenuItem: Supplier<JCheckBoxMenuItem>,
-            showDescriptionMenuItem: Supplier<JCheckBoxMenuItem>,
-            filmListScrollPane: JScrollPane,
-            ownerComponent: Component,
-            table: Supplier<MVFilmTable>,
-            tableOrNull: Supplier<MVFilmTable?>,
-            setTable: Consumer<MVFilmTable>,
-            filmActionHost: FilmActionHost,
-            filmUiActions: Supplier<FilmUiActions>,
-            selectedFilm: Supplier<Optional<DatenFilm>>,
-            filmAtRow: IntFunction<Optional<DatenFilm>>,
-            playSelectedFilm: Runnable,
-            saveSelectedFilm: Runnable,
-            startFilmWithPset: Consumer<DatenPset>,
-            setSelectionUpdatesSuspended: Consumer<Boolean>,
-            mediathekGui: MediathekGui,
-            updateSelectedListItemsCount: Runnable,
-            onComponentShown: Runnable,
-            updateFilmData: Runnable,
-            selectionUpdatesSuspended: Supplier<Boolean>,
-            descriptionTabController: DescriptionTabController,
+            view: ViewDependencies,
+            tableDependencies: TableDependencies,
+            actions: ActionDependencies,
+            runtimeHooks: RuntimeHooks,
         ): FilmViewAndTableSetup {
             val viewHost = FilmViewHostAdapter(
-                psetButtonsTab,
-                psetButtonsPanel,
-                setPsetButtonsPanel,
-                showButtonsMenuItem,
-                showDescriptionMenuItem,
-                filmUiActions,
-                descriptionTabController::setVisible,
-                startFilmWithPset,
+                view.psetButtonsTab,
+                view.psetButtonsPanel,
+                view.setPsetButtonsPanel,
+                view.showButtonsMenuItem,
+                view.showDescriptionMenuItem,
+                actions.filmUiActions,
+                view.descriptionTabController::setVisible,
+                actions.startFilmWithPset,
             )
             val tableContextMenuHost = TableContextMenuHostAdapter(
-                table,
-                selectedFilm,
-                filmAtRow,
-                playSelectedFilm,
-                saveSelectedFilm,
-                startFilmWithPset,
-                setSelectionUpdatesSuspended,
-                mediathekGui,
-                filmUiActions,
+                tableDependencies.table,
+                actions.selectedFilm,
+                actions.filmAtRow,
+                actions.playSelectedFilm,
+                actions.saveSelectedFilm,
+                actions.startFilmWithPset,
+                actions.setSelectionUpdatesSuspended,
+                runtimeHooks.mediathekGui,
+                actions.filmUiActions,
             )
             val tableInstallerHost = FilmTableInstallerHostAdapter(
-                table,
-                tableOrNull,
-                setTable,
-                filmListScrollPane,
-                ownerComponent,
+                tableDependencies.table,
+                tableDependencies.tableOrNull,
+                tableDependencies.setTable,
+                tableDependencies.filmListScrollPane,
+                tableDependencies.ownerComponent,
                 Supplier { tableContextMenuHost },
-                filmActionHost,
-                filmUiActions,
-                updateSelectedListItemsCount,
-                onComponentShown,
-                updateFilmData,
-                selectionUpdatesSuspended::get,
+                actions.filmActionHost,
+                actions.filmUiActions,
+                runtimeHooks.updateSelectedListItemsCount,
+                runtimeHooks.onComponentShown,
+                runtimeHooks.updateFilmData,
+                runtimeHooks.selectionUpdatesSuspended::get,
             )
 
             return FilmViewAndTableSetup(

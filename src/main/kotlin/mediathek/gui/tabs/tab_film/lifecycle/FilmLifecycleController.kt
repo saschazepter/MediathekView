@@ -18,6 +18,12 @@
 
 package mediathek.gui.tabs.tab_film.lifecycle
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.filmeSuchen.ListenerFilmeLaden
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent
@@ -34,7 +40,6 @@ import mediathek.gui.tabs.tab_film.search.SearchField
 import mediathek.tool.FilterConfiguration
 import mediathek.tool.MessageBus
 import mediathek.tool.table.MVFilmTable
-import javax.swing.SwingUtilities
 
 class FilmLifecycleController(private val host: Host) {
     interface Host {
@@ -53,23 +58,26 @@ class FilmLifecycleController(private val host: Host) {
         fun closeFilterSelectionModel()
     }
 
+    private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+
     fun start() {
         MessageBus.messageBus.subscribe(host.messageBusSubscriber())
         host.daten().filmeLaden.addAdListener(filmListReloadListener())
-        SwingUtilities.invokeLater { host.requestTableReload() }
+        launchOnSwing { host.requestTableReload() }
     }
 
     fun disposePanel() {
         host.saveTableConfiguration()
         host.swingFilterDialog().dispose()
         host.closeFilterSelectionModel()
+        uiScope.cancel()
     }
 
     fun handleTableModelChange(event: TableModelChangeEvent) {
         if (event.active) {
-            SwingUtilities.invokeLater { setFilmControlsEnabled(false) }
+            launchOnSwing { setFilmControlsEnabled(false) }
         } else {
-            SwingUtilities.invokeLater {
+            launchOnSwing {
                 setFilmControlsEnabled(true)
                 if (event.fromSearchField) {
                     host.searchField().requestFocusInWindow()
@@ -81,7 +89,7 @@ class FilmLifecycleController(private val host: Host) {
     }
 
     fun handleDownloadHistoryChangedEvent(@Suppress("UNUSED_PARAMETER") event: DownloadHistoryChangedEvent) {
-        SwingUtilities.invokeLater {
+        launchOnSwing {
             if (host.filterConfiguration().isShowUnseenOnly) {
                 host.requestTableReload()
             } else {
@@ -91,14 +99,14 @@ class FilmLifecycleController(private val host: Host) {
     }
 
     fun handleButtonStart(@Suppress("UNUSED_PARAMETER") event: ButtonStartEvent) {
-        SwingUtilities.invokeLater {
+        launchOnSwing {
             host.table().fireTableDataChanged(true)
             host.updateStartInfoProperty()
         }
     }
 
     fun handleStartEvent(@Suppress("UNUSED_PARAMETER") event: StartEvent) {
-        SwingUtilities.invokeLater { host.updateStartInfoProperty() }
+        launchOnSwing { host.updateStartInfoProperty() }
     }
 
     fun handleReloadTableDataEvent(@Suppress("UNUSED_PARAMETER") event: ReloadTableDataEvent) {
@@ -124,15 +132,19 @@ class FilmLifecycleController(private val host: Host) {
         host.filmToolBar().isEnabled = enabled
     }
 
+    private fun launchOnSwing(block: () -> Unit) {
+        uiScope.launch { block() }
+    }
+
     private fun filmListReloadListener(): ListenerFilmeLaden =
         object : ListenerFilmeLaden() {
             override fun start(@Suppress("UNUSED_PARAMETER") event: ListenerFilmeLadenEvent) {
-                SwingUtilities.invokeLater { host.swingFilterDialog().onFilmDataLoadingStarted() }
+                launchOnSwing { host.swingFilterDialog().onFilmDataLoadingStarted() }
                 host.bookmarkStartupReloadCoordinator().onFilmListLoadingStarted()
             }
 
             override fun fertig(@Suppress("UNUSED_PARAMETER") event: ListenerFilmeLadenEvent) {
-                SwingUtilities.invokeLater {
+                launchOnSwing {
                     host.swingFilterDialog().onFilmDataLoaded()
                     if (host.bookmarkStartupReloadCoordinator()
                             .onFilmListLoaded(host.filterConfiguration().isShowBookMarkedOnly)

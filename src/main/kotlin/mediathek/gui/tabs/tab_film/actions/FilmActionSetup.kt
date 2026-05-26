@@ -32,26 +32,16 @@ import java.util.function.Consumer
 import java.util.function.Supplier
 
 class FilmActionSetup(
-    private val playFilmAction: PlayFilmAction,
-    private val saveFilmAction: SaveFilmAction,
-    private val copyHqUrlToClipboardAction: CopyUrlToClipboardAction,
-    private val copyNormalUrlToClipboardAction: CopyUrlToClipboardAction,
-    private val toggleFilterDialogVisibilityAction: ToggleFilterDialogVisibilityAction,
-    private val bookmarkAddFilmAction: BookmarkAddFilmAction,
-    private val bookmarkRemoveFilmAction: BookmarkRemoveFilmAction,
-    private val manageBookmarkAction: ManageBookmarkAction,
-    private val filmUiActions: FilmUiActions,
+    val playFilmAction: PlayFilmAction,
+    val saveFilmAction: SaveFilmAction,
+    val copyHqUrlToClipboardAction: CopyUrlToClipboardAction,
+    val copyNormalUrlToClipboardAction: CopyUrlToClipboardAction,
+    val toggleFilterDialogVisibilityAction: ToggleFilterDialogVisibilityAction,
+    val bookmarkAddFilmAction: BookmarkAddFilmAction,
+    val bookmarkRemoveFilmAction: BookmarkRemoveFilmAction,
+    val manageBookmarkAction: ManageBookmarkAction,
+    val filmUiActions: FilmUiActions,
 ) {
-    fun playFilmAction(): PlayFilmAction = playFilmAction
-    fun saveFilmAction(): SaveFilmAction = saveFilmAction
-    fun copyHqUrlToClipboardAction(): CopyUrlToClipboardAction = copyHqUrlToClipboardAction
-    fun copyNormalUrlToClipboardAction(): CopyUrlToClipboardAction = copyNormalUrlToClipboardAction
-    fun toggleFilterDialogVisibilityAction(): ToggleFilterDialogVisibilityAction = toggleFilterDialogVisibilityAction
-    fun bookmarkAddFilmAction(): BookmarkAddFilmAction = bookmarkAddFilmAction
-    fun bookmarkRemoveFilmAction(): BookmarkRemoveFilmAction = bookmarkRemoveFilmAction
-    fun manageBookmarkAction(): ManageBookmarkAction = manageBookmarkAction
-    fun filmUiActions(): FilmUiActions = filmUiActions
-
     companion object {
         @JvmStatic
         fun create(
