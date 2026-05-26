@@ -23,27 +23,26 @@ import ca.odell.glazedlists.FilterList
 import mediathek.config.Daten
 import mediathek.controller.SenderFilmlistLoadApprover
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
-import java.util.function.Supplier
 
 class FilmFilterDataProviderAdapter(
-    private val daten: Supplier<Daten>,
+    private val datenProvider: () -> Daten,
 ) : FilmFilterController.DataProvider {
     override fun senderList(): EventList<String> =
-        FilterList(daten.get().allSendersList, SenderFilmlistLoadApprover::isApproved)
+        FilterList(datenProvider().allSendersList, SenderFilmlistLoadApprover::isApproved)
 
     override fun getThemen(senders: Collection<String>): List<String> =
-        daten.get().listeFilmeNachBlackList.getThemen(senders)
+        datenProvider().listeFilmeNachBlackList.getThemen(senders)
 }
 
 class FilmFilterReloadRequesterAdapter(
-    private val requestTableReload: Runnable,
-    private val requestZeitraumReload: Runnable,
+    private val requestTableReloadAction: () -> Unit,
+    private val requestZeitraumReloadAction: () -> Unit,
 ) : FilmFilterController.ReloadRequester {
     override fun requestTableReload() {
-        requestTableReload.run()
+        requestTableReloadAction()
     }
 
     override fun requestZeitraumReload() {
-        requestZeitraumReload.run()
+        requestZeitraumReloadAction()
     }
 }

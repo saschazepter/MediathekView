@@ -31,9 +31,6 @@ import mediathek.mainwindow.MediathekGui
 import mediathek.tool.table.MVFilmTable
 import java.awt.Component
 import java.util.*
-import java.util.function.Consumer
-import java.util.function.IntFunction
-import java.util.function.Supplier
 import javax.swing.JCheckBoxMenuItem
 import javax.swing.JScrollPane
 import javax.swing.JTabbedPane
@@ -44,42 +41,41 @@ class FilmViewAndTableSetup(
 ) {
     data class ViewDependencies(
         val psetButtonsTab: JTabbedPane,
-        val psetButtonsPanel: Supplier<PsetButtonsPanel?>,
-        val setPsetButtonsPanel: Consumer<PsetButtonsPanel>,
-        val showButtonsMenuItem: Supplier<JCheckBoxMenuItem>,
-        val showDescriptionMenuItem: Supplier<JCheckBoxMenuItem>,
+        val psetButtonsPanel: () -> PsetButtonsPanel?,
+        val setPsetButtonsPanel: (PsetButtonsPanel) -> Unit,
+        val showButtonsMenuItem: () -> JCheckBoxMenuItem,
+        val showDescriptionMenuItem: () -> JCheckBoxMenuItem,
         val descriptionTabController: DescriptionTabController,
     )
 
     data class TableDependencies(
         val filmListScrollPane: JScrollPane,
         val ownerComponent: Component,
-        val table: Supplier<MVFilmTable>,
-        val tableOrNull: Supplier<MVFilmTable?>,
-        val setTable: Consumer<MVFilmTable>,
+        val table: () -> MVFilmTable,
+        val tableOrNull: () -> MVFilmTable?,
+        val setTable: (MVFilmTable) -> Unit,
     )
 
     data class ActionDependencies(
         val filmActionHost: FilmActionHost,
-        val filmUiActions: Supplier<FilmUiActions>,
-        val selectedFilm: Supplier<Optional<DatenFilm>>,
-        val filmAtRow: IntFunction<Optional<DatenFilm>>,
-        val playSelectedFilm: Runnable,
-        val saveSelectedFilm: Runnable,
-        val startFilmWithPset: Consumer<DatenPset>,
-        val setSelectionUpdatesSuspended: Consumer<Boolean>,
+        val filmUiActions: () -> FilmUiActions,
+        val selectedFilm: () -> Optional<DatenFilm>,
+        val filmAtRow: (Int) -> Optional<DatenFilm>,
+        val playSelectedFilm: () -> Unit,
+        val saveSelectedFilm: () -> Unit,
+        val startFilmWithPset: (DatenPset) -> Unit,
+        val setSelectionUpdatesSuspended: (Boolean) -> Unit,
     )
 
     data class RuntimeHooks(
         val mediathekGui: MediathekGui,
-        val updateSelectedListItemsCount: Runnable,
-        val onComponentShown: Runnable,
-        val updateFilmData: Runnable,
-        val selectionUpdatesSuspended: Supplier<Boolean>,
+        val updateSelectedListItemsCount: () -> Unit,
+        val onComponentShown: () -> Unit,
+        val updateFilmData: () -> Unit,
+        val selectionUpdatesSuspended: () -> Boolean,
     )
 
     companion object {
-        @JvmStatic
         fun create(
             view: ViewDependencies,
             tableDependencies: TableDependencies,
@@ -113,13 +109,13 @@ class FilmViewAndTableSetup(
                 tableDependencies.setTable,
                 tableDependencies.filmListScrollPane,
                 tableDependencies.ownerComponent,
-                Supplier { tableContextMenuHost },
+                { tableContextMenuHost },
                 actions.filmActionHost,
                 actions.filmUiActions,
                 runtimeHooks.updateSelectedListItemsCount,
                 runtimeHooks.onComponentShown,
                 runtimeHooks.updateFilmData,
-                runtimeHooks.selectionUpdatesSuspended::get,
+                runtimeHooks.selectionUpdatesSuspended,
             )
 
             return FilmViewAndTableSetup(

@@ -83,15 +83,14 @@ class FilmUiSetup(
     )
 
     data class TableHooks(
-        val table: Supplier<JTable>,
-        val setupFilmListTable: Runnable,
-        val setupFilmSelectionPropertyListener: Runnable,
+        val table: () -> JTable,
+        val setupFilmListTable: () -> Unit,
+        val setupFilmSelectionPropertyListener: () -> Unit,
         val viewController: FilmViewController,
-        val selectedFilm: Supplier<Optional<DatenFilm>>,
+        val selectedFilm: () -> Optional<DatenFilm>,
     )
 
     companion object {
-        @JvmStatic
         fun create(
             layout: LayoutDependencies,
             search: SearchDependencies,
@@ -113,14 +112,14 @@ class FilmUiSetup(
             extensionArea.add(layout.descriptionTabController.tabbedPane)
             extensionArea.add(layout.psetButtonsTab)
 
-            tableHooks.setupFilmListTable.run()
-            tableHooks.setupFilmSelectionPropertyListener.run()
+            tableHooks.setupFilmListTable()
+            tableHooks.setupFilmSelectionPropertyListener()
             tableHooks.viewController.setupShowFilmDescriptionMenuItem()
             layout.descriptionTabController.install(
-                tableHooks.table.get(),
+                tableHooks.table(),
                 layout.showDescriptionMenuItem,
                 ApplicationConfiguration.FILM_SHOW_DESCRIPTION,
-                tableHooks.selectedFilm,
+                Supplier { tableHooks.selectedFilm() },
             )
             tableHooks.viewController.setupPsetButtonsTab()
 

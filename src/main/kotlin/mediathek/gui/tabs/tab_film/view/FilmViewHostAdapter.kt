@@ -21,40 +21,38 @@ package mediathek.gui.tabs.tab_film.view
 import mediathek.daten.DatenPset
 import mediathek.gui.tabs.tab_film.PsetButtonsPanel
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
-import java.util.function.Consumer
-import java.util.function.Supplier
 import javax.swing.JCheckBoxMenuItem
 import javax.swing.JTabbedPane
 
 class FilmViewHostAdapter(
     private val psetButtonsTab: JTabbedPane,
-    private val psetButtonsPanel: Supplier<PsetButtonsPanel?>,
-    private val setPsetButtonsPanel: Consumer<PsetButtonsPanel>,
-    private val showButtonsMenuItem: Supplier<JCheckBoxMenuItem>,
-    private val showDescriptionMenuItem: Supplier<JCheckBoxMenuItem>,
-    private val actions: Supplier<FilmUiActions>,
-    private val setDescriptionTabVisible: Consumer<Boolean>,
-    private val startFilmWithPset: Consumer<DatenPset>,
+    private val psetButtonsPanelProvider: () -> PsetButtonsPanel?,
+    private val setPsetButtonsPanelAction: (PsetButtonsPanel) -> Unit,
+    private val showButtonsMenuItemProvider: () -> JCheckBoxMenuItem,
+    private val showDescriptionMenuItemProvider: () -> JCheckBoxMenuItem,
+    private val actionsProvider: () -> FilmUiActions,
+    private val setDescriptionTabVisibleAction: (Boolean) -> Unit,
+    private val startFilmWithPsetAction: (DatenPset) -> Unit,
 ) : FilmViewController.Host {
     override fun psetButtonsTab(): JTabbedPane = psetButtonsTab
 
-    override fun psetButtonsPanel(): PsetButtonsPanel? = psetButtonsPanel.get()
+    override fun psetButtonsPanel(): PsetButtonsPanel? = psetButtonsPanelProvider()
 
     override fun setPsetButtonsPanel(panel: PsetButtonsPanel) {
-        setPsetButtonsPanel.accept(panel)
+        setPsetButtonsPanelAction(panel)
     }
 
-    override fun showButtonsMenuItem(): JCheckBoxMenuItem = showButtonsMenuItem.get()
+    override fun showButtonsMenuItem(): JCheckBoxMenuItem = showButtonsMenuItemProvider()
 
-    override fun showDescriptionMenuItem(): JCheckBoxMenuItem = showDescriptionMenuItem.get()
+    override fun showDescriptionMenuItem(): JCheckBoxMenuItem = showDescriptionMenuItemProvider()
 
-    override fun actions(): FilmUiActions = actions.get()
+    override fun actions(): FilmUiActions = actionsProvider()
 
     override fun setDescriptionTabVisible(visible: Boolean) {
-        setDescriptionTabVisible.accept(visible)
+        setDescriptionTabVisibleAction(visible)
     }
 
     override fun startFilmWithPset(pset: DatenPset) {
-        startFilmWithPset.accept(pset)
+        startFilmWithPsetAction(pset)
     }
 }

@@ -21,29 +21,27 @@ package mediathek.gui.tabs.tab_film.actions
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import java.util.Optional
-import java.util.function.Consumer
-import java.util.function.Supplier
 
 class FilmActionHostAdapter(
-    private val saveFilm: Consumer<DatenPset?>,
-    private val selectedFilms: Supplier<List<DatenFilm>>,
-    private val updateBookmarkListAndRefresh: Consumer<List<DatenFilm>>,
-    private val currentlySelectedFilm: Supplier<Optional<DatenFilm>>,
-    private val toggleFilterDialogVisibility: Runnable,
+    private val saveFilmAction: (DatenPset?) -> Unit,
+    private val selectedFilmsProvider: () -> List<DatenFilm>,
+    private val updateBookmarkListAndRefreshAction: (List<DatenFilm>) -> Unit,
+    private val currentlySelectedFilmProvider: () -> Optional<DatenFilm>,
+    private val toggleFilterDialogVisibilityAction: () -> Unit,
 ) : FilmActionHost {
     override fun saveFilm(pSet: DatenPset?) {
-        saveFilm.accept(pSet)
+        saveFilmAction(pSet)
     }
 
-    override fun selectedFilms(): List<DatenFilm> = selectedFilms.get()
+    override fun selectedFilms(): List<DatenFilm> = selectedFilmsProvider()
 
     override fun updateBookmarkListAndRefresh(films: List<DatenFilm>) {
-        updateBookmarkListAndRefresh.accept(films)
+        updateBookmarkListAndRefreshAction(films)
     }
 
-    override fun currentlySelectedFilm(): Optional<DatenFilm> = currentlySelectedFilm.get()
+    override fun currentlySelectedFilm(): Optional<DatenFilm> = currentlySelectedFilmProvider()
 
     override fun toggleFilterDialogVisibility() {
-        toggleFilterDialogVisibility.run()
+        toggleFilterDialogVisibilityAction()
     }
 }

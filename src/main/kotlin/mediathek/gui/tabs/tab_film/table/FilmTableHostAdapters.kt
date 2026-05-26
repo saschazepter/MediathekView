@@ -30,123 +30,119 @@ import mediathek.tool.table.MVFilmTable
 import java.awt.Component
 import java.util.Optional
 import java.util.concurrent.Executor
-import java.util.function.BooleanSupplier
-import java.util.function.Consumer
-import java.util.function.IntFunction
-import java.util.function.Supplier
 import javax.swing.JScrollPane
 
 class FilmTableReloadHostAdapter(
-    private val table: Supplier<MVFilmTable>,
-    private val searchFieldData: Supplier<SearchFieldData>,
+    private val tableProvider: () -> MVFilmTable,
+    private val searchFieldDataProvider: () -> SearchFieldData,
     private val filterController: FilmFilterController,
-    private val tableModelExecutor: Supplier<Executor>,
-    private val setSelectionUpdatesSuspended: Consumer<Boolean>,
-    private val updateStartInfoProperty: Runnable,
-    private val updateFilmData: Runnable,
+    private val tableModelExecutorProvider: () -> Executor,
+    private val setSelectionUpdatesSuspendedAction: (Boolean) -> Unit,
+    private val updateStartInfoPropertyAction: () -> Unit,
+    private val updateFilmDataAction: () -> Unit,
 ) : FilmTableReloader.Host {
-    override fun table(): MVFilmTable = table.get()
+    override fun table(): MVFilmTable = tableProvider()
 
-    override fun searchFieldData(): SearchFieldData = searchFieldData.get()
+    override fun searchFieldData(): SearchFieldData = searchFieldDataProvider()
 
     override fun filterController(): FilmFilterController = filterController
 
-    override fun tableModelExecutor(): Executor = tableModelExecutor.get()
+    override fun tableModelExecutor(): Executor = tableModelExecutorProvider()
 
     override fun setSelectionUpdatesSuspended(suspended: Boolean) {
-        setSelectionUpdatesSuspended.accept(suspended)
+        setSelectionUpdatesSuspendedAction(suspended)
     }
 
     override fun updateStartInfoProperty() {
-        updateStartInfoProperty.run()
+        updateStartInfoPropertyAction()
     }
 
     override fun updateFilmData() {
-        updateFilmData.run()
+        updateFilmDataAction()
     }
 }
 
 class TableContextMenuHostAdapter(
-    private val table: Supplier<MVFilmTable>,
-    private val currentlySelectedFilm: Supplier<Optional<DatenFilm>>,
-    private val filmAtRow: IntFunction<Optional<DatenFilm>>,
-    private val playSelectedFilm: Runnable,
-    private val saveSelectedFilm: Runnable,
-    private val startFilmWithPset: Consumer<DatenPset>,
-    private val setSelectionUpdatesSuspended: Consumer<Boolean>,
+    private val tableProvider: () -> MVFilmTable,
+    private val currentlySelectedFilmProvider: () -> Optional<DatenFilm>,
+    private val filmAtRowProvider: (Int) -> Optional<DatenFilm>,
+    private val playSelectedFilmAction: () -> Unit,
+    private val saveSelectedFilmAction: () -> Unit,
+    private val startFilmWithPsetAction: (DatenPset) -> Unit,
+    private val setSelectionUpdatesSuspendedAction: (Boolean) -> Unit,
     private val gui: MediathekGui,
-    private val actions: Supplier<FilmUiActions>,
+    private val actionsProvider: () -> FilmUiActions,
 ) : TableContextMenuHandler.Host {
-    override fun table(): MVFilmTable = table.get()
+    override fun table(): MVFilmTable = tableProvider()
 
-    override fun getCurrentlySelectedFilm(): Optional<DatenFilm> = currentlySelectedFilm.get()
+    override fun getCurrentlySelectedFilm(): Optional<DatenFilm> = currentlySelectedFilmProvider()
 
-    override fun getFilm(row: Int): Optional<DatenFilm> = filmAtRow.apply(row)
+    override fun getFilm(row: Int): Optional<DatenFilm> = filmAtRowProvider(row)
 
     override fun playSelectedFilm() {
-        playSelectedFilm.run()
+        playSelectedFilmAction()
     }
 
     override fun saveSelectedFilm() {
-        saveSelectedFilm.run()
+        saveSelectedFilmAction()
     }
 
     override fun startFilmWithPset(pSet: DatenPset) {
-        startFilmWithPset.accept(pSet)
+        startFilmWithPsetAction(pSet)
     }
 
     override fun setSelectionUpdatesSuspended(suspended: Boolean) {
-        setSelectionUpdatesSuspended.accept(suspended)
+        setSelectionUpdatesSuspendedAction(suspended)
     }
 
     override fun gui(): MediathekGui = gui
 
-    override fun actions(): FilmUiActions = actions.get()
+    override fun actions(): FilmUiActions = actionsProvider()
 }
 
 class FilmTableInstallerHostAdapter(
-    private val table: Supplier<MVFilmTable>,
-    private val tableOrNull: Supplier<MVFilmTable?>,
-    private val setTable: Consumer<MVFilmTable>,
+    private val tableProvider: () -> MVFilmTable,
+    private val tableOrNullProvider: () -> MVFilmTable?,
+    private val setTableAction: (MVFilmTable) -> Unit,
     private val filmListScrollPane: JScrollPane,
     private val ownerComponent: Component,
-    private val tableContextMenuHost: Supplier<TableContextMenuHandler.Host>,
+    private val tableContextMenuHostProvider: () -> TableContextMenuHandler.Host,
     private val filmActionHost: FilmActionHost,
-    private val actions: Supplier<FilmUiActions>,
-    private val updateSelectedListItemsCount: Runnable,
-    private val onComponentShown: Runnable,
-    private val updateFilmData: Runnable,
-    private val selectionUpdatesSuspended: BooleanSupplier,
+    private val actionsProvider: () -> FilmUiActions,
+    private val updateSelectedListItemsCountAction: () -> Unit,
+    private val onComponentShownAction: () -> Unit,
+    private val updateFilmDataAction: () -> Unit,
+    private val selectionUpdatesSuspendedProvider: () -> Boolean,
 ) : FilmTableInstaller.Host {
-    override fun table(): MVFilmTable = table.get()
+    override fun table(): MVFilmTable = tableProvider()
 
-    override fun tableOrNull(): MVFilmTable? = tableOrNull.get()
+    override fun tableOrNull(): MVFilmTable? = tableOrNullProvider()
 
     override fun setTable(table: MVFilmTable) {
-        setTable.accept(table)
+        setTableAction(table)
     }
 
     override fun filmListScrollPane(): JScrollPane = filmListScrollPane
 
     override fun ownerComponent(): Component = ownerComponent
 
-    override fun tableContextMenuHost(): TableContextMenuHandler.Host = tableContextMenuHost.get()
+    override fun tableContextMenuHost(): TableContextMenuHandler.Host = tableContextMenuHostProvider()
 
     override fun filmActionHost(): FilmActionHost = filmActionHost
 
-    override fun actions(): FilmUiActions = actions.get()
+    override fun actions(): FilmUiActions = actionsProvider()
 
     override fun updateSelectedListItemsCount() {
-        updateSelectedListItemsCount.run()
+        updateSelectedListItemsCountAction()
     }
 
     override fun onComponentShown() {
-        onComponentShown.run()
+        onComponentShownAction()
     }
 
     override fun updateFilmData() {
-        updateFilmData.run()
+        updateFilmDataAction()
     }
 
-    override fun selectionUpdatesSuspended(): Boolean = selectionUpdatesSuspended.asBoolean
+    override fun selectionUpdatesSuspended(): Boolean = selectionUpdatesSuspendedProvider()
 }

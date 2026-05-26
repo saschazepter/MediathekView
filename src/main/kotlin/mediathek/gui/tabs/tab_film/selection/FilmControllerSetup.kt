@@ -27,27 +27,24 @@ import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkHostAdapter
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.table.MVFilmTable
 import java.awt.Component
-import java.util.function.Consumer
-import java.util.function.Supplier
 
 class FilmControllerSetup(
     val selectionController: FilmSelectionController,
     val bookmarkController: FilmBookmarkController,
     val filmActionHost: FilmActionHost,
-    val saveSelectedFilm: Consumer<DatenPset?>,
+    val saveSelectedFilm: (DatenPset?) -> Unit,
 ) {
     companion object {
-        @JvmStatic
         fun create(
-            table: Supplier<MVFilmTable>,
-            tableOrNull: Supplier<MVFilmTable?>,
+            table: () -> MVFilmTable,
+            tableOrNull: () -> MVFilmTable?,
             parentComponent: Component,
             mediathekGui: MediathekGui,
-            daten: Supplier<Daten>,
-            showHighQualityOnly: Supplier<Boolean>,
+            daten: () -> Daten,
+            showHighQualityOnly: () -> Boolean,
             saveLock: Any,
-            repaintOwner: Runnable,
-            toggleFilterDialogVisibility: Runnable,
+            repaintOwner: () -> Unit,
+            toggleFilterDialogVisibility: () -> Unit,
         ): FilmControllerSetup {
             val selectionHost = FilmSelectionHostAdapter(
                 table,
@@ -60,7 +57,7 @@ class FilmControllerSetup(
             val selectionController = FilmSelectionController(selectionHost)
             val bookmarkHost = FilmBookmarkHostAdapter(mediathekGui, repaintOwner)
             val bookmarkController = FilmBookmarkController(bookmarkHost)
-            val saveSelectedFilm = Consumer<DatenPset?> { pset ->
+            val saveSelectedFilm = { pset: DatenPset? ->
                 synchronized(saveLock) {
                     selectionController.saveFilm(pset)
                 }

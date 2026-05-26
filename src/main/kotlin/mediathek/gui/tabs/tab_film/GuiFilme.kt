@@ -172,7 +172,7 @@ class GuiFilme(
                 selectionController::getCurrentlySelectedFilm,
                 selectionController::getFilm,
                 { playFilmAction.actionPerformed(null) },
-                { saveSelectedFilm.accept(null) },
+                { saveSelectedFilm(null) },
                 selectionController::startFilm,
                 { suspended -> stopBeob = suspended },
             ),

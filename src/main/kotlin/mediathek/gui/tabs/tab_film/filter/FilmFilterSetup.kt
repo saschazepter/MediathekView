@@ -23,13 +23,12 @@ import mediathek.gui.tabs.tab_film.FilmFilterDataProviderAdapter
 import mediathek.gui.tabs.tab_film.FilmFilterReloadRequesterAdapter
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.tool.FilterConfiguration
-import java.util.function.Supplier
 
 class FilmFilterSetup(
     filterConfiguration: FilterConfiguration,
-    daten: Supplier<Daten>,
-    requestTableReload: Runnable,
-    requestZeitraumReload: Runnable,
+    daten: () -> Daten,
+    requestTableReload: () -> Unit,
+    requestZeitraumReload: () -> Unit,
 ) {
     val filterController = FilmFilterController(
         filterConfiguration,

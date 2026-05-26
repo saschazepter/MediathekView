@@ -43,16 +43,15 @@ class FilmActionSetup(
     val filmUiActions: FilmUiActions,
 ) {
     companion object {
-        @JvmStatic
         fun create(
             filmActionHost: FilmActionHost,
-            startFilm: Consumer<DatenPset>,
+            startFilm: (DatenPset) -> Unit,
             mediathekGui: MediathekGui,
             deleteBookmarksAction: DeleteBookmarksAction,
-            selectedFilms: Supplier<List<DatenFilm>>,
-            currentlySelectedFilm: Supplier<Optional<DatenFilm>>,
+            selectedFilms: () -> List<DatenFilm>,
+            currentlySelectedFilm: () -> Optional<DatenFilm>,
         ): FilmActionSetup {
-            val playFilmAction = PlayFilmAction(startFilm)
+            val playFilmAction = PlayFilmAction(Consumer { startFilm(it) })
             val saveFilmAction = SaveFilmAction(filmActionHost)
             val copyHqUrlToClipboardAction =
                 CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY)
@@ -62,9 +61,9 @@ class FilmActionSetup(
             val bookmarkAddFilmAction = BookmarkAddFilmAction(filmActionHost)
             val bookmarkRemoveFilmAction = BookmarkRemoveFilmAction(filmActionHost)
             val manageBookmarkAction = ManageBookmarkAction(MediathekGui.ui())
-            val markFilmAsSeenAction = MarkFilmAsSeenAction(selectedFilms)
-            val markFilmAsUnseenAction = MarkFilmAsUnseenAction(selectedFilms)
-            val downloadSubtitleAction = DownloadSubtitleAction(currentlySelectedFilm)
+            val markFilmAsSeenAction = MarkFilmAsSeenAction(Supplier { selectedFilms() })
+            val markFilmAsUnseenAction = MarkFilmAsUnseenAction(Supplier { selectedFilms() })
+            val downloadSubtitleAction = DownloadSubtitleAction(Supplier { currentlySelectedFilm() })
             val filmUiActions = FilmUiActions(
                 playFilmAction,
                 saveFilmAction,

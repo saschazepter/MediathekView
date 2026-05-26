@@ -22,25 +22,24 @@ import mediathek.config.Daten
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.table.MVFilmTable
 import java.awt.Component
-import java.util.function.Supplier
 
 class FilmSelectionHostAdapter(
-    private val table: Supplier<MVFilmTable>,
-    private val tableOrNull: Supplier<MVFilmTable?>,
+    private val tableProvider: () -> MVFilmTable,
+    private val tableOrNullProvider: () -> MVFilmTable?,
     private val parentComponent: Component,
     private val mediathekGui: MediathekGui,
-    private val daten: Supplier<Daten>,
-    private val showHighQualityOnly: Supplier<Boolean>,
+    private val datenProvider: () -> Daten,
+    private val showHighQualityOnlyProvider: () -> Boolean,
 ) : FilmSelectionController.Host {
-    override fun table(): MVFilmTable = table.get()
+    override fun table(): MVFilmTable = tableProvider()
 
-    override fun tableOrNull(): MVFilmTable? = tableOrNull.get()
+    override fun tableOrNull(): MVFilmTable? = tableOrNullProvider()
 
     override fun parentComponent(): Component = parentComponent
 
     override fun mediathekGui(): MediathekGui = mediathekGui
 
-    override fun daten(): Daten = daten.get()
+    override fun daten(): Daten = datenProvider()
 
-    override fun showHighQualityOnly(): Boolean = showHighQualityOnly.get()
+    override fun showHighQualityOnly(): Boolean = showHighQualityOnlyProvider()
 }
