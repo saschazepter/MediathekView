@@ -46,11 +46,13 @@ import mediathek.gui.tabs.tab_film.filter.FilmFilterSetup
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog
 import mediathek.gui.tabs.tab_film.lifecycle.BookmarkStartupReloadCoordinator
 import mediathek.gui.tabs.tab_film.lifecycle.FilmLifecycleController
-import mediathek.gui.tabs.tab_film.lifecycle.FilmRuntimeSetup
+import mediathek.gui.tabs.tab_film.lifecycle.FilmLifecycleHostAdapter
 import mediathek.gui.tabs.tab_film.search.SearchFieldHostAdapter
+import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import mediathek.gui.tabs.tab_film.selection.FilmControllerSetup
 import mediathek.gui.tabs.tab_film.selection.FilmSelectionController
 import mediathek.gui.tabs.tab_film.table.FilmTableInstaller
+import mediathek.gui.tabs.tab_film.table.FilmTableReloadHostAdapter
 import mediathek.gui.tabs.tab_film.table.FilmTableReloader
 import mediathek.gui.tabs.tab_film.view.FilmUiSetup
 import mediathek.gui.tabs.tab_film.view.FilmViewAndTableSetup
@@ -222,7 +224,19 @@ class GuiFilme(
 
         tableInstaller.setupTable()
 
-        val runtimeSetup = FilmRuntimeSetup.create(
+        val tableReloadHost = FilmTableReloadHostAdapter(
+            { currentTable },
+            {
+                SearchFieldData(searchField.text, searchField.getSearchMode())
+            },
+            filterController,
+            daten::getDecoratedPool,
+            { suspended -> stopBeob = suspended },
+            ::updateStartInfoProperty,
+            selectionController::updateFilmData,
+        )
+        tableReloader = FilmTableReloader(tableReloadHost)
+        val lifecycleHost = FilmLifecycleHostAdapter(
             this,
             daten,
             { currentTable },
@@ -232,16 +246,12 @@ class GuiFilme(
             { filmToolBar },
             { searchField },
             { filmUiActions },
-            filterController,
-            { suspended -> stopBeob = suspended },
-            ::updateStartInfoProperty,
-            selectionController::updateFilmData,
             ::requestTableReload,
+            ::updateStartInfoProperty,
             ::tabelleSpeichern,
             filterSelectionComboBoxModel::close,
         )
-        tableReloader = runtimeSetup.tableReloader
-        lifecycleController = runtimeSetup.lifecycleController
+        lifecycleController = FilmLifecycleController(lifecycleHost)
         lifecycleController.start()
     }
 
