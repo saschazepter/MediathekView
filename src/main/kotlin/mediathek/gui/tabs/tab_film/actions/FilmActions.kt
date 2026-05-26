@@ -36,7 +36,7 @@ import javax.swing.KeyStroke
 interface FilmActionHost {
     fun saveFilm(pSet: DatenPset?)
     fun selectedFilms(): List<DatenFilm>
-    fun updateBookmarkListAndRefresh(films: List<@JvmSuppressWildcards DatenFilm>)
+    fun updateBookmarkListAndRefresh(films: List<DatenFilm>)
     fun currentlySelectedFilm(): Optional<DatenFilm>
     fun toggleFilterDialogVisibility()
 }
