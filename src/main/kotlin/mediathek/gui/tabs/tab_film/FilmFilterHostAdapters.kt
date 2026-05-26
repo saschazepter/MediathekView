@@ -33,16 +33,3 @@ class FilmFilterDataProviderAdapter(
     override fun getThemen(senders: Collection<String>): List<String> =
         datenProvider().listeFilmeNachBlackList.getThemen(senders)
 }
-
-class FilmFilterReloadRequesterAdapter(
-    private val requestTableReloadAction: () -> Unit,
-    private val requestZeitraumReloadAction: () -> Unit,
-) : FilmFilterController.ReloadRequester {
-    override fun requestTableReload() {
-        requestTableReloadAction()
-    }
-
-    override fun requestZeitraumReload() {
-        requestZeitraumReloadAction()
-    }
-}

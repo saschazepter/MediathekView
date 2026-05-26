@@ -54,7 +54,6 @@ import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.actions.SaveFilmAction
 import mediathek.gui.tabs.tab_film.actions.ToggleFilterDialogVisibilityAction
 import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkController
-import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkHostAdapter
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
@@ -62,7 +61,6 @@ import mediathek.gui.tabs.tab_film.lifecycle.BookmarkStartupReloadCoordinator
 import mediathek.gui.tabs.tab_film.lifecycle.FilmLifecycleController
 import mediathek.gui.tabs.tab_film.lifecycle.FilmLifecycleHostAdapter
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
-import mediathek.gui.tabs.tab_film.search.SearchFieldHostAdapter
 import mediathek.gui.tabs.tab_film.search.LuceneSearchField
 import mediathek.gui.tabs.tab_film.search.RegularSearchField
 import mediathek.gui.tabs.tab_film.search.SearchField
@@ -82,8 +80,6 @@ import mediathek.tool.table.MVFilmTable
 import net.engio.mbassy.listener.Handler
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.BorderLayout
-import java.util.function.Consumer
-import java.util.function.Supplier
 import kotlin.time.Duration.Companion.milliseconds
 import javax.swing.Action
 import javax.swing.JCheckBoxMenuItem
@@ -172,11 +168,7 @@ class GuiFilme(
         val cbShowButtons = JCheckBoxMenuItem("Buttons anzeigen")
         val filterComponents = createFilterComponents(filterConfiguration)
         filterController = filterComponents.filterController
-        val searchFieldHost = SearchFieldHostAdapter(
-            mediathekGui,
-            ::loadTable,
-            ::loadTable,
-        )
+        val searchFieldHost = createSearchFieldHost()
         val viewComponents = createViewComponents(
             psetButtonsTab,
             cbShowButtons,
@@ -223,7 +215,13 @@ class GuiFilme(
             { filterConfiguration.isShowHighQualityOnly },
         )
         val selectionController = FilmSelectionController(selectionHost)
-        val bookmarkHost = FilmBookmarkHostAdapter(mediathekGui, ::repaint)
+        val bookmarkHost = object : FilmBookmarkController.Host {
+            override fun mediathekGui() = mediathekGui
+
+            override fun repaintOwner() {
+                repaint()
+            }
+        }
         val bookmarkController = FilmBookmarkController(bookmarkHost)
         val saveSelectedFilm = { pset: DatenPset? ->
             synchronized(this) {
@@ -255,6 +253,19 @@ class GuiFilme(
             filmActionHost,
         )
     }
+
+    private fun createSearchFieldHost(): SearchField.Host =
+        object : SearchField.Host {
+            override fun mediathekGui() = mediathekGui
+
+            override fun loadTable() {
+                this@GuiFilme.loadTable()
+            }
+
+            override fun loadTable(fromSearchField: Boolean) {
+                this@GuiFilme.loadTable(fromSearchField)
+            }
+        }
 
     private fun createFilmActions(
         deleteBookmarksAction: DeleteBookmarksAction,
@@ -313,7 +324,15 @@ class GuiFilme(
         val filterController = FilmFilterController(
             filterConfiguration,
             FilmFilterDataProviderAdapter { daten },
-            FilmFilterReloadRequesterAdapter(::requestTableReload, ::requestZeitraumReload),
+            object : FilmFilterController.ReloadRequester {
+                override fun requestTableReload() {
+                    this@GuiFilme.requestTableReload()
+                }
+
+                override fun requestZeitraumReload() {
+                    this@GuiFilme.requestZeitraumReload()
+                }
+            },
         )
         val filterSelectionComboBoxModel = FilterSelectionComboBoxModel(
             filterController::currentFilter,
