@@ -29,6 +29,7 @@ import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.daten.DatenPset
 import mediathek.daten.FilmResolution
+import mediathek.daten.IndexedFilmList
 import mediathek.gui.actions.DeleteBookmarksAction
 import mediathek.gui.actions.ManageBookmarkAction
 import mediathek.gui.actions.PlayFilmAction
@@ -59,21 +60,27 @@ import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.gui.tabs.tab_film.lifecycle.BookmarkStartupReloadCoordinator
 import mediathek.gui.tabs.tab_film.lifecycle.FilmLifecycleController
 import mediathek.gui.tabs.tab_film.lifecycle.FilmLifecycleHostAdapter
-import mediathek.gui.tabs.tab_film.search.SearchFieldHostAdapter
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
+import mediathek.gui.tabs.tab_film.search.SearchFieldHostAdapter
+import mediathek.gui.tabs.tab_film.search.LuceneSearchField
+import mediathek.gui.tabs.tab_film.search.RegularSearchField
 import mediathek.gui.tabs.tab_film.selection.FilmSelectionController
 import mediathek.gui.tabs.tab_film.selection.FilmSelectionHostAdapter
 import mediathek.gui.tabs.tab_film.table.FilmTableInstaller
+import mediathek.gui.tabs.tab_film.table.FilmTableInstallerHostAdapter
 import mediathek.gui.tabs.tab_film.table.FilmTableReloadHostAdapter
 import mediathek.gui.tabs.tab_film.table.FilmTableReloader
-import mediathek.gui.tabs.tab_film.view.FilmUiSetup
-import mediathek.gui.tabs.tab_film.view.FilmViewAndTableSetup
 import mediathek.gui.tabs.tab_film.view.FilmViewController
+import mediathek.gui.tabs.tab_film.table.TableContextMenuHostAdapter
+import mediathek.gui.tabs.tab_film.view.FilmViewHostAdapter
 import mediathek.mainwindow.MediathekGui
+import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.FilterConfiguration
 import mediathek.tool.MessageBus
 import mediathek.tool.table.MVFilmTable
 import net.engio.mbassy.listener.Handler
+import org.jdesktop.swingx.VerticalLayout
+import java.awt.BorderLayout
 import java.util.function.Consumer
 import java.util.function.Supplier
 import kotlin.time.Duration.Companion.milliseconds
@@ -190,77 +197,88 @@ class GuiFilme(
             mediathekGui.showFilmInformationAction,
             downloadSubtitleAction,
         )
-        val viewAndTableSetup = FilmViewAndTableSetup.create(
-            FilmViewAndTableSetup.ViewDependencies(
-                psetButtonsTab,
-                { psetButtonsPanel },
-                { panel -> psetButtonsPanel = panel },
-                { cbShowButtons },
-                { cbkShowDescription },
-                descriptionTabController,
-            ),
-            FilmViewAndTableSetup.TableDependencies(
-                filmListScrollPane,
-                this,
-                { currentTable },
-                { tabelle },
-                { table -> tabelle = table },
-            ),
-            FilmViewAndTableSetup.ActionDependencies(
-                filmActionHost,
-                { filmUiActions },
-                selectionController::getCurrentlySelectedFilm,
-                selectionController::getFilm,
-                { playFilmAction.actionPerformed(null) },
-                { saveSelectedFilm(null) },
-                selectionController::startFilm,
-                { suspended -> stopBeob = suspended },
-            ),
-            FilmViewAndTableSetup.RuntimeHooks(
-                mediathekGui,
-                { updateSelectedListItemsCount(currentTable) },
-                ::onComponentShown,
-                selectionController::updateFilmData,
-                { stopBeob },
-            ),
+        val viewHost = FilmViewHostAdapter(
+            psetButtonsTab,
+            { psetButtonsPanel },
+            { panel -> psetButtonsPanel = panel },
+            { cbShowButtons },
+            { cbkShowDescription },
+            { filmUiActions },
+            descriptionTabController::setVisible,
+            selectionController::startFilm,
         )
-        tableInstaller = viewAndTableSetup.tableInstaller
-        viewController = viewAndTableSetup.viewController
+        val tableContextMenuHost = TableContextMenuHostAdapter(
+            { currentTable },
+            selectionController::getCurrentlySelectedFilm,
+            selectionController::getFilm,
+            { playFilmAction.actionPerformed(null) },
+            { saveSelectedFilm(null) },
+            selectionController::startFilm,
+            { suspended -> stopBeob = suspended },
+            mediathekGui,
+            { filmUiActions },
+        )
+        val tableInstallerHost = FilmTableInstallerHostAdapter(
+            { currentTable },
+            { tabelle },
+            { table -> tabelle = table },
+            filmListScrollPane,
+            this,
+            { tableContextMenuHost },
+            filmActionHost,
+            { filmUiActions },
+            { updateSelectedListItemsCount(currentTable) },
+            ::onComponentShown,
+            selectionController::updateFilmData,
+            { stopBeob },
+        )
+        tableInstaller = FilmTableInstaller(tableInstallerHost)
+        viewController = FilmViewController(viewHost)
 
-        val filmUiSetup = FilmUiSetup.create(
-            FilmUiSetup.LayoutDependencies(
-                this,
-                filmListScrollPane,
-                cbkShowDescription,
-                descriptionTabController,
-                psetButtonsTab,
-            ),
-            FilmUiSetup.SearchDependencies(daten, searchFieldHost),
-            FilmUiSetup.FilterDependencies(
-                mediathekGui,
-                filterSelectionComboBoxModel,
-                filterController,
-            ),
-            FilmUiSetup.ToolBarActions(
-                bookmarkAddFilmAction,
-                bookmarkRemoveFilmAction,
-                deleteBookmarksAction,
-                manageBookmarkAction,
-                playFilmAction,
-                saveFilmAction,
-                toggleFilterDialogVisibilityActionValue,
-            ),
-            FilmUiSetup.TableHooks(
-                { currentTable },
-                tableInstaller::setupFilmListTable,
-                tableInstaller::setupFilmSelectionPropertyListener,
-                viewController,
-                selectionController::getCurrentlySelectedFilm,
-            ),
+        layout = BorderLayout()
+        add(filmListScrollPane, BorderLayout.CENTER)
+        val extensionArea = JPanel(VerticalLayout())
+        add(extensionArea, BorderLayout.SOUTH)
+
+        val searchField = if (daten.listeFilmeNachBlackList is IndexedFilmList) {
+            LuceneSearchField(searchFieldHost)
+        } else {
+            RegularSearchField(searchFieldHost)
+        }
+
+        extensionArea.add(descriptionTabController.tabbedPane)
+        extensionArea.add(psetButtonsTab)
+
+        tableInstaller.setupFilmListTable()
+        tableInstaller.setupFilmSelectionPropertyListener()
+        viewController.setupShowFilmDescriptionMenuItem()
+        descriptionTabController.install(
+            currentTable,
+            cbkShowDescription,
+            ApplicationConfiguration.FILM_SHOW_DESCRIPTION,
+            Supplier { selectionController.getCurrentlySelectedFilm() },
         )
-        val searchField = filmUiSetup.searchField
-        val filmToolBar = filmUiSetup.filmToolBar
-        swingFilterDialog = filmUiSetup.swingFilterDialog
+        viewController.setupPsetButtonsTab()
+
+        val filmToolBar = FilmToolBar(
+            filterSelectionComboBoxModel,
+            bookmarkAddFilmAction,
+            bookmarkRemoveFilmAction,
+            deleteBookmarksAction,
+            manageBookmarkAction,
+            playFilmAction,
+            saveFilmAction,
+            searchField,
+            toggleFilterDialogVisibilityActionValue,
+        )
+        add(filmToolBar, BorderLayout.NORTH)
+
+        swingFilterDialog = SwingFilterDialog(
+            mediathekGui,
+            filterSelectionComboBoxModel,
+            filmToolBar.toggleFilterDialogVisibilityButton,
+            filterController,
+        )
 
         tableInstaller.setupTable()
 
