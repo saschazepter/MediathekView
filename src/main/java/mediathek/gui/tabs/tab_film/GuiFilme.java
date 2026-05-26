@@ -126,40 +126,15 @@ public class GuiFilme extends AGuiTabPanel {
                 this::loadTable,
                 this::loadTable);
         var filmUiActions = filmActions.filmUiActions();
-        var viewHost = new FilmViewHostAdapter(
-                psetButtonsTab,
-                () -> psetButtonsPanel,
-                panel -> psetButtonsPanel = panel,
-                () -> cbShowButtons,
-                () -> cbkShowDescription,
-                () -> filmUiActions,
-                this::makeDescriptionTabVisible,
-                selectionController::startFilm);
-        var tableContextMenuHost = new TableContextMenuHostAdapter(
-                () -> tabelle,
-                selectionController::getCurrentlySelectedFilm,
-                selectionController::getFilm,
-                () -> playFilmAction.actionPerformed(null),
-                () -> saveSelectedFilm.accept(null),
-                selectionController::startFilm,
-                suspended -> stopBeob = suspended,
-                mediathekGui,
-                () -> filmUiActions);
-        var tableInstallerHost = new FilmTableInstallerHostAdapter(
-                () -> tabelle,
-                () -> tabelle,
-                table -> tabelle = table,
+        var viewAndTableSetup = createViewAndTableSetup(
+                cbShowButtons,
+                cbkShowDescription,
                 filmListScrollPane,
-                this,
-                () -> tableContextMenuHost,
                 filmActionHost,
-                () -> filmUiActions,
-                () -> updateSelectedListItemsCount(tabelle),
-                this::onComponentShown,
-                selectionController::updateFilmData,
-                () -> stopBeob);
-        tableInstaller = new FilmTableInstaller(tableInstallerHost);
-        viewController = new FilmViewController(viewHost);
+                filmUiActions,
+                saveSelectedFilm);
+        tableInstaller = viewAndTableSetup.tableInstaller();
+        viewController = viewAndTableSetup.viewController();
 
         setLayout(new BorderLayout());
         add(filmListScrollPane, BorderLayout.CENTER);
@@ -228,6 +203,51 @@ public class GuiFilme extends AGuiTabPanel {
         lifecycleController = new FilmLifecycleController(lifecycleHost);
         lifecycleController.start();
 
+    }
+
+    private FilmViewAndTableSetup createViewAndTableSetup(
+            JCheckBoxMenuItem cbShowButtons,
+            JCheckBoxMenuItem cbkShowDescription,
+            JScrollPane filmListScrollPane,
+            FilmActionHost filmActionHost,
+            FilmUiActions filmUiActions,
+            Consumer<DatenPset> saveSelectedFilm) {
+        var viewHost = new FilmViewHostAdapter(
+                psetButtonsTab,
+                () -> psetButtonsPanel,
+                panel -> psetButtonsPanel = panel,
+                () -> cbShowButtons,
+                () -> cbkShowDescription,
+                () -> filmUiActions,
+                this::makeDescriptionTabVisible,
+                selectionController::startFilm);
+        var tableContextMenuHost = new TableContextMenuHostAdapter(
+                () -> tabelle,
+                selectionController::getCurrentlySelectedFilm,
+                selectionController::getFilm,
+                () -> playFilmAction.actionPerformed(null),
+                () -> saveSelectedFilm.accept(null),
+                selectionController::startFilm,
+                suspended -> stopBeob = suspended,
+                mediathekGui,
+                () -> filmUiActions);
+        var tableInstallerHost = new FilmTableInstallerHostAdapter(
+                () -> tabelle,
+                () -> tabelle,
+                table -> tabelle = table,
+                filmListScrollPane,
+                this,
+                () -> tableContextMenuHost,
+                filmActionHost,
+                () -> filmUiActions,
+                () -> updateSelectedListItemsCount(tabelle),
+                this::onComponentShown,
+                selectionController::updateFilmData,
+                () -> stopBeob);
+
+        return new FilmViewAndTableSetup(
+                new FilmTableInstaller(tableInstallerHost),
+                new FilmViewController(viewHost));
     }
 
     private FilmActionSetup createFilmActions(FilmActionHost filmActionHost) {
@@ -405,6 +425,11 @@ public class GuiFilme extends AGuiTabPanel {
             BookmarkRemoveFilmAction bookmarkRemoveFilmAction,
             ManageBookmarkAction manageBookmarkAction,
             FilmUiActions filmUiActions) {
+    }
+
+    private record FilmViewAndTableSetup(
+            FilmTableInstaller tableInstaller,
+            FilmViewController viewController) {
     }
 
     static class NonRepeatingTimer extends Timer {
