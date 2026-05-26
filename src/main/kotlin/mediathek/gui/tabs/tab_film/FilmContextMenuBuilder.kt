@@ -33,7 +33,7 @@ class FilmContextMenuBuilder(
     private val aboWithoutTitleAction: ActionListener,
     private val aboWithTitleAction: ActionListener,
     private val addBlacklistRuleForSelectedFilm: ((DatenFilm) -> Unit) -> Unit,
-    private val addFilmSpecificContextActions: (JPopupMenu, DatenFilm) -> Unit,
+    private val filmSpecificContextMenuBuilder: FilmSpecificContextMenuBuilder,
     private val addPrintAndInfoActions: (JPopupMenu, Optional<DatenFilm>) -> Unit,
     private val addFileAndDuplicateActions: (JPopupMenu, DatenFilm) -> Unit,
 ) {
@@ -42,7 +42,7 @@ class FilmContextMenuBuilder(
             addPrimaryContextActions(this, selectedFilm)
             addFilmProgramsMenu(this)
             addBlacklistMenu(this)
-            selectedFilm.ifPresent { film -> addFilmSpecificContextActions(this, film) }
+            selectedFilm.ifPresent { film -> filmSpecificContextMenuBuilder.addFilmSpecificContextActions(this, film) }
             addPrintAndInfoActions(this, selectedFilm)
             selectedFilm.ifPresent { film -> addFileAndDuplicateActions(this, film) }
         }

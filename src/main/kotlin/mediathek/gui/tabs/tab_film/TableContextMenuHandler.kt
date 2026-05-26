@@ -27,23 +27,18 @@ import mediathek.controller.history.SeenHistoryController
 import mediathek.controller.starter.Start
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
-import mediathek.daten.FilmResolution
 import mediathek.filmlisten.writer.FilmListWriter
 import mediathek.gui.actions.CreateNewAboAction
-import mediathek.gui.actions.UrlHyperlinkAction
 import mediathek.gui.duplicates.details.DuplicateFilmDetailsDialog
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.FileDialogs
-import mediathek.tool.GuiFunktionen
 import mediathek.tool.MVInfoFile
 import mediathek.tool.table.MVFilmTable
 import org.apache.logging.log4j.LogManager
 import java.awt.Point
 import java.awt.event.*
 import java.awt.print.PrinterException
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets
 import java.util.*
 import javax.swing.*
 
@@ -75,13 +70,14 @@ class TableContextMenuHandler(
     private val seenActionListener = BeobHistory(true)
     private val jDownloadHelper = JDownloadHelper()
     private val pyLoadHelper = PyLoadHelper()
+    private val filmSpecificContextMenuBuilder = FilmSpecificContextMenuBuilder(host, jDownloadHelper, pyLoadHelper)
     private val contextMenuBuilder = FilmContextMenuBuilder(
         host,
         daten,
         beobAbo,
         beobAboMitTitel,
         this::addBlacklistRuleForSelectedFilm,
-        this::addFilmSpecificContextActions,
+        filmSpecificContextMenuBuilder,
         this::addPrintAndInfoActions,
         this::addFileAndDuplicateActions,
     )
@@ -161,22 +157,6 @@ class TableContextMenuHandler(
 
         val popupMenu = contextMenuBuilder.createContextMenu(host.getFilm(row))
         popupMenu.show(event.component, event.x, event.y)
-    }
-
-    private fun addFilmSpecificContextActions(popupMenu: JPopupMenu, film: DatenFilm) {
-        popupMenu.addSeparator()
-        jDownloadHelper.installContextMenu(film, popupMenu)
-        popupMenu.addSeparator()
-        pyLoadHelper.installContextMenu(film, popupMenu)
-        popupMenu.addSeparator()
-        setupCopyToClipboardContextMenu(film, popupMenu)
-        popupMenu.addSeparator()
-        setupSearchEntries(popupMenu, film)
-
-        if (film.hasSubtitle()) {
-            popupMenu.add(host.actions().downloadSubtitle)
-            popupMenu.addSeparator()
-        }
     }
 
     private fun addPrintAndInfoActions(popupMenu: JPopupMenu, selectedFilm: Optional<DatenFilm>) {
@@ -317,135 +297,6 @@ class TableContextMenuHandler(
                 popupMenu.add(historyMenuItem)
             }
         }
-    }
-
-    private fun setupCopyToClipboardContextMenu(film: DatenFilm, popupMenu: JPopupMenu) {
-        val copyToClipboardMenu = JMenu("In Zwischenablage kopieren")
-
-        JMenuItem("Titel").also {
-            it.addActionListener { GuiFunktionen.copyToClipboard(film.title) }
-            copyToClipboardMenu.add(it)
-        }
-
-        JMenuItem("Thema").also {
-            it.addActionListener { GuiFunktionen.copyToClipboard(film.thema) }
-            copyToClipboardMenu.add(it)
-        }
-
-        JMenuItem("Thema - Titel").also {
-            it.addActionListener { GuiFunktionen.copyToClipboard("${film.thema} - ${film.title}") }
-            copyToClipboardMenu.add(it)
-        }
-
-        JMenuItem("Sender - Thema - Titel").also {
-            it.addActionListener { GuiFunktionen.copyToClipboard("${film.sender} - ${film.thema} - ${film.title}") }
-            copyToClipboardMenu.add(it)
-        }
-
-        JMenuItem("Beschreibung").also {
-            it.addActionListener { GuiFunktionen.copyToClipboard(film.description) }
-            copyToClipboardMenu.add(it)
-        }
-
-        setupFilmUrlCopyToClipboardEntries(copyToClipboardMenu, film)
-        popupMenu.add(copyToClipboardMenu)
-    }
-
-    private fun setupFilmUrlCopyToClipboardEntries(parentMenu: JMenu, film: DatenFilm) {
-        parentMenu.addSeparator()
-
-        val normalUrl = film.getUrlFuerAufloesung(FilmResolution.Enum.NORMAL)
-        var highQualityUrl = film.getUrlFuerAufloesung(FilmResolution.Enum.HIGH_QUALITY)
-        var lowQualityUrl = film.getUrlFuerAufloesung(FilmResolution.Enum.LOW)
-        if (highQualityUrl == normalUrl) {
-            highQualityUrl = ""
-        }
-        if (lowQualityUrl == normalUrl) {
-            lowQualityUrl = ""
-        }
-
-        if (normalUrl.isNotEmpty()) {
-            val copyNormalUrlListener = ActionListener { GuiFunktionen.copyToClipboard(normalUrl) }
-            if (highQualityUrl.isNotEmpty() || lowQualityUrl.isNotEmpty()) {
-                val submenuUrl = JMenu("Film-URL")
-                if (highQualityUrl.isNotEmpty()) {
-                    JMenuItem("höchste/hohe Qualität").also {
-                        it.accelerator = KeyStroke.getKeyStroke(
-                            KeyEvent.VK_H,
-                            GuiFunktionen.getPlatformControlKey() or KeyEvent.SHIFT_DOWN_MASK or KeyEvent.ALT_DOWN_MASK,
-                        )
-                        it.addActionListener {
-                            GuiFunktionen.copyToClipboard(film.getUrlFuerAufloesung(FilmResolution.Enum.HIGH_QUALITY))
-                        }
-                        submenuUrl.add(it)
-                    }
-                }
-
-                JMenuItem("mittlere Qualität").also {
-                    it.addActionListener(copyNormalUrlListener)
-                    it.accelerator = KeyStroke.getKeyStroke(
-                        KeyEvent.VK_N,
-                        GuiFunktionen.getPlatformControlKey() or KeyEvent.SHIFT_DOWN_MASK or KeyEvent.ALT_DOWN_MASK,
-                    )
-                    submenuUrl.add(it)
-                }
-
-                if (lowQualityUrl.isNotEmpty()) {
-                    JMenuItem("niedrige Qualität").also {
-                        it.addActionListener {
-                            GuiFunktionen.copyToClipboard(film.getUrlFuerAufloesung(FilmResolution.Enum.LOW))
-                        }
-                        submenuUrl.add(it)
-                    }
-                }
-                parentMenu.add(submenuUrl)
-            } else {
-                JMenuItem("Verfügbare URL").also {
-                    it.addActionListener(copyNormalUrlListener)
-                    parentMenu.add(it)
-                }
-            }
-        }
-
-        if (film.subtitleUrl.isNotEmpty()) {
-            JMenuItem("Untertitel-URL").also {
-                it.addActionListener { GuiFunktionen.copyToClipboard(film.subtitleUrl) }
-                parentMenu.add(it)
-            }
-        }
-    }
-
-    private fun setupSearchEntries(popupMenu: JPopupMenu, film: DatenFilm) {
-        val onlineSearchMenu = JMenu("Online-Suche nach")
-        val themaMenu = JMenu("Thema")
-        val titelMenu = JMenu("Titel")
-
-        for (provider in OnlineSearchProviders.entries) {
-            if (!film.isLivestream) {
-                JMenuItem(provider.toString()).also {
-                    it.addActionListener {
-                        val url = provider.queryUrl + URLEncoder.encode(film.thema, StandardCharsets.UTF_8)
-                        UrlHyperlinkAction.openURL(url)
-                    }
-                    themaMenu.add(it)
-                }
-            }
-
-            JMenuItem(provider.toString()).also {
-                it.addActionListener {
-                    val url = provider.queryUrl + URLEncoder.encode(film.title, StandardCharsets.UTF_8)
-                    UrlHyperlinkAction.openURL(url)
-                }
-                titelMenu.add(it)
-            }
-        }
-
-        if (!film.isLivestream) {
-            onlineSearchMenu.add(themaMenu)
-        }
-        onlineSearchMenu.add(titelMenu)
-        popupMenu.add(onlineSearchMenu)
-        popupMenu.addSeparator()
     }
 
     private fun selectedFilmAtPopupPoint(): DatenFilm? {
