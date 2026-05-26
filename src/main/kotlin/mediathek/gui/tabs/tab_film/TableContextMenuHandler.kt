@@ -28,7 +28,6 @@ import mediathek.controller.starter.Start
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.daten.FilmResolution
-import mediathek.daten.blacklist.BlacklistRule
 import mediathek.filmlisten.writer.FilmListWriter
 import mediathek.gui.actions.CreateNewAboAction
 import mediathek.gui.actions.UrlHyperlinkAction
@@ -76,6 +75,16 @@ class TableContextMenuHandler(
     private val seenActionListener = BeobHistory(true)
     private val jDownloadHelper = JDownloadHelper()
     private val pyLoadHelper = PyLoadHelper()
+    private val contextMenuBuilder = FilmContextMenuBuilder(
+        host,
+        daten,
+        beobAbo,
+        beobAboMitTitel,
+        this::addBlacklistRuleForSelectedFilm,
+        this::addFilmSpecificContextActions,
+        this::addPrintAndInfoActions,
+        this::addFileAndDuplicateActions,
+    )
     private var popupPoint: Point? = null
 
     override fun mouseClicked(event: MouseEvent) {
@@ -141,24 +150,6 @@ class TableContextMenuHandler(
         }
     }
 
-    private fun createStartWithPsetItems(popupMenu: JPopupMenu) {
-        val submenu = JMenu("Film mit Set starten")
-        popupMenu.add(submenu)
-        val liste = Daten.getInstance().listePset.listeButton
-        for (pset in liste) {
-            if (pset.listeProg.isEmpty() && pset.name.isEmpty()) {
-                continue
-            }
-
-            val item = JMenuItem(pset.name)
-            pset.foregroundColor.ifPresent(item::setForeground)
-            if (pset.listeProg.isNotEmpty()) {
-                item.addActionListener { host.startFilmWithPset(pset) }
-            }
-            submenu.add(item)
-        }
-    }
-
     private fun showMenu(event: MouseEvent) {
         popupPoint = event.point
         val point = popupPoint ?: return
@@ -168,116 +159,8 @@ class TableContextMenuHandler(
         }
         host.table().setRowSelectionInterval(row, row)
 
-        val popupMenu = createContextMenu(host.getFilm(row))
+        val popupMenu = contextMenuBuilder.createContextMenu(host.getFilm(row))
         popupMenu.show(event.component, event.x, event.y)
-    }
-
-    private fun createContextMenu(selectedFilm: Optional<DatenFilm>): JPopupMenu =
-        JPopupMenu().apply {
-            addPrimaryContextActions(this, selectedFilm)
-            addFilmProgramsMenu(this)
-            addBlacklistMenu(this)
-            selectedFilm.ifPresent { film -> addFilmSpecificContextActions(this, film) }
-            addPrintAndInfoActions(this, selectedFilm)
-            selectedFilm.ifPresent { film -> addFileAndDuplicateActions(this, film) }
-    }
-
-    private fun addPrimaryContextActions(popupMenu: JPopupMenu, selectedFilm: Optional<DatenFilm>) {
-        val actions = host.actions()
-        popupMenu.add(actions.playFilm)
-        popupMenu.add(actions.saveFilm)
-
-        val bookmarkMenuItem = JMenuItem(actions.bookmarkAddFilm)
-        popupMenu.add(bookmarkMenuItem)
-        popupMenu.addSeparator()
-        addAboMenu(popupMenu, selectedFilm)
-        updateBookmarkMenuItem(popupMenu, bookmarkMenuItem, selectedFilm)
-    }
-
-    private fun addAboMenu(popupMenu: JPopupMenu, selectedFilm: Optional<DatenFilm>) {
-        val submenuAbo = JMenu("Abo")
-        popupMenu.add(submenuAbo)
-
-        val itemAbo = JMenuItem("Abo mit Sender und Thema anlegen")
-        val itemAboMitTitel = JMenuItem("Abo mit Sender und Thema und Titel anlegen")
-
-        selectedFilm.ifPresent { film -> configureAboMenuItems(film, itemAbo, itemAboMitTitel) }
-
-        submenuAbo.add(itemAbo)
-        submenuAbo.add(itemAboMitTitel)
-    }
-
-    private fun configureAboMenuItems(
-        film: DatenFilm,
-        itemAbo: JMenuItem,
-        itemAboMitTitel: JMenuItem,
-    ) {
-        if (daten.listeAbo.getAboFuerFilm_schnell(film, false) != null) {
-            itemAbo.isEnabled = false
-            itemAboMitTitel.isEnabled = false
-        } else {
-            itemAbo.addActionListener(beobAbo)
-            itemAboMitTitel.addActionListener(beobAboMitTitel)
-        }
-    }
-
-    private fun updateBookmarkMenuItem(
-        popupMenu: JPopupMenu,
-        bookmarkMenuItem: JMenuItem,
-        selectedFilm: Optional<DatenFilm>,
-    ) {
-        selectedFilm.ifPresent { film ->
-            if (film.isLivestream) {
-                popupMenu.remove(bookmarkMenuItem)
-            } else {
-                bookmarkMenuItem.text = if (film.isBookmarked) {
-                    "Film aus Merkliste entfernen"
-                } else {
-                    "Film merken"
-                }
-            }
-        }
-    }
-
-    private fun addFilmProgramsMenu(popupMenu: JPopupMenu) {
-        createStartWithPsetItems(popupMenu)
-    }
-
-    private fun addBlacklistMenu(popupMenu: JPopupMenu) {
-        val submenuBlack = JMenu("Blacklist")
-        popupMenu.add(submenuBlack)
-
-        val itemBlackSender = JMenuItem("Sender in die Blacklist einfügen")
-        itemBlackSender.addActionListener {
-            addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule(film.sender, "", "", ""))
-            }
-        }
-        submenuBlack.add(itemBlackSender)
-
-        val itemBlackThema = JMenuItem("Thema in die Blacklist einfügen")
-        itemBlackThema.addActionListener {
-            addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule("", film.thema, "", ""))
-            }
-        }
-        submenuBlack.add(itemBlackThema)
-
-        val itemAddTitleToBlacklist = JMenuItem("Titel in die Blacklist einfügen")
-        itemAddTitleToBlacklist.addActionListener {
-            addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule("", "", film.title, ""))
-            }
-        }
-        submenuBlack.add(itemAddTitleToBlacklist)
-
-        val itemBlackSenderThema = JMenuItem("Sender und Thema in die Blacklist einfügen")
-        itemBlackSenderThema.addActionListener {
-            addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule(film.sender, film.thema, "", ""))
-            }
-        }
-        submenuBlack.add(itemBlackSenderThema)
     }
 
     private fun addFilmSpecificContextActions(popupMenu: JPopupMenu, film: DatenFilm) {
