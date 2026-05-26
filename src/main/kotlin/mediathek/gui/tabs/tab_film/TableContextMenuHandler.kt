@@ -21,19 +21,13 @@ package mediathek.gui.tabs.tab_film
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
-import mediathek.config.Konstanten
-import mediathek.config.StandardLocations
 import mediathek.controller.history.SeenHistoryController
 import mediathek.controller.starter.Start
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
-import mediathek.filmlisten.writer.FilmListWriter
 import mediathek.gui.actions.CreateNewAboAction
-import mediathek.gui.duplicates.details.DuplicateFilmDetailsDialog
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.ApplicationConfiguration
-import mediathek.tool.FileDialogs
-import mediathek.tool.MVInfoFile
 import mediathek.tool.table.MVFilmTable
 import org.apache.logging.log4j.LogManager
 import java.awt.Point
@@ -71,6 +65,7 @@ class TableContextMenuHandler(
     private val jDownloadHelper = JDownloadHelper()
     private val pyLoadHelper = PyLoadHelper()
     private val filmSpecificContextMenuBuilder = FilmSpecificContextMenuBuilder(host, jDownloadHelper, pyLoadHelper)
+    private val filmFileAndDuplicateContextActions = FilmFileAndDuplicateContextActions(host, daten, uiScope)
     private val contextMenuBuilder = FilmContextMenuBuilder(
         host,
         daten,
@@ -79,7 +74,7 @@ class TableContextMenuHandler(
         this::addBlacklistRuleForSelectedFilm,
         filmSpecificContextMenuBuilder,
         this::addPrintAndInfoActions,
-        this::addFileAndDuplicateActions,
+        filmFileAndDuplicateContextActions::addActions,
     )
     private var popupPoint: Point? = null
 
@@ -166,120 +161,6 @@ class TableContextMenuHandler(
 
         popupMenu.add(host.actions().showFilmInformation)
         selectedFilm.ifPresent { film -> setupHistoryContextActions(popupMenu, film) }
-    }
-
-    private fun addFileAndDuplicateActions(popupMenu: JPopupMenu, film: DatenFilm) {
-        if (!film.isLivestream) {
-            popupMenu.addSeparator()
-            popupMenu.add(createInfoFileMenuItem(film))
-        }
-
-        if (film.isDuplicate) {
-            popupMenu.addSeparator()
-            popupMenu.add(createDuplicateDetailsMenuItem(film))
-        }
-
-        if (!film.isLivestream) {
-            popupMenu.addSeparator()
-            popupMenu.add(createRemoveDuplicatesMenuItem(film))
-        }
-    }
-
-    private fun createInfoFileMenuItem(film: DatenFilm): JMenuItem =
-        JMenuItem("Infodatei erzeugen...").apply {
-            addActionListener {
-                val file = FileDialogs.chooseSaveFileLocation(MediathekGui.ui(), "Infodatei speichern", "")
-                if (file != null) {
-                    try {
-                        MVInfoFile().writeManualInfoFile(film, file.toPath())
-                    } catch (e: Exception) {
-                        throw RuntimeException(e)
-                    }
-                }
-            }
-        }
-
-    private fun createDuplicateDetailsMenuItem(film: DatenFilm): JMenuItem =
-        JMenuItem("Zusammengehörige Filme anzeigen...").apply {
-            addActionListener {
-                DuplicateFilmDetailsDialog(MediathekGui.ui(), film).isVisible = true
-            }
-        }
-
-    private fun createRemoveDuplicatesMenuItem(film: DatenFilm): JMenuItem =
-        JMenuItem("Duplikate entfernen...").apply {
-            addActionListener { performDuplicateRemoval(film) }
-        }
-
-    private fun performDuplicateRemoval(film: DatenFilm) {
-        val completeFilmList = daten.listeFilme
-        val filteredFilmList = daten.listeBlacklist
-        val duplicateList = ArrayList(
-            completeFilmList.parallelStream()
-                .filter { it.sender.equals(film.sender, ignoreCase = true) }
-                .filter { it.thema.equals(film.thema, ignoreCase = true) }
-                .filter { it.title.equals(film.title, ignoreCase = true) }
-                .filter { it.urlNormalQuality.equals(film.urlNormalQuality, ignoreCase = true) }
-                .toList(),
-        )
-        val filmCount = duplicateList.size
-
-        if (filmCount <= 1) {
-            JOptionPane.showMessageDialog(
-                host.gui(),
-                "Es wurden keine Duplikate gefunden.",
-                Konstanten.PROGRAMMNAME,
-                JOptionPane.INFORMATION_MESSAGE,
-            )
-            return
-        }
-
-        val duplicateCount = filmCount - 1
-        val duplicateString = if (duplicateCount == 1) "Duplikat" else "Duplikate"
-        val message = "Es wurden $duplicateCount $duplicateString gefunden.\nMöchten Sie diese entfernen?"
-        val result = JOptionPane.showConfirmDialog(
-            host.gui(),
-            message,
-            Konstanten.PROGRAMMNAME,
-            JOptionPane.YES_NO_OPTION,
-        )
-        if (result != JOptionPane.YES_OPTION) {
-            return
-        }
-
-        duplicateList.remove(film)
-        completeFilmList.removeAll(duplicateList.toSet())
-
-        uiScope.launch {
-            val writeResult = withContext(Dispatchers.IO) {
-                runCatching {
-                    FilmListWriter(false).writeFilmList(
-                        StandardLocations.getFilmlistFilePathString(),
-                        completeFilmList,
-                    )
-                }
-            }
-
-            writeResult
-                .onSuccess {
-                    filteredFilmList.filterListAndNotifyListeners()
-                    JOptionPane.showMessageDialog(
-                        host.gui(),
-                        "Duplikate wurden entfernt.",
-                        Konstanten.PROGRAMMNAME,
-                        JOptionPane.INFORMATION_MESSAGE,
-                    )
-                }
-                .onFailure { error ->
-                    logger.error("Could not persist duplicate-removal changes.", error)
-                    JOptionPane.showMessageDialog(
-                        host.gui(),
-                        "Duplikate konnten nicht gespeichert werden.",
-                        Konstanten.PROGRAMMNAME,
-                        JOptionPane.ERROR_MESSAGE,
-                    )
-                }
-        }
     }
 
     private fun setupHistoryContextActions(popupMenu: JPopupMenu, film: DatenFilm) {
