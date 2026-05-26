@@ -141,37 +141,121 @@ public class GuiFilme extends AGuiTabPanel {
 
     }
 
-    private FilmRuntimeSetup createRuntimeSetup(
-            BookmarkStartupReloadCoordinator bookmarkStartupReloadCoordinator,
-            FilmToolBar filmToolBar,
-            FilmUiActions filmUiActions) {
-        var tableReloadHost = new FilmTableReloadHostAdapter(
+    private FilmControllerSetup createControllerSetup(MediathekGui mediathekGui) {
+        var selectionHost = new FilmSelectionHostAdapter(
                 () -> tabelle,
-                () -> new SearchFieldData(searchField.getText(), searchField.getSearchMode()),
-                filterController,
-                () -> daten.getDecoratedPool(),
-                suspended -> stopBeob = suspended,
-                this::updateStartInfoProperty,
-                selectionController::updateFilmData);
-        var tableReloader = new FilmTableReloader(tableReloadHost);
-        var reloadTableDataTimer = new NonRepeatingTimer(_ -> loadTable());
-        var lifecycleHost = new FilmLifecycleHostAdapter(
+                () -> tabelle,
                 this,
-                daten,
-                () -> tabelle,
-                filterConfiguration,
-                bookmarkStartupReloadCoordinator,
-                () -> swingFilterDialog,
-                () -> filmToolBar,
-                () -> searchField,
-                () -> filmUiActions,
-                this::requestTableReload,
-                this::updateStartInfoProperty,
-                this::tabelleSpeichern,
-                filterSelectionComboBoxModel::close);
-        var lifecycleController = new FilmLifecycleController(lifecycleHost);
+                mediathekGui,
+                () -> daten,
+                filterConfiguration::isShowHighQualityOnly);
+        var selectionController = new FilmSelectionController(selectionHost);
+        var bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
+        var bookmarkController = new FilmBookmarkController(bookmarkHost);
+        Consumer<DatenPset> saveSelectedFilm = pSet -> {
+            synchronized (this) {
+                selectionController.saveFilm(pSet);
+            }
+        };
+        var filmActionHost = new FilmActionHostAdapter(
+                saveSelectedFilm,
+                selectionController::getSelectedFilms,
+                bookmarkController::updateBookmarkListAndRefresh,
+                selectionController::getCurrentlySelectedFilm,
+                this::toggleFilterDialogVisibility);
 
-        return new FilmRuntimeSetup(tableReloader, reloadTableDataTimer, lifecycleController);
+        return new FilmControllerSetup(
+                selectionController,
+                bookmarkController,
+                filmActionHost,
+                saveSelectedFilm);
+    }
+
+    private FilmActionSetup createFilmActions(FilmActionHost filmActionHost) {
+        var playFilmAction = new PlayFilmAction(selectionController::startFilm);
+        var saveFilmAction = new SaveFilmAction(filmActionHost);
+        var copyHqUrlToClipboardAction =
+                new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY);
+        var copyNormalUrlToClipboardAction =
+                new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL);
+        var toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction(filmActionHost);
+        var bookmarkAddFilmAction = new BookmarkAddFilmAction(filmActionHost);
+        var bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction(filmActionHost);
+        var manageBookmarkAction = new ManageBookmarkAction(MediathekGui.ui());
+        var markFilmAsSeenAction = new MarkFilmAsSeenAction(selectionController::getSelectedFilms);
+        var markFilmAsUnseenAction = new MarkFilmAsUnseenAction(selectionController::getSelectedFilms);
+        var downloadSubtitleAction = new DownloadSubtitleAction(selectionController::getCurrentlySelectedFilm);
+        var filmUiActions = new FilmUiActions(
+                playFilmAction,
+                saveFilmAction,
+                bookmarkAddFilmAction,
+                bookmarkRemoveFilmAction,
+                deleteBookmarksAction,
+                manageBookmarkAction,
+                copyNormalUrlToClipboardAction,
+                copyHqUrlToClipboardAction,
+                markFilmAsSeenAction,
+                markFilmAsUnseenAction,
+                mediathekGui.toggleBlacklistAction,
+                mediathekGui.editBlacklistAction,
+                mediathekGui.showFilmInformationAction,
+                downloadSubtitleAction);
+
+        return new FilmActionSetup(
+                playFilmAction,
+                saveFilmAction,
+                copyHqUrlToClipboardAction,
+                copyNormalUrlToClipboardAction,
+                toggleFilterDialogVisibilityAction,
+                bookmarkAddFilmAction,
+                bookmarkRemoveFilmAction,
+                manageBookmarkAction,
+                filmUiActions);
+    }
+
+    private FilmViewAndTableSetup createViewAndTableSetup(
+            JCheckBoxMenuItem cbShowButtons,
+            JCheckBoxMenuItem cbkShowDescription,
+            JScrollPane filmListScrollPane,
+            FilmActionHost filmActionHost,
+            FilmUiActions filmUiActions,
+            Consumer<DatenPset> saveSelectedFilm) {
+        var viewHost = new FilmViewHostAdapter(
+                psetButtonsTab,
+                () -> psetButtonsPanel,
+                panel -> psetButtonsPanel = panel,
+                () -> cbShowButtons,
+                () -> cbkShowDescription,
+                () -> filmUiActions,
+                this::makeDescriptionTabVisible,
+                selectionController::startFilm);
+        var tableContextMenuHost = new TableContextMenuHostAdapter(
+                () -> tabelle,
+                selectionController::getCurrentlySelectedFilm,
+                selectionController::getFilm,
+                () -> playFilmAction.actionPerformed(null),
+                () -> saveSelectedFilm.accept(null),
+                selectionController::startFilm,
+                suspended -> stopBeob = suspended,
+                mediathekGui,
+                () -> filmUiActions);
+        var tableInstallerHost = new FilmTableInstallerHostAdapter(
+                () -> tabelle,
+                () -> tabelle,
+                table -> tabelle = table,
+                filmListScrollPane,
+                this,
+                () -> tableContextMenuHost,
+                filmActionHost,
+                () -> filmUiActions,
+                () -> updateSelectedListItemsCount(tabelle),
+                this::onComponentShown,
+                selectionController::updateFilmData,
+                () -> stopBeob);
+
+        return new FilmViewAndTableSetup(
+                new FilmTableInstaller(tableInstallerHost),
+                new FilmViewController(viewHost));
     }
 
     private FilmUiSetup createFilmUi(
@@ -223,121 +307,37 @@ public class GuiFilme extends AGuiTabPanel {
         return new FilmUiSetup(searchField, filmToolBar, swingFilterDialog);
     }
 
-    private FilmControllerSetup createControllerSetup(MediathekGui mediathekGui) {
-        var selectionHost = new FilmSelectionHostAdapter(
+    private FilmRuntimeSetup createRuntimeSetup(
+            BookmarkStartupReloadCoordinator bookmarkStartupReloadCoordinator,
+            FilmToolBar filmToolBar,
+            FilmUiActions filmUiActions) {
+        var tableReloadHost = new FilmTableReloadHostAdapter(
                 () -> tabelle,
-                () -> tabelle,
-                this,
-                mediathekGui,
-                () -> daten,
-                filterConfiguration::isShowHighQualityOnly);
-        var selectionController = new FilmSelectionController(selectionHost);
-        var bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
-        var bookmarkController = new FilmBookmarkController(bookmarkHost);
-        Consumer<DatenPset> saveSelectedFilm = pSet -> {
-            synchronized (this) {
-                selectionController.saveFilm(pSet);
-            }
-        };
-        var filmActionHost = new FilmActionHostAdapter(
-                saveSelectedFilm,
-                selectionController::getSelectedFilms,
-                bookmarkController::updateBookmarkListAndRefresh,
-                selectionController::getCurrentlySelectedFilm,
-                this::toggleFilterDialogVisibility);
-
-        return new FilmControllerSetup(
-                selectionController,
-                bookmarkController,
-                filmActionHost,
-                saveSelectedFilm);
-    }
-
-    private FilmViewAndTableSetup createViewAndTableSetup(
-            JCheckBoxMenuItem cbShowButtons,
-            JCheckBoxMenuItem cbkShowDescription,
-            JScrollPane filmListScrollPane,
-            FilmActionHost filmActionHost,
-            FilmUiActions filmUiActions,
-            Consumer<DatenPset> saveSelectedFilm) {
-        var viewHost = new FilmViewHostAdapter(
-                psetButtonsTab,
-                () -> psetButtonsPanel,
-                panel -> psetButtonsPanel = panel,
-                () -> cbShowButtons,
-                () -> cbkShowDescription,
-                () -> filmUiActions,
-                this::makeDescriptionTabVisible,
-                selectionController::startFilm);
-        var tableContextMenuHost = new TableContextMenuHostAdapter(
-                () -> tabelle,
-                selectionController::getCurrentlySelectedFilm,
-                selectionController::getFilm,
-                () -> playFilmAction.actionPerformed(null),
-                () -> saveSelectedFilm.accept(null),
-                selectionController::startFilm,
+                () -> new SearchFieldData(searchField.getText(), searchField.getSearchMode()),
+                filterController,
+                () -> daten.getDecoratedPool(),
                 suspended -> stopBeob = suspended,
-                mediathekGui,
-                () -> filmUiActions);
-        var tableInstallerHost = new FilmTableInstallerHostAdapter(
-                () -> tabelle,
-                () -> tabelle,
-                table -> tabelle = table,
-                filmListScrollPane,
+                this::updateStartInfoProperty,
+                selectionController::updateFilmData);
+        var tableReloader = new FilmTableReloader(tableReloadHost);
+        var reloadTableDataTimer = new NonRepeatingTimer(_ -> loadTable());
+        var lifecycleHost = new FilmLifecycleHostAdapter(
                 this,
-                () -> tableContextMenuHost,
-                filmActionHost,
+                daten,
+                () -> tabelle,
+                filterConfiguration,
+                bookmarkStartupReloadCoordinator,
+                () -> swingFilterDialog,
+                () -> filmToolBar,
+                () -> searchField,
                 () -> filmUiActions,
-                () -> updateSelectedListItemsCount(tabelle),
-                this::onComponentShown,
-                selectionController::updateFilmData,
-                () -> stopBeob);
+                this::requestTableReload,
+                this::updateStartInfoProperty,
+                this::tabelleSpeichern,
+                filterSelectionComboBoxModel::close);
+        var lifecycleController = new FilmLifecycleController(lifecycleHost);
 
-        return new FilmViewAndTableSetup(
-                new FilmTableInstaller(tableInstallerHost),
-                new FilmViewController(viewHost));
-    }
-
-    private FilmActionSetup createFilmActions(FilmActionHost filmActionHost) {
-        var playFilmAction = new PlayFilmAction(selectionController::startFilm);
-        var saveFilmAction = new SaveFilmAction(filmActionHost);
-        var copyHqUrlToClipboardAction =
-                new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY);
-        var copyNormalUrlToClipboardAction =
-                new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL);
-        var toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction(filmActionHost);
-        var bookmarkAddFilmAction = new BookmarkAddFilmAction(filmActionHost);
-        var bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction(filmActionHost);
-        var manageBookmarkAction = new ManageBookmarkAction(MediathekGui.ui());
-        var markFilmAsSeenAction = new MarkFilmAsSeenAction(selectionController::getSelectedFilms);
-        var markFilmAsUnseenAction = new MarkFilmAsUnseenAction(selectionController::getSelectedFilms);
-        var downloadSubtitleAction = new DownloadSubtitleAction(selectionController::getCurrentlySelectedFilm);
-        var filmUiActions = new FilmUiActions(
-                playFilmAction,
-                saveFilmAction,
-                bookmarkAddFilmAction,
-                bookmarkRemoveFilmAction,
-                deleteBookmarksAction,
-                manageBookmarkAction,
-                copyNormalUrlToClipboardAction,
-                copyHqUrlToClipboardAction,
-                markFilmAsSeenAction,
-                markFilmAsUnseenAction,
-                mediathekGui.toggleBlacklistAction,
-                mediathekGui.editBlacklistAction,
-                mediathekGui.showFilmInformationAction,
-                downloadSubtitleAction);
-
-        return new FilmActionSetup(
-                playFilmAction,
-                saveFilmAction,
-                copyHqUrlToClipboardAction,
-                copyNormalUrlToClipboardAction,
-                toggleFilterDialogVisibilityAction,
-                bookmarkAddFilmAction,
-                bookmarkRemoveFilmAction,
-                manageBookmarkAction,
-                filmUiActions);
+        return new FilmRuntimeSetup(tableReloader, reloadTableDataTimer, lifecycleController);
     }
 
     private void toggleFilterDialogVisibility() {
@@ -463,6 +463,13 @@ public class GuiFilme extends AGuiTabPanel {
         tableReloader.loadTable(from_search_field);
     }
 
+    private record FilmControllerSetup(
+            FilmSelectionController selectionController,
+            FilmBookmarkController bookmarkController,
+            FilmActionHost filmActionHost,
+            Consumer<DatenPset> saveSelectedFilm) {
+    }
+
     private record FilmActionSetup(
             PlayFilmAction playFilmAction,
             SaveFilmAction saveFilmAction,
@@ -478,13 +485,6 @@ public class GuiFilme extends AGuiTabPanel {
     private record FilmViewAndTableSetup(
             FilmTableInstaller tableInstaller,
             FilmViewController viewController) {
-    }
-
-    private record FilmControllerSetup(
-            FilmSelectionController selectionController,
-            FilmBookmarkController bookmarkController,
-            FilmActionHost filmActionHost,
-            Consumer<DatenPset> saveSelectedFilm) {
     }
 
     private record FilmUiSetup(
