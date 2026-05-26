@@ -146,33 +146,16 @@ public class GuiFilme extends JPanel {
     }
 
     private FilmControllerSetup createControllerSetup(MediathekGui mediathekGui) {
-        var selectionHost = new FilmSelectionHostAdapter(
+        return FilmControllerSetup.create(
                 () -> tabelle,
                 () -> tabelle,
                 this,
                 mediathekGui,
                 () -> daten,
-                filterConfiguration::isShowHighQualityOnly);
-        var selectionController = new FilmSelectionController(selectionHost);
-        var bookmarkHost = new FilmBookmarkHostAdapter(mediathekGui, this::repaint);
-        var bookmarkController = new FilmBookmarkController(bookmarkHost);
-        Consumer<DatenPset> saveSelectedFilm = pSet -> {
-            synchronized (this) {
-                selectionController.saveFilm(pSet);
-            }
-        };
-        var filmActionHost = new FilmActionHostAdapter(
-                saveSelectedFilm,
-                selectionController::getSelectedFilms,
-                bookmarkController::updateBookmarkListAndRefresh,
-                selectionController::getCurrentlySelectedFilm,
+                filterConfiguration::isShowHighQualityOnly,
+                this,
+                this::repaint,
                 this::toggleFilterDialogVisibility);
-
-        return new FilmControllerSetup(
-                selectionController,
-                bookmarkController,
-                filmActionHost,
-                saveSelectedFilm);
     }
 
     private FilmActionSetup createFilmActions(FilmActionHost filmActionHost) {

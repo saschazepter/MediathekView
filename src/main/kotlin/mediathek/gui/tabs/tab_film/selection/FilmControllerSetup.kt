@@ -18,19 +18,72 @@
 
 package mediathek.gui.tabs.tab_film.selection
 
+import mediathek.config.Daten
 import mediathek.daten.DatenPset
+import mediathek.gui.tabs.tab_film.actions.FilmActionHostAdapter
 import mediathek.gui.tabs.tab_film.actions.FilmActionHost
 import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkController
+import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkHostAdapter
+import mediathek.mainwindow.MediathekGui
+import mediathek.tool.table.MVFilmTable
+import java.awt.Component
 import java.util.function.Consumer
+import java.util.function.Supplier
 
 class FilmControllerSetup(
     private val selectionController: FilmSelectionController,
     private val bookmarkController: FilmBookmarkController,
     private val filmActionHost: FilmActionHost,
-    private val saveSelectedFilm: Consumer<DatenPset>,
+    private val saveSelectedFilm: Consumer<DatenPset?>,
 ) {
     fun selectionController(): FilmSelectionController = selectionController
     fun bookmarkController(): FilmBookmarkController = bookmarkController
     fun filmActionHost(): FilmActionHost = filmActionHost
-    fun saveSelectedFilm(): Consumer<DatenPset> = saveSelectedFilm
+    fun saveSelectedFilm(): Consumer<DatenPset?> = saveSelectedFilm
+
+    companion object {
+        @JvmStatic
+        fun create(
+            table: Supplier<MVFilmTable>,
+            tableOrNull: Supplier<MVFilmTable?>,
+            parentComponent: Component,
+            mediathekGui: MediathekGui,
+            daten: Supplier<Daten>,
+            showHighQualityOnly: Supplier<Boolean>,
+            saveLock: Any,
+            repaintOwner: Runnable,
+            toggleFilterDialogVisibility: Runnable,
+        ): FilmControllerSetup {
+            val selectionHost = FilmSelectionHostAdapter(
+                table,
+                tableOrNull,
+                parentComponent,
+                mediathekGui,
+                daten,
+                showHighQualityOnly,
+            )
+            val selectionController = FilmSelectionController(selectionHost)
+            val bookmarkHost = FilmBookmarkHostAdapter(mediathekGui, repaintOwner)
+            val bookmarkController = FilmBookmarkController(bookmarkHost)
+            val saveSelectedFilm = Consumer<DatenPset?> { pset ->
+                synchronized(saveLock) {
+                    selectionController.saveFilm(pset)
+                }
+            }
+            val filmActionHost = FilmActionHostAdapter(
+                saveSelectedFilm,
+                selectionController::getSelectedFilms,
+                bookmarkController::updateBookmarkListAndRefresh,
+                selectionController::getCurrentlySelectedFilm,
+                toggleFilterDialogVisibility,
+            )
+
+            return FilmControllerSetup(
+                selectionController,
+                bookmarkController,
+                filmActionHost,
+                saveSelectedFilm,
+            )
+        }
+    }
 }
