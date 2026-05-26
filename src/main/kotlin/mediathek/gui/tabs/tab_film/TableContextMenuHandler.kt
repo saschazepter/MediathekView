@@ -21,7 +21,6 @@ package mediathek.gui.tabs.tab_film
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
-import mediathek.controller.starter.Start
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.mainwindow.MediathekGui
@@ -51,6 +50,7 @@ class TableContextMenuHandler(
 
     private val daten = Daten.getInstance()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+    private val filmTableButtonClickHandler = FilmTableButtonClickHandler(host, daten)
     private val filmAboAndBlacklistContextActions =
         FilmAboAndBlacklistContextActions(host, daten, this::selectedFilmAtPopupPoint)
     private val jDownloadHelper = JDownloadHelper()
@@ -76,7 +76,7 @@ class TableContextMenuHandler(
                 val row = host.table().rowAtPoint(point)
                 val column = host.table().columnAtPoint(point)
                 if (row >= 0) {
-                    buttonTable(row, column)
+                    filmTableButtonClickHandler.handleButtonClick(row, column)
                 }
             } else if (event.clickCount > 1) {
                 host.gui().filmInfoDialog?.let { infoDialog ->
@@ -97,37 +97,6 @@ class TableContextMenuHandler(
     override fun mouseReleased(event: MouseEvent) {
         if (event.isPopupTrigger) {
             showMenu(event)
-        }
-    }
-
-    private fun buttonTable(row: Int, column: Int) {
-        if (row == -1) {
-            return
-        }
-
-        when (host.table().convertColumnIndexToModel(column)) {
-            DatenFilm.FILM_ABSPIELEN -> host.getCurrentlySelectedFilm().ifPresent { film ->
-                var dontPlay = false
-                val download = daten.listeDownloadsButton.getDownloadUrlFilm(film.urlNormalQuality)
-                if (download != null && download.start != null && download.start.status == Start.STATUS_RUN) {
-                    dontPlay = true
-                    daten.listeDownloadsButton.delDownloadButton(film.urlNormalQuality)
-                }
-                if (!dontPlay) {
-                    host.playSelectedFilm()
-                }
-            }
-
-            DatenFilm.FILM_AUFZEICHNEN -> host.saveSelectedFilm()
-            DatenFilm.FILM_MERKEN -> host.getCurrentlySelectedFilm().ifPresent { film ->
-                if (!film.isLivestream) {
-                    if (film.isBookmarked) {
-                        host.actions().bookmarkRemoveFilm.actionPerformed(null)
-                    } else {
-                        host.actions().bookmarkAddFilm.actionPerformed(null)
-                    }
-                }
-            }
         }
     }
 
