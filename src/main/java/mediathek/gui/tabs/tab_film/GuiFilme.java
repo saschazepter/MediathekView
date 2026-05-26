@@ -173,17 +173,19 @@ public class GuiFilme extends JPanel {
             FilmActionHost filmActionHost,
             FilmUiActions filmUiActions,
             Consumer<DatenPset> saveSelectedFilm) {
-        var viewHost = new FilmViewHostAdapter(
+        return FilmViewAndTableSetup.create(
                 psetButtonsTab,
                 () -> psetButtonsPanel,
                 panel -> psetButtonsPanel = panel,
                 () -> cbShowButtons,
                 () -> cbkShowDescription,
-                () -> filmUiActions,
-                descriptionTabController::setVisible,
-                selectionController::startFilm);
-        var tableContextMenuHost = new TableContextMenuHostAdapter(
+                filmListScrollPane,
+                this,
                 () -> tabelle,
+                () -> tabelle,
+                table -> tabelle = table,
+                filmActionHost,
+                () -> filmUiActions,
                 selectionController::getCurrentlySelectedFilm,
                 selectionController::getFilm,
                 () -> playFilmAction.actionPerformed(null),
@@ -191,24 +193,11 @@ public class GuiFilme extends JPanel {
                 selectionController::startFilm,
                 suspended -> stopBeob = suspended,
                 mediathekGui,
-                () -> filmUiActions);
-        var tableInstallerHost = new FilmTableInstallerHostAdapter(
-                () -> tabelle,
-                () -> tabelle,
-                table -> tabelle = table,
-                filmListScrollPane,
-                this,
-                () -> tableContextMenuHost,
-                filmActionHost,
-                () -> filmUiActions,
                 () -> updateSelectedListItemsCount(tabelle),
                 this::onComponentShown,
                 selectionController::updateFilmData,
-                () -> stopBeob);
-
-        return new FilmViewAndTableSetup(
-                new FilmTableInstaller(tableInstallerHost),
-                new FilmViewController(viewHost));
+                () -> stopBeob,
+                descriptionTabController);
     }
 
     private FilmUiSetup createFilmUi(
