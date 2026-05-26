@@ -133,6 +133,18 @@ public class GuiFilme extends AGuiTabPanel {
 
         tableInstaller.setupTable();
 
+        var runtimeSetup = createRuntimeSetup(bookmarkStartupReloadCoordinator, filmToolBar, filmUiActions);
+        tableReloader = runtimeSetup.tableReloader();
+        reloadTableDataTimer = runtimeSetup.reloadTableDataTimer();
+        lifecycleController = runtimeSetup.lifecycleController();
+        lifecycleController.start();
+
+    }
+
+    private FilmRuntimeSetup createRuntimeSetup(
+            BookmarkStartupReloadCoordinator bookmarkStartupReloadCoordinator,
+            FilmToolBar filmToolBar,
+            FilmUiActions filmUiActions) {
         var tableReloadHost = new FilmTableReloadHostAdapter(
                 () -> tabelle,
                 () -> new SearchFieldData(searchField.getText(), searchField.getSearchMode()),
@@ -141,8 +153,8 @@ public class GuiFilme extends AGuiTabPanel {
                 suspended -> stopBeob = suspended,
                 this::updateStartInfoProperty,
                 selectionController::updateFilmData);
-        tableReloader = new FilmTableReloader(tableReloadHost);
-        reloadTableDataTimer = new NonRepeatingTimer(_ -> loadTable());
+        var tableReloader = new FilmTableReloader(tableReloadHost);
+        var reloadTableDataTimer = new NonRepeatingTimer(_ -> loadTable());
         var lifecycleHost = new FilmLifecycleHostAdapter(
                 this,
                 daten,
@@ -157,9 +169,9 @@ public class GuiFilme extends AGuiTabPanel {
                 this::updateStartInfoProperty,
                 this::tabelleSpeichern,
                 filterSelectionComboBoxModel::close);
-        lifecycleController = new FilmLifecycleController(lifecycleHost);
-        lifecycleController.start();
+        var lifecycleController = new FilmLifecycleController(lifecycleHost);
 
+        return new FilmRuntimeSetup(tableReloader, reloadTableDataTimer, lifecycleController);
     }
 
     private FilmUiSetup createFilmUi(
@@ -479,6 +491,12 @@ public class GuiFilme extends AGuiTabPanel {
             SearchField searchField,
             FilmToolBar filmToolBar,
             SwingFilterDialog swingFilterDialog) {
+    }
+
+    private record FilmRuntimeSetup(
+            FilmTableReloader tableReloader,
+            NonRepeatingTimer reloadTableDataTimer,
+            FilmLifecycleController lifecycleController) {
     }
 
     static class NonRepeatingTimer extends Timer {
