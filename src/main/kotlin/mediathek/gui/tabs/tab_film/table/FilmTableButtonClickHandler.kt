@@ -27,6 +27,21 @@ class FilmTableButtonClickHandler(
     private val host: TableContextMenuHandler.Host,
     private val daten: Daten,
 ) {
+    fun isButtonColumn(column: Int): Boolean {
+        if (column < 0) {
+            return false
+        }
+
+        return when (host.table().convertColumnIndexToModel(column)) {
+            DatenFilm.FILM_ABSPIELEN,
+            DatenFilm.FILM_AUFZEICHNEN,
+            DatenFilm.FILM_MERKEN,
+                -> true
+
+            else -> false
+        }
+    }
+
     fun handleButtonClick(row: Int, column: Int) {
         if (row == -1) {
             return

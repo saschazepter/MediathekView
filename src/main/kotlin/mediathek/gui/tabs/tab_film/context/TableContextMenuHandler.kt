@@ -18,7 +18,9 @@
 
 package mediathek.gui.tabs.tab_film.context
 
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.daten.DatenFilm
@@ -30,9 +32,9 @@ import mediathek.gui.tabs.tab_film.table.FilmTableButtonClickHandler
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.table.MVFilmTable
 import java.awt.Point
-import java.awt.event.*
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.util.*
-import javax.swing.*
 
 /**
  * Implements the context menu for tab film.
@@ -71,18 +73,11 @@ class TableContextMenuHandler(
         filmFileAndDuplicateContextActions::addActions,
     )
     private var popupPoint: Point? = null
+    private var pressedButtonCell: ButtonCell? = null
 
     override fun mouseClicked(event: MouseEvent) {
         if (event.button == MouseEvent.BUTTON1) {
-            if (event.clickCount == 1) {
-                popupPoint = event.point
-                val point = popupPoint ?: return
-                val row = host.table().rowAtPoint(point)
-                val column = host.table().columnAtPoint(point)
-                if (row >= 0) {
-                    filmTableButtonClickHandler.handleButtonClick(row, column)
-                }
-            } else if (event.clickCount > 1) {
+            if (event.clickCount > 1) {
                 host.gui().filmInfoDialog?.let { infoDialog ->
                     if (!infoDialog.isVisible) {
                         infoDialog.showInfo()
@@ -94,13 +89,25 @@ class TableContextMenuHandler(
 
     override fun mousePressed(event: MouseEvent) {
         if (event.isPopupTrigger) {
+            pressedButtonCell = null
             showMenu(event)
+            return
         }
+
+        pressedButtonCell = event.buttonCell()
     }
 
     override fun mouseReleased(event: MouseEvent) {
         if (event.isPopupTrigger) {
+            pressedButtonCell = null
             showMenu(event)
+            return
+        }
+
+        val buttonCell = pressedButtonCell
+        pressedButtonCell = null
+        if (buttonCell != null && buttonCell == event.buttonCell()) {
+            filmTableButtonClickHandler.handleButtonClick(buttonCell.row, buttonCell.column)
         }
     }
 
@@ -126,4 +133,23 @@ class TableContextMenuHandler(
         return host.getFilm(row).orElse(null)
     }
 
+    private fun MouseEvent.buttonCell(): ButtonCell? {
+        if (button != MouseEvent.BUTTON1 || clickCount != 1) {
+            return null
+        }
+
+        val row = host.table().rowAtPoint(point)
+        if (row < 0) {
+            return null
+        }
+
+        val column = host.table().columnAtPoint(point)
+        return if (filmTableButtonClickHandler.isButtonColumn(column)) {
+            ButtonCell(row, column)
+        } else {
+            null
+        }
+    }
+
+    private data class ButtonCell(val row: Int, val column: Int)
 }
