@@ -97,18 +97,16 @@ public class GuiFilme extends AGuiTabPanel {
                 bookmarkController::updateBookmarkListAndRefresh,
                 selectionController::getCurrentlySelectedFilm,
                 this::toggleFilterDialogVisibility);
-        playFilmAction = new PlayFilmAction(selectionController::startFilm);
-        saveFilmAction = new SaveFilmAction(filmActionHost);
-        copyHqUrlToClipboardAction = new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY);
-        copyNormalUrlToClipboardAction = new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL);
-        toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction(filmActionHost);
+        var filmActions = createFilmActions(filmActionHost);
+        playFilmAction = filmActions.playFilmAction();
+        saveFilmAction = filmActions.saveFilmAction();
+        copyHqUrlToClipboardAction = filmActions.copyHqUrlToClipboardAction();
+        copyNormalUrlToClipboardAction = filmActions.copyNormalUrlToClipboardAction();
+        toggleFilterDialogVisibilityAction = filmActions.toggleFilterDialogVisibilityAction();
         var bookmarkStartupReloadCoordinator = new BookmarkStartupReloadCoordinator();
-        var bookmarkAddFilmAction = new BookmarkAddFilmAction(filmActionHost);
-        var bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction(filmActionHost);
-        var manageBookmarkAction = new ManageBookmarkAction(MediathekGui.ui());
-        var markFilmAsSeenAction = new MarkFilmAsSeenAction(selectionController::getSelectedFilms);
-        var markFilmAsUnseenAction = new MarkFilmAsUnseenAction(selectionController::getSelectedFilms);
-        var downloadSubtitleAction = new DownloadSubtitleAction(selectionController::getCurrentlySelectedFilm);
+        var bookmarkAddFilmAction = filmActions.bookmarkAddFilmAction();
+        var bookmarkRemoveFilmAction = filmActions.bookmarkRemoveFilmAction();
+        var manageBookmarkAction = filmActions.manageBookmarkAction();
         var filmListScrollPane = new JScrollPane();
         var cbkShowDescription = new JCheckBoxMenuItem("Beschreibung anzeigen");
         var cbShowButtons = new JCheckBoxMenuItem("Buttons anzeigen");
@@ -127,21 +125,7 @@ public class GuiFilme extends AGuiTabPanel {
                 mediathekGui,
                 this::loadTable,
                 this::loadTable);
-        var filmUiActions = new FilmUiActions(
-                playFilmAction,
-                saveFilmAction,
-                bookmarkAddFilmAction,
-                bookmarkRemoveFilmAction,
-                deleteBookmarksAction,
-                manageBookmarkAction,
-                copyNormalUrlToClipboardAction,
-                copyHqUrlToClipboardAction,
-                markFilmAsSeenAction,
-                markFilmAsUnseenAction,
-                mediathekGui.toggleBlacklistAction,
-                mediathekGui.editBlacklistAction,
-                mediathekGui.showFilmInformationAction,
-                downloadSubtitleAction);
+        var filmUiActions = filmActions.filmUiActions();
         var viewHost = new FilmViewHostAdapter(
                 psetButtonsTab,
                 () -> psetButtonsPanel,
@@ -244,6 +228,48 @@ public class GuiFilme extends AGuiTabPanel {
         lifecycleController = new FilmLifecycleController(lifecycleHost);
         lifecycleController.start();
 
+    }
+
+    private FilmActionSetup createFilmActions(FilmActionHost filmActionHost) {
+        var playFilmAction = new PlayFilmAction(selectionController::startFilm);
+        var saveFilmAction = new SaveFilmAction(filmActionHost);
+        var copyHqUrlToClipboardAction =
+                new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY);
+        var copyNormalUrlToClipboardAction =
+                new CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.NORMAL);
+        var toggleFilterDialogVisibilityAction = new ToggleFilterDialogVisibilityAction(filmActionHost);
+        var bookmarkAddFilmAction = new BookmarkAddFilmAction(filmActionHost);
+        var bookmarkRemoveFilmAction = new BookmarkRemoveFilmAction(filmActionHost);
+        var manageBookmarkAction = new ManageBookmarkAction(MediathekGui.ui());
+        var markFilmAsSeenAction = new MarkFilmAsSeenAction(selectionController::getSelectedFilms);
+        var markFilmAsUnseenAction = new MarkFilmAsUnseenAction(selectionController::getSelectedFilms);
+        var downloadSubtitleAction = new DownloadSubtitleAction(selectionController::getCurrentlySelectedFilm);
+        var filmUiActions = new FilmUiActions(
+                playFilmAction,
+                saveFilmAction,
+                bookmarkAddFilmAction,
+                bookmarkRemoveFilmAction,
+                deleteBookmarksAction,
+                manageBookmarkAction,
+                copyNormalUrlToClipboardAction,
+                copyHqUrlToClipboardAction,
+                markFilmAsSeenAction,
+                markFilmAsUnseenAction,
+                mediathekGui.toggleBlacklistAction,
+                mediathekGui.editBlacklistAction,
+                mediathekGui.showFilmInformationAction,
+                downloadSubtitleAction);
+
+        return new FilmActionSetup(
+                playFilmAction,
+                saveFilmAction,
+                copyHqUrlToClipboardAction,
+                copyNormalUrlToClipboardAction,
+                toggleFilterDialogVisibilityAction,
+                bookmarkAddFilmAction,
+                bookmarkRemoveFilmAction,
+                manageBookmarkAction,
+                filmUiActions);
     }
 
     private void toggleFilterDialogVisibility() {
@@ -367,6 +393,18 @@ public class GuiFilme extends AGuiTabPanel {
 
     private void loadTable(boolean from_search_field) {
         tableReloader.loadTable(from_search_field);
+    }
+
+    private record FilmActionSetup(
+            PlayFilmAction playFilmAction,
+            SaveFilmAction saveFilmAction,
+            CopyUrlToClipboardAction copyHqUrlToClipboardAction,
+            CopyUrlToClipboardAction copyNormalUrlToClipboardAction,
+            ToggleFilterDialogVisibilityAction toggleFilterDialogVisibilityAction,
+            BookmarkAddFilmAction bookmarkAddFilmAction,
+            BookmarkRemoveFilmAction bookmarkRemoveFilmAction,
+            ManageBookmarkAction manageBookmarkAction,
+            FilmUiActions filmUiActions) {
     }
 
     static class NonRepeatingTimer extends Timer {
