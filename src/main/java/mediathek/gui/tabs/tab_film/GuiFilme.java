@@ -199,22 +199,22 @@ public class GuiFilme extends AGuiTabPanel {
     private final FilmTableReloader tableReloader;
     private final FilmTableReloader.Host tableReloadHost = new FilmTableReloader.Host() {
         @Override
-        public MVFilmTable table() {
+        public @NonNull MVFilmTable table() {
             return tabelle;
         }
 
         @Override
-        public SearchFieldData searchFieldData() {
+        public @NonNull SearchFieldData searchFieldData() {
             return new SearchFieldData(searchField.getText(), searchField.getSearchMode());
         }
 
         @Override
-        public FilmFilterController filterController() {
+        public @NonNull FilmFilterController filterController() {
             return filterController;
         }
 
         @Override
-        public Executor tableModelExecutor() {
+        public @NonNull Executor tableModelExecutor() {
             return daten.getDecoratedPool();
         }
 
@@ -307,7 +307,7 @@ public class GuiFilme extends AGuiTabPanel {
         }
 
         @Override
-        public TableContextMenuHandler.Host tableContextMenuHost() {
+        public TableContextMenuHandler.@NonNull Host tableContextMenuHost() {
             return tableContextMenuHost;
         }
 
@@ -354,7 +354,7 @@ public class GuiFilme extends AGuiTabPanel {
                 this,
                 mediathekGui,
                 () -> daten,
-                () -> filterConfiguration.isShowHighQualityOnly());
+                filterConfiguration::isShowHighQualityOnly);
         searchFieldHost = new SearchFieldHostAdapter(
                 mediathekGui,
                 this::loadTable,
