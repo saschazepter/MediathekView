@@ -56,19 +56,13 @@ internal class GuiModelHelperSupport(
     fun applyCommonFilters(
         source: Stream<DatenFilm>,
         filterContext: FilterExecutionContext,
-    ): Stream<DatenFilm> {
-        var stream = source
-        if (filterContext.filterThema.isNotEmpty()) {
-            stream = stream.filter { film -> film.thema.equals(filterContext.filterThema, ignoreCase = true) }
+    ): Stream<DatenFilm> =
+        source.filter { film ->
+            matchesThemaFilter(film, filterContext) &&
+                matchesMaxLengthFilter(film, filterContext.lengthFilterRange) &&
+                matchesSeenFilter(film, filterContext) &&
+                minLengthCheck(film, filterContext.lengthFilterRange)
         }
-        if (filterContext.lengthFilterRange.hasUpperLimit()) {
-            stream = stream.filter { film -> film.filmLength < filterContext.lengthFilterRange.maxLengthInSeconds }
-        }
-        if (filterContext.state.showUnseenOnly) {
-            stream = stream.filter(::seenCheck)
-        }
-        return stream.filter { film -> minLengthCheck(film, filterContext.lengthFilterRange) }
-    }
 
     fun createFilterExecutionContext(): FilterExecutionContext {
         val state = state()
@@ -125,6 +119,15 @@ internal class GuiModelHelperSupport(
         return filmLength >= lengthFilterRange.minLengthInSeconds
     }
 
+    private fun matchesThemaFilter(film: DatenFilm, filterContext: FilterExecutionContext): Boolean =
+        filterContext.filterThema.isEmpty() || film.thema.equals(filterContext.filterThema, ignoreCase = true)
+
+    private fun matchesMaxLengthFilter(film: DatenFilm, lengthFilterRange: LengthFilterRange): Boolean =
+        !lengthFilterRange.hasUpperLimit() || film.filmLength < lengthFilterRange.maxLengthInSeconds
+
+    private fun matchesSeenFilter(film: DatenFilm, filterContext: FilterExecutionContext): Boolean =
+        !filterContext.state.showUnseenOnly || seenCheck(film)
+
     private fun getSelectedSendersFromFilter(state: FilmFilterState): Set<String> =
         state.checkedChannels
             .filter(SenderFilmlistLoadApprover::isApproved)
@@ -165,9 +168,11 @@ internal class GuiModelHelperSupport(
         val finalStageFilter: (DatenFilm) -> Boolean,
         val noFiltersAreSet: Boolean,
     ) {
-        fun hasSearchTerms(): Boolean = searchTerms.isNotEmpty()
+        val hasSearchTerms: Boolean
+            get() = searchTerms.isNotEmpty()
 
-        fun hasSelectedSenders(): Boolean = selectedSenders.isNotEmpty()
+        val hasSelectedSenders: Boolean
+            get() = selectedSenders.isNotEmpty()
     }
 
     private companion object {

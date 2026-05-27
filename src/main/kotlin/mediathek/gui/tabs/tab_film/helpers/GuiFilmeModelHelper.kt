@@ -24,6 +24,7 @@ import mediathek.daten.DatenFilm
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import mediathek.tool.ApplicationConfiguration
+import java.util.stream.Stream
 import javax.swing.table.TableModel
 
 class GuiFilmeModelHelper(
@@ -52,49 +53,38 @@ class GuiFilmeModelHelper(
         }
 
         var stream = allFilms.parallelStream()
-        if (filterContext.hasSelectedSenders()) {
-            stream = stream.filter { film -> filterContext.senderFilter(film) }
-        }
-        if (state.showNewOnly) {
-            stream = stream.filter(DatenFilm::isNew)
-        }
-        if (state.showBookMarkedOnly) {
-            stream = stream.filter(DatenFilm::isBookmarked)
-        }
-        if (state.showLivestreamsOnly) {
-            stream = stream.filter(DatenFilm::isLivestream)
-        }
-        if (state.showHighQualityOnly) {
-            stream = stream.filter(DatenFilm::isHighQuality)
-        }
-        if (state.dontShowTrailers) {
-            stream = stream.filter { film -> !film.isTrailerTeaser }
-        }
-        if (state.dontShowSignLanguage) {
-            stream = stream.filter { film -> !film.isSignLanguage }
-        }
+            .filterIf(filterContext.hasSelectedSenders) { film -> filterContext.senderFilter(film) }
+            .filterIf(state.showNewOnly, DatenFilm::isNew)
+            .filterIf(state.showBookMarkedOnly, DatenFilm::isBookmarked)
+            .filterIf(state.showLivestreamsOnly, DatenFilm::isLivestream)
+            .filterIf(state.showHighQualityOnly, DatenFilm::isHighQuality)
+            .filterIf(state.dontShowTrailers) { film -> !film.isTrailerTeaser }
+            .filterIf(state.dontShowSignLanguage) { film -> !film.isSignLanguage }
+
         if (state.dontShowGeoblocked) {
             val geographicLocation = ApplicationConfiguration.getInstance().geographicLocation
             stream = stream.filter { film -> !film.isGeoBlockedForLocation(geographicLocation) }
         }
-        if (state.dontShowAudioVersions) {
-            stream = stream.filter { film -> !film.isAudioVersion }
-        }
-        if (state.dontShowAbos) {
-            stream = stream.filter { film -> film.abo == null }
-        }
-        if (state.dontShowDuplicates) {
-            stream = stream.filter { film -> !film.isDuplicate }
-        }
-        if (state.showSubtitlesOnly) {
-            stream = stream.filter(DatenFilm::hasAnySubtitles)
-        }
+        stream = stream
+            .filterIf(state.dontShowAudioVersions) { film -> !film.isAudioVersion }
+            .filterIf(state.dontShowAbos) { film -> film.abo == null }
+            .filterIf(state.dontShowDuplicates) { film -> !film.isDuplicate }
+            .filterIf(state.showSubtitlesOnly, DatenFilm::hasAnySubtitles)
 
         stream = support.applyCommonFilters(stream, filterContext)
-        if (filterContext.hasSearchTerms()) {
+        if (filterContext.hasSearchTerms) {
             stream = stream.filter { film -> filterContext.finalStageFilter(film) }
         }
 
         return stream.toList()
     }
+}
+
+private inline fun <T> Stream<T>.filterIf(
+    enabled: Boolean,
+    crossinline predicate: (T) -> Boolean,
+): Stream<T> = if (enabled) {
+    filter { item -> predicate(item) }
+} else {
+    this
 }

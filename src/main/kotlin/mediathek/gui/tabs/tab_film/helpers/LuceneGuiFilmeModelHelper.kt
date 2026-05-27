@@ -64,8 +64,9 @@ class LuceneGuiFilmeModelHelper(
     override val filteredTableModel: TableModel
         get() {
             val allFilms = allFilms()
+            check(allFilms is IndexedFilmList) { "Lucene filtering requires an IndexedFilmList" }
             return support.getFilteredTableModel(allFilms) { filterContext ->
-                filterFilms(allFilms as IndexedFilmList, filterContext)
+                filterFilms(allFilms, filterContext)
             }
         }
 
@@ -177,29 +178,23 @@ class LuceneGuiFilmeModelHelper(
     }
 
     private fun applyConfiguredQueries(queryBuilder: BooleanQuery.Builder, state: FilmFilterState) {
-        if (state.showLivestreamsOnly) {
-            queryBuilder.add(termQuery(LuceneIndexKeys.LIVESTREAM), BooleanClause.Occur.FILTER)
-        }
-        if (state.showHighQualityOnly) {
-            queryBuilder.add(termQuery(LuceneIndexKeys.HIGH_QUALITY), BooleanClause.Occur.FILTER)
-        }
-        if (state.dontShowTrailers) {
-            queryBuilder.add(termQuery(LuceneIndexKeys.TRAILER_TEASER), BooleanClause.Occur.MUST_NOT)
-        }
-        if (state.dontShowAudioVersions) {
-            queryBuilder.add(termQuery(LuceneIndexKeys.AUDIOVERSION), BooleanClause.Occur.MUST_NOT)
-        }
-        if (state.dontShowSignLanguage) {
-            queryBuilder.add(termQuery(LuceneIndexKeys.SIGN_LANGUAGE), BooleanClause.Occur.MUST_NOT)
-        }
-        if (state.dontShowDuplicates) {
-            queryBuilder.add(termQuery(LuceneIndexKeys.DUPLICATE), BooleanClause.Occur.MUST_NOT)
-        }
-        if (state.showSubtitlesOnly) {
-            queryBuilder.add(termQuery(LuceneIndexKeys.SUBTITLE), BooleanClause.Occur.FILTER)
-        }
-        if (state.showNewOnly) {
-            queryBuilder.add(termQuery(LuceneIndexKeys.NEW), BooleanClause.Occur.FILTER)
+        queryBuilder.addTermIf(state.showLivestreamsOnly, LuceneIndexKeys.LIVESTREAM, BooleanClause.Occur.FILTER)
+        queryBuilder.addTermIf(state.showHighQualityOnly, LuceneIndexKeys.HIGH_QUALITY, BooleanClause.Occur.FILTER)
+        queryBuilder.addTermIf(state.dontShowTrailers, LuceneIndexKeys.TRAILER_TEASER, BooleanClause.Occur.MUST_NOT)
+        queryBuilder.addTermIf(state.dontShowAudioVersions, LuceneIndexKeys.AUDIOVERSION, BooleanClause.Occur.MUST_NOT)
+        queryBuilder.addTermIf(state.dontShowSignLanguage, LuceneIndexKeys.SIGN_LANGUAGE, BooleanClause.Occur.MUST_NOT)
+        queryBuilder.addTermIf(state.dontShowDuplicates, LuceneIndexKeys.DUPLICATE, BooleanClause.Occur.MUST_NOT)
+        queryBuilder.addTermIf(state.showSubtitlesOnly, LuceneIndexKeys.SUBTITLE, BooleanClause.Occur.FILTER)
+        queryBuilder.addTermIf(state.showNewOnly, LuceneIndexKeys.NEW, BooleanClause.Occur.FILTER)
+    }
+
+    private fun BooleanQuery.Builder.addTermIf(
+        enabled: Boolean,
+        field: String,
+        occur: BooleanClause.Occur,
+    ) {
+        if (enabled) {
+            add(termQuery(field), occur)
         }
     }
 
