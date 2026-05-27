@@ -25,7 +25,6 @@ import mediathek.swing.IconUtils
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.MessageBus
 import mediathek.tool.SVGIconUtilities
-import org.apache.commons.configuration2.Configuration
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Color
@@ -40,17 +39,12 @@ import javax.swing.table.TableColumnModel
  * CellRenderer base class for all custom renderer associated with a Start.
  */
 open class CellRendererBaseWithStart : CellRendererBase() {
-    protected val config: Configuration = ApplicationConfiguration.getConfiguration()
     protected val lockedIcon: FontIcon = IconUtils.of(FontAwesomeSolid.LOCK)
     protected val lockedIconSelected: FontIcon = FontIcon.of(FontAwesomeSolid.LOCK, IconUtils.DEFAULT_SIZE, Color.WHITE)
     protected val unlockedIcon: FontIcon = IconUtils.of(FontAwesomeSolid.LOCK_OPEN)
     protected val unlockedIconSelected: FontIcon =
         FontIcon.of(FontAwesomeSolid.LOCK_OPEN, IconUtils.DEFAULT_SIZE, Color.WHITE)
 
-    /**
-     * Temporary storage for the icons that will be assembled to a compound icon.
-     */
-    private val iconList = mutableListOf<Icon>()
     private val subtitleIcon: FontIcon = IconUtils.of(FontAwesomeSolid.CLOSED_CAPTIONING)
     private val subtitleIconSelected: FontIcon =
         FontIcon.of(FontAwesomeSolid.CLOSED_CAPTIONING, IconUtils.DEFAULT_SIZE, Color.WHITE)
@@ -123,6 +117,7 @@ open class CellRendererBaseWithStart : CellRendererBase() {
         hqColumnHidden: Boolean,
         utColumnHidden: Boolean,
     ) {
+        val iconList = mutableListOf<Icon>()
         if (!filmIsCountryUnlocked(datenFilm)) {
             iconList += if (isSelected) lockedIconSelected else lockedIcon
         }
@@ -156,8 +151,6 @@ open class CellRendererBaseWithStart : CellRendererBase() {
         } else {
             SwingConstants.TRAILING
         }
-        // always clear at the end
-        iconList.clear()
     }
 
     private fun getIndicatorColumnVisibility(table: JTable): IndicatorColumnVisibility {

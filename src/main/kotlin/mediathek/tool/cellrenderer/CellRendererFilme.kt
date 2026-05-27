@@ -33,11 +33,8 @@ import java.awt.Component
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import javax.swing.Icon
 import javax.swing.JTable
-import javax.swing.JTextArea
 import javax.swing.SwingConstants
-import javax.swing.UIManager
 
 class CellRendererFilme : CellRendererBaseWithStart() {
     private val selectedStopIcon = FontIcon.of(FontAwesomeSolid.STOP, IconUtils.DEFAULT_SIZE, Color.WHITE)
@@ -49,21 +46,6 @@ class CellRendererFilme : CellRendererBaseWithStart() {
     private val selectedBookmarkIcon = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.WHITE)
     private val normalBookmarkIcon = IconUtils.of(FontAwesomeSolid.BOOKMARK)
     private val selectedBookmarkIconHighlighted = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.ORANGE)
-
-    private fun createTextArea(content: String): JTextArea {
-        val textArea = JTextArea()
-        textArea.lineWrap = true
-        textArea.wrapStyleWord = true
-        textArea.text = content
-        textArea.foreground = foreground
-        textArea.background = background
-
-        val fontSize = textArea.font.size2D
-        val labelFont = UIManager.getFont("Label.font")
-        textArea.font = labelFont.deriveFont(fontSize)
-
-        return textArea
-    }
 
     override fun getTableCellRendererComponent(
         table: JTable,
@@ -90,7 +72,7 @@ class CellRendererFilme : CellRendererBaseWithStart() {
                     DatenFilm.FILM_THEMA,
                     DatenFilm.FILM_TITEL,
                     DatenFilm.FILM_URL,
-                        -> return createTextArea(value!!.toString())
+                        -> return createWrappedTextArea(valueText(value), useLabelFont = true)
                 }
             } else {
                 applyHorizontalAlignment(columnModelIndex)
@@ -115,7 +97,7 @@ class CellRendererFilme : CellRendererBaseWithStart() {
                 DatenFilm.FILM_SENDER -> {
                     if (mvTable.showSenderIcons()) {
                         val targetDim = getSenderCellDimension(table, row, column)
-                        setSenderIcon(value!!.toString(), targetDim, isSelected)
+                        setSenderIcon(valueText(value), targetDim, isSelected)
                     }
                 }
 
@@ -169,21 +151,16 @@ class CellRendererFilme : CellRendererBaseWithStart() {
 
     private fun handleButtonStartColumn(datenDownload: DatenDownload?, isSelected: Boolean) {
         if (datenDownload?.start?.status == Start.STATUS_RUN) {
-            setIconAndToolTip(isSelected, normalStopIcon, selectedStopIcon, "Film stoppen")
+            setSelectedIconAndToolTip(isSelected, normalStopIcon, selectedStopIcon, "Film stoppen")
         }
 
         if (icon == null) {
-            setIconAndToolTip(isSelected, normalPlayIcon, selectedPlayIcon, "Film abspielen")
+            setSelectedIconAndToolTip(isSelected, normalPlayIcon, selectedPlayIcon, "Film abspielen")
         }
     }
 
-    private fun setIconAndToolTip(isSelected: Boolean, normal: Icon, selected: Icon, text: String) {
-        toolTipText = text
-        icon = if (isSelected) selected else normal
-    }
-
     private fun handleButtonDownloadColumn(isSelected: Boolean) {
-        setIconAndToolTip(isSelected, normalDownloadIcon, selectedDownloadIcon, "Film aufzeichnen")
+        setSelectedIconAndToolTip(isSelected, normalDownloadIcon, selectedDownloadIcon, "Film aufzeichnen")
     }
 
     private fun handleButtonBookmarkColumn(isBookMarked: Boolean, isSelected: Boolean, isLivestream: Boolean) {

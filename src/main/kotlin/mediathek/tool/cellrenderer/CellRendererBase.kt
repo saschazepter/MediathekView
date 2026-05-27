@@ -29,7 +29,9 @@ import java.util.*
 import javax.swing.Icon
 import javax.swing.ImageIcon
 import javax.swing.JTable
+import javax.swing.JTextArea
 import javax.swing.SwingConstants
+import javax.swing.UIManager
 import javax.swing.table.DefaultTableCellRenderer
 import kotlin.math.max
 import kotlin.math.roundToInt
@@ -43,6 +45,30 @@ open class CellRendererBase : DefaultTableCellRenderer() {
      * Will get evicted automatically in order to not store too many useless objects.
      */
     private val senderCellIconCache = SelfEvictingSenderIconCache()
+
+    protected fun createWrappedTextArea(content: String, useLabelFont: Boolean = false): JTextArea =
+        JTextArea().apply {
+            lineWrap = true
+            wrapStyleWord = true
+            text = content
+            foreground = this@CellRendererBase.foreground
+            background = this@CellRendererBase.background
+
+            if (useLabelFont) {
+                val fontSize = font.size2D
+                font = UIManager.getFont("Label.font").deriveFont(fontSize)
+            }
+        }
+
+    protected fun valueText(value: Any?): String = requireNotNull(value).toString()
+
+    protected fun selectedIcon(isSelected: Boolean, normal: Icon, selected: Icon): Icon =
+        if (isSelected) selected else normal
+
+    protected fun setSelectedIconAndToolTip(isSelected: Boolean, normal: Icon, selected: Icon, tooltip: String) {
+        toolTipText = tooltip
+        icon = selectedIcon(isSelected, normal, selected)
+    }
 
     protected fun setSenderIcon(sender: String, targetDim: Dimension, isSelected: Boolean) {
         val normalizedSender = normalizeSender(sender)

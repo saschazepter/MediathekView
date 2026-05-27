@@ -55,7 +55,7 @@ class CellRendererDownloads : CellRendererBaseWithStart() {
         }
     }
 
-    protected fun setBackgroundColor(c: Component, s: Start?, isSelected: Boolean) {
+    private fun setBackgroundColor(c: Component, s: Start?, isSelected: Boolean) {
         if (s != null) {
             val color = when (s.status) {
                 Start.STATUS_INIT -> if (isSelected) MVColor.DOWNLOAD_WAIT_SEL.color else MVColor.DOWNLOAD_WAIT.color
@@ -101,7 +101,7 @@ class CellRendererDownloads : CellRendererBaseWithStart() {
                     DatenDownload.DOWNLOAD_ZIEL_PFAD,
                     DatenDownload.DOWNLOAD_ZIEL_PFAD_DATEINAME,
                     DatenDownload.DOWNLOAD_ABO,
-                        -> return createTextArea(value!!.toString(), datenDownload, columnModelIndex, isSelected)
+                        -> return createTextArea(valueText(value), datenDownload, columnModelIndex, isSelected)
                 }
             } else {
                 applyHorizontalAlignment(columnModelIndex)
@@ -123,7 +123,7 @@ class CellRendererDownloads : CellRendererBaseWithStart() {
                             progressBar.value = start.percent
 
                             val progressValue = start.percent / 10.0
-                            progressBar.string = progressValue.toString() + '%'
+                            progressBar.string = "$progressValue%"
 
                             return panel
                         } else {
@@ -162,7 +162,7 @@ class CellRendererDownloads : CellRendererBaseWithStart() {
                 DatenDownload.DOWNLOAD_SENDER -> {
                     if (mvTable.showSenderIcons()) {
                         val targetDim = getSenderCellDimension(table, row, column)
-                        setSenderIcon(value!!.toString(), targetDim, isSelected)
+                        setSenderIcon(valueText(value), targetDim, isSelected)
                     }
                 }
 
@@ -188,13 +188,7 @@ class CellRendererDownloads : CellRendererBaseWithStart() {
         columnModelIndex: Int,
         isSelected: Boolean,
     ): JTextArea {
-        val textArea = JTextArea().apply {
-            lineWrap = true
-            wrapStyleWord = true
-            text = value
-            foreground = this@CellRendererDownloads.foreground
-            background = this@CellRendererDownloads.background
-        }
+        val textArea = createWrappedTextArea(value)
         if (columnModelIndex == DatenDownload.DOWNLOAD_ABO) {
             handleAboColumn(textArea, datenDownload)
         }
@@ -275,7 +269,7 @@ class CellRendererDownloads : CellRendererBaseWithStart() {
     }
 
     private fun setIcons(tab: Icon, tabSw: Icon, text: String, isSelected: Boolean) {
-        icon = if (isSelected) tab else tabSw
+        icon = selectedIcon(isSelected, tabSw, tab)
         toolTipText = text
     }
 
