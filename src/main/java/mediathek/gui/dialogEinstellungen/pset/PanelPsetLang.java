@@ -18,6 +18,8 @@
 
 package mediathek.gui.dialogEinstellungen.pset;
 
+import ca.odell.glazedlists.swing.AdvancedTableModel;
+import ca.odell.glazedlists.swing.GlazedListsSwing;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.config.MVConfig;
@@ -26,6 +28,7 @@ import mediathek.controller.starter.RuntimeExec;
 import mediathek.daten.DatenProg;
 import mediathek.daten.DatenPset;
 import mediathek.daten.FilmResolution;
+import mediathek.daten.ListeProg;
 import mediathek.daten.ListePset;
 import mediathek.gui.PanelVorlage;
 import mediathek.gui.messages.ProgramSetChangedEvent;
@@ -59,10 +62,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class PanelPsetLang extends PanelVorlage {
+    private static final ProgramTableFormat PROGRAM_TABLE_FORMAT = new ProgramTableFormat();
+
     private int neuZaehler;
     private final ListePset listePset;
     private final MVTable tabellePset;
     private final MVTable tabelleProgramme;
+    private final ListeProg emptyProgramList = new ListeProg();
+    private ListeProg currentProgramList;
 
     public PanelPsetLang(Daten d, JFrame parentComponent, ListePset llistePset) {
         super(d, parentComponent);
@@ -206,7 +213,7 @@ public class PanelPsetLang extends PanelVorlage {
                     int row = tabelleProgramme.convertRowIndexToModel(rows);
                     DatenProg prog = getPset().getListeProg().get(row);
                     prog.arr[DatenProg.PROGRAMM_RESTART] = Boolean.toString(jCheckBoxRestart.isSelected());
-                    tabelleProgramme.getModel().setValueAt(Boolean.toString(jCheckBoxRestart.isSelected()), row, DatenProg.PROGRAMM_RESTART);
+                    getPset().getListeProg().fireEntryChanged(row);
                     updateProgramMoveButtons(prog);
                 }
             }
@@ -218,7 +225,7 @@ public class PanelPsetLang extends PanelVorlage {
                     final int modelIndex = tabelleProgramme.convertRowIndexToModel(rows);
                     DatenProg prog = getPset().getListeProg().get(modelIndex);
                     prog.arr[DatenProg.PROGRAMM_DOWNLOADMANAGER] = Boolean.toString(jCheckBoxRemoteDownload.isSelected());
-                    tabelleProgramme.getModel().setValueAt(Boolean.toString(jCheckBoxRemoteDownload.isSelected()), modelIndex, DatenProg.PROGRAMM_DOWNLOADMANAGER);
+                    getPset().getListeProg().fireEntryChanged(modelIndex);
                     updateProgramMoveButtons(prog);
                 }
             }
@@ -631,7 +638,7 @@ public class PanelPsetLang extends PanelVorlage {
                 case LOW -> jRadioButtonAufloesungKlein.setSelected(true);
                 default -> jRadioButtonAufloesungNormal.setSelected(true);
             }
-            tabelleProgramme.setModel(pSet.getListeProg().createModel());
+            bindProgramTableModel(pSet.getListeProg());
             if (tabelleProgramme.getRowCount() > 0) {
                 spaltenSetzenProgramme();
                 tabelleProgramme.setRowSelectionInterval(0, 0);
@@ -652,10 +659,25 @@ public class PanelPsetLang extends PanelVorlage {
             tfGruppeZielName.setText("");
             tfGruppeZielPfad.setText("");
             jTextAreaSetBeschreibung.setText("");
-            tabelleProgramme.setModel(new NonEditableTableModel(new Object[0][DatenProg.MAX_ELEM], DatenProg.COLUMN_NAMES));
+            bindProgramTableModel(emptyProgramList);
         }
         stopBeob = false;
         fillTextProgramme();
+    }
+
+    private void bindProgramTableModel(ListeProg listeProg) {
+        if (currentProgramList == listeProg) {
+            return;
+        }
+        AdvancedTableModel<?> oldModel = null;
+        if (tabelleProgramme.getModel() instanceof AdvancedTableModel<?> model) {
+            oldModel = model;
+        }
+        tabelleProgramme.setModel(GlazedListsSwing.eventTableModelWithThreadProxyList(listeProg, PROGRAM_TABLE_FORMAT));
+        currentProgramList = listeProg;
+        if (oldModel != null) {
+            oldModel.dispose();
+        }
     }
 
     public void spaltenSetzenProgramme() {
@@ -893,12 +915,7 @@ public class PanelPsetLang extends PanelVorlage {
                     prog.arr[DatenProg.PROGRAMM_ZIEL_DATEINAME] = jTextFieldProgZielDateiName.getText();
                     prog.arr[DatenProg.PROGRAMM_SUFFIX] = jTextFieldProgSuffix.getText();
                     prog.arr[DatenProg.PROGRAMM_PRAEFIX] = jTextFieldProgPraefix.getText();
-                    tabelleProgramme.getModel().setValueAt(jTextFieldProgPfad.getText(), row, DatenProg.PROGRAMM_PROGRAMMPFAD);
-                    tabelleProgramme.getModel().setValueAt(jTextFieldProgSchalter.getText(), row, DatenProg.PROGRAMM_SCHALTER);
-                    tabelleProgramme.getModel().setValueAt(jTextFieldProgName.getText(), row, DatenProg.PROGRAMM_NAME);
-                    tabelleProgramme.getModel().setValueAt(jTextFieldProgZielDateiName.getText(), row, DatenProg.PROGRAMM_ZIEL_DATEINAME);
-                    tabelleProgramme.getModel().setValueAt(jTextFieldProgSuffix.getText(), row, DatenProg.PROGRAMM_SUFFIX);
-                    tabelleProgramme.getModel().setValueAt(jTextFieldProgPraefix.getText(), row, DatenProg.PROGRAMM_PRAEFIX);
+                    getPset().getListeProg().fireEntryChanged(row);
                     updateProgramMoveButtons(prog);
 //                    progNamePruefen();
                 }
