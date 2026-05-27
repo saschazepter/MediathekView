@@ -412,8 +412,6 @@ public class PanelPsetLang extends PanelVorlage {
                 }
             }
         });
-        tabelleProgramme.setDefaultRenderer(Object.class, new CellRendererProgramme());
-
         tabellePset.setDefaultRenderer(Object.class, new CellRendererPset());
         tabellePset.getSelectionModel().addListSelectionListener(event -> {
             if (!stopBeob) {
@@ -626,6 +624,7 @@ public class PanelPsetLang extends PanelVorlage {
                 default -> jRadioButtonAufloesungNormal.setSelected(true);
             }
             tabelleProgramme.setModel(pSet.getListeProg().createModel());
+            installProgrammeRenderers();
             if (tabelleProgramme.getRowCount() > 0) {
                 spaltenSetzenProgramme();
                 tabelleProgramme.setRowSelectionInterval(0, 0);
@@ -647,9 +646,17 @@ public class PanelPsetLang extends PanelVorlage {
             tfGruppeZielPfad.setText("");
             jTextAreaSetBeschreibung.setText("");
             tabelleProgramme.setModel(new NonEditableTableModel(new Object[0][DatenProg.MAX_ELEM], DatenProg.COLUMN_NAMES));
+            installProgrammeRenderers();
         }
         stopBeob = false;
         fillTextProgramme();
+    }
+
+    private void installProgrammeRenderers() {
+        var renderer = new CellRendererProgramme();
+        var columnModel = tabelleProgramme.getColumnModel();
+        columnModel.getColumn(tabelleProgramme.convertColumnIndexToView(DatenProg.PROGRAMM_RESTART)).setCellRenderer(renderer);
+        columnModel.getColumn(tabelleProgramme.convertColumnIndexToView(DatenProg.PROGRAMM_DOWNLOADMANAGER)).setCellRenderer(renderer);
     }
 
     public void spaltenSetzenProgramme() {
