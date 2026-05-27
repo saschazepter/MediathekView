@@ -24,7 +24,6 @@ import mediathek.daten.DatenFilm
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import mediathek.tool.ApplicationConfiguration
-import java.util.stream.Stream
 import javax.swing.table.TableModel
 
 class GuiFilmeModelHelper(
@@ -36,68 +35,66 @@ class GuiFilmeModelHelper(
     override val filteredTableModel: TableModel
         get() {
             val allFilms = allFilms()
-            return support.getFilteredTableModel(allFilms, ::filterFilms)
+            return support.getFilteredTableModel(allFilms) { filterContext ->
+                filterFilms(allFilms, filterContext)
+            }
         }
 
     private fun allFilms(): Collection<DatenFilm> = Daten.getInstance().listeFilmeNachBlackList
 
-    private fun filterFilms(): Collection<DatenFilm> {
-        val filterContext = support.createFilterExecutionContext()
-
-        if (support.state().showUnseenOnly) {
+    private fun filterFilms(
+        allFilms: Collection<DatenFilm>,
+        filterContext: GuiModelHelperSupport.FilterExecutionContext,
+    ): Collection<DatenFilm> {
+        val state = filterContext.state
+        if (state.showUnseenOnly) {
             SeenHistoryController.prepareSharedMemoryCache()
         }
 
-        var stream = Daten.getInstance().listeFilmeNachBlackList.parallelStream()
+        var stream = allFilms.parallelStream()
         if (filterContext.hasSelectedSenders()) {
-            stream = stream.filter(filterContext.senderFilter)
+            stream = stream.filter { film -> filterContext.senderFilter(film) }
         }
-        stream = applyConfiguredPredicates(stream)
+        if (state.showNewOnly) {
+            stream = stream.filter(DatenFilm::isNew)
+        }
+        if (state.showBookMarkedOnly) {
+            stream = stream.filter(DatenFilm::isBookmarked)
+        }
+        if (state.showLivestreamsOnly) {
+            stream = stream.filter(DatenFilm::isLivestream)
+        }
+        if (state.showHighQualityOnly) {
+            stream = stream.filter(DatenFilm::isHighQuality)
+        }
+        if (state.dontShowTrailers) {
+            stream = stream.filter { film -> !film.isTrailerTeaser }
+        }
+        if (state.dontShowSignLanguage) {
+            stream = stream.filter { film -> !film.isSignLanguage }
+        }
+        if (state.dontShowGeoblocked) {
+            val geographicLocation = ApplicationConfiguration.getInstance().geographicLocation
+            stream = stream.filter { film -> !film.isGeoBlockedForLocation(geographicLocation) }
+        }
+        if (state.dontShowAudioVersions) {
+            stream = stream.filter { film -> !film.isAudioVersion }
+        }
+        if (state.dontShowAbos) {
+            stream = stream.filter { film -> film.abo == null }
+        }
+        if (state.dontShowDuplicates) {
+            stream = stream.filter { film -> !film.isDuplicate }
+        }
+        if (state.showSubtitlesOnly) {
+            stream = stream.filter(DatenFilm::hasAnySubtitles)
+        }
 
-        stream = support.applyCommonFilters(stream, filterContext.filterThema, filterContext.lengthFilterRange)
-
+        stream = support.applyCommonFilters(stream, filterContext)
         if (filterContext.hasSearchTerms()) {
-            stream = stream.filter(filterContext.finalStageFilter)
+            stream = stream.filter { film -> filterContext.finalStageFilter(film) }
         }
 
         return stream.toList()
     }
-
-    private fun applyConfiguredPredicates(source: Stream<DatenFilm>): Stream<DatenFilm> {
-        var stream = source
-        for (predicateSpec in createPredicateSpecs()) {
-            if (predicateSpec.enabled()) {
-                stream = stream.filter { film -> predicateSpec.predicate(film) }
-            }
-        }
-        return stream
-    }
-
-    private fun createPredicateSpecs(): List<PredicateSpec> {
-        val geographicLocation = ApplicationConfiguration.getInstance().geographicLocation
-
-        return listOf(
-            predicateSpec({ support.state().showNewOnly }, DatenFilm::isNew),
-            predicateSpec({ support.state().showBookMarkedOnly }, DatenFilm::isBookmarked),
-            predicateSpec({ support.state().showLivestreamsOnly }, DatenFilm::isLivestream),
-            predicateSpec({ support.state().showHighQualityOnly }, DatenFilm::isHighQuality),
-            predicateSpec({ support.state().dontShowTrailers }) { film -> !film.isTrailerTeaser },
-            predicateSpec({ support.state().dontShowSignLanguage }) { film -> !film.isSignLanguage },
-            predicateSpec({ support.state().dontShowGeoblocked }) { film ->
-                !film.isGeoBlockedForLocation(geographicLocation)
-            },
-            predicateSpec({ support.state().dontShowAudioVersions }) { film -> !film.isAudioVersion },
-            predicateSpec({ support.state().dontShowAbos }) { film -> film.abo == null },
-            predicateSpec({ support.state().dontShowDuplicates }) { film -> !film.isDuplicate },
-            predicateSpec({ support.state().showSubtitlesOnly }, DatenFilm::hasAnySubtitles),
-        )
-    }
-
-    private fun predicateSpec(enabled: () -> Boolean, predicate: (DatenFilm) -> Boolean): PredicateSpec =
-        PredicateSpec(enabled, predicate)
-
-    private data class PredicateSpec(
-        val enabled: () -> Boolean,
-        val predicate: (DatenFilm) -> Boolean,
-    )
 }

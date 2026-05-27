@@ -27,10 +27,9 @@ import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider
 import mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import mediathek.tool.models.TModelFilm
-import java.util.concurrent.TimeUnit
-import java.util.function.Predicate
 import java.util.stream.Stream
 import javax.swing.table.TableModel
+import kotlin.time.Duration.Companion.minutes
 
 sealed interface GuiModelHelper {
     val filteredTableModel: TableModel
@@ -42,57 +41,58 @@ internal class GuiModelHelperSupport(
 ) {
     fun getFilteredTableModel(
         allFilms: Collection<DatenFilm>,
-        filteredFilmSupplier: () -> Collection<DatenFilm>,
+        filteredFilmSupplier: (FilterExecutionContext) -> Collection<DatenFilm>,
     ): TableModel {
         if (allFilms.isEmpty()) {
             return createEmptyFilmTableModel()
         }
-        if (noFiltersAreSet()) {
+        val filterContext = createFilterExecutionContext()
+        if (filterContext.noFiltersAreSet) {
             return createFilmTableModel(allFilms)
         }
-        return createFilmTableModel(filteredFilmSupplier())
+        return createFilmTableModel(filteredFilmSupplier(filterContext))
     }
 
     fun applyCommonFilters(
         source: Stream<DatenFilm>,
-        filterThema: String,
-        lengthFilterRange: LengthFilterRange,
+        filterContext: FilterExecutionContext,
     ): Stream<DatenFilm> {
         var stream = source
-        if (filterThema.isNotEmpty()) {
-            stream = stream.filter { film -> film.thema.equals(filterThema, ignoreCase = true) }
+        if (filterContext.filterThema.isNotEmpty()) {
+            stream = stream.filter { film -> film.thema.equals(filterContext.filterThema, ignoreCase = true) }
         }
-        if (lengthFilterRange.hasUpperLimit()) {
-            stream = stream.filter { film -> film.filmLength < lengthFilterRange.maxLengthInSeconds }
+        if (filterContext.lengthFilterRange.hasUpperLimit()) {
+            stream = stream.filter { film -> film.filmLength < filterContext.lengthFilterRange.maxLengthInSeconds }
         }
-        if (state().showUnseenOnly) {
+        if (filterContext.state.showUnseenOnly) {
             stream = stream.filter(::seenCheck)
         }
-        return stream.filter { film -> minLengthCheck(film, lengthFilterRange) }
+        return stream.filter { film -> minLengthCheck(film, filterContext.lengthFilterRange) }
     }
-
-    fun noFiltersAreSet(): Boolean = noFiltersAreSet(state()) && searchFieldData.isEmpty()
 
     fun createFilterExecutionContext(): FilterExecutionContext {
         val state = state()
-        val selectedSenders = getSelectedSendersFromFilter()
+        val selectedSenders = getSelectedSendersFromFilter(state)
         val searchTerms = searchFieldData.evaluateThemaTitel().toList()
+        val searchThroughDescriptions = searchFieldData.searchThroughDescriptions()
         return FilterExecutionContext(
-            lengthFilterRange = createLengthFilterRange(),
+            state = state,
+            lengthFilterRange = createLengthFilterRange(state),
             selectedSenders = selectedSenders,
             filterThema = state.thema,
             searchFieldText = searchFieldData.searchFieldText,
-            searchThroughDescriptions = searchFieldData.searchThroughDescriptions(),
+            searchThroughDescriptions = searchThroughDescriptions,
             searchTerms = searchTerms,
-            senderFilter = Predicate { film -> selectedSenders.isEmpty() || film.sender in selectedSenders },
+            senderFilter = { film -> selectedSenders.isEmpty() || film.sender in selectedSenders },
             finalStageFilter = if (searchTerms.isEmpty()) {
-                Predicate { true }
+                { true }
             } else {
                 createFinalStageFilter(
-                    searchFieldData.searchThroughDescriptions(),
+                    searchThroughDescriptions,
                     searchTerms.toTypedArray(),
-                )
+                )::test
             },
+            noFiltersAreSet = noFiltersAreSet(state) && searchFieldData.isEmpty(),
         )
     }
 
@@ -125,20 +125,18 @@ internal class GuiModelHelperSupport(
         return filmLength >= lengthFilterRange.minLengthInSeconds
     }
 
-    private fun getSelectedSendersFromFilter(): Set<String> =
-        state().checkedChannels
+    private fun getSelectedSendersFromFilter(state: FilmFilterState): Set<String> =
+        state.checkedChannels
             .filter(SenderFilmlistLoadApprover::isApproved)
             .toSet()
 
     private fun seenCheck(film: DatenFilm): Boolean = !SeenHistoryController.hasBeenSeenFromSharedCache(film)
 
-    private fun createLengthFilterRange(): LengthFilterRange {
-        val state = state()
-        return LengthFilterRange(
-            minLengthInSeconds = TimeUnit.SECONDS.convert(state.filmLengthMin.toLong(), TimeUnit.MINUTES),
-            maxLengthInSeconds = TimeUnit.SECONDS.convert(state.filmLengthMax.toLong(), TimeUnit.MINUTES),
+    private fun createLengthFilterRange(state: FilmFilterState): LengthFilterRange =
+        LengthFilterRange(
+            minLengthInSeconds = state.filmLengthMin.minutes.inWholeSeconds,
+            maxLengthInSeconds = state.filmLengthMax.minutes.inWholeSeconds,
         )
-    }
 
     private fun createFilmTableModel(films: Collection<DatenFilm>): TModelFilm {
         val filmModel = TModelFilm(films.size)
@@ -152,46 +150,27 @@ internal class GuiModelHelperSupport(
         val minLengthInSeconds: Long,
         val maxLengthInSeconds: Long,
     ) {
-        fun minLengthInSeconds(): Long = minLengthInSeconds
-
-        fun maxLengthInSeconds(): Long = maxLengthInSeconds
-
         fun hasUpperLimit(): Boolean = maxLengthInSeconds < UNLIMITED_LENGTH_IN_SECONDS
     }
 
     data class FilterExecutionContext(
+        val state: FilmFilterState,
         val lengthFilterRange: LengthFilterRange,
         val selectedSenders: Set<String>,
         val filterThema: String,
         val searchFieldText: String,
         val searchThroughDescriptions: Boolean,
         val searchTerms: List<String>,
-        val senderFilter: Predicate<DatenFilm>,
-        val finalStageFilter: Predicate<DatenFilm>,
+        val senderFilter: (DatenFilm) -> Boolean,
+        val finalStageFilter: (DatenFilm) -> Boolean,
+        val noFiltersAreSet: Boolean,
     ) {
-        fun lengthFilterRange(): LengthFilterRange = lengthFilterRange
-
-        fun selectedSenders(): Set<String> = selectedSenders
-
-        fun filterThema(): String = filterThema
-
-        fun searchFieldText(): String = searchFieldText
-
-        fun searchThroughDescriptions(): Boolean = searchThroughDescriptions
-
-        fun searchTerms(): List<String> = searchTerms
-
-        fun senderFilter(): Predicate<DatenFilm> = senderFilter
-
-        fun finalStageFilter(): Predicate<DatenFilm> = finalStageFilter
-
         fun hasSearchTerms(): Boolean = searchTerms.isNotEmpty()
 
         fun hasSelectedSenders(): Boolean = selectedSenders.isNotEmpty()
     }
 
     private companion object {
-        private val UNLIMITED_LENGTH_IN_SECONDS =
-            TimeUnit.SECONDS.convert(FilmLengthSlider.UNLIMITED_VALUE.toLong(), TimeUnit.MINUTES)
+        private val UNLIMITED_LENGTH_IN_SECONDS = FilmLengthSlider.UNLIMITED_VALUE.minutes.inWholeSeconds
     }
 }

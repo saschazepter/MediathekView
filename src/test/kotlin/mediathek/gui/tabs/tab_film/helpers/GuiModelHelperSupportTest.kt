@@ -48,7 +48,7 @@ internal class GuiModelHelperSupportTest {
 
         val context = support.createFilterExecutionContext()
 
-        assertEquals(setOf("ARD"), context.selectedSenders())
+        assertEquals(setOf("ARD"), context.selectedSenders)
         assertTrue(filterConfiguration.checkedChannels.isEmpty())
     }
 

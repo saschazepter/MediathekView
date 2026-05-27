@@ -23,6 +23,7 @@ import mediathek.controller.history.SeenHistoryController
 import mediathek.daten.DatenFilm
 import mediathek.daten.IndexedFilmList
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
+import mediathek.gui.tabs.tab_film.filter.FilmFilterState
 import mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import mediathek.gui.tasks.LuceneIndexKeys
@@ -35,7 +36,6 @@ import org.apache.lucene.analysis.Analyzer
 import org.apache.lucene.document.DateTools
 import org.apache.lucene.index.LeafReaderContext
 import org.apache.lucene.index.Term
-import org.apache.lucene.queryparser.classic.ParseException
 import org.apache.lucene.queryparser.classic.QueryParser
 import org.apache.lucene.queryparser.flexible.standard.StandardQueryParser
 import org.apache.lucene.queryparser.flexible.standard.config.PointsConfig
@@ -64,24 +64,28 @@ class LuceneGuiFilmeModelHelper(
     override val filteredTableModel: TableModel
         get() {
             val allFilms = allFilms()
-            return support.getFilteredTableModel(allFilms, ::filterFilms)
+            return support.getFilteredTableModel(allFilms) { filterContext ->
+                filterFilms(allFilms as IndexedFilmList, filterContext)
+            }
         }
 
     private fun allFilms(): Collection<DatenFilm> = Daten.getInstance().listeFilmeNachBlackList
 
-    private fun filterFilms(): Collection<DatenFilm> {
-        val listeFilme = allFilms() as IndexedFilmList
+    private fun filterFilms(
+        listeFilme: IndexedFilmList,
+        filterContext: GuiModelHelperSupport.FilterExecutionContext,
+    ): Collection<DatenFilm> {
         try {
             LuceneDefaultAnalyzer.buildPerFieldAnalyzer().use { analyzer ->
-                val filterContext = support.createFilterExecutionContext()
+                val state = filterContext.state
 
-                if (support.state().showUnseenOnly) {
+                if (state.showUnseenOnly) {
                     SeenHistoryController.prepareSharedMemoryCache()
                 }
 
                 var stream = listeFilme.parallelStream()
 
-                if (!support.noFiltersAreSet()) {
+                if (!filterContext.noFiltersAreSet) {
                     val parser = StandardQueryParser(analyzer)
                     parser.pointsConfigMap = PARSER_CONFIG_MAP
                     parser.allowLeadingWildcard = true
@@ -94,14 +98,14 @@ class LuceneGuiFilmeModelHelper(
                     val queryBuilder = BooleanQuery.Builder()
                     queryBuilder.add(initialQuery, BooleanClause.Occur.MUST)
 
-                    if (!support.state().zeitraum.equals(ZeitraumSpinner.INFINITE_TEXT, ignoreCase = true)) {
+                    if (!state.zeitraum.equals(ZeitraumSpinner.INFINITE_TEXT, ignoreCase = true)) {
                         try {
-                            queryBuilder.add(createZeitraumQuery(analyzer), BooleanClause.Occur.FILTER)
+                            queryBuilder.add(createZeitraumQuery(analyzer, state.zeitraum), BooleanClause.Occur.FILTER)
                         } catch (ex: Exception) {
                             logger.error("Unable to add zeitraum filter", ex)
                         }
                     }
-                    applyConfiguredQueries(queryBuilder)
+                    applyConfiguredQueries(queryBuilder, state)
                     if (filterContext.selectedSenders.isNotEmpty()) {
                         addSenderFilterQuery(queryBuilder, filterContext.selectedSenders)
                     }
@@ -129,22 +133,18 @@ class LuceneGuiFilmeModelHelper(
                     stream = matchingFilms.parallelStream()
                 }
 
-                if (support.state().showBookMarkedOnly) {
+                if (state.showBookMarkedOnly) {
                     stream = stream.filter(DatenFilm::isBookmarked)
                 }
-                if (support.state().dontShowGeoblocked) {
+                if (state.dontShowGeoblocked) {
                     val currentGeoLocation = ApplicationConfiguration.getInstance().geographicLocation
                     stream = stream.filter { film -> !film.isGeoBlockedForLocation(currentGeoLocation) }
                 }
-                if (support.state().dontShowAbos) {
+                if (state.dontShowAbos) {
                     stream = stream.filter { film -> film.abo == null }
                 }
 
-                val resultList = support.applyCommonFilters(
-                    stream,
-                    filterContext.filterThema,
-                    filterContext.lengthFilterRange,
-                ).toList()
+                val resultList = support.applyCommonFilters(stream, filterContext).toList()
                 logger.trace("Resulting filmlist size after all filters applied: {}", resultList.size)
 
                 return resultList
@@ -176,35 +176,37 @@ class LuceneGuiFilmeModelHelper(
         queryBuilder.add(booleanQuery.build(), BooleanClause.Occur.FILTER)
     }
 
-    private fun applyConfiguredQueries(queryBuilder: BooleanQuery.Builder) {
-        for (querySpec in createQuerySpecs()) {
-            if (querySpec.enabled()) {
-                queryBuilder.add(querySpec.toQuery(), querySpec.occur)
-            }
+    private fun applyConfiguredQueries(queryBuilder: BooleanQuery.Builder, state: FilmFilterState) {
+        if (state.showLivestreamsOnly) {
+            queryBuilder.add(termQuery(LuceneIndexKeys.LIVESTREAM), BooleanClause.Occur.FILTER)
+        }
+        if (state.showHighQualityOnly) {
+            queryBuilder.add(termQuery(LuceneIndexKeys.HIGH_QUALITY), BooleanClause.Occur.FILTER)
+        }
+        if (state.dontShowTrailers) {
+            queryBuilder.add(termQuery(LuceneIndexKeys.TRAILER_TEASER), BooleanClause.Occur.MUST_NOT)
+        }
+        if (state.dontShowAudioVersions) {
+            queryBuilder.add(termQuery(LuceneIndexKeys.AUDIOVERSION), BooleanClause.Occur.MUST_NOT)
+        }
+        if (state.dontShowSignLanguage) {
+            queryBuilder.add(termQuery(LuceneIndexKeys.SIGN_LANGUAGE), BooleanClause.Occur.MUST_NOT)
+        }
+        if (state.dontShowDuplicates) {
+            queryBuilder.add(termQuery(LuceneIndexKeys.DUPLICATE), BooleanClause.Occur.MUST_NOT)
+        }
+        if (state.showSubtitlesOnly) {
+            queryBuilder.add(termQuery(LuceneIndexKeys.SUBTITLE), BooleanClause.Occur.FILTER)
+        }
+        if (state.showNewOnly) {
+            queryBuilder.add(termQuery(LuceneIndexKeys.NEW), BooleanClause.Occur.FILTER)
         }
     }
 
-    private fun createQuerySpecs(): List<QuerySpec> =
-        listOf(
-            termQuerySpec({ support.state().showLivestreamsOnly }, LuceneIndexKeys.LIVESTREAM, BooleanClause.Occur.FILTER),
-            termQuerySpec({ support.state().showHighQualityOnly }, LuceneIndexKeys.HIGH_QUALITY, BooleanClause.Occur.FILTER),
-            termQuerySpec({ support.state().dontShowTrailers }, LuceneIndexKeys.TRAILER_TEASER, BooleanClause.Occur.MUST_NOT),
-            termQuerySpec({ support.state().dontShowAudioVersions }, LuceneIndexKeys.AUDIOVERSION, BooleanClause.Occur.MUST_NOT),
-            termQuerySpec({ support.state().dontShowSignLanguage }, LuceneIndexKeys.SIGN_LANGUAGE, BooleanClause.Occur.MUST_NOT),
-            termQuerySpec({ support.state().dontShowDuplicates }, LuceneIndexKeys.DUPLICATE, BooleanClause.Occur.MUST_NOT),
-            termQuerySpec({ support.state().showSubtitlesOnly }, LuceneIndexKeys.SUBTITLE, BooleanClause.Occur.FILTER),
-            termQuerySpec({ support.state().showNewOnly }, LuceneIndexKeys.NEW, BooleanClause.Occur.FILTER),
-        )
+    private fun termQuery(field: String): Query = TermQuery(Term(field, "true"))
 
-    private fun termQuerySpec(
-        enabled: () -> Boolean,
-        field: String,
-        occur: BooleanClause.Occur,
-    ): QuerySpec = QuerySpec(enabled, field, "true", occur)
-
-    @Throws(ParseException::class)
-    private fun createZeitraumQuery(analyzer: Analyzer): Query {
-        val numDays = support.state().zeitraum.toInt()
+    private fun createZeitraumQuery(analyzer: Analyzer, zeitraumDays: String): Query {
+        val numDays = zeitraumDays.toInt()
         val toDate = LocalDateTime.now()
         val fromDate = toDate.minusDays(numDays.toLong())
         val utcZone = ZoneId.of("UTC")
@@ -248,15 +250,6 @@ class LuceneGuiFilmeModelHelper(
             }
             return merged
         }
-    }
-
-    private data class QuerySpec(
-        val enabled: () -> Boolean,
-        val field: String,
-        val value: String,
-        val occur: BooleanClause.Occur,
-    ) {
-        fun toQuery(): Query = TermQuery(Term(field, value))
     }
 
     private companion object {
