@@ -20,6 +20,7 @@ package mediathek.gui.dialogEinstellungen.pset;
 
 import ca.odell.glazedlists.swing.AdvancedTableModel;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
+import mediathek.audiothek.ui.table.TriStateTableRowSorter;
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
 import mediathek.config.MVConfig;
@@ -36,7 +37,6 @@ import mediathek.mainwindow.MediathekGui;
 import mediathek.tool.*;
 import mediathek.tool.cellrenderer.CellRendererPset;
 import mediathek.tool.models.NonEditableTableModel;
-import mediathek.tool.table.MVProgTable;
 import mediathek.tool.table.MVPsetTable;
 import mediathek.tool.table.MVTable;
 import net.engio.mbassy.listener.Handler;
@@ -53,6 +53,7 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
 import javax.swing.text.JTextComponent;
 import java.awt.*;
 import java.io.File;
@@ -67,8 +68,9 @@ public class PanelPsetLang extends PanelVorlage {
     private int neuZaehler;
     private final ListePset listePset;
     private final MVTable tabellePset;
-    private final MVTable tabelleProgramme;
+    private final JTable tabelleProgramme;
     private final ListeProg emptyProgramList = new ListeProg();
+    private TriStateTableRowSorter<TableModel> programTableSorter;
     private ListeProg currentProgramList;
 
     public PanelPsetLang(Daten d, JFrame parentComponent, ListePset llistePset) {
@@ -76,7 +78,9 @@ public class PanelPsetLang extends PanelVorlage {
         initComponents();
         tabellePset = new MVPsetTable();
         jScrollPane3.setViewportView(tabellePset);
-        tabelleProgramme = new MVProgTable();
+        tabelleProgramme = new JTable();
+        tabelleProgramme.setAutoCreateRowSorter(false);
+        tabelleProgramme.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         jScrollPane1.setViewportView(tabelleProgramme);
         listePset = llistePset;
         init();
@@ -673,8 +677,18 @@ public class PanelPsetLang extends PanelVorlage {
         if (tabelleProgramme.getModel() instanceof AdvancedTableModel<?> model) {
             oldModel = model;
         }
-        tabelleProgramme.setModel(GlazedListsSwing.eventTableModelWithThreadProxyList(listeProg, PROGRAM_TABLE_FORMAT));
+        TableModel newModel = GlazedListsSwing.eventTableModelWithThreadProxyList(listeProg, PROGRAM_TABLE_FORMAT);
+        tabelleProgramme.setRowSorter(null);
+        tabelleProgramme.setModel(newModel);
         currentProgramList = listeProg;
+        if (programTableSorter == null) {
+            programTableSorter = new TriStateTableRowSorter<>(newModel);
+            programTableSorter.addRowSorterListener(_ -> updateProgramMoveButtonsForSelection());
+        } else {
+            programTableSorter.setModel(newModel);
+        }
+        tabelleProgramme.setRowSorter(programTableSorter);
+        updateProgramMoveButtonsForSelection();
         if (oldModel != null) {
             oldModel.dispose();
         }
@@ -849,9 +863,32 @@ public class PanelPsetLang extends PanelVorlage {
     }
 
     private void updateProgramMoveButtons(DatenProg prog) {
-        boolean enabled = prog != null && !isEmptyProgramEntry(prog);
+        boolean enabled = prog != null && !isEmptyProgramEntry(prog) && !isProgramTableSorted();
         jButtonProgAuf.setEnabled(enabled);
         jButtonProgAb.setEnabled(enabled);
+    }
+
+    private void updateProgramMoveButtonsForSelection() {
+        updateProgramMoveButtons(getSelectedProgramEntry());
+    }
+
+    private DatenProg getSelectedProgramEntry() {
+        if (currentProgramList == null) {
+            return null;
+        }
+        int viewRow = tabelleProgramme.getSelectedRow();
+        if (viewRow == -1) {
+            return null;
+        }
+        int modelRow = tabelleProgramme.convertRowIndexToModel(viewRow);
+        if (modelRow < 0 || modelRow >= currentProgramList.size()) {
+            return null;
+        }
+        return currentProgramList.get(modelRow);
+    }
+
+    private boolean isProgramTableSorted() {
+        return programTableSorter != null && !programTableSorter.getSortKeys().isEmpty();
     }
 
     private void progNeueZeile(DatenProg prog) {
@@ -873,6 +910,9 @@ public class PanelPsetLang extends PanelVorlage {
     }
 
     private void progAufAb(boolean auf) {
+        if (isProgramTableSorted()) {
+            return;
+        }
         int rows = tabelleProgramme.getSelectedRow();
         if (rows != -1) {
             int row = tabelleProgramme.convertRowIndexToModel(rows);
