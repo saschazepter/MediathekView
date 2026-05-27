@@ -160,7 +160,13 @@ public class PanelPsetLang extends PanelVorlage {
                 String text;
                 if (rows.length == 1) {
                     final int delRow = tabelleProgramme.convertRowIndexToModel(rows[0]);
-                    text = pSet.getProg(delRow).arr[DatenProg.PROGRAMM_NAME];
+                    DatenProg prog = pSet.getProg(delRow);
+                    if (isEmptyProgramEntry(prog)) {
+                        pSet.getListeProg().remove(delRow);
+                        tabelleProgramme();
+                        return;
+                    }
+                    text = prog.arr[DatenProg.PROGRAMM_NAME];
                 } else {
                     text = rows.length + " Programme löschen?";
                 }
@@ -803,6 +809,16 @@ public class PanelPsetLang extends PanelVorlage {
         } else {
             NoSelectionErrorDialog.show(this);
         }
+    }
+
+    private boolean isEmptyProgramEntry(DatenProg prog) {
+        for (int i = 0; i < DatenProg.PROGRAMM_RESTART; ++i) {
+            String value = prog.arr[i];
+            if (value != null && !value.isBlank()) {
+                return false;
+            }
+        }
+        return !prog.isRestart() && !prog.isDownloadManager();
     }
 
     private void progNeueZeile(DatenProg prog) {
