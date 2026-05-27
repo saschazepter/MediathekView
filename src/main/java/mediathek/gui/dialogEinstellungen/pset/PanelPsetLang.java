@@ -198,6 +198,7 @@ public class PanelPsetLang extends PanelVorlage {
         jButtonProgAb.addActionListener(_ -> progAufAb(false));
 
         jButtonProgPfad.setEnabled(false);
+        updateProgramMoveButtons(null);
         jCheckBoxRestart.addActionListener(_ -> {
             if (!stopBeob) {
                 int rows = tabelleProgramme.getSelectedRow();
@@ -206,6 +207,7 @@ public class PanelPsetLang extends PanelVorlage {
                     DatenProg prog = getPset().getListeProg().get(row);
                     prog.arr[DatenProg.PROGRAMM_RESTART] = Boolean.toString(jCheckBoxRestart.isSelected());
                     tabelleProgramme.getModel().setValueAt(Boolean.toString(jCheckBoxRestart.isSelected()), row, DatenProg.PROGRAMM_RESTART);
+                    updateProgramMoveButtons(prog);
                 }
             }
         });
@@ -217,6 +219,7 @@ public class PanelPsetLang extends PanelVorlage {
                     DatenProg prog = getPset().getListeProg().get(modelIndex);
                     prog.arr[DatenProg.PROGRAMM_DOWNLOADMANAGER] = Boolean.toString(jCheckBoxRemoteDownload.isSelected());
                     tabelleProgramme.getModel().setValueAt(Boolean.toString(jCheckBoxRemoteDownload.isSelected()), modelIndex, DatenProg.PROGRAMM_DOWNLOADMANAGER);
+                    updateProgramMoveButtons(prog);
                 }
             }
         });
@@ -698,6 +701,7 @@ public class PanelPsetLang extends PanelVorlage {
         jCheckBoxRemoteDownload.setEnabled(validRowSelected);
         if (validRowSelected) {
             DatenProg prog = getPset().getProg(tabelleProgramme.convertRowIndexToModel(row));
+            updateProgramMoveButtons(prog);
             jTextFieldProgPfad.setText(prog.arr[DatenProg.PROGRAMM_PROGRAMMPFAD]);
             jTextFieldProgSchalter.setText(prog.arr[DatenProg.PROGRAMM_SCHALTER]);
             jTextFieldProgZielDateiName.setText(prog.arr[DatenProg.PROGRAMM_ZIEL_DATEINAME]);
@@ -715,6 +719,7 @@ public class PanelPsetLang extends PanelVorlage {
             jTextFieldProgZielDateiName.setText("");
             jTextFieldProgPraefix.setText("");
             jTextFieldProgSuffix.setText("");
+            updateProgramMoveButtons(null);
         }
         if (letzteZeile) {
             jTextFieldProgPraefix.setEnabled(false);
@@ -821,6 +826,12 @@ public class PanelPsetLang extends PanelVorlage {
         return !prog.isRestart() && !prog.isDownloadManager();
     }
 
+    private void updateProgramMoveButtons(DatenProg prog) {
+        boolean enabled = prog != null && !isEmptyProgramEntry(prog);
+        jButtonProgAuf.setEnabled(enabled);
+        jButtonProgAb.setEnabled(enabled);
+    }
+
     private void progNeueZeile(DatenProg prog) {
         DatenPset gruppe = getPset();
         if (gruppe != null) {
@@ -888,6 +899,7 @@ public class PanelPsetLang extends PanelVorlage {
                     tabelleProgramme.getModel().setValueAt(jTextFieldProgZielDateiName.getText(), row, DatenProg.PROGRAMM_ZIEL_DATEINAME);
                     tabelleProgramme.getModel().setValueAt(jTextFieldProgSuffix.getText(), row, DatenProg.PROGRAMM_SUFFIX);
                     tabelleProgramme.getModel().setValueAt(jTextFieldProgPraefix.getText(), row, DatenProg.PROGRAMM_PRAEFIX);
+                    updateProgramMoveButtons(prog);
 //                    progNamePruefen();
                 }
             }
