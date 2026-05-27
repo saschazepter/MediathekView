@@ -24,6 +24,26 @@ import ca.odell.glazedlists.EventList
 class ListeProg(
     private val entries: BasicEventList<DatenProg> = BasicEventList(),
 ) : EventList<DatenProg> by entries {
+    fun addEntry(prog: DatenProg) {
+        val lock = entries.readWriteLock.writeLock()
+        lock.lock()
+        try {
+            entries.add(prog)
+        } finally {
+            lock.unlock()
+        }
+    }
+
+    fun removeEntryAtIndex(index: Int): DatenProg {
+        val lock = entries.readWriteLock.writeLock()
+        lock.lock()
+        try {
+            return entries.removeAt(index)
+        } finally {
+            lock.unlock()
+        }
+    }
+
     fun remove(name: String): DatenProg? {
         val lock = entries.readWriteLock.writeLock()
         lock.lock()
@@ -50,6 +70,16 @@ class ListeProg(
             val prog = entries.removeAt(idx)
             entries.add(newIndex, prog)
             return newIndex
+        } finally {
+            lock.unlock()
+        }
+    }
+
+    fun removeAllEntries(progs: Collection<DatenProg>) {
+        val lock = entries.readWriteLock.writeLock()
+        lock.lock()
+        try {
+            entries.removeAll(progs.toSet())
         } finally {
             lock.unlock()
         }
