@@ -43,17 +43,13 @@ class ListeProg(
         val lock = entries.readWriteLock.writeLock()
         lock.lock()
         try {
-            val prog = entries.removeAt(idx)
-            var neu = idx
-            if (up) {
-                if (neu > 0) {
-                    --neu
-                }
-            } else if (neu < entries.size) {
-                ++neu
+            val newIndex = (idx + if (up) -1 else 1).coerceIn(0, entries.lastIndex)
+            if (newIndex == idx) {
+                return idx
             }
-            entries.add(neu, prog)
-            return neu
+            val prog = entries.removeAt(idx)
+            entries.add(newIndex, prog)
+            return newIndex
         } finally {
             lock.unlock()
         }
