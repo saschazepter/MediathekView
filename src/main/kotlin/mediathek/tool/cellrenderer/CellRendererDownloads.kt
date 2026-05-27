@@ -18,26 +18,34 @@ import javax.swing.*
 import javax.swing.border.Border
 
 class CellRendererDownloads : CellRendererBaseWithStart() {
-    private val filmStartSelected: FontIcon = FontIcon.of(FontAwesomeSolid.PLAY, IconUtils.DEFAULT_SIZE, Color.WHITE)
-    private val filmStart: FontIcon = IconUtils.of(FontAwesomeSolid.PLAY)
+    private val filmStartIcons = rendererIconPair(
+        normal = IconUtils.of(FontAwesomeSolid.PLAY),
+        selected = FontIcon.of(FontAwesomeSolid.PLAY, IconUtils.DEFAULT_SIZE, Color.WHITE),
+    )
     private val emptyBorder: Border = BorderFactory.createEmptyBorder(3, 2, 3, 2)
     private val largeBorder: Border = BorderFactory.createEmptyBorder(9, 2, 9, 2)
     private val progressBar = JProgressBar(0, 1000)
     private val panel = JPanel(BorderLayout()).apply {
         add(progressBar)
     }
-    private val downloadStopSelected: FontIcon = FontIcon.of(FontAwesomeSolid.STOP, IconUtils.DEFAULT_SIZE, Color.WHITE)
-    private val downloadStop: FontIcon = IconUtils.of(FontAwesomeSolid.STOP)
-    private val downloadStartSelected: FlatSVGIcon = SVGIconUtilities.createSVGIcon("icons/fontawesome/caret-down.svg").apply {
-        colorFilter = FlatSVGIcon.ColorFilter { Color.WHITE }
-    }
-    private val downloadStart: Icon = SVGIconUtilities.createSVGIcon("icons/fontawesome/caret-down.svg")
-    private val downloadClearSelected: FontIcon =
-        FontIcon.of(FontAwesomeSolid.ERASER, IconUtils.DEFAULT_SIZE, Color.WHITE)
-    private val downloadClear: FontIcon = IconUtils.of(FontAwesomeSolid.ERASER)
-    private val downloadDeleteSelected: FontIcon =
-        FontIcon.of(FontAwesomeRegular.TRASH_ALT, IconUtils.DEFAULT_SIZE, Color.WHITE)
-    private val downloadDelete: FontIcon = IconUtils.of(FontAwesomeRegular.TRASH_ALT)
+    private val downloadStopIcons = rendererIconPair(
+        normal = IconUtils.of(FontAwesomeSolid.STOP),
+        selected = FontIcon.of(FontAwesomeSolid.STOP, IconUtils.DEFAULT_SIZE, Color.WHITE),
+    )
+    private val downloadStartIcons = rendererIconPair(
+        normal = SVGIconUtilities.createSVGIcon("icons/fontawesome/caret-down.svg"),
+        selected = SVGIconUtilities.createSVGIcon("icons/fontawesome/caret-down.svg").apply {
+            colorFilter = FlatSVGIcon.ColorFilter { Color.WHITE }
+        },
+    )
+    private val downloadClearIcons = rendererIconPair(
+        normal = IconUtils.of(FontAwesomeSolid.ERASER),
+        selected = FontIcon.of(FontAwesomeSolid.ERASER, IconUtils.DEFAULT_SIZE, Color.WHITE),
+    )
+    private val downloadDeleteIcons = rendererIconPair(
+        normal = IconUtils.of(FontAwesomeRegular.TRASH_ALT),
+        selected = FontIcon.of(FontAwesomeRegular.TRASH_ALT, IconUtils.DEFAULT_SIZE, Color.WHITE),
+    )
 
     private fun applyHorizontalAlignment(colIndex: Int) {
         when (colIndex) {
@@ -108,54 +116,10 @@ class CellRendererDownloads : CellRendererBaseWithStart() {
             }
 
             when (columnModelIndex) {
-                DatenDownload.DOWNLOAD_PROGRESS -> {
-                    progressBar.border = if (mvTable.showSenderIcons() && !mvTable.getUseSmallSenderIcons()) {
-                        largeBorder
-                    } else {
-                        emptyBorder
-                    }
-                    val start = datenDownload.start
-                    if (start != null) {
-                        if (1 < start.percent && start.percent < Start.PROGRESS_FERTIG) {
-                            setBackgroundColor(panel, start, isSelected)
-                            setBackgroundColor(progressBar, start, isSelected)
-
-                            progressBar.value = start.percent
-
-                            val progressValue = start.percent / 10.0
-                            progressBar.string = "$progressValue%"
-
-                            return panel
-                        } else {
-                            text = Start.getTextProgress(datenDownload.isDownloadManager, start)
-                        }
-                    } else {
-                        text = ""
-                    }
-                }
-
-                DatenDownload.DOWNLOAD_FILM_NR -> {
-                    if (table.model.getValueAt(rowModelIndex, DatenDownload.DOWNLOAD_FILM_NR) as Int == 0) {
-                        text = ""
-                    }
-                }
-
-                DatenDownload.DOWNLOAD_ART -> {
-                    when (datenDownload.art.toInt()) {
-                        DatenDownload.ART_DOWNLOAD.toInt() -> text = DatenDownload.ART_DOWNLOAD_TXT
-                        DatenDownload.ART_PROGRAMM.toInt() -> text = DatenDownload.ART_PROGRAMM_TXT
-                    }
-                }
-
-                DatenDownload.DOWNLOAD_QUELLE -> {
-                    when (datenDownload.quelle.toInt()) {
-                        DatenDownload.QUELLE_ALLE.toInt() -> text = DatenDownload.QUELLE_ALLE_TXT
-                        DatenDownload.QUELLE_ABO.toInt() -> text = DatenDownload.QUELLE_ABO_TXT
-                        DatenDownload.QUELLE_BUTTON.toInt() -> text = DatenDownload.QUELLE_BUTTON_TXT
-                        DatenDownload.QUELLE_DOWNLOAD.toInt() -> text = DatenDownload.QUELLE_DOWNLOAD_TXT
-                    }
-                }
-
+                DatenDownload.DOWNLOAD_PROGRESS -> renderProgressColumn(datenDownload, mvTable, isSelected)?.let { return it }
+                DatenDownload.DOWNLOAD_FILM_NR -> hideZeroFilmNumber(table, rowModelIndex)
+                DatenDownload.DOWNLOAD_ART -> renderDownloadType(datenDownload)
+                DatenDownload.DOWNLOAD_QUELLE -> renderDownloadSource(datenDownload)
                 DatenDownload.DOWNLOAD_BUTTON_START -> handleButtonStartColumn(datenDownload, isSelected)
                 DatenDownload.DOWNLOAD_BUTTON_DEL -> handleButtonDeleteColumn(datenDownload, isSelected)
                 DatenDownload.DOWNLOAD_ABO -> handleAboColumn(datenDownload)
@@ -182,6 +146,58 @@ class CellRendererDownloads : CellRendererBaseWithStart() {
         return this
     }
 
+    private fun renderProgressColumn(datenDownload: DatenDownload, mvTable: MVTable, isSelected: Boolean): Component? {
+        progressBar.border = if (mvTable.showSenderIcons() && !mvTable.getUseSmallSenderIcons()) {
+            largeBorder
+        } else {
+            emptyBorder
+        }
+
+        val start = datenDownload.start
+        if (start == null) {
+            text = ""
+            return null
+        }
+
+        if (1 < start.percent && start.percent < Start.PROGRESS_FERTIG) {
+            setBackgroundColor(panel, start, isSelected)
+            setBackgroundColor(progressBar, start, isSelected)
+
+            progressBar.value = start.percent
+            val progressValue = start.percent / 10.0
+            progressBar.string = "$progressValue%"
+
+            return panel
+        }
+
+        text = Start.getTextProgress(datenDownload.isDownloadManager, start)
+        return null
+    }
+
+    private fun hideZeroFilmNumber(table: JTable, rowModelIndex: Int) {
+        if (table.model.getValueAt(rowModelIndex, DatenDownload.DOWNLOAD_FILM_NR) as Int == 0) {
+            text = ""
+        }
+    }
+
+    private fun renderDownloadType(datenDownload: DatenDownload) {
+        text = when (datenDownload.art.toInt()) {
+            DatenDownload.ART_DOWNLOAD.toInt() -> DatenDownload.ART_DOWNLOAD_TXT
+            DatenDownload.ART_PROGRAMM.toInt() -> DatenDownload.ART_PROGRAMM_TXT
+            else -> text
+        }
+    }
+
+    private fun renderDownloadSource(datenDownload: DatenDownload) {
+        text = when (datenDownload.quelle.toInt()) {
+            DatenDownload.QUELLE_ALLE.toInt() -> DatenDownload.QUELLE_ALLE_TXT
+            DatenDownload.QUELLE_ABO.toInt() -> DatenDownload.QUELLE_ABO_TXT
+            DatenDownload.QUELLE_BUTTON.toInt() -> DatenDownload.QUELLE_BUTTON_TXT
+            DatenDownload.QUELLE_DOWNLOAD.toInt() -> DatenDownload.QUELLE_DOWNLOAD_TXT
+            else -> text
+        }
+    }
+
     private fun createTextArea(
         value: String,
         datenDownload: DatenDownload,
@@ -196,43 +212,34 @@ class CellRendererDownloads : CellRendererBaseWithStart() {
         return textArea
     }
 
-    private fun setIconsAndToolTips(
-        datenDownload: DatenDownload,
-        filmIcon: Icon,
-        downloadStartIcon: Icon,
-        downloadStopIcon: Icon,
-    ) {
+    private fun setIconsAndToolTips(datenDownload: DatenDownload, isSelected: Boolean) {
         val start = datenDownload.start
         if (start != null && !datenDownload.isDownloadManager) {
             when (start.status) {
                 Start.STATUS_FERTIG -> {
-                    icon = filmIcon
+                    icon = filmStartIcons.icon(isSelected)
                     toolTipText = PLAY_DOWNLOADED_FILM
                 }
 
                 Start.STATUS_ERR -> {
-                    icon = downloadStartIcon
+                    icon = downloadStartIcons.icon(isSelected)
                     toolTipText = DOWNLOAD_STARTEN
                 }
 
                 else -> {
-                    icon = downloadStopIcon
+                    icon = downloadStopIcons.icon(isSelected)
                     toolTipText = DOWNLOAD_STOPPEN
                 }
             }
         } else {
-            icon = downloadStartIcon
+            icon = downloadStartIcons.icon(isSelected)
             toolTipText = DOWNLOAD_STARTEN
         }
     }
 
     private fun handleButtonStartColumn(datenDownload: DatenDownload, isSelected: Boolean) {
         horizontalAlignment = SwingConstants.CENTER
-        if (isSelected) {
-            setIconsAndToolTips(datenDownload, filmStartSelected, downloadStartSelected, downloadStopSelected)
-        } else {
-            setIconsAndToolTips(datenDownload, filmStart, downloadStart, downloadStop)
-        }
+        setIconsAndToolTips(datenDownload, isSelected)
     }
 
     private fun handleAboColumn(a: JTextArea, datenDownload: DatenDownload) {
@@ -259,7 +266,7 @@ class CellRendererDownloads : CellRendererBaseWithStart() {
         val start = datenDownload.start
         if (start != null) {
             if (start.status >= Start.STATUS_FERTIG) {
-                setIcons(downloadClearSelected, downloadClear, DOWNLOAD_ENTFERNEN, isSelected)
+                setIcon(downloadClearIcons, DOWNLOAD_ENTFERNEN, isSelected)
             } else {
                 setupDownloadLoeschen(isSelected)
             }
@@ -268,13 +275,13 @@ class CellRendererDownloads : CellRendererBaseWithStart() {
         }
     }
 
-    private fun setIcons(tab: Icon, tabSw: Icon, text: String, isSelected: Boolean) {
-        icon = selectedIcon(isSelected, tabSw, tab)
-        toolTipText = text
+    private fun setIcon(icons: RendererIconPair, tooltip: String, isSelected: Boolean) {
+        icon = icons.icon(isSelected)
+        toolTipText = tooltip
     }
 
     private fun setupDownloadLoeschen(isSelected: Boolean) {
-        setIcons(downloadDeleteSelected, downloadDelete, DOWNLOAD_LOESCHEN, isSelected)
+        setIcon(downloadDeleteIcons, DOWNLOAD_LOESCHEN, isSelected)
     }
 
     private companion object {

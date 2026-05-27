@@ -37,14 +37,22 @@ import javax.swing.JTable
 import javax.swing.SwingConstants
 
 class CellRendererFilme : CellRendererBaseWithStart() {
-    private val selectedStopIcon = FontIcon.of(FontAwesomeSolid.STOP, IconUtils.DEFAULT_SIZE, Color.WHITE)
-    private val normalStopIcon = IconUtils.of(FontAwesomeSolid.STOP)
-    private val selectedDownloadIcon = FontIcon.of(FontAwesomeSolid.DOWNLOAD, IconUtils.DEFAULT_SIZE, Color.WHITE)
-    private val normalDownloadIcon = IconUtils.of(FontAwesomeSolid.DOWNLOAD)
-    private val selectedPlayIcon = FontIcon.of(FontAwesomeSolid.PLAY, IconUtils.DEFAULT_SIZE, Color.WHITE)
-    private val normalPlayIcon = IconUtils.of(FontAwesomeSolid.PLAY)
-    private val selectedBookmarkIcon = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.WHITE)
-    private val normalBookmarkIcon = IconUtils.of(FontAwesomeSolid.BOOKMARK)
+    private val stopIcons = rendererIconPair(
+        normal = IconUtils.of(FontAwesomeSolid.STOP),
+        selected = FontIcon.of(FontAwesomeSolid.STOP, IconUtils.DEFAULT_SIZE, Color.WHITE),
+    )
+    private val downloadIcons = rendererIconPair(
+        normal = IconUtils.of(FontAwesomeSolid.DOWNLOAD),
+        selected = FontIcon.of(FontAwesomeSolid.DOWNLOAD, IconUtils.DEFAULT_SIZE, Color.WHITE),
+    )
+    private val playIcons = rendererIconPair(
+        normal = IconUtils.of(FontAwesomeSolid.PLAY),
+        selected = FontIcon.of(FontAwesomeSolid.PLAY, IconUtils.DEFAULT_SIZE, Color.WHITE),
+    )
+    private val bookmarkIcons = rendererIconPair(
+        normal = IconUtils.of(FontAwesomeSolid.BOOKMARK),
+        selected = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.WHITE),
+    )
     private val selectedBookmarkIconHighlighted = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.ORANGE)
 
     override fun getTableCellRendererComponent(
@@ -151,16 +159,16 @@ class CellRendererFilme : CellRendererBaseWithStart() {
 
     private fun handleButtonStartColumn(datenDownload: DatenDownload?, isSelected: Boolean) {
         if (datenDownload?.start?.status == Start.STATUS_RUN) {
-            setSelectedIconAndToolTip(isSelected, normalStopIcon, selectedStopIcon, "Film stoppen")
+            setSelectedIconAndToolTip(isSelected, stopIcons, "Film stoppen")
         }
 
         if (icon == null) {
-            setSelectedIconAndToolTip(isSelected, normalPlayIcon, selectedPlayIcon, "Film abspielen")
+            setSelectedIconAndToolTip(isSelected, playIcons, "Film abspielen")
         }
     }
 
     private fun handleButtonDownloadColumn(isSelected: Boolean) {
-        setSelectedIconAndToolTip(isSelected, normalDownloadIcon, selectedDownloadIcon, "Film aufzeichnen")
+        setSelectedIconAndToolTip(isSelected, downloadIcons, "Film aufzeichnen")
     }
 
     private fun handleButtonBookmarkColumn(isBookMarked: Boolean, isSelected: Boolean, isLivestream: Boolean) {
@@ -173,8 +181,7 @@ class CellRendererFilme : CellRendererBaseWithStart() {
         toolTipText = if (isBookMarked) "Film aus Merkliste entfernen" else "Film merken"
         icon = when {
             isBookMarked -> selectedBookmarkIconHighlighted
-            isSelected -> selectedBookmarkIcon
-            else -> normalBookmarkIcon
+            else -> bookmarkIcons.icon(isSelected)
         }
     }
 

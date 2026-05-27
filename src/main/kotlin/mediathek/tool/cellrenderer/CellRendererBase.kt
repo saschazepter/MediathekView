@@ -62,12 +62,19 @@ open class CellRendererBase : DefaultTableCellRenderer() {
 
     protected fun valueText(value: Any?): String = requireNotNull(value).toString()
 
-    protected fun selectedIcon(isSelected: Boolean, normal: Icon, selected: Icon): Icon =
-        if (isSelected) selected else normal
+    protected class RendererIconPair(
+        private val normal: Icon,
+        private val selected: Icon,
+    ) {
+        fun icon(isSelected: Boolean): Icon = if (isSelected) selected else normal
+    }
 
-    protected fun setSelectedIconAndToolTip(isSelected: Boolean, normal: Icon, selected: Icon, tooltip: String) {
+    protected fun rendererIconPair(normal: Icon, selected: Icon): RendererIconPair =
+        RendererIconPair(normal, selected)
+
+    protected fun setSelectedIconAndToolTip(isSelected: Boolean, icons: RendererIconPair, tooltip: String) {
         toolTipText = tooltip
-        icon = selectedIcon(isSelected, normal, selected)
+        icon = icons.icon(isSelected)
     }
 
     protected fun setSenderIcon(sender: String, targetDim: Dimension, isSelected: Boolean) {
