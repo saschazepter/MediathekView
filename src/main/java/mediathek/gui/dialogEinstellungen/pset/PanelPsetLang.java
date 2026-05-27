@@ -817,7 +817,7 @@ public class PanelPsetLang extends PanelVorlage {
         int rows = tabelleProgramme.getSelectedRow();
         if (rows != -1) {
             int row = tabelleProgramme.convertRowIndexToModel(rows);
-            int neu = getPset().getListeProg().auf(row, auf);
+            int neu = getPset().getListeProg().moveEntryAtIndex(row, auf);
             tabelleProgramme();
             tabelleProgramme.setRowSelectionInterval(neu, neu);
             tabelleProgramme.scrollRectToVisible(tabelleProgramme.getCellRect(neu, 0, true));
