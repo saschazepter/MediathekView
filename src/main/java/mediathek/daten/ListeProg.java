@@ -56,23 +56,46 @@ public class ListeProg extends ArrayList<DatenProg> {
     }
 
     public TableModel createModel() {
-        TableModel model;
-        Object[][] object;
-        DatenProg daten;
+        Object[][] object = new Object[this.size()][DatenProg.MAX_ELEM];
         int i = 0;
-        if (this.size() > 0) {
-            Iterator<DatenProg> iterator = this.iterator();
-            object = new Object[this.size()][DatenProg.MAX_ELEM];
-            while (iterator.hasNext()) {
-                daten = iterator.next();
-                object[i] = daten.arr;
-                ++i;
-            }
-            model = new NonEditableTableModel(object, DatenProg.COLUMN_NAMES);
-        } else {
-            model = new NonEditableTableModel(new Object[0][DatenProg.MAX_ELEM], DatenProg.COLUMN_NAMES);
+        for (DatenProg daten : this) {
+            System.arraycopy(daten.arr, 0, object[i], 0, DatenProg.MAX_ELEM);
+            object[i][DatenProg.PROGRAMM_RESTART] = daten.isRestart();
+            object[i][DatenProg.PROGRAMM_DOWNLOADMANAGER] = daten.isDownloadManager();
+            ++i;
         }
-        return model;
+        return new ProgramTableModel(this, object);
+    }
+
+    private static class ProgramTableModel extends NonEditableTableModel {
+        private final ListeProg listeProg;
+
+        ProgramTableModel(ListeProg listeProg, Object[][] data) {
+            super(data, DatenProg.COLUMN_NAMES);
+            this.listeProg = listeProg;
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            if (columnIndex == DatenProg.PROGRAMM_RESTART
+                    || columnIndex == DatenProg.PROGRAMM_DOWNLOADMANAGER) {
+                return Boolean.class;
+            }
+            return super.getColumnClass(columnIndex);
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int row, int column) {
+            if (column == DatenProg.PROGRAMM_RESTART
+                    || column == DatenProg.PROGRAMM_DOWNLOADMANAGER) {
+                boolean selected = Boolean.parseBoolean(String.valueOf(aValue));
+                listeProg.get(row).arr[column] = Boolean.toString(selected);
+                super.setValueAt(selected, row, column);
+            } else {
+                listeProg.get(row).arr[column] = aValue == null ? null : aValue.toString();
+                super.setValueAt(aValue, row, column);
+            }
+        }
     }
 
 }
