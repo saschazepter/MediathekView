@@ -808,8 +808,18 @@ public class PanelPsetLang extends PanelVorlage {
     private void progNeueZeile(DatenProg prog) {
         DatenPset gruppe = getPset();
         if (gruppe != null) {
+            int newRow = gruppe.getListeProg().size();
             gruppe.addProg(prog);
             tabelleProgramme();
+            selectProgramModelRow(newRow);
+        }
+    }
+
+    private void selectProgramModelRow(int modelRow) {
+        int viewRow = tabelleProgramme.convertRowIndexToView(modelRow);
+        if (viewRow != -1) {
+            tabelleProgramme.setRowSelectionInterval(viewRow, viewRow);
+            tabelleProgramme.scrollRectToVisible(tabelleProgramme.getCellRect(viewRow, 0, true));
         }
     }
 
