@@ -51,6 +51,7 @@
 - **FEATURE:** `-dq` bzw. `--download-quit` ist nun ein vollständig CLI-basierter Ausführungsmodus.
 - **FEATURE:** Proxy-Einstellungen werden nun ohne Neustart übernommen.
 - **FEATURE(Unix):** Dark-mode-Erkennung funktioniert nun auch mit KDE6.
+- **FEATURE:** `„`, `“` und `”` werden für Thema und Titel nun in einheitliches `"` konvertiert.
 - interne Optimierungen für mehr Geschwindigkeit.
 - interne Fehler wurden behoben.
 - MV nutzt `https://ipify.org` zur Erkennung der öffentlichen IP.
