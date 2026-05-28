@@ -30,7 +30,7 @@ import javax.swing.JScrollPane
 import javax.swing.WindowConstants
 import javax.swing.event.HyperlinkEvent
 
-class LuceneTutorialDialog @JvmOverloads constructor(
+class LuceneTutorialDialog(
     owner: Window,
     title: String = "Lucene-Suchsyntax",
     private val markdownResourcePath: String = Konstanten.PFAD_LUCENE_TUTORIAL_MARKDOWN,

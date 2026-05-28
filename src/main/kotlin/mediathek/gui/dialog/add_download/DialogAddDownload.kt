@@ -116,7 +116,6 @@ class DialogAddDownload(
             audio = "Audio: 48000 Hz, 128 kBit/s, AAC (Advanced Audio Coding)"
         )
 
-        @JvmStatic
         fun saveComboPfad(jcb: JComboBox<String>, orgPath: String) {
             val pfade = mutableListOf<String>()
             val s = jcb.selectedItem?.toString().orEmpty()
@@ -143,7 +142,6 @@ class DialogAddDownload(
             }
         }
 
-        @JvmStatic
         fun setModelPfad(pfad: String, jcb: JComboBox<String>) {
             val pfade = mutableListOf<String>()
             val showLastUsedPath = ApplicationConfiguration.getConfiguration()

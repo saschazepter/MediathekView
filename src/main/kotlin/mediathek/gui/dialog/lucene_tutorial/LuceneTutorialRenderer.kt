@@ -26,7 +26,6 @@ object LuceneTutorialRenderer {
     private val parser = Parser.builder().extensions(extensions).build()
     private val renderer = HtmlRenderer.builder().extensions(extensions).build()
 
-    @JvmStatic
     fun renderMarkdown(markdown: String): String {
         val body = renderer.render(parser.parse(markdown))
         return """
