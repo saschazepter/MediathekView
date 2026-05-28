@@ -28,6 +28,7 @@ new FormModel {
 							name: "list"
 							auxiliary() {
 								"JavaCodeGenerator.typeParameters": "String"
+								"JavaCodeGenerator.variableModifiers": 4
 							}
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {
@@ -44,6 +45,7 @@ new FormModel {
 							"toolTipText": "Ausgewählte Einträge löschen"
 							auxiliary() {
 								"JavaCodeGenerator.postCreateCode": "btnDeleteEntries.setIcon(SVGIconUtilities.createSVGIcon(\"icons/fontawesome/trash-can.svg\"));"
+								"JavaCodeGenerator.variableModifiers": 4
 							}
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
@@ -51,6 +53,7 @@ new FormModel {
 							"toolTipText": "Element nach oben verschieben"
 							auxiliary() {
 								"JavaCodeGenerator.postCreateCode": "btnUp.setIcon(SVGIconUtilities.createSVGIcon(\"icons/fontawesome/arrow-up.svg\"));"
+								"JavaCodeGenerator.variableModifiers": 4
 							}
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
@@ -58,6 +61,7 @@ new FormModel {
 							"toolTipText": "Element nach unten verschieben"
 							auxiliary() {
 								"JavaCodeGenerator.postCreateCode": "btnDown.setIcon(SVGIconUtilities.createSVGIcon(\"icons/fontawesome/arrow-down.svg\"));"
+								"JavaCodeGenerator.variableModifiers": 4
 							}
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {
