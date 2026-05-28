@@ -32,9 +32,11 @@ import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelperFactory
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import mediathek.tool.MessageBus
+import mediathek.tool.models.TModelFilm
 import mediathek.tool.table.MVFilmTable
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.Executor
+import javax.swing.RowSorter
 import javax.swing.table.TableModel
 
 class FilmTableReloader(private val host: Host) {
@@ -82,6 +84,7 @@ class FilmTableReloader(private val host: Host) {
 
         host.setSelectionUpdatesSuspended(true)
         host.table().getSpalten()
+        val sortKeys = host.table().savedSortKeysForReload()
         host.table().isEnabled = false
 
         val decoratedPool = host.tableModelExecutor()
@@ -89,12 +92,16 @@ class FilmTableReloader(private val host: Host) {
             val result = runCatching {
                 withContext(decoratedPool.asCoroutineDispatcher()) {
                     val helper = GuiModelHelperFactory.createGuiModelHelper(host.searchFieldData(), host.filterController())
-                    helper.filteredTableModel
+                    helper.filteredTableModel.also { model ->
+                        if (model is TModelFilm && sortKeys.isNotEmpty()) {
+                            model.sortRowsBy(sortKeys)
+                        }
+                    }
                 }
             }
 
             result.fold(
-                onSuccess = { model -> applyFilteredModel(model, fromSearchField) },
+                onSuccess = { model -> applyFilteredModel(model, sortKeys, fromSearchField) },
                 onFailure = { thrown ->
                     logger.error("Model filtering failed!", thrown)
                     restoreTableAfterFiltering(fromSearchField, scrollToSelection = false)
@@ -105,9 +112,10 @@ class FilmTableReloader(private val host: Host) {
 
     private fun applyFilteredModel(
         model: TableModel,
+        sortKeys: List<RowSorter.SortKey>,
         fromSearchField: Boolean,
     ) {
-        host.table().model = model
+        host.table().installPresortedModel(model, sortKeys)
         restoreTableAfterFiltering(fromSearchField, scrollToSelection = true)
     }
 

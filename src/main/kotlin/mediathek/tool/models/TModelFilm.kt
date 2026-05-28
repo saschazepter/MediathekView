@@ -21,6 +21,8 @@ package mediathek.tool.models
 import mediathek.daten.DatenFilm
 import mediathek.tool.FilmSize
 import mediathek.tool.datum.DatumFilm
+import javax.swing.RowSorter
+import javax.swing.SortOrder
 import javax.swing.table.AbstractTableModel
 
 class TModelFilm @JvmOverloads constructor(capacity: Int = 0) : AbstractTableModel() {
@@ -69,10 +71,22 @@ class TModelFilm @JvmOverloads constructor(capacity: Int = 0) : AbstractTableMod
             else -> throw IndexOutOfBoundsException("UNKNOWN COLUMN NAME: $column")
         }
 
-    override fun getValueAt(row: Int, column: Int): Any {
-        val film = dataList[row]
+    override fun getValueAt(row: Int, column: Int): Any = valueAt(dataList[row], column)
 
-        return when (column) {
+    fun sortRowsBy(sortKeys: List<RowSorter.SortKey>) {
+        val sortKey = sortKeys.firstOrNull() ?: return
+        if (sortKey.sortOrder == SortOrder.UNSORTED) {
+            return
+        }
+
+        val direction = if (sortKey.sortOrder == SortOrder.DESCENDING) -1 else 1
+        dataList.sortWith { left, right ->
+            direction * compareColumnValues(valueAt(left, sortKey.column), valueAt(right, sortKey.column))
+        }
+    }
+
+    private fun valueAt(film: DatenFilm, column: Int): Any =
+        when (column) {
             DatenFilm.FILM_NR -> film.filmNr
             DatenFilm.FILM_SENDER -> film.sender
             DatenFilm.FILM_THEMA -> film.thema
@@ -93,7 +107,13 @@ class TModelFilm @JvmOverloads constructor(capacity: Int = 0) : AbstractTableMod
             DatenFilm.FILM_REF -> film
             else -> throw IndexOutOfBoundsException("UNKNOWN COLUMN VALUE: $column")
         }
-    }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun compareColumnValues(left: Any, right: Any): Int =
+        when {
+            left is Comparable<*> && left::class.java.isInstance(right) -> (left as Comparable<Any>).compareTo(right)
+            else -> left.toString().compareTo(right.toString())
+        }
 
     fun addAll(listeFilme: List<DatenFilm>) {
         if (listeFilme.isEmpty()) {

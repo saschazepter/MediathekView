@@ -206,16 +206,29 @@ class BookmarkDataList(daten: Daten) {
             return
         }
 
+        val bookmarkSnapshot = bookmarks.withReadLock {
+            ArrayList(bookmarks)
+        }
+        if (bookmarkSnapshot.isEmpty()) {
+            return
+        }
+
         val listeFilme = Daten.getInstance().listeFilme
         val filmSnapshot: List<DatenFilm> =
             synchronized(listeFilme) {
                 ArrayList(listeFilme)
             }
-        val filmsByHash = createFilmHashIndex(filmSnapshot)
-        val filmsByUrl = createFilmUrlIndex(filmSnapshot)
-        val bookmarkSnapshot = bookmarks.withReadLock {
-            ArrayList(bookmarks)
-        }
+        val requestedHashes = bookmarkSnapshot
+            .asSequence()
+            .mapNotNull { bookmark -> bookmark.filmHashCode }
+            .toSet()
+        val requestedUrls = bookmarkSnapshot
+            .asSequence()
+            .filter { bookmark -> bookmark.filmHashCode == null }
+            .mapNotNull { bookmark -> bookmark.url?.lowercase(Locale.ROOT) }
+            .toSet()
+        val filmsByHash = createFilmHashIndex(filmSnapshot, requestedHashes)
+        val filmsByUrl = createFilmUrlIndex(filmSnapshot, requestedUrls)
 
         for (bookmark in bookmarkSnapshot) {
             val hashCodeStr = bookmark.filmHashCode
@@ -246,19 +259,42 @@ class BookmarkDataList(daten: Daten) {
         }
     }
 
-    private fun createFilmHashIndex(films: List<DatenFilm>): Map<String, DatenFilm> {
-        val filmsByHash = HashMap<String, DatenFilm>(films.size)
+    private fun createFilmHashIndex(films: List<DatenFilm>, targetHashes: Set<String>): Map<String, DatenFilm> {
+        if (targetHashes.isEmpty()) {
+            return emptyMap()
+        }
+
+        val unmatchedHashes = HashSet(targetHashes)
+        val filmsByHash = HashMap<String, DatenFilm>(targetHashes.size)
         for (film in films) {
-            filmsByHash.putIfAbsent(film.sha256, film)
+            val hash = film.sha256
+            if (hash in unmatchedHashes) {
+                filmsByHash.putIfAbsent(hash, film)
+                unmatchedHashes.remove(hash)
+                if (unmatchedHashes.isEmpty()) {
+                    break
+                }
+            }
         }
         return filmsByHash
     }
 
-    private fun createFilmUrlIndex(films: List<DatenFilm>): Map<String, DatenFilm> {
-        val filmsByUrl = HashMap<String, DatenFilm>(films.size)
+    private fun createFilmUrlIndex(films: List<DatenFilm>, targetUrls: Set<String>): Map<String, DatenFilm> {
+        if (targetUrls.isEmpty()) {
+            return emptyMap()
+        }
+
+        val unmatchedUrls = HashSet(targetUrls)
+        val filmsByUrl = HashMap<String, DatenFilm>(targetUrls.size)
         for (film in films) {
             val normalizedUrl = film.urlNormalQuality.lowercase(Locale.ROOT)
-            filmsByUrl.putIfAbsent(normalizedUrl, film)
+            if (normalizedUrl in unmatchedUrls) {
+                filmsByUrl.putIfAbsent(normalizedUrl, film)
+                unmatchedUrls.remove(normalizedUrl)
+                if (unmatchedUrls.isEmpty()) {
+                    break
+                }
+            }
         }
         return filmsByUrl
     }

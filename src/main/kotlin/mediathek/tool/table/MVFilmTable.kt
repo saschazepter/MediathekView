@@ -29,6 +29,7 @@ import java.awt.Color
 import java.awt.Component
 import java.awt.event.MouseEvent
 import java.util.*
+import javax.swing.RowSorter.SortKey
 import javax.swing.table.TableCellRenderer
 import javax.swing.table.TableColumnModel
 import javax.swing.table.TableModel
@@ -131,6 +132,20 @@ class MVFilmTable : PersistentColumnConfigurationTable(
         } catch (exception: Exception) {
             logger.error("setSpalten", exception)
         }
+    }
+
+    fun savedSortKeysForReload(): List<SortKey> = listeSortKeys.orEmpty()
+
+    fun installPresortedModel(model: TableModel, sortKeys: List<SortKey>) {
+        val currentSorter = sorter
+        if (currentSorter == null || sortKeys.isEmpty()) {
+            this.model = model
+            return
+        }
+
+        currentSorter.clearSortKeysBeforePresortedModelInstall()
+        this.model = model
+        currentSorter.showPresortedSortKeys(sortKeys)
     }
 
     override fun saveSelectedTableRows() {
@@ -260,20 +275,49 @@ class MVFilmTable : PersistentColumnConfigurationTable(
     private fun restoreSortKeys() {
         val savedSortKeys = listeSortKeys ?: return
         val currentSorter = rowSorter ?: return
-        if (savedSortKeys !== currentSorter.sortKeys && savedSortKeys.isNotEmpty()) {
+        if (savedSortKeys.isNotEmpty() && savedSortKeys != currentSorter.sortKeys) {
             currentSorter.sortKeys = savedSortKeys
         }
     }
 
     private class FilmRowSorter(model: TableModel) : TableRowSorter<TableModel>(model) {
+        private var installingPresortedModel = false
+
         override fun setModel(model: TableModel) {
             super.setModel(model)
             configureSortableColumns()
             configureComparators()
         }
 
+        override fun sort() {
+            if (!installingPresortedModel) {
+                super.sort()
+            }
+        }
+
         override fun setSortKeys(sortKeys: MutableList<out SortKey>?) {
             super.setSortKeys(sortKeys?.take(1))
+        }
+
+        fun clearSortKeysBeforePresortedModelInstall() {
+            whileInstallingPresortedModel {
+                super.setSortKeys(emptyList<SortKey>())
+            }
+        }
+
+        fun showPresortedSortKeys(sortKeys: List<SortKey>) {
+            whileInstallingPresortedModel {
+                super.setSortKeys(sortKeys.take(1))
+            }
+        }
+
+        private fun whileInstallingPresortedModel(block: () -> Unit) {
+            installingPresortedModel = true
+            try {
+                block()
+            } finally {
+                installingPresortedModel = false
+            }
         }
 
         private fun configureSortableColumns() {
@@ -286,6 +330,8 @@ class MVFilmTable : PersistentColumnConfigurationTable(
         private fun configureComparators() {
             setComparator(DatenFilm.FILM_GROESSE, Comparator<FilmSize> { left, right -> left.compareTo(right) })
             setComparator(DatenFilm.FILM_SENDER, Comparator<String> { left, right -> left.compareTo(right) })
+            setComparator(DatenFilm.FILM_THEMA, Comparator<String> { left, right -> left.compareTo(right) })
+            setComparator(DatenFilm.FILM_TITEL, Comparator<String> { left, right -> left.compareTo(right) })
             setComparator(DatenFilm.FILM_ZEIT, Comparator<String> { left, right -> left.compareTo(right) })
             setComparator(DatenFilm.FILM_URL, Comparator<String> { left, right -> left.compareTo(right) })
             setComparator(DatenFilm.FILM_DAUER, Comparator<Int> { left, right -> left.compareTo(right) })
