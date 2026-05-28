@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2024 derreisende77.
+ * Copyright (c) 2026 derreisende77.
  * This code was developed as part of the MediathekView project https://github.com/mediathekview/MediathekView
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,25 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.actions;
+package mediathek.gui.actions
 
-import mediathek.gui.dialog.subripmerge.MergeSubripVideoDialog;
-import mediathek.mainwindow.MediathekGui;
+import java.awt.event.ActionEvent
+import javax.swing.AbstractAction
+import javax.swing.JDialog
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-
-public class MergeSubtitleWithVideoAction extends AbstractAction {
-    private final MediathekGui ui;
-
-    public MergeSubtitleWithVideoAction(MediathekGui mediathekGui) {
-        this.ui = mediathekGui;
-        putValue(NAME, "Untertiteldatei zu Video hinzufügen...");
+class DisposeDialogAction(
+    private val dialog: JDialog,
+    description: String,
+    shortDescription: String,
+) : AbstractAction() {
+    init {
+        putValue(NAME, description)
+        putValue(SHORT_DESCRIPTION, shortDescription)
     }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        MergeSubripVideoDialog dlg = new MergeSubripVideoDialog(ui);
-        dlg.setVisible(true);
+    override fun actionPerformed(event: ActionEvent?) {
+        dialog.dispose()
     }
 }
