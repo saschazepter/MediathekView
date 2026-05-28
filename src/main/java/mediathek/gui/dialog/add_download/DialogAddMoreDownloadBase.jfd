@@ -34,17 +34,24 @@ new FormModel {
 					"model": new javax.swing.DefaultComboBoxModel
 					auxiliary() {
 						"JavaCodeGenerator.typeParameters": "String"
+						"JavaCodeGenerator.variableModifiers": 4
 					}
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "jButtonDelPath"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/mediathek/res/muster/button-del.png" )
 					"toolTipText": "History löschen"
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 4
+					}
 				} )
 				add( new FormComponent( "javax.swing.JButton" ) {
 					name: "jButtonPath"
 					"icon": new com.jformdesigner.model.SwingIcon( 0, "/mediathek/res/muster/button-file-open.png" )
 					"toolTipText": "Zielpfad auswählen"
+					auxiliary() {
+						"JavaCodeGenerator.variableModifiers": 4
+					}
 				} )
 				add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.swingx.VerticalLayout ) {
 					"gap": 5
@@ -56,13 +63,22 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JCheckBox" ) {
 						name: "chkInfo"
 						"text": "Infodatei anlegen: \"Filmname.txt\""
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 					add( new FormComponent( "javax.swing.JCheckBox" ) {
 						name: "jCheckBoxPfadSpeichern"
 						"text": "Zielpfad speichern"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 					add( new FormComponent( "mediathek.gui.dialog.add_download.DownloadSubtitleCheckBox" ) {
 						name: "chkSubtitle"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					} )
 				} )
 			} )
@@ -70,18 +86,30 @@ new FormModel {
 				name: "btnChange"
 				"text": "Einzeln anlegen"
 				"toolTipText": "Die Sammelaktion wird abgebrochen und Sie können im Anschluß die Einstellungen für jeden Download einzeln festlegen."
+				auxiliary() {
+					"JavaCodeGenerator.variableModifiers": 4
+				}
 			} )
 			add( new FormComponent( "javax.swing.JButton" ) {
 				name: "btnCancel"
 				"text": "Abbrechen"
+				auxiliary() {
+					"JavaCodeGenerator.variableModifiers": 4
+				}
 			} )
 			add( new FormComponent( "javax.swing.JButton" ) {
 				name: "btnStartImmediately"
 				"text": "Sofort starten"
+				auxiliary() {
+					"JavaCodeGenerator.variableModifiers": 4
+				}
 			} )
 			add( new FormComponent( "javax.swing.JButton" ) {
 				name: "btnQueueDownloads"
 				"text": "In die Warteschlange"
+				auxiliary() {
+					"JavaCodeGenerator.variableModifiers": 4
+				}
 			} )
 		}, new FormLayoutConstraints( null ) {
 			"size": new java.awt.Dimension( 730, 230 )

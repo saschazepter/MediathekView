@@ -18,154 +18,19 @@
 
 package mediathek.gui.dialog.add_download;
 
-import mediathek.config.MVColor;
-import mediathek.config.MVConfig;
-import mediathek.daten.DatenPset;
-import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.*;
-import org.apache.commons.configuration2.Configuration;
 import org.jdesktop.swingx.VerticalLayout;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.JTextComponent;
-import java.util.Objects;
 
-public class DialogAddMoreDownload extends JDialog {
-    private final DatenPset pSet;
-    private final String orgPfad;
-    private final Configuration config = ApplicationConfiguration.getConfiguration();
-    private boolean addAll;
-    private boolean cancel;
-    private boolean info;
-    private boolean subtitle;
-    private boolean startImmediately;
-
-    public DialogAddMoreDownload(JFrame parent, DatenPset pSet) {
+/**
+ * Base class for UI Designer.
+ * Subclasses contain the hand-written dialog behavior.
+ */
+public class DialogAddMoreDownloadBase extends JDialog {
+    public DialogAddMoreDownloadBase(JFrame parent) {
         super(parent);
-        this.pSet = pSet;
-
         initComponents();
-
-        chkSubtitle.setSelected(pSet.shouldDownloadSubtitle());
-        subtitle = chkSubtitle.isSelected();
-        chkSubtitle.addActionListener(_ -> subtitle = chkSubtitle.isSelected());
-
-        chkInfo.setSelected(pSet.shouldCreateInfofile());
-        info = chkInfo.isSelected();
-        chkInfo.addActionListener(_ -> info = chkInfo.isSelected());
-
-        jCheckBoxPfadSpeichern.setSelected(config.getBoolean(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, true));
-        jCheckBoxPfadSpeichern.addActionListener(_ -> config.setProperty(ApplicationConfiguration.DOWNLOAD_SHOW_LAST_USED_PATH, jCheckBoxPfadSpeichern.isSelected()));
-
-        btnChange.addActionListener(_ -> dispose());
-        btnStartImmediately.addActionListener(_ -> {
-            addAll = true;
-            startImmediately = true;
-            dispose();
-        });
-        btnQueueDownloads.addActionListener(_ -> {
-            addAll = true;
-            startImmediately = false;
-            dispose();
-        });
-        btnCancel.addActionListener(_ -> {
-            cancel = true;
-            dispose();
-        });
-
-        jButtonPath.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/folder-open.svg"));
-        jButtonPath.addActionListener(_ -> {
-            var initialDirectory = "";
-            var cbItem = Objects.requireNonNull(jComboBoxPath.getSelectedItem()).toString();
-            if (!cbItem.isEmpty()) {
-                initialDirectory = cbItem;
-            }
-            var selectedDirectory = FileDialogs.chooseDirectoryLocation(MediathekGui.ui(), "Film speichern", initialDirectory);
-            if (selectedDirectory != null) {
-                final String absolutePath = selectedDirectory.getAbsolutePath();
-                jComboBoxPath.addItem(absolutePath);
-                jComboBoxPath.setSelectedItem(absolutePath);
-            }
-        });
-
-
-        jButtonDelPath.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
-        jButtonDelPath.addActionListener(_ -> {
-            MVConfig.add(MVConfig.Configs.SYSTEM_DIALOG_DOWNLOAD__PFADE_ZUM_SPEICHERN, "");
-            jComboBoxPath.setModel(new DefaultComboBoxModel<>(new String[]{pSet.getZielPfad()}));
-        });
-
-        DialogAddDownloadWithCoroutines.setModelPfad(pSet.getZielPfad(), jComboBoxPath);
-        orgPfad = pSet.getZielPfad();
-        ((JTextComponent) jComboBoxPath.getEditor().getEditorComponent()).setOpaque(true);
-        ((JTextComponent) jComboBoxPath.getEditor().getEditorComponent()).getDocument().addDocumentListener(new IllegalFilenameListener());
-
-        EscapeKeyHandler.installHandler(this, () -> {
-            cancel = true;
-            dispose();
-        });
-
-        getRootPane().setDefaultButton(btnStartImmediately);
-
-        pack();
-    }
-
-    public boolean wasCancelled() {
-        return cancel;
-    }
-
-    public DialogResult showDialog() {
-        setVisible(true);
-        return new DialogResult(addAll, info, subtitle, getPath(), startImmediately);
-    }
-
-    private String getPath() {
-        String path = jComboBoxPath.getModel().getSelectedItem().toString();
-        if (path.isEmpty()) {
-            path = pSet.getZielPfad();
-        }
-        return path;
-    }
-
-    @Override
-    public void dispose() {
-        DialogAddDownloadWithCoroutines.saveComboPfad(jComboBoxPath, orgPfad);
-        super.dispose();
-    }
-
-    public record DialogResult(boolean addAllWithDefaults, boolean info, boolean subtitle, String path, boolean startImmediately) {
-    }
-
-    private class IllegalFilenameListener implements DocumentListener {
-
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            tus();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            tus();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            tus();
-        }
-
-        private void tus() {
-            String s = ((JTextComponent) jComboBoxPath.getEditor().getEditorComponent()).getText();
-            var editor = jComboBoxPath.getEditor().getEditorComponent();
-            if (!s.equals(FilenameUtils.checkFilenameForIllegalCharacters(s, true))) {
-                editor.setBackground(MVColor.DOWNLOAD_FEHLER.getColor());
-            }
-            else {
-                editor.setBackground(UIManager.getDefaults().getColor("TextField.background"));
-            }
-        }
     }
 
     /** This method is called from within the constructor to
@@ -314,15 +179,15 @@ public class DialogAddMoreDownload extends JDialog {
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JComboBox<String> jComboBoxPath;
-    private JButton jButtonDelPath;
-    private JButton jButtonPath;
-    private JCheckBox chkInfo;
-    private JCheckBox jCheckBoxPfadSpeichern;
-    private DownloadSubtitleCheckBox chkSubtitle;
-    private JButton btnChange;
-    private JButton btnCancel;
-    private JButton btnStartImmediately;
-    private JButton btnQueueDownloads;
+    protected JComboBox<String> jComboBoxPath;
+    protected JButton jButtonDelPath;
+    protected JButton jButtonPath;
+    protected JCheckBox chkInfo;
+    protected JCheckBox jCheckBoxPfadSpeichern;
+    protected DownloadSubtitleCheckBox chkSubtitle;
+    protected JButton btnChange;
+    protected JButton btnCancel;
+    protected JButton btnStartImmediately;
+    protected JButton btnQueueDownloads;
     // End of variables declaration//GEN-END:variables
 }
