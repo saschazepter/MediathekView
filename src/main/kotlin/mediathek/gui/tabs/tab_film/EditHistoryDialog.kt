@@ -7,6 +7,7 @@ package mediathek.gui.tabs.tab_film
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.swing.GlazedListsSwing
 import mediathek.tool.ApplicationConfiguration
+import mediathek.tool.withLock
 import org.apache.commons.configuration2.sync.LockMode
 import org.apache.logging.log4j.LogManager
 import java.awt.Window
@@ -83,36 +84,30 @@ class EditHistoryDialog(
     }
 
     private fun restorePosition() {
-        val config = ApplicationConfiguration.getConfiguration()
         try {
-            config.lock(LockMode.READ)
-            val x = config.getInt(CONFIG_X)
-            val y = config.getInt(CONFIG_Y)
-            val width = config.getInt(CONFIG_WIDTH)
-            val height = config.getInt(CONFIG_HEIGHT)
+            ApplicationConfiguration.getConfiguration().withLock(LockMode.READ) {
+                val x = getInt(CONFIG_X)
+                val y = getInt(CONFIG_Y)
+                val width = getInt(CONFIG_WIDTH)
+                val height = getInt(CONFIG_HEIGHT)
 
-            setSize(width, height)
-            setLocation(x, y)
+                setSize(width, height)
+                setLocation(x, y)
+            }
         } catch (_: NoSuchElementException) {
         } catch (ex: Exception) {
             logger.error("Unhandled exception", ex)
-        } finally {
-            config.unlock(LockMode.READ)
         }
     }
 
     private fun savePosition() {
-        val config = ApplicationConfiguration.getConfiguration()
-        try {
-            config.lock(LockMode.WRITE)
+        ApplicationConfiguration.getConfiguration().withLock(LockMode.WRITE) {
             val size = size
             val location = location
-            config.setProperty(CONFIG_WIDTH, size.width)
-            config.setProperty(CONFIG_HEIGHT, size.height)
-            config.setProperty(CONFIG_X, location.x)
-            config.setProperty(CONFIG_Y, location.y)
-        } finally {
-            config.unlock(LockMode.WRITE)
+            setProperty(CONFIG_WIDTH, size.width)
+            setProperty(CONFIG_HEIGHT, size.height)
+            setProperty(CONFIG_X, location.x)
+            setProperty(CONFIG_Y, location.y)
         }
     }
 
