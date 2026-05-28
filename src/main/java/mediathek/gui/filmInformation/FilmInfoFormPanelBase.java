@@ -27,8 +27,8 @@ import org.jdesktop.swingx.JXHyperlink;
 import javax.swing.*;
 import java.awt.*;
 
-public class FilmInfoFormPanel extends JPanel {
-    public FilmInfoFormPanel() {
+public class FilmInfoFormPanelBase extends JPanel {
+    public FilmInfoFormPanelBase() {
         initComponents();
     }
 
@@ -50,9 +50,9 @@ public class FilmInfoFormPanel extends JPanel {
         var label7 = new JLabel();
         lblSize = new JLabel();
         var label8 = new JLabel();
-        cbHq = new DisabledCheckBox();
+        cbHq = new JCheckBox();
         var label9 = new JLabel();
-        cbSubtitle = new DisabledCheckBox();
+        cbSubtitle = new JCheckBox();
         var label12 = new JLabel();
         lblSeason = new JLabel();
         var label14 = new JLabel();
@@ -222,8 +222,8 @@ public class FilmInfoFormPanel extends JPanel {
     private JLabel lblUhrzeit;
     private JLabel lblDuration;
     private JLabel lblSize;
-    private DisabledCheckBox cbHq;
-    private DisabledCheckBox cbSubtitle;
+    private JCheckBox cbHq;
+    private JCheckBox cbSubtitle;
     private JLabel lblSeason;
     private JLabel lblEpisode;
     private JLabel lblAvailableUntil;
@@ -262,11 +262,11 @@ public class FilmInfoFormPanel extends JPanel {
         return lblSize;
     }
 
-    DisabledCheckBox getCbHq() {
+    JCheckBox getCbHq() {
         return cbHq;
     }
 
-    DisabledCheckBox getCbSubtitle() {
+    JCheckBox getCbSubtitle() {
         return cbSubtitle;
     }
 

@@ -120,7 +120,7 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 7"
 			} )
-			add( new FormComponent( "mediathek.gui.filmInformation.DisabledCheckBox" ) {
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
 				name: "cbHq"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 7"
@@ -134,7 +134,7 @@ new FormModel {
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 8"
 			} )
-			add( new FormComponent( "mediathek.gui.filmInformation.DisabledCheckBox" ) {
+			add( new FormComponent( "javax.swing.JCheckBox" ) {
 				name: "cbSubtitle"
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 1 8"
