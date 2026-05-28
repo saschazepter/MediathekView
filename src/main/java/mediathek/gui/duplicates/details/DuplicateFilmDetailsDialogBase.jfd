@@ -31,6 +31,9 @@ new FormModel {
 							"showHorizontalLines": false
 							"showVerticalLines": false
 							"preferredScrollableViewportSize": new java.awt.Dimension( 500, 150 )
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "Center"
@@ -52,6 +55,9 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "okButton"
 						"text": "Schließen"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 						"gridx": 1
 						"gridy": 0
