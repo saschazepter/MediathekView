@@ -34,6 +34,9 @@ new FormModel {
 							"selectionMode": 0
 							"showHorizontalLines": false
 							"showVerticalLines": false
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "Center"
@@ -41,6 +44,9 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "lblTotalCommon"
 						"text": "Gesamtanzahl Filme:"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "South"
 					} )
@@ -67,6 +73,9 @@ new FormModel {
 							"showVerticalLines": false
 							"autoResizeMode": 0
 							"preferredScrollableViewportSize": new java.awt.Dimension( 250, 400 )
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 						} )
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "Center"
@@ -74,6 +83,9 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JLabel" ) {
 						name: "lblTotalDuplicates"
 						"text": "Gesamtanzahl Duplikate:"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					}, new FormLayoutConstraints( class java.lang.String ) {
 						"value": "Last"
 					} )

@@ -8,6 +8,7 @@ import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.swing.GlazedListsSwing
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.withLock
+import mediathek.tool.withWriteLock
 import org.apache.commons.configuration2.sync.LockMode
 import org.apache.logging.log4j.LogManager
 import java.awt.Window
@@ -60,26 +61,18 @@ class EditHistoryDialog(
         val listModel = list.model
         val changeList = list.selectedIndices.map { listModel.getElementAt(it) }
 
-        val lock = eventList.readWriteLock.writeLock()
-        lock.lock()
-        try {
+        eventList.withWriteLock {
             changeList.forEach(eventList::remove)
-        } finally {
-            lock.unlock()
         }
     }
 
     private fun moveEntry(idx: Int, operator: (Int) -> Int): Int {
-        val lock = eventList.readWriteLock.writeLock()
-        lock.lock()
-        try {
+        return eventList.withWriteLock {
             val obj = eventList[idx]
             eventList.removeAt(idx)
             val newIdx = operator(idx)
             eventList.add(newIdx, obj)
-            return newIdx
-        } finally {
-            lock.unlock()
+            newIdx
         }
     }
 
