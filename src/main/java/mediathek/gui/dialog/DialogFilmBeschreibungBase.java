@@ -1,101 +1,21 @@
 package mediathek.gui.dialog;
 
-import mediathek.config.Daten;
-import mediathek.config.Konstanten;
-import mediathek.config.MVConfig;
-import mediathek.config.StandardLocations;
-import mediathek.daten.DatenFilm;
-import mediathek.daten.DatenPset;
-import mediathek.daten.ListePset;
-import mediathek.mainwindow.MediathekGui;
-import mediathek.tool.*;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
-import okhttp3.HttpUrl;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import javax.swing.*;
-import java.io.IOException;
-import java.nio.file.Path;
 
-public class DialogFilmBeschreibung extends JDialog {
-    private static final String TITLE = "Beschreibung ändern";
-
-    public DialogFilmBeschreibung(JFrame parent, DatenFilm datenFilm) {
+/**
+ * Base class for UI Designer.
+ * Subclasses contain the hand-written dialog behavior.
+ */
+public class DialogFilmBeschreibungBase extends JDialog {
+    public DialogFilmBeschreibungBase(JFrame parent) {
         super(parent, true);
-
         initComponents();
-
-        setTitle(TITLE);
-        if (parent != null)
-            setLocationRelativeTo(parent);
-
-        EscapeKeyHandler.installHandler(this, this::dispose);
-
-        jTextArea1.setText(datenFilm.getDescription());
-        jTextFieldTitel.setText(datenFilm.getTitle());
-
-        jButtonOk.addActionListener(_ -> {
-            datenFilm.setDescription(jTextArea1.getText());
-            dispose();
-        });
-
-        jButtonHilfe.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg"));
-        jButtonHilfe.addActionListener(_ -> {
-            var message = """
-                    Diese Funktion richtet sich z.B. an Benutzer,welche eine angepasste Beschreibung der Sendung in Form der Infodatei ("Filmname.txt") anlegen und durch Drittprogramme einlesen lassen wollen.
-
-                    Achtung: Diese Änderungen gehen nach dem Neuladen einer Filmliste verloren.
-                    """;
-            JOptionPane.showMessageDialog(this, message, Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
-        });
-
-        jButtonSpeichern.addActionListener(_ -> {
-            datenFilm.setDescription(jTextArea1.getText());
-
-            String titel = FilenameUtils.replaceLeerDateiname(datenFilm.getTitle(), false,
-                    Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_USE_REPLACETABLE)),
-                    Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_ONLY_ASCII)));
-            String pfad = "";
-            ListePset lp = Daten.getInstance().getListePset().getListeSpeichern();
-            if (!lp.isEmpty()) {
-                DatenPset p = lp.getFirst();
-                pfad = p.getZielPfad();
-            }
-            if (pfad.isEmpty()) {
-                pfad = StandardLocations.getStandardDownloadPath();
-            }
-
-            final String suffix = ".txt";
-            titel = titel.isEmpty()
-                    ? datenFilm.getSender().replace(" ", "-") + suffix
-                    : titel + suffix;
-
-
-            pfad = GuiFunktionen.addsPfad(pfad, titel);
-            var destFile = FileDialogs.chooseSaveFileLocation(MediathekGui.ui(),"Infos speichern", pfad);
-            if (destFile != null) {
-                final Path path = destFile.toPath();
-                try {
-                    MVInfoFile file = new MVInfoFile();
-                    var url = HttpUrl.parse(datenFilm.getUrlNormalQuality());
-                    file.writeInfoFile(datenFilm, path, url);
-
-                    JOptionPane.showMessageDialog(this, "Infodatei wurde erfolgreich geschrieben.",
-                            Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);
-                }
-                catch (IOException ex) {
-                    SwingErrorDialog.showExceptionMessage(this,"Ein unbekannter Fehler ist aufgetreten!", ex);
-                    logger.error("Ziel: {}", path.toAbsolutePath().toString(), ex);
-                }
-            }
-        });
     }
-
-    private static final Logger logger = LogManager.getLogger();
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -196,11 +116,11 @@ public class DialogFilmBeschreibung extends JDialog {
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JButton jButtonOk;
-    private JButton jButtonHilfe;
-    private JButton jButtonSpeichern;
-    private JTextArea jTextArea1;
-    private JTextField jTextFieldTitel;
+    protected JButton jButtonOk;
+    protected JButton jButtonHilfe;
+    protected JButton jButtonSpeichern;
+    protected JTextArea jTextArea1;
+    protected JTextField jTextFieldTitel;
     // End of variables declaration//GEN-END:variables
 
 }
