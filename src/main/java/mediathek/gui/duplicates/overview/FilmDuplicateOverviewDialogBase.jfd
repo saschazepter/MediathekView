@@ -34,6 +34,9 @@ new FormModel {
 							}
 							add( new FormComponent( "javax.swing.JTree" ) {
 								name: "tree"
+								auxiliary() {
+									"JavaCodeGenerator.variableModifiers": 4
+								}
 							} )
 						}, new FormLayoutConstraints( class java.lang.String ) {
 							"value": "left"
@@ -46,6 +49,9 @@ new FormModel {
 							add( new FormComponent( "javax.swing.JTable" ) {
 								name: "table"
 								"autoResizeMode": 0
+								auxiliary() {
+									"JavaCodeGenerator.variableModifiers": 4
+								}
 							} )
 						}, new FormLayoutConstraints( class java.lang.String ) {
 							"value": "right"
@@ -70,6 +76,9 @@ new FormModel {
 					add( new FormComponent( "javax.swing.JButton" ) {
 						name: "okButton"
 						"text": "Schließen"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 					}, new FormLayoutConstraints( class com.jformdesigner.runtime.GridBagConstraintsEx ) {
 						"gridx": 1
 						"gridy": 0
