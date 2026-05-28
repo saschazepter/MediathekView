@@ -28,6 +28,8 @@ import mediathek.filmeSuchen.ListenerFilmeLaden
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent
 import mediathek.gui.messages.BookmarkRefreshCompletedEvent
 import mediathek.tool.MessageBus
+import mediathek.tool.withReadLock
+import mediathek.tool.withWriteLock
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import java.time.LocalDate
@@ -99,32 +101,26 @@ class BookmarkDataList(daten: Daten) {
 
         if (add) {
             // Check if history list is known.
-            val writeLock = bookmarks.readWriteLock.writeLock()
-            writeLock.lock()
             try {
-                SeenHistoryController().use { history ->
-                    addList.forEach { movie ->
-                        val bookmarkData = BookmarkData(movie)
-                        movie.bookmark = bookmarkData // Link backwards
-                        bookmarkData.seen = history.hasBeenSeen(movie)
-                        bookmarkData.filmHashCode = movie.sha256
-                        bookmarkData.bookmarkAdded = LocalDate.now()
-                        bookmarks.add(bookmarkData)
+                bookmarks.withWriteLock {
+                    SeenHistoryController().use { history ->
+                        addList.forEach { movie ->
+                            val bookmarkData = BookmarkData(movie)
+                            movie.bookmark = bookmarkData // Link backwards
+                            bookmarkData.seen = history.hasBeenSeen(movie)
+                            bookmarkData.filmHashCode = movie.sha256
+                            bookmarkData.bookmarkAdded = LocalDate.now()
+                            bookmarks.add(bookmarkData)
+                        }
                     }
                 }
             } catch (ex: Exception) {
                 logger.error("history produced error", ex)
-            } finally {
-                writeLock.unlock()
             }
         } else {
             movies.forEach { movie -> movie.bookmark = null }
-            val writeLock = bookmarks.readWriteLock.writeLock()
-            writeLock.lock()
-            try {
+            bookmarks.withWriteLock {
                 bookmarks.removeAll(delList)
-            } finally {
-                writeLock.unlock()
             }
         }
     }
@@ -217,13 +213,8 @@ class BookmarkDataList(daten: Daten) {
             }
         val filmsByHash = createFilmHashIndex(filmSnapshot)
         val filmsByUrl = createFilmUrlIndex(filmSnapshot)
-        val readLock = bookmarks.readWriteLock.readLock()
-        val bookmarkSnapshot: List<BookmarkData>
-        readLock.lock()
-        try {
-            bookmarkSnapshot = ArrayList(bookmarks)
-        } finally {
-            readLock.unlock()
+        val bookmarkSnapshot = bookmarks.withReadLock {
+            ArrayList(bookmarks)
         }
 
         for (bookmark in bookmarkSnapshot) {

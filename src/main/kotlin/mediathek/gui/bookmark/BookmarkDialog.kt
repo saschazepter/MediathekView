@@ -44,6 +44,7 @@ import mediathek.swing.table.IconHeaderCellRenderer
 import mediathek.swing.table.TableUtils
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.EscapeKeyHandler
+import mediathek.tool.withReadLock
 import mediathek.tool.withLock
 import org.apache.commons.configuration2.sync.LockMode
 import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular
@@ -245,15 +246,10 @@ class BookmarkDialog(owner: Frame) : JDialog(owner) {
     private fun setupTable() {
         val bookmarkConnector = GlazedLists.beanConnector(BookmarkData::class.java) as ObservableElementList.Connector<BookmarkData>
         val sourceEventList = Daten.getInstance().listeBookmarkList.getEventList()
-        sourceEventList.readWriteLock.readLock().lock()
 
-        val observedBookmarks: ObservableElementList<BookmarkData>
-        val sortedList: SortedList<BookmarkData>
-        try {
-            observedBookmarks = ObservableElementList(Daten.getInstance().listeBookmarkList.getEventList(), bookmarkConnector)
-            sortedList = SortedList(observedBookmarks, BookmarkAddedAtComparator())
-        } finally {
-            sourceEventList.readWriteLock.readLock().unlock()
+        val sortedList = sourceEventList.withReadLock {
+            val observedBookmarks = ObservableElementList(sourceEventList, bookmarkConnector)
+            SortedList(observedBookmarks, BookmarkAddedAtComparator())
         }
 
         val model = GlazedListsSwing.eventTableModelWithThreadProxyList(sortedList, getTableFormat())
