@@ -306,7 +306,7 @@ new FormModel {
 				"$rowConstraints": "[top]"
 			} ) {
 				name: "filmPanel"
-				"border": javax.swing.BorderFactory.createEtchedBorder()
+				"border": new javax.swing.border.EtchedBorder( 1, null, null )
 				auxiliary() {
 					"JavaCodeGenerator.variableLocal": true
 				}
