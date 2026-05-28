@@ -101,7 +101,7 @@ class DialogAddMoreDownload(
             jComboBoxPath.model = DefaultComboBoxModel(arrayOf(pSet.zielPfad))
         }
 
-        DialogAddDownloadWithCoroutines.setModelPfad(pSet.zielPfad, jComboBoxPath)
+        DialogAddDownload.setModelPfad(pSet.zielPfad, jComboBoxPath)
         orgPfad = pSet.zielPfad
         pathEditor.isOpaque = true
         pathEditor.document.addDocumentListener(IllegalFilenameListener())
@@ -129,7 +129,7 @@ class DialogAddMoreDownload(
         get() = jComboBoxPath.model.selectedItem?.toString().orEmpty().ifEmpty { pSet.zielPfad }
 
     override fun dispose() {
-        DialogAddDownloadWithCoroutines.saveComboPfad(jComboBoxPath, orgPfad)
+        DialogAddDownload.saveComboPfad(jComboBoxPath, orgPfad)
         super.dispose()
     }
 

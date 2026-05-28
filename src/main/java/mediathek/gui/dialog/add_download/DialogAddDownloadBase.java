@@ -30,11 +30,11 @@ import javax.swing.border.TitledBorder;
 import java.awt.*;
 
 /**
- * Base class for UI Designer.
- * Subclass uses kotlin coroutines for concurrent work.
+ * Base class for JFormDesigner.
+ * Subclass contains the dialog behavior.
  */
-public class DialogAddDownload extends JDialog {
-    public DialogAddDownload(Frame parent) {
+public class DialogAddDownloadBase extends JDialog {
+    public DialogAddDownloadBase(Frame parent) {
         super(parent, true);
         initComponents();
     }

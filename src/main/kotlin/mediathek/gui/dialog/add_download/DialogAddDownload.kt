@@ -55,7 +55,7 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.Duration.Companion.seconds
 
-class DialogAddDownloadWithCoroutines(
+class DialogAddDownload(
     parent: Frame,
     private val film: DatenFilm,
     /**
@@ -63,7 +63,7 @@ class DialogAddDownloadWithCoroutines(
      */
     private var activeProgramSet: DatenPset,
     private val requestedResolution: Optional<FilmResolution.Enum>
-) : DialogAddDownload(parent) {
+) : DialogAddDownloadBase(parent) {
     private sealed interface LiveInfoCommand {
         data object Cancel : LiveInfoCommand
         data class Fetch(val resolution: FilmResolution.Enum) : LiveInfoCommand
