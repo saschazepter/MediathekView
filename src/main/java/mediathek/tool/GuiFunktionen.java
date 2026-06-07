@@ -72,80 +72,11 @@ public class GuiFunktionen {
         return !isNotUsingExternalUpdater();
     }
     /**
-     * Determine the image's size while keeping aspect ratio within a given boundary box.
-     *
-     * @param imgSize  The size of the original image.
-     * @param boundary The bounds where the image needs to fit into.
-     * @return The calculated image dimensions for fitting into boundary.
-     */
-    public static Dimension calculateFittedDimension(Dimension imgSize, Dimension boundary) {
-
-        int original_width = imgSize.width;
-        int original_height = imgSize.height;
-        int bound_width = boundary.width;
-        int bound_height = boundary.height;
-        int new_width = original_width;
-        int new_height = original_height;
-
-        // first check if we need to scale width
-        if (original_width > bound_width) {
-            //scale width to fit
-            new_width = bound_width;
-            //scale height to maintain aspect ratio
-            new_height = (new_width * original_height) / original_width;
-        }
-
-        // then check if we need to scale even with the new height
-        if (new_height > bound_height) {
-            //scale height to fit instead
-            new_height = bound_height;
-            //scale width to maintain aspect ratio
-            new_width = (new_height * original_width) / original_height;
-        }
-
-        return new Dimension(new_width, new_height);
-    }
-
-    /**
      * Copy string to system clipboard.
      * @param s the data for the clipboard.
      */
     public static void copyToClipboard(@NonNull String s) {
         Toolkit.getDefaultToolkit().getSystemClipboard().setContents(new StringSelection(s), null);
-    }
-
-    @Deprecated
-    public static boolean setSize(Configs nr, JDialog jDialog, Frame relativFrame) {
-        boolean ret = false;
-        int breite, hoehe, posX, posY;
-        breite = 0;
-        hoehe = 0;
-        posX = 0;
-        posY = 0;
-        String[] arr = MVConfig.get(nr).split(":");
-        try {
-            if (arr.length == 4) {
-                breite = Integer.parseInt(arr[0]);
-                hoehe = Integer.parseInt(arr[1]);
-                posX = Integer.parseInt(arr[2]);
-                posY = Integer.parseInt(arr[3]);
-            }
-        } catch (Exception ex) {
-            breite = 0;
-            hoehe = 0;
-            posX = 0;
-            posY = 0;
-        }
-        if (breite > 0 && hoehe > 0) {
-            jDialog.setSize(new Dimension(breite, hoehe));
-            ret = true;
-        }
-        if (posX > 0 && posY > 0) {
-            jDialog.setLocation(posX, posY);
-        } else if (relativFrame != null) {
-            jDialog.setLocationRelativeTo(relativFrame);
-        }
-        return ret;
     }
 
     public static String addsPfad(String pfad1, String pfad2) {
