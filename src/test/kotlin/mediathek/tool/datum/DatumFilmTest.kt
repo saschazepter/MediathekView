@@ -18,29 +18,29 @@
 
 package mediathek.tool.datum
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.Date
 
-class DatumFilm : Date {
-    constructor(date: Long) : super(date)
+class DatumFilmTest {
 
-    constructor(year: Int, month: Int, date: Int) : this(legacyDateToEpochMillis(year, month, date))
+    @Test
+    fun undefinedFilmDateRendersAsEmptyText() {
+        assertEquals("", DatumFilm.UNDEFINED_FILM_DATE.toString())
+    }
 
-    override fun toString(): String =
-        if (this == UNDEFINED_FILM_DATE) {
-            ""
-        } else {
-            DateUtil.FORMATTER.format(DateUtil.convertToLocalDate(this))
-        }
+    @Test
+    fun legacyDateConstructorKeepsDateSemantics() {
+        val filmDate = DatumFilm(124, 5, 7)
 
-    companion object {
-        @JvmField
-        val UNDEFINED_FILM_DATE = DatumFilm(0, 0, 1)
+        assertEquals("07.06.2024", filmDate.toString())
+        assertEquals(LocalDate.of(2024, 6, 7), DateUtil.convertToLocalDate(filmDate))
+    }
 
-        private fun legacyDateToEpochMillis(year: Int, month: Int, date: Int): Long =
-            LocalDate.of(year + 1900, month + 1, date)
-                .atStartOfDay(DateUtil.MV_DEFAULT_TIMEZONE)
-                .toInstant()
-                .toEpochMilli()
+    @Test
+    fun epochMillisConstructorKeepsOriginalTime() {
+        val time = -122749200000L
+
+        assertEquals(time, DatumFilm(time).time)
     }
 }

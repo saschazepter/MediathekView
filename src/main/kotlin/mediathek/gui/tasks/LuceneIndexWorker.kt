@@ -104,7 +104,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
     private fun addWochentag(doc: Document, film: DatenFilm) {
         val date = film.datumFilm
         if (date !== DatumFilm.UNDEFINED_FILM_DATE) {
-            val strDate = FORMATTER.format(date.zonedDateTime)
+            val strDate = FORMATTER.format(date.toInstant().atZone(DateUtil.MV_DEFAULT_TIMEZONE))
             doc.add(TextField(LuceneIndexKeys.SENDE_WOCHENTAG, strDate, Field.Store.NO))
         }
     }
