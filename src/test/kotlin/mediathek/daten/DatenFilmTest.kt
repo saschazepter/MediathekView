@@ -232,6 +232,40 @@ internal class DatenFilmTest {
         assertEquals("https://example.org/page", film.privateField("websiteUrl"))
     }
 
+    @Test
+    fun countriesAsStringCachesAndInvalidatesWhenCountriesChange() {
+        val film = DatenFilm()
+
+        assertEquals("", film.countriesAsString)
+        assertNull(film.privateField("countriesAsString"))
+
+        film.addCountry(Country.DE)
+
+        assertEquals("DE", film.countriesAsString)
+        val cachedSingleCountry = film.privateField("countriesAsString")
+        assertEquals("DE", cachedSingleCountry)
+        assertSame(cachedSingleCountry, film.countriesAsString)
+
+        film.addCountry(Country.DE)
+
+        assertSame(cachedSingleCountry, film.privateField("countriesAsString"))
+
+        film.addCountry(Country.AT)
+
+        assertNull(film.privateField("countriesAsString"))
+        assertEquals("DE-AT", film.countriesAsString)
+
+        val copy = DatenFilm(film)
+
+        assertEquals("DE-AT", copy.countriesAsString)
+        assertEquals("DE-AT", copy.privateField("countriesAsString"))
+
+        film.clearCountries()
+
+        assertEquals("", film.countriesAsString)
+        assertNull(film.privateField("countriesAsString"))
+    }
+
     private companion object {
         @JvmStatic
         fun filmLengthEdgeCases(): Stream<Arguments> =

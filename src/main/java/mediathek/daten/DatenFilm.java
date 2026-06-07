@@ -89,6 +89,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
      * List of countries which can view this film.
      */
     private EnumSet<Country> countrySet;
+    private String countriesAsString;
     /**
      * Runtime evidence from live URL checks that a film is blocked in specific configured countries.
      */
@@ -145,6 +146,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
         if (other.countrySet != null && !other.countrySet.isEmpty()) {
             this.countrySet = EnumSet.copyOf(other.countrySet);
         }
+        this.countriesAsString = other.countriesAsString;
         if (other.knownBlockedCountries != null && !other.knownBlockedCountries.isEmpty()) {
             this.knownBlockedCountries = EnumSet.copyOf(other.knownBlockedCountries);
         }
@@ -427,13 +429,16 @@ public class DatenFilm implements Comparable<DatenFilm> {
 
     public void clearCountries() {
         countrySet = null;
+        countriesAsString = null;
     }
 
     public void addCountry(@NonNull Country country) {
         if (countrySet == null) {
             countrySet = EnumSet.noneOf(Country.class);
         }
-        countrySet.add(country);
+        if (countrySet.add(country)) {
+            countriesAsString = null;
+        }
     }
 
     public boolean hasCountries() {
@@ -468,6 +473,9 @@ public class DatenFilm implements Comparable<DatenFilm> {
         if (countrySet == null || countrySet.isEmpty()) {
             return "";
         }
+        if (countriesAsString != null) {
+            return countriesAsString;
+        }
 
         StringBuilder sb = new StringBuilder();
         var iterator = countrySet.iterator();
@@ -475,7 +483,8 @@ public class DatenFilm implements Comparable<DatenFilm> {
         while (iterator.hasNext()) {
             sb.append('-').append(iterator.next());
         }
-        return sb.toString();
+        countriesAsString = sb.toString();
+        return countriesAsString;
     }
 
     //TODO This function might not be necessary as getUrlNormalOrRequested does almost the same
