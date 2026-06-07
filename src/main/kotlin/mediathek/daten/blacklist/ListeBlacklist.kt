@@ -14,8 +14,8 @@ import mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner
 import mediathek.mainwindow.MediathekGui
 import mediathek.tool.ApplicationConfiguration
 import mediathek.tool.MessageBus
-import java.util.concurrent.TimeUnit
 import java.util.function.Predicate
+import kotlin.time.Duration.Companion.days
 
 class ListeBlacklist : ArrayList<BlacklistRule>() {
     private val geoblockingPredicate = GeoblockingPredicate()
@@ -216,7 +216,7 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
                 if (strZeitraum.equals(ZeitraumSpinner.INFINITE_TEXT, ignoreCase = true)) {
                     0
                 } else {
-                    val daysMs = TimeUnit.MILLISECONDS.convert(strZeitraum.toLong(), TimeUnit.DAYS)
+                    val daysMs = strZeitraum.toLong().days.inWholeMilliseconds
                     System.currentTimeMillis() - daysMs
                 }
         } catch (_: Exception) {

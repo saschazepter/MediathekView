@@ -36,7 +36,8 @@ import java.io.IOException
 import java.io.OutputStream
 import java.nio.file.Files
 import java.nio.file.Path
-import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.nanoseconds
 
 class FilmListWriter(private val readable: Boolean) {
     private var sender = ""
@@ -170,7 +171,7 @@ class FilmListWriter(private val readable: Boolean) {
                     val end = System.nanoTime()
 
                     logger.info("   --> geschrieben!")
-                    logger.trace("Write duration: {} ms", TimeUnit.MILLISECONDS.convert(end - start, TimeUnit.NANOSECONDS))
+                    logger.trace("Write duration: {} ms", (end - start).nanoseconds.inWholeMilliseconds)
                 }
             }
         }
@@ -188,7 +189,7 @@ class FilmListWriter(private val readable: Boolean) {
         if (datenFilm.isDatumFilmUndefined) {
             jg.writeString("")
         } else {
-            val timeSeconds = TimeUnit.SECONDS.convert(datenFilm.datumFilmTimeMillis, TimeUnit.MILLISECONDS)
+            val timeSeconds = datenFilm.datumFilmTimeMillis.milliseconds.inWholeSeconds
             jg.writeString(timeSeconds.toString())
         }
     }

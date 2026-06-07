@@ -12,8 +12,8 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.util.HexFormat
-import java.util.concurrent.TimeUnit
 import java.util.stream.Stream
+import kotlin.time.Duration.Companion.seconds
 
 internal class DatenFilmTest {
 
@@ -71,9 +71,9 @@ internal class DatenFilmTest {
         film.setDatumLongSeconds(-122749200L)
         film.init()
 
-        assertEquals(TimeUnit.MILLISECONDS.convert(-122749200L, TimeUnit.SECONDS), film.datumFilmTimeMillis)
+        assertEquals((-122749200L).seconds.inWholeMilliseconds, film.datumFilmTimeMillis)
         assertNotEquals(DatumFilm.UNDEFINED_FILM_DATE, film.datumFilm)
-        assertEquals(TimeUnit.MILLISECONDS.convert(-122749200L, TimeUnit.SECONDS), film.datumFilm.time)
+        assertEquals((-122749200L).seconds.inWholeMilliseconds, film.datumFilm.time)
     }
 
     @Test
@@ -195,7 +195,7 @@ internal class DatenFilmTest {
         assertTrue(copy.isHighQuality)
         assertTrue(copy.isBookmarked)
         assertNotEquals(DatumFilm.UNDEFINED_FILM_DATE, copy.datumFilm)
-        assertEquals(TimeUnit.MILLISECONDS.convert(-122749200L, TimeUnit.SECONDS), copy.datumFilm.time)
+        assertEquals((-122749200L).seconds.inWholeMilliseconds, copy.datumFilm.time)
     }
 
     @Test
@@ -240,7 +240,7 @@ internal class DatenFilmTest {
             setDatumLongSeconds(-122749200L)
             init()
         }
-        val expectedTime = TimeUnit.MILLISECONDS.convert(-122749200L, TimeUnit.SECONDS)
+        val expectedTime = (-122749200L).seconds.inWholeMilliseconds
 
         assertEquals(expectedTime, film.datumFilmTimeMillis)
         assertNull(film.privateField("datumFilmCache"))

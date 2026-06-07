@@ -34,8 +34,8 @@ import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.time.LocalDate
 import java.util.*
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
+import kotlin.time.Duration.Companion.seconds
 
 class DatenFilm private constructor(
     val filmNr: Int,
@@ -442,7 +442,7 @@ class DatenFilm private constructor(
                 sendeZeit = ""
                 datumFilmTimeMillisStorage = 0
             } else {
-                datumFilmTimeMillisStorage = TimeUnit.MILLISECONDS.convert(datumLongSeconds, TimeUnit.SECONDS)
+                datumFilmTimeMillisStorage = datumLongSeconds.seconds.inWholeMilliseconds
             }
             datumFilmCache = null
         }
@@ -506,13 +506,13 @@ class DatenFilm private constructor(
     val filmLengthAsString: String
         get() {
             if (filmLength == 0) {
-                return ""
-            }
-            if (filmLengthAsStringCache.isEmpty()) {
-                val duration = TimeUnit.MILLISECONDS.convert(filmLength.toLong(), TimeUnit.SECONDS)
-                filmLengthAsStringCache = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true)
-            }
-            return filmLengthAsStringCache
+            return ""
+        }
+        if (filmLengthAsStringCache.isEmpty()) {
+            val duration = filmLength.seconds.inWholeMilliseconds
+            filmLengthAsStringCache = DurationFormatUtils.formatDuration(duration, "HH:mm:ss", true)
+        }
+        return filmLengthAsStringCache
         }
 
     var urlNormalQuality: String
