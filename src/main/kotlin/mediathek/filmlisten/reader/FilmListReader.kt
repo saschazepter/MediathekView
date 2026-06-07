@@ -416,7 +416,7 @@ open class FilmListReader : AutoCloseable {
     }
 
     private fun parseUrl(jp: JsonParser, datenFilm: DatenFilm) {
-        datenFilm.setNormalQualityUrl(checkedString(jp))
+        datenFilm.urlNormalQuality = checkedString(jp)
     }
 
     private fun parseLivestream(datenFilm: DatenFilm) {

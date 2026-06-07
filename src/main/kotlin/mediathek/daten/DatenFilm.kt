@@ -36,7 +36,6 @@ import java.time.LocalDate
 import java.util.EnumSet
 import java.util.HexFormat
 import java.util.Locale
-import java.util.Optional
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -136,9 +135,6 @@ class DatenFilm private constructor(
         filmLength = durationInSeconds.coerceAtLeast(0)
         filmLengthAsStringCache = ""
     }
-
-    val aboOptional: Optional<DatenAbo>
-        get() = Optional.ofNullable(abo)
 
     val datumFilm: DatumFilm
         get() {
@@ -517,10 +513,6 @@ class DatenFilm private constructor(
             handleNormalQualityUrlChange(previousUrl, urlNormalQuality)
             invalidateSha256()
         }
-
-    fun setNormalQualityUrl(urlNormalQuality: String) {
-        this.urlNormalQuality = urlNormalQuality
-    }
 
     private fun handleNormalQualityUrlChange(previousUrl: String, newUrl: String) {
         if (previousUrl.equals(newUrl, ignoreCase = true)) {

@@ -267,7 +267,7 @@ class FilmInfoDialog(owner: Window) : JDialog(owner) {
             form.cbHq.isSelected = currentFilm.isHighQuality
             form.cbSubtitle.isSelected = currentFilm.hasSubtitle()
 
-            currentFilm.aboOptional.ifPresentOrElse({ abo -> form.lblAbo.text = abo.name }, { form.lblAbo.text = "" })
+            form.lblAbo.text = currentFilm.abo?.name.orEmpty()
 
             prepareHyperlink(currentFilm.websiteUrl)
 

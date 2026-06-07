@@ -33,7 +33,7 @@ internal class DatenFilmTest {
         val film = DatenFilm()
         film.sender = "sender"
         film.thema = "thema"
-        film.setNormalQualityUrl("https://example.org/video.mp4")
+        film.urlNormalQuality = "https://example.org/video.mp4"
         film.websiteUrl = "https://example.org/page"
 
         val initialHash = film.sha256
@@ -54,7 +54,7 @@ internal class DatenFilmTest {
         val film = DatenFilm()
         film.sender = "ARTE"
         film.thema = "München"
-        film.setNormalQualityUrl("https://example.org/äöü-\uD83D\uDE80.mp4")
+        film.urlNormalQuality = "https://example.org/äöü-\uD83D\uDE80.mp4"
         film.websiteUrl = "https://example.org/seite"
 
         assertEquals(
@@ -82,12 +82,12 @@ internal class DatenFilmTest {
         val newUrl = "https://example.org/new.mp4"
         val film = DatenFilm()
         film.setFileSize("123")
-        film.setNormalQualityUrl(oldUrl)
+        film.urlNormalQuality = oldUrl
 
         assertEquals("123", film.cachedLookup(oldUrl)?.sizeText)
 
         val clone = DatenFilm(film)
-        clone.setNormalQualityUrl(newUrl)
+        clone.urlNormalQuality = newUrl
 
         assertNull(clone.cachedLookup(newUrl))
     }
@@ -112,7 +112,7 @@ internal class DatenFilmTest {
         val url = "https://example.org/video.mp4"
 
         film.setFileSize("123")
-        film.setNormalQualityUrl(url)
+        film.urlNormalQuality = url
         assertEquals("123", film.cachedLookup(url)?.sizeText)
         film.markGeoBlockedForLocation(Country.DE)
 
@@ -168,7 +168,7 @@ internal class DatenFilmTest {
         val abo = DatenAbo()
         val bookmark = BookmarkData()
         val film = DatenFilm().apply {
-            setNormalQualityUrl("https://example.org/normal.mp4")
+            urlNormalQuality = "https://example.org/normal.mp4"
             lowQualityUrl = "https://example.org/low.mp4"
             highQualityUrl = "https://example.org/high.mp4"
             subtitleUrl = "https://example.org/subtitle.vtt"

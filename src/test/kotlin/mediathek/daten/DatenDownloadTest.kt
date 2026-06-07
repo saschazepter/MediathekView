@@ -102,7 +102,7 @@ internal class DatenDownloadTest {
             title = "Title One"
             sendeDatum = "01.06.2026"
             sendeZeit = "20:15:00"
-            setNormalQualityUrl("https://example.invalid/video.mp4")
+            urlNormalQuality = "https://example.invalid/video.mp4"
         }
         val programSet = DatenPset("Set").apply {
             zielDateiname = "%s-%t-%T.%S"
@@ -136,7 +136,7 @@ internal class DatenDownloadTest {
             title = "Title One"
             sendeDatum = "01.06.2026"
             sendeZeit = "20:15:00"
-            setNormalQualityUrl("https://example.invalid/video.mp4")
+            urlNormalQuality = "https://example.invalid/video.mp4"
             setFileSize("123")
         }
         val programSet = createProgramSet()
@@ -154,7 +154,7 @@ internal class DatenDownloadTest {
             title = "Title One"
             sendeDatum = "01.06.2026"
             sendeZeit = "20:15:00"
-            setNormalQualityUrl("https://example.invalid/video.mp4?token=temporary")
+            urlNormalQuality = "https://example.invalid/video.mp4?token=temporary"
             setFileSize("456")
         }
         val programSet = createProgramSet()
@@ -168,7 +168,7 @@ internal class DatenDownloadTest {
     @Test
     fun setGroesseFromFilmSeedsNormalQualitySizeWhenDownloadUrlHasParameters() {
         val film = DatenFilm().apply {
-            setNormalQualityUrl("https://example.invalid/video.mp4")
+            urlNormalQuality = "https://example.invalid/video.mp4"
             setFileSize("789")
         }
         val download = DatenDownload().apply {
@@ -189,7 +189,7 @@ internal class DatenDownloadTest {
             title = "Title One"
             sendeDatum = "01.06.2026"
             sendeZeit = "20:15:00"
-            setNormalQualityUrl("https://example.invalid/video.mp4")
+            urlNormalQuality = "https://example.invalid/video.mp4"
             websiteUrl = "https://example.invalid/film-page"
         }
         val programSet = DatenPset("Set").apply {
