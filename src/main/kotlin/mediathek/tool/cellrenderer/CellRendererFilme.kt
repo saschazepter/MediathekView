@@ -114,6 +114,7 @@ class CellRendererFilme : CellRendererBaseWithStart() {
                     setIndicatorIcons(table, datenFilm, isSelected)
                 }
 
+                DatenFilm.FILM_GROESSE -> text = datenFilm.fileSizeAsString
                 DatenFilm.FILM_GEO -> drawGeolocationIcons(datenFilm, isSelected)
                 DatenFilm.FILM_ZEIT -> drawTime(datenFilm)
             }

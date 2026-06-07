@@ -137,7 +137,7 @@ internal class DatenDownloadTest {
             sendeDatum = "01.06.2026"
             sendeZeit = "20:15:00"
             setNormalQualityUrl("https://example.invalid/video.mp4")
-            fileSize.setSize("123")
+            setFileSize("123")
         }
         val programSet = createProgramSet()
 
@@ -155,7 +155,7 @@ internal class DatenDownloadTest {
             sendeDatum = "01.06.2026"
             sendeZeit = "20:15:00"
             setNormalQualityUrl("https://example.invalid/video.mp4?token=temporary")
-            fileSize.setSize("456")
+            setFileSize("456")
         }
         val programSet = createProgramSet()
 
@@ -169,7 +169,7 @@ internal class DatenDownloadTest {
     fun setGroesseFromFilmSeedsNormalQualitySizeWhenDownloadUrlHasParameters() {
         val film = DatenFilm().apply {
             setNormalQualityUrl("https://example.invalid/video.mp4")
-            fileSize.setSize("789")
+            setFileSize("789")
         }
         val download = DatenDownload().apply {
             this.film = film

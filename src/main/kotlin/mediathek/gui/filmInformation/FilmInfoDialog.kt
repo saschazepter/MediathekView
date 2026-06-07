@@ -262,7 +262,7 @@ class FilmInfoDialog(owner: Window) : JDialog(owner) {
             form.lblDate.text = currentFilm.sendeDatum
             form.lblUhrzeit.text = currentFilm.sendeZeit
             updateDurationLabel(currentFilm)
-            form.lblSize.text = currentFilm.fileSize.toString()
+            form.lblSize.text = currentFilm.fileSizeAsString
             updateGeoLabel(currentFilm)
             form.cbHq.isSelected = currentFilm.isHighQuality
             form.cbSubtitle.isSelected = currentFilm.hasSubtitle()

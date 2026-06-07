@@ -208,7 +208,7 @@ class FilmListWriter(private val readable: Boolean) {
         jg.writeString(film.sendeDatum)
         writeZeit(jg, film)
         writeFilmLength(film, jg)
-        jg.writeString(film.fileSize.toString())
+        jg.writeString(film.fileSizeAsString)
         jg.writeString(film.description)
         jg.writeString(film.urlNormalQuality)
         jg.writeString(film.websiteUrl)

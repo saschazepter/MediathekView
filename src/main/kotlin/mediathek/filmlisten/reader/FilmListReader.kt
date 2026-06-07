@@ -342,7 +342,7 @@ open class FilmListReader : AutoCloseable {
 
     private fun parseGroesse(jp: JsonParser, datenFilm: DatenFilm) {
         val value = checkedString(jp)
-        datenFilm.fileSize.setSize(value)
+        datenFilm.setFileSize(value)
     }
 
     /**

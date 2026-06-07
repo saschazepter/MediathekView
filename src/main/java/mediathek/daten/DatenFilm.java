@@ -22,7 +22,6 @@ import mediathek.daten.abo.DatenAbo;
 import mediathek.gui.bookmark.BookmarkData;
 import mediathek.tool.ApplicationConfiguration;
 import mediathek.tool.FileSize;
-import mediathek.tool.FilmSize;
 import mediathek.tool.GermanStringSorter;
 import mediathek.tool.datum.DatumFilm;
 import mediathek.tool.episodes.SeasonEpisode;
@@ -95,10 +94,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
      */
     private EnumSet<Country> knownBlockedCountries;
     private int flags;
-    /**
-     * File size in MByte
-     */
-    private final FilmSize filmSize = new FilmSize();
+    private int fileSizeInMegabytes;
     /// The date until this film will be available. is set by the film info search worker.
     LocalDate availableUntil;
     /**
@@ -138,7 +134,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
 
     public DatenFilm(@NonNull DatenFilm other) {
         this.datumFilm = other.datumFilm;
-        this.filmSize.setSize(other.filmSize.toString());
+        this.fileSizeInMegabytes = other.fileSizeInMegabytes;
         this.description = other.description;
         this.sender = other.sender;
         this.thema = other.thema;
@@ -332,13 +328,21 @@ public class DatenFilm implements Comparable<DatenFilm> {
         return filmNr;
     }
 
-    /**
-     * Get the file size of this film.
-     *
-     * @return The size in MByte
-     */
-    public FilmSize getFileSize() {
-        return filmSize;
+    public int getFileSizeInMegabytes() {
+        return fileSizeInMegabytes;
+    }
+
+    public String getFileSizeAsString() {
+        return fileSizeInMegabytes == 0 ? "" : Integer.toString(fileSizeInMegabytes);
+    }
+
+    public void setFileSize(@Nullable String sizeText) {
+        try {
+            fileSizeInMegabytes = FileSize.INSTANCE.megabyteTextToInt(Objects.requireNonNullElse(sizeText, ""));
+        } catch (NumberFormatException ex) {
+            logger.error("String: {}", sizeText, ex);
+            fileSizeInMegabytes = 0;
+        }
     }
 
     /**
@@ -556,8 +560,8 @@ public class DatenFilm implements Comparable<DatenFilm> {
             }
         }
 
-        if (canBootstrapFileSizeFromNormalQualityUrl && url.equalsIgnoreCase(getUrlNormalQuality()) && !getFileSize().toString().isEmpty()) {
-            var cachedSizeInBytes = (long) getFileSize().toInteger() * FileSize.ONE_MiB;
+        if (canBootstrapFileSizeFromNormalQualityUrl && url.equalsIgnoreCase(getUrlNormalQuality()) && fileSizeInMegabytes > 0) {
+            var cachedSizeInBytes = (long) fileSizeInMegabytes * FileSize.ONE_MiB;
             var bootstrapLookupResult = new FileSize.LookupResult(cachedSizeInBytes, null, null, null);
             fileSizeLookupCache().put(url, bootstrapLookupResult);
             return bootstrapLookupResult;
@@ -573,7 +577,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
 
         fileSizeLookupCache().put(url, lookupResult);
         if (url.equalsIgnoreCase(getUrlNormalQuality())) {
-            getFileSize().setSize(lookupResult.getSizeText());
+            setFileSize(lookupResult.getSizeText());
             canBootstrapFileSizeFromNormalQualityUrl = true;
         }
     }

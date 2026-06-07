@@ -80,7 +80,7 @@ internal class DatenFilmTest {
         val oldUrl = "https://example.org/old.mp4"
         val newUrl = "https://example.org/new.mp4"
         val film = DatenFilm()
-        film.fileSize.setSize("123")
+        film.setFileSize("123")
         film.setNormalQualityUrl(oldUrl)
 
         assertEquals("123", film.cachedLookup(oldUrl)?.sizeText)
@@ -110,7 +110,7 @@ internal class DatenFilmTest {
         val film = DatenFilm()
         val url = "https://example.org/video.mp4"
 
-        film.fileSize.setSize("123")
+        film.setFileSize("123")
         film.setNormalQualityUrl(url)
         assertEquals("123", film.cachedLookup(url)?.sizeText)
         film.markGeoBlockedForLocation(Country.DE)

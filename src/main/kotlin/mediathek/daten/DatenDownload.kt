@@ -219,7 +219,7 @@ class DatenDownload() : Comparable<DatenDownload> {
             normalizedNormalQualityUrl.equals(downloadUrl, ignoreCase = true) ||
             normalizedNormalQualityUrl.equals(normalizedDownloadUrl, ignoreCase = true)
         ) {
-            runtime.filmSize.setSize(currentFilm.fileSize.toString())
+            runtime.filmSize.setSize(currentFilm.fileSizeAsString)
         } else {
             runtime.filmSize.size = 0
         }

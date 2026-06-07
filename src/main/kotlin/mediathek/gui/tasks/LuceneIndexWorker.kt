@@ -68,7 +68,7 @@ class LuceneIndexWorker(private val progLabel: JLabel, private val progressBar: 
         doc.add(TextField(LuceneIndexKeys.TITEL, film.title, Field.Store.NO))
         doc.add(TextField(LuceneIndexKeys.THEMA, film.thema, Field.Store.NO))
         doc.add(IntPoint(LuceneIndexKeys.FILM_LENGTH, film.filmLength))
-        doc.add(IntPoint(LuceneIndexKeys.FILM_SIZE, film.fileSize.toInteger()))
+        doc.add(IntPoint(LuceneIndexKeys.FILM_SIZE, film.fileSizeInMegabytes))
 
         doc.add(TextField(LuceneIndexKeys.BESCHREIBUNG, film.description, Field.Store.NO))
         doc.add(StringField(LuceneIndexKeys.LIVESTREAM, film.isLivestream.toString(), Field.Store.NO))
