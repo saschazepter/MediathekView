@@ -181,7 +181,7 @@ class FilmListWriter(private val readable: Boolean) {
         if (!compressSenderTag) {
             return filmEntries
         }
-        return filmEntries.sortedWith(compareBy(DatenFilm::getSender).thenBy(DatenFilm::getThema))
+        return filmEntries.sortedWith(compareBy(DatenFilm::sender).thenBy(DatenFilm::thema))
     }
 
     private fun writeDatumLong(datenFilm: DatenFilm, jg: JsonGenerator) {

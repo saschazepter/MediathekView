@@ -214,10 +214,10 @@ internal class DatenFilmTest {
         assertFalse(film.hasLowQuality())
         assertFalse(film.isHighQuality)
         assertFalse(film.hasSubtitle())
-        assertNull(film.privateField("lowQualityUrl"))
-        assertNull(film.privateField("highQualityUrl"))
-        assertNull(film.privateField("subtitleUrl"))
-        assertNull(film.privateField("websiteUrl"))
+        assertNull(film.privateField("lowQualityUrlStorage"))
+        assertNull(film.privateField("highQualityUrlStorage"))
+        assertNull(film.privateField("subtitleUrlStorage"))
+        assertNull(film.privateField("websiteUrlStorage"))
 
         film.lowQualityUrl = "https://example.org/low.mp4"
         film.highQualityUrl = "https://example.org/high.mp4"
@@ -227,10 +227,10 @@ internal class DatenFilmTest {
         assertTrue(film.hasLowQuality())
         assertTrue(film.isHighQuality)
         assertTrue(film.hasSubtitle())
-        assertEquals("https://example.org/low.mp4", film.privateField("lowQualityUrl"))
-        assertEquals("https://example.org/high.mp4", film.privateField("highQualityUrl"))
-        assertEquals("https://example.org/subtitle.vtt", film.privateField("subtitleUrl"))
-        assertEquals("https://example.org/page", film.privateField("websiteUrl"))
+        assertEquals("https://example.org/low.mp4", film.privateField("lowQualityUrlStorage"))
+        assertEquals("https://example.org/high.mp4", film.privateField("highQualityUrlStorage"))
+        assertEquals("https://example.org/subtitle.vtt", film.privateField("subtitleUrlStorage"))
+        assertEquals("https://example.org/page", film.privateField("websiteUrlStorage"))
     }
 
     @Test
@@ -243,7 +243,7 @@ internal class DatenFilmTest {
         val expectedTime = TimeUnit.MILLISECONDS.convert(-122749200L, TimeUnit.SECONDS)
 
         assertEquals(expectedTime, film.datumFilmTimeMillis)
-        assertNull(film.privateField("datumFilm"))
+        assertNull(film.privateField("datumFilmCache"))
 
         val filmDate = film.datumFilm
 
@@ -253,7 +253,7 @@ internal class DatenFilmTest {
         val copy = DatenFilm(film)
 
         assertEquals(expectedTime, copy.datumFilmTimeMillis)
-        assertNull(copy.privateField("datumFilm"))
+        assertNull(copy.privateField("datumFilmCache"))
         assertEquals(expectedTime, copy.datumFilm.time)
     }
 
@@ -262,33 +262,33 @@ internal class DatenFilmTest {
         val film = DatenFilm()
 
         assertEquals("", film.countriesAsString)
-        assertNull(film.privateField("countriesAsString"))
+        assertNull(film.privateField("countriesAsStringCache"))
 
         film.addCountry(Country.DE)
 
         assertEquals("DE", film.countriesAsString)
-        val cachedSingleCountry = film.privateField("countriesAsString")
+        val cachedSingleCountry = film.privateField("countriesAsStringCache")
         assertEquals("DE", cachedSingleCountry)
         assertSame(cachedSingleCountry, film.countriesAsString)
 
         film.addCountry(Country.DE)
 
-        assertSame(cachedSingleCountry, film.privateField("countriesAsString"))
+        assertSame(cachedSingleCountry, film.privateField("countriesAsStringCache"))
 
         film.addCountry(Country.AT)
 
-        assertNull(film.privateField("countriesAsString"))
+        assertNull(film.privateField("countriesAsStringCache"))
         assertEquals("DE-AT", film.countriesAsString)
 
         val copy = DatenFilm(film)
 
         assertEquals("DE-AT", copy.countriesAsString)
-        assertEquals("DE-AT", copy.privateField("countriesAsString"))
+        assertEquals("DE-AT", copy.privateField("countriesAsStringCache"))
 
         film.clearCountries()
 
         assertEquals("", film.countriesAsString)
-        assertNull(film.privateField("countriesAsString"))
+        assertNull(film.privateField("countriesAsStringCache"))
     }
 
     private companion object {

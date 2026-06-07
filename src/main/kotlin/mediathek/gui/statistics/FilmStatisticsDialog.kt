@@ -158,7 +158,7 @@ class FilmStatisticsDialog(
         }
         val themaCountDeferred = async {
             filmsWithoutLivestreams.asSequence()
-                .map(DatenFilm::getThema)
+                .map(DatenFilm::thema)
                 .map(String::trim)
                 .filter(String::isNotEmpty)
                 .toCollection(TreeSet(sorter))
