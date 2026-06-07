@@ -33,9 +33,7 @@ import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
 import java.security.NoSuchAlgorithmException
 import java.time.LocalDate
-import java.util.EnumSet
-import java.util.HexFormat
-import java.util.Locale
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -309,15 +307,7 @@ class DatenFilm private constructor(
             else -> urlNormalQuality
         }
 
-    fun getFileSizeForUrl(url: String): String = getFileSizeForUrl(url, false)
-
-    fun getFileSizeForUrl(url: String, forceFetch: Boolean): String =
-        lookupFileSizeForUrl(url, forceFetch).sizeText
-
     fun lookupFileSizeForUrl(url: String): FileSize.LookupResult = lookupFileSizeForUrl(url, false, null)
-
-    fun lookupFileSizeForUrl(url: String, forceFetch: Boolean): FileSize.LookupResult =
-        lookupFileSizeForUrl(url, forceFetch, null)
 
     fun lookupFileSizeForUrl(
         url: String,
