@@ -258,7 +258,7 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
         }
 
         if (daysLowerBoundary != 0L) {
-            val filmTime = film.datumFilm.time
+            val filmTime = film.datumFilmTimeMillis
             return filmTime == 0L || filmTime >= daysLowerBoundary
         }
 
@@ -269,7 +269,7 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
      * Check if a future film should be displayed.
      */
     private fun checkIfFilmIsInFuture(film: DatenFilm): Boolean =
-        film.datumFilm.time <= System.currentTimeMillis()
+        film.datumFilmTimeMillis <= System.currentTimeMillis()
 
     /**
      * Filter based on film length.

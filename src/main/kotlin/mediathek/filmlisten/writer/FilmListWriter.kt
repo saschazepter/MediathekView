@@ -24,7 +24,6 @@ import mediathek.gui.messages.FilmListWriteStartEvent
 import mediathek.gui.messages.FilmListWriteStopEvent
 import mediathek.tool.FileUtils
 import mediathek.tool.MessageBus
-import mediathek.tool.datum.DatumFilm
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
 import tools.jackson.core.JsonEncoding
@@ -186,11 +185,10 @@ class FilmListWriter(private val readable: Boolean) {
     }
 
     private fun writeDatumLong(datenFilm: DatenFilm, jg: JsonGenerator) {
-        val filmDate = datenFilm.datumFilm
-        if (filmDate == DatumFilm.UNDEFINED_FILM_DATE) {
+        if (datenFilm.isDatumFilmUndefined) {
             jg.writeString("")
         } else {
-            val timeSeconds = TimeUnit.SECONDS.convert(filmDate.time, TimeUnit.MILLISECONDS)
+            val timeSeconds = TimeUnit.SECONDS.convert(datenFilm.datumFilmTimeMillis, TimeUnit.MILLISECONDS)
             jg.writeString(timeSeconds.toString())
         }
     }

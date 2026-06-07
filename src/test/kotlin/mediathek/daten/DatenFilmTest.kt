@@ -71,6 +71,7 @@ internal class DatenFilmTest {
         film.setDatumLongSeconds(-122749200L)
         film.init()
 
+        assertEquals(TimeUnit.MILLISECONDS.convert(-122749200L, TimeUnit.SECONDS), film.datumFilmTimeMillis)
         assertNotEquals(DatumFilm.UNDEFINED_FILM_DATE, film.datumFilm)
         assertEquals(TimeUnit.MILLISECONDS.convert(-122749200L, TimeUnit.SECONDS), film.datumFilm.time)
     }
@@ -230,6 +231,30 @@ internal class DatenFilmTest {
         assertEquals("https://example.org/high.mp4", film.privateField("highQualityUrl"))
         assertEquals("https://example.org/subtitle.vtt", film.privateField("subtitleUrl"))
         assertEquals("https://example.org/page", film.privateField("websiteUrl"))
+    }
+
+    @Test
+    fun datumFilmIsCreatedLazilyFromStoredTime() {
+        val film = DatenFilm().apply {
+            sendeDatum = "01.01.1966"
+            setDatumLongSeconds(-122749200L)
+            init()
+        }
+        val expectedTime = TimeUnit.MILLISECONDS.convert(-122749200L, TimeUnit.SECONDS)
+
+        assertEquals(expectedTime, film.datumFilmTimeMillis)
+        assertNull(film.privateField("datumFilm"))
+
+        val filmDate = film.datumFilm
+
+        assertEquals(expectedTime, filmDate.time)
+        assertSame(filmDate, film.datumFilm)
+
+        val copy = DatenFilm(film)
+
+        assertEquals(expectedTime, copy.datumFilmTimeMillis)
+        assertNull(copy.privateField("datumFilm"))
+        assertEquals(expectedTime, copy.datumFilm.time)
     }
 
     @Test

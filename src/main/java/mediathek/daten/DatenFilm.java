@@ -83,6 +83,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     private static final GermanStringSorter sorter = GermanStringSorter.INSTANCE;
     private static final Logger logger = LogManager.getLogger(DatenFilm.class);
     private static final boolean USE_WINDOWS_SHA256_FAST_PATH = SystemUtils.IS_OS_WINDOWS;
+    private static final long UNDEFINED_DATUM_FILM_TIME_MILLIS = DatumFilm.UNDEFINED_FILM_DATE.getTime();
     private final static AtomicInteger FILMNR_GENERATOR = new AtomicInteger(0);
     /**
      * List of countries which can view this film.
@@ -97,10 +98,8 @@ public class DatenFilm implements Comparable<DatenFilm> {
     private int fileSizeInMegabytes;
     /// The date until this film will be available. is set by the film info search worker.
     LocalDate availableUntil;
-    /**
-     * film date stored IN SECONDS!!!
-     */
-    private DatumFilm datumFilm = DatumFilm.UNDEFINED_FILM_DATE;
+    private long datumFilmTimeMillis = UNDEFINED_DATUM_FILM_TIME_MILLIS;
+    private DatumFilm datumFilm;
     private String description;
     private String sender = "";
     private String thema = "";
@@ -133,7 +132,7 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     public DatenFilm(@NonNull DatenFilm other) {
-        this.datumFilm = other.datumFilm;
+        this.datumFilmTimeMillis = other.datumFilmTimeMillis;
         this.fileSizeInMegabytes = other.fileSizeInMegabytes;
         this.description = other.description;
         this.sender = other.sender;
@@ -219,7 +218,21 @@ public class DatenFilm implements Comparable<DatenFilm> {
     }
 
     public DatumFilm getDatumFilm() {
+        if (isDatumFilmUndefined()) {
+            return DatumFilm.UNDEFINED_FILM_DATE;
+        }
+        if (datumFilm == null) {
+            datumFilm = new DatumFilm(datumFilmTimeMillis);
+        }
         return datumFilm;
+    }
+
+    public boolean isDatumFilmUndefined() {
+        return datumFilmTimeMillis == UNDEFINED_DATUM_FILM_TIME_MILLIS;
+    }
+
+    public long getDatumFilmTimeMillis() {
+        return datumFilmTimeMillis;
     }
 
     public String getLowQualityUrl() {
@@ -663,11 +676,12 @@ public class DatenFilm implements Comparable<DatenFilm> {
             if (datumLongSeconds == 0) {
                 setSendeDatum("");
                 setSendeZeit("");
-                datumFilm = new DatumFilm(0);
+                datumFilmTimeMillis = 0;
             }
             else {
-                datumFilm = new DatumFilm(TimeUnit.MILLISECONDS.convert(datumLongSeconds, TimeUnit.SECONDS));
+                datumFilmTimeMillis = TimeUnit.MILLISECONDS.convert(datumLongSeconds, TimeUnit.SECONDS);
             }
+            datumFilm = null;
         }
     }
 

@@ -530,7 +530,7 @@ open class FilmListReader : AutoCloseable {
                     if (film.isLivestream) {
                         listeFilme.add(film)
                     } else {
-                        val filmDate = DateUtil.convertToLocalDate(film.datumFilm)
+                        val filmDate = DateUtil.convertToLocalDate(film.datumFilmTimeMillis)
                         if (!cutoffDate.isAfter(filmDate)) {
                             listeFilme.add(film)
                         }
