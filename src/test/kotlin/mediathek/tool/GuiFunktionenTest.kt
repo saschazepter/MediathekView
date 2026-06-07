@@ -7,14 +7,6 @@ import java.io.File
 internal class GuiFunktionenTest {
 
     @Test
-    fun getSuffixFromUrl() {
-        val testStr = "https://ios-ondemand.swr.de/i/swr-fernsehen/bw-extra/20130202/601676.,m,s,l,.mp4.csmil/index_2_av.m3u8?e=b471643725c47acd"
-        val result = GuiFunktionen.getSuffixFromUrl(testStr)
-
-        assertEquals("m3u8", result)
-    }
-
-    @Test
     fun concatPaths() {
         val separator = File.separator
         assertEquals("", GuiFunktionen.concatPaths(null, null))

@@ -201,29 +201,6 @@ public class GuiFunktionen {
         return ret;
     }
 
-    public static String getSuffixFromUrl(String pfad) {
-        // Suffix einer URL extrahieren
-        // "http://ios-ondemand.swr.de/i/swr-fernsehen/bw-extra/20130202/601676.,m,s,l,.mp4.csmil/index_2_av.m3u8?e=b471643725c47acd"
-        String ret = "";
-        if (pfad != null) {
-            if (!pfad.isEmpty() && pfad.contains(".")) {
-                ret = pfad.substring(pfad.lastIndexOf('.') + 1);
-            }
-        }
-        if (ret.isEmpty()) {
-            logger.error("getSuffixFromUrl({})", pfad);
-        }
-        if (ret.contains("?")) {
-            ret = ret.substring(0, ret.indexOf('?'));
-        }
-        if (ret.length() > 5) {
-            // dann ist was faul
-            ret = "---";
-            logger.error("getSuffixFromUrl({})", pfad);
-        }
-        return ret;
-    }
-
     /**
      * Maps the "command" key to the correspondig icon based on operating system.
      *

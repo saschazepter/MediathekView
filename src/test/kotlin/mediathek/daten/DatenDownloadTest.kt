@@ -163,6 +163,37 @@ internal class DatenDownloadTest {
     }
 
     @Test
+    fun buildsTargetSuffixFromDownloadUrlWithoutQueryParameters() {
+        val film = DatenFilm().apply {
+            sender = "Sender One"
+            thema = "Topic One"
+            title = "Title One"
+            urlNormalQuality =
+                "https://ios-ondemand.swr.de/i/swr-fernsehen/bw-extra/20130202/601676.,m,s,l,.mp4.csmil/index_2_av.m3u8?e=b471643725c47acd"
+        }
+        val programSet = DatenPset("Set").apply {
+            zielDateiname = "%S"
+            zielPfad = "/downloads"
+            addProg(DatenProg("Program", "program", "--target **", false.toString(), false.toString()))
+        }
+
+        val target = DownloadTargetBuilder.build(
+            DownloadTargetRequest(
+                pSet = programSet,
+                film = film,
+                abo = null,
+                requestedFileName = "",
+                requestedPath = "",
+                downloadUrl = film.urlNormalQuality,
+                topic = "Topic One",
+                title = "Title One",
+            ),
+        )
+
+        assertEquals("m3u8", target.fileName)
+    }
+
+    @Test
     fun constructorSeedsNormalQualitySizeFromFilmList() {
         val film = DatenFilm().apply {
             sender = "Sender One"
