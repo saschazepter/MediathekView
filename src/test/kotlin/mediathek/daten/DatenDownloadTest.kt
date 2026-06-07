@@ -64,6 +64,40 @@ internal class DatenDownloadTest {
     }
 
     @Test
+    fun fileNameWithoutSuffixStripsLikelyWebExtension() {
+        val download = DatenDownload().apply {
+            targetPathFileName = "https://ios-ondemand.swr.de/i/swr-fernsehen/bw-extra/20130202/601676.,m,s,l,.mp4.csmil/index_2_av.m3u8?e=b471643725c47acd"
+        }
+
+        assertEquals(
+            "https://ios-ondemand.swr.de/i/swr-fernsehen/bw-extra/20130202/601676.,m,s,l,.mp4.csmil/index_2_av",
+            download.fileNameWithoutSuffix,
+        )
+    }
+
+    @Test
+    fun fileNameWithoutSuffixStripsFileExtension() {
+        val download = DatenDownload().apply {
+            targetPathFileName = "/Users/derreisende/file1.mp4"
+        }
+
+        assertEquals("/Users/derreisende/file1", download.fileNameWithoutSuffix)
+    }
+
+    @Test
+    fun fileNameWithoutSuffixKeepsQuestionMarksInPath() {
+        val download = DatenDownload().apply {
+            targetPathFileName =
+                "/Users/derreisende/Downloads/mediathek/Die Nordreportage/Die Nordreportage-Wie geht das? Fertigung eines Windrades-0143177029.mp4"
+        }
+
+        assertEquals(
+            "/Users/derreisende/Downloads/mediathek/Die Nordreportage/Die Nordreportage-Wie geht das? Fertigung eines Windrades-0143177029",
+            download.fileNameWithoutSuffix,
+        )
+    }
+
+    @Test
     fun buildsProgramInvocationFromDownloadContext() {
         val program = DatenProg(
             "Program",

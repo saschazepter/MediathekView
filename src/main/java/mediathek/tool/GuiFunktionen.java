@@ -225,18 +225,6 @@ public class GuiFunktionen {
     }
 
     /**
-     * Strip the extension from a filename, e.g. file1.mp4 becomes file1
-     * @param fileName the filename
-     * @return the stripped filename
-     */
-    public static String getFileNameWithoutExtension(@NonNull String fileName) {
-        final int dotIndex = FileNameExtensions.getLikelyExtensionDotIndex(fileName);
-        return dotIndex >= 0
-                ? fileName.substring(0, dotIndex)
-                : fileName;
-    }
-
-    /**
      * Maps the "command" key to the correspondig icon based on operating system.
      *
      * @return an InputEvent modifier based on operating system.
