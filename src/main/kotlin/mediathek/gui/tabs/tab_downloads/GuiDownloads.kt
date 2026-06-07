@@ -51,6 +51,7 @@ import net.engio.mbassy.listener.Handler
 import org.apache.commons.configuration2.Configuration
 import org.apache.logging.log4j.LogManager
 import java.awt.BorderLayout
+import java.awt.Component
 import java.awt.MenuItem
 import java.awt.PopupMenu
 import java.awt.Taskbar
@@ -60,9 +61,10 @@ import java.awt.event.ComponentEvent
 import java.awt.event.KeyEvent
 import java.io.File
 import java.util.Optional
-import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicLong
 import javax.swing.*
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 class GuiDownloads(
@@ -723,14 +725,13 @@ class GuiDownloads(
                     continue
                 }
                 if (start.status > StartStatus.RUNNING) {
-                    val reply = GuiFunktionen.createDismissableMessageDialog(
+                    val reply = createDismissableMessageDialog(
                         mediathekGui,
                         "Fertiger Download",
                         "Film nochmal starten?  ==> " + download.title,
                         JOptionPane.YES_NO_OPTION,
                         JOptionPane.NO_OPTION,
-                        10,
-                        TimeUnit.SECONDS,
+                        10.seconds,
                         JOptionPane.QUESTION_MESSAGE,
                     )
                     if (reply != JOptionPane.YES_OPTION) {
@@ -797,14 +798,13 @@ class GuiDownloads(
                             } else {
                                 "Film nochmal starten?  ==> " + download.title
                             }
-                            answer = GuiFunktionen.createDismissableMessageDialog(
+                            answer = createDismissableMessageDialog(
                                 mediathekGui,
                                 "Fertiger Download",
                                 text,
                                 JOptionPane.YES_NO_CANCEL_OPTION,
                                 JOptionPane.NO_OPTION,
-                                10,
-                                TimeUnit.SECONDS,
+                                10.seconds,
                                 JOptionPane.QUESTION_MESSAGE,
                             )
                         }
@@ -860,6 +860,24 @@ class GuiDownloads(
         }
 
         mediathekGui.filmInfoDialog?.updateCurrentFilm(getCurrentlySelectedFilm().orElse(null))
+    }
+
+    private fun createDismissableMessageDialog(
+        parentComponent: Component?,
+        title: String,
+        message: String,
+        optionType: Int,
+        defaultValue: Int,
+        defaultDelay: Duration,
+        style: Int,
+    ): Int {
+        val optionPane = JOptionPane(message, style, optionType, null, null)
+        val dialog = optionPane.createDialog(parentComponent, title)
+        Timer(defaultDelay.inWholeMilliseconds.toInt()) {
+            optionPane.value = defaultValue
+        }.start()
+        dialog.isVisible = true
+        return optionPane.value as Int
     }
 
     fun getSelFilme(): List<DatenFilm> = tableSelection.selectedFilmsOrShowError()

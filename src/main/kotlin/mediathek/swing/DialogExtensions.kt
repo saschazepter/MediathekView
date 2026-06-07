@@ -16,26 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.actions
+package mediathek.swing
 
-import mediathek.config.Daten
-import mediathek.gui.dialog.reset.ResetSettingsDialog
-import mediathek.swing.centerOnScreen
-import java.awt.event.ActionEvent
-import javax.swing.AbstractAction
-import javax.swing.JFrame
+import java.awt.Toolkit
+import javax.swing.JDialog
 
-class ResetSettingsAction(
-    private val owner: JFrame,
-    private val daten: Daten,
-) : AbstractAction() {
-    init {
-        putValue(NAME, "Einstellungen zurücksetzen...")
+/**
+ * Places the dialog on the primary screen.
+ *
+ * The default keeps the legacy MediathekView behavior: dialogs are placed at half of the calculated
+ * centered coordinates, resulting in a quarter-screen offset. Pass `absolute = true` for true screen center.
+ */
+fun JDialog.centerOnScreen(absolute: Boolean = false) {
+    val screenSize = Toolkit.getDefaultToolkit().screenSize
+    var x = (screenSize.width / 2) - (width / 2)
+    var y = (screenSize.height / 2) - (height / 2)
+    if (!absolute) {
+        x /= 2
+        y /= 2
     }
-
-    override fun actionPerformed(event: ActionEvent?) {
-        val dialog = ResetSettingsDialog(owner, daten)
-        dialog.centerOnScreen()
-        dialog.isVisible = true
-    }
+    setLocation(x, y)
 }
