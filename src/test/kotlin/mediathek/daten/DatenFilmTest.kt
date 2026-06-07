@@ -258,6 +258,15 @@ internal class DatenFilmTest {
     }
 
     @Test
+    fun decompressUrlCombinesNormalQualityPrefixWithCompressedSuffix() {
+        val film = DatenFilm().apply {
+            urlNormalQuality = "https://example.org/video-normal.mp4"
+        }
+
+        assertEquals("https://example.org/video-high.mp4", film.decompressUrl("26|high.mp4"))
+    }
+
+    @Test
     fun countriesAsStringCachesAndInvalidatesWhenCountriesChange() {
         val film = DatenFilm()
 

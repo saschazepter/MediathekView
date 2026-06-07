@@ -482,8 +482,28 @@ class DatenFilm private constructor(
 
     fun decompressUrl(requestedUrl: String): String {
         val indexPipe = requestedUrl.indexOf(COMPRESSION_MARKER)
-        val prefixLength = requestedUrl.substring(0, indexPipe).toInt()
-        return urlNormalQuality.substring(0, prefixLength) + requestedUrl.substring(indexPipe + 1)
+        val prefixLength = parseCompressionPrefixLength(requestedUrl, indexPipe)
+        return buildString(prefixLength + requestedUrl.length - indexPipe - 1) {
+            append(urlNormalQuality, 0, prefixLength)
+            append(requestedUrl, indexPipe + 1, requestedUrl.length)
+        }
+    }
+
+    private fun parseCompressionPrefixLength(requestedUrl: String, markerIndex: Int): Int {
+        if (markerIndex <= 0) {
+            throw NumberFormatException(requestedUrl.take(markerIndex.coerceAtLeast(0)))
+        }
+
+        var prefixLength = 0
+        for (index in 0..<markerIndex) {
+            val digit = requestedUrl[index].digitToIntOrNull()
+                ?: throw NumberFormatException(requestedUrl.substring(0, markerIndex))
+            if (prefixLength > (Int.MAX_VALUE - digit) / 10) {
+                throw NumberFormatException(requestedUrl.substring(0, markerIndex))
+            }
+            prefixLength = prefixLength * 10 + digit
+        }
+        return prefixLength
     }
 
     private fun getUrlByResolution(resolution: FilmResolution.Enum?): String =
