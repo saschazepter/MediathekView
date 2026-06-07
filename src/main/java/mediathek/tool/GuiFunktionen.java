@@ -34,15 +34,6 @@ import java.io.File;
 
 public class GuiFunktionen {
 
-    /**
-     * legacy constant, used internally only
-     */
-    private static final int UPDATE_FILME_AUS = 0;
-    /**
-     * legacy constant, used internally only
-     */
-    private static final int UPDATE_FILME_AUTO = 2;
-
     private static final Logger logger = LogManager.getLogger();
     /**
      * Property string to indicate usage of install4j's external updater.
@@ -261,47 +252,6 @@ public class GuiFunktionen {
         }
 
         return result;
-    }
-
-    /**
-     * Get the the user set filmlist update type.
-     *
-     * @return MANUAL or AUTOMATIC based on config. Default is AUTOMATIC.
-     */
-    public static FilmListUpdateType getFilmListUpdateType() {
-        FilmListUpdateType result;
-
-        int ret;
-        try {
-            ret = Integer.parseInt(MVConfig.get(MVConfig.Configs.SYSTEM_IMPORT_ART_FILME));
-        } catch (Exception ex) {
-            MVConfig.add(MVConfig.Configs.SYSTEM_IMPORT_ART_FILME, String.valueOf(UPDATE_FILME_AUTO));
-            ret = UPDATE_FILME_AUTO;
-        }
-
-        if (ret == UPDATE_FILME_AUS) {
-            result = FilmListUpdateType.MANUAL;
-        } else {
-            result = FilmListUpdateType.AUTOMATIC;
-        }
-
-        return result;
-    }
-
-    /**
-     * Store filmlist update mode in config.
-     *
-     * @param type MANUAL or AUTOMATIC mode.
-     */
-    public static void setFilmListUpdateType(FilmListUpdateType type) {
-        final int value;
-        if (type == FilmListUpdateType.MANUAL) {
-            value = UPDATE_FILME_AUS;
-        } else {
-            value = UPDATE_FILME_AUTO;
-        }
-
-        MVConfig.add(MVConfig.Configs.SYSTEM_IMPORT_ART_FILME, String.valueOf(value));
     }
 
 }

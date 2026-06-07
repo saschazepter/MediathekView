@@ -1,17 +1,10 @@
 package mediathek.tool
 
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Test
 import java.io.File
 
 internal class GuiFunktionenTest {
-
-    @Test
-    fun getFilmListUpdateType() {
-        val result = GuiFunktionen.getFilmListUpdateType()
-        assertSame(FilmListUpdateType.AUTOMATIC, result)
-    }
 
     @Test
     fun getSuffixFromUrl() {

@@ -29,7 +29,7 @@ public class MVConfig {
 
         if (CommandLineOptions.isDebugModeEnabled()) {
             logger.debug("Debug mode enabled - Setting FilmList import mode to MANUAL");
-            GuiFunktionen.setFilmListUpdateType(FilmListUpdateType.MANUAL);
+            FilmListUpdateType.MANUAL.writeToConfig();
         }
 
         logger.debug("User-Agent: {}", ApplicationConfiguration.getConfiguration().getString(ApplicationConfiguration.APPLICATION_USER_AGENT));

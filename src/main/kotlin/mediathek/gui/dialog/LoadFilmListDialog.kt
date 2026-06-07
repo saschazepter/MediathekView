@@ -39,7 +39,7 @@ class LoadFilmListDialog(owner: Frame?) : JDialog(owner, "Filmliste laden", true
                 logger.trace("Sender list was changed loading full list...")
             }
 
-            if (GuiFunktionen.getFilmListUpdateType() == FilmListUpdateType.AUTOMATIC) {
+            if (FilmListUpdateType.fromConfig() == FilmListUpdateType.AUTOMATIC) {
                 //easy, just load
                 filmeLaden.loadFilmlist("", immerNeuLaden)
             } else {
