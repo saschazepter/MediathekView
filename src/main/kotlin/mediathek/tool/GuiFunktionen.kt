@@ -48,12 +48,10 @@ object GuiFunktionen {
     @JvmStatic
     fun isUsingExternalUpdater(): Boolean = !isNotUsingExternalUpdater()
 
-    @JvmStatic
     fun copyToClipboard(s: String) {
         Toolkit.getDefaultToolkit().systemClipboard.setContents(StringSelection(s), null)
     }
 
-    @JvmStatic
     fun addsPfad(pfad1: String?, pfad2: String?): String {
         val result = concatPaths(pfad1, pfad2)
         if (result.isEmpty()) {
@@ -82,7 +80,6 @@ object GuiFunktionen {
         }
     }
 
-    @JvmStatic
     fun cutName(name: String, length: Int): String =
         if (name.length > length) {
             name.substring(0, length - 4) + name.substring(name.length - 4)
@@ -90,7 +87,6 @@ object GuiFunktionen {
             name
         }
 
-    @JvmStatic
     fun getDateiName(pfad: String?): String {
         var result = if (!pfad.isNullOrEmpty()) {
             pfad.substring(pfad.lastIndexOf('/') + 1)

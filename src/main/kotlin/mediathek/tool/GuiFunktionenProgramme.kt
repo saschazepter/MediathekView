@@ -235,7 +235,6 @@ object GuiFunktionenProgramme {
      * @param name the executable name
      * @return the path INCLUDING the binary name.
      */
-    @JvmStatic
     fun findExecutableOnPath(name: String): Path {
         var exeString = name
         var path = System.getenv("PATH") + File.pathSeparator + getBinaryPath().toAbsolutePath()
