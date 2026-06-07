@@ -304,14 +304,4 @@ public class GuiFunktionen {
         MVConfig.add(MVConfig.Configs.SYSTEM_IMPORT_ART_FILME, String.valueOf(value));
     }
 
-    public static void enableComponents(Container container, boolean enable) {
-        Component[] components = container.getComponents();
-        for (Component component : components) {
-            component.setEnabled(enable);
-            if (component instanceof Container) {
-                enableComponents((Container) component, enable);
-            }
-        }
-    }
-
 }

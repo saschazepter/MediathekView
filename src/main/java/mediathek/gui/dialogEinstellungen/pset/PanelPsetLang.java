@@ -577,7 +577,7 @@ public class PanelPsetLang extends JPanel {
         var pSet = getPset();
         stopBeob = true;
 
-        GuiFunktionen.enableComponents(jTabbedPane, pSet != null);
+        enableComponents(jTabbedPane, pSet != null);
         jButtonAbspielen.setBackground(null);
         if (pSet != null) {
             jTabbedPane.setTitleAt(0, "Set Name: " + pSet.getName());
@@ -641,6 +641,16 @@ public class PanelPsetLang extends JPanel {
         }
         stopBeob = false;
         fillTextProgramme();
+    }
+
+    private void enableComponents(Container container, boolean enable) {
+        Component[] components = container.getComponents();
+        for (Component component : components) {
+            component.setEnabled(enable);
+            if (component instanceof Container childContainer) {
+                enableComponents(childContainer, enable);
+            }
+        }
     }
 
     private void bindProgramTableModel(ListeProg listeProg) {
