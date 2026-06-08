@@ -34,7 +34,7 @@ class ResetSettingsAction(
     }
 
     override fun actionPerformed(event: ActionEvent?) {
-        val dialog = ResetSettingsDialog(owner, daten)
+        val dialog = ResetSettingsDialog(owner)
         dialog.centerOnScreen()
         dialog.isVisible = true
     }
