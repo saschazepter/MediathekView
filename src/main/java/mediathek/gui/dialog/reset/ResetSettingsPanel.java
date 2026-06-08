@@ -2,14 +2,13 @@ package mediathek.gui.dialog.reset;
 
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
+import mediathek.daten.ListePset;
 import mediathek.daten.ListePsetVorlagen;
 import mediathek.gui.dialog.DialogHilfe;
-import mediathek.gui.messages.ProgramSetChangedEvent;
 import mediathek.mainwindow.MediathekGui;
 import mediathek.swing.MultilineLabel;
 import mediathek.tool.GetFile;
 import mediathek.tool.GuiFunktionenProgramme;
-import mediathek.tool.MessageBus;
 import mediathek.tool.SVGIconUtilities;
 import org.jdesktop.swingx.VerticalLayout;
 
@@ -28,9 +27,15 @@ public class ResetSettingsPanel extends JPanel {
         jButtonHilfeReset.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg"));
         jButtonHilfeReset.addActionListener(_ -> new DialogHilfe(parent, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_RESET)).setVisible(true));
         jButtonResetSets.addActionListener(_ -> {
-            Daten.getInstance().getListePset().clear();
-            GuiFunktionenProgramme.addSetVorlagen(parent, Daten.getInstance(), ListePsetVorlagen.getStandarset(parent, true), true);
-            MessageBus.getMessageBus().publishAsync(new ProgramSetChangedEvent());
+            var listePset = Daten.getInstance().getListePset();
+            var previousPsets = new ListePset();
+            previousPsets.addAll(listePset);
+
+            listePset.clear();
+            if (!GuiFunktionenProgramme.addSetVorlagen(parent, Daten.getInstance(), ListePsetVorlagen.getStandarset(parent, true), true)) {
+                listePset.clear();
+                listePset.addAll(previousPsets);
+            }
         });
         jButtonResetAll.addActionListener(_ -> {
             int ret = JOptionPane.showConfirmDialog(parent, RESET_MESSAGE, "Einstellungen zurücksetzen", JOptionPane.YES_NO_OPTION);
