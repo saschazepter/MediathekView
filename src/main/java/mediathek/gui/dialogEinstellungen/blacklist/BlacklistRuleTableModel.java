@@ -1,4 +1,4 @@
-package mediathek.gui.dialogEinstellungen;
+package mediathek.gui.dialogEinstellungen.blacklist;
 
 import mediathek.daten.blacklist.BlacklistRule;
 import mediathek.daten.blacklist.ListeBlacklist;

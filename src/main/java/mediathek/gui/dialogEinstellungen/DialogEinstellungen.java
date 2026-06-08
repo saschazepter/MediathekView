@@ -2,6 +2,7 @@ package mediathek.gui.dialogEinstellungen;
 
 import mediathek.config.Daten;
 import mediathek.config.Konstanten;
+import mediathek.gui.dialogEinstellungen.blacklist.PanelBlacklist;
 import mediathek.gui.dialogEinstellungen.allgemein.LuceneDirectoryModePanel;
 import mediathek.gui.dialogEinstellungen.allgemein.PanelEinstellungen;
 import mediathek.mainwindow.MediathekGui;

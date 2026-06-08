@@ -1,4 +1,4 @@
-package mediathek.gui.dialogEinstellungen;
+package mediathek.gui.dialogEinstellungen.blacklist;
 
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;

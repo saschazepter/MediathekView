@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.gui.dialogEinstellungen
+package mediathek.gui.dialogEinstellungen.blacklist
 
 import mediathek.config.Daten
 import mediathek.config.Konstanten
