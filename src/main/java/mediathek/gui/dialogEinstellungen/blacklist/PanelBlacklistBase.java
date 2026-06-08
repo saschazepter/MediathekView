@@ -56,7 +56,6 @@ public class PanelBlacklistBase extends JPanel {
         var panel3 = new JPanel();
         var label2 = new JLabel();
         lblNumEntries = new JLabel();
-        var jLabel10 = new JLabel();
         jButtonTabelleLoeschen = new JButton();
         var separator2 = new JSeparator();
         var jPanel3 = new JPanel();
@@ -82,7 +81,7 @@ public class PanelBlacklistBase extends JPanel {
             //======== jPanel1 ========
             {
                 jPanel1.setLayout(new MigLayout(
-                    new LC().insets("5").hideMode(3).gridGap("5", "5"), //NON-NLS
+                    new LC().insets("5").hideMode(3).gridGap("5", "5"),
                     // columns
                     new AC()
                         .grow().fill(),
@@ -107,10 +106,10 @@ public class PanelBlacklistBase extends JPanel {
 
                 //======== jPanel4 ========
                 {
-                    jPanel4.setBorder(new TitledBorder("Sender, Thema, Titel oder Thema/Titel:")); //NON-NLS
+                    jPanel4.setBorder(new TitledBorder("Sender, Thema, Titel oder Thema/Titel:"));
 
                     //---- jLabel5 ----
-                    jLabel5.setText("Sender:"); //NON-NLS
+                    jLabel5.setText("Sender:");
 
                     //---- jComboBoxSender ----
                     jComboBoxSender.setModel(new DefaultComboBoxModel<>(new String[] {
@@ -118,7 +117,7 @@ public class PanelBlacklistBase extends JPanel {
                     }));
 
                     //---- jLabel6 ----
-                    jLabel6.setText("Thema:"); //NON-NLS
+                    jLabel6.setText("Thema:");
 
                     //---- jComboBoxThema ----
                     jComboBoxThema.setModel(new DefaultComboBoxModel<>(new String[] {
@@ -126,16 +125,16 @@ public class PanelBlacklistBase extends JPanel {
                     }));
 
                     //---- jButtonHinzufuegen ----
-                    jButtonHinzufuegen.setText("Hinzuf\u00fcgen"); //NON-NLS
+                    jButtonHinzufuegen.setText("Hinzuf\u00fcgen");
 
                     //---- jLabel8 ----
-                    jLabel8.setText("Titel:"); //NON-NLS
+                    jLabel8.setText("Titel:");
 
                     //---- jLabel2 ----
-                    jLabel2.setText("Thema oder Titel:"); //NON-NLS
+                    jLabel2.setText("Thema oder Titel:");
 
                     //---- jButtonAendern ----
-                    jButtonAendern.setText("\u00c4ndern"); //NON-NLS
+                    jButtonAendern.setText("\u00c4ndern");
 
                     GroupLayout jPanel4Layout = new GroupLayout(jPanel4);
                     jPanel4.setLayout(jPanel4Layout);
@@ -162,7 +161,7 @@ public class PanelBlacklistBase extends JPanel {
                                             .addComponent(jTextFieldTitel)
                                             .addComponent(jTextFieldThemaTitel)))
                                     .addGroup(GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                                        .addGap(0, 620, Short.MAX_VALUE)
+                                        .addGap(0, 622, Short.MAX_VALUE)
                                         .addComponent(jButtonAendern)
                                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jButtonHinzufuegen)))
@@ -201,11 +200,11 @@ public class PanelBlacklistBase extends JPanel {
                 //======== panel2 ========
                 {
                     panel2.setLayout(new MigLayout(
-                        new LC().insets("0").hideMode(3).gridGap("5", "5"), //NON-NLS
+                        new LC().insets("0").hideMode(3).gridGap("5", "5"),
                         // columns
                         new AC()
                             .fill().gap()
-                            .grow().align("right"), //NON-NLS
+                            .grow().align("right"),
                         // rows
                         new AC()
                             .fill().gap()
@@ -213,36 +212,36 @@ public class PanelBlacklistBase extends JPanel {
 
                     //---- jRadioButtonBlacklist ----
                     jRadioButtonBlacklist.setSelected(true);
-                    jRadioButtonBlacklist.setText("\"Sender / Thema / Titel\" werden nicht angezeigt (Blacklist)"); //NON-NLS
+                    jRadioButtonBlacklist.setText("\"Sender / Thema / Titel\" werden nicht angezeigt (Blacklist)");
                     panel2.add(jRadioButtonBlacklist, new CC().cell(0, 0));
 
                     //---- jRadioButtonWhitelist ----
-                    jRadioButtonWhitelist.setText("nur diese \"Sender / Thema / Titel\" anzeigen (Whitelist)"); //NON-NLS
+                    jRadioButtonWhitelist.setText("nur diese \"Sender / Thema / Titel\" anzeigen (Whitelist)");
                     panel2.add(jRadioButtonWhitelist, new CC().cell(0, 1));
 
                     //---- jButtonHilfe ----
-                    jButtonHilfe.setToolTipText("Hilfe anzeigen"); //NON-NLS
-                    panel2.add(jButtonHilfe, new CC().cell(1, 0, 1, 2).alignX("right").alignY("center").grow(0, 0)); //NON-NLS
+                    jButtonHilfe.setToolTipText("Hilfe anzeigen");
+                    panel2.add(jButtonHilfe, new CC().cell(1, 0, 1, 2).alignX("right").alignY("center").grow(0, 0));
                 }
                 jPanel1.add(panel2, new CC().cell(0, 0));
                 jPanel1.add(separator1, new CC().cell(0, 2));
 
                 //---- label1 ----
-                label1.setText("Suchstring:"); //NON-NLS
-                jPanel1.add(label1, new CC().cell(0, 3).alignX("center").growX(0)); //NON-NLS
+                label1.setText("Suchstring:");
+                jPanel1.add(label1, new CC().cell(0, 3).alignX("center").growX(0));
 
                 //---- tfFilter ----
-                tfFilter.setToolTipText("<html>Hier wird der Suchtext als RegExp eingegeben.<br>Zum Zur\u00fccksetzen des Filters den Suchtext <b>l\u00f6schen</b> und erneut <i>\"Filtern\"</i> dr\u00fccken.</html>"); //NON-NLS
+                tfFilter.setToolTipText("<html>Hier wird der Suchtext als RegExp eingegeben.<br>Zum Zur\u00fccksetzen des Filters den Suchtext <b>l\u00f6schen</b> und erneut <i>\"Filtern\"</i> dr\u00fccken.</html>");
                 jPanel1.add(tfFilter, new CC().cell(0, 3));
 
                 //---- btnFilterTable ----
-                btnFilterTable.setText("Filtern"); //NON-NLS
-                jPanel1.add(btnFilterTable, new CC().cell(0, 3).alignX("center").growX(0)); //NON-NLS
+                btnFilterTable.setText("Filtern");
+                jPanel1.add(btnFilterTable, new CC().cell(0, 3).alignX("center").growX(0));
 
                 //======== panel1 ========
                 {
                     panel1.setLayout(new MigLayout(
-                        new LC().insets("0").hideMode(3).gridGap("5", "0"), //NON-NLS
+                        new LC().insets("0").hideMode(3).gridGap("5", "0"),
                         // columns
                         new AC()
                             .fill().gap()
@@ -250,55 +249,51 @@ public class PanelBlacklistBase extends JPanel {
                             .fill(),
                         // rows
                         new AC()
-                            .grow().align("center"))); //NON-NLS
+                            .grow().align("center")));
 
                     //======== panel3 ========
                     {
                         panel3.setLayout(new MigLayout(
-                            new LC().insets("0").hideMode(3).gridGap("5", "0"), //NON-NLS
+                            new LC().insets("0").hideMode(3).gridGap("5", "0"),
                             // columns
                             new AC()
                                 .fill().gap()
                                 .fill(),
                             // rows
                             new AC()
-                                .grow().align("center"))); //NON-NLS
+                                .grow().align("center")));
 
                         //---- label2 ----
-                        label2.setText("Eintr\u00e4ge:"); //NON-NLS
+                        label2.setText("Eintr\u00e4ge:");
                         panel3.add(label2, new CC().cell(0, 0));
 
                         //---- lblNumEntries ----
-                        lblNumEntries.setText("0"); //NON-NLS
+                        lblNumEntries.setText("0");
                         panel3.add(lblNumEntries, new CC().cell(1, 0));
                     }
                     panel1.add(panel3, new CC().cell(0, 0));
 
-                    //---- jLabel10 ----
-                    jLabel10.setText("Alle Eintr\u00e4ge l\u00f6schen:"); //NON-NLS
-                    jLabel10.setHorizontalAlignment(SwingConstants.RIGHT);
-                    panel1.add(jLabel10, new CC().cell(1, 0));
-
                     //---- jButtonTabelleLoeschen ----
-                    jButtonTabelleLoeschen.setToolTipText("Alle Eintr\u00e4ge l\u00f6schen"); //NON-NLS
+                    jButtonTabelleLoeschen.setToolTipText("Alle Eintr\u00e4ge l\u00f6schen");
+                    jButtonTabelleLoeschen.setText("Alle Eintr\u00e4ge l\u00f6schen");
                     panel1.add(jButtonTabelleLoeschen, new CC().cell(2, 0));
                 }
                 jPanel1.add(panel1, new CC().cell(0, 5));
                 jPanel1.add(separator2, new CC().cell(0, 6));
             }
-            jTabbedPaneBlacklist.addTab("Sender-Thema-Titel", jPanel1); //NON-NLS
+            jTabbedPaneBlacklist.addTab("Sender-Thema-Titel", jPanel1);
 
             //======== jPanel3 ========
             {
                 jPanel3.setLayout(new VerticalLayout(5));
 
                 //---- jCheckBoxZukunftNichtAnzeigen ----
-                jCheckBoxZukunftNichtAnzeigen.setText("Filme mit Datum in der Zukunft nicht anzeigen"); //NON-NLS
+                jCheckBoxZukunftNichtAnzeigen.setText("Filme mit Datum in der Zukunft nicht anzeigen");
                 jPanel3.add(jCheckBoxZukunftNichtAnzeigen);
 
                 //---- jCheckBoxGeo ----
-                jCheckBoxGeo.setText("Filme, die per Geoblocking gesperrt sind, nicht anzeigen"); //NON-NLS
-                jCheckBoxGeo.setToolTipText("<html>Geogeblockte Filme k\u00f6nnen im jeweiligen \"Ausland\" nicht abgerufen werden.<br>Dazu muss die eigene Position in den Einstellungen angegeben werden</html>"); //NON-NLS
+                jCheckBoxGeo.setText("Filme, die per Geoblocking gesperrt sind, nicht anzeigen");
+                jCheckBoxGeo.setToolTipText("<html>Geogeblockte Filme k\u00f6nnen im jeweiligen \"Ausland\" nicht abgerufen werden.<br>Dazu muss die eigene Position in den Einstellungen angegeben werden</html>");
                 jPanel3.add(jCheckBoxGeo);
 
                 //======== jPanel6 ========
@@ -309,13 +304,13 @@ public class PanelBlacklistBase extends JPanel {
                     jSliderMinuten.setValue(0);
 
                     //---- jLabel1 ----
-                    jLabel1.setText("Nur Filme anzeigen mit einer L\u00e4nge von mehr als [min]:"); //NON-NLS
+                    jLabel1.setText("Nur Filme anzeigen mit einer L\u00e4nge von mehr als [min]:");
 
                     //---- jTextFieldMinuten ----
                     jTextFieldMinuten.setEditable(false);
 
                     //---- jLabel13 ----
-                    jLabel13.setText("Filme, die keine L\u00e4ngenangabe haben, werden immer angezeigt."); //NON-NLS
+                    jLabel13.setText("Filme, die keine L\u00e4ngenangabe haben, werden immer angezeigt.");
 
                     GroupLayout jPanel6Layout = new GroupLayout(jPanel6);
                     jPanel6.setLayout(jPanel6Layout);
@@ -332,7 +327,7 @@ public class PanelBlacklistBase extends JPanel {
                                                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                                                 .addComponent(jTextFieldMinuten, GroupLayout.PREFERRED_SIZE, 81, GroupLayout.PREFERRED_SIZE))
                                             .addComponent(jLabel13))
-                                        .addGap(0, 424, Short.MAX_VALUE)))
+                                        .addGap(0, 430, Short.MAX_VALUE)))
                                 .addContainerGap())
                     );
                     jPanel6Layout.setVerticalGroup(
@@ -351,26 +346,26 @@ public class PanelBlacklistBase extends JPanel {
                 }
                 jPanel3.add(jPanel6);
             }
-            jTabbedPaneBlacklist.addTab("Blacklist allgemein", jPanel3); //NON-NLS
+            jTabbedPaneBlacklist.addTab("Blacklist allgemein", jPanel3);
         }
         add(jTabbedPaneBlacklist, BorderLayout.CENTER);
 
         //======== jPanel8 ========
         {
-            jPanel8.setBorder(new TitledBorder("Allgemeine Einstellungen")); //NON-NLS
+            jPanel8.setBorder(new TitledBorder("Allgemeine Einstellungen"));
             jPanel8.setLayout(new GridLayout(3, 1));
 
             //---- jCheckBoxStart ----
-            jCheckBoxStart.setText("Beim Programmstart einschalten"); //NON-NLS
+            jCheckBoxStart.setText("Beim Programmstart einschalten");
             jPanel8.add(jCheckBoxStart);
 
             //---- jCheckBoxBlacklistEingeschaltet ----
-            jCheckBoxBlacklistEingeschaltet.setText("Im Tab Filme einschalten"); //NON-NLS
+            jCheckBoxBlacklistEingeschaltet.setText("Im Tab Filme einschalten");
             jPanel8.add(jCheckBoxBlacklistEingeschaltet);
 
             //---- jCheckBoxAbo ----
-            jCheckBoxAbo.setText("Bei der Suche nach Abos ber\u00fccksichtigen"); //NON-NLS
-            jCheckBoxAbo.setToolTipText("<html>Die Blacklist beim Suchen nach Abos ber\u00fccksichtigen.<br/>Ansonsten wird die komplette Filmliste durchsucht.</html>"); //NON-NLS
+            jCheckBoxAbo.setText("Bei der Suche nach Abos ber\u00fccksichtigen");
+            jCheckBoxAbo.setToolTipText("<html>Die Blacklist beim Suchen nach Abos ber\u00fccksichtigen.<br/>Ansonsten wird die komplette Filmliste durchsucht.</html>");
             jPanel8.add(jCheckBoxAbo);
         }
         add(jPanel8, BorderLayout.NORTH);

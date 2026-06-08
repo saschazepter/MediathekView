@@ -66,7 +66,6 @@ class PanelBlacklist(
 
     init {
         jButtonHilfe.icon = SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg")
-        jButtonTabelleLoeschen.icon = SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg")
 
         jButtonAendern.isEnabled = jTableBlacklist.selectionModel.selectedItemsCount == 1
 
