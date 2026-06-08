@@ -43,10 +43,12 @@ public class PanelBlacklist extends JPanel {
     private final String name;
     private final Daten daten;
     private final JFrame parentComponent;
+    private final BlacklistRuleTableModel tableModel;
 
     public PanelBlacklist(Daten daten, JFrame parentComponent, String name) {
         this.daten = daten;
         this.parentComponent = parentComponent;
+        this.tableModel = new BlacklistRuleTableModel(daten.getListeBlacklist());
 
         initComponents();
         this.name = name;
@@ -146,11 +148,6 @@ public class PanelBlacklist extends JPanel {
             SwingUtilities.invokeLater(this::init_);
         }
     }
-
-    /**
-     * TableModel which syncs table view with ListBlacklist entries.
-     */
-    private final BlacklistRuleTableModel tableModel = new BlacklistRuleTableModel();
 
     private void init_() {
         jCheckBoxAbo.setSelected(Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_AUCH_ABO)));
@@ -309,15 +306,7 @@ public class PanelBlacklist extends JPanel {
             int selectedTableRow = jTableBlacklist.getSelectedRow();
             if (selectedTableRow != -1) {
                 int modelIndex = jTableBlacklist.convertRowIndexToModel(selectedTableRow);
-                var bl = tableModel.get(modelIndex);
-                bl.setSender(strSender);
-                bl.setThema(strThema);
-                bl.setTitel(strTitel);
-                bl.setThema_titel(strThemaTitel);
-
-                tableModel.fireTableRowsUpdated(modelIndex, modelIndex);
-
-                notifyBlacklistChanged();
+                tableModel.updateRule(modelIndex, new BlacklistRule(strSender, strThema, strTitel, strThemaTitel));
             }
         }
     }
@@ -345,7 +334,7 @@ public class PanelBlacklist extends JPanel {
         int selectedTableRow = jTableBlacklist.getSelectedRow();
         if (selectedTableRow != -1) {
             int modelIndex = jTableBlacklist.convertRowIndexToModel(selectedTableRow);
-            var bl = tableModel.get(modelIndex);
+            var bl = tableModel.getRule(modelIndex);
             jComboBoxSender.setSelectedItem(bl.getSender());
             jComboBoxThema.setSelectedItem(bl.getThema());
             jTextFieldTitel.setText(bl.getTitel());
@@ -408,7 +397,7 @@ public class PanelBlacklist extends JPanel {
                 List<BlacklistRule> tempStore = new ArrayList<>();
                 for (var selectedRow : selectedIndices) {
                     int modelIndex = jTableBlacklist.convertRowIndexToModel(selectedRow);
-                    var rule = tableModel.get(modelIndex);
+                    var rule = tableModel.getRule(modelIndex);
                     tempStore.add(rule);
                 }
                 tableModel.removeRules(tempStore);

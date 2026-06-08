@@ -1,6 +1,5 @@
 package mediathek.gui.dialogEinstellungen;
 
-import mediathek.config.Daten;
 import mediathek.daten.blacklist.BlacklistRule;
 import mediathek.daten.blacklist.ListeBlacklist;
 import org.jspecify.annotations.NonNull;
@@ -15,8 +14,8 @@ public class BlacklistRuleTableModel extends AbstractTableModel {
     private static final int BLACKLIST_THEMA_TITEL = 3;
     private final ListeBlacklist blacklist;
 
-    public BlacklistRuleTableModel() {
-        this.blacklist = Daten.getInstance().getListeBlacklist();
+    public BlacklistRuleTableModel(@NonNull ListeBlacklist blacklist) {
+        this.blacklist = blacklist;
     }
 
     @Override
@@ -87,12 +86,24 @@ public class BlacklistRuleTableModel extends AbstractTableModel {
      * @param rule to be added.
      */
     public void addRule(@NonNull BlacklistRule rule) {
+        int rowIndex = blacklist.size();
         blacklist.add(rule);
-        fireTableDataChanged();
+        fireTableRowsInserted(rowIndex, rowIndex);
     }
 
     public boolean contains(@NonNull BlacklistRule rule) {
         return blacklist.contains(rule);
+    }
+
+    public void updateRule(int modelIndex, @NonNull BlacklistRule updatedRule) {
+        var rule = blacklist.get(modelIndex);
+        rule.setSender(updatedRule.getSender());
+        rule.setThema(updatedRule.getThema());
+        rule.setTitel(updatedRule.getTitel());
+        rule.setThema_titel(updatedRule.getThema_titel());
+
+        blacklist.filterListAndNotifyListeners();
+        fireTableRowsUpdated(modelIndex, modelIndex);
     }
 
     /**
@@ -101,7 +112,13 @@ public class BlacklistRuleTableModel extends AbstractTableModel {
      * @param fromModelIndex the index.
      * @return the rule.
      */
-    public BlacklistRule get(int fromModelIndex) {
-        return blacklist.get(fromModelIndex);
+    public BlacklistRule getRule(int fromModelIndex) {
+        var rule = blacklist.get(fromModelIndex);
+        return new BlacklistRule(
+                rule.getSender(),
+                rule.getThema(),
+                rule.getTitel(),
+                rule.getThema_titel()
+        );
     }
 }
