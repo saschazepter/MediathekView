@@ -44,6 +44,13 @@ public class PanelBlacklist extends JPanel {
     private final Daten daten;
     private final JFrame parentComponent;
     private final BlacklistRuleTableModel tableModel;
+    private final ListenerFilmeLaden filmLoadListener = new ListenerFilmeLaden() {
+        @Override
+        public void fertig(@NonNull ListenerFilmeLadenEvent event) {
+            comboThemaLaden();
+        }
+    };
+    private boolean listenersRegistered;
 
     public PanelBlacklist(Daten daten, JFrame parentComponent, String name) {
         this.daten = daten;
@@ -78,20 +85,41 @@ public class PanelBlacklist extends JPanel {
         init_();
         init();
 
-        MessageBus.getMessageBus().subscribe(this);
-
-        daten.getFilmeLaden().addAdListener(new ListenerFilmeLaden() {
-            @Override
-            public void fertig(@NonNull ListenerFilmeLadenEvent event) {
-                comboThemaLaden();
-            }
-        });
-
         //Table filtering
         setupTableFilter();
 
         lblNumEntries.setText(Integer.toString(jTableBlacklist.getRowCount()));
         jTableBlacklist.getModel().addTableModelListener(_ -> lblNumEntries.setText(Integer.toString(jTableBlacklist.getRowCount())));
+    }
+
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        registerListeners();
+    }
+
+    @Override
+    public void removeNotify() {
+        unregisterListeners();
+        super.removeNotify();
+    }
+
+    private void registerListeners() {
+        if (listenersRegistered) {
+            return;
+        }
+        MessageBus.getMessageBus().subscribe(this);
+        daten.getFilmeLaden().addAdListener(filmLoadListener);
+        listenersRegistered = true;
+    }
+
+    private void unregisterListeners() {
+        if (!listenersRegistered) {
+            return;
+        }
+        MessageBus.getMessageBus().unsubscribe(this);
+        daten.getFilmeLaden().removeAdListener(filmLoadListener);
+        listenersRegistered = false;
     }
 
     private static final Logger logger = LogManager.getLogger();
@@ -405,6 +433,14 @@ public class PanelBlacklist extends JPanel {
         }
 
         private void showMenu(MouseEvent evt) {
+            int row = jTableBlacklist.rowAtPoint(evt.getPoint());
+            if (row == -1) {
+                return;
+            }
+            if (!jTableBlacklist.isRowSelected(row)) {
+                jTableBlacklist.getSelectionModel().setSelectionInterval(row, row);
+            }
+
             JPopupMenu jPopupMenu = new JPopupMenu();
             //löschen
             String menuText;
