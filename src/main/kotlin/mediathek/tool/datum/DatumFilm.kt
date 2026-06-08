@@ -34,7 +34,6 @@ class DatumFilm : Date {
         }
 
     companion object {
-        @JvmField
         val UNDEFINED_FILM_DATE = DatumFilm(0, 0, 1)
 
         private fun legacyDateToEpochMillis(year: Int, month: Int, date: Int): Long =
