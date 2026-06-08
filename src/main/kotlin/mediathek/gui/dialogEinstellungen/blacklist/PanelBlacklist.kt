@@ -18,6 +18,7 @@
 
 package mediathek.gui.dialogEinstellungen.blacklist
 
+import mediathek.audiothek.ui.table.TriStateTableRowSorter
 import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.config.MVColor
@@ -46,7 +47,6 @@ import javax.swing.UIManager
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.table.TableModel
-import javax.swing.table.TableRowSorter
 import javax.swing.table.TableStringConverter
 
 class PanelBlacklist(
@@ -56,10 +56,15 @@ class PanelBlacklist(
 ) : PanelBlacklistBase() {
     var ok: Boolean = false
 
-    private val tableModel = BlacklistRuleTableModel(daten.listeBlacklist)
+    private val tableModel = BlacklistRuleTableModel(daten.listeBlacklist) {
+        synchronized(daten.listeFilme) {
+            daten.listeFilme.toList()
+        }
+    }
     private val filmLoadListener = object : ListenerFilmeLaden() {
         override fun fertig(event: ListenerFilmeLadenEvent) {
             comboThemaLaden()
+            tableModel.refreshFilteredCounts()
         }
     }
     private var listenersRegistered = false
@@ -125,7 +130,7 @@ class PanelBlacklist(
     }
 
     private fun setupTableFilter() {
-        val sorter = TableRowSorter(tableModel)
+        val sorter = TriStateTableRowSorter(tableModel)
         sorter.stringConverter = object : TableStringConverter() {
             override fun toString(model: TableModel, row: Int, column: Int): String =
                 model.getValueAt(row, column).toString().lowercase()
@@ -195,7 +200,7 @@ class PanelBlacklist(
             MVConfig.add(MVConfig.Configs.SYSTEM_BLACKLIST_FILMLAENGE, "0")
         }
 
-        tableModel.fireTableDataChanged()
+        tableModel.refreshFilteredCounts()
     }
 
     private fun initBehavior() {
