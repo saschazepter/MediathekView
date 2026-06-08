@@ -138,10 +138,13 @@ public class PanelBlacklist extends JPanel {
             String text = tfFilter.getText();
             if(text.isEmpty()) {
                 sorter.setRowFilter(null);
+                GuiFunktionen.showErrorIndication(tfFilter, false);
             } else {
                 try {
                     sorter.setRowFilter(RowFilter.regexFilter(text.toLowerCase()));
+                    GuiFunktionen.showErrorIndication(tfFilter, false);
                 } catch(PatternSyntaxException pse) {
+                    GuiFunktionen.showErrorIndication(tfFilter, true);
                     logger.error("Bad regex pattern", pse);
                 }
             }
