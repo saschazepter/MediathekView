@@ -1,462 +1,24 @@
 package mediathek.gui.dialogEinstellungen;
 
-import mediathek.config.Daten;
-import mediathek.config.Konstanten;
-import mediathek.config.MVColor;
-import mediathek.config.MVConfig;
-import mediathek.daten.blacklist.BlacklistRule;
-import mediathek.filmeSuchen.ListenerFilmeLaden;
-import mediathek.filmeSuchen.ListenerFilmeLadenEvent;
-import mediathek.gui.dialog.DialogHilfe;
-import mediathek.gui.messages.BlacklistAboSettingChangedEvent;
-import mediathek.gui.messages.BlacklistChangedEvent;
-import mediathek.gui.messages.BlacklistStartSettingChangedEvent;
-import mediathek.tool.*;
-import net.engio.mbassy.listener.Handler;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
 import net.miginfocom.swing.MigLayout;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jdesktop.swingx.VerticalLayout;
-import org.jspecify.annotations.NonNull;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
-import javax.swing.table.TableStringConverter;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.regex.PatternSyntaxException;
 
-public class PanelBlacklist extends JPanel {
-    public boolean ok;
-    private final String name;
-    private final Daten daten;
-    private final JFrame parentComponent;
-    private final BlacklistRuleTableModel tableModel;
-    private final ListenerFilmeLaden filmLoadListener = new ListenerFilmeLaden() {
-        @Override
-        public void fertig(@NonNull ListenerFilmeLadenEvent event) {
-            comboThemaLaden();
-        }
-    };
-    private boolean listenersRegistered;
-
-    public PanelBlacklist(Daten daten, JFrame parentComponent, String name) {
-        this.daten = daten;
-        this.parentComponent = parentComponent;
-        this.tableModel = new BlacklistRuleTableModel(daten.getListeBlacklist());
-
+/**
+ * Base class for UI Designer.
+ * Subclasses contain the hand-written panel behavior.
+ */
+public class PanelBlacklistBase extends JPanel {
+    public PanelBlacklistBase() {
+        super();
         initComponents();
-        this.name = name;
-        jButtonHilfe.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg"));
-        jButtonTabelleLoeschen.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/trash-can.svg"));
-
-        jButtonAendern.setEnabled(jTableBlacklist.getSelectionModel().getSelectedItemsCount() == 1);
-
-        jTableBlacklist.setModel(tableModel);
-
-        tableModel.addTableModelListener(_ -> jButtonTabelleLoeschen.setEnabled(tableModel.getRowCount() != 0));
-        jTableBlacklist.getSelectionModel().addListSelectionListener(l -> {
-            if (!l.getValueIsAdjusting()) {
-                jButtonAendern.setEnabled(jTableBlacklist.getSelectionModel().getSelectedItemsCount() == 1);
-
-                if (jTableBlacklist.getSelectionModel().getSelectedItemsCount() == 0){
-                    resetRuleEntryFields();
-                }
-            }
-        });
-
-        jCheckBoxGeo.addActionListener(_ -> {
-            ApplicationConfiguration.getInstance().setBlacklistDoNotShowGeoblockedFilms(jCheckBoxGeo.isSelected());
-            notifyBlacklistChanged();
-        });
-
-        init_();
-        init();
-
-        //Table filtering
-        setupTableFilter();
-
-        lblNumEntries.setText(Integer.toString(jTableBlacklist.getRowCount()));
-        jTableBlacklist.getModel().addTableModelListener(_ -> lblNumEntries.setText(Integer.toString(jTableBlacklist.getRowCount())));
-    }
-
-    @Override
-    public void addNotify() {
-        super.addNotify();
-        registerListeners();
-    }
-
-    @Override
-    public void removeNotify() {
-        unregisterListeners();
-        super.removeNotify();
-    }
-
-    private void registerListeners() {
-        if (listenersRegistered) {
-            return;
-        }
-        MessageBus.getMessageBus().subscribe(this);
-        daten.getFilmeLaden().addAdListener(filmLoadListener);
-        listenersRegistered = true;
-    }
-
-    private void unregisterListeners() {
-        if (!listenersRegistered) {
-            return;
-        }
-        MessageBus.getMessageBus().unsubscribe(this);
-        daten.getFilmeLaden().removeAdListener(filmLoadListener);
-        listenersRegistered = false;
-    }
-
-    private static final Logger logger = LogManager.getLogger();
-
-    private void setupTableFilter() {
-        final TableRowSorter<BlacklistRuleTableModel> sorter = new TableRowSorter<>(tableModel);
-        // make search case-insensitive
-        sorter.setStringConverter(new TableStringConverter() {
-            @Override
-            public String toString(TableModel model, int row, int column) {
-                return model.getValueAt(row, column).toString().toLowerCase();
-            }
-        });
-        jTableBlacklist.setRowSorter(sorter);
-        btnFilterTable.addActionListener(_ -> {
-            String text = tfFilter.getText();
-            if(text.isEmpty()) {
-                sorter.setRowFilter(null);
-                GuiFunktionen.showErrorIndication(tfFilter, false);
-            } else {
-                try {
-                    sorter.setRowFilter(RowFilter.regexFilter(text.toLowerCase()));
-                    GuiFunktionen.showErrorIndication(tfFilter, false);
-                } catch(PatternSyntaxException pse) {
-                    GuiFunktionen.showErrorIndication(tfFilter, true);
-                    logger.error("Bad regex pattern", pse);
-                }
-            }
-        });
-    }
-
-    private void resetRuleEntryFields() {
-        jTextFieldTitel.setText("");
-        jTextFieldThemaTitel.setText("");
-        jComboBoxThema.setSelectedItem("");
-        jComboBoxSender.setSelectedItem("");
-    }
-
-    @Handler
-    private void handleBlacklistChangedEvent(BlacklistChangedEvent e) {
-        SwingUtilities.invokeLater(this::init_);
-    }
-
-    @Handler
-    private void handleBlacklistStartSettingChangedEvent(BlacklistStartSettingChangedEvent event) {
-        // Keep standalone and settings-window blacklist panels in sync.
-        if (!Objects.equals(event.getSourceName(), name)) {
-            SwingUtilities.invokeLater(() ->
-                    jCheckBoxStart.setSelected(Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_START_ON)))
-            );
-        }
-    }
-
-    @Handler
-    private void handleBlacklistAboSettingChangedEvent(BlacklistAboSettingChangedEvent event) {
-        if (!Objects.equals(event.getSourceName(), name)) {
-            SwingUtilities.invokeLater(this::init_);
-        }
-    }
-
-    private void init_() {
-        jCheckBoxAbo.setSelected(Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_AUCH_ABO)));
-        jCheckBoxStart.setSelected(Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_START_ON)));
-
-        var blacklist_is_on = ApplicationConfiguration.getConfiguration().getBoolean(ApplicationConfiguration.BLACKLIST_IS_ON, false);
-        jCheckBoxBlacklistEingeschaltet.setSelected(blacklist_is_on);
-
-        jCheckBoxZukunftNichtAnzeigen.setSelected(Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_ZUKUNFT_NICHT_ANZEIGEN)));
-
-        jCheckBoxGeo.setSelected(ApplicationConfiguration.getInstance().getBlacklistDoNotShowGeoblockedFilms());
-
-        try {
-            jSliderMinuten.setValue(Integer.parseInt(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_FILMLAENGE)));
-        } catch (Exception ex) {
-            jSliderMinuten.setValue(0);
-            MVConfig.add(MVConfig.Configs.SYSTEM_BLACKLIST_FILMLAENGE, "0");
-        }
-
-        tableModel.fireTableDataChanged();
-    }
-
-    private void init() {
-        jTableBlacklist.addMouseListener(new BeobMausTabelle());
-        jTableBlacklist.getSelectionModel().addListSelectionListener(e -> {
-            if (!e.getValueIsAdjusting()) {
-                fillControlsWithRuleData();
-            }
-        });
-
-        jRadioButtonWhitelist.setSelected(Boolean.parseBoolean(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_IST_WHITELIST)));
-        jRadioButtonWhitelist.addActionListener(_ -> {
-            MVConfig.add(MVConfig.Configs.SYSTEM_BLACKLIST_IST_WHITELIST, Boolean.toString(jRadioButtonWhitelist.isSelected()));
-            notifyBlacklistChanged();
-        });
-        jRadioButtonBlacklist.addActionListener(_ -> {
-            MVConfig.add(MVConfig.Configs.SYSTEM_BLACKLIST_IST_WHITELIST, Boolean.toString(jRadioButtonWhitelist.isSelected()));
-            notifyBlacklistChanged();
-        });
-        jCheckBoxZukunftNichtAnzeigen.addActionListener(_ -> {
-            MVConfig.add(MVConfig.Configs.SYSTEM_BLACKLIST_ZUKUNFT_NICHT_ANZEIGEN, Boolean.toString(jCheckBoxZukunftNichtAnzeigen.isSelected()));
-            notifyBlacklistChanged();
-        });
-        jCheckBoxAbo.addActionListener(_ -> {
-            MVConfig.add(MVConfig.Configs.SYSTEM_BLACKLIST_AUCH_ABO, Boolean.toString(jCheckBoxAbo.isSelected()));
-            // bei den Downloads melden
-            // damit die Änderungen im Eigenschaftendialog auch übernommen werden
-            MessageBus.getMessageBus().publishAsync(new BlacklistAboSettingChangedEvent(name));
-        });
-        jCheckBoxStart.addActionListener(_ -> {
-            MVConfig.add(MVConfig.Configs.SYSTEM_BLACKLIST_START_ON, Boolean.toString(jCheckBoxStart.isSelected()));
-            // A second blacklist panel can be open through the standalone edit action.
-            MessageBus.getMessageBus().publishAsync(new BlacklistStartSettingChangedEvent(name));
-        });
-        jCheckBoxBlacklistEingeschaltet.addActionListener(_ -> {
-            ApplicationConfiguration.getConfiguration().setProperty(ApplicationConfiguration.BLACKLIST_IS_ON, jCheckBoxBlacklistEingeschaltet.isSelected());
-            notifyBlacklistChanged();
-        });
-        jButtonHinzufuegen.addActionListener(_ -> onAddBlacklistRule());
-
-        jButtonAendern.addActionListener(_ -> onChangeBlacklistRule());
-
-        jButtonHilfe.addActionListener(_ -> new DialogHilfe(parentComponent, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_BLACKLIST)).setVisible(true));
-        jButtonTabelleLoeschen.addActionListener(_ -> {
-            int ret = JOptionPane.showConfirmDialog(parentComponent,
-                    "<html>Möchten Sie wirklich <b>alle Regeln</b> dauerhaft löschen?</html>",
-                    "Blacklist Regeln", JOptionPane.YES_NO_OPTION);
-            if (ret == JOptionPane.OK_OPTION) {
-                tableModel.removeAll();
-            }
-        });
-        jComboBoxSender.addActionListener(_ -> comboThemaLaden());
-
-        var documentListener = new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                tus();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                tus();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                tus();
-            }
-
-            private void tus() {
-                validatePatternInput(jTextFieldThemaTitel);
-                validatePatternInput(jTextFieldTitel);
-            }
-
-            /**
-             * Check if entry in JTextField is a regexp pattern and its validity.
-             * If a recognized pattern is invalid, change the background color of the JTextField.
-             *
-             * @param tf The control that will be validated
-             */
-            private void validatePatternInput(JTextField tf) {
-                String text = tf.getText();
-                if (Filter.isPattern(text)) {
-                    tf.setForeground(MVColor.getRegExPatternColor());
-                    GuiFunktionen.showErrorIndication(tf, Filter.makePatternNoCache(text) == null);
-                } else {
-                    GuiFunktionen.showErrorIndication(tf, false);
-                    tf.setForeground(UIManager.getColor("TextField.foreground"));
-                }
-            }
-        };
-        jTextFieldTitel.getDocument().addDocumentListener(documentListener);
-        jTextFieldThemaTitel.getDocument().addDocumentListener(documentListener);
-
-        try {
-            jSliderMinuten.setValue(Integer.parseInt(MVConfig.get(MVConfig.Configs.SYSTEM_BLACKLIST_FILMLAENGE)));
-        } catch (Exception ex) {
-            jSliderMinuten.setValue(0);
-            MVConfig.add(MVConfig.Configs.SYSTEM_BLACKLIST_FILMLAENGE, "0");
-        }
-        jTextFieldMinuten.setText(String.valueOf(jSliderMinuten.getValue()));
-        if (jSliderMinuten.getValue() == 0) {
-            jTextFieldMinuten.setText("alles");
-        }
-        jSliderMinuten.addChangeListener(_ -> {
-            jTextFieldMinuten.setText(String.valueOf(jSliderMinuten.getValue()));
-            if (jSliderMinuten.getValue() == 0) {
-                jTextFieldMinuten.setText("alles");
-            }
-            if (!jSliderMinuten.getValueIsAdjusting()) {
-                MVConfig.add(MVConfig.Configs.SYSTEM_BLACKLIST_FILMLAENGE, String.valueOf(jSliderMinuten.getValue()));
-                notifyBlacklistChanged();
-            }
-        });
-
-        jComboBoxSender.setModel(new SenderListComboBoxModel());
-
-        comboThemaLaden();
-
-        var handler = new TextCopyPasteHandler<>(jTextFieldThemaTitel);
-        jTextFieldThemaTitel.setComponentPopupMenu(handler.getPopupMenu());
-
-        handler = new TextCopyPasteHandler<>(jTextFieldTitel);
-        jTextFieldTitel.setComponentPopupMenu(handler.getPopupMenu());
-    }
-
-    /**
-     * Apply changes to an existing rule.
-     */
-    private void onChangeBlacklistRule() {
-        String strSender = Objects.requireNonNull(jComboBoxSender.getSelectedItem()).toString();
-        String strThema = Objects.requireNonNull(jComboBoxThema.getSelectedItem()).toString();
-        String strTitel = jTextFieldTitel.getText().trim();
-        String strThemaTitel = jTextFieldThemaTitel.getText().trim();
-        if (!strSender.isEmpty() || !strThema.isEmpty() || !strTitel.isEmpty() || !strThemaTitel.isEmpty()) {
-            int selectedTableRow = jTableBlacklist.getSelectedRow();
-            if (selectedTableRow != -1) {
-                int modelIndex = jTableBlacklist.convertRowIndexToModel(selectedTableRow);
-                tableModel.updateRule(modelIndex, new BlacklistRule(strSender, strThema, strTitel, strThemaTitel));
-            }
-        }
-    }
-
-    private void notifyBlacklistChanged() {
-        daten.getListeBlacklist().filterListe();
-        MessageBus.getMessageBus().publishAsync(new BlacklistChangedEvent());
-    }
-
-    private void comboThemaLaden() {
-        String filterSender = Objects.requireNonNull(jComboBoxSender.getSelectedItem()).toString();
-
-        if (filterSender.isEmpty())
-            filterSender = "";
-
-        java.util.List<String> lst = daten.getListeFilme().getThemen(filterSender);
-        DefaultComboBoxModel<String> model = new DefaultComboBoxModel<>();
-        model.addElement("");
-        for (String item : lst)
-            model.addElement(item);
-        jComboBoxThema.setModel(model);
-    }
-
-    private void fillControlsWithRuleData() {
-        int selectedTableRow = jTableBlacklist.getSelectedRow();
-        if (selectedTableRow != -1) {
-            int modelIndex = jTableBlacklist.convertRowIndexToModel(selectedTableRow);
-            var bl = tableModel.getRule(modelIndex);
-            jComboBoxSender.setSelectedItem(bl.getSender());
-            jComboBoxThema.setSelectedItem(bl.getThema());
-            jTextFieldTitel.setText(bl.getTitel());
-            jTextFieldThemaTitel.setText(bl.getThema_titel());
-        }
-    }
-
-    /**
-     * Add a new blacklist rule to the model
-     */
-    private void onAddBlacklistRule() {
-        String strSender = Objects.requireNonNull(jComboBoxSender.getSelectedItem()).toString();
-        String strThema = Objects.requireNonNull(jComboBoxThema.getSelectedItem()).toString();
-        String strTitel = jTextFieldTitel.getText().trim();
-        String strThemaTitel = jTextFieldThemaTitel.getText().trim();
-
-        if (!strSender.isEmpty() || !strThema.isEmpty() || !strTitel.isEmpty() || !strThemaTitel.isEmpty()) {
-            var rule = new BlacklistRule(strSender, strThema, strTitel, strThemaTitel);
-            if (!tableModel.contains(rule)) {
-                tableModel.addRule(rule);
-                resetRuleEntryFields();
-            }
-            else {
-                //duplicate rule
-                var msg = """
-                        Es existiert bereits eine gleichlautende Regel.
-                        Es dürfen keine Duplikate in der Liste vorkommen.
-                        """;
-                JOptionPane.showMessageDialog(this, msg, Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE);
-            }
-        }
-    }
-
-    private class BeobMausTabelle extends MouseAdapter {
-
-        @Override
-        public void mousePressed(MouseEvent arg0) {
-            if (arg0.isPopupTrigger()) {
-                showMenu(arg0);
-            }
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent arg0) {
-            if (arg0.isPopupTrigger()) {
-                showMenu(arg0);
-            }
-        }
-
-        /**
-         * Remove one or more selected BlacklistRule objects from model.
-         */
-        private void onRemoveBlacklistRules() {
-            var selectedIndices = jTableBlacklist.getSelectionModel().getSelectedIndices();
-            if (selectedIndices.length == 1) {
-                int modelIndex = jTableBlacklist.convertRowIndexToModel(selectedIndices[0]);
-                tableModel.removeRow(modelIndex);
-            }
-            else {
-                List<BlacklistRule> tempStore = new ArrayList<>();
-                for (var selectedRow : selectedIndices) {
-                    int modelIndex = jTableBlacklist.convertRowIndexToModel(selectedRow);
-                    var rule = tableModel.getRule(modelIndex);
-                    tempStore.add(rule);
-                }
-                tableModel.removeRules(tempStore);
-            }
-        }
-
-        private void showMenu(MouseEvent evt) {
-            int row = jTableBlacklist.rowAtPoint(evt.getPoint());
-            if (row == -1) {
-                return;
-            }
-            if (!jTableBlacklist.isRowSelected(row)) {
-                jTableBlacklist.getSelectionModel().setSelectionInterval(row, row);
-            }
-
-            JPopupMenu jPopupMenu = new JPopupMenu();
-            //löschen
-            String menuText;
-            if (jTableBlacklist.getSelectedRowCount() > 1)
-                menuText = "Zeilen löschen";
-            else
-                menuText = "Zeile löschen";
-            JMenuItem item = new JMenuItem(menuText);
-            item.addActionListener(_ -> onRemoveBlacklistRules());
-            jPopupMenu.add(item);
-            //anzeigen
-            jPopupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-        }
     }
 
     /** This method is called from within the constructor to
@@ -821,26 +383,26 @@ public class PanelBlacklist extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JTable jTableBlacklist;
-    private JComboBox<String> jComboBoxSender;
-    private JComboBox<String> jComboBoxThema;
-    private JButton jButtonHinzufuegen;
-    private JTextField jTextFieldTitel;
-    private JTextField jTextFieldThemaTitel;
-    private JButton jButtonAendern;
-    private JRadioButton jRadioButtonBlacklist;
-    private JRadioButton jRadioButtonWhitelist;
-    private JButton jButtonHilfe;
-    private JTextField tfFilter;
-    private JButton btnFilterTable;
-    private JLabel lblNumEntries;
-    private JButton jButtonTabelleLoeschen;
-    private JCheckBox jCheckBoxZukunftNichtAnzeigen;
-    private JCheckBox jCheckBoxGeo;
-    private JSlider jSliderMinuten;
-    private JTextField jTextFieldMinuten;
-    private JCheckBox jCheckBoxStart;
-    private JCheckBox jCheckBoxBlacklistEingeschaltet;
-    private JCheckBox jCheckBoxAbo;
+    protected JTable jTableBlacklist;
+    protected JComboBox<String> jComboBoxSender;
+    protected JComboBox<String> jComboBoxThema;
+    protected JButton jButtonHinzufuegen;
+    protected JTextField jTextFieldTitel;
+    protected JTextField jTextFieldThemaTitel;
+    protected JButton jButtonAendern;
+    protected JRadioButton jRadioButtonBlacklist;
+    protected JRadioButton jRadioButtonWhitelist;
+    protected JButton jButtonHilfe;
+    protected JTextField tfFilter;
+    protected JButton btnFilterTable;
+    protected JLabel lblNumEntries;
+    protected JButton jButtonTabelleLoeschen;
+    protected JCheckBox jCheckBoxZukunftNichtAnzeigen;
+    protected JCheckBox jCheckBoxGeo;
+    protected JSlider jSliderMinuten;
+    protected JTextField jTextFieldMinuten;
+    protected JCheckBox jCheckBoxStart;
+    protected JCheckBox jCheckBoxBlacklistEingeschaltet;
+    protected JCheckBox jCheckBoxAbo;
     // End of variables declaration//GEN-END:variables
 }
