@@ -49,14 +49,6 @@ public class LuceneDirectoryModePanel extends JPanel {
         updateDescription();
     }
 
-    public JComboBox<String> getModeComboBox() {
-        return modeComboBox;
-    }
-
-    public JLabel getDescriptionLabel() {
-        return descriptionLabel;
-    }
-
     public String getSelectedMode() {
         var selected = modeComboBox.getSelectedItem();
         return selected == null ? "auto" : selected.toString();
