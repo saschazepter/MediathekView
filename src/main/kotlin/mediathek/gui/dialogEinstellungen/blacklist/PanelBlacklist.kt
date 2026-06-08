@@ -33,25 +33,21 @@ import mediathek.gui.messages.BlacklistStartSettingChangedEvent
 import mediathek.tool.*
 import net.engio.mbassy.listener.Handler
 import org.apache.logging.log4j.LogManager
+import java.awt.Color
+import java.awt.Component
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.regex.PatternSyntaxException
-import javax.swing.DefaultComboBoxModel
-import javax.swing.JMenuItem
-import javax.swing.JOptionPane
-import javax.swing.JPopupMenu
-import javax.swing.JTextField
-import javax.swing.RowFilter
-import javax.swing.SwingUtilities
-import javax.swing.UIManager
+import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
+import javax.swing.table.DefaultTableCellRenderer
 import javax.swing.table.TableModel
 import javax.swing.table.TableStringConverter
 
 class PanelBlacklist(
     private val daten: Daten,
-    private val parentComponent: javax.swing.JFrame?,
+    private val parentComponent: JFrame?,
     private val name: String,
 ) : PanelBlacklistBase() {
     var ok: Boolean = false
@@ -75,6 +71,7 @@ class PanelBlacklist(
         jButtonAendern.isEnabled = jTableBlacklist.selectionModel.selectedItemsCount == 1
 
         jTableBlacklist.model = tableModel
+        setupTableRenderer()
 
         tableModel.addTableModelListener { jButtonTabelleLoeschen.isEnabled = tableModel.rowCount != 0 }
         jTableBlacklist.selectionModel.addListSelectionListener { event ->
@@ -127,6 +124,35 @@ class PanelBlacklist(
         MessageBus.messageBus.unsubscribe(this)
         daten.filmeLaden.removeAdListener(filmLoadListener)
         listenersRegistered = false
+    }
+
+    private fun setupTableRenderer() {
+        val renderer = object : DefaultTableCellRenderer() {
+            override fun getTableCellRendererComponent(
+                table: JTable,
+                value: Any?,
+                isSelected: Boolean,
+                hasFocus: Boolean,
+                row: Int,
+                column: Int,
+            ): Component {
+                val component = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column)
+                horizontalAlignment = if (value is Number) RIGHT else LEADING
+
+                val modelRow = table.convertRowIndexToModel(row)
+                component.foreground = if (tableModel.hasNoFilteredFilms(modelRow)) {
+                    Color.RED
+                } else if (isSelected) {
+                    table.selectionForeground
+                } else {
+                    table.foreground
+                }
+                return component
+            }
+        }
+
+        jTableBlacklist.setDefaultRenderer(String::class.java, renderer)
+        jTableBlacklist.setDefaultRenderer(Int::class.javaObjectType, renderer)
     }
 
     private fun setupTableFilter() {

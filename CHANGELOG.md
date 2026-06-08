@@ -56,6 +56,8 @@
 - **FEATURE:** Downloads werden nun in `downloads.json` anstatt der XML-Konfiguration gespeichert.
 - **FEATURE:** In der Infodatei wird nun auch die URL zum Untertitel gespeichert wenn verfügbar.
 - **FEATURE:** Das Download-Tab cached nun Dateigrößen-Downloads um den Startvorgang zu beschleunigen. Die Daten werden in `download-size-cache.json` gespeichert.
+- **FEATURE:** In den Blacklist-Einstellungen wird nun für jede Blacklist-Regel angezeigt, wieviele Filmeinträge sie filtert.
+- **FEATURE:** `Blacklist bearbeiten` und der enstprechende Dialog in den Einstellungen hebt nun Blacklist-Einträge in rot hervor, die keine Auswirkung auf die aktuelle Filmliste haben.
 - interne Optimierungen für mehr Geschwindigkeit.
 - interne Fehler wurden behoben.
 - MV nutzt `https://ipify.org` zur Erkennung der öffentlichen IP.
