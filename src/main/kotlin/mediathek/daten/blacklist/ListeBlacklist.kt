@@ -39,15 +39,111 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
      * Add item without notifying registered listeners.
      */
     @Synchronized
-    fun addWithoutNotification(rule: BlacklistRule) {
-        super.add(rule)
-    }
+    fun addWithoutNotification(rule: BlacklistRule): Boolean =
+        addUniqueWithoutNotification(rule)
+
+    /**
+     * Add items without notifying registered listeners.
+     */
+    @Synchronized
+    fun addAllWithoutNotification(rules: Collection<BlacklistRule>): Boolean =
+        super.addAll(uniqueRulesNotAlreadyPresent(rules))
 
     @Synchronized
     override fun add(element: BlacklistRule): Boolean {
+        if (contains(element)) {
+            return false
+        }
         val result = super.add(element)
         filterListAndNotifyListeners()
         return result
+    }
+
+    @Synchronized
+    override fun add(index: Int, element: BlacklistRule) {
+        checkAddIndex(index)
+        if (contains(element)) {
+            return
+        }
+        super.add(index, element)
+        filterListAndNotifyListeners()
+    }
+
+    @Synchronized
+    override fun addAll(elements: Collection<BlacklistRule>): Boolean {
+        val uniqueRules = uniqueRulesNotAlreadyPresent(elements)
+        if (uniqueRules.isEmpty()) {
+            return false
+        }
+        val result = super.addAll(uniqueRules)
+        filterListAndNotifyListeners()
+        return result
+    }
+
+    @Synchronized
+    override fun addAll(index: Int, elements: Collection<BlacklistRule>): Boolean {
+        checkAddIndex(index)
+        val uniqueRules = uniqueRulesNotAlreadyPresent(elements)
+        if (uniqueRules.isEmpty()) {
+            return false
+        }
+        val result = super.addAll(index, uniqueRules)
+        filterListAndNotifyListeners()
+        return result
+    }
+
+    @Synchronized
+    override fun set(index: Int, element: BlacklistRule): BlacklistRule {
+        checkElementIndex(index)
+        require(!hasDuplicateAt(index, element)) { "Duplicate blacklist rule" }
+        val previousRule = super.set(index, element)
+        filterListAndNotifyListeners()
+        return previousRule
+    }
+
+    @Synchronized
+    fun replaceAtIfUnique(index: Int, updatedRule: BlacklistRule): Boolean {
+        checkElementIndex(index)
+        if (hasDuplicateAt(index, updatedRule)) {
+            return false
+        }
+
+        val rule = super.get(index)
+        rule.sender = updatedRule.sender
+        rule.thema = updatedRule.thema
+        rule.titel = updatedRule.titel
+        rule.thema_titel = updatedRule.thema_titel
+        filterListAndNotifyListeners()
+        return true
+    }
+
+    private fun uniqueRulesNotAlreadyPresent(elements: Collection<BlacklistRule>): List<BlacklistRule> {
+        val seen = toHashSet()
+        return elements.filter { rule -> seen.add(rule) }
+    }
+
+    private fun addUniqueWithoutNotification(rule: BlacklistRule): Boolean {
+        if (contains(rule)) {
+            return false
+        }
+        return super.add(rule)
+    }
+
+    private fun hasDuplicateAt(index: Int, rule: BlacklistRule): Boolean =
+        withIndex().any { (ruleIndex, existingRule) ->
+            ruleIndex != index && existingRule == rule
+        }
+
+    private fun checkAddIndex(index: Int) {
+        if (index !in 0..size) {
+            throw IndexOutOfBoundsException("Index: $index, Size: $size")
+        }
+    }
+
+    private fun checkElementIndex(index: Int) {
+        if (index !in indices) {
+            throw IndexOutOfBoundsException("Index: $index, Size: $size")
+        }
     }
 
     @Synchronized
@@ -75,7 +171,7 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
 
     @Synchronized
     override fun get(index: Int): BlacklistRule =
-        super.get(index)
+        super.get(index).copy()
 
     @Synchronized
     override fun clear() {
@@ -214,10 +310,9 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
             while (startIndex < filmSnapshot.size) {
                 val endIndex = (startIndex + chunkSize).coerceAtMost(filmSnapshot.size)
                 val chunkStartIndex = startIndex
-                val chunkEndIndex = endIndex
                 deferredChunks.add(
                     async(Dispatchers.Default) {
-                        filterFilmRange(filmSnapshot, chunkStartIndex, chunkEndIndex, filterDuplicates, predicate)
+                        filterFilmRange(filmSnapshot, chunkStartIndex, endIndex, filterDuplicates, predicate)
                     }
                 )
                 startIndex = endIndex

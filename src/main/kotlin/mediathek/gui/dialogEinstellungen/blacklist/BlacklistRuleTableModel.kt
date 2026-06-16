@@ -86,26 +86,23 @@ class BlacklistRuleTableModel(
         fireTableDataChanged()
     }
 
-    fun addRule(rule: BlacklistRule) {
+    fun addRule(rule: BlacklistRule): Boolean {
         val rowIndex = blacklist.size
-        blacklist.add(rule)
+        if (!blacklist.add(rule)) {
+            return false
+        }
         updateFilteredCounts()
         fireTableRowsInserted(rowIndex, rowIndex)
+        return true
     }
 
-    fun contains(rule: BlacklistRule): Boolean =
-        blacklist.contains(rule)
-
-    fun updateRule(modelIndex: Int, updatedRule: BlacklistRule) {
-        val rule = blacklist[modelIndex]
-        rule.sender = updatedRule.sender
-        rule.thema = updatedRule.thema
-        rule.titel = updatedRule.titel
-        rule.thema_titel = updatedRule.thema_titel
-
-        blacklist.filterListAndNotifyListeners()
+    fun updateRule(modelIndex: Int, updatedRule: BlacklistRule): Boolean {
+        if (!blacklist.replaceAtIfUnique(modelIndex, updatedRule)) {
+            return false
+        }
         updateFilteredCounts()
         fireTableRowsUpdated(modelIndex, modelIndex)
+        return true
     }
 
     fun refreshFilteredCounts() {

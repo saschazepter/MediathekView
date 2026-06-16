@@ -322,7 +322,9 @@ class PanelBlacklist(
             val selectedTableRow = jTableBlacklist.selectedRow
             if (selectedTableRow != -1) {
                 val modelIndex = jTableBlacklist.convertRowIndexToModel(selectedTableRow)
-                tableModel.updateRule(modelIndex, BlacklistRule(sender, topic, title, topicTitle))
+                if (!tableModel.updateRule(modelIndex, BlacklistRule(sender, topic, title, topicTitle))) {
+                    showDuplicateRuleMessage()
+                }
             }
         }
     }
@@ -364,17 +366,20 @@ class PanelBlacklist(
 
         if (sender.isNotEmpty() || topic.isNotEmpty() || title.isNotEmpty() || topicTitle.isNotEmpty()) {
             val rule = BlacklistRule(sender, topic, title, topicTitle)
-            if (!tableModel.contains(rule)) {
-                tableModel.addRule(rule)
+            if (tableModel.addRule(rule)) {
                 resetRuleEntryFields()
             } else {
-                val message = """
-                    Es existiert bereits eine gleichlautende Regel.
-                    Es dürfen keine Duplikate in der Liste vorkommen.
-                """.trimIndent()
-                JOptionPane.showMessageDialog(this, message, Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE)
+                showDuplicateRuleMessage()
             }
         }
+    }
+
+    private fun showDuplicateRuleMessage() {
+        val message = """
+            Es existiert bereits eine gleichlautende Regel.
+            Es dürfen keine Duplikate in der Liste vorkommen.
+        """.trimIndent()
+        JOptionPane.showMessageDialog(this, message, Konstanten.PROGRAMMNAME, JOptionPane.ERROR_MESSAGE)
     }
 
     private inner class BlacklistTableMouseHandler : MouseAdapter() {
