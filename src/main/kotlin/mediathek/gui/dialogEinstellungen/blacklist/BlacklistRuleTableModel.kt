@@ -50,7 +50,7 @@ class BlacklistRuleTableModel(
 
     override fun getColumnName(column: Int): String =
         when (column) {
-            BLACKLIST_ACTIVE -> "Aktiv"
+            BLACKLIST_ACTIVE -> "aktiv"
             BLACKLIST_SENDER -> "Sender"
             BLACKLIST_THEMA -> "Thema"
             BLACKLIST_TITEL -> "Titel"
@@ -120,13 +120,13 @@ class BlacklistRuleTableModel(
             blacklist.toList()
         }
 
-    private companion object {
-        private const val BLACKLIST_ACTIVE = 0
-        private const val BLACKLIST_SENDER = 1
-        private const val BLACKLIST_THEMA = 2
-        private const val BLACKLIST_TITEL = 3
-        private const val BLACKLIST_THEMA_TITEL = 4
-        private const val BLACKLIST_FILTERED = 5
-        private const val COLUMN_COUNT = 6
+    companion object {
+        internal const val BLACKLIST_ACTIVE = 0
+        internal const val BLACKLIST_SENDER = 1
+        internal const val BLACKLIST_THEMA = 2
+        internal const val BLACKLIST_TITEL = 3
+        internal const val BLACKLIST_THEMA_TITEL = 4
+        internal const val BLACKLIST_FILTERED = 5
+        internal const val COLUMN_COUNT = 6
     }
 }

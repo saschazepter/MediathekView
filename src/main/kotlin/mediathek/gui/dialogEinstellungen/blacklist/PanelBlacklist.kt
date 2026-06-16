@@ -71,6 +71,7 @@ class PanelBlacklist(
     private var blacklistRefreshJob: Job? = null
     private var blacklistRefreshSequence = 0
     private var listenersRegistered = false
+    private lateinit var tableColumnSettings: BlacklistRuleTableColumnSettings
 
     init {
         jButtonHilfe.icon = SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg")
@@ -78,6 +79,8 @@ class PanelBlacklist(
         jButtonAendern.isEnabled = jTableBlacklist.selectionModel.selectedItemsCount == 1
 
         jTableBlacklist.model = tableModel
+        tableColumnSettings = BlacklistRuleTableColumnSettings(jTableBlacklist)
+        tableColumnSettings.restore()
         setupTableRenderer()
 
         tableModel.addTableModelListener { jButtonTabelleLoeschen.isEnabled = tableModel.rowCount != 0 }
@@ -111,6 +114,7 @@ class PanelBlacklist(
     }
 
     override fun removeNotify() {
+        tableColumnSettings.save()
         cancelScheduledRefreshes()
         unregisterListeners()
         super.removeNotify()
