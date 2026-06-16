@@ -319,9 +319,9 @@ class PanelBlacklist(
                 JOptionPane.YES_NO_OPTION,
             )
             if (result == JOptionPane.OK_OPTION) {
-                val hadRows = tableModel.rowCount != 0
-                tableModel.removeAll()
-                if (hadRows) {
+                if (daten.listeBlacklist.isNotEmpty()) {
+                    daten.listeBlacklist.clearWithoutNotification()
+                    tableModel.rulesChanged()
                     scheduleBlacklistRulesChanged()
                 }
             }
@@ -355,7 +355,7 @@ class PanelBlacklist(
         jSliderMinuten.value = ApplicationConfiguration.getInstance().blacklistMinimumFilmLengthMinutes
         updateMinimumLengthText()
         jSliderMinuten.addChangeListener {
-                updateMinimumLengthText()
+            updateMinimumLengthText()
             if (!jSliderMinuten.valueIsAdjusting) {
                 ApplicationConfiguration.getInstance().blacklistMinimumFilmLengthMinutes = jSliderMinuten.value
                 scheduleBlacklistSettingsChanged()
@@ -389,9 +389,14 @@ class PanelBlacklist(
             val selectedTableRow = jTableBlacklist.selectedRow
             if (selectedTableRow != -1) {
                 val modelIndex = jTableBlacklist.convertRowIndexToModel(selectedTableRow)
-                if (!tableModel.updateRule(modelIndex, BlacklistRule(sender, topic, title, topicTitle))) {
+                if (!daten.listeBlacklist.replaceAtIfUniqueWithoutNotification(
+                        modelIndex,
+                        BlacklistRule(sender, topic, title, topicTitle),
+                    )
+                ) {
                     showDuplicateRuleMessage()
                 } else {
+                    tableModel.ruleUpdated(modelIndex)
                     scheduleBlacklistRulesChanged()
                 }
             }
@@ -434,7 +439,9 @@ class PanelBlacklist(
 
         if (sender.isNotEmpty() || topic.isNotEmpty() || title.isNotEmpty() || topicTitle.isNotEmpty()) {
             val rule = BlacklistRule(sender, topic, title, topicTitle)
-            if (tableModel.addRule(rule)) {
+            val rowIndex = daten.listeBlacklist.size
+            if (daten.listeBlacklist.addWithoutNotification(rule)) {
+                tableModel.ruleInserted(rowIndex)
                 resetRuleEntryFields()
                 scheduleBlacklistRulesChanged()
             } else {
@@ -468,15 +475,19 @@ class PanelBlacklist(
             val selectedIndices = jTableBlacklist.selectionModel.selectedIndices
             if (selectedIndices.size == 1) {
                 val modelIndex = jTableBlacklist.convertRowIndexToModel(selectedIndices[0])
-                tableModel.removeRow(modelIndex)
+                daten.listeBlacklist.removeAtWithoutNotification(modelIndex)
+                tableModel.ruleRemoved(modelIndex)
+                scheduleBlacklistRulesChanged()
             } else {
                 val rules = selectedIndices.map { selectedRow ->
                     val modelIndex = jTableBlacklist.convertRowIndexToModel(selectedRow)
                     tableModel.getRule(modelIndex)
                 }
-                tableModel.removeRules(rules)
+                if (daten.listeBlacklist.removeAllWithoutNotification(rules)) {
+                    tableModel.rulesChanged()
+                    scheduleBlacklistRulesChanged()
+                }
             }
-            scheduleBlacklistRulesChanged()
         }
 
         private fun showMenu(event: MouseEvent) {

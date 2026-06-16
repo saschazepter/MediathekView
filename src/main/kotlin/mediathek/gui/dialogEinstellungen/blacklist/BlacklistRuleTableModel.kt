@@ -63,39 +63,20 @@ class BlacklistRuleTableModel(
             else -> String::class.java
         }
 
-    fun removeRow(modelIndex: Int) {
-        blacklist.removeAtWithoutNotification(modelIndex)
+    fun ruleRemoved(modelIndex: Int) {
         fireTableRowsDeleted(modelIndex, modelIndex)
     }
 
-    fun removeRules(rules: List<BlacklistRule>) {
-        if (blacklist.removeAllWithoutNotification(rules)) {
-            fireTableDataChanged()
-        }
+    fun rulesChanged() {
+        fireTableDataChanged()
     }
 
-    fun removeAll() {
-        if (blacklist.isNotEmpty()) {
-            blacklist.clearWithoutNotification()
-            fireTableDataChanged()
-        }
-    }
-
-    fun addRule(rule: BlacklistRule): Boolean {
-        val rowIndex = blacklist.size
-        if (!blacklist.addWithoutNotification(rule)) {
-            return false
-        }
+    fun ruleInserted(rowIndex: Int) {
         fireTableRowsInserted(rowIndex, rowIndex)
-        return true
     }
 
-    fun updateRule(modelIndex: Int, updatedRule: BlacklistRule): Boolean {
-        if (!blacklist.replaceAtIfUniqueWithoutNotification(modelIndex, updatedRule)) {
-            return false
-        }
+    fun ruleUpdated(modelIndex: Int) {
         fireTableRowsUpdated(modelIndex, modelIndex)
-        return true
     }
 
     fun calculateFilteredCounts(films: List<DatenFilm>): IntArray {
