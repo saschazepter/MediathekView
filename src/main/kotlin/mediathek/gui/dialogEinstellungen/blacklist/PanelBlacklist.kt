@@ -38,9 +38,11 @@ import mediathek.filmeSuchen.ListenerFilmeLadenEvent
 import mediathek.gui.dialog.DialogHilfe
 import mediathek.gui.messages.BlacklistAboSettingChangedEvent
 import mediathek.gui.messages.BlacklistChangedEvent
+import mediathek.swing.IconUtils
 import mediathek.tool.*
 import net.engio.mbassy.listener.Handler
 import org.apache.logging.log4j.LogManager
+import org.kordamp.ikonli.materialdesign2.MaterialDesignF
 import java.awt.Color
 import java.awt.Component
 import java.awt.event.MouseAdapter
@@ -75,6 +77,7 @@ class PanelBlacklist(
 
     init {
         jButtonHilfe.icon = SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg")
+        jButtonDeactivateZeroFilterRules.icon = IconUtils.of(MaterialDesignF.FILTER_OFF_OUTLINE)
 
         jButtonAendern.isEnabled = jTableBlacklist.selectionModel.selectedItemsCount == 1
 
@@ -313,6 +316,7 @@ class PanelBlacklist(
         }
         jButtonHinzufuegen.addActionListener { onAddBlacklistRule() }
         jButtonAendern.addActionListener { onChangeBlacklistRule() }
+        jButtonDeactivateZeroFilterRules.addActionListener { onDeactivateZeroFilterRules() }
         jButtonHilfe.addActionListener {
             DialogHilfe(parentComponent, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_BLACKLIST)).isVisible = true
         }
@@ -406,6 +410,20 @@ class PanelBlacklist(
                     scheduleBlacklistRulesChanged()
                 }
             }
+        }
+    }
+
+    private fun onDeactivateZeroFilterRules() {
+        val changedRows = BlacklistRuleBulkActions.deactivateActiveRulesWithZeroFilteredCount(
+            daten.listeBlacklist,
+            tableModel,
+        )
+        for (modelIndex in changedRows) {
+            tableModel.ruleUpdated(modelIndex)
+        }
+        if (changedRows.isNotEmpty()) {
+            fillControlsWithRuleData()
+            scheduleBlacklistRulesChanged()
         }
     }
 

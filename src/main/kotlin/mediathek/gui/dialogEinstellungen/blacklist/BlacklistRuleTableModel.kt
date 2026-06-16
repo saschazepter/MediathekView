@@ -109,8 +109,11 @@ class BlacklistRuleTableModel(
         )
     }
 
-    fun hasNoFilteredFilms(modelIndex: Int): Boolean =
+    fun hasZeroFilteredCount(modelIndex: Int): Boolean =
         getFilteredCount(modelIndex) == 0
+
+    fun hasNoFilteredFilms(modelIndex: Int): Boolean =
+        hasZeroFilteredCount(modelIndex)
 
     private fun getFilteredCount(rowIndex: Int): Int =
         filteredCounts.getOrElse(rowIndex) { 0 }

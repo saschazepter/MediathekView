@@ -57,6 +57,7 @@ public class PanelBlacklistBase extends JPanel {
         var panel3 = new JPanel();
         var label2 = new JLabel();
         lblNumEntries = new JLabel();
+        jButtonDeactivateZeroFilterRules = new JButton();
         jButtonTabelleLoeschen = new JButton();
         var separator2 = new JSeparator();
         var jPanel3 = new JPanel();
@@ -255,6 +256,7 @@ public class PanelBlacklistBase extends JPanel {
                         new AC()
                             .fill().gap()
                             .grow().fill().gap()
+                            .fill().gap()
                             .fill(),
                         // rows
                         new AC()
@@ -282,10 +284,14 @@ public class PanelBlacklistBase extends JPanel {
                     }
                     panel1.add(panel3, new CC().cell(0, 0));
 
+                    //---- jButtonDeactivateZeroFilterRules ----
+                    jButtonDeactivateZeroFilterRules.setToolTipText("Deaktiviert alle aktiven Regeln, die aktuell keine Treffer filtern.");
+                    panel1.add(jButtonDeactivateZeroFilterRules, new CC().cell(2, 0));
+
                     //---- jButtonTabelleLoeschen ----
                     jButtonTabelleLoeschen.setToolTipText("Alle Eintr\u00e4ge l\u00f6schen");
                     jButtonTabelleLoeschen.setText("Alle Eintr\u00e4ge l\u00f6schen");
-                    panel1.add(jButtonTabelleLoeschen, new CC().cell(2, 0));
+                    panel1.add(jButtonTabelleLoeschen, new CC().cell(3, 0));
                 }
                 jPanel1.add(panel1, new CC().cell(0, 5));
                 jPanel1.add(separator2, new CC().cell(0, 6));
@@ -405,6 +411,7 @@ public class PanelBlacklistBase extends JPanel {
     protected JTextField tfFilter;
     protected JButton btnFilterTable;
     protected JLabel lblNumEntries;
+    protected JButton jButtonDeactivateZeroFilterRules;
     protected JButton jButtonTabelleLoeschen;
     protected JCheckBox jCheckBoxZukunftNichtAnzeigen;
     protected JCheckBox jCheckBoxGeo;

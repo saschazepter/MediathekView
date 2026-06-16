@@ -205,7 +205,7 @@ new FormModel {
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class net.miginfocom.swing.MigLayout ) {
 						"$layoutConstraints": "insets 0,hidemode 3,gap 5 0"
-						"$columnConstraints": "[fill][grow,fill][fill]"
+						"$columnConstraints": "[fill][grow,fill][fill][fill]"
 						"$rowConstraints": "[grow,center]"
 					} ) {
 						name: "panel1"
@@ -243,6 +243,15 @@ new FormModel {
 							"value": "cell 0 0"
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
+							name: "jButtonDeactivateZeroFilterRules"
+							"toolTipText": "Deaktiviert alle aktiven Regeln, die aktuell keine Treffer filtern."
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
+						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
+							"value": "cell 2 0"
+						} )
+						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "jButtonTabelleLoeschen"
 							"toolTipText": "Alle Einträge löschen"
 							"text": "Alle Einträge löschen"
@@ -250,7 +259,7 @@ new FormModel {
 								"JavaCodeGenerator.variableModifiers": 4
 							}
 						}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
-							"value": "cell 2 0"
+							"value": "cell 3 0"
 						} )
 					}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 						"value": "cell 0 5"
