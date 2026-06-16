@@ -26,13 +26,8 @@ import javax.swing.table.AbstractTableModel
 
 class BlacklistRuleTableModel(
     private val blacklist: ListeBlacklist,
-    private val filmsSupplier: () -> List<DatenFilm>,
 ) : AbstractTableModel() {
     private var filteredCounts = IntArray(0)
-
-    init {
-        updateFilteredCounts()
-    }
 
     override fun getRowCount(): Int =
         blacklist.size
@@ -69,44 +64,51 @@ class BlacklistRuleTableModel(
         }
 
     fun removeRow(modelIndex: Int) {
-        blacklist.removeAt(modelIndex)
-        updateFilteredCounts()
+        blacklist.removeAtWithoutNotification(modelIndex)
         fireTableRowsDeleted(modelIndex, modelIndex)
     }
 
     fun removeRules(rules: List<BlacklistRule>) {
-        blacklist.remove(rules)
-        updateFilteredCounts()
-        fireTableDataChanged()
+        if (blacklist.removeAllWithoutNotification(rules)) {
+            fireTableDataChanged()
+        }
     }
 
     fun removeAll() {
-        blacklist.clear()
-        updateFilteredCounts()
-        fireTableDataChanged()
+        if (blacklist.isNotEmpty()) {
+            blacklist.clearWithoutNotification()
+            fireTableDataChanged()
+        }
     }
 
     fun addRule(rule: BlacklistRule): Boolean {
         val rowIndex = blacklist.size
-        if (!blacklist.add(rule)) {
+        if (!blacklist.addWithoutNotification(rule)) {
             return false
         }
-        updateFilteredCounts()
         fireTableRowsInserted(rowIndex, rowIndex)
         return true
     }
 
     fun updateRule(modelIndex: Int, updatedRule: BlacklistRule): Boolean {
-        if (!blacklist.replaceAtIfUnique(modelIndex, updatedRule)) {
+        if (!blacklist.replaceAtIfUniqueWithoutNotification(modelIndex, updatedRule)) {
             return false
         }
-        updateFilteredCounts()
         fireTableRowsUpdated(modelIndex, modelIndex)
         return true
     }
 
-    fun refreshFilteredCounts() {
-        updateFilteredCounts()
+    fun calculateFilteredCounts(films: List<DatenFilm>): IntArray {
+        val rules = blacklistSnapshot()
+        return if (rules.isEmpty()) {
+            IntArray(0)
+        } else {
+            CompiledBlacklistMatcher(rules).countMatchesByRule(films)
+        }
+    }
+
+    fun applyFilteredCounts(counts: IntArray) {
+        filteredCounts = counts
         if (rowCount > 0) {
             fireTableRowsUpdated(0, rowCount - 1)
         }
@@ -127,15 +129,6 @@ class BlacklistRuleTableModel(
 
     private fun getFilteredCount(rowIndex: Int): Int =
         filteredCounts.getOrElse(rowIndex) { 0 }
-
-    private fun updateFilteredCounts() {
-        val rules = blacklistSnapshot()
-        filteredCounts = if (rules.isEmpty()) {
-            IntArray(0)
-        } else {
-            CompiledBlacklistMatcher(rules).countMatchesByRule(filmsSupplier())
-        }
-    }
 
     private fun blacklistSnapshot(): List<BlacklistRule> =
         synchronized(blacklist) {

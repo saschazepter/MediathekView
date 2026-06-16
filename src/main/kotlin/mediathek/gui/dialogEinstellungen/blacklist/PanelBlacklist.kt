@@ -18,6 +18,15 @@
 
 package mediathek.gui.dialogEinstellungen.blacklist
 
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.swing.Swing
+import kotlinx.coroutines.withContext
 import mediathek.audiothek.ui.table.TriStateTableRowSorter
 import mediathek.config.Daten
 import mediathek.config.Konstanten
@@ -51,17 +60,18 @@ class PanelBlacklist(
 ) : PanelBlacklistBase() {
     var ok: Boolean = false
 
-    private val tableModel = BlacklistRuleTableModel(daten.listeBlacklist) {
-        synchronized(daten.listeFilme) {
-            daten.listeFilme.toList()
-        }
-    }
+    private val tableModel = BlacklistRuleTableModel(daten.listeBlacklist)
     private val filmLoadListener = object : ListenerFilmeLaden() {
         override fun fertig(event: ListenerFilmeLadenEvent) {
             comboThemaLaden()
-            tableModel.refreshFilteredCounts()
+            scheduleFilteredCountRefresh()
         }
     }
+    private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+    private var filteredCountRefreshJob: Job? = null
+    private var filteredCountRefreshSequence = 0
+    private var blacklistRefreshJob: Job? = null
+    private var blacklistRefreshSequence = 0
     private var listenersRegistered = false
 
     init {
@@ -85,7 +95,7 @@ class PanelBlacklist(
 
         jCheckBoxGeo.addActionListener {
             ApplicationConfiguration.getInstance().blacklistDoNotShowGeoblockedFilms = jCheckBoxGeo.isSelected
-            notifyBlacklistChanged()
+            scheduleBlacklistSettingsChanged()
         }
 
         initPanelState()
@@ -103,6 +113,7 @@ class PanelBlacklist(
     }
 
     override fun removeNotify() {
+        cancelScheduledRefreshes()
         unregisterListeners()
         super.removeNotify()
     }
@@ -123,6 +134,13 @@ class PanelBlacklist(
         MessageBus.messageBus.unsubscribe(this)
         daten.filmeLaden.removeAdListener(filmLoadListener)
         listenersRegistered = false
+    }
+
+    private fun cancelScheduledRefreshes() {
+        filteredCountRefreshJob?.cancel()
+        filteredCountRefreshJob = null
+        blacklistRefreshJob?.cancel()
+        blacklistRefreshJob = null
     }
 
     private fun setupTableRenderer() {
@@ -211,7 +229,54 @@ class PanelBlacklist(
 
         jSliderMinuten.value = applicationConfiguration.blacklistMinimumFilmLengthMinutes
 
-        tableModel.refreshFilteredCounts()
+        scheduleFilteredCountRefresh()
+    }
+
+    private fun scheduleFilteredCountRefresh() {
+        uiScope.launch {
+            val refreshSequence = ++filteredCountRefreshSequence
+            filteredCountRefreshJob?.cancel()
+            filteredCountRefreshJob = launch {
+                try {
+                    val counts = withContext(Dispatchers.Default) {
+                        tableModel.calculateFilteredCounts(daten.listeFilme.snapshot())
+                    }
+                    if (refreshSequence == filteredCountRefreshSequence) {
+                        tableModel.applyFilteredCounts(counts)
+                    }
+                } catch (exception: CancellationException) {
+                    throw exception
+                } catch (exception: Exception) {
+                    logger.error("Failed to refresh blacklist filtered counts", exception)
+                }
+            }
+        }
+    }
+
+    private fun scheduleBlacklistFilterRefresh() {
+        uiScope.launch {
+            val refreshSequence = ++blacklistRefreshSequence
+            blacklistRefreshJob?.cancel()
+            blacklistRefreshJob = launch {
+                try {
+                    withContext(Dispatchers.Default) {
+                        daten.listeBlacklist.filterListe()
+                    }
+                    if (refreshSequence == blacklistRefreshSequence) {
+                        MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
+                    }
+                } catch (exception: CancellationException) {
+                    throw exception
+                } catch (exception: Exception) {
+                    logger.error("Failed to refresh blacklist filter", exception)
+                }
+            }
+        }
+    }
+
+    private fun scheduleBlacklistRulesChanged() {
+        scheduleFilteredCountRefresh()
+        scheduleBlacklistFilterRefresh()
     }
 
     private fun initBehavior() {
@@ -225,15 +290,15 @@ class PanelBlacklist(
         jRadioButtonWhitelist.isSelected = ApplicationConfiguration.getInstance().blacklistWhitelistMode
         jRadioButtonWhitelist.addActionListener {
             ApplicationConfiguration.getInstance().blacklistWhitelistMode = jRadioButtonWhitelist.isSelected
-            notifyBlacklistChanged()
+            scheduleBlacklistSettingsChanged()
         }
         jRadioButtonBlacklist.addActionListener {
             ApplicationConfiguration.getInstance().blacklistWhitelistMode = jRadioButtonWhitelist.isSelected
-            notifyBlacklistChanged()
+            scheduleBlacklistSettingsChanged()
         }
         jCheckBoxZukunftNichtAnzeigen.addActionListener {
             ApplicationConfiguration.getInstance().blacklistDoNotShowFutureFilms = jCheckBoxZukunftNichtAnzeigen.isSelected
-            notifyBlacklistChanged()
+            scheduleBlacklistSettingsChanged()
         }
         jCheckBoxAbo.addActionListener {
             ApplicationConfiguration.getInstance().blacklistApplyToAbo = jCheckBoxAbo.isSelected
@@ -241,7 +306,7 @@ class PanelBlacklist(
         }
         jCheckBoxBlacklistEingeschaltet.addActionListener {
             ApplicationConfiguration.getInstance().isBlacklistEnabled = jCheckBoxBlacklistEingeschaltet.isSelected
-            notifyBlacklistChanged()
+            scheduleBlacklistSettingsChanged()
         }
         jButtonHinzufuegen.addActionListener { onAddBlacklistRule() }
         jButtonAendern.addActionListener { onChangeBlacklistRule() }
@@ -256,7 +321,11 @@ class PanelBlacklist(
                 JOptionPane.YES_NO_OPTION,
             )
             if (result == JOptionPane.OK_OPTION) {
+                val hadRows = tableModel.rowCount != 0
                 tableModel.removeAll()
+                if (hadRows) {
+                    scheduleBlacklistRulesChanged()
+                }
             }
         }
         jComboBoxSender.addActionListener { comboThemaLaden() }
@@ -288,10 +357,10 @@ class PanelBlacklist(
         jSliderMinuten.value = ApplicationConfiguration.getInstance().blacklistMinimumFilmLengthMinutes
         updateMinimumLengthText()
         jSliderMinuten.addChangeListener {
-            updateMinimumLengthText()
+                updateMinimumLengthText()
             if (!jSliderMinuten.valueIsAdjusting) {
                 ApplicationConfiguration.getInstance().blacklistMinimumFilmLengthMinutes = jSliderMinuten.value
-                notifyBlacklistChanged()
+                scheduleBlacklistSettingsChanged()
             }
         }
 
@@ -324,14 +393,15 @@ class PanelBlacklist(
                 val modelIndex = jTableBlacklist.convertRowIndexToModel(selectedTableRow)
                 if (!tableModel.updateRule(modelIndex, BlacklistRule(sender, topic, title, topicTitle))) {
                     showDuplicateRuleMessage()
+                } else {
+                    scheduleBlacklistRulesChanged()
                 }
             }
         }
     }
 
-    private fun notifyBlacklistChanged() {
-        daten.listeBlacklist.filterListe()
-        MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
+    private fun scheduleBlacklistSettingsChanged() {
+        scheduleBlacklistFilterRefresh()
     }
 
     private fun comboThemaLaden() {
@@ -368,6 +438,7 @@ class PanelBlacklist(
             val rule = BlacklistRule(sender, topic, title, topicTitle)
             if (tableModel.addRule(rule)) {
                 resetRuleEntryFields()
+                scheduleBlacklistRulesChanged()
             } else {
                 showDuplicateRuleMessage()
             }
@@ -407,6 +478,7 @@ class PanelBlacklist(
                 }
                 tableModel.removeRules(rules)
             }
+            scheduleBlacklistRulesChanged()
         }
 
         private fun showMenu(event: MouseEvent) {

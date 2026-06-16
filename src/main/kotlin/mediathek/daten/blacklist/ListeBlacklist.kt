@@ -50,6 +50,24 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
         super.addAll(uniqueRulesNotAlreadyPresent(rules))
 
     @Synchronized
+    fun removeAtWithoutNotification(index: Int): BlacklistRule =
+        super.removeAt(index)
+
+    @Synchronized
+    fun removeAllWithoutNotification(rules: Collection<BlacklistRule>): Boolean {
+        var changed = false
+        rules.forEach { rule ->
+            changed = super.remove(rule) || changed
+        }
+        return changed
+    }
+
+    @Synchronized
+    fun clearWithoutNotification() {
+        super.clear()
+    }
+
+    @Synchronized
     override fun add(element: BlacklistRule): Boolean {
         if (contains(element)) {
             return false
@@ -114,6 +132,21 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
         rule.titel = updatedRule.titel
         rule.thema_titel = updatedRule.thema_titel
         filterListAndNotifyListeners()
+        return true
+    }
+
+    @Synchronized
+    fun replaceAtIfUniqueWithoutNotification(index: Int, updatedRule: BlacklistRule): Boolean {
+        checkElementIndex(index)
+        if (hasDuplicateAt(index, updatedRule)) {
+            return false
+        }
+
+        val rule = super.get(index)
+        rule.sender = updatedRule.sender
+        rule.thema = updatedRule.thema
+        rule.titel = updatedRule.titel
+        rule.thema_titel = updatedRule.thema_titel
         return true
     }
 
