@@ -38,6 +38,7 @@ class BlacklistRuleTableModel(
     override fun getValueAt(rowIndex: Int, columnIndex: Int): Any {
         val rule = blacklist[rowIndex]
         return when (columnIndex) {
+            BLACKLIST_ACTIVE -> rule.active
             BLACKLIST_SENDER -> rule.sender
             BLACKLIST_THEMA -> rule.thema
             BLACKLIST_TITEL -> rule.titel
@@ -49,6 +50,7 @@ class BlacklistRuleTableModel(
 
     override fun getColumnName(column: Int): String =
         when (column) {
+            BLACKLIST_ACTIVE -> "Aktiv"
             BLACKLIST_SENDER -> "Sender"
             BLACKLIST_THEMA -> "Thema"
             BLACKLIST_TITEL -> "Titel"
@@ -59,6 +61,7 @@ class BlacklistRuleTableModel(
 
     override fun getColumnClass(columnIndex: Int): Class<*> =
         when (columnIndex) {
+            BLACKLIST_ACTIVE -> Boolean::class.javaObjectType
             BLACKLIST_FILTERED -> Int::class.javaObjectType
             else -> String::class.java
         }
@@ -102,6 +105,7 @@ class BlacklistRuleTableModel(
             rule.thema,
             rule.titel,
             rule.thema_titel,
+            rule.active,
         )
     }
 
@@ -117,11 +121,12 @@ class BlacklistRuleTableModel(
         }
 
     private companion object {
-        private const val BLACKLIST_SENDER = 0
-        private const val BLACKLIST_THEMA = 1
-        private const val BLACKLIST_TITEL = 2
-        private const val BLACKLIST_THEMA_TITEL = 3
-        private const val BLACKLIST_FILTERED = 4
-        private const val COLUMN_COUNT = 5
+        private const val BLACKLIST_ACTIVE = 0
+        private const val BLACKLIST_SENDER = 1
+        private const val BLACKLIST_THEMA = 2
+        private const val BLACKLIST_TITEL = 3
+        private const val BLACKLIST_THEMA_TITEL = 4
+        private const val BLACKLIST_FILTERED = 5
+        private const val COLUMN_COUNT = 6
     }
 }

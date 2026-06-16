@@ -34,6 +34,7 @@ public class PanelBlacklistBase extends JPanel {
         var jScrollPane1 = new JScrollPane();
         jTableBlacklist = new JTable();
         var jPanel4 = new JPanel();
+        jCheckBoxRuleActive = new JCheckBox();
         var jLabel5 = new JLabel();
         jComboBoxSender = new JComboBox<>();
         var jLabel6 = new JLabel();
@@ -107,6 +108,10 @@ public class PanelBlacklistBase extends JPanel {
                 {
                     jPanel4.setBorder(new TitledBorder("Sender, Thema, Titel oder Thema/Titel:"));
 
+                    //---- jCheckBoxRuleActive ----
+                    jCheckBoxRuleActive.setSelected(true);
+                    jCheckBoxRuleActive.setText("Aktiv");
+
                     //---- jLabel5 ----
                     jLabel5.setText("Sender:");
 
@@ -144,6 +149,9 @@ public class PanelBlacklistBase extends JPanel {
                                 .addGroup(jPanel4Layout.createParallelGroup()
                                     .addGroup(jPanel4Layout.createSequentialGroup()
                                         .addGap(68, 68, 68)
+                                        .addComponent(jCheckBoxRuleActive))
+                                    .addGroup(jPanel4Layout.createSequentialGroup()
+                                        .addGap(68, 68, 68)
                                         .addGroup(jPanel4Layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
                                             .addComponent(jLabel6)
                                             .addComponent(jLabel5))
@@ -171,6 +179,8 @@ public class PanelBlacklistBase extends JPanel {
                         jPanel4Layout.createParallelGroup()
                             .addGroup(jPanel4Layout.createSequentialGroup()
                                 .addContainerGap()
+                                .addComponent(jCheckBoxRuleActive)
+                                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addGroup(jPanel4Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                                     .addComponent(jLabel5)
                                     .addComponent(jComboBoxSender, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
@@ -382,6 +392,7 @@ public class PanelBlacklistBase extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
     protected JTable jTableBlacklist;
+    protected JCheckBox jCheckBoxRuleActive;
     protected JComboBox<String> jComboBoxSender;
     protected JComboBox<String> jComboBoxThema;
     protected JButton jButtonHinzufuegen;

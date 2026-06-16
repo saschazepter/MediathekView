@@ -69,7 +69,7 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
 
     @Synchronized
     override fun add(element: BlacklistRule): Boolean {
-        if (contains(element)) {
+        if (containsCriteria(element)) {
             return false
         }
         val result = super.add(element)
@@ -80,7 +80,7 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
     @Synchronized
     override fun add(index: Int, element: BlacklistRule) {
         checkAddIndex(index)
-        if (contains(element)) {
+        if (containsCriteria(element)) {
             return
         }
         super.add(index, element)
@@ -131,6 +131,7 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
         rule.thema = updatedRule.thema
         rule.titel = updatedRule.titel
         rule.thema_titel = updatedRule.thema_titel
+        rule.active = updatedRule.active
         filterListAndNotifyListeners()
         return true
     }
@@ -147,16 +148,17 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
         rule.thema = updatedRule.thema
         rule.titel = updatedRule.titel
         rule.thema_titel = updatedRule.thema_titel
+        rule.active = updatedRule.active
         return true
     }
 
     private fun uniqueRulesNotAlreadyPresent(elements: Collection<BlacklistRule>): List<BlacklistRule> {
-        val seen = toHashSet()
-        return elements.filter { rule -> seen.add(rule) }
+        val seen = mapTo(HashSet(), BlacklistRule::criteria)
+        return elements.filter { rule -> seen.add(rule.criteria()) }
     }
 
     private fun addUniqueWithoutNotification(rule: BlacklistRule): Boolean {
-        if (contains(rule)) {
+        if (containsCriteria(rule)) {
             return false
         }
         return super.add(rule)
@@ -164,8 +166,11 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
 
     private fun hasDuplicateAt(index: Int, rule: BlacklistRule): Boolean =
         withIndex().any { (ruleIndex, existingRule) ->
-            ruleIndex != index && existingRule == rule
+            ruleIndex != index && existingRule.hasSameCriteria(rule)
         }
+
+    private fun containsCriteria(rule: BlacklistRule): Boolean =
+        any { existingRule -> existingRule.hasSameCriteria(rule) }
 
     private fun checkAddIndex(index: Int) {
         if (index !in 0..size) {

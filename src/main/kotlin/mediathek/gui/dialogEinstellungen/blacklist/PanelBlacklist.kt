@@ -195,6 +195,7 @@ class PanelBlacklist(
     }
 
     private fun resetRuleEntryFields() {
+        jCheckBoxRuleActive.isSelected = true
         jTextFieldTitel.text = ""
         jTextFieldThemaTitel.text = ""
         jComboBoxThema.selectedItem = ""
@@ -385,13 +386,14 @@ class PanelBlacklist(
         val topic = requireNotNull(jComboBoxThema.selectedItem).toString()
         val title = jTextFieldTitel.text.trim()
         val topicTitle = jTextFieldThemaTitel.text.trim()
+        val active = jCheckBoxRuleActive.isSelected
         if (sender.isNotEmpty() || topic.isNotEmpty() || title.isNotEmpty() || topicTitle.isNotEmpty()) {
             val selectedTableRow = jTableBlacklist.selectedRow
             if (selectedTableRow != -1) {
                 val modelIndex = jTableBlacklist.convertRowIndexToModel(selectedTableRow)
                 if (!daten.listeBlacklist.replaceAtIfUniqueWithoutNotification(
                         modelIndex,
-                        BlacklistRule(sender, topic, title, topicTitle),
+                        BlacklistRule(sender, topic, title, topicTitle, active),
                     )
                 ) {
                     showDuplicateRuleMessage()
@@ -424,6 +426,7 @@ class PanelBlacklist(
         if (selectedTableRow != -1) {
             val modelIndex = jTableBlacklist.convertRowIndexToModel(selectedTableRow)
             val rule = tableModel.getRule(modelIndex)
+            jCheckBoxRuleActive.isSelected = rule.active
             jComboBoxSender.selectedItem = rule.sender
             jComboBoxThema.selectedItem = rule.thema
             jTextFieldTitel.text = rule.titel
@@ -436,9 +439,10 @@ class PanelBlacklist(
         val topic = requireNotNull(jComboBoxThema.selectedItem).toString()
         val title = jTextFieldTitel.text.trim()
         val topicTitle = jTextFieldThemaTitel.text.trim()
+        val active = jCheckBoxRuleActive.isSelected
 
         if (sender.isNotEmpty() || topic.isNotEmpty() || title.isNotEmpty() || topicTitle.isNotEmpty()) {
-            val rule = BlacklistRule(sender, topic, title, topicTitle)
+            val rule = BlacklistRule(sender, topic, title, topicTitle, active)
             val rowIndex = daten.listeBlacklist.size
             if (daten.listeBlacklist.addWithoutNotification(rule)) {
                 tableModel.ruleInserted(rowIndex)
@@ -490,6 +494,26 @@ class PanelBlacklist(
             }
         }
 
+        private fun onToggleBlacklistRulesActive() {
+            val selectedIndices = jTableBlacklist.selectionModel.selectedIndices
+                .map(jTableBlacklist::convertRowIndexToModel)
+                .distinct()
+            selectedIndices.forEach { modelIndex ->
+                val rule = tableModel.getRule(modelIndex)
+                if (daten.listeBlacklist.replaceAtIfUniqueWithoutNotification(
+                        modelIndex,
+                        rule.copy(active = !rule.active),
+                    )
+                ) {
+                    tableModel.ruleUpdated(modelIndex)
+                }
+            }
+            if (selectedIndices.isNotEmpty()) {
+                fillControlsWithRuleData()
+                scheduleBlacklistRulesChanged()
+            }
+        }
+
         private fun showMenu(event: MouseEvent) {
             val row = jTableBlacklist.rowAtPoint(event.point)
             if (row == -1) {
@@ -500,6 +524,10 @@ class PanelBlacklist(
             }
 
             val menu = JPopupMenu()
+            val toggleActiveItem = JMenuItem("Aktiv umschalten")
+            toggleActiveItem.addActionListener { onToggleBlacklistRulesActive() }
+            menu.add(toggleActiveItem)
+
             val menuText = if (jTableBlacklist.selectedRowCount > 1) "Zeilen löschen" else "Zeile löschen"
             val item = JMenuItem(menuText)
             item.addActionListener { onRemoveBlacklistRules() }

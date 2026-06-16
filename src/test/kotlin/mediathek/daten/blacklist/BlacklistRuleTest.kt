@@ -47,6 +47,11 @@ internal class BlacklistRuleTest {
     }
 
     @Test
+    fun activeDefaultsToTrue() {
+        assertTrue(BlacklistRule("ZDF").active)
+    }
+
+    @Test
     fun addRejectsDuplicateRules() {
         val list = ListeBlacklist()
 
@@ -54,6 +59,16 @@ internal class BlacklistRuleTest {
         assertFalse(list.add(BlacklistRule("ZDF")))
 
         assertEquals(listOf(BlacklistRule("ZDF")), list)
+    }
+
+    @Test
+    fun addRejectsDuplicateRulesWithDifferentActiveState() {
+        val list = ListeBlacklist()
+
+        assertTrue(list.add(BlacklistRule("ZDF", active = true)))
+        assertFalse(list.add(BlacklistRule("ZDF", active = false)))
+
+        assertEquals(listOf(BlacklistRule("ZDF", active = true)), list)
     }
 
     @Test
@@ -125,11 +140,12 @@ internal class BlacklistRuleTest {
     @Test
     fun getReturnsRuleCopy() {
         val list = ListeBlacklist()
-        list.addWithoutNotification(BlacklistRule("ZDF"))
+        list.addWithoutNotification(BlacklistRule("ZDF", active = false))
 
         val rule = list[0]
         rule.sender = "ARD"
+        rule.active = true
 
-        assertEquals(BlacklistRule("ZDF"), list[0])
+        assertEquals(BlacklistRule("ZDF", active = false), list[0])
     }
 }
