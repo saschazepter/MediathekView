@@ -327,7 +327,7 @@ class PanelBlacklist(
                 }
             }
         }
-        jComboBoxSender.addActionListener { comboThemaLaden() }
+        jComboBoxSender.addActionListener { comboThemaLaden("") }
 
         val documentListener = object : DocumentListener {
             override fun insertUpdate(event: DocumentEvent) = validatePatternInput()
@@ -410,6 +410,10 @@ class PanelBlacklist(
     }
 
     private fun comboThemaLaden() {
+        comboThemaLaden(jComboBoxThema.selectedItem?.toString().orEmpty())
+    }
+
+    private fun comboThemaLaden(selectedTopic: String) {
         val filterSender = requireNotNull(jComboBoxSender.selectedItem).toString()
 
         val topics = daten.listeFilme.getThemen(filterSender)
@@ -418,7 +422,11 @@ class PanelBlacklist(
         for (topic in topics) {
             model.addElement(topic)
         }
+        if (selectedTopic.isNotEmpty() && !topics.contains(selectedTopic)) {
+            model.addElement(selectedTopic)
+        }
         jComboBoxThema.model = model
+        jComboBoxThema.selectedItem = selectedTopic
     }
 
     private fun fillControlsWithRuleData() {
@@ -428,6 +436,7 @@ class PanelBlacklist(
             val rule = tableModel.getRule(modelIndex)
             jCheckBoxRuleActive.isSelected = rule.active
             jComboBoxSender.selectedItem = rule.sender
+            comboThemaLaden(rule.thema)
             jComboBoxThema.selectedItem = rule.thema
             jTextFieldTitel.text = rule.titel
             jTextFieldThemaTitel.text = rule.thema_titel
