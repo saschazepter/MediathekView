@@ -56,10 +56,8 @@ import javax.swing.table.TableStringConverter
 class PanelBlacklist(
     private val daten: Daten,
     private val parentComponent: JFrame?,
-    private val name: String,
 ) : PanelBlacklistBase() {
-    var ok: Boolean = false
-
+    private val aboSettingEventSource = Any()
     private val tableModel = BlacklistRuleTableModel(daten.listeBlacklist)
     private val filmLoadListener = object : ListenerFilmeLaden() {
         override fun fertig(event: ListenerFilmeLadenEvent) {
@@ -210,7 +208,7 @@ class PanelBlacklist(
 
     @Handler
     private fun handleBlacklistAboSettingChangedEvent(event: BlacklistAboSettingChangedEvent) {
-        if (event.sourceName != name) {
+        if (event.source !== aboSettingEventSource) {
             SwingUtilities.invokeLater(::initPanelState)
         }
     }
@@ -302,7 +300,7 @@ class PanelBlacklist(
         }
         jCheckBoxAbo.addActionListener {
             ApplicationConfiguration.getInstance().blacklistApplyToAbo = jCheckBoxAbo.isSelected
-            MessageBus.messageBus.publishAsync(BlacklistAboSettingChangedEvent(name))
+            MessageBus.messageBus.publishAsync(BlacklistAboSettingChangedEvent(aboSettingEventSource))
         }
         jCheckBoxBlacklistEingeschaltet.addActionListener {
             ApplicationConfiguration.getInstance().isBlacklistEnabled = jCheckBoxBlacklistEingeschaltet.isSelected

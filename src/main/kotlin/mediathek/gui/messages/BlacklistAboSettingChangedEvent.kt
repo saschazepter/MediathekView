@@ -19,5 +19,5 @@
 package mediathek.gui.messages
 
 class BlacklistAboSettingChangedEvent(
-    val sourceName: String,
+    val source: Any,
 ) : BaseEvent()
