@@ -20,20 +20,24 @@
 
 package mediathek.config
 
-import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.SortedList
-import kotlinx.coroutines.*
 import mediathek.SplashScreenLifecycle
 import mediathek.controller.AboRuleStorage
 import mediathek.controller.BlacklistRuleStorage
+import mediathek.controller.ConfigDataStore
 import mediathek.controller.IoXmlLesen
 import mediathek.controller.IoXmlSchreiben
 import mediathek.controller.history.AboHistoryController
+import mediathek.controller.starter.DownloadServices
 import mediathek.controller.starter.DownloadStartCoordinator
 import mediathek.daten.*
+import mediathek.daten.abo.AboServices
+import mediathek.daten.blacklist.BlacklistServices
 import mediathek.daten.blacklist.ListeBlacklist
+import mediathek.filmlisten.FilmCatalog
 import mediathek.filmlisten.FilmeLaden
+import mediathek.gui.bookmark.BookmarkServices
 import mediathek.gui.bookmark.BookmarkDataList
 import mediathek.gui.duplicates.FilmStatistics
 import mediathek.tool.GermanStringSorter
@@ -45,45 +49,61 @@ import java.nio.file.Path
 import java.util.concurrent.ExecutionException
 import javax.swing.JOptionPane
 
-class Daten {
-    private val historyScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+class Daten : ConfigDataStore {
+    val programSets: ProgramSetRepository = ProgramSetRepository()
+    val filmCatalog: FilmCatalog = FilmCatalog(this)
+    val downloads: DownloadServices = DownloadServices(this)
+    val blacklist: BlacklistServices = BlacklistServices(this)
+    val bookmarks: BookmarkServices = BookmarkServices(this)
+    val abos: AboServices = AboServices(this)
 
-    val listePset: ListePset = ListePset()
-    val duplicateStatistics: EventList<FilmStatistics> = BasicEventList()
-    val commonStatistics: EventList<FilmStatistics> = BasicEventList()
-    val filmeLaden: FilmeLaden = FilmeLaden(this)
+    override val listePset: ListePset
+        get() = programSets.list
+    val duplicateStatistics: EventList<FilmStatistics>
+        get() = filmCatalog.duplicateStatistics
+    val commonStatistics: EventList<FilmStatistics>
+        get() = filmCatalog.commonStatistics
+    val filmeLaden: FilmeLaden
+        get() = filmCatalog.loader
 
     /**
      * "source" list of all entries, contains everything
      */
-    val listeFilme: ListeFilme = ListeFilme()
-    val listeDownloads: ListeDownloads = ListeDownloads(this)
-    val listeDownloadsButton: ListeDownloads = ListeDownloads(this)
-    val listeBlacklist: ListeBlacklist = ListeBlacklist(this)
-    val listeBookmarkList: BookmarkDataList = BookmarkDataList(this)
-    val listeAbo: ListeAbo = ListeAbo(this)
-    val downloadInfos: DownloadInfos = DownloadInfos(this)
-    val downloadStartCoordinator: DownloadStartCoordinator = DownloadStartCoordinator(this)
+    val listeFilme: ListeFilme
+        get() = filmCatalog.allFilms
+    override val listeDownloads: ListeDownloads
+        get() = downloads.queue
+    val listeDownloadsButton: ListeDownloads
+        get() = downloads.buttonQueue
+    override val listeBlacklist: ListeBlacklist
+        get() = blacklist.rules
+    val listeBookmarkList: BookmarkDataList
+        get() = bookmarks.list
+    override val listeAbo: ListeAbo
+        get() = abos.list
+    val downloadInfos: DownloadInfos
+        get() = downloads.info
+    val downloadStartCoordinator: DownloadStartCoordinator
+        get() = downloads.starter
 
     /**
      * "the" final list of films after all filtering is done.
      * Defaults to no lucene index unless changed at startup.
      */
-    var listeFilmeNachBlackList: ListeFilme = ListeFilme()
+    var listeFilmeNachBlackList: ListeFilme
+        get() = filmCatalog.filteredFilms
+        set(value) {
+            filmCatalog.filteredFilms = value
+        }
 
-    /**
-     * erfolgreich geladene Abos.
-     */
-    private var erledigteAbos: AboHistoryController? = null
     private var backupAlreadyHandled = false
-    private var aboHistoryJob: Deferred<Unit>? = null
 
     val allSendersList: EventList<String> = SortedList(SenderListBoxModel.providedSenderList).apply {
         setComparator(GermanStringSorter)
     }
 
     val aboHistoryController: AboHistoryController
-        get() = erledigteAbos!!
+        get() = abos.historyController
 
     fun allesLaden(): Boolean {
         if (!load()) {
@@ -98,39 +118,12 @@ class Daten {
     }
 
     fun launchHistoryDataLoading() {
-        logger.trace("launching async history data loading")
-        val loadingJob = historyScope.async {
-            setAboHistoryList(AboHistoryController())
-        }
-        loadingJob.invokeOnCompletion { throwable ->
-            if (throwable != null) {
-                logger.error("launchAboHistoryController", throwable)
-            }
-        }
-        aboHistoryJob = loadingJob
+        abos.launchHistoryDataLoading()
     }
 
     @Throws(ExecutionException::class, InterruptedException::class)
     fun waitForHistoryDataLoadingToComplete() {
-        val runningHistoryLoad = aboHistoryJob ?: return
-
-        try {
-            runBlocking {
-                runningHistoryLoad.await()
-            }
-        } catch (exception: InterruptedException) {
-            throw exception
-        } catch (exception: Throwable) {
-            throw ExecutionException(exception)
-        } finally {
-            if (aboHistoryJob === runningHistoryLoad) {
-                aboHistoryJob = null
-            }
-        }
-    }
-
-    private fun setAboHistoryList(controller: AboHistoryController) {
-        erledigteAbos = controller
+        abos.waitForHistoryDataLoadingToComplete()
     }
 
     private fun clearKonfig() {

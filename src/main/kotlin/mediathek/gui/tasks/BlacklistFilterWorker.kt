@@ -42,7 +42,7 @@ class BlacklistFilterWorker(
         }
 
         withContext(Dispatchers.IO) {
-            daten.listeBlacklist.filterListe()
+            daten.blacklist.applyToFilmList()
         }
     }
 }

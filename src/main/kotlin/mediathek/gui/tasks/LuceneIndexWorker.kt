@@ -202,9 +202,9 @@ class LuceneIndexWorker(
     }
 
     private suspend fun rebuildIndex() = withContext(Dispatchers.IO) {
-        val indexList = daten.listeFilmeNachBlackList as IndexedFilmList
+        val indexList = daten.filmCatalog.filteredFilms as IndexedFilmList
         // Search all films, then map hits through the current blacklist-filtered list at query time.
-        val sourceFilms = daten.listeFilme.snapshot()
+        val sourceFilms = daten.filmCatalog.allFilms.snapshot()
         val indexingThreads = (Runtime.getRuntime().availableProcessors() - 1).coerceAtLeast(1)
         val indexingTuning = calculateIndexingTuning(indexingThreads)
         createIndexWriter(indexList).use { writer ->

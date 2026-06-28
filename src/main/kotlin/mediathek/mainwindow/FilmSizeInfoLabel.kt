@@ -95,7 +95,7 @@ class FilmSizeInfoLabel(
     }
 
     private fun updateValues() {
-        val gesamt = daten.listeFilme.size
+        val gesamt = daten.filmCatalog.allFilms.size
         val rowCount = filmTableRowCount.asInt
 
         if (gesamt == oldGesamt && rowCount == oldRowCount) {

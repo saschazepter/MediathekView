@@ -456,7 +456,7 @@ class CdnAwareDirectDownloadThread(
     private fun removeSeenHistoryEntry() {
         datenDownload.film?.let {
             logger.trace("Removing failed download entry from history")
-            SeenHistoryController(daten.listeBookmarkList).use { historyController ->
+            SeenHistoryController().use { historyController ->
                 historyController.markUnseen(it)
             }
         }

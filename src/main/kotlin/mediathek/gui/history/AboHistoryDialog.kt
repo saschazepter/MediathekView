@@ -46,7 +46,7 @@ class AboHistoryDialog(
     owner: Frame?,
     daten: Daten,
 ) : JDialog(owner, "Abo-Historie", true) {
-    private val controller = daten.aboHistoryController
+    private val controller = daten.abos.historyController
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val deleteAction = object : AbstractAction("Einträge löschen") {
         override fun actionPerformed(e: java.awt.event.ActionEvent?) {

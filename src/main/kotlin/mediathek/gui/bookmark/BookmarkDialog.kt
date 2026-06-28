@@ -240,7 +240,7 @@ class BookmarkDialog(
 
     private fun setupTable() {
         val bookmarkConnector = GlazedLists.beanConnector(BookmarkData::class.java) as ObservableElementList.Connector<BookmarkData>
-        val sourceEventList = daten.listeBookmarkList.getEventList()
+        val sourceEventList = daten.bookmarks.list.getEventList()
 
         val sortedList = sourceEventList.withReadLock {
             val observedBookmarks = ObservableElementList(sourceEventList, bookmarkConnector)
@@ -343,7 +343,7 @@ class BookmarkDialog(
     private fun persistBookmarksAsync() {
         uiScope.launch {
             withContext(Dispatchers.IO) {
-                daten.listeBookmarkList.saveToFile()
+                daten.bookmarks.saveToFile()
             }
         }
     }
@@ -357,7 +357,7 @@ class BookmarkDialog(
 
         override fun actionPerformed(event: java.awt.event.ActionEvent?) {
             val film = selectedPlayableFilm() ?: return
-            val pSet = daten.listePset.psetAbspielen
+            val pSet = daten.programSets.list.psetAbspielen
             if (pSet == null) {
                 JOptionPane.showMessageDialog(
                     this@BookmarkDialog,
@@ -369,7 +369,7 @@ class BookmarkDialog(
                 return
             }
 
-            daten.downloadStartCoordinator.urlMitProgrammStarten(pSet, film, "")
+            daten.downloads.starter.urlMitProgrammStarten(pSet, film, "")
         }
     }
 
@@ -486,7 +486,7 @@ class BookmarkDialog(
         }
 
         override fun actionPerformed(event: java.awt.event.ActionEvent?) {
-            val bookmarkList = daten.listeBookmarkList
+            val bookmarkList = daten.bookmarks.list
             val bookmarksToRemove = ArrayList(selectionModel.selected)
             for (bookmark in bookmarksToRemove) {
                 bookmarkList.removeBookmark(bookmark)

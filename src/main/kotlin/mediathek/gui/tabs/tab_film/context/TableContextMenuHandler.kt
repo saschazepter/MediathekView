@@ -61,7 +61,7 @@ class TableContextMenuHandler(
     private val filmTableButtonClickHandler = FilmTableButtonClickHandler(host, daten)
     private val filmAboAndBlacklistContextActions =
         FilmAboAndBlacklistContextActions(host, daten, this::selectedFilmAtPopupPoint)
-    private val jDownloadHelper = JDownloadHelper(host.ownerFrame(), daten)
+    private val jDownloadHelper = JDownloadHelper(host.ownerFrame())
     private val pyLoadHelper = PyLoadHelper(host.ownerFrame())
     private val filmSpecificContextMenuBuilder = FilmSpecificContextMenuBuilder(host, jDownloadHelper, pyLoadHelper)
     private val filmFileAndDuplicateContextActions = FilmFileAndDuplicateContextActions(host, daten, uiScope)

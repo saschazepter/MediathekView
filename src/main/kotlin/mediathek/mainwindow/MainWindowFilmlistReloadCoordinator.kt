@@ -38,7 +38,7 @@ class MainWindowFilmlistReloadCoordinator(
 
         automaticFilmlistUpdate = AutomaticFilmlistUpdate {
             if (FilmListUpdateType.AUTOMATIC.isConfigured() &&
-                daten.listeDownloads.unfinishedDownloads() == 0L
+                daten.downloads.queue.unfinishedDownloads() == 0L
             ) {
                 loadFilmListAction.isEnabled = false
                 loadFilmListAutomatically.run()

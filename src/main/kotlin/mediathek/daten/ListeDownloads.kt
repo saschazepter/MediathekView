@@ -54,7 +54,7 @@ class ListeDownloads(
         // bei einmal Downloads nach einem Programmstart/Neuladen der Filmliste
         // den Film wieder eintragen
         logger.info("Filme in Downloads eintragen")
-        val listeFilme = daten.listeFilme
+        val listeFilme = daten.filmCatalog.allFilms
         filter { download -> download.film == null }
             .forEach { download ->
                 download.film = listeFilme.getFilmByUrl_klein_hoch_hd(download.downloadUrl)
@@ -251,13 +251,13 @@ class ListeDownloads(
 
         // prüfen ob in "alle Filme" oder nur "nach Blacklist" gesucht werden soll
         val checkWithBlackList = ApplicationConfiguration.getInstance().blacklistApplyToAbo
-        val defaultPset = daten.listePset.getPsetAbo("")
+        val defaultPset = daten.programSets.list.getPsetAbo("")
         val today = LocalDate.now(DateUtil.MV_DEFAULT_TIMEZONE)
 
-        val listeAbo = daten.listeAbo
-        val listeBlacklist = daten.listeBlacklist
-        val aboHistoryController = daten.aboHistoryController
-        val listeFilme = daten.listeFilme
+        val listeAbo = daten.abos.list
+        val listeBlacklist = daten.blacklist.rules
+        val aboHistoryController = daten.abos.historyController
+        val listeFilme = daten.filmCatalog.allFilms
         val blacklistFilter: Predicate<DatenFilm> = if (checkWithBlackList) {
             listeBlacklist.createDownloadsPredicate()
         } else {
@@ -278,7 +278,7 @@ class ListeDownloads(
                 continue
             }
 
-            val pset = if (abo.psetName.isEmpty()) defaultPset else daten.listePset.getPsetAbo(abo.psetName)
+            val pset = if (abo.psetName.isEmpty()) defaultPset else daten.programSets.list.getPsetAbo(abo.psetName)
             if (pset != null) {
                 // mit der tatsächlichen URL prüfen, ob die URL schon in der Downloadliste ist
                 val downloadUrl = film.getUrlFuerAufloesung(pset.aufloesung)
@@ -411,7 +411,7 @@ class ListeDownloads(
                     val restarted = state.countRestarted
                     if (download.art == DownloadType.DIRECT) {
                         DownloadLifecycleActions.reset(download)
-                        DownloadStartActions.start(daten, download)
+                        DownloadStartActions.start(download)
                         download.runtime.runState?.countRestarted = restarted + 1
                         return download
                     }

@@ -17,7 +17,6 @@
  */
 package mediathek.controller
 
-import mediathek.config.Daten
 import mediathek.config.StandardLocations
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenProg
@@ -34,7 +33,7 @@ import javax.xml.stream.XMLStreamException
 import javax.xml.stream.XMLStreamReader
 
 class IoXmlLesen @JvmOverloads constructor(
-    private val daten: Daten,
+    private val daten: ConfigDataStore,
     private val downloadStoragePath: Path = StandardLocations.getDownloadsFilePath(),
     private val blacklistRuleStoragePath: Path = StandardLocations.getBlacklistRulesFilePath(),
     private val aboRuleStoragePath: Path = StandardLocations.getAboRulesFilePath(),

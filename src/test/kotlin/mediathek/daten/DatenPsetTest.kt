@@ -16,12 +16,12 @@ internal class DatenPsetTest {
 
     @AfterEach
     fun tearDown() {
-        daten.downloadStartCoordinator.shutdown()
+        daten.downloads.shutdown()
     }
 
     @Test
     fun parsingAbspielenFlagDoesNotResetGlobalPlaybackSelection() {
-        val listePset = daten.listePset
+        val listePset = daten.programSets.list
         val originalState = ListePset()
         originalState.addAll(listePset)
         try {

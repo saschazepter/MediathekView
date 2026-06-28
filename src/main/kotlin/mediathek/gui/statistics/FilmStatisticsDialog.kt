@@ -134,7 +134,7 @@ class FilmStatisticsDialog(
         val zoneId = ZoneId.systemDefault()
         val currentGeoLocation = ApplicationConfiguration.getInstance().geographicLocation
 
-        val allEntries = daten.listeFilme.parallelStream().toList()
+        val allEntries = daten.filmCatalog.allFilms.parallelStream().toList()
         val livestreams = allEntries.count(DatenFilm::isLivestream).toLong()
         val filmsWithoutLivestreams = allEntries.filterNot(DatenFilm::isLivestream)
         val totalFilms = filmsWithoutLivestreams.size.toLong()

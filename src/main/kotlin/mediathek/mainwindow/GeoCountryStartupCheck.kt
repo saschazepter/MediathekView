@@ -103,7 +103,7 @@ class GeoCountryStartupCheck(
 
         if (answer == JOptionPane.YES_OPTION) {
             ApplicationConfiguration.getInstance().geographicLocation = mismatch.detectedCountry
-            daten.listeBlacklist.filterListe()
+            daten.blacklist.applyToFilmList()
             MessageBus.messageBus.publishAsync(GeoStateChangedEvent())
             MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
         }

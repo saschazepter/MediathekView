@@ -44,7 +44,7 @@ class MainWindowLifecycle(
     private var filmListListenersRegistered = false
     private val bookmarkRefreshListener = object : ListenerFilmeLaden() {
         override fun fertig(@Suppress("UNUSED_PARAMETER") event: ListenerFilmeLadenEvent) {
-            daten.listeBookmarkList.refreshFromCurrentFilmListAsync()
+            daten.bookmarks.list.refreshFromCurrentFilmListAsync()
         }
     }
 
@@ -64,7 +64,7 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.filmeLaden.addFilmLoadListener(filmlistProgressListener)
+        daten.filmCatalog.loader.addFilmLoadListener(filmlistProgressListener)
         filmlistProgressListenerRegistered = true
     }
 
@@ -74,10 +74,10 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.listeBlacklist.setZeitraumFilterValueProvider(zeitraumFilterValueProvider)
-        daten.filmeLaden.setUiHost(filmListLoadHost)
-        daten.filmeLaden.addFilmLoadListener(filmListListener)
-        daten.filmeLaden.addFilmLoadListener(bookmarkRefreshListener)
+        daten.blacklist.rules.setZeitraumFilterValueProvider(zeitraumFilterValueProvider)
+        daten.filmCatalog.loader.setUiHost(filmListLoadHost)
+        daten.filmCatalog.loader.addFilmLoadListener(filmListListener)
+        daten.filmCatalog.loader.addFilmLoadListener(bookmarkRefreshListener)
         filmListListenersRegistered = true
     }
 
@@ -96,7 +96,7 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.downloadStartCoordinator.setDialogOwner(dialogOwner)
+        daten.downloads.starter.setDialogOwner(dialogOwner)
         downloadDialogOwnerRegistered = true
     }
 
@@ -135,7 +135,7 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.downloadStartCoordinator.setDialogOwner(null)
+        daten.downloads.starter.setDialogOwner(null)
         downloadDialogOwnerRegistered = false
     }
 
@@ -144,10 +144,10 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.listeBlacklist.setZeitraumFilterValueProvider(null)
-        daten.filmeLaden.setUiHost(null)
-        daten.filmeLaden.removeFilmLoadListener(bookmarkRefreshListener)
-        daten.filmeLaden.removeFilmLoadListener(filmListListener)
+        daten.blacklist.rules.setZeitraumFilterValueProvider(null)
+        daten.filmCatalog.loader.setUiHost(null)
+        daten.filmCatalog.loader.removeFilmLoadListener(bookmarkRefreshListener)
+        daten.filmCatalog.loader.removeFilmLoadListener(filmListListener)
         filmListListenersRegistered = false
     }
 
@@ -156,7 +156,7 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.filmeLaden.removeFilmLoadListener(filmlistProgressListener)
+        daten.filmCatalog.loader.removeFilmLoadListener(filmlistProgressListener)
         filmlistProgressListenerRegistered = false
     }
 

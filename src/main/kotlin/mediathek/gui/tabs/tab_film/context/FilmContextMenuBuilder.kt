@@ -75,7 +75,7 @@ class FilmContextMenuBuilder(
     private fun addFilmProgramsMenu(popupMenu: JPopupMenu) {
         val submenu = JMenu("Film mit Set starten")
         popupMenu.add(submenu)
-        val liste = host.daten().listePset.listeButton
+        val liste = host.daten().programSets.list.listeButton
         for (pset in liste) {
             if (pset.listeProg.isEmpty() && pset.name.isEmpty()) {
                 continue

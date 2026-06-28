@@ -32,7 +32,7 @@ class FilmListCreationDateLabel(
     private val daten: Daten,
 ) : JLabel(), PropertyChangeListener {
     init {
-        val blacklist = daten.listeFilmeNachBlackList
+        val blacklist = daten.filmCatalog.filteredFilms
         setText(blacklist.metaData)
         blacklist.addMetaDataChangeListener(this)
 
@@ -47,7 +47,7 @@ class FilmListCreationDateLabel(
     @Suppress("UNUSED_PARAMETER")
     @Handler
     private fun handleFilmListStop(event: FilmListReadStopEvent) {
-        setText(daten.listeFilmeNachBlackList.metaData)
+        setText(daten.filmCatalog.filteredFilms.metaData)
     }
 
     override fun propertyChange(evt: PropertyChangeEvent) {

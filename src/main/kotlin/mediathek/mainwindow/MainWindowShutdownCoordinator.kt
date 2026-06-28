@@ -69,12 +69,12 @@ class MainWindowShutdownCoordinator(
             .edt("Close bandwidth monitor", dialogCoordinator::closeBandwidthMonitor)
             .edt("Close abo dialog", dialogCoordinator::closeAboDialog)
             .background("Perform history maintenance", ::performHistoryMaintenance)
-            .background("Save bookmark list") { daten.listeBookmarkList.saveToFile() }
-            .background("Stop starter thread") { daten.downloadStartCoordinator.shutdown() }
+            .background("Save bookmark list") { daten.bookmarks.saveToFile() }
+            .background("Stop starter thread") { daten.downloads.shutdown() }
             .edt("Close system tray", closeSystemTray)
             .background("Close notification center", closeNotificationCenter)
             .edt("Dispose main window tabs", tabRegistry::disposeTabs)
-            .background("Stop all downloads") { daten.listeDownloads.requestStopForShutdown() }
+            .background("Stop all downloads") { daten.downloads.queue.requestStopForShutdown() }
             .background("Save app data", daten::allesSpeichern)
             .background("Close seen history database", SeenHistoryController::closeSharedStore)
             .edt("Close main window", owner::dispose)

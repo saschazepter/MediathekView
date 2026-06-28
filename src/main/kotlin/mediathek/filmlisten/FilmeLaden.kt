@@ -80,11 +80,11 @@ class FilmeLaden(private val daten: Daten) {
 
     private fun shouldStartAutomaticStartupUpdate(): Boolean =
         FilmListUpdateType.fromConfig() == FilmListUpdateType.AUTOMATIC &&
-            daten.listeFilme.needsUpdate()
+            daten.filmCatalog.allFilms.needsUpdate()
 
     fun loadFilmlist(dateiUrl: String, immerNeuLaden: Boolean, loadOptions: FilmListLoadOptions): Boolean {
         // damit wird die Filmliste geladen UND auch gleich im Konfig-Ordner gespeichert
-        val listeFilme = daten.listeFilme
+        val listeFilme = daten.filmCatalog.allFilms
 
         logger.trace("loadFilmlist(String,boolean,FilmListLoadOptions)")
         logger.info("")
@@ -120,7 +120,7 @@ class FilmeLaden(private val daten: Daten) {
         // erhalten) UND auch gleich im Konfig-Ordner gespeichert
         logger.debug("Filme laden (Update), start")
         logger.info("")
-        displayLogInfo(daten.listeFilme)
+        displayLogInfo(daten.filmCatalog.allFilms)
 
         if (!beginLoad()) {
             return
@@ -159,8 +159,8 @@ class FilmeLaden(private val daten: Daten) {
     }
 
     private fun prepareLoad(): Set<String> {
-        val oldFilmUrls = FilmListImportApplier.collectFilmUrls(daten.listeFilme)
-        daten.listeFilmeNachBlackList.clear()
+        val oldFilmUrls = FilmListImportApplier.collectFilmUrls(daten.filmCatalog.allFilms)
+        daten.filmCatalog.filteredFilms.clear()
         return oldFilmUrls
     }
 
@@ -212,7 +212,7 @@ class FilmeLaden(private val daten: Daten) {
         // beim Ändern von Abos gemacht wird
 
         logger.debug("finishImport()")
-        val listeFilme = daten.listeFilme
+        val listeFilme = daten.filmCatalog.allFilms
         FilmListImportApplier.applyImportedFilms(listeFilme, diffListe, oldFilmUrls)
 
         val host = ui.currentHost

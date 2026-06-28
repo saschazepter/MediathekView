@@ -64,7 +64,7 @@ class LuceneGuiFilmeModelHelper(
             }
         }
 
-    private fun allFilms(): Collection<DatenFilm> = daten.listeFilmeNachBlackList
+    private fun allFilms(): Collection<DatenFilm> = daten.filmCatalog.filteredFilms
 
     private fun filterFilms(
         listeFilme: IndexedFilmList,

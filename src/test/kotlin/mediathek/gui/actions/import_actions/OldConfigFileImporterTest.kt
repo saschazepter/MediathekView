@@ -24,12 +24,12 @@ internal class OldConfigFileImporterTest {
 
     @AfterEach
     fun tearDown() {
-        daten.downloadStartCoordinator.shutdown()
+        daten.downloads.shutdown()
     }
 
     @Test
     fun importAboBlacklistStillImportsLegacyXmlAbos() {
-        val abos = daten.listeAbo
+        val abos = daten.abos.list
         val originalAbos = ArrayList(abos)
         try {
             abos.clear()

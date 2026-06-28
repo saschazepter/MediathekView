@@ -58,7 +58,7 @@ class FilmDuplicateOverviewDialog(
     private fun loadDuplicateTree() {
         dialogScope.launch {
             val rootNode = withContext(Dispatchers.Default) {
-                createDuplicateRootNode(daten.listeFilme.snapshot())
+                createDuplicateRootNode(daten.filmCatalog.allFilms.snapshot())
             }
             tree.model = DefaultTreeModel(rootNode)
         }
@@ -106,7 +106,7 @@ class FilmDuplicateOverviewDialog(
     private fun findDuplicateFilms(film: DatenFilm): List<DatenFilm> {
         val normalUrl = film.urlNormalQuality
         val highQualityUrl = film.highQualityUrl
-        return daten.listeFilme.snapshot()
+        return daten.filmCatalog.allFilms.snapshot()
             .asSequence()
             .filter { item -> !item.isLivestream }
             .filter { item ->

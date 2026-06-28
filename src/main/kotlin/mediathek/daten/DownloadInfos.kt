@@ -59,7 +59,7 @@ class DownloadInfos(
     private fun makeDownloadInfos() {
         resetData()
 
-        val activeDownloads = daten.listeDownloads
+        val activeDownloads = daten.downloads.queue
             .getListOfStartsNotFinished(DownloadSource.ALL)
 
         for (download in activeDownloads) {

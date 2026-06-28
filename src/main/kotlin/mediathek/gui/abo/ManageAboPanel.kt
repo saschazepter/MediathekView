@@ -58,7 +58,7 @@ class ManageAboPanel(
 ) : JPanel() {
     private val tabelle = AboTable()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
-    private val createAboAction = CreateNewAboAction(daten, daten.listeAbo) { owner }
+    private val createAboAction = CreateNewAboAction(daten, daten.abos.list) { owner }
     private var tableBinding: AboTableBinding
     private lateinit var tableColumnSettings: AboTableColumnSettings
     private val infoPanel = JXStatusBar()
@@ -95,13 +95,13 @@ class ManageAboPanel(
     init {
         initComponents()
 
-        tableBinding = AboTableBinding(tabelle, daten.listeAbo, this::filmCountForAbo)
+        tableBinding = AboTableBinding(tabelle, daten.abos.list, this::filmCountForAbo)
         setupToolBar()
         setupInfoPanel()
         updateInfoText()
 
         MessageBus.messageBus.subscribe(this)
-        daten.filmeLaden.addFilmLoadListener(filmLoadListener)
+        daten.filmCatalog.loader.addFilmLoadListener(filmLoadListener)
 
         initListeners()
         initializeTable()
@@ -124,7 +124,7 @@ class ManageAboPanel(
     override fun removeNotify() {
         if (!disposed) {
             disposed = true
-            daten.filmeLaden.removeFilmLoadListener(filmLoadListener)
+            daten.filmCatalog.loader.removeFilmLoadListener(filmLoadListener)
             countRefreshJob?.cancel()
             uiScope.cancel()
             tableBinding.dispose()
@@ -167,7 +167,7 @@ class ManageAboPanel(
         if (multiEdit) {
             applyMultiEdit(dialogAbo, selectedAbos, dialog.multiEditCbIndices)
         } else {
-            daten.listeAbo.fireAboChanged(editedAbo)
+            daten.abos.list.fireAboChanged(editedAbo)
         }
 
         processAboChanges()
@@ -215,7 +215,7 @@ class ManageAboPanel(
                     }
                 }
             }
-            daten.listeAbo.fireAboChanged(targetAbo)
+            daten.abos.list.fireAboChanged(targetAbo)
         }
     }
 
@@ -278,12 +278,12 @@ class ManageAboPanel(
         swingToolBar.add(senderCombo)
     }
 
-    private fun numActiveAbos(): Int = daten.listeAbo.count { abo -> abo.isActive }
+    private fun numActiveAbos(): Int = daten.abos.list.count { abo -> abo.isActive }
 
-    private fun numInactiveAbos(): Int = daten.listeAbo.count { abo -> !abo.isActive }
+    private fun numInactiveAbos(): Int = daten.abos.list.count { abo -> !abo.isActive }
 
     private fun updateInfoText() {
-        val listeAbo = daten.listeAbo
+        val listeAbo = daten.abos.list
         val numAbos = listeAbo.size
 
         totalAbos.text = if (numAbos == 1) {
@@ -304,7 +304,7 @@ class ManageAboPanel(
         }
 
     private fun initializeAboFilmCounts() {
-        if (daten.filmeLaden.isFilmListImportRunning) {
+        if (daten.filmCatalog.loader.isFilmListImportRunning) {
             markAboFilmCountsLoading()
         } else {
             scheduleAboFilmCountRefresh()
@@ -323,8 +323,8 @@ class ManageAboPanel(
             countRefreshJob = launch {
                 val counts = withContext(Dispatchers.Default) {
                     AboFilmCounts.countMatchingFilms(
-                        daten.listeAbo.withReadLock { toList() },
-                        daten.listeFilme.snapshot(),
+                        daten.abos.list.withReadLock { toList() },
+                        daten.filmCatalog.allFilms.snapshot(),
                     )
                 }
                 if (!disposed && refreshSequence == countRefreshSequence) {
@@ -348,20 +348,20 @@ class ManageAboPanel(
 
     private fun applyAboFilmCounts(counts: Map<DatenAbo, Int>) {
         val changedAbos = if (aboFilmCountsLoading) {
-            daten.listeAbo.withReadLock { toList() }
+            daten.abos.list.withReadLock { toList() }
         } else {
             AboFilmCounts.changedAbos(aboFilmCounts, counts)
         }
         aboFilmCounts = counts
         aboFilmCountsLoading = false
         if (changedAbos.isNotEmpty()) {
-            daten.listeAbo.fireAbosChanged(changedAbos)
+            daten.abos.list.fireAbosChanged(changedAbos)
         }
     }
 
     private fun markAboFilmCountsLoading() {
         aboFilmCountsLoading = true
-        daten.listeAbo.fireAbosChanged(daten.listeAbo.withReadLock { toList() })
+        daten.abos.list.fireAbosChanged(daten.abos.list.withReadLock { toList() })
     }
 
     private fun setupKeyMap() {
@@ -616,7 +616,7 @@ class ManageAboPanel(
             val ret = JOptionPane.showConfirmDialog(this, text, "Abo löschen", JOptionPane.YES_NO_OPTION)
             if (ret == JOptionPane.OK_OPTION) {
                 try {
-                    daten.listeAbo.removeAbosWithoutNotification(selectedAbos)
+                    daten.abos.list.removeAbosWithoutNotification(selectedAbos)
                 } catch (e: Exception) {
                     logger.error("aboLoeschen", e)
                 }
@@ -639,7 +639,7 @@ class ManageAboPanel(
         if (selectedAbos.isNotEmpty()) {
             for (abo in selectedAbos) {
                 abo.isActive = ein
-                daten.listeAbo.fireAboChanged(abo)
+                daten.abos.list.fireAboChanged(abo)
             }
             tabelle.requestFocusInWindow()
 
@@ -666,7 +666,7 @@ class ManageAboPanel(
             }
             try {
                 withContext(Dispatchers.Default) {
-                    daten.listeAbo.aenderungMelden()
+                    daten.abos.list.aenderungMelden()
                 }
             } finally {
                 progressJob.cancel()

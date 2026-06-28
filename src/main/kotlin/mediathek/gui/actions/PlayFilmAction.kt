@@ -34,7 +34,7 @@ class PlayFilmAction(
 
     @Synchronized
     override fun actionPerformed(event: ActionEvent?) {
-        val pset = daten.listePset.psetAbspielen
+        val pset = daten.programSets.list.psetAbspielen
         if (pset != null) {
             startFilm.accept(pset)
         } else {

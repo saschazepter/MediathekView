@@ -44,7 +44,7 @@ class FixedRedrawStatusBar(
         add(
             FilmAgeLabel(
                 ageProvider = {
-                    daten.listeFilme
+                    daten.filmCatalog.allFilms
                         .metaData
                         .ageInSeconds
                         .coerceAtLeast(0)

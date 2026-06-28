@@ -211,7 +211,7 @@ class ProgramUpdateCheck(
         }
     }
 
-    private fun currentPsets(): ListePset = daten.listePset
+    private fun currentPsets(): ListePset = daten.programSets.list
 
     override fun close() {
         job.cancel()

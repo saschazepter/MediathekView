@@ -52,7 +52,7 @@ class FilmlistWriterWorker(
 
             withContext(Dispatchers.IO) {
                 var lastProgress = 0
-                FilmListWriter(false).writeFilmList(getFilmlistFilePathString(), daten.listeFilme) { prog ->
+                FilmListWriter(false).writeFilmList(getFilmlistFilePathString(), daten.filmCatalog.allFilms) { prog ->
                     val progress = (100.0 * prog).roundToInt().coerceIn(0, 100)
                     if (progress >= lastProgress + 1) {
                         lastProgress = progress

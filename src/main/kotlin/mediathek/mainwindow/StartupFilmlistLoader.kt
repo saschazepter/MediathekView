@@ -80,7 +80,7 @@ class StartupFilmlistLoader(
         try {
             FilmListReader().use { reader ->
                 val loadNumDays = ApplicationConfiguration.getInstance().filmListLoadNumDays
-                reader.readFilmListe(StandardLocations.getFilmlistFilePathString(), daten.listeFilme, loadNumDays)
+                reader.readFilmListe(StandardLocations.getFilmlistFilePathString(), daten.filmCatalog.allFilms, loadNumDays)
             }
         } finally {
             MessageBus.messageBus.publishAsync(FilmListReadStopEvent())
@@ -89,7 +89,7 @@ class StartupFilmlistLoader(
 
     private fun startRemoteFilmlistUpdateIfNeeded(): Boolean {
         logger.trace("Check for filmlist updates")
-        return daten.filmeLaden.startAutomaticStartupUpdateIfNeeded()
+        return daten.filmCatalog.loader.startAutomaticStartupUpdateIfNeeded()
     }
 
     private suspend fun runPostLoadTasks() =

@@ -31,5 +31,5 @@ class FilmFilterDataProviderAdapter(
         FilterList(datenProvider().allSendersList, SenderFilmlistLoadApprover::isApproved)
 
     override fun getThemen(senders: Collection<String>): List<String> =
-        datenProvider().listeFilmeNachBlackList.getThemen(senders)
+        datenProvider().filmCatalog.filteredFilms.getThemen(senders)
 }

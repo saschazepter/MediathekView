@@ -121,7 +121,7 @@ class ListeAbo(
 
     internal fun aenderungMelden() {
         // Filmliste anpassen
-        daten?.let { setAboFuerFilm(it.listeFilme, true) }
+        daten?.let { setAboFuerFilm(it.filmCatalog.allFilms, true) }
         MessageBus.messageBus.publishAsync(AboListChangedEvent())
     }
 

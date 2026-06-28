@@ -25,7 +25,7 @@ import kotlinx.coroutines.withContext
 import mediathek.audiothek.model.AudioEntry
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.DatenFilm
-import mediathek.gui.bookmark.BookmarkDataList
+import mediathek.gui.messages.history.FilmSeenStateChangedEvent
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
 import mediathek.sqlite.SeenHistoryCorruptionHandler
 import mediathek.tool.MessageBus
@@ -43,9 +43,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Public methods remain blocking for compatibility, while all JDBC access is confined
  * to a process-wide coroutine dispatcher with parallelism 1.
  */
-class SeenHistoryController(
-    private val bookmarkDataList: BookmarkDataList? = null,
-) : AutoCloseable {
+class SeenHistoryController : AutoCloseable {
     private val closed = AtomicBoolean(false)
     private val store = sharedStore()
 
@@ -67,7 +65,7 @@ class SeenHistoryController(
         }
         if (success) {
             SeenHistoryCache.remove(film.urlNormalQuality)
-            bookmarkDataList?.updateSeen(false, film)
+            sendFilmSeenStateChanged(false, listOf(film))
             sendChangeMessage()
         }
     }
@@ -87,7 +85,7 @@ class SeenHistoryController(
         }
         if (success) {
             SeenHistoryCache.remove(urls)
-            bookmarkDataList?.updateSeen(false, list)
+            sendFilmSeenStateChanged(false, list)
             sendChangeMessage()
         }
     }
@@ -108,7 +106,7 @@ class SeenHistoryController(
         }
         if (inserted) {
             SeenHistoryCache.add(entry.url)
-            bookmarkDataList?.updateSeen(true, film)
+            sendFilmSeenStateChanged(true, listOf(film))
             sendChangeMessage()
         }
     }
@@ -128,7 +126,7 @@ class SeenHistoryController(
         }
         if (success) {
             SeenHistoryCache.add(candidates.asSequence().map(SeenHistoryEntry::url).toList())
-            bookmarkDataList?.updateSeen(true, list)
+            sendFilmSeenStateChanged(true, list)
             sendChangeMessage()
         }
     }
@@ -265,6 +263,12 @@ class SeenHistoryController(
 
     private fun sendChangeMessage() {
         MessageBus.messageBus.publishAsync(DownloadHistoryChangedEvent())
+    }
+
+    private fun sendFilmSeenStateChanged(seen: Boolean, films: List<DatenFilm>) {
+        if (films.isNotEmpty()) {
+            MessageBus.messageBus.publishAsync(FilmSeenStateChangedEvent(seen, films))
+        }
     }
 
     companion object {

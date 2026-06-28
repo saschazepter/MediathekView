@@ -42,13 +42,13 @@ fun startDownloads(
         return
     }
 
-    if (!daten.listePset.hasDownloadProgramSet()) {
+    if (!daten.programSets.list.hasDownloadProgramSet()) {
         MissingProgramSetDialog.showMissingDownloadProgramSet(parent, daten)
         return
     }
 
-    val effectiveProgramSet = pSet ?: daten.listePset.listeSpeichern.first()
-    val downloadsList = daten.listeDownloads
+    val effectiveProgramSet = pSet ?: daten.programSets.list.listeSpeichern.first()
+    val downloadsList = daten.downloads.queue
 
     if (films.size > 1) {
         val dialog = DialogAddMoreDownload(parent, effectiveProgramSet)
@@ -77,7 +77,7 @@ fun startDownloads(
                 downloadsList.addMitNummer(datenDownload)
                 MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
                 if (result.startImmediately()) {
-                    DownloadStartActions.start(daten, datenDownload)
+                    DownloadStartActions.start(datenDownload)
                 }
             } else {
                 showSingleDownloadDialog(daten, parent, film, effectiveProgramSet, requestedResolution)

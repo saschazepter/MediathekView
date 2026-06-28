@@ -16,7 +16,7 @@ class ResetAboHistoryAction(
      Dies kann nicht rückgängig gemacht werden.
      """.trimIndent(), "Abo-Historie löschen", JOptionPane.YES_NO_OPTION)
         if (ret == JOptionPane.OK_OPTION) {
-            daten.aboHistoryController.removeAll()
+            daten.abos.historyController.removeAll()
         }
     }
 

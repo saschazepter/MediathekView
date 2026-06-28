@@ -29,7 +29,7 @@ open class IndicatorThread(protected val daten: Daten) : Thread() {
         var numOfDownloadsActive = 0
         var accumPercentage = 0.0
         //only count running/active downloads and calc accumulated progress..
-        val activeDownloadList = daten.listeDownloads.getListOfStartsNotFinished(DownloadSource.ALL)
+        val activeDownloadList = daten.downloads.queue.getListOfStartsNotFinished(DownloadSource.ALL)
         for (download in activeDownloadList) {
             val start = download.runtime.runState
             if (start?.isRunning == true) {

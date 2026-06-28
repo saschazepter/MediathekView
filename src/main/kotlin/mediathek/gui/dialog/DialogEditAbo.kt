@@ -58,7 +58,7 @@ class DialogEditAbo(
 
     private fun configureComboBoxes(daten: Daten) {
         jScrollPane1.verticalScrollBar.unitIncrement = 16
-        comboboxPSet.model = DefaultComboBoxModel(daten.listePset.listeAbo.objectDataCombo)
+        comboboxPSet.model = DefaultComboBoxModel(daten.programSets.list.listeAbo.objectDataCombo)
         comboboxSender.model = SenderListComboBoxModel(daten)
     }
 
@@ -77,7 +77,7 @@ class DialogEditAbo(
     }
 
     private fun aboTargetPaths(daten: Daten): MutableList<String> =
-        daten.listeAbo
+        daten.abos.list
             .map { abo -> abo.zielpfad }
             .distinct()
             .sortedWith(GermanStringSorter)

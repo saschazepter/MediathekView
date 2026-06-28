@@ -17,7 +17,6 @@
  */
 package mediathek.controller
 
-import mediathek.config.Daten
 import mediathek.config.StandardLocations
 import mediathek.daten.DatenProg
 import mediathek.daten.DatenPset
@@ -32,7 +31,7 @@ import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.XMLStreamWriter
 
 class IoXmlSchreiben @JvmOverloads constructor(
-    private val daten: Daten,
+    private val daten: ConfigDataStore,
     private val downloadStoragePath: Path = StandardLocations.getDownloadsFilePath(),
 ) {
     private val outFactory: XMLOutputFactory = XMLOutputFactory.newInstance()

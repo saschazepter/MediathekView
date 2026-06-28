@@ -209,7 +209,7 @@ class MainWindowMenuBuilder(
     }
 
     private fun createAboMenu() {
-        aboMenu.add(CreateNewAboAction(daten, daten.listeAbo) { ownerFrame })
+        aboMenu.add(CreateNewAboAction(daten, daten.abos.list) { ownerFrame })
         aboMenu.add(ShowAboHistoryAction(ownerFrame, daten))
         aboMenu.addSeparator()
         aboMenu.add(manageAboAction)

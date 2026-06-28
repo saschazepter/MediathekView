@@ -37,7 +37,7 @@ class FilmlistExportWorker(
         }
         writer.writeFilmList(
             selectedFile.absolutePath,
-            daten.listeFilme
+            daten.filmCatalog.allFilms
         ) { prog ->
             uiScope.launch {
                 onProgress((100.0 * prog).roundToInt())

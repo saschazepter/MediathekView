@@ -119,7 +119,7 @@ class DialogFilmBeschreibung(
             applicationConfiguration.useFilenameReplaceTable,
             applicationConfiguration.onlyAsciiFilenames,
         )
-        val programSets = daten.listePset.listeSpeichern
+        val programSets = daten.programSets.list.listeSpeichern
         val targetPath = if (programSets.isEmpty()) {
             StandardLocations.getStandardDownloadPath()
         } else {

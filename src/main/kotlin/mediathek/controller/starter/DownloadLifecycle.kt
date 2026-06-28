@@ -45,7 +45,7 @@ internal object DownloadCompletionValidator {
                 datenDownload.title,
                 datenDownload.historyUrl,
             )
-            daten.aboHistoryController.add(entry)
+            daten.abos.historyController.add(entry)
         }
 
         return true

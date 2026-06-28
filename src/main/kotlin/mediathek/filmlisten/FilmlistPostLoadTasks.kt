@@ -50,7 +50,7 @@ class FilmlistPostLoadTasks(
         if (writeFilmList) {
             FilmlistWriterWorker(daten, label, progressBar).run()
         }
-        if (daten.listeFilmeNachBlackList is IndexedFilmList) {
+        if (daten.filmCatalog.filteredFilms is IndexedFilmList) {
             LuceneIndexWorker(daten, label, progressBar, host).execute()
         }
     }

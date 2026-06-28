@@ -92,7 +92,7 @@ class DialogAddDownload(
     private var initialSizeLookupStatusIsError: Boolean = false
     private var ffprobePath: Path? = null
     private var orgPfad = ""
-    private val listeSpeichern: ListePset = daten.listePset.listeSpeichern
+    private val listeSpeichern: ListePset = daten.programSets.list.listeSpeichern
     private lateinit var resolutionButtonLabels: ResolutionButtonLabels
     private lateinit var cbPathTextComponent: JTextComponent
     private lateinit var datenDownload: DatenDownload
@@ -484,11 +484,11 @@ class DialogAddDownload(
     }
 
     private fun addDownloadToQueue(startAutomatically: Boolean) {
-        daten.listeDownloads.addMitNummer(datenDownload)
+        daten.downloads.queue.addMitNummer(datenDownload)
         messageBus.publishAsync(DownloadListChangedEvent())
 
         if (startAutomatically) {
-            DownloadStartActions.start(daten, datenDownload)
+            DownloadStartActions.start(datenDownload)
         }
     }
 

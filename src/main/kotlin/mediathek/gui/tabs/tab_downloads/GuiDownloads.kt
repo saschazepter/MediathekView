@@ -407,7 +407,7 @@ class GuiDownloads(
         if (now - lastUpdate.get() >= 500) {
             lastUpdate.set(now)
             SwingUtilities.invokeLater {
-                daten.listeDownloads.setModelProgress(model)
+                daten.downloads.queue.setModelProgress(model)
             }
         }
     }
@@ -441,7 +441,7 @@ class GuiDownloads(
 
         val displayFilter = filterController.displayFilter
         val viewFilter = filterController.viewFilter
-        daten.listeDownloads.getModel(
+        daten.downloads.queue.getModel(
             model,
             DownloadListFilter(
                 onlyAbos = displayFilter.onlyAbos(),
@@ -470,7 +470,7 @@ class GuiDownloads(
             return
         }
 
-        val listeDownloads = daten.listeDownloads
+        val listeDownloads = daten.downloads.queue
         rememberAboSizes(listeDownloads)
         listeDownloads.abosAuffrischen()
         listeDownloads.abosSuchen(ownerFrame)
@@ -545,17 +545,17 @@ class GuiDownloads(
         }
 
     private fun updateUnknownDownloadSizes() {
-        downloadSizeLookupService.updateFilmSizes(daten.listeDownloads.toList())
+        downloadSizeLookupService.updateFilmSizes(daten.downloads.queue.toList())
     }
 
     @Synchronized
     fun cleanupDownloads() {
-        daten.listeDownloads.listePutzen()
+        daten.downloads.queue.listePutzen()
     }
 
     @Synchronized
     fun downloadsAufraeumen(datenDownload: DatenDownload) {
-        daten.listeDownloads.listePutzen(datenDownload)
+        daten.downloads.queue.listePutzen(datenDownload)
     }
 
     private fun getSelDownloads(): ArrayList<DatenDownload> = tableSelection.selectedDownloadsOrShowError()
@@ -582,7 +582,7 @@ class GuiDownloads(
         if (downloads.isEmpty()) {
             return
         }
-        daten.listeDownloads.downloadsVorziehen(downloads)
+        daten.downloads.queue.downloadsVorziehen(downloads)
     }
 
     fun zielordnerOeffnen() {
@@ -670,11 +670,11 @@ class GuiDownloads(
             }
 
             if (aboUrls.isNotEmpty()) {
-                daten.aboHistoryController.add(aboUrls)
+                daten.abos.historyController.add(aboUrls)
             }
 
             downloadsToDelete.forEach(::evictDownloadSizeCache)
-            daten.listeDownloads.downloadLoeschen(downloadsToDelete)
+            daten.downloads.queue.downloadLoeschen(downloadsToDelete)
             reloadTable()
             selectSingleRowAfterDeletion(rowToSelectAfterDeletion)
         } catch (ex: Exception) {
@@ -745,14 +745,14 @@ class GuiDownloads(
                     }
                     downloadsToCancel.add(download)
                     if (download.isFromAbo) {
-                        daten.aboHistoryController.removeUrl(download.historyUrl)
+                        daten.abos.historyController.removeUrl(download.historyUrl)
                     }
                 }
             }
             downloadsToStart.add(download)
         }
 
-        daten.listeDownloads.downloadAbbrechen(downloadsToCancel)
+        daten.downloads.queue.downloadAbbrechen(downloadsToCancel)
 
         val dialogBeenden = DialogBeendenZeit(ownerFrame, daten, downloadsToStart)
         dialogBeenden.isVisible = true
@@ -783,7 +783,7 @@ class GuiDownloads(
         val selectedDownloads = if (processAllDownloads) addAllDownloadsToList() else getSelDownloads()
 
         if (!starten) {
-            daten.downloadStartCoordinator.delayNewStarts()
+            daten.downloads.starter.delayNewStarts()
         }
 
         var answer = -1
@@ -822,7 +822,7 @@ class GuiDownloads(
                         }
                         downloadsToCancel.add(download)
                         if (download.isFromAbo) {
-                            daten.aboHistoryController.removeUrl(download.historyUrl)
+                            daten.abos.historyController.removeUrl(download.historyUrl)
                         }
                     }
                 }
@@ -832,14 +832,14 @@ class GuiDownloads(
             }
         }
 
-        daten.listeDownloads.downloadAbbrechen(downloadsToCancel)
+        daten.downloads.queue.downloadAbbrechen(downloadsToCancel)
 
         if (skipManualDownloads) {
             downloadsToStart.removeIf { download -> !download.isFromAbo || download.isAutomaticStartBlockedByAbo }
         }
 
         if (starten) {
-            DownloadStartActions.startAll(daten, downloadsToStart)
+            DownloadStartActions.startAll(downloadsToStart)
         }
 
         reloadTable()
@@ -857,7 +857,7 @@ class GuiDownloads(
                 downloadsToStop.add(datenDownload)
             }
         }
-        daten.listeDownloads.downloadAbbrechen(downloadsToStop)
+        daten.downloads.queue.downloadAbbrechen(downloadsToStop)
     }
 
     private fun updateFilmData() {
@@ -904,7 +904,7 @@ class GuiDownloads(
         add(downloadListArea, BorderLayout.CENTER)
         add(toolBarRow, BorderLayout.NORTH)
 
-        daten.filmeLaden.addFilmLoadListener(object : ListenerFilmeLaden() {
+        daten.filmCatalog.loader.addFilmLoadListener(object : ListenerFilmeLaden() {
             override fun start(event: ListenerFilmeLadenEvent) {
                 loadFilmlist = true
                 SwingUtilities.invokeLater {
@@ -917,7 +917,7 @@ class GuiDownloads(
                 SwingUtilities.invokeLater {
                     refreshDownloadListAction.isEnabled = true
                 }
-                daten.listeDownloads.filmEintragen()
+                daten.downloads.queue.filmEintragen()
                 if (ApplicationConfiguration.getInstance().searchAbosImmediately) {
                     updateDownloads()
                 } else {

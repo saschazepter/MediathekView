@@ -222,8 +222,8 @@ class ListeBlacklist(
     @Synchronized
     fun filterListe() {
         val daten = daten ?: return
-        val completeFilmList = daten.listeFilme
-        val filteredList = daten.listeFilmeNachBlackList
+        val completeFilmList = daten.filmCatalog.allFilms
+        val filteredList = daten.filmCatalog.filteredFilms
 
         filteredList.clear()
         loadCurrentFilterSettings()
@@ -260,7 +260,7 @@ class ListeBlacklist(
         val filters = mutableListOf<(DatenFilm) -> Boolean>()
 
         // Keep it for the old-style search. It is useless for Lucene.
-        if (daten?.listeFilmeNachBlackList !is IndexedFilmList && daysLowerBoundary != 0L) {
+        if (daten?.filmCatalog?.filteredFilms !is IndexedFilmList && daysLowerBoundary != 0L) {
             filters.add(::checkDate)
         }
 

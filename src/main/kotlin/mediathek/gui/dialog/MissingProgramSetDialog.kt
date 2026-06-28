@@ -65,10 +65,10 @@ object MissingProgramSetDialog {
     }
 
     private fun hasAboProgramSet(daten: Daten): Boolean =
-        daten.listePset.hasAboProgramSet()
+        daten.programSets.list.hasAboProgramSet()
 
     private fun hasDownloadProgramSet(daten: Daten): Boolean =
-        daten.listePset.hasDownloadProgramSet()
+        daten.programSets.list.hasDownloadProgramSet()
 
     private fun importStandardProgramSets(parent: JFrame?, daten: Daten) {
         GuiFunktionenProgramme.addSetVorlagen(

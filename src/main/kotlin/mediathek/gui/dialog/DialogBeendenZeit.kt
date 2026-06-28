@@ -122,10 +122,10 @@ class DialogBeendenZeit(
                 }
 
                 progressPanel?.setMessage("Warte auf Abschluss der Downloads...")
-                DownloadStartActions.startAll(daten, listeDownloadsStarten)
+                DownloadStartActions.startAll(listeDownloadsStarten)
 
                 withContext(Dispatchers.IO) {
-                    while (daten.listeDownloads.unfinishedDownloads() > 0) {
+                    while (daten.downloads.queue.unfinishedDownloads() > 0) {
                         ensureActive()
                         delay(1.seconds)
                     }

@@ -107,12 +107,12 @@ object Main {
                 daten.launchHistoryDataLoading()
                 daten.waitForHistoryDataLoadingToComplete()
                 withContext(Dispatchers.IO) {
-                    daten.listeBookmarkList.loadFromFile()
+                    daten.bookmarks.loadFromFile()
                 }
                 val exitCode = try {
                     downloadAndQuitRunner.run()
                 } finally {
-                    daten.downloadStartCoordinator.shutdown()
+                    daten.downloads.shutdown()
                     SeenHistoryController.closeSharedStore()
                     ApplicationConfiguration.getInstance().writeConfiguration()
                 }
@@ -132,14 +132,14 @@ object Main {
         migrateSeenHistory()
         daten.launchHistoryDataLoading()
         withContext(Dispatchers.IO) {
-            daten.listeBookmarkList.loadFromFile()
+            daten.bookmarks.loadFromFile()
             removeLuceneIndexDirectory()
         }
 
         // enable modern search on demand
         val useModernSearch = ApplicationConfiguration.getInstance().useModernSearch
         if (useModernSearch) {
-            daten.listeFilmeNachBlackList = IndexedFilmList()
+            daten.filmCatalog.filteredFilms = IndexedFilmList()
         }
 
         startGuiMode(daten)

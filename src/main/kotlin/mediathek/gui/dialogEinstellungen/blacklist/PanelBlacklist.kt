@@ -53,7 +53,7 @@ class PanelBlacklist(
     private val parentComponent: JFrame?,
 ) : PanelBlacklistBase() {
     private val aboSettingEventSource = Any()
-    private val tableModel = BlacklistRuleTableModel(daten.listeBlacklist)
+    private val tableModel = BlacklistRuleTableModel(daten.blacklist.rules)
     private val filmLoadListener = object : ListenerFilmeLaden() {
         override fun fertig(event: ListenerFilmeLadenEvent) {
             comboThemaLaden()
@@ -122,7 +122,7 @@ class PanelBlacklist(
             return
         }
         MessageBus.messageBus.subscribe(this)
-        daten.filmeLaden.addFilmLoadListener(filmLoadListener)
+        daten.filmCatalog.loader.addFilmLoadListener(filmLoadListener)
         listenersRegistered = true
     }
 
@@ -131,7 +131,7 @@ class PanelBlacklist(
             return
         }
         MessageBus.messageBus.unsubscribe(this)
-        daten.filmeLaden.removeFilmLoadListener(filmLoadListener)
+        daten.filmCatalog.loader.removeFilmLoadListener(filmLoadListener)
         listenersRegistered = false
     }
 
@@ -239,7 +239,7 @@ class PanelBlacklist(
             filteredCountRefreshJob = launch {
                 try {
                     val counts = withContext(Dispatchers.Default) {
-                        tableModel.calculateFilteredCounts(daten.listeFilme.snapshot())
+                        tableModel.calculateFilteredCounts(daten.filmCatalog.allFilms.snapshot())
                     }
                     if (refreshSequence == filteredCountRefreshSequence) {
                         tableModel.applyFilteredCounts(counts)
@@ -260,7 +260,7 @@ class PanelBlacklist(
             blacklistRefreshJob = launch {
                 try {
                     withContext(Dispatchers.Default) {
-                        daten.listeBlacklist.filterListe()
+                        daten.blacklist.applyToFilmList()
                     }
                     if (refreshSequence == blacklistRefreshSequence) {
                         MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
@@ -378,7 +378,7 @@ class PanelBlacklist(
             val selectedTableRow = jTableBlacklist.selectedRow
             if (selectedTableRow != -1) {
                 val modelIndex = jTableBlacklist.convertRowIndexToModel(selectedTableRow)
-                if (!daten.listeBlacklist.replaceAtIfUniqueWithoutNotification(
+                if (!daten.blacklist.rules.replaceAtIfUniqueWithoutNotification(
                         modelIndex,
                         BlacklistRule(sender, topic, title, topicTitle, active),
                     )
@@ -406,7 +406,7 @@ class PanelBlacklist(
 
     private fun onDeactivateZeroFilterRules() {
         val changedRows = BlacklistRuleBulkActions.deactivateActiveRulesWithZeroFilteredCount(
-            daten.listeBlacklist,
+            daten.blacklist.rules,
             tableModel,
         )
         for (modelIndex in changedRows) {
@@ -426,7 +426,7 @@ class PanelBlacklist(
             JOptionPane.YES_NO_OPTION,
         )
         if (result == JOptionPane.OK_OPTION) {
-            if (BlacklistRuleBulkActions.removeRulesWithZeroFilteredCount(daten.listeBlacklist, tableModel)) {
+            if (BlacklistRuleBulkActions.removeRulesWithZeroFilteredCount(daten.blacklist.rules, tableModel)) {
                 tableModel.rulesChanged()
                 scheduleBlacklistRulesChanged()
             }
@@ -441,8 +441,8 @@ class PanelBlacklist(
             JOptionPane.YES_NO_OPTION,
         )
         if (result == JOptionPane.OK_OPTION) {
-            if (daten.listeBlacklist.isNotEmpty()) {
-                daten.listeBlacklist.clearWithoutNotification()
+            if (daten.blacklist.rules.isNotEmpty()) {
+                daten.blacklist.rules.clearWithoutNotification()
                 tableModel.rulesChanged()
                 scheduleBlacklistRulesChanged()
             }
@@ -460,7 +460,7 @@ class PanelBlacklist(
     private fun comboThemaLaden(selectedTopic: String) {
         val filterSender = requireNotNull(jComboBoxSender.selectedItem).toString()
 
-        val topics = daten.listeFilme.getThemen(filterSender)
+        val topics = daten.filmCatalog.allFilms.getThemen(filterSender)
         val model = DefaultComboBoxModel<String>()
         model.addElement("")
         for (topic in topics) {
@@ -496,8 +496,8 @@ class PanelBlacklist(
 
         if (sender.isNotEmpty() || topic.isNotEmpty() || title.isNotEmpty() || topicTitle.isNotEmpty()) {
             val rule = BlacklistRule(sender, topic, title, topicTitle, active)
-            val rowIndex = daten.listeBlacklist.size
-            if (daten.listeBlacklist.addWithoutNotification(rule)) {
+            val rowIndex = daten.blacklist.rules.size
+            if (daten.blacklist.rules.addWithoutNotification(rule)) {
                 tableModel.ruleInserted(rowIndex)
                 resetRuleEntryFields()
                 scheduleBlacklistRulesChanged()
@@ -532,7 +532,7 @@ class PanelBlacklist(
             val selectedIndices = jTableBlacklist.selectionModel.selectedIndices
             if (selectedIndices.size == 1) {
                 val modelIndex = jTableBlacklist.convertRowIndexToModel(selectedIndices[0])
-                daten.listeBlacklist.removeAtWithoutNotification(modelIndex)
+                daten.blacklist.rules.removeAtWithoutNotification(modelIndex)
                 tableModel.ruleRemoved(modelIndex)
                 scheduleBlacklistRulesChanged()
             } else {
@@ -540,7 +540,7 @@ class PanelBlacklist(
                     val modelIndex = jTableBlacklist.convertRowIndexToModel(selectedRow)
                     tableModel.getRule(modelIndex)
                 }
-                if (daten.listeBlacklist.removeAllWithoutNotification(rules)) {
+                if (daten.blacklist.rules.removeAllWithoutNotification(rules)) {
                     tableModel.rulesChanged()
                     scheduleBlacklistRulesChanged()
                 }
@@ -553,7 +553,7 @@ class PanelBlacklist(
                 .distinct()
             selectedIndices.forEach { modelIndex ->
                 val rule = tableModel.getRule(modelIndex)
-                if (daten.listeBlacklist.replaceAtIfUniqueWithoutNotification(
+                if (daten.blacklist.rules.replaceAtIfUniqueWithoutNotification(
                         modelIndex,
                         rule.copy(active = !rule.active),
                     )

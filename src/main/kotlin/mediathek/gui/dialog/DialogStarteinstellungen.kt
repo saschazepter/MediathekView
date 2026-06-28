@@ -155,14 +155,14 @@ class DialogStarteinstellungen(
     private suspend fun statusPset() {
         jButtonAnpassen.isVisible = false
         jCheckBoxAlleEinstellungen.isVisible = true
-        if (daten.listePset.isEmpty()) {
+        if (daten.programSets.list.isEmpty()) {
             addStandardSetWithNavigationLock(parentComponent)
         }
 
         if (jCheckBoxAlleEinstellungen.isSelected) {
-            setMainContent(PanelPsetLang(parentComponent, daten, daten.listePset))
+            setMainContent(PanelPsetLang(parentComponent, daten, daten.programSets.list))
         } else {
-            setMainContent(PanelPsetKurz(parentComponent, daten.listePset))
+            setMainContent(PanelPsetKurz(parentComponent, daten.programSets.list))
         }
         status = State.FERTIG
         setContinueButtonText()
@@ -174,7 +174,7 @@ class DialogStarteinstellungen(
         } ?: return false
 
         ListePset.progMusterErsetzen(parent, pSet)
-        daten.listePset.addPset(pSet)
+        daten.programSets.list.addPset(pSet)
         ApplicationConfiguration.getInstance().standardProgramSetVersion = pSet.version
         return true
     }

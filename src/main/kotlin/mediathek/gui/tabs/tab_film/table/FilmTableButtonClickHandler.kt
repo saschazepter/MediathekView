@@ -50,10 +50,10 @@ class FilmTableButtonClickHandler(
         when (host.table().convertColumnIndexToModel(column)) {
             DatenFilm.FILM_ABSPIELEN -> host.getCurrentlySelectedFilm().ifPresent { film ->
                 var dontPlay = false
-                val download = daten.listeDownloadsButton.getDownloadUrlFilm(film.urlNormalQuality)
+                val download = daten.downloads.buttonQueue.getDownloadUrlFilm(film.urlNormalQuality)
                 if (download?.runtime?.runState?.status == StartStatus.RUNNING) {
                     dontPlay = true
-                    daten.listeDownloadsButton.delDownloadButton(film.urlNormalQuality)
+                    daten.downloads.buttonQueue.delDownloadButton(film.urlNormalQuality)
                 }
                 if (!dontPlay) {
                     host.playSelectedFilm()

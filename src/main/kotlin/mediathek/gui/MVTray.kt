@@ -50,7 +50,7 @@ class MVTray(
             }
 
             // Anzahl, Anz-Abo, Anz-Down, nicht gestarted, laufen, fertig OK, fertig fehler
-            val info = daten.listeDownloads.starts
+            val info = daten.downloads.queue.starts
             if (info.error > 0) {
                 // es gibt welche mit Fehler
                 if (trayState != TrayState.ERROR) {
@@ -151,7 +151,7 @@ class MVTray(
 
     private val textInfos: String
         get() {
-            val filmList = daten.listeFilme
+            val filmList = daten.filmCatalog.allFilms
             return buildString {
                 append("Filmliste erstellt: ")
                 append(filmList.metaData.generationDateTimeAsString)
@@ -165,7 +165,7 @@ class MVTray(
 
     private val infoTextDownloads: String
         get() {
-            val info = daten.listeDownloads.starts
+            val info = daten.downloads.queue.starts
             return buildString {
                 append("Downloads: ")
                 append(info.total_starts)
@@ -176,7 +176,7 @@ class MVTray(
 
                     if (info.running > 0) {
                         append(" (")
-                        append(daten.downloadInfos.bandwidthStr)
+                        append(daten.downloads.info.bandwidthStr)
                         append(')')
                     }
 

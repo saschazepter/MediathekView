@@ -42,7 +42,7 @@ class RefreshAboWorker(
         }
 
         withContext(Dispatchers.IO) {
-            daten.listeAbo.setAboFuerFilm(daten.listeFilme, false)
+            daten.abos.list.setAboFuerFilm(daten.filmCatalog.allFilms, false)
         }
     }
 }

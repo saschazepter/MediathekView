@@ -25,7 +25,7 @@ internal class IoXmlSchreibenTest {
 
     @AfterEach
     fun tearDown() {
-        daten.downloadStartCoordinator.shutdown()
+        daten.downloads.shutdown()
     }
 
     @Test
@@ -84,7 +84,7 @@ internal class IoXmlSchreibenTest {
 
     @Test
     fun writeConfigurationFileWritesDownloadsToJsonOnly() {
-        val downloads = daten.listeDownloads
+        val downloads = daten.downloads.queue
         val originalDownloads = ArrayList(downloads)
         try {
             downloads.clear()
@@ -124,7 +124,7 @@ internal class IoXmlSchreibenTest {
 
     @Test
     fun writeConfigurationFileDoesNotWriteAbosToXml() {
-        val abos = daten.listeAbo
+        val abos = daten.abos.list
         val originalAbos = ArrayList(abos)
         try {
             abos.clear()

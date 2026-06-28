@@ -67,7 +67,7 @@ class DownloadStartCoordinator(private val daten: Daten) {
             download.runtime.startRun()
             launchDownloadThread(download)
             // gestartete Filme (originalURL des Films) auch in die History eintragen
-            SeenHistoryController(daten.listeBookmarkList).use { historyController ->
+            SeenHistoryController().use { historyController ->
                 historyController.markSeen(film)
             }
 
@@ -76,7 +76,7 @@ class DownloadStartCoordinator(private val daten: Daten) {
                 film.bookmark?.seen = true
             }
             // und jetzt noch in die Downloadliste damit die Farbe im Tab Filme passt
-            daten.listeDownloadsButton.addMitNummer(download)
+            daten.downloads.buttonQueue.addMitNummer(download)
         }
     }
 
@@ -110,7 +110,7 @@ class DownloadStartCoordinator(private val daten: Daten) {
                 return
             }
 
-            daten.listeDownloadsButton.buttonStartsPutzen() // Button Starts aus der Liste löschen
+            daten.downloads.buttonQueue.buttonStartsPutzen() // Button Starts aus der Liste löschen
         } catch (ex: Exception) {
             logger.error("Fehler im Starter-Scheduler:", ex)
         }
@@ -127,7 +127,7 @@ class DownloadStartCoordinator(private val daten: Daten) {
     private fun getNextStart(): DatenDownload? {
         // get: erstes passendes Element der Liste zurückgeben oder null
         // und versuchen dass bei mehreren laufenden Downloads ein anderer Sender gesucht wird
-        val listeDownloads = daten.listeDownloads
+        val listeDownloads = daten.downloads.queue
         var download = listeDownloads.nextStart
         if (download == null) {
             // dann versuchen einen Fehlerhaften nochmal zu starten

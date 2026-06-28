@@ -25,7 +25,7 @@ import org.apache.logging.log4j.LogManager
 class FilmDuplicateEvaluationTask(
     private val daten: Daten,
 ) : Runnable {
-    private val listeFilme: ListeFilme = daten.listeFilme
+    private val listeFilme: ListeFilme = daten.filmCatalog.allFilms
 
     private fun printDuplicateStatistics() {
         val statisticsMap = listeFilme.parallelStream()
@@ -33,7 +33,7 @@ class FilmDuplicateEvaluationTask(
             .countFilmsBySender()
         val duplicateCount = statisticsMap.values.sum()
 
-        replaceFilmStatistics(daten.duplicateStatistics, statisticsMap)
+        replaceFilmStatistics(daten.filmCatalog.duplicateStatistics, statisticsMap)
 
         logger.trace("Number of duplicates: {}", duplicateCount)
     }

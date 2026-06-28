@@ -83,8 +83,8 @@ class DownloadAndQuitRunner(
 
         logger.info("Loading downloads from abos...")
         prepareAboSearch(daten)
-        daten.listeDownloads.abosAuffrischen()
-        val addedDownloads = daten.listeDownloads.abosSuchen(null)
+        daten.downloads.queue.abosAuffrischen()
+        val addedDownloads = daten.downloads.queue.abosSuchen(null)
         updateAboDownloadSizes(addedDownloads)
 
         val downloadsToStart = collectDownloadsToStart(daten)
@@ -103,7 +103,7 @@ class DownloadAndQuitRunner(
         }
 
         logger.info("Starting {} abo download(s)...", downloadsToStart.size)
-        DownloadStartActions.startAll(daten, downloadsToStart)
+        DownloadStartActions.startAll(downloadsToStart)
         if (shutdownRequested.get()) {
             stopDownloads(downloadsToStart)
         }
@@ -142,7 +142,7 @@ class DownloadAndQuitRunner(
             }
 
             override fun fertig(event: ListenerFilmeLadenEvent) {
-                daten.filmeLaden.removeFilmLoadListener(this)
+                daten.filmCatalog.loader.removeFilmLoadListener(this)
                 if (event.fehler) {
                     logger.error("Filmlist update failed.")
                 } else {
@@ -164,10 +164,10 @@ class DownloadAndQuitRunner(
             }
         }
 
-        daten.filmeLaden.addFilmLoadListener(listener)
-        val loadStarted = daten.filmeLaden.loadFilmlist("", false)
+        daten.filmCatalog.loader.addFilmLoadListener(listener)
+        val loadStarted = daten.filmCatalog.loader.loadFilmlist("", false)
         if (!loadStarted) {
-            daten.filmeLaden.removeFilmLoadListener(listener)
+            daten.filmCatalog.loader.removeFilmLoadListener(listener)
             logger.info("Filmlist update skipped because another filmlist load is already running.")
             return@withContext true
         }
@@ -175,8 +175,8 @@ class DownloadAndQuitRunner(
     }
 
     private suspend fun prepareAboSearch(daten: Daten) = withContext(Dispatchers.Default) {
-        logger.info("Preparing abo matches for {} film(s)...", daten.listeFilme.size)
-        daten.listeAbo.setAboFuerFilm(daten.listeFilme, false)
+        logger.info("Preparing abo matches for {} film(s)...", daten.filmCatalog.allFilms.size)
+        daten.abos.list.setAboFuerFilm(daten.filmCatalog.allFilms, false)
     }
 
     private suspend fun updateAboDownloadSizes(downloads: List<DatenDownload>) = withContext(Dispatchers.IO) {
@@ -199,20 +199,20 @@ class DownloadAndQuitRunner(
     }
 
     private fun loadLocalFilmlist(daten: Daten) {
-        if (daten.listeFilme.isNotEmpty()) {
+        if (daten.filmCatalog.allFilms.isNotEmpty()) {
             return
         }
 
         logger.info("Reading local filmlist cache...")
         FilmListReader().use { reader ->
             val numDays = ApplicationConfiguration.getInstance().filmListLoadNumDays
-            reader.readFilmListe(StandardLocations.getFilmlistFilePathString(), daten.listeFilme, numDays)
+            reader.readFilmListe(StandardLocations.getFilmlistFilePathString(), daten.filmCatalog.allFilms, numDays)
         }
     }
 
     private fun collectDownloadsToStart(daten: Daten): ArrayList<DatenDownload> {
         val downloadsToStart = ArrayList<DatenDownload>()
-        for (download in daten.listeDownloads) {
+        for (download in daten.downloads.queue) {
             if (!download.isFromAbo || download.isAutomaticStartBlockedByAbo) {
                 continue
             }
@@ -295,7 +295,7 @@ class DownloadAndQuitRunner(
             return
         }
 
-        daten.downloadStartCoordinator.delayNewStarts()
+        daten.downloads.starter.delayNewStarts()
         for (download in downloads) {
             val start = download.runtime.runState
             if (start == null) {
@@ -319,11 +319,11 @@ class DownloadAndQuitRunner(
 
     private fun persistState(daten: Daten) {
         logger.info("Persisting download and configuration state...")
-        daten.listeDownloads.listePutzen()
+        daten.downloads.queue.listePutzen()
         SeenHistoryController().use { history ->
             history.performMaintenance()
         }
-        daten.listeBookmarkList.saveToFile()
+        daten.bookmarks.saveToFile()
         daten.allesSpeichern()
         ApplicationConfiguration.getInstance().writeConfiguration()
     }

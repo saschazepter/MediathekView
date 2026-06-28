@@ -47,7 +47,7 @@ class PsetButtonsPanel(
     protected fun setupButtonLayout() {
         btnPanel.removeAll()
 
-        for (pset in daten.listePset.listeButton) {
+        for (pset in daten.programSets.list.listeButton) {
             if (!pset.isFreeLine) {
                 val component: JComponent = if (pset.isLabel) {
                     JLabel(pset.name)

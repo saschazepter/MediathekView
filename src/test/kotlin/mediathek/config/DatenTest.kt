@@ -31,13 +31,13 @@ internal class DatenTest {
     fun tearDown() {
         StandardLocations.portableBaseDirectory = previousPortableBaseDirectory
         backupAlreadyHandled = previousBackupAlreadyHandled
-        daten.downloadStartCoordinator.shutdown()
+        daten.downloads.shutdown()
     }
 
     @Test
     fun allesSpeichernWritesBlacklistRulesToJsonOnly() {
         StandardLocations.portableBaseDirectory = tempDir.toString()
-        val blacklist = daten.listeBlacklist
+        val blacklist = daten.blacklist.rules
         val originalBlacklist = ArrayList(blacklist)
         try {
             blacklist.clear()
@@ -65,7 +65,7 @@ internal class DatenTest {
     @Test
     fun allesSpeichernWritesAboRulesToJsonOnly() {
         StandardLocations.portableBaseDirectory = tempDir.toString()
-        val abos = daten.listeAbo
+        val abos = daten.abos.list
         val originalAbos = ArrayList(abos)
         try {
             abos.clear()

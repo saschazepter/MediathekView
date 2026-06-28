@@ -68,7 +68,7 @@ class DuplicateFilmDetailsDialog(
         val url = film.urlNormalQuality
         dialogScope.launch {
             val duplicates = withContext(Dispatchers.Default) {
-                daten.listeFilme
+                daten.filmCatalog.allFilms
                     .asSequence()
                     .filter { it.urlNormalQuality == url }
                     .toList()

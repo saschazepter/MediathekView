@@ -42,7 +42,7 @@ class GuiFilmeModelHelper(
             }
         }
 
-    private fun allFilms(): Collection<DatenFilm> = daten.listeFilmeNachBlackList
+    private fun allFilms(): Collection<DatenFilm> = daten.filmCatalog.filteredFilms
 
     private fun filterFilms(
         allFilms: Collection<DatenFilm>,

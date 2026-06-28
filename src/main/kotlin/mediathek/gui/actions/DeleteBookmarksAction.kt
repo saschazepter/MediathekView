@@ -53,7 +53,7 @@ class DeleteBookmarksAction(
             JOptionPane.YES_NO_OPTION,
         )
         if (result == JOptionPane.YES_OPTION) {
-            val bookmarkList = daten.listeBookmarkList
+            val bookmarkList = daten.bookmarks.list
             bookmarkList.clear()
             bookmarkList.saveToFile()
             JOptionPane.showMessageDialog(

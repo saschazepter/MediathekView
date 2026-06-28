@@ -198,7 +198,7 @@ class DownloadsTableMouseHandler(
         val itemDelAbo = JMenuItem("Abo löschen")
         val datenAbo = datenDownload
             ?.film
-            ?.let { film -> daten.listeAbo.getAboForFilmFast(film, false) }
+            ?.let { film -> daten.abos.list.getAboForFilmFast(film, false) }
 
         if (datenAbo == null) {
             submenueAbo.isEnabled = false
@@ -215,7 +215,7 @@ class DownloadsTableMouseHandler(
     }
 
     private fun enableAboActions(itemChangeAbo: JMenuItem, itemDelAbo: JMenuItem, datenAbo: DatenAbo) {
-        itemDelAbo.addActionListener { daten.listeAbo.aboLoeschen(datenAbo) }
+        itemDelAbo.addActionListener { daten.abos.list.aboLoeschen(datenAbo) }
         itemChangeAbo.addActionListener {
             if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(ownerFrame, daten)) {
                 return@addActionListener
@@ -223,7 +223,7 @@ class DownloadsTableMouseHandler(
             val dialog = DialogEditAbo(ownerFrame, daten, datenAbo, false)
             dialog.isVisible = true
             if (dialog.successful()) {
-                daten.listeAbo.aenderungMelden()
+                daten.abos.list.aenderungMelden()
             }
         }
     }
@@ -249,7 +249,7 @@ class DownloadsTableMouseHandler(
             return
         }
 
-        val pSetPlay = daten.listePset.psetAbspielen
+        val pSetPlay = daten.programSets.list.psetAbspielen
         if (pSetPlay == null) {
             showMissingPlayerMessage()
         } else {
@@ -264,7 +264,7 @@ class DownloadsTableMouseHandler(
             urlNormalQuality = download.downloadUrl
             lowQualityUrl = ""
         }
-        daten.downloadStartCoordinator.urlMitProgrammStarten(gruppe, filmClone, "")
+        daten.downloads.starter.urlMitProgrammStarten(gruppe, filmClone, "")
     }
 
     private fun showMissingPlayerMessage() {

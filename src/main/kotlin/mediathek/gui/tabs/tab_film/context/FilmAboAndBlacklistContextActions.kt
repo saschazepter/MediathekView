@@ -35,7 +35,7 @@ class FilmAboAndBlacklistContextActions(
     private val daten: Daten,
     private val selectedFilmAtPopupPoint: () -> DatenFilm?,
 ) {
-    private val createAboAction = CreateNewAboAction(daten, daten.listeAbo) { host.ownerFrame() }
+    private val createAboAction = CreateNewAboAction(daten, daten.abos.list) { host.ownerFrame() }
     private val aboWithoutTitleAction = AboActionListener(false)
     private val aboWithTitleAction = AboActionListener(true)
 
@@ -59,7 +59,7 @@ class FilmAboAndBlacklistContextActions(
         val itemBlackSender = JMenuItem("Sender in die Blacklist einfügen")
         itemBlackSender.addActionListener {
             addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule(film.sender, "", "", ""))
+                daten.blacklist.rules.add(BlacklistRule(film.sender, "", "", ""))
             }
         }
         submenuBlack.add(itemBlackSender)
@@ -67,7 +67,7 @@ class FilmAboAndBlacklistContextActions(
         val itemBlackThema = JMenuItem("Thema in die Blacklist einfügen")
         itemBlackThema.addActionListener {
             addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule("", film.thema, "", ""))
+                daten.blacklist.rules.add(BlacklistRule("", film.thema, "", ""))
             }
         }
         submenuBlack.add(itemBlackThema)
@@ -75,7 +75,7 @@ class FilmAboAndBlacklistContextActions(
         val itemAddTitleToBlacklist = JMenuItem("Titel in die Blacklist einfügen")
         itemAddTitleToBlacklist.addActionListener {
             addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule("", "", film.title, ""))
+                daten.blacklist.rules.add(BlacklistRule("", "", film.title, ""))
             }
         }
         submenuBlack.add(itemAddTitleToBlacklist)
@@ -83,7 +83,7 @@ class FilmAboAndBlacklistContextActions(
         val itemBlackSenderThema = JMenuItem("Sender und Thema in die Blacklist einfügen")
         itemBlackSenderThema.addActionListener {
             addBlacklistRuleForSelectedFilm { film ->
-                daten.listeBlacklist.add(BlacklistRule(film.sender, film.thema, "", ""))
+                daten.blacklist.rules.add(BlacklistRule(film.sender, film.thema, "", ""))
             }
         }
         submenuBlack.add(itemBlackSenderThema)
@@ -94,7 +94,7 @@ class FilmAboAndBlacklistContextActions(
         itemAbo: JMenuItem,
         itemAboMitTitel: JMenuItem,
     ) {
-        if (daten.listeAbo.getAboForFilmFast(film, false) != null) {
+        if (daten.abos.list.getAboForFilmFast(film, false) != null) {
             itemAbo.isEnabled = false
             itemAboMitTitel.isEnabled = false
         } else {
@@ -110,9 +110,9 @@ class FilmAboAndBlacklistContextActions(
             selectedFilmAtPopupPoint()?.let { film ->
                 host.setSelectionUpdatesSuspended(true)
                 try {
-                    val datenAbo = daten.listeAbo.getAboForFilmFast(film, false)
+                    val datenAbo = daten.abos.list.getAboForFilmFast(film, false)
                     if (datenAbo != null) {
-                        daten.listeAbo.aboLoeschen(datenAbo)
+                        daten.abos.list.aboLoeschen(datenAbo)
                     } else {
                         createAboAction.createAbo(
                             aboname = film.thema,

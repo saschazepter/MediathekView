@@ -54,7 +54,7 @@ class DuplicateStatisticsDialog(
     }
 
     private fun setupCommonTable() {
-        val commonStats = daten.commonStatistics
+        val commonStats = daten.filmCatalog.commonStatistics
         val sortedList = SortedList(commonStats, compareBy(FilmStatistics::sender))
         val model = GlazedListsSwing.eventTableModelWithThreadProxyList(sortedList, tableFormat)
         model.addTableModelListener { updateTotalCommonStats() }
@@ -62,7 +62,7 @@ class DuplicateStatisticsDialog(
     }
 
     private fun setupDuplicatesTable() {
-        val duplicateStats = daten.duplicateStatistics
+        val duplicateStats = daten.filmCatalog.duplicateStatistics
         val sortedList = SortedList(duplicateStats, compareBy(FilmStatistics::sender))
         val model = GlazedListsSwing.eventTableModelWithThreadProxyList(sortedList, tableFormat)
         model.addTableModelListener { updateTotalDuplicatesStats() }
@@ -82,14 +82,14 @@ class DuplicateStatisticsDialog(
 
     private fun updateTotalCommonStats() {
         resizeSenderColumnWidth(tblCommon)
-        val statisticsList = daten.commonStatistics
+        val statisticsList = daten.filmCatalog.commonStatistics
         val total = statisticsList.sumCounts()
         lblTotalCommon.text = "Gesamtanzahl Filme: $total"
     }
 
     private fun updateTotalDuplicatesStats() {
         resizeSenderColumnWidth(tblDuplicates)
-        val statisticsList = daten.duplicateStatistics
+        val statisticsList = daten.filmCatalog.duplicateStatistics
         val total = statisticsList.sumCounts()
         lblTotalDuplicates.text = "Gesamtanzahl Duplikate: $total"
     }

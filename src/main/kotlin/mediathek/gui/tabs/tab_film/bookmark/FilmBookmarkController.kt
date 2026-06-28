@@ -33,7 +33,7 @@ class FilmBookmarkController(private val host: Host) {
     }
 
     fun updateBookmarkListAndRefresh(filmList: List<DatenFilm>) {
-        val bookmarkList = host.daten().listeBookmarkList
+        val bookmarkList = host.daten().bookmarks.list
         bookmarkList.checkAndBookmarkMovies(filmList)
         bookmarkList.saveToFile()
         host.repaintOwner()

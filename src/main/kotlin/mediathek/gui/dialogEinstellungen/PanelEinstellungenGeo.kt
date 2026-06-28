@@ -148,7 +148,7 @@ class PanelEinstellungenGeo @JvmOverloads constructor(
     }
 
     private fun filterBlacklistAndNotifyChanges() {
-        daten.listeBlacklist.filterListe()
+        daten.blacklist.applyToFilmList()
         MessageBus.messageBus.publishAsync(GeoStateChangedEvent())
         MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
     }

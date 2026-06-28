@@ -30,7 +30,7 @@ object GuiModelHelperFactory {
         owner: Component,
         searchFieldData: SearchFieldData,
         filterController: FilmFilterController
-    ): GuiModelHelper = if (daten.listeFilmeNachBlackList is IndexedFilmList) {
+    ): GuiModelHelper = if (daten.filmCatalog.filteredFilms is IndexedFilmList) {
         LuceneGuiFilmeModelHelper(daten, owner, searchFieldData, filterController)
     } else {
         GuiFilmeModelHelper(daten, searchFieldData, filterController)

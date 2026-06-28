@@ -159,7 +159,7 @@ class MVDownloadsTable(
     @Synchronized
     fun sortDownloadListByTableRows() {
         val tableModel = model
-        val downloads = daten.listeDownloads
+        val downloads = daten.downloads.queue
 
         for (row in 0 until rowCount) {
             val download = tableModel.getValueAt(convertRowIndexToModel(row), DownloadColumns.REF) as DatenDownload
@@ -257,10 +257,10 @@ class MVDownloadsTable(
 
                 val download = tableModel.getValueAt(convertRowIndexToModel(row), DownloadColumns.REF) as DatenDownload
                 downloadsToMove.add(download)
-                daten.listeDownloads.remove(download)
+                daten.downloads.queue.remove(download)
             }
 
-            daten.listeDownloads.addAll(insertionIndex, downloadsToMove)
+            daten.downloads.queue.addAll(insertionIndex, downloadsToMove)
             rowSorter?.sortKeys = null
             restoreSelectedTableRows()
 

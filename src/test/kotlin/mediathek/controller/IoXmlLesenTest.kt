@@ -26,12 +26,12 @@ internal class IoXmlLesenTest {
 
     @AfterEach
     fun tearDown() {
-        daten.downloadStartCoordinator.shutdown()
+        daten.downloads.shutdown()
     }
 
     @Test
     fun datenLesenReadsProgramSetsAndFollowingPrograms() {
-        val listePset = daten.listePset
+        val listePset = daten.programSets.list
         val originalState = ListePset()
         originalState.addAll(listePset)
         try {
@@ -113,7 +113,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenMigratesLegacyDownloadsToJson() {
-        val downloads = daten.listeDownloads
+        val downloads = daten.downloads.queue
         val originalDownloads = ArrayList(downloads)
         try {
             downloads.clear()
@@ -157,7 +157,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenUsesJsonDownloadsWhenPresent() {
-        val downloads = daten.listeDownloads
+        val downloads = daten.downloads.queue
         val originalDownloads = ArrayList(downloads)
         try {
             downloads.clear()
@@ -206,7 +206,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenMigratesLegacyBlacklistRulesToJson() {
-        val blacklist = daten.listeBlacklist
+        val blacklist = daten.blacklist.rules
         val originalBlacklist = ArrayList(blacklist)
         try {
             blacklist.clear()
@@ -250,7 +250,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenUsesJsonBlacklistRulesWhenPresent() {
-        val blacklist = daten.listeBlacklist
+        val blacklist = daten.blacklist.rules
         val originalBlacklist = ArrayList(blacklist)
         try {
             blacklist.clear()
@@ -287,7 +287,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenMigratesLegacyAbosToJson() {
-        val abos = daten.listeAbo
+        val abos = daten.abos.list
         val originalAbos = ArrayList(abos)
         try {
             abos.clear()
@@ -349,7 +349,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenUsesJsonAbosWhenPresent() {
-        val abos = daten.listeAbo
+        val abos = daten.abos.list
         val originalAbos = ArrayList(abos)
         try {
             abos.clear()

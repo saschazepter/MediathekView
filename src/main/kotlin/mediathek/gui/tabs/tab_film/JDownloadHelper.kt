@@ -1,6 +1,5 @@
 package mediathek.gui.tabs.tab_film
 
-import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.history.SeenHistoryController
@@ -26,7 +25,6 @@ import kotlin.time.toJavaDuration
 
 class JDownloadHelper(
     private val owner: Component,
-    private val daten: Daten,
 ) {
     private fun downloadUrl(url: HttpUrl, film: DatenFilm) {
         try {
@@ -44,7 +42,7 @@ class JDownloadHelper(
             val client = builder.build()
             client.newCall(request).execute().use {
                 if (it.isSuccessful)
-                    SeenHistoryController(daten.listeBookmarkList).use { historyController ->
+                    SeenHistoryController().use { historyController ->
                         historyController.markSeen(film)
                     }
             }

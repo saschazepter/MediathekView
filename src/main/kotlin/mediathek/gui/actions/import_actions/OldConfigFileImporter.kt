@@ -43,7 +43,7 @@ class OldConfigFileImporter(
                             } else if (importBlacklist && parser.localName == LegacyBlacklistRuleXml.TAG) {
                                 try {
                                     val rule = LegacyBlacklistRuleXml.readRule(parser)
-                                    if (daten.listeBlacklist.addWithoutNotification(rule)) {
+                                    if (daten.blacklist.rules.addWithoutNotification(rule)) {
                                         foundBlacklistEntries++
                                     }
                                 }
@@ -70,11 +70,11 @@ class OldConfigFileImporter(
         }
 
         if (foundAbos > 0) {
-            daten.listeAbo.finishLoading()
-            daten.listeAbo.aenderungMelden()
+            daten.abos.list.finishLoading()
+            daten.abos.list.aenderungMelden()
         }
         if (foundBlacklistEntries > 0)
-            daten.listeBlacklist.filterListAndNotifyListeners()
+            daten.blacklist.rules.filterListAndNotifyListeners()
         if (foundReplaceListEntries > 0)
             MessageBus.messageBus.publishAsync(ReplaceListChangedEvent())
 
@@ -86,7 +86,7 @@ class OldConfigFileImporter(
     private fun importAboEntry(parser: XMLStreamReader): Boolean {
         return try {
             val datenAbo = LegacyAboRuleXml.readAbo(parser)
-            daten.listeAbo.addAboFromConfig(datenAbo)
+            daten.abos.list.addAboFromConfig(datenAbo)
             true
         }
         catch (_: Exception) {

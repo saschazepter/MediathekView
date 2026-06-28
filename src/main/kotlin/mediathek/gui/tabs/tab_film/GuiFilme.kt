@@ -430,7 +430,7 @@ class GuiFilme(
         val extensionArea = JPanel(VerticalLayout())
         add(extensionArea, BorderLayout.SOUTH)
 
-        val searchField = if (daten.listeFilmeNachBlackList is IndexedFilmList) {
+        val searchField = if (daten.filmCatalog.filteredFilms is IndexedFilmList) {
             LuceneSearchField(searchFieldHost)
         } else {
             RegularSearchField(searchFieldHost)
@@ -558,7 +558,7 @@ class GuiFilme(
     }
 
     private fun requestZeitraumReload() {
-        daten.listeBlacklist.filterListe()
+        daten.blacklist.applyToFilmList()
         requestTableReload()
     }
 

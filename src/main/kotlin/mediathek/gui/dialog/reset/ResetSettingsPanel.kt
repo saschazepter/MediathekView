@@ -41,7 +41,7 @@ class ResetSettingsPanel(
             DialogHilfe(parent, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_RESET)).isVisible = true
         }
         jButtonResetSets.addActionListener {
-            val listePset = daten.listePset
+            val listePset = daten.programSets.list
             val previousPsets = ListePset()
             previousPsets.addAll(listePset)
 
