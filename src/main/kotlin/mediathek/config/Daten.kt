@@ -25,17 +25,13 @@ import ca.odell.glazedlists.SortedList
 import mediathek.SplashScreenLifecycle
 import mediathek.controller.AboRuleStorage
 import mediathek.controller.BlacklistRuleStorage
-import mediathek.controller.ConfigDataStore
 import mediathek.controller.IoXmlLesen
 import mediathek.controller.IoXmlSchreiben
+import mediathek.controller.XmlConfigData
 import mediathek.controller.starter.DownloadServices
-import mediathek.daten.ListeAbo
-import mediathek.daten.ListeDownloads
-import mediathek.daten.ListePset
 import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
-import mediathek.daten.blacklist.ListeBlacklist
 import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.bookmark.BookmarkServices
 import mediathek.tool.GermanStringSorter
@@ -47,7 +43,7 @@ import java.nio.file.Path
 import java.util.concurrent.ExecutionException
 import javax.swing.JOptionPane
 
-class Daten : ConfigDataStore {
+class Daten {
     val programSets: ProgramSetRepository = ProgramSetRepository()
     val filmCatalog: FilmCatalog = FilmCatalog(this)
     val downloads: DownloadServices = DownloadServices(this)
@@ -55,14 +51,13 @@ class Daten : ConfigDataStore {
     val bookmarks: BookmarkServices = BookmarkServices(this)
     val abos: AboServices = AboServices(filmCatalog.allFilms)
 
-    override val configProgramSets: ListePset
-        get() = programSets.list
-    override val configDownloads: ListeDownloads
-        get() = downloads.queue
-    override val configBlacklistRules: ListeBlacklist
-        get() = blacklist.rules
-    override val configAbos: ListeAbo
-        get() = abos.list
+    val xmlConfigData: XmlConfigData
+        get() = XmlConfigData(
+            programSets = programSets.list,
+            downloads = downloads.queue,
+            blacklistRules = blacklist.rules,
+            abos = abos.list,
+        )
 
     private var backupAlreadyHandled = false
 
@@ -104,7 +99,7 @@ class Daten : ConfigDataStore {
         val xmlFilePath = StandardLocations.getMediathekXmlFile()
 
         if (Files.exists(xmlFilePath)) {
-            val configReader = IoXmlLesen(this)
+            val configReader = IoXmlLesen(xmlConfigData)
             if (configReader.datenLesen(xmlFilePath)) {
                 return true
             }
@@ -153,7 +148,7 @@ class Daten : ConfigDataStore {
             for (path in backupPaths) {
                 clearKonfig()
                 logger.info("Versuch Backup zu laden: {}", path.toString())
-                val configReader = IoXmlLesen(this)
+                val configReader = IoXmlLesen(xmlConfigData)
                 if (configReader.datenLesen(path)) {
                     logger.info("Backup hat geklappt: {}", path.toString())
                     return true
@@ -169,7 +164,7 @@ class Daten : ConfigDataStore {
             backupAlreadyHandled = ConfigurationBackupService.createConfigurationBackupCopies()
         }
 
-        val configWriter = IoXmlSchreiben(this)
+        val configWriter = IoXmlSchreiben(xmlConfigData)
         configWriter.writeConfigurationFile(StandardLocations.getMediathekXmlFile())
         writeBlacklistRules()
         writeAboRules()

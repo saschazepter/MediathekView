@@ -54,7 +54,7 @@ internal class IoXmlSchreibenTest {
         }
         val exportFile = tempDir.resolve("pset.xml")
 
-        IoXmlSchreiben(daten).exportPset(arrayOf(pset), exportFile.toString())
+        IoXmlSchreiben(daten.xmlConfigData).exportPset(arrayOf(pset), exportFile.toString())
 
         assertTrue(Files.exists(exportFile))
         val imported = ListePsetVorlagen.importPsetFile(exportFile.toString(), false)
@@ -110,7 +110,7 @@ internal class IoXmlSchreibenTest {
             val configFile = tempDir.resolve("mediathek.xml")
             val storageFile = tempDir.resolve("downloads.json")
 
-            IoXmlSchreiben(daten, downloadStoragePath = storageFile).writeConfigurationFile(configFile)
+            IoXmlSchreiben(daten.xmlConfigData, downloadStoragePath = storageFile).writeConfigurationFile(configFile)
 
             val xml = Files.readString(configFile)
             assertTrue(Files.exists(storageFile))
@@ -137,7 +137,7 @@ internal class IoXmlSchreibenTest {
             )
             val configFile = tempDir.resolve("mediathek.xml")
 
-            IoXmlSchreiben(daten, downloadStoragePath = tempDir.resolve("downloads.json")).writeConfigurationFile(configFile)
+            IoXmlSchreiben(daten.xmlConfigData, downloadStoragePath = tempDir.resolve("downloads.json")).writeConfigurationFile(configFile)
 
             val xml = Files.readString(configFile)
             assertFalse(xml.contains("<Abonnement>"))

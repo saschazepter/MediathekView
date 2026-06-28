@@ -33,7 +33,7 @@ import javax.xml.stream.XMLStreamException
 import javax.xml.stream.XMLStreamReader
 
 class IoXmlLesen @JvmOverloads constructor(
-    private val daten: ConfigDataStore,
+    private val configData: XmlConfigData,
     private val downloadStoragePath: Path = StandardLocations.getDownloadsFilePath(),
     private val blacklistRuleStoragePath: Path = StandardLocations.getBlacklistRulesFilePath(),
     private val aboRuleStoragePath: Path = StandardLocations.getAboRulesFilePath(),
@@ -66,7 +66,7 @@ class IoXmlLesen @JvmOverloads constructor(
                                             datenPset = readProgramSet(parser)
                                             val currentPset = datenPset
                                             if (currentPset != null) {
-                                                daten.configProgramSets.add(currentPset)
+                                                configData.programSets.add(currentPset)
                                             }
                                         }
 
@@ -192,7 +192,7 @@ class IoXmlLesen @JvmOverloads constructor(
         try {
             val datenAbo = LegacyAboRuleXml.readAbo(parser)
             if (readLegacyAboRule) {
-                daten.configAbos.addAboFromConfig(datenAbo)
+                configData.abos.addAboFromConfig(datenAbo)
                 return true
             }
         } catch (ex: XMLStreamException) {
@@ -205,7 +205,7 @@ class IoXmlLesen @JvmOverloads constructor(
         try {
             val rule = LegacyBlacklistRuleXml.readRule(parser)
             if (readLegacyBlacklistRule) {
-                return daten.configBlacklistRules.addWithoutNotification(rule)
+                return configData.blacklistRules.addWithoutNotification(rule)
             }
         } catch (ex: XMLStreamException) {
             logger.error("Failed to read blacklist rule", ex)
@@ -218,7 +218,7 @@ class IoXmlLesen @JvmOverloads constructor(
             val download = DatenDownload.readFromConfig(parser)
             // abo entries will be generated...but we need this for CLI so far
             if (readLegacyDownload && !download.isFromAbo) {
-                daten.configDownloads.add(download)
+                configData.downloads.add(download)
                 return true
             }
         } catch (ex: Exception) {
@@ -229,7 +229,7 @@ class IoXmlLesen @JvmOverloads constructor(
 
     private fun readDownloadsFromJson() {
         try {
-            daten.configDownloads.addAll(DownloadStorage.read(downloadStoragePath))
+            configData.downloads.addAll(DownloadStorage.read(downloadStoragePath))
         } catch (ex: Exception) {
             logger.error("Failed to read downloads from {}", downloadStoragePath, ex)
         }
@@ -237,7 +237,7 @@ class IoXmlLesen @JvmOverloads constructor(
 
     private fun readBlacklistRulesFromJson() {
         try {
-            daten.configBlacklistRules.addAllWithoutNotification(BlacklistRuleStorage.read(blacklistRuleStoragePath))
+            configData.blacklistRules.addAllWithoutNotification(BlacklistRuleStorage.read(blacklistRuleStoragePath))
         } catch (ex: Exception) {
             logger.error("Failed to read blacklist rules from {}", blacklistRuleStoragePath, ex)
         }
@@ -245,7 +245,7 @@ class IoXmlLesen @JvmOverloads constructor(
 
     private fun readAboRulesFromJson() {
         try {
-            AboRuleStorage.read(aboRuleStoragePath).forEach(daten.configAbos::addAboFromConfig)
+            AboRuleStorage.read(aboRuleStoragePath).forEach(configData.abos::addAboFromConfig)
         } catch (ex: Exception) {
             logger.error("Failed to read abo rules from {}", aboRuleStoragePath, ex)
         }
@@ -253,7 +253,7 @@ class IoXmlLesen @JvmOverloads constructor(
 
     private fun writeMigratedDownloads() {
         try {
-            DownloadStorage.write(downloadStoragePath, daten.configDownloads)
+            DownloadStorage.write(downloadStoragePath, configData.downloads)
         } catch (ex: Exception) {
             logger.error("Failed to migrate downloads to {}", downloadStoragePath, ex)
         }
@@ -261,7 +261,7 @@ class IoXmlLesen @JvmOverloads constructor(
 
     private fun writeMigratedAboRules() {
         try {
-            AboRuleStorage.write(aboRuleStoragePath, daten.configAbos)
+            AboRuleStorage.write(aboRuleStoragePath, configData.abos)
         } catch (ex: Exception) {
             logger.error("Failed to migrate abo rules to {}", aboRuleStoragePath, ex)
         }
@@ -269,7 +269,7 @@ class IoXmlLesen @JvmOverloads constructor(
 
     private fun writeMigratedBlacklistRules() {
         try {
-            BlacklistRuleStorage.write(blacklistRuleStoragePath, daten.configBlacklistRules)
+            BlacklistRuleStorage.write(blacklistRuleStoragePath, configData.blacklistRules)
         } catch (ex: Exception) {
             logger.error("Failed to migrate blacklist rules to {}", blacklistRuleStoragePath, ex)
         }
@@ -287,8 +287,8 @@ class IoXmlLesen @JvmOverloads constructor(
     }
 
     private fun sortLists() {
-        daten.configDownloads.listeNummerieren()
-        daten.configAbos.finishLoading()
+        configData.downloads.listeNummerieren()
+        configData.abos.finishLoading()
     }
 
     private inline fun XMLStreamReader.use(block: (XMLStreamReader) -> Unit) {

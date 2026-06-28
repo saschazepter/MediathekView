@@ -835,7 +835,7 @@ public class PanelPsetLang extends JPanel {
             if (resultFile != null) {
                 var ziel = resultFile.getAbsolutePath();
 
-                var configWriter = new IoXmlSchreiben(daten);
+                var configWriter = new IoXmlSchreiben(daten.getXmlConfigData());
                 configWriter.exportPset(liste.toArray(new DatenPset[0]), ziel);
                 JOptionPane.showMessageDialog(this,
                         "Das Programmset wurde erfolgreich exportiert.",

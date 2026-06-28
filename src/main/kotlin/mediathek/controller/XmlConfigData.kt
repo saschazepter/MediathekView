@@ -5,9 +5,9 @@ import mediathek.daten.ListeDownloads
 import mediathek.daten.ListePset
 import mediathek.daten.blacklist.ListeBlacklist
 
-interface ConfigDataStore {
-    val configProgramSets: ListePset
-    val configDownloads: ListeDownloads
-    val configBlacklistRules: ListeBlacklist
-    val configAbos: ListeAbo
-}
+data class XmlConfigData(
+    val programSets: ListePset,
+    val downloads: ListeDownloads,
+    val blacklistRules: ListeBlacklist,
+    val abos: ListeAbo,
+)

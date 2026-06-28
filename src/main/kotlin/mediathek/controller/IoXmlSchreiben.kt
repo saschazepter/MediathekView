@@ -31,7 +31,7 @@ import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.XMLStreamWriter
 
 class IoXmlSchreiben @JvmOverloads constructor(
-    private val daten: ConfigDataStore,
+    private val configData: XmlConfigData,
     private val downloadStoragePath: Path = StandardLocations.getDownloadsFilePath(),
 ) {
     private val outFactory: XMLOutputFactory = XMLOutputFactory.newInstance()
@@ -83,7 +83,7 @@ class IoXmlSchreiben @JvmOverloads constructor(
         writer.writeCharacters("\n\n")
         writeNewLine(writer)
         // Proggruppen schreiben, bei Konfig-Datei
-        for (datenPset in daten.configProgramSets) {
+        for (datenPset in configData.programSets) {
             writeProgramSet(writer, datenPset)
             for (datenProg in datenPset.listeProg) {
                 xmlSchreibenDaten(writer, DatenProg.TAG, DatenProg.XML_NAMES, datenProg.toArray(), true)
@@ -103,7 +103,7 @@ class IoXmlSchreiben @JvmOverloads constructor(
 
     private fun writeDownloads() {
         try {
-            DownloadStorage.write(downloadStoragePath, daten.configDownloads)
+            DownloadStorage.write(downloadStoragePath, configData.downloads)
         } catch (ex: Exception) {
             logger.error("writeDownloads error!", ex)
         }
