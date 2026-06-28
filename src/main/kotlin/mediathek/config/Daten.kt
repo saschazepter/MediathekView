@@ -53,7 +53,7 @@ class Daten : ConfigDataStore {
     val downloads: DownloadServices = DownloadServices(this)
     val blacklist: BlacklistServices = BlacklistServices(this)
     val bookmarks: BookmarkServices = BookmarkServices(this)
-    val abos: AboServices = AboServices(this)
+    val abos: AboServices = AboServices(filmCatalog.allFilms)
 
     override val configProgramSets: ListePset
         get() = programSets.list

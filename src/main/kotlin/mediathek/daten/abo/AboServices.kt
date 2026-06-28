@@ -1,17 +1,18 @@
 package mediathek.daten.abo
 
 import kotlinx.coroutines.*
-import mediathek.config.Daten
 import mediathek.controller.history.AboHistoryController
 import mediathek.daten.DatenFilm
 import mediathek.daten.ListeAbo
+import mediathek.daten.ListeFilme
 import mediathek.gui.messages.AboListChangedEvent
 import mediathek.tool.MessageBus
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.ExecutionException
 
-class AboServices(daten: Daten) {
-    private val daten: Daten = daten
+class AboServices(
+    private val allFilms: ListeFilme,
+) {
     private val historyScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val filmAssignmentService = AboFilmAssignmentService()
     private var completedAboHistory: AboHistoryController? = null
@@ -28,7 +29,7 @@ class AboServices(daten: Daten) {
     fun assignAbosToFilms(removeMissingAbos: Boolean) {
         filmAssignmentService.assignAbosToFilms(
             list.assignmentSnapshot(),
-            daten.filmCatalog.allFilms,
+            allFilms,
             removeMissingAbos,
         )
     }
