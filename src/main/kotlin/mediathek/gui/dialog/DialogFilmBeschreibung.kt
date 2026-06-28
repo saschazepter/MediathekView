@@ -35,6 +35,7 @@ import javax.swing.JOptionPane
 
 class DialogFilmBeschreibung(
     private val parent: JFrame?,
+    private val daten: Daten,
     private val datenFilm: DatenFilm,
 ) : DialogFilmBeschreibungBase(parent) {
     private val dialogScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
@@ -118,7 +119,7 @@ class DialogFilmBeschreibung(
             applicationConfiguration.useFilenameReplaceTable,
             applicationConfiguration.onlyAsciiFilenames,
         )
-        val programSets = Daten.getInstance().listePset.listeSpeichern
+        val programSets = daten.listePset.listeSpeichern
         val targetPath = if (programSets.isEmpty()) {
             StandardLocations.getStandardDownloadPath()
         } else {

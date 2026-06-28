@@ -18,6 +18,7 @@
 
 package mediathek.mainwindow
 
+import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.gui.MVTray
 import raven.toast.Notifications
@@ -30,6 +31,7 @@ import javax.swing.JFrame
 import javax.swing.SwingUtilities
 
 class MainWindowPlatformIntegration(
+    private val daten: Daten,
     private val ownerFrame: JFrame,
     private val trayHost: TrayHost,
     private val loadFilmListAction: Action,
@@ -70,7 +72,7 @@ class MainWindowPlatformIntegration(
     fun initializeSystemTray() {
         val useTray = ApplicationConfiguration.getInstance().useTray
         if (tray == null && useTray) {
-            tray = systemTrayController.initialize(trayHost)
+            tray = systemTrayController.initialize(daten, trayHost)
         } else if (tray != null && !useTray) {
             closeSystemTray()
         }

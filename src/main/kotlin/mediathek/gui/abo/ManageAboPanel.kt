@@ -51,11 +51,14 @@ import java.time.LocalDate
 import javax.swing.*
 import kotlin.time.Duration.Companion.milliseconds
 
-class ManageAboPanel(dialog: JDialog, private val owner: JFrame) : JPanel() {
+class ManageAboPanel(
+    dialog: JDialog,
+    private val owner: JFrame,
+    private val daten: Daten,
+) : JPanel() {
     private val tabelle = AboTable()
-    private val daten = Daten.getInstance()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
-    private val createAboAction = CreateNewAboAction(daten.listeAbo) { owner }
+    private val createAboAction = CreateNewAboAction(daten, daten.listeAbo) { owner }
     private var tableBinding: AboTableBinding
     private lateinit var tableColumnSettings: AboTableColumnSettings
     private val infoPanel = JXStatusBar()
@@ -150,11 +153,11 @@ class ManageAboPanel(dialog: JDialog, private val owner: JFrame) : JPanel() {
         val multiEdit = selectedAbos.size > 1
         val dialogAbo = if (multiEdit) editedAbo.copyForEditDialog() else editedAbo
 
-        if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(owner)) {
+        if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(owner, daten)) {
             return
         }
 
-        val dialog = DialogEditAbo(owner, dialogAbo, multiEdit)
+        val dialog = DialogEditAbo(owner, daten, dialogAbo, multiEdit)
         dialog.title = EDIT_ABO_TEXT
         dialog.isVisible = true
         if (!dialog.successful()) {

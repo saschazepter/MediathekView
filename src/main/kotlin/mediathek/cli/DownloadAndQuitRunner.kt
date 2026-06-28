@@ -40,9 +40,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.seconds
 
-object DownloadAndQuitRunner {
-    const val INTERRUPTED_EXIT_CODE = 130
-
+class DownloadAndQuitRunner(
+    private val daten: Daten,
+) {
     private val logger = LogManager.getLogger()
     private val shutdownRequested = AtomicBoolean(false)
 
@@ -50,8 +50,6 @@ object DownloadAndQuitRunner {
     private var activeDownloads: List<DatenDownload> = emptyList()
 
     suspend fun run(): Int {
-        val daten = Daten.getInstance()
-
         logger.info("CLI download mode started.")
         try {
             return runInternal(daten)
@@ -105,7 +103,7 @@ object DownloadAndQuitRunner {
         }
 
         logger.info("Starting {} abo download(s)...", downloadsToStart.size)
-        DownloadStartActions.startAll(downloadsToStart)
+        DownloadStartActions.startAll(daten, downloadsToStart)
         if (shutdownRequested.get()) {
             stopDownloads(downloadsToStart)
         }
@@ -297,7 +295,7 @@ object DownloadAndQuitRunner {
             return
         }
 
-        Daten.getInstance().downloadStartCoordinator.delayNewStarts()
+        daten.downloadStartCoordinator.delayNewStarts()
         for (download in downloads) {
             val start = download.runtime.runState
             if (start == null) {
@@ -334,4 +332,8 @@ object DownloadAndQuitRunner {
         val url: String,
         val quality: String,
     )
+
+    companion object {
+        const val INTERRUPTED_EXIT_CODE = 130
+    }
 }

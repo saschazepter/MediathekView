@@ -52,6 +52,7 @@ import kotlin.coroutines.CoroutineContext
 
 class FilmStatisticsDialog(
     owner: Window,
+    private val daten: Daten,
     private val action: AbstractAction
 ) : JDialog(owner), CoroutineScope {
 
@@ -133,7 +134,7 @@ class FilmStatisticsDialog(
         val zoneId = ZoneId.systemDefault()
         val currentGeoLocation = ApplicationConfiguration.getInstance().geographicLocation
 
-        val allEntries = Daten.getInstance().listeFilme.parallelStream().toList()
+        val allEntries = daten.listeFilme.parallelStream().toList()
         val livestreams = allEntries.count(DatenFilm::isLivestream).toLong()
         val filmsWithoutLivestreams = allEntries.filterNot(DatenFilm::isLivestream)
         val totalFilms = filmsWithoutLivestreams.size.toLong()

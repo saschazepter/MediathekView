@@ -429,7 +429,7 @@ class DirectHttpDownload(
     private fun removeSeenHistoryEntry() {
         datenDownload.film?.let {
             logger.trace("Removing failed download entry from history")
-            SeenHistoryController().use { historyController ->
+            SeenHistoryController(daten.listeBookmarkList).use { historyController ->
                 historyController.markUnseen(it)
             }
         }

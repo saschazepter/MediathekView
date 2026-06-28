@@ -36,7 +36,9 @@ import java.util.*
 /**
  * Stores a full list of bookmarked movies.
  */
-class BookmarkDataList {
+class BookmarkDataList(
+    private val daten: Daten,
+) {
     private val bookmarks = BasicEventList<BookmarkData>()
 
     /**
@@ -211,7 +213,7 @@ class BookmarkDataList {
             ArrayList(bookmarks)
         }
 
-        val listeFilme = Daten.getInstance().listeFilme
+        val listeFilme = daten.listeFilme
         val filmSnapshot: List<DatenFilm> =
             synchronized(listeFilme) {
                 ArrayList(listeFilme)

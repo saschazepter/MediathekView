@@ -59,6 +59,7 @@ import javax.swing.JFrame
 import kotlin.time.Duration.Companion.milliseconds
 
 class CdnAwareDirectDownloadThread(
+    private val daten: Daten,
     private val datenDownload: DatenDownload,
     private val dialogOwnerProvider: () -> JFrame? = { null },
 ) : Thread("CDN AWARE DIRECT DL THREAD_${datenDownload.title}") {
@@ -390,7 +391,7 @@ class CdnAwareDirectDownloadThread(
 
         if (
             datenDownload.quelle == DownloadSource.BUTTON ||
-            DownloadCompletionValidator.validateAndRecordSuccessfulAboDownload(Daten.getInstance(), datenDownload, start)
+            DownloadCompletionValidator.validateAndRecordSuccessfulAboDownload(daten, datenDownload, start)
         ) {
             start.markFinished()
         } else {
@@ -455,7 +456,7 @@ class CdnAwareDirectDownloadThread(
     private fun removeSeenHistoryEntry() {
         datenDownload.film?.let {
             logger.trace("Removing failed download entry from history")
-            SeenHistoryController().use { historyController ->
+            SeenHistoryController(daten.listeBookmarkList).use { historyController ->
                 historyController.markUnseen(it)
             }
         }

@@ -67,7 +67,7 @@ class DownloadStartCoordinator(private val daten: Daten) {
             download.runtime.startRun()
             launchDownloadThread(download)
             // gestartete Filme (originalURL des Films) auch in die History eintragen
-            SeenHistoryController().use { historyController ->
+            SeenHistoryController(daten.listeBookmarkList).use { historyController ->
                 historyController.markSeen(film)
             }
 
@@ -144,7 +144,7 @@ class DownloadStartCoordinator(private val daten: Daten) {
         val result = CdnDetector.detect(datenDownload.downloadUrl)
         return if (useCdnAwareDirectDownload && CdnDetector.isCdn(result)) {
             logger.trace("CDN detected: {}", result)
-            CdnAwareDirectDownloadThread(datenDownload, ::dialogOwnerFrame)
+            CdnAwareDirectDownloadThread(daten, datenDownload, ::dialogOwnerFrame)
         } else {
             if (!useCdnAwareDirectDownload) {
                 logger.info("CDN detection is disabled")
@@ -167,7 +167,7 @@ class DownloadStartCoordinator(private val daten: Daten) {
         DownloadProgressEventPublisher.publishThrottled()
 
         val downloadThread = when (datenDownload.art) {
-            DownloadType.PROGRAM -> ExternalProgramDownload(datenDownload, ::dialogOwnerFrame)
+            DownloadType.PROGRAM -> ExternalProgramDownload(daten, datenDownload, ::dialogOwnerFrame)
             DownloadType.DIRECT -> selectDirectDownload(datenDownload)
         }
         downloadThread.start()

@@ -32,47 +32,48 @@ object MissingProgramSetDialog {
 
     private val options = arrayOf("Standardsets importieren", "Schließen")
 
-    fun ensureAboProgramSetAvailable(parent: JFrame?): Boolean {
-        if (hasAboProgramSet()) {
+    fun ensureAboProgramSetAvailable(parent: JFrame?, daten: Daten): Boolean {
+        if (hasAboProgramSet(daten)) {
             return true
         }
 
-        showMissingAboProgramSet(parent)
-        return hasAboProgramSet()
+        showMissingAboProgramSet(parent, daten)
+        return hasAboProgramSet(daten)
     }
 
-    fun showMissingAboProgramSet(parent: JFrame?) {
-        showMissingProgramSetIfNeeded(parent, ::hasAboProgramSet, ::createAboMessageLabel)
+    fun showMissingAboProgramSet(parent: JFrame?, daten: Daten) {
+        showMissingProgramSetIfNeeded(parent, daten, ::hasAboProgramSet, ::createAboMessageLabel)
     }
 
-    fun showMissingDownloadProgramSet(parent: JFrame?) {
-        showMissingProgramSetIfNeeded(parent, ::hasDownloadProgramSet, ::createDownloadMessageLabel)
+    fun showMissingDownloadProgramSet(parent: JFrame?, daten: Daten) {
+        showMissingProgramSetIfNeeded(parent, daten, ::hasDownloadProgramSet, ::createDownloadMessageLabel)
     }
 
     private fun showMissingProgramSetIfNeeded(
         parent: JFrame?,
-        hasProgramSet: () -> Boolean,
+        daten: Daten,
+        hasProgramSet: (Daten) -> Boolean,
         createMessageLabel: () -> JLabel,
     ) {
-        if (hasProgramSet()) {
+        if (hasProgramSet(daten)) {
             return
         }
 
         if (showImportPrompt(parent, createMessageLabel()) == IMPORT_OPTION_INDEX) {
-            importStandardProgramSets(parent)
+            importStandardProgramSets(parent, daten)
         }
     }
 
-    private fun hasAboProgramSet(): Boolean =
-        Daten.getInstance().listePset.hasAboProgramSet()
+    private fun hasAboProgramSet(daten: Daten): Boolean =
+        daten.listePset.hasAboProgramSet()
 
-    private fun hasDownloadProgramSet(): Boolean =
-        Daten.getInstance().listePset.hasDownloadProgramSet()
+    private fun hasDownloadProgramSet(daten: Daten): Boolean =
+        daten.listePset.hasDownloadProgramSet()
 
-    private fun importStandardProgramSets(parent: JFrame?) {
+    private fun importStandardProgramSets(parent: JFrame?, daten: Daten) {
         GuiFunktionenProgramme.addSetVorlagen(
             parent,
-            Daten.getInstance(),
+            daten,
             ListePsetVorlagen.getStandarset(parent, true),
             true,
         )

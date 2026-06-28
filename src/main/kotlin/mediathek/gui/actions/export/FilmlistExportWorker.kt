@@ -13,6 +13,7 @@ data class FilmlistExportSettings(
 )
 
 class FilmlistExportWorker(
+    private val daten: Daten,
     private val selectedFile: File,
     private val exportSettings: FilmlistExportSettings,
     private val uiScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing),
@@ -36,7 +37,7 @@ class FilmlistExportWorker(
         }
         writer.writeFilmList(
             selectedFile.absolutePath,
-            Daten.getInstance().listeFilme
+            daten.listeFilme
         ) { prog ->
             uiScope.launch {
                 onProgress((100.0 * prog).roundToInt())

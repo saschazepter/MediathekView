@@ -22,9 +22,8 @@ import javax.swing.tree.TreeSelectionModel
 
 class DialogEinstellungen(
     private val host: SettingsDialogHost,
+    private val daten: Daten,
 ) : DialogEinstellungenBase() {
-    private val daten = Daten.getInstance()
-
     init {
         initTree()
         restoreSizeFromConfig()
@@ -68,7 +67,7 @@ class DialogEinstellungen(
             )
         val geoEinstellungen = SettingsPage(
             NAME_ALLGEMEINE_EINSTELLUNGEN_GEO,
-            createPanel = { PanelEinstellungenGeo(this) },
+            createPanel = { PanelEinstellungenGeo(this, daten = daten) },
         )
         val colorEinstellungen = SettingsPage(
             NAME_ALLGEMEINE_EINSTELLUNGEN_COLOR,
@@ -81,12 +80,12 @@ class DialogEinstellungen(
 
         val filmlisteLaden = SettingsPage(
             NAME_FILMLISTE_LADEN,
-            createPanel = { PanelFilmlisteLaden(true, host.ownerFrame()) },
+            createPanel = { PanelFilmlisteLaden(true, host.ownerFrame(), daten) },
         )
         val blacklist = SettingsPage(NAME_BLACKLIST, createPanel = { PanelBlacklist(daten, this) })
 
         val dateinamen = SettingsPage(NAME_DATEINAME, createPanel = { PanelDateinamen() })
-        val pset = SettingsPage(NAME_PROGRAMMSET, createPanel = { PanelPset(this) })
+        val pset = SettingsPage(NAME_PROGRAMMSET, createPanel = { PanelPset(this, daten) })
         val psetImport = SettingsPage(
             NAME_PROGRAMMSET_IMPORTIEREN,
             createPanel = { PanelPsetImport(daten, this) },

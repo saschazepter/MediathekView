@@ -42,8 +42,11 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.table.AbstractTableModel
 
-class AboHistoryDialog(owner: Frame?) : JDialog(owner, "Abo-Historie", true) {
-    private val controller = Daten.getInstance().aboHistoryController
+class AboHistoryDialog(
+    owner: Frame?,
+    daten: Daten,
+) : JDialog(owner, "Abo-Historie", true) {
+    private val controller = daten.aboHistoryController
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val deleteAction = object : AbstractAction("Einträge löschen") {
         override fun actionPerformed(e: java.awt.event.ActionEvent?) {

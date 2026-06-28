@@ -48,7 +48,7 @@ class FilmSelectionController(private val host: Host) {
         } else {
             null
         }
-        startDownloads(host.downloadParent(), getSelectedFilms(), pSet, requestedResolution)
+        startDownloads(host.daten(), host.downloadParent(), getSelectedFilms(), pSet, requestedResolution)
     }
 
     fun startFilm(pSet: DatenPset) {

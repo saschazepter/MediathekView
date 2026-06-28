@@ -6,6 +6,8 @@ import mediathek.controller.starter.StartStatus
 import mediathek.daten.*
 import mediathek.daten.abo.DatenAbo
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
@@ -14,6 +16,17 @@ import java.nio.file.Path
 internal class IoXmlSchreibenTest {
     @TempDir
     lateinit var tempDir: Path
+    private lateinit var daten: Daten
+
+    @BeforeEach
+    fun setUp() {
+        daten = Daten()
+    }
+
+    @AfterEach
+    fun tearDown() {
+        daten.downloadStartCoordinator.shutdown()
+    }
 
     @Test
     fun exportPsetWritesProgramSetAndProgramsInImportableFormat() {
@@ -41,7 +54,7 @@ internal class IoXmlSchreibenTest {
         }
         val exportFile = tempDir.resolve("pset.xml")
 
-        IoXmlSchreiben().exportPset(arrayOf(pset), exportFile.toString())
+        IoXmlSchreiben(daten).exportPset(arrayOf(pset), exportFile.toString())
 
         assertTrue(Files.exists(exportFile))
         val imported = ListePsetVorlagen.importPsetFile(exportFile.toString(), false)
@@ -71,7 +84,7 @@ internal class IoXmlSchreibenTest {
 
     @Test
     fun writeConfigurationFileWritesDownloadsToJsonOnly() {
-        val downloads = Daten.getInstance().listeDownloads
+        val downloads = daten.listeDownloads
         val originalDownloads = ArrayList(downloads)
         try {
             downloads.clear()
@@ -97,7 +110,7 @@ internal class IoXmlSchreibenTest {
             val configFile = tempDir.resolve("mediathek.xml")
             val storageFile = tempDir.resolve("downloads.json")
 
-            IoXmlSchreiben(downloadStoragePath = storageFile).writeConfigurationFile(configFile)
+            IoXmlSchreiben(daten, downloadStoragePath = storageFile).writeConfigurationFile(configFile)
 
             val xml = Files.readString(configFile)
             assertTrue(Files.exists(storageFile))
@@ -111,7 +124,7 @@ internal class IoXmlSchreibenTest {
 
     @Test
     fun writeConfigurationFileDoesNotWriteAbosToXml() {
-        val abos = Daten.getInstance().listeAbo
+        val abos = daten.listeAbo
         val originalAbos = ArrayList(abos)
         try {
             abos.clear()
@@ -124,7 +137,7 @@ internal class IoXmlSchreibenTest {
             )
             val configFile = tempDir.resolve("mediathek.xml")
 
-            IoXmlSchreiben(downloadStoragePath = tempDir.resolve("downloads.json")).writeConfigurationFile(configFile)
+            IoXmlSchreiben(daten, downloadStoragePath = tempDir.resolve("downloads.json")).writeConfigurationFile(configFile)
 
             val xml = Files.readString(configFile)
             assertFalse(xml.contains("<Abonnement>"))

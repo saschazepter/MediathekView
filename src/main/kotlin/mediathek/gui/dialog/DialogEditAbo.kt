@@ -19,6 +19,7 @@ import javax.swing.text.JTextComponent
 
 class DialogEditAbo(
     parent: JFrame,
+    private val daten: Daten,
     private val aktAbo: DatenAbo,
     private val isMultiEditMode: Boolean,
 ) : DialogEditAboBase(parent) {
@@ -35,7 +36,6 @@ class DialogEditAbo(
     private var ok = false
 
     init {
-        val daten = Daten.getInstance()
         configureFilmLengthButtons()
         configureComboBoxes(daten)
         configurePathValidation(daten)
@@ -59,7 +59,7 @@ class DialogEditAbo(
     private fun configureComboBoxes(daten: Daten) {
         jScrollPane1.verticalScrollBar.unitIncrement = 16
         comboboxPSet.model = DefaultComboBoxModel(daten.listePset.listeAbo.objectDataCombo)
-        comboboxSender.model = SenderListComboBoxModel()
+        comboboxSender.model = SenderListComboBoxModel(daten)
     }
 
     private fun configurePathValidation(daten: Daten) {

@@ -117,13 +117,13 @@ class MainWindowMenuBuilder(
         fileMenu.addSeparator()
 
         val exportMenu = JMenu("Export")
-        exportMenu.add(ExportReadableFilmlistAction(ownerFrame))
-        exportMenu.add(ExportDecompressedFilmlistAction(ownerFrame))
+        exportMenu.add(ExportReadableFilmlistAction(daten, ownerFrame))
+        exportMenu.add(ExportDecompressedFilmlistAction(daten, ownerFrame))
 
         val importMenu = JMenu("Import")
-        importMenu.add(ImportOldAbosAction(ownerFrame))
-        importMenu.add(ImportOldBlacklistAction(ownerFrame))
-        importMenu.add(ImportOldReplacementListAction(ownerFrame))
+        importMenu.add(ImportOldAbosAction(ownerFrame, daten))
+        importMenu.add(ImportOldBlacklistAction(ownerFrame, daten))
+        importMenu.add(ImportOldReplacementListAction(ownerFrame, daten))
 
         fileMenu.add(exportMenu)
         fileMenu.add(importMenu)
@@ -140,11 +140,11 @@ class MainWindowMenuBuilder(
         viewMenu.add(showMemoryMonitorAction)
         viewMenu.add(showBandwidthUsageAction)
         viewMenu.addSeparator()
-        viewMenu.add(ShowFilmStatisticsAction(ownerFrame))
-        viewMenu.add(ShowDuplicateStatisticsAction(ownerFrame))
+        viewMenu.add(ShowFilmStatisticsAction(ownerFrame, daten))
+        viewMenu.add(ShowDuplicateStatisticsAction(ownerFrame, daten))
         viewMenu.add(JMenuItem("Übersicht aller Duplikate anzeigen...").apply {
             addActionListener {
-                FilmDuplicateOverviewDialog(ownerFrame).isVisible = true
+                FilmDuplicateOverviewDialog(ownerFrame, daten).isVisible = true
             }
         })
         viewMenu.addSeparator()
@@ -169,12 +169,12 @@ class MainWindowMenuBuilder(
         helpMenu.addSeparator()
         helpMenu.add(ShowLogWindowAction(logDialog))
         helpMenu.addSeparator()
-        helpMenu.add(ResetSettingsAction(settingsResetHost))
+        helpMenu.add(ResetSettingsAction(settingsResetHost, daten))
         helpMenu.add(ResetDownloadHistoryAction(ownerFrame))
-        helpMenu.add(ResetAboHistoryAction(ownerFrame))
+        helpMenu.add(ResetAboHistoryAction(ownerFrame, daten))
         helpMenu.addSeparator()
         helpMenu.add(DeleteLocalFilmlistAction(quitHost))
-        helpMenu.add(DeleteBookmarksAction(filmBookmarkHost))
+        helpMenu.add(DeleteBookmarksAction(daten, filmBookmarkHost))
         helpMenu.addSeparator()
         helpMenu.add(ResetFilterDialogPosition(filmBookmarkHost))
         helpMenu.addSeparator()
@@ -209,8 +209,8 @@ class MainWindowMenuBuilder(
     }
 
     private fun createAboMenu() {
-        aboMenu.add(CreateNewAboAction(daten.listeAbo) { ownerFrame })
-        aboMenu.add(ShowAboHistoryAction(ownerFrame))
+        aboMenu.add(CreateNewAboAction(daten, daten.listeAbo) { ownerFrame })
+        aboMenu.add(ShowAboHistoryAction(ownerFrame, daten))
         aboMenu.addSeparator()
         aboMenu.add(manageAboAction)
     }

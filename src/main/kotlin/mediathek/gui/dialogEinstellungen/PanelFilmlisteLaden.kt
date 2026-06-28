@@ -44,6 +44,7 @@ import javax.swing.event.DocumentListener
 class PanelFilmlisteLaden(
     inSettingsDialog: Boolean,
     private val owner: Frame,
+    private val daten: Daten,
 ) : PanelFilmlisteLadenBase() {
     private val applicationConfiguration = ApplicationConfiguration.getInstance()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
@@ -84,7 +85,6 @@ class PanelFilmlisteLaden(
     private fun initReloadButton() {
         btnReloadFilmlist.icon = IconUtils.of(FontAwesomeSolid.REDO_ALT)
         btnReloadFilmlist.addActionListener {
-            val daten = Daten.getInstance()
             daten.listeFilme.clear()
             daten.filmeLaden.loadFilmlist("", hasSenderSelectionChanged())
         }

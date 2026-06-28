@@ -12,7 +12,10 @@ import java.awt.FlowLayout
 import java.util.function.Consumer
 import javax.swing.*
 
-class PsetButtonsPanel(private val startFilmWithPset: Consumer<DatenPset>) : JPanel() {
+class PsetButtonsPanel(
+    private val daten: Daten,
+    private val startFilmWithPset: Consumer<DatenPset>,
+) : JPanel() {
     private val btnPanel = JPanel()
 
     init {
@@ -44,7 +47,7 @@ class PsetButtonsPanel(private val startFilmWithPset: Consumer<DatenPset>) : JPa
     protected fun setupButtonLayout() {
         btnPanel.removeAll()
 
-        for (pset in Daten.getInstance().listePset.listeButton) {
+        for (pset in daten.listePset.listeButton) {
             if (!pset.isFreeLine) {
                 val component: JComponent = if (pset.isLabel) {
                     JLabel(pset.name)

@@ -19,9 +19,11 @@ internal class DatenTest {
 
     private val previousPortableBaseDirectory = StandardLocations.portableBaseDirectory
     private var previousBackupAlreadyHandled = false
+    private lateinit var daten: Daten
 
     @BeforeEach
     fun setUp() {
+        daten = Daten()
         previousBackupAlreadyHandled = backupAlreadyHandled
     }
 
@@ -29,12 +31,12 @@ internal class DatenTest {
     fun tearDown() {
         StandardLocations.portableBaseDirectory = previousPortableBaseDirectory
         backupAlreadyHandled = previousBackupAlreadyHandled
+        daten.downloadStartCoordinator.shutdown()
     }
 
     @Test
     fun allesSpeichernWritesBlacklistRulesToJsonOnly() {
         StandardLocations.portableBaseDirectory = tempDir.toString()
-        val daten = Daten.getInstance()
         val blacklist = daten.listeBlacklist
         val originalBlacklist = ArrayList(blacklist)
         try {
@@ -63,7 +65,6 @@ internal class DatenTest {
     @Test
     fun allesSpeichernWritesAboRulesToJsonOnly() {
         StandardLocations.portableBaseDirectory = tempDir.toString()
-        val daten = Daten.getInstance()
         val abos = daten.listeAbo
         val originalAbos = ArrayList(abos)
         try {
@@ -96,9 +97,9 @@ internal class DatenTest {
     }
 
     private var backupAlreadyHandled: Boolean
-        get() = backupAlreadyHandledField.getBoolean(Daten.getInstance())
+        get() = backupAlreadyHandledField.getBoolean(daten)
         set(value) {
-            backupAlreadyHandledField.setBoolean(Daten.getInstance(), value)
+            backupAlreadyHandledField.setBoolean(daten, value)
         }
 
     private companion object {

@@ -8,7 +8,9 @@ import mediathek.tool.BandwidthFormatter
 import mediathek.tool.MessageBus
 import net.engio.mbassy.listener.Handler
 
-class DownloadInfos {
+class DownloadInfos(
+    private val daten: Daten,
+) {
     /**
      * Bandbreite: bytes per second
      */
@@ -57,8 +59,7 @@ class DownloadInfos {
     private fun makeDownloadInfos() {
         resetData()
 
-        val activeDownloads = Daten.getInstance()
-            .listeDownloads
+        val activeDownloads = daten.listeDownloads
             .getListOfStartsNotFinished(DownloadSource.ALL)
 
         for (download in activeDownloads) {

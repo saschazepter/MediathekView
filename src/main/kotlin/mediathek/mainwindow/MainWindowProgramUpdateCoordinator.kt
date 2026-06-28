@@ -18,11 +18,13 @@
 
 package mediathek.mainwindow
 
+import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.update.ProgramUpdateCheck
 import mediathek.update.ProgramUpdateHost
 
 class MainWindowProgramUpdateCoordinator(
+    private val daten: Daten,
     private val host: ProgramUpdateHost,
 ) : AutoCloseable {
     private var programUpdateChecker: ProgramUpdateCheck? = null
@@ -34,7 +36,7 @@ class MainWindowProgramUpdateCoordinator(
     fun update(active: Boolean) {
         if (active) {
             close()
-            programUpdateChecker = ProgramUpdateCheck(host).also { it.start() }
+            programUpdateChecker = ProgramUpdateCheck(host, daten).also { it.start() }
         } else {
             close()
         }

@@ -31,7 +31,8 @@ import java.nio.file.Paths
 import javax.xml.stream.XMLOutputFactory
 import javax.xml.stream.XMLStreamWriter
 
-class IoXmlSchreiben(
+class IoXmlSchreiben @JvmOverloads constructor(
+    private val daten: Daten,
     private val downloadStoragePath: Path = StandardLocations.getDownloadsFilePath(),
 ) {
     private val outFactory: XMLOutputFactory = XMLOutputFactory.newInstance()
@@ -83,7 +84,7 @@ class IoXmlSchreiben(
         writer.writeCharacters("\n\n")
         writeNewLine(writer)
         // Proggruppen schreiben, bei Konfig-Datei
-        for (datenPset in Daten.getInstance().listePset) {
+        for (datenPset in daten.listePset) {
             writeProgramSet(writer, datenPset)
             for (datenProg in datenPset.listeProg) {
                 xmlSchreibenDaten(writer, DatenProg.TAG, DatenProg.XML_NAMES, datenProg.toArray(), true)
@@ -103,7 +104,7 @@ class IoXmlSchreiben(
 
     private fun writeDownloads() {
         try {
-            DownloadStorage.write(downloadStoragePath, Daten.getInstance().listeDownloads)
+            DownloadStorage.write(downloadStoragePath, daten.listeDownloads)
         } catch (ex: Exception) {
             logger.error("writeDownloads error!", ex)
         }

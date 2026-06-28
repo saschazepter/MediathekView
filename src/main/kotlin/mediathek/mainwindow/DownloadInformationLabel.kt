@@ -27,7 +27,9 @@ import net.engio.mbassy.listener.Handler
 import javax.swing.JLabel
 import javax.swing.SwingUtilities
 
-class DownloadInformationLabel : JLabel() {
+class DownloadInformationLabel(
+    private val daten: Daten,
+) : JLabel() {
     init {
         MessageBus.messageBus.subscribe(this)
     }
@@ -39,7 +41,7 @@ class DownloadInformationLabel : JLabel() {
     }
 
     private fun setInfoFilme() {
-        text = buildDownloadInfoText(Daten.getInstance())
+        text = buildDownloadInfoText(daten)
     }
 
     private fun buildDownloadInfoText(daten: Daten): String {

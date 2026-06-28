@@ -28,6 +28,7 @@ import javax.swing.AbstractAction
 import javax.swing.JOptionPane
 
 class DeleteBookmarksAction(
+    private val daten: Daten,
     private val host: FilmBookmarkHost,
 ) : AbstractAction() {
     init {
@@ -52,7 +53,7 @@ class DeleteBookmarksAction(
             JOptionPane.YES_NO_OPTION,
         )
         if (result == JOptionPane.YES_OPTION) {
-            val bookmarkList = Daten.getInstance().listeBookmarkList
+            val bookmarkList = daten.listeBookmarkList
             bookmarkList.clear()
             bookmarkList.saveToFile()
             JOptionPane.showMessageDialog(

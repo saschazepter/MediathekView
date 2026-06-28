@@ -19,7 +19,10 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeSelectionModel
 
-class FilmDuplicateOverviewDialog(owner: Window) : FilmDuplicateOverviewDialogBase(owner) {
+class FilmDuplicateOverviewDialog(
+    owner: Window,
+    private val daten: Daten,
+) : FilmDuplicateOverviewDialogBase(owner) {
     private val dialogScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val filmList: EventList<DatenFilm> = BasicEventList()
     private var selectionJob: Job? = null
@@ -55,7 +58,7 @@ class FilmDuplicateOverviewDialog(owner: Window) : FilmDuplicateOverviewDialogBa
     private fun loadDuplicateTree() {
         dialogScope.launch {
             val rootNode = withContext(Dispatchers.Default) {
-                createDuplicateRootNode(Daten.getInstance().listeFilme.snapshot())
+                createDuplicateRootNode(daten.listeFilme.snapshot())
             }
             tree.model = DefaultTreeModel(rootNode)
         }
@@ -103,7 +106,7 @@ class FilmDuplicateOverviewDialog(owner: Window) : FilmDuplicateOverviewDialogBa
     private fun findDuplicateFilms(film: DatenFilm): List<DatenFilm> {
         val normalUrl = film.urlNormalQuality
         val highQualityUrl = film.highQualityUrl
-        return Daten.getInstance().listeFilme.snapshot()
+        return daten.listeFilme.snapshot()
             .asSequence()
             .filter { item -> !item.isLivestream }
             .filter { item ->

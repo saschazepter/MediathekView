@@ -14,9 +14,11 @@ import java.awt.*;
 
 public class PanelPset extends JPanel {
     private final JFrame parentComponent;
+    private final Daten daten;
 
-    public PanelPset(JFrame parentComponent) {
+    public PanelPset(JFrame parentComponent, Daten daten) {
         this.parentComponent = parentComponent;
+        this.daten = daten;
 
         initComponents();
         var applicationConfiguration = ApplicationConfiguration.getInstance();
@@ -33,9 +35,8 @@ public class PanelPset extends JPanel {
      */
     private void setupPSetVisiblePanels() {
         jPanelPset.removeAll();
-        var daten = Daten.getInstance();
         if (jCheckBoxAlleEinstellungen.isSelected()) {
-            jPanelPset.add(new PanelPsetLang(parentComponent, daten.getListePset()), BorderLayout.CENTER);
+            jPanelPset.add(new PanelPsetLang(parentComponent, daten, daten.getListePset()), BorderLayout.CENTER);
         } else {
             jPanelPset.add(new PanelPsetKurz(parentComponent, daten.getListePset()), BorderLayout.CENTER);
         }

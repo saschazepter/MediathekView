@@ -105,11 +105,11 @@ class GuiDownloads(
     private val toolBarRow = DownloadsToolBarRow(swingToolBar, displayFilterToolBar, configToolBar)
     private val lastUpdate = AtomicLong(0)
     private val cbShowDownloadDescription = JCheckBoxMenuItem("Filmbeschreibung anzeigen")
-    private val descriptionTabController = DescriptionTabController()
+    private val descriptionTabController = DescriptionTabController(daten = daten)
     private val markFilmAsSeenAction = MarkFilmAsSeenAction(::getSelFilme)
     private val markFilmAsUnseenAction = MarkFilmAsUnseenAction(::getSelFilme)
     private val filterController = DownloadsFilterController(displayFilterToolBar, ::reloadTable)
-    private val startInfoProperty = DownloadStartInfoProperty()
+    private val startInfoProperty = DownloadStartInfoProperty(daten)
     private val statusBar = DownloadsStatusBar(startInfoProperty)
     private val downloadSizeCacheSnapshot = DownloadSizeCacheStorage.load()
     private val downloadSizeLookupService = DownloadSizeLookupService(
@@ -200,7 +200,7 @@ class GuiDownloads(
     }
 
     private fun setupDownloadListTable() {
-        tabelle = MVDownloadsTable()
+        tabelle = MVDownloadsTable(daten)
         tableSelection = DownloadsTableSelection(tabelle, this)
         downloadListScrollPane.viewport.view = tabelle
     }
@@ -754,7 +754,7 @@ class GuiDownloads(
 
         daten.listeDownloads.downloadAbbrechen(downloadsToCancel)
 
-        val dialogBeenden = DialogBeendenZeit(ownerFrame, downloadsToStart)
+        val dialogBeenden = DialogBeendenZeit(ownerFrame, daten, downloadsToStart)
         dialogBeenden.isVisible = true
         if (dialogBeenden.applicationCanTerminate()) {
             quitApplication.test(dialogBeenden.isShutdownRequested())
@@ -839,7 +839,7 @@ class GuiDownloads(
         }
 
         if (starten) {
-            DownloadStartActions.startAll(downloadsToStart)
+            DownloadStartActions.startAll(daten, downloadsToStart)
         }
 
         reloadTable()

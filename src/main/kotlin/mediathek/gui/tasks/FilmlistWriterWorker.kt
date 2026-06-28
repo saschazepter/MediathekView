@@ -32,6 +32,7 @@ import javax.swing.JProgressBar
 import kotlin.math.roundToInt
 
 class FilmlistWriterWorker(
+    private val daten: Daten,
     private val progLabel: JLabel,
     private val progressBar: JProgressBar,
 ) {
@@ -51,7 +52,7 @@ class FilmlistWriterWorker(
 
             withContext(Dispatchers.IO) {
                 var lastProgress = 0
-                FilmListWriter(false).writeFilmList(getFilmlistFilePathString(), Daten.getInstance().listeFilme) { prog ->
+                FilmListWriter(false).writeFilmList(getFilmlistFilePathString(), daten.listeFilme) { prog ->
                     val progress = (100.0 * prog).roundToInt().coerceIn(0, 100)
                     if (progress >= lastProgress + 1) {
                         lastProgress = progress

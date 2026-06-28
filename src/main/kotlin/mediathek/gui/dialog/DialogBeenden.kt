@@ -39,6 +39,7 @@ import kotlin.time.Duration.Companion.milliseconds
 
 class DialogBeenden(
     parent: JFrame,
+    private val daten: Daten,
     private val downloadControlHost: DownloadControlHost,
 ) : JDialog(parent, true) {
     /**
@@ -100,7 +101,7 @@ class DialogBeenden(
         downloadMonitorJob = coroutineScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    while (Daten.getInstance().listeDownloads.unfinishedDownloads() > 0) {
+                    while (daten.listeDownloads.unfinishedDownloads() > 0) {
                         ensureActive()
                         delay(1_000.milliseconds)
                     }

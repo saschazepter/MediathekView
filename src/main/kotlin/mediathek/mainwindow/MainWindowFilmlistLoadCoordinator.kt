@@ -46,7 +46,7 @@ class MainWindowFilmlistLoadCoordinator(
 
     fun performFilmListLoadOperation(manualMode: Boolean) {
         if (manualMode || FilmListUpdateType.MANUAL.isConfigured()) {
-            LoadFilmListDialog(owner).isVisible = true
+            LoadFilmListDialog(owner, daten).isVisible = true
         } else {
             daten.filmeLaden.loadFilmlist("", false)
         }

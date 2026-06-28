@@ -27,6 +27,7 @@ import javax.swing.JLabel
 import javax.swing.JProgressBar
 
 class BlacklistFilterWorker(
+    private val daten: Daten,
     private val progLabel: JLabel,
     private val progressBar: JProgressBar,
 ) : Runnable {
@@ -41,7 +42,7 @@ class BlacklistFilterWorker(
         }
 
         withContext(Dispatchers.IO) {
-            Daten.getInstance().listeBlacklist.filterListe()
+            daten.listeBlacklist.filterListe()
         }
     }
 }

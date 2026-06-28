@@ -131,13 +131,13 @@ class GuiFilme(
 
     init {
         val psetButtonsTab = JTabbedPane()
-        val descriptionTabController = DescriptionTabController { ownerFrame }
+        val descriptionTabController = DescriptionTabController({ ownerFrame }, daten)
         val filterConfiguration = ApplicationConfiguration.getInstance().createFilterConfiguration()
         val selectionComponents = createSelectionComponents(filterConfiguration)
         selectionController = selectionComponents.selectionController
         bookmarkController = selectionComponents.bookmarkController
         val bookmarkActionHost = createBookmarkActionHost()
-        val deleteBookmarksAction = DeleteBookmarksAction(bookmarkActionHost)
+        val deleteBookmarksAction = DeleteBookmarksAction(daten, bookmarkActionHost)
         val filmActions = createFilmActions(deleteBookmarksAction, selectionComponents)
         copyHqUrlToClipboardActionValue = filmActions.copyHqUrlToClipboardAction
         copyNormalUrlToClipboardActionValue = filmActions.copyNormalUrlToClipboardAction
@@ -202,6 +202,8 @@ class GuiFilme(
         val selectionController = FilmSelectionController(selectionHost)
         val bookmarkHost = object : FilmBookmarkController.Host {
             override fun ownerFrame() = ownerFrame
+
+            override fun daten() = daten
 
             override fun repaintOwner() {
                 repaint()
@@ -280,7 +282,7 @@ class GuiFilme(
     ): FilmActions {
         val selectionController = selectionComponents.selectionController
         val filmActionHost = selectionComponents.filmActionHost
-        val playFilmAction = PlayFilmAction({ selectionController.startFilm(it) }) { ownerFrame }
+        val playFilmAction = PlayFilmAction(daten, { selectionController.startFilm(it) }) { ownerFrame }
         val saveFilmAction = SaveFilmAction(filmActionHost)
         val copyHqUrlToClipboardAction =
             CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY)
@@ -362,7 +364,7 @@ class GuiFilme(
     ): ViewComponents {
         val selectionController = selectionComponents.selectionController
         val filmUiActions = filmActions.filmUiActions
-        val psetButtonsPanel = PsetButtonsPanel { pset -> selectionController.startFilm(pset) }
+        val psetButtonsPanel = PsetButtonsPanel(daten) { pset -> selectionController.startFilm(pset) }
         val viewHost = object : FilmViewController.Host {
             override fun psetButtonsTab() = psetButtonsTab
 
@@ -380,6 +382,7 @@ class GuiFilme(
 
         }
         val tableContextMenuHost = TableContextMenuHostAdapter(
+            daten,
             { tabelle },
             selectionController::getCurrentlySelectedFilm,
             selectionController::getFilm,
@@ -392,6 +395,7 @@ class GuiFilme(
             { filmUiActions },
         )
         val tableInstallerHost = FilmTableInstallerHostAdapter(
+            daten,
             { tabelle },
             filmListScrollPane,
             this,
@@ -499,6 +503,7 @@ class GuiFilme(
         filterController: FilmFilterController,
     ): FilmTableReloader {
         val tableReloadHost = FilmTableReloadHostAdapter(
+            daten,
             ownerFrame,
             { tabelle },
             {

@@ -41,6 +41,7 @@ import kotlin.time.Duration.Companion.seconds
  */
 class ProgramUpdateCheck(
     private val host: ProgramUpdateHost,
+    private val daten: Daten,
 ) : AutoCloseable {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(job + Dispatchers.IO + CoroutineExceptionHandler { _, ex ->
@@ -138,7 +139,7 @@ class ProgramUpdateCheck(
     }
 
     private fun confirmStandardPsetUpdate(parent: JFrame, standardPset: ListePset): Boolean {
-        val dialogNewSet = DialogNewSet(parent)
+        val dialogNewSet = DialogNewSet(parent, daten)
         dialogNewSet.isVisible = true
         if (dialogNewSet.ok) {
             return true
@@ -159,7 +160,7 @@ class ProgramUpdateCheck(
         copySaveSettingsFromExistingSet(standardPset)
         prepareImportedSetsForExistingConfiguration(standardPset)
 
-        GuiFunktionenProgramme.addSetVorlagen(parent, Daten.getInstance(), standardPset, true)
+        GuiFunktionenProgramme.addSetVorlagen(parent, daten, standardPset, true)
         logger.info("Setanlegen: OK")
         logger.info("==========================================")
     }
@@ -210,7 +211,7 @@ class ProgramUpdateCheck(
         }
     }
 
-    private fun currentPsets(): ListePset = Daten.getInstance().listePset
+    private fun currentPsets(): ListePset = daten.listePset
 
     override fun close() {
         job.cancel()

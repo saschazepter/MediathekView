@@ -195,7 +195,7 @@ object GuiFunktionenProgramme {
         val dialog = DialogImportPset(parent, true, daten, pSet)
         dialog.isVisible = true
         if (dialog.ok) {
-            if (Daten.getInstance().listePset.addPset(pSet)) {
+            if (daten.listePset.addPset(pSet)) {
                 if (setVersion) {
                     ApplicationConfiguration.getInstance().standardProgramSetVersion = pSet.version
                 }

@@ -66,6 +66,7 @@ import java.util.function.Supplier
 import javax.swing.*
 
 open class MediathekGui private constructor(
+    private val daten: Daten,
     notificationCenterFactory: Supplier<INotificationCenter>,
     computerShutdown: ComputerShutdown,
     downloadProgressIndicatorFactory: Function<JFrame, DownloadProgressIndicator>,
@@ -87,10 +88,9 @@ open class MediathekGui private constructor(
     SettingsResetHost,
     FilmListLoadHost {
     private val disposed = AtomicBoolean()
-    private val editBlacklistAction = EditBlacklistAction(this)
-    private val toggleBlacklistAction = ToggleBlacklistAction()
+    private val editBlacklistAction = EditBlacklistAction(this, daten)
+    private val toggleBlacklistAction = ToggleBlacklistAction(daten)
     private val selectedListItemsProperty = ListSelectedItemsProperty(0)
-    private val daten = Daten.getInstance()
     private val tabbedPane = PositionSavingTabbedPane()
     private val jMenuHilfe = JMenu()
     private val settingsAction = SettingsAction()
@@ -118,10 +118,10 @@ open class MediathekGui private constructor(
     private val showFilmInformationAction: ShowFilmInformationAction
     private val searchProgramUpdateAction: SearchProgramUpdateAction
     private val showMemoryMonitorAction = MemoryMonitorAction(this)
-    private val manageAboAction = ManageAboAction(this)
+    private val manageAboAction = ManageAboAction(this, daten)
     private val showBandwidthUsageAction = ShowBandwidthUsageAction(this)
     private val dialogCoordinator =
-        MainWindowDialogCoordinator(this, this, showMemoryMonitorAction, showBandwidthUsageAction, manageAboAction)
+        MainWindowDialogCoordinator(daten, this, this, showMemoryMonitorAction, showBandwidthUsageAction, manageAboAction)
     private val showLuceneTutorialAction = ShowLuceneTutorialAction(this)
     private val onlineSearchTab: MainWindowTab by lazy(LazyThreadSafetyMode.NONE) {
         MainWindowTab(
@@ -174,10 +174,11 @@ open class MediathekGui private constructor(
     private val downloadProgressIndicator: DownloadProgressIndicator = requireNotNull(downloadProgressIndicatorFactory.apply(this))
     private val startupOrchestrator: MainWindowStartupOrchestrator
     private val platformIntegration: MainWindowPlatformIntegration
-    private val programUpdateCoordinator = MainWindowProgramUpdateCoordinator(this)
+    private val programUpdateCoordinator = MainWindowProgramUpdateCoordinator(daten, this)
     private val shutdownRuntime = MainWindowShutdownRuntime()
     private val statusBarController =
         MainWindowStatusBarController(
+            daten,
             contentPane,
             selectedListItemsProperty,
             ::getFilmTableRowCount,
@@ -207,11 +208,13 @@ open class MediathekGui private constructor(
     private val mainWindowLifecycle: MainWindowLifecycle
 
     protected constructor(
+        daten: Daten,
         notificationCenterFactory: Supplier<INotificationCenter>,
         computerShutdown: ComputerShutdown,
         darkModeActionPlacement: MainWindowDarkModeActionPlacement,
         systemTrayController: MainWindowSystemTrayController,
     ) : this(
+        daten,
         notificationCenterFactory,
         computerShutdown,
         NO_DOWNLOAD_PROGRESS_INDICATOR_FACTORY,
@@ -227,6 +230,7 @@ open class MediathekGui private constructor(
     )
 
     protected constructor(
+        daten: Daten,
         notificationCenterFactory: Supplier<INotificationCenter>,
         computerShutdown: ComputerShutdown,
         downloadProgressIndicatorFactory: Function<JFrame, DownloadProgressIndicator>,
@@ -239,6 +243,7 @@ open class MediathekGui private constructor(
         disableF10MenuShortcut: Boolean,
         afterMenusInitialized: Consumer<MainWindowQuitHost>,
     ) : this(
+        daten,
         notificationCenterFactory,
         computerShutdown,
         downloadProgressIndicatorFactory,
@@ -254,11 +259,13 @@ open class MediathekGui private constructor(
     )
 
     protected constructor(
+        daten: Daten,
         notificationCenterFactory: Supplier<INotificationCenter>,
         computerShutdown: ComputerShutdown,
         downloadProgressIndicatorFactory: Function<JFrame, DownloadProgressIndicator>,
         darkModeActionPlacement: MainWindowDarkModeActionPlacement,
     ) : this(
+        daten,
         notificationCenterFactory,
         computerShutdown,
         downloadProgressIndicatorFactory,
@@ -297,6 +304,7 @@ open class MediathekGui private constructor(
         ) { getCurrentZeitraumFilterValue() }
         searchProgramUpdateAction = SearchProgramUpdateAction(this)
         platformIntegration = MainWindowPlatformIntegration(
+            daten,
             this,
             this,
             loadFilmListAction,
@@ -467,7 +475,7 @@ open class MediathekGui private constructor(
     }
 
     private fun performGeoCountryStartupCheck() {
-        GeoCountryStartupCheck(this, { performAustrianVlcCheck() }).perform()
+        GeoCountryStartupCheck(daten, this, { performAustrianVlcCheck() }).perform()
     }
 
     private fun mapFilmUrlCopyCommands() {
@@ -741,6 +749,7 @@ open class MediathekGui private constructor(
 
     private fun createOnlineSearchHost(): OnlineSearchHost =
         MainWindowOnlineSearchHost(
+            daten,
             ownerFrame(),
             { film: DatenFilm? -> dialogCoordinator.updateFilmInfoCurrentFilm(film) },
             { getFilmInfoDialog().showInfo() }

@@ -20,6 +20,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 
 class MVTray(
+    private val daten: Daten,
     private val host: TrayHost,
 ) {
     private enum class TrayState {
@@ -49,7 +50,7 @@ class MVTray(
             }
 
             // Anzahl, Anz-Abo, Anz-Down, nicht gestarted, laufen, fertig OK, fertig fehler
-            val info = Daten.getInstance().listeDownloads.starts
+            val info = daten.listeDownloads.starts
             if (info.error > 0) {
                 // es gibt welche mit Fehler
                 if (trayState != TrayState.ERROR) {
@@ -150,7 +151,7 @@ class MVTray(
 
     private val textInfos: String
         get() {
-            val filmList = Daten.getInstance().listeFilme
+            val filmList = daten.listeFilme
             return buildString {
                 append("Filmliste erstellt: ")
                 append(filmList.metaData.generationDateTimeAsString)
@@ -164,7 +165,6 @@ class MVTray(
 
     private val infoTextDownloads: String
         get() {
-            val daten = Daten.getInstance()
             val info = daten.listeDownloads.starts
             return buildString {
                 append("Downloads: ")

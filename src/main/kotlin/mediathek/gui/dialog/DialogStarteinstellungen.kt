@@ -19,7 +19,10 @@ import java.awt.event.WindowEvent
 import javax.swing.JFrame
 import kotlin.coroutines.CoroutineContext
 
-class DialogStarteinstellungen(parent: JFrame?) : DialogStarteinstellungenBase(parent), CoroutineScope {
+class DialogStarteinstellungen(
+    parent: JFrame?,
+    private val daten: Daten,
+) : DialogStarteinstellungenBase(parent), CoroutineScope {
     private enum class State { START, PFAD, PSET, FERTIG }
 
     enum class ResultCode {
@@ -81,7 +84,7 @@ class DialogStarteinstellungen(parent: JFrame?) : DialogStarteinstellungenBase(p
     }
 
     private fun createLayout() {
-        val panelEinstellungenGeo = PanelEinstellungenGeo(parentComponent, true)
+        val panelEinstellungenGeo = PanelEinstellungenGeo(parentComponent, true, daten)
         jPanelExtra.layout = BorderLayout()
         jPanelExtra.add(panelEinstellungenGeo, BorderLayout.CENTER)
     }
@@ -152,13 +155,12 @@ class DialogStarteinstellungen(parent: JFrame?) : DialogStarteinstellungenBase(p
     private suspend fun statusPset() {
         jButtonAnpassen.isVisible = false
         jCheckBoxAlleEinstellungen.isVisible = true
-        if (Daten.getInstance().listePset.isEmpty()) {
+        if (daten.listePset.isEmpty()) {
             addStandardSetWithNavigationLock(parentComponent)
         }
 
-        val daten = Daten.getInstance()
         if (jCheckBoxAlleEinstellungen.isSelected) {
-            setMainContent(PanelPsetLang(parentComponent, daten.listePset))
+            setMainContent(PanelPsetLang(parentComponent, daten, daten.listePset))
         } else {
             setMainContent(PanelPsetKurz(parentComponent, daten.listePset))
         }
@@ -172,7 +174,7 @@ class DialogStarteinstellungen(parent: JFrame?) : DialogStarteinstellungenBase(p
         } ?: return false
 
         ListePset.progMusterErsetzen(parent, pSet)
-        Daten.getInstance().listePset.addPset(pSet)
+        daten.listePset.addPset(pSet)
         ApplicationConfiguration.getInstance().standardProgramSetVersion = pSet.version
         return true
     }

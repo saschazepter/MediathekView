@@ -86,6 +86,7 @@ object Main {
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
+        val daten = Daten()
         setupEnvironmentProperties()
 
         val parseResult = parseCommandLine(args)
@@ -97,20 +98,21 @@ object Main {
         printDirectoryPaths()
 
         if (CommandLineOptions.isDownloadAndQuit()) {
-            CliShutdownSignal.install(DownloadAndQuitRunner::requestShutdown).use {
+            val downloadAndQuitRunner = DownloadAndQuitRunner(daten)
+            CliShutdownSignal.install(downloadAndQuitRunner::requestShutdown).use {
                 installSingleInstanceHandler(false)
                 performBackgroundStartup(cleanupMediaDb = !GraphicsEnvironment.isHeadless())
-                loadConfigurationDataCli()
+                loadConfigurationDataCli(daten)
                 migrateSeenHistory()
-                Daten.getInstance().launchHistoryDataLoading()
-                Daten.getInstance().waitForHistoryDataLoadingToComplete()
+                daten.launchHistoryDataLoading()
+                daten.waitForHistoryDataLoadingToComplete()
                 withContext(Dispatchers.IO) {
-                    Daten.getInstance().listeBookmarkList.loadFromFile()
+                    daten.listeBookmarkList.loadFromFile()
                 }
                 val exitCode = try {
-                    DownloadAndQuitRunner.run()
+                    downloadAndQuitRunner.run()
                 } finally {
-                    Daten.getInstance().downloadStartCoordinator.shutdown()
+                    daten.downloadStartCoordinator.shutdown()
                     SeenHistoryController.closeSharedStore()
                     ApplicationConfiguration.getInstance().writeConfiguration()
                 }
@@ -123,24 +125,24 @@ object Main {
 
         performBackgroundStartup(cleanupMediaDb = true)
 
-        loadConfigurationData()
+        loadConfigurationData(daten)
         activateNewSenders()
         activateNewMaxFilmLength()
 
         migrateSeenHistory()
-        Daten.getInstance().launchHistoryDataLoading()
+        daten.launchHistoryDataLoading()
         withContext(Dispatchers.IO) {
-            Daten.getInstance().listeBookmarkList.loadFromFile()
+            daten.listeBookmarkList.loadFromFile()
             removeLuceneIndexDirectory()
         }
 
         // enable modern search on demand
         val useModernSearch = ApplicationConfiguration.getInstance().useModernSearch
         if (useModernSearch) {
-            Daten.getInstance().listeFilmeNachBlackList = IndexedFilmList()
+            daten.listeFilmeNachBlackList = IndexedFilmList()
         }
 
-        startGuiMode()
+        startGuiMode(daten)
     }
 
     private suspend fun parseCommandLine(args: Array<String>): CommandLine.ParseResult {
@@ -260,8 +262,8 @@ object Main {
         deleteOldUserAgentsDatabase()
     }
 
-    private fun loadConfigurationDataCli() {
-        if (!Daten.getInstance().allesLaden()) {
+    private fun loadConfigurationDataCli(daten: Daten) {
+        if (!daten.allesLaden()) {
             logger.error("CLI download mode requires an existing valid configuration and does not support interactive setup or repair.")
             exitProcess(1)
         }
@@ -733,13 +735,13 @@ object Main {
         }
     }
 
-    private suspend fun loadConfigurationData() = withContext(Dispatchers.Swing) {
-        if (!Daten.getInstance().allesLaden()) {
+    private suspend fun loadConfigurationData(daten: Daten) = withContext(Dispatchers.Swing) {
+        if (!daten.allesLaden()) {
             // erster Start
             ReplaceList.init() // einmal ein Muster anlegen, für Linux/OS X ist es bereits aktiv!
             SplashScreenLifecycle.close()
 
-            val dialog = DialogStarteinstellungen(null)
+            val dialog = DialogStarteinstellungen(null, daten)
             if (dialog.showDialog() == DialogStarteinstellungen.ResultCode.CANCELLED) {
                 //show termination dialog
                 JOptionPane.showMessageDialog(
@@ -848,7 +850,7 @@ object Main {
         }
     }
 
-    private suspend fun startGuiMode() {
+    private suspend fun startGuiMode(daten: Daten) {
         withContext(Dispatchers.Swing) {
             SplashScreenLifecycle.update(UIProgressState.INIT_FX)
 
@@ -868,11 +870,11 @@ object Main {
             SplashScreenLifecycle.update(UIProgressState.WAIT_FOR_HISTORY_DATA)
         }
 
-        waitForHistoryDataLoadingToComplete()
+        waitForHistoryDataLoadingToComplete(daten)
 
         withContext(Dispatchers.Swing) {
             SplashScreenLifecycle.update(UIProgressState.START_UI)
-            val window = getPlatformWindow()
+            val window = getPlatformWindow(daten)
             window.start()
             SplashScreenLifecycle.close()
             window.isVisible = true
@@ -888,10 +890,10 @@ object Main {
         }
     }
 
-    private suspend fun waitForHistoryDataLoadingToComplete() {
+    private suspend fun waitForHistoryDataLoadingToComplete(daten: Daten) {
         try {
             withContext(Dispatchers.IO) {
-                Daten.getInstance().waitForHistoryDataLoadingToComplete()
+                daten.waitForHistoryDataLoadingToComplete()
             }
         } catch (exception: InterruptedException) {
             Thread.currentThread().interrupt()
@@ -901,11 +903,11 @@ object Main {
         }
     }
 
-    private fun getPlatformWindow(): MediathekGui {
+    private fun getPlatformWindow(daten: Daten): MediathekGui {
         return when {
-            SystemUtils.IS_OS_MAC_OSX -> MediathekGuiMac()
-            SystemUtils.IS_OS_WINDOWS -> MediathekGuiWindows()
-            SystemUtils.IS_OS_LINUX -> MediathekGuiX11()
+            SystemUtils.IS_OS_MAC_OSX -> MediathekGuiMac(daten)
+            SystemUtils.IS_OS_WINDOWS -> MediathekGuiWindows(daten)
+            SystemUtils.IS_OS_LINUX -> MediathekGuiX11(daten)
             else -> {
                 JOptionPane.showMessageDialog(
                     null,

@@ -28,6 +28,7 @@ import java.util.stream.Stream
 import javax.swing.table.TableModel
 
 class GuiFilmeModelHelper(
+    private val daten: Daten,
     searchFieldData: SearchFieldData,
     filterController: FilmFilterController,
 ) : GuiModelHelper {
@@ -41,7 +42,7 @@ class GuiFilmeModelHelper(
             }
         }
 
-    private fun allFilms(): Collection<DatenFilm> = Daten.getInstance().listeFilmeNachBlackList
+    private fun allFilms(): Collection<DatenFilm> = daten.listeFilmeNachBlackList
 
     private fun filterFilms(
         allFilms: Collection<DatenFilm>,

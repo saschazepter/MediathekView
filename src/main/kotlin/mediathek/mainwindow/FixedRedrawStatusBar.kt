@@ -30,21 +30,21 @@ import kotlin.time.Duration.Companion.seconds
  * This class tries to fix some redraw issues with JXStatusBar on removal.
  */
 class FixedRedrawStatusBar(
+    private val daten: Daten,
     filmTableRowCount: IntSupplier,
     selectedListItemsProperty: ListSelectedItemsProperty,
 ) : JXStatusBar() {
     init {
         add(SelectedListItemsLabel(selectedListItemsProperty))
-        add(FilmSizeInfoLabel(filmTableRowCount))
-        add(DownloadInformationLabel())
+        add(FilmSizeInfoLabel(daten, filmTableRowCount))
+        add(DownloadInformationLabel(daten))
 
         add(JPanel(), Constraint(Constraint.ResizeBehavior.FILL))
-        add(FilmListCreationDateLabel())
+        add(FilmListCreationDateLabel(daten))
         add(
             FilmAgeLabel(
                 ageProvider = {
-                    Daten.getInstance()
-                        .listeFilme
+                    daten.listeFilme
                         .metaData
                         .ageInSeconds
                         .coerceAtLeast(0)

@@ -56,6 +56,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class DialogAddDownload(
     private val ownerFrame: Frame,
+    private val daten: Daten,
     private val film: DatenFilm,
     /**
      * The currently selected pSet or null when no selection.
@@ -91,7 +92,7 @@ class DialogAddDownload(
     private var initialSizeLookupStatusIsError: Boolean = false
     private var ffprobePath: Path? = null
     private var orgPfad = ""
-    private val listeSpeichern: ListePset = Daten.getInstance().listePset.listeSpeichern
+    private val listeSpeichern: ListePset = daten.listePset.listeSpeichern
     private lateinit var resolutionButtonLabels: ResolutionButtonLabels
     private lateinit var cbPathTextComponent: JTextComponent
     private lateinit var datenDownload: DatenDownload
@@ -483,11 +484,11 @@ class DialogAddDownload(
     }
 
     private fun addDownloadToQueue(startAutomatically: Boolean) {
-        Daten.getInstance().listeDownloads.addMitNummer(datenDownload)
+        daten.listeDownloads.addMitNummer(datenDownload)
         messageBus.publishAsync(DownloadListChangedEvent())
 
         if (startAutomatically) {
-            DownloadStartActions.start(datenDownload)
+            DownloadStartActions.start(daten, datenDownload)
         }
     }
 

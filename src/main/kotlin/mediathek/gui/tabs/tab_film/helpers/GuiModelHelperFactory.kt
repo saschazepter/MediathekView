@@ -26,12 +26,13 @@ import java.awt.Component
 
 object GuiModelHelperFactory {
     fun createGuiModelHelper(
+        daten: Daten,
         owner: Component,
         searchFieldData: SearchFieldData,
         filterController: FilmFilterController
-    ): GuiModelHelper = if (Daten.getInstance().listeFilmeNachBlackList is IndexedFilmList) {
-        LuceneGuiFilmeModelHelper(owner, searchFieldData, filterController)
+    ): GuiModelHelper = if (daten.listeFilmeNachBlackList is IndexedFilmList) {
+        LuceneGuiFilmeModelHelper(daten, owner, searchFieldData, filterController)
     } else {
-        GuiFilmeModelHelper(searchFieldData, filterController)
+        GuiFilmeModelHelper(daten, searchFieldData, filterController)
     }
 }

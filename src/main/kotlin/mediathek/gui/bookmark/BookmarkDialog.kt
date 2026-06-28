@@ -57,11 +57,12 @@ import javax.swing.*
 
 class BookmarkDialog(
     owner: JFrame,
+    private val daten: Daten,
     private val repaintFilmTab: Runnable,
 ) : JDialog(owner) {
     private val ownerFrame = owner
     private val applicationConfiguration = ApplicationConfiguration.getInstance()
-    private val filmDescriptionPanel = FilmDescriptionPanel()
+    private val filmDescriptionPanel = FilmDescriptionPanel(daten = daten)
     private val noteArea = JTextArea()
     private val table = JTable()
     private val playFilmAction = PlayFilmAction()
@@ -239,7 +240,7 @@ class BookmarkDialog(
 
     private fun setupTable() {
         val bookmarkConnector = GlazedLists.beanConnector(BookmarkData::class.java) as ObservableElementList.Connector<BookmarkData>
-        val sourceEventList = Daten.getInstance().listeBookmarkList.getEventList()
+        val sourceEventList = daten.listeBookmarkList.getEventList()
 
         val sortedList = sourceEventList.withReadLock {
             val observedBookmarks = ObservableElementList(sourceEventList, bookmarkConnector)
@@ -342,7 +343,7 @@ class BookmarkDialog(
     private fun persistBookmarksAsync() {
         uiScope.launch {
             withContext(Dispatchers.IO) {
-                Daten.getInstance().listeBookmarkList.saveToFile()
+                daten.listeBookmarkList.saveToFile()
             }
         }
     }
@@ -356,7 +357,7 @@ class BookmarkDialog(
 
         override fun actionPerformed(event: java.awt.event.ActionEvent?) {
             val film = selectedPlayableFilm() ?: return
-            val pSet = Daten.getInstance().listePset.psetAbspielen
+            val pSet = daten.listePset.psetAbspielen
             if (pSet == null) {
                 JOptionPane.showMessageDialog(
                     this@BookmarkDialog,
@@ -368,7 +369,7 @@ class BookmarkDialog(
                 return
             }
 
-            Daten.getInstance().downloadStartCoordinator.urlMitProgrammStarten(pSet, film, "")
+            daten.downloadStartCoordinator.urlMitProgrammStarten(pSet, film, "")
         }
     }
 
@@ -386,7 +387,7 @@ class BookmarkDialog(
                 return
             }
 
-            startDownloads(ownerFrame, films, null, null)
+            startDownloads(daten, ownerFrame, films, null, null)
 
             val skippedBookmarks = selectedBookmarks.size - films.size
             if (skippedBookmarks > 0) {
@@ -485,7 +486,7 @@ class BookmarkDialog(
         }
 
         override fun actionPerformed(event: java.awt.event.ActionEvent?) {
-            val bookmarkList = Daten.getInstance().listeBookmarkList
+            val bookmarkList = daten.listeBookmarkList
             val bookmarksToRemove = ArrayList(selectionModel.selected)
             for (bookmark in bookmarksToRemove) {
                 bookmarkList.removeBookmark(bookmark)

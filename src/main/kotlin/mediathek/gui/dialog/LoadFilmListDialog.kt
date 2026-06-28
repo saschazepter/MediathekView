@@ -19,7 +19,10 @@ import javax.swing.JDialog
 import javax.swing.JOptionPane
 import javax.swing.JScrollPane
 
-class LoadFilmListDialog(owner: Frame?) : JDialog(owner, "Filmliste laden", true) {
+class LoadFilmListDialog(
+    owner: Frame?,
+    private val daten: Daten,
+) : JDialog(owner, "Filmliste laden", true) {
     private val contentPanel: PanelFilmlisteLaden
     private val logger: Logger = LogManager.getLogger()
     private val btnContentPanel = ButtonPanel()
@@ -34,7 +37,7 @@ class LoadFilmListDialog(owner: Frame?) : JDialog(owner, "Filmliste laden", true
 
         val btn = JButton("Filmliste laden")
         btn.addActionListener {
-            val filmeLaden = Daten.getInstance().filmeLaden
+            val filmeLaden = daten.filmeLaden
             val immerNeuLaden = contentPanel.hasSenderSelectionChanged()
             if (immerNeuLaden && !contentPanel.updateCheckBox.isSelected) {
                 logger.trace("Sender list was changed loading full list...")
@@ -106,7 +109,7 @@ class LoadFilmListDialog(owner: Frame?) : JDialog(owner, "Filmliste laden", true
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
         contentPane.layout = BorderLayout()
-        contentPanel = PanelFilmlisteLaden(false, requireNotNull(owner))
+        contentPanel = PanelFilmlisteLaden(false, requireNotNull(owner), daten)
         val scrollPane = JScrollPane(contentPanel)
         contentPane.add(scrollPane, BorderLayout.CENTER)
         createButtonPanel()

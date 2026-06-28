@@ -6,6 +6,8 @@ import mediathek.daten.abo.DatenAbo
 import mediathek.daten.abo.FilmLengthState
 import mediathek.daten.blacklist.BlacklistRule
 import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
@@ -15,10 +17,21 @@ import java.time.LocalDate
 internal class IoXmlLesenTest {
     @TempDir
     lateinit var tempDir: Path
+    private lateinit var daten: Daten
+
+    @BeforeEach
+    fun setUp() {
+        daten = Daten()
+    }
+
+    @AfterEach
+    fun tearDown() {
+        daten.downloadStartCoordinator.shutdown()
+    }
 
     @Test
     fun datenLesenReadsProgramSetsAndFollowingPrograms() {
-        val listePset = Daten.getInstance().listePset
+        val listePset = daten.listePset
         val originalState = ListePset()
         originalState.addAll(listePset)
         try {
@@ -58,6 +71,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
+                    daten,
                     downloadStoragePath = tempDir.resolve("downloads.json"),
                     blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
                 ).datenLesen(configFile),
@@ -94,12 +108,12 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenReturnsFalseWhenFileDoesNotExist() {
-        assertFalse(IoXmlLesen().datenLesen(tempDir.resolve("missing.xml")))
+        assertFalse(IoXmlLesen(daten).datenLesen(tempDir.resolve("missing.xml")))
     }
 
     @Test
     fun datenLesenMigratesLegacyDownloadsToJson() {
-        val downloads = Daten.getInstance().listeDownloads
+        val downloads = daten.listeDownloads
         val originalDownloads = ArrayList(downloads)
         try {
             downloads.clear()
@@ -125,6 +139,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
+                    daten,
                     downloadStoragePath = storageFile,
                     blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
                 ).datenLesen(configFile),
@@ -142,7 +157,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenUsesJsonDownloadsWhenPresent() {
-        val downloads = Daten.getInstance().listeDownloads
+        val downloads = daten.listeDownloads
         val originalDownloads = ArrayList(downloads)
         try {
             downloads.clear()
@@ -175,6 +190,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
+                    daten,
                     downloadStoragePath = storageFile,
                     blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
                 ).datenLesen(configFile),
@@ -190,7 +206,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenMigratesLegacyBlacklistRulesToJson() {
-        val blacklist = Daten.getInstance().listeBlacklist
+        val blacklist = daten.listeBlacklist
         val originalBlacklist = ArrayList(blacklist)
         try {
             blacklist.clear()
@@ -214,6 +230,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
+                    daten,
                     downloadStoragePath = downloadStorageFile,
                     blacklistRuleStoragePath = blacklistStorageFile,
                 ).datenLesen(configFile),
@@ -233,7 +250,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenUsesJsonBlacklistRulesWhenPresent() {
-        val blacklist = Daten.getInstance().listeBlacklist
+        val blacklist = daten.listeBlacklist
         val originalBlacklist = ArrayList(blacklist)
         try {
             blacklist.clear()
@@ -255,6 +272,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
+                    daten,
                     downloadStoragePath = downloadStorageFile,
                     blacklistRuleStoragePath = blacklistStorageFile,
                 ).datenLesen(configFile),
@@ -269,7 +287,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenMigratesLegacyAbosToJson() {
-        val abos = Daten.getInstance().listeAbo
+        val abos = daten.listeAbo
         val originalAbos = ArrayList(abos)
         try {
             abos.clear()
@@ -301,6 +319,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
+                    daten,
                     downloadStoragePath = tempDir.resolve("downloads.json"),
                     blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
                     aboRuleStoragePath = aboRulesFile,
@@ -330,7 +349,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenUsesJsonAbosWhenPresent() {
-        val abos = Daten.getInstance().listeAbo
+        val abos = daten.listeAbo
         val originalAbos = ArrayList(abos)
         try {
             abos.clear()
@@ -360,6 +379,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
+                    daten,
                     downloadStoragePath = tempDir.resolve("downloads.json"),
                     blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
                     aboRuleStoragePath = aboRulesFile,

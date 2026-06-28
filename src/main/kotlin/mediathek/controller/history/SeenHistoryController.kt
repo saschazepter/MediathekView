@@ -23,9 +23,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import mediathek.audiothek.model.AudioEntry
-import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.DatenFilm
+import mediathek.gui.bookmark.BookmarkDataList
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
 import mediathek.sqlite.SeenHistoryCorruptionHandler
 import mediathek.tool.MessageBus
@@ -43,7 +43,9 @@ import java.util.concurrent.atomic.AtomicBoolean
  * Public methods remain blocking for compatibility, while all JDBC access is confined
  * to a process-wide coroutine dispatcher with parallelism 1.
  */
-class SeenHistoryController : AutoCloseable {
+class SeenHistoryController(
+    private val bookmarkDataList: BookmarkDataList? = null,
+) : AutoCloseable {
     private val closed = AtomicBoolean(false)
     private val store = sharedStore()
 
@@ -65,7 +67,7 @@ class SeenHistoryController : AutoCloseable {
         }
         if (success) {
             SeenHistoryCache.remove(film.urlNormalQuality)
-            Daten.getInstance().listeBookmarkList.updateSeen(false, film)
+            bookmarkDataList?.updateSeen(false, film)
             sendChangeMessage()
         }
     }
@@ -85,7 +87,7 @@ class SeenHistoryController : AutoCloseable {
         }
         if (success) {
             SeenHistoryCache.remove(urls)
-            Daten.getInstance().listeBookmarkList.updateSeen(false, list)
+            bookmarkDataList?.updateSeen(false, list)
             sendChangeMessage()
         }
     }
@@ -106,7 +108,7 @@ class SeenHistoryController : AutoCloseable {
         }
         if (inserted) {
             SeenHistoryCache.add(entry.url)
-            Daten.getInstance().listeBookmarkList.updateSeen(true, film)
+            bookmarkDataList?.updateSeen(true, film)
             sendChangeMessage()
         }
     }
@@ -126,7 +128,7 @@ class SeenHistoryController : AutoCloseable {
         }
         if (success) {
             SeenHistoryCache.add(candidates.asSequence().map(SeenHistoryEntry::url).toList())
-            Daten.getInstance().listeBookmarkList.updateSeen(true, list)
+            bookmarkDataList?.updateSeen(true, list)
             sendChangeMessage()
         }
     }

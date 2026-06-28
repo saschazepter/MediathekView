@@ -33,7 +33,8 @@ import javax.xml.stream.XMLStreamConstants
 import javax.xml.stream.XMLStreamException
 import javax.xml.stream.XMLStreamReader
 
-class IoXmlLesen(
+class IoXmlLesen @JvmOverloads constructor(
+    private val daten: Daten,
     private val downloadStoragePath: Path = StandardLocations.getDownloadsFilePath(),
     private val blacklistRuleStoragePath: Path = StandardLocations.getBlacklistRulesFilePath(),
     private val aboRuleStoragePath: Path = StandardLocations.getAboRulesFilePath(),
@@ -43,8 +44,6 @@ class IoXmlLesen(
         setProperty(XMLInputFactory.SUPPORT_DTD, false)
         setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false)
     }
-    private val daten = Daten.getInstance()
-
     fun datenLesen(xmlFilePath: Path): Boolean {
         var ret = false
         if (Files.exists(xmlFilePath)) {

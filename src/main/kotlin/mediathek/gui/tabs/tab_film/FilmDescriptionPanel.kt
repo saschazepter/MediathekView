@@ -19,6 +19,7 @@
 package mediathek.gui.tabs.tab_film
 
 import mediathek.audiothek.model.AudioEntry
+import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.daten.DatenFilm
 import mediathek.gui.actions.UrlHyperlinkAction
@@ -41,6 +42,7 @@ import javax.swing.*
 
 class FilmDescriptionPanel(
     private val ownerProvider: () -> JFrame? = { null },
+    private val daten: Daten? = null,
 ) : JPanel() {
     private val scrollPane1 = JScrollPane()
     private val popupMenu = JPopupMenu()
@@ -91,7 +93,8 @@ class FilmDescriptionPanel(
     private fun createPopupMenu() {
         editDescriptionItem.addActionListener {
             val film = currentFilm ?: return@addActionListener
-            DialogFilmBeschreibung(ownerProvider(), film).isVisible = true
+            val daten = daten ?: return@addActionListener
+            DialogFilmBeschreibung(ownerProvider(), daten, film).isVisible = true
         }
         popupMenu.add(editDescriptionItem)
         popupMenu.add(editSeparator)

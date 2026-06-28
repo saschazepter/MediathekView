@@ -40,7 +40,9 @@ import javax.swing.table.TableModel
 
 private val logger = LogManager.getLogger()
 
-class MVDownloadsTable : PersistentColumnConfigurationTable(
+class MVDownloadsTable(
+    private val daten: Daten,
+) : PersistentColumnConfigurationTable(
     DownloadColumns.COUNT,
     DownloadColumns.visibilityStore(),
     TableConfigurationStores.DOWNLOAD,
@@ -157,7 +159,7 @@ class MVDownloadsTable : PersistentColumnConfigurationTable(
     @Synchronized
     fun sortDownloadListByTableRows() {
         val tableModel = model
-        val downloads = Daten.getInstance().listeDownloads
+        val downloads = daten.listeDownloads
 
         for (row in 0 until rowCount) {
             val download = tableModel.getValueAt(convertRowIndexToModel(row), DownloadColumns.REF) as DatenDownload
@@ -242,7 +244,6 @@ class MVDownloadsTable : PersistentColumnConfigurationTable(
         private fun reorder(targetIndex: Int, rowsFrom: IntArray) {
             saveSelectedTableRows()
 
-            val daten = Daten.getInstance()
             val tableModel = model as TModelDownload
 
             sortDownloadListByTableRows()

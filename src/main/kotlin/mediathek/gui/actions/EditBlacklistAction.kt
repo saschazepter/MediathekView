@@ -17,6 +17,7 @@ import javax.swing.KeyStroke
 
 class EditBlacklistAction(
     private val parent: JFrame,
+    private val daten: Daten,
 ) : AbstractAction() {
     init {
         putValue(NAME, "Blacklist bearbeiten...")
@@ -33,7 +34,7 @@ class EditBlacklistAction(
     override fun actionPerformed(event: ActionEvent?) {
         object : StandardCloseDialog(parent, "Blacklist", true) {
             override fun createContentPanel(): JComponent =
-                PanelBlacklist(Daten.getInstance(), null)
+                PanelBlacklist(daten, null)
         }.apply {
             centerOnScreen()
             isVisible = true

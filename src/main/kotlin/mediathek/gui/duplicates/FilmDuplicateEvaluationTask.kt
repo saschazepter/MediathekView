@@ -22,8 +22,10 @@ import mediathek.config.Daten
 import mediathek.daten.ListeFilme
 import org.apache.logging.log4j.LogManager
 
-class FilmDuplicateEvaluationTask : Runnable {
-    private val listeFilme: ListeFilme = Daten.getInstance().listeFilme
+class FilmDuplicateEvaluationTask(
+    private val daten: Daten,
+) : Runnable {
+    private val listeFilme: ListeFilme = daten.listeFilme
 
     private fun printDuplicateStatistics() {
         val statisticsMap = listeFilme.parallelStream()
@@ -31,7 +33,7 @@ class FilmDuplicateEvaluationTask : Runnable {
             .countFilmsBySender()
         val duplicateCount = statisticsMap.values.sum()
 
-        replaceFilmStatistics(Daten.getInstance().duplicateStatistics, statisticsMap)
+        replaceFilmStatistics(daten.duplicateStatistics, statisticsMap)
 
         logger.trace("Number of duplicates: {}", duplicateCount)
     }

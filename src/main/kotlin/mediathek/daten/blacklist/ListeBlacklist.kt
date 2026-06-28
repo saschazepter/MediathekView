@@ -12,7 +12,9 @@ import mediathek.tool.MessageBus
 import java.util.function.Predicate
 import kotlin.time.Duration.Companion.days
 
-class ListeBlacklist : ArrayList<BlacklistRule>() {
+class ListeBlacklist(
+    private val daten: Daten? = null,
+) : ArrayList<BlacklistRule>() {
     private val geoblockingPredicate = GeoblockingPredicate()
 
     /**
@@ -219,7 +221,7 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
      */
     @Synchronized
     fun filterListe() {
-        val daten = Daten.getInstance()
+        val daten = daten ?: return
         val completeFilmList = daten.listeFilme
         val filteredList = daten.listeFilmeNachBlackList
 
@@ -258,7 +260,7 @@ class ListeBlacklist : ArrayList<BlacklistRule>() {
         val filters = mutableListOf<(DatenFilm) -> Boolean>()
 
         // Keep it for the old-style search. It is useless for Lucene.
-        if (Daten.getInstance().listeFilmeNachBlackList !is IndexedFilmList && daysLowerBoundary != 0L) {
+        if (daten?.listeFilmeNachBlackList !is IndexedFilmList && daysLowerBoundary != 0L) {
             filters.add(::checkDate)
         }
 

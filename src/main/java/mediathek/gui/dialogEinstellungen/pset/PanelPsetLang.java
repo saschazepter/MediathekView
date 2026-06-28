@@ -63,6 +63,7 @@ public class PanelPsetLang extends JPanel {
     private static final ProgramTableFormat PROGRAM_TABLE_FORMAT = new ProgramTableFormat();
 
     private int neuZaehler;
+    private final Daten daten;
     private final ListePset listePset;
     private final MVTable tabellePset;
     private final JTable tabelleProgramme;
@@ -73,8 +74,9 @@ public class PanelPsetLang extends JPanel {
     private ListeProg currentProgramList;
     private boolean stopBeob;
 
-    public PanelPsetLang(JFrame parentComponent, ListePset llistePset) {
+    public PanelPsetLang(JFrame parentComponent, Daten daten, ListePset llistePset) {
         this.parentComponent = parentComponent;
+        this.daten = daten;
         initComponents();
         tabellePset = new MVPsetTable();
         jScrollPane3.setViewportView(tabellePset);
@@ -180,7 +182,7 @@ public class PanelPsetLang extends JPanel {
     private void installProgramSetActions() {
         jButtonAbspielen.addActionListener(_ -> {
             if (getPset() instanceof DatenPset pset) {
-                Daten.getInstance().getListePset().activateAsPlayer(pset);
+                listePset.activateAsPlayer(pset);
                 nurtabellePset();
                 notifyProgramSetChanged();
             }
@@ -231,7 +233,7 @@ public class PanelPsetLang extends JPanel {
         tfGruppeZielPfad.getDocument().addDocumentListener(
                 new BeobDoc(tfGruppeZielPfad, DatenPset.PROGRAMMSET_ZIEL_PFAD, false));
 
-        jTextFieldSetName.getDocument().addDocumentListener(new DuplicatePsetNameCheckListener(jTextFieldSetName));
+        jTextFieldSetName.getDocument().addDocumentListener(new DuplicatePsetNameCheckListener(jTextFieldSetName, listePset));
         jTextFieldSetName.getDocument().addDocumentListener(new BeobDoc(jTextFieldSetName, DatenPset.PROGRAMMSET_NAME));
 
         installTextPopupMenus(
@@ -446,7 +448,7 @@ public class PanelPsetLang extends JPanel {
         var text = new StringBuilder();
 
         //check only pset which are not label or free line
-        Daten.getInstance().getListePset().stream()
+        listePset.stream()
                 .filter(pset -> !pset.isFreeLine())
                 .filter(pset -> !pset.isLabel())
                 .forEach(datenPset -> {
@@ -833,7 +835,7 @@ public class PanelPsetLang extends JPanel {
             if (resultFile != null) {
                 var ziel = resultFile.getAbsolutePath();
 
-                var configWriter = new IoXmlSchreiben();
+                var configWriter = new IoXmlSchreiben(daten);
                 configWriter.exportPset(liste.toArray(new DatenPset[0]), ziel);
                 JOptionPane.showMessageDialog(this,
                         "Das Programmset wurde erfolgreich exportiert.",

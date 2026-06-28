@@ -33,6 +33,7 @@ import mediathek.tool.withWriteLock
 import java.util.*
 
 class ListeAbo(
+    private val daten: Daten? = null,
     private val entries: BasicEventList<DatenAbo> = BasicEventList(),
 ) : EventList<DatenAbo> by entries {
     fun addAbo(datenAbo: DatenAbo) {
@@ -120,7 +121,7 @@ class ListeAbo(
 
     internal fun aenderungMelden() {
         // Filmliste anpassen
-        setAboFuerFilm(Daten.getInstance().listeFilme, true)
+        daten?.let { setAboFuerFilm(it.listeFilme, true) }
         MessageBus.messageBus.publishAsync(AboListChangedEvent())
     }
 

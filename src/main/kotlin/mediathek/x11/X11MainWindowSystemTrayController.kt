@@ -18,6 +18,7 @@
 
 package mediathek.x11
 
+import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.gui.MVTray
 import mediathek.mainwindow.DefaultMainWindowSystemTrayController
@@ -36,5 +37,6 @@ object X11MainWindowSystemTrayController : MainWindowSystemTrayController {
         }
     }
 
-    override fun initialize(owner: TrayHost): MVTray? = DefaultMainWindowSystemTrayController.initialize(owner)
+    override fun initialize(daten: Daten, owner: TrayHost): MVTray? =
+        DefaultMainWindowSystemTrayController.initialize(daten, owner)
 }

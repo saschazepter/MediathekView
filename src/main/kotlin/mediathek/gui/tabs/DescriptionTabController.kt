@@ -18,6 +18,7 @@
 
 package mediathek.gui.tabs
 
+import mediathek.config.Daten
 import mediathek.daten.DatenFilm
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel
 import java.util.*
@@ -31,9 +32,10 @@ import javax.swing.JTable
 
 class DescriptionTabController(
     ownerProvider: () -> JFrame? = { null },
+    daten: Daten? = null,
 ) {
     val tabbedPane: JTabbedPane = JTabbedPane()
-    private val descriptionPanel = FilmDescriptionPanel(ownerProvider)
+    private val descriptionPanel = FilmDescriptionPanel(ownerProvider, daten)
 
     fun install(
         table: JTable,

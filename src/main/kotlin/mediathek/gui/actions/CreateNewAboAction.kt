@@ -18,6 +18,7 @@
 
 package mediathek.gui.actions
 
+import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.ListeAbo
 import mediathek.daten.abo.DatenAbo
@@ -32,6 +33,7 @@ import javax.swing.JFrame
 import javax.swing.JOptionPane
 
 class CreateNewAboAction(
+    private val daten: Daten,
     private val listeAbo: ListeAbo,
     private val parentProvider: () -> JFrame,
 ) : AbstractAction() {
@@ -48,11 +50,11 @@ class CreateNewAboAction(
         val parent = parentProvider()
         val datenAbo = createAboDraft(aboname, filmSender, filmThema, filmTitel)
 
-        if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(parent)) {
+        if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten)) {
             return
         }
 
-        val dialogEditAbo = DialogEditAbo(parent, datenAbo, false)
+        val dialogEditAbo = DialogEditAbo(parent, daten, datenAbo, false)
         dialogEditAbo.isVisible = true
         if (!dialogEditAbo.successful()) {
             return

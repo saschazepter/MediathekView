@@ -28,9 +28,11 @@ import java.beans.PropertyChangeListener
 import javax.swing.JLabel
 import javax.swing.SwingUtilities
 
-class FilmListCreationDateLabel : JLabel(), PropertyChangeListener {
+class FilmListCreationDateLabel(
+    private val daten: Daten,
+) : JLabel(), PropertyChangeListener {
     init {
-        val blacklist = Daten.getInstance().listeFilmeNachBlackList
+        val blacklist = daten.listeFilmeNachBlackList
         setText(blacklist.metaData)
         blacklist.addMetaDataChangeListener(this)
 
@@ -45,7 +47,7 @@ class FilmListCreationDateLabel : JLabel(), PropertyChangeListener {
     @Suppress("UNUSED_PARAMETER")
     @Handler
     private fun handleFilmListStop(event: FilmListReadStopEvent) {
-        setText(Daten.getInstance().listeFilmeNachBlackList.metaData)
+        setText(daten.listeFilmeNachBlackList.metaData)
     }
 
     override fun propertyChange(evt: PropertyChangeEvent) {

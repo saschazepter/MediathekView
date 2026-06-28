@@ -18,6 +18,7 @@
 
 package mediathek.gui.actions
 
+import mediathek.config.Daten
 import mediathek.gui.dialog.reset.ResetSettingsDialog
 import mediathek.mainwindow.SettingsResetHost
 import mediathek.swing.centerOnScreen
@@ -26,13 +27,14 @@ import javax.swing.AbstractAction
 
 class ResetSettingsAction(
     private val host: SettingsResetHost,
+    private val daten: Daten,
 ) : AbstractAction() {
     init {
         putValue(NAME, "Einstellungen zurücksetzen...")
     }
 
     override fun actionPerformed(event: ActionEvent?) {
-        val dialog = ResetSettingsDialog(host)
+        val dialog = ResetSettingsDialog(host, daten)
         dialog.centerOnScreen()
         dialog.isVisible = true
     }

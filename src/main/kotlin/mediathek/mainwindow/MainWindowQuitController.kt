@@ -148,7 +148,7 @@ class MainWindowQuitController private constructor(
         ): QuitConfirmation {
             var shutdownComputer = requestShutdownComputer
             if (daten.listeDownloads.unfinishedDownloads() > 0) {
-                val dialogBeenden = DialogBeenden(owner, downloadControlHost)
+                val dialogBeenden = DialogBeenden(owner, daten, downloadControlHost)
                 dialogBeenden.isVisible = true
                 if (!dialogBeenden.applicationCanTerminate) {
                     return QuitConfirmation.declined()

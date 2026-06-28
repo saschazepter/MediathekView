@@ -29,7 +29,7 @@ public class DialogImportPset extends JDialog {
 
         jCheckBoxAlleEinstellungen.addActionListener(e -> {
             if (jCheckBoxAlleEinstellungen.isSelected()) {
-                jScrollPane1.setViewportView(new PanelPsetLang(parentComponent, liste));
+                jScrollPane1.setViewportView(new PanelPsetLang(parentComponent, ddaten, liste));
             } else {
                 jScrollPane1.setViewportView(new PanelPsetKurz(parentComponent, liste));
             }

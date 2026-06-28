@@ -18,18 +18,19 @@
 
 package mediathek.controller.starter
 
+import mediathek.config.Daten
 import mediathek.controller.history.SeenHistoryController
 import mediathek.daten.DatenDownload
 import mediathek.gui.messages.StartEvent
 import mediathek.tool.MessageBus
 
 object DownloadStartActions {
-    fun start(download: DatenDownload) {
-        startAll(listOf(download))
+    fun start(daten: Daten, download: DatenDownload) {
+        startAll(daten, listOf(download))
     }
 
-    fun startAll(downloads: Iterable<DatenDownload>) {
-        SeenHistoryController().use { historyController ->
+    fun startAll(daten: Daten, downloads: Iterable<DatenDownload>) {
+        SeenHistoryController(daten.listeBookmarkList).use { historyController ->
             for (download in downloads) {
                 download.runtime.startRun()
                 historyController.markSeen(download.film)

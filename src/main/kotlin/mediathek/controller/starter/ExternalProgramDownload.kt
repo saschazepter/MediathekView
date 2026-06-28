@@ -25,6 +25,7 @@ import javax.swing.JFrame
  * Download files via an external program.
  */
 class ExternalProgramDownload(
+    private val daten: Daten,
     private val datenDownload: DatenDownload,
     private val dialogOwnerProvider: () -> JFrame? = { null },
 ) : Thread("EXTERNAL PROGRAM DL THREAD: ${datenDownload.title}") {
@@ -97,7 +98,7 @@ class ExternalProgramDownload(
                 STAT_PRUEFEN -> {
                     if (datenDownload.quelle == DownloadSource.BUTTON || datenDownload.isDownloadManager) {
                         STAT_FERTIG_OK
-                    } else if (DownloadCompletionValidator.validateAndRecordSuccessfulAboDownload(Daten.getInstance(), datenDownload, start)) {
+                    } else if (DownloadCompletionValidator.validateAndRecordSuccessfulAboDownload(daten, datenDownload, start)) {
                         STAT_FERTIG_OK
                     } else {
                         STAT_FERTIG_FEHLER

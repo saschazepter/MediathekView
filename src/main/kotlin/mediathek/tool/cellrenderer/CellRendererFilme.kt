@@ -35,7 +35,9 @@ import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import javax.swing.JTable
 
-class CellRendererFilme : CellRendererBaseWithStart() {
+class CellRendererFilme(
+    private val daten: Daten,
+) : CellRendererBaseWithStart() {
     private val stopIcons = rendererIconPair(
         normal = IconUtils.of(FontAwesomeSolid.STOP),
         selected = FontIcon.of(FontAwesomeSolid.STOP, IconUtils.DEFAULT_SIZE, Color.WHITE),
@@ -88,8 +90,7 @@ class CellRendererFilme : CellRendererBaseWithStart() {
             when (columnModelIndex) {
                 DatenFilm.FILM_DAUER -> text = datenFilm.filmLengthAsString
                 DatenFilm.FILM_ABSPIELEN -> {
-                    val datenDownload = Daten.getInstance()
-                        .listeDownloadsButton
+                    val datenDownload = daten.listeDownloadsButton
                         .getDownloadUrlFilm(datenFilm.urlNormalQuality)
                     handleButtonStartColumn(datenDownload, isSelected)
                 }

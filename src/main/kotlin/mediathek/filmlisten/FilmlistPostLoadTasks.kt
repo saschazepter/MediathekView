@@ -38,20 +38,20 @@ class FilmlistPostLoadTasks(
     private val host: FilmListLoadHost? = null,
 ) {
     suspend fun run(writeFilmList: Boolean) {
-        RefreshAboWorker(label, progressBar).execute()
-        BlacklistFilterWorker(label, progressBar).execute()
+        RefreshAboWorker(daten, label, progressBar).execute()
+        BlacklistFilterWorker(daten, label, progressBar).execute()
 
         if (ApplicationConfiguration.getInstance().evaluateFilmDuplicates) {
-            FilmDuplicateEvaluationTask().run()
+            FilmDuplicateEvaluationTask(daten).run()
         }
 
-        CommonStatsEvaluationTask().run()
+        CommonStatsEvaluationTask(daten).run()
 
         if (writeFilmList) {
-            FilmlistWriterWorker(label, progressBar).run()
+            FilmlistWriterWorker(daten, label, progressBar).run()
         }
         if (daten.listeFilmeNachBlackList is IndexedFilmList) {
-            LuceneIndexWorker(label, progressBar, host).execute()
+            LuceneIndexWorker(daten, label, progressBar, host).execute()
         }
     }
 }

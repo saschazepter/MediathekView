@@ -42,6 +42,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class DialogBeendenZeit(
     parent: JFrame?,
+    private val daten: Daten,
     private val listeDownloadsStarten: ArrayList<DatenDownload>,
 ) : DialogBeendenZeitBase(parent) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
@@ -121,10 +122,10 @@ class DialogBeendenZeit(
                 }
 
                 progressPanel?.setMessage("Warte auf Abschluss der Downloads...")
-                DownloadStartActions.startAll(listeDownloadsStarten)
+                DownloadStartActions.startAll(daten, listeDownloadsStarten)
 
                 withContext(Dispatchers.IO) {
-                    while (Daten.getInstance().listeDownloads.unfinishedDownloads() > 0) {
+                    while (daten.listeDownloads.unfinishedDownloads() > 0) {
                         ensureActive()
                         delay(1.seconds)
                     }

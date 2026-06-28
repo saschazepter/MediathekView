@@ -18,6 +18,7 @@
 
 package mediathek.mainwindow
 
+import mediathek.config.Daten
 import java.awt.BorderLayout
 import java.awt.Container
 import java.util.concurrent.atomic.AtomicBoolean
@@ -28,6 +29,7 @@ import javax.swing.JProgressBar
 import javax.swing.SwingUtilities
 
 class MainWindowStatusBarController(
+    private val daten: Daten,
     private val contentPane: Container,
     private val selectedListItemsProperty: ListSelectedItemsProperty,
     private val filmTableRowCount: IntSupplier,
@@ -38,7 +40,7 @@ class MainWindowStatusBarController(
     private lateinit var statusBar: FixedRedrawStatusBar
 
     fun createStatusBar() {
-        statusBar = FixedRedrawStatusBar(filmTableRowCount, selectedListItemsProperty)
+        statusBar = FixedRedrawStatusBar(daten, filmTableRowCount, selectedListItemsProperty)
         contentPane.add(statusBar, BorderLayout.SOUTH)
     }
 

@@ -40,7 +40,9 @@ import java.util.*
 import java.util.function.Predicate
 import javax.swing.JFrame
 
-class ListeDownloads : LinkedList<DatenDownload>() {
+class ListeDownloads(
+    private val daten: Daten,
+) : LinkedList<DatenDownload>() {
     @Synchronized
     fun addMitNummer(download: DatenDownload) {
         add(download)
@@ -52,7 +54,7 @@ class ListeDownloads : LinkedList<DatenDownload>() {
         // bei einmal Downloads nach einem Programmstart/Neuladen der Filmliste
         // den Film wieder eintragen
         logger.info("Filme in Downloads eintragen")
-        val listeFilme = Daten.getInstance().listeFilme
+        val listeFilme = daten.listeFilme
         filter { download -> download.film == null }
             .forEach { download ->
                 download.film = listeFilme.getFilmByUrl_klein_hoch_hd(download.downloadUrl)
@@ -249,10 +251,9 @@ class ListeDownloads : LinkedList<DatenDownload>() {
 
         // prüfen ob in "alle Filme" oder nur "nach Blacklist" gesucht werden soll
         val checkWithBlackList = ApplicationConfiguration.getInstance().blacklistApplyToAbo
-        val defaultPset = Daten.getInstance().listePset.getPsetAbo("")
+        val defaultPset = daten.listePset.getPsetAbo("")
         val today = LocalDate.now(DateUtil.MV_DEFAULT_TIMEZONE)
 
-        val daten = Daten.getInstance()
         val listeAbo = daten.listeAbo
         val listeBlacklist = daten.listeBlacklist
         val aboHistoryController = daten.aboHistoryController
@@ -277,7 +278,7 @@ class ListeDownloads : LinkedList<DatenDownload>() {
                 continue
             }
 
-            val pset = if (abo.psetName.isEmpty()) defaultPset else Daten.getInstance().listePset.getPsetAbo(abo.psetName)
+            val pset = if (abo.psetName.isEmpty()) defaultPset else daten.listePset.getPsetAbo(abo.psetName)
             if (pset != null) {
                 // mit der tatsächlichen URL prüfen, ob die URL schon in der Downloadliste ist
                 val downloadUrl = film.getUrlFuerAufloesung(pset.aufloesung)
@@ -300,7 +301,7 @@ class ListeDownloads : LinkedList<DatenDownload>() {
                 if (parent == null || CommandLineOptions.isDownloadAndQuit()) {
                     throw IllegalStateException("Kein Programmset für Abo \"${abo.name}\" konfiguriert.")
                 }
-                MissingProgramSetDialog.showMissingAboProgramSet(parent)
+                MissingProgramSetDialog.showMissingAboProgramSet(parent, daten)
                 break
             }
         }
@@ -410,7 +411,7 @@ class ListeDownloads : LinkedList<DatenDownload>() {
                     val restarted = state.countRestarted
                     if (download.art == DownloadType.DIRECT) {
                         DownloadLifecycleActions.reset(download)
-                        DownloadStartActions.start(download)
+                        DownloadStartActions.start(daten, download)
                         download.runtime.runState?.countRestarted = restarted + 1
                         return download
                     }

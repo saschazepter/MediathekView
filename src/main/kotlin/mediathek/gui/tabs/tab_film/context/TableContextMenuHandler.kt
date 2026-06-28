@@ -44,6 +44,7 @@ class TableContextMenuHandler(
 ) : MouseAdapter() {
     interface Host {
         fun table(): MVFilmTable
+        fun daten(): Daten
         fun getCurrentlySelectedFilm(): Optional<DatenFilm>
         fun getFilm(row: Int): Optional<DatenFilm>
         fun playSelectedFilm()
@@ -55,12 +56,12 @@ class TableContextMenuHandler(
         fun actions(): FilmUiActions
     }
 
-    private val daten = Daten.getInstance()
+    private val daten = host.daten()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val filmTableButtonClickHandler = FilmTableButtonClickHandler(host, daten)
     private val filmAboAndBlacklistContextActions =
         FilmAboAndBlacklistContextActions(host, daten, this::selectedFilmAtPopupPoint)
-    private val jDownloadHelper = JDownloadHelper(host.ownerFrame())
+    private val jDownloadHelper = JDownloadHelper(host.ownerFrame(), daten)
     private val pyLoadHelper = PyLoadHelper(host.ownerFrame())
     private val filmSpecificContextMenuBuilder = FilmSpecificContextMenuBuilder(host, jDownloadHelper, pyLoadHelper)
     private val filmFileAndDuplicateContextActions = FilmFileAndDuplicateContextActions(host, daten, uiScope)

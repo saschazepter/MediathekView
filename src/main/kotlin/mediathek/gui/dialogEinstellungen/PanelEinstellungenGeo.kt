@@ -23,6 +23,7 @@ import kotlin.coroutines.CoroutineContext
 class PanelEinstellungenGeo @JvmOverloads constructor(
     private val parentComponent: JFrame?,
     private val preselectFromPublicIp: Boolean = false,
+    private val daten: Daten,
 ) : PanelEinstellungenGeoBase(), CoroutineScope {
     override val coroutineContext: CoroutineContext = SupervisorJob() + Dispatchers.Swing
 
@@ -147,7 +148,7 @@ class PanelEinstellungenGeo @JvmOverloads constructor(
     }
 
     private fun filterBlacklistAndNotifyChanges() {
-        Daten.getInstance().listeBlacklist.filterListe()
+        daten.listeBlacklist.filterListe()
         MessageBus.messageBus.publishAsync(GeoStateChangedEvent())
         MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
     }

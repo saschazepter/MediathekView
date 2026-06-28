@@ -48,6 +48,7 @@ import javax.swing.SwingUtilities
 import javax.swing.table.TableModel
 
 class LuceneGuiFilmeModelHelper(
+    private val daten: Daten,
     private val owner: Component,
     searchFieldData: SearchFieldData,
     filterController: FilmFilterController,
@@ -63,7 +64,7 @@ class LuceneGuiFilmeModelHelper(
             }
         }
 
-    private fun allFilms(): Collection<DatenFilm> = Daten.getInstance().listeFilmeNachBlackList
+    private fun allFilms(): Collection<DatenFilm> = daten.listeFilmeNachBlackList
 
     private fun filterFilms(
         listeFilme: IndexedFilmList,

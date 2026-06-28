@@ -31,6 +31,7 @@ import javax.swing.JOptionPane
 
 class ResetSettingsPanel(
     private val host: SettingsResetHost,
+    private val daten: Daten,
 ) : ResetSettingsPanelBase() {
     private val parent = host.ownerFrame()
 
@@ -40,14 +41,14 @@ class ResetSettingsPanel(
             DialogHilfe(parent, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_RESET)).isVisible = true
         }
         jButtonResetSets.addActionListener {
-            val listePset = Daten.getInstance().listePset
+            val listePset = daten.listePset
             val previousPsets = ListePset()
             previousPsets.addAll(listePset)
 
             listePset.clear()
             if (!GuiFunktionenProgramme.addSetVorlagen(
                     parent,
-                    Daten.getInstance(),
+                    daten,
                     ListePsetVorlagen.getStandarset(parent, true),
                     true,
                 )

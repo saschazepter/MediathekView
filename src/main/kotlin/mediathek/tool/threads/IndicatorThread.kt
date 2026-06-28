@@ -24,8 +24,7 @@ import mediathek.daten.DownloadSource
 /**
  * Base class for platform-specific progress indicator threads
  */
-open class IndicatorThread : Thread() {
-    protected val daten: Daten
+open class IndicatorThread(protected val daten: Daten) : Thread() {
     protected fun calculateOverallPercentage(): Double {
         var numOfDownloadsActive = 0
         var accumPercentage = 0.0
@@ -43,6 +42,5 @@ open class IndicatorThread : Thread() {
 
     init {
         name = "IndicatorThread"
-        daten = Daten.getInstance()
     }
 }

@@ -26,10 +26,12 @@ import net.engio.mbassy.listener.Handler
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
 
-class DownloadStartInfoProperty {
+class DownloadStartInfoProperty(
+    private val daten: Daten,
+) {
     private val pcs = PropertyChangeSupport(this)
 
-    var info: DownloadStartInfo = Daten.getInstance().listeDownloads.starts
+    var info: DownloadStartInfo = daten.listeDownloads.starts
         set(value) {
             val oldValue = field
             field = value
@@ -43,7 +45,7 @@ class DownloadStartInfoProperty {
     @Suppress("UNUSED_PARAMETER")
     @Handler
     private fun handleLeftDisplayUpdate(event: UpdateStatusBarLeftDisplayEvent) {
-        info = Daten.getInstance().listeDownloads.starts
+        info = daten.listeDownloads.starts
     }
 
     fun addStartInfoChangeListener(listener: PropertyChangeListener) {

@@ -21,6 +21,7 @@ import java.awt.event.WindowEvent
 
 class DuplicateFilmDetailsDialog(
     owner: Window,
+    private val daten: Daten,
     private val film: DatenFilm,
 ) : DuplicateFilmDetailsDialogBase(owner) {
     private val applicationConfiguration = ApplicationConfiguration.getInstance()
@@ -67,7 +68,7 @@ class DuplicateFilmDetailsDialog(
         val url = film.urlNormalQuality
         dialogScope.launch {
             val duplicates = withContext(Dispatchers.Default) {
-                Daten.getInstance().listeFilme
+                daten.listeFilme
                     .asSequence()
                     .filter { it.urlNormalQuality == url }
                     .toList()

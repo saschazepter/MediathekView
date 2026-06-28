@@ -28,18 +28,19 @@ class FilmBookmarkController(private val host: Host) {
 
     interface Host {
         fun ownerFrame(): JFrame
+        fun daten(): Daten
         fun repaintOwner()
     }
 
     fun updateBookmarkListAndRefresh(filmList: List<DatenFilm>) {
-        val bookmarkList = Daten.getInstance().listeBookmarkList
+        val bookmarkList = host.daten().listeBookmarkList
         bookmarkList.checkAndBookmarkMovies(filmList)
         bookmarkList.saveToFile()
         host.repaintOwner()
     }
 
     fun showManageBookmarkWindow() {
-        val dialog = bookmarkDialog ?: BookmarkDialog(host.ownerFrame(), host::repaintOwner).also { bookmarkDialog = it }
+        val dialog = bookmarkDialog ?: BookmarkDialog(host.ownerFrame(), host.daten(), host::repaintOwner).also { bookmarkDialog = it }
         dialog.isVisible = true
     }
 

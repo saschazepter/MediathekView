@@ -18,18 +18,19 @@
 
 package mediathek.mainwindow
 
+import mediathek.config.Daten
 import mediathek.gui.MVTray
 
 interface MainWindowSystemTrayController {
     fun setup() = Unit
 
-    fun initialize(owner: TrayHost): MVTray?
+    fun initialize(daten: Daten, owner: TrayHost): MVTray?
 }
 
 object DefaultMainWindowSystemTrayController : MainWindowSystemTrayController {
-    override fun initialize(owner: TrayHost): MVTray? = MVTray(owner).systemTray()
+    override fun initialize(daten: Daten, owner: TrayHost): MVTray? = MVTray(daten, owner).systemTray()
 }
 
 object NoOpMainWindowSystemTrayController : MainWindowSystemTrayController {
-    override fun initialize(owner: TrayHost): MVTray? = null
+    override fun initialize(daten: Daten, owner: TrayHost): MVTray? = null
 }

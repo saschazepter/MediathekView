@@ -36,6 +36,7 @@ import javax.swing.JFrame
 import javax.swing.JOptionPane
 
 class GeoCountryStartupCheck(
+    private val daten: Daten,
     private val owner: JFrame,
     private val onFinished: Runnable = Runnable {},
     private val httpClient: OkHttpClient = MVHttpClient.httpClient,
@@ -102,7 +103,7 @@ class GeoCountryStartupCheck(
 
         if (answer == JOptionPane.YES_OPTION) {
             ApplicationConfiguration.getInstance().geographicLocation = mismatch.detectedCountry
-            Daten.getInstance().listeBlacklist.filterListe()
+            daten.listeBlacklist.filterListe()
             MessageBus.messageBus.publishAsync(GeoStateChangedEvent())
             MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
         }

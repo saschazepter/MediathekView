@@ -18,6 +18,7 @@
 
 package mediathek.gui.tabs.tab_film.table
 
+import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.DatenFilm
 import mediathek.daten.FilmResolution
@@ -41,6 +42,7 @@ import javax.swing.ListSelectionModel
 class FilmTableInstaller(private val host: Host) {
     interface Host {
         fun table(): MVFilmTable
+        fun daten(): Daten
         fun filmListScrollPane(): JScrollPane
         fun ownerComponent(): Component
         fun tableContextMenuHost(): TableContextMenuHandler.Host
@@ -130,7 +132,7 @@ class FilmTableInstaller(private val host: Host) {
     }
 
     private fun setupCellRenderer() {
-        val cellRenderer = CellRendererFilme()
+        val cellRenderer = CellRendererFilme(host.daten())
         host.table().setDefaultRenderer(Any::class.java, cellRenderer)
         host.table().setDefaultRenderer(DatumFilm::class.java, cellRenderer)
         host.table().setDefaultRenderer(Int::class.javaObjectType, cellRenderer)

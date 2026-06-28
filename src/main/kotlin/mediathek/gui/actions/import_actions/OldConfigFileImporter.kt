@@ -16,8 +16,9 @@ import javax.xml.stream.XMLStreamConstants
 import javax.xml.stream.XMLStreamException
 import javax.xml.stream.XMLStreamReader
 
-class OldConfigFileImporter {
-    private val daten: Daten = Daten.getInstance()
+class OldConfigFileImporter(
+    private val daten: Daten,
+) {
     private val inFactory: XMLInputFactory = XMLInputFactory.newInstance()
 
     @Throws(IOException::class, XMLStreamException::class)

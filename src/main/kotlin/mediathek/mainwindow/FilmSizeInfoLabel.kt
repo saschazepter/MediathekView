@@ -28,7 +28,10 @@ import java.util.function.IntSupplier
 import javax.swing.JLabel
 import kotlin.time.Duration.Companion.seconds
 
-class FilmSizeInfoLabel(private val filmTableRowCount: IntSupplier) : JLabel() {
+class FilmSizeInfoLabel(
+    private val daten: Daten,
+    private val filmTableRowCount: IntSupplier,
+) : JLabel() {
     private var oldGesamt = 0
     private var oldRowCount = 0
     private var uiScope: CoroutineScope? = null
@@ -92,7 +95,7 @@ class FilmSizeInfoLabel(private val filmTableRowCount: IntSupplier) : JLabel() {
     }
 
     private fun updateValues() {
-        val gesamt = Daten.getInstance().listeFilme.size
+        val gesamt = daten.listeFilme.size
         val rowCount = filmTableRowCount.asInt
 
         if (gesamt == oldGesamt && rowCount == oldRowCount) {

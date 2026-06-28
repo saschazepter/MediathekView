@@ -50,6 +50,7 @@ import javax.swing.JProgressBar
 import kotlin.coroutines.cancellation.CancellationException
 
 class LuceneIndexWorker(
+    private val daten: Daten,
     private val progLabel: JLabel,
     private val progressBar: JProgressBar,
     private val host: FilmListLoadHost? = null,
@@ -201,7 +202,6 @@ class LuceneIndexWorker(
     }
 
     private suspend fun rebuildIndex() = withContext(Dispatchers.IO) {
-        val daten = Daten.getInstance()
         val indexList = daten.listeFilmeNachBlackList as IndexedFilmList
         // Search all films, then map hits through the current blacklist-filtered list at query time.
         val sourceFilms = daten.listeFilme.snapshot()

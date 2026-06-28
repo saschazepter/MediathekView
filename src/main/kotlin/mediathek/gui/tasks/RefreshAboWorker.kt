@@ -27,6 +27,7 @@ import javax.swing.JLabel
 import javax.swing.JProgressBar
 
 class RefreshAboWorker(
+    private val daten: Daten,
     private val progLabel: JLabel,
     private val progressBar: JProgressBar,
 ) : Runnable {
@@ -41,7 +42,6 @@ class RefreshAboWorker(
         }
 
         withContext(Dispatchers.IO) {
-            val daten = Daten.getInstance()
             daten.listeAbo.setAboFuerFilm(daten.listeFilme, false)
         }
     }

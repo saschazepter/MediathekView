@@ -16,6 +16,7 @@ import javax.swing.JOptionPane
 import javax.swing.KeyStroke
 
 class PlayFilmAction(
+    private val daten: Daten,
     private val startFilm: Consumer<DatenPset>,
     private val parentProvider: () -> Component?,
 ) : AbstractAction() {
@@ -33,7 +34,7 @@ class PlayFilmAction(
 
     @Synchronized
     override fun actionPerformed(event: ActionEvent?) {
-        val pset = Daten.getInstance().listePset.psetAbspielen
+        val pset = daten.listePset.psetAbspielen
         if (pset != null) {
             startFilm.accept(pset)
         } else {

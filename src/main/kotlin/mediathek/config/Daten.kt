@@ -45,7 +45,7 @@ import java.nio.file.Path
 import java.util.concurrent.ExecutionException
 import javax.swing.JOptionPane
 
-class Daten private constructor() {
+class Daten {
     private val historyScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     val listePset: ListePset = ListePset()
@@ -57,12 +57,12 @@ class Daten private constructor() {
      * "source" list of all entries, contains everything
      */
     val listeFilme: ListeFilme = ListeFilme()
-    val listeDownloads: ListeDownloads = ListeDownloads()
-    val listeDownloadsButton: ListeDownloads = ListeDownloads()
-    val listeBlacklist: ListeBlacklist = ListeBlacklist()
-    val listeBookmarkList: BookmarkDataList = BookmarkDataList()
-    val listeAbo: ListeAbo = ListeAbo()
-    val downloadInfos: DownloadInfos = DownloadInfos()
+    val listeDownloads: ListeDownloads = ListeDownloads(this)
+    val listeDownloadsButton: ListeDownloads = ListeDownloads(this)
+    val listeBlacklist: ListeBlacklist = ListeBlacklist(this)
+    val listeBookmarkList: BookmarkDataList = BookmarkDataList(this)
+    val listeAbo: ListeAbo = ListeAbo(this)
+    val downloadInfos: DownloadInfos = DownloadInfos(this)
     val downloadStartCoordinator: DownloadStartCoordinator = DownloadStartCoordinator(this)
 
     /**
@@ -146,7 +146,7 @@ class Daten private constructor() {
         val xmlFilePath = StandardLocations.getMediathekXmlFile()
 
         if (Files.exists(xmlFilePath)) {
-            val configReader = IoXmlLesen()
+            val configReader = IoXmlLesen(this)
             if (configReader.datenLesen(xmlFilePath)) {
                 return true
             }
@@ -195,7 +195,7 @@ class Daten private constructor() {
             for (path in backupPaths) {
                 clearKonfig()
                 logger.info("Versuch Backup zu laden: {}", path.toString())
-                val configReader = IoXmlLesen()
+                val configReader = IoXmlLesen(this)
                 if (configReader.datenLesen(path)) {
                     logger.info("Backup hat geklappt: {}", path.toString())
                     return true
@@ -211,7 +211,7 @@ class Daten private constructor() {
             backupAlreadyHandled = ConfigurationBackupService.createConfigurationBackupCopies()
         }
 
-        val configWriter = IoXmlSchreiben()
+        val configWriter = IoXmlSchreiben(this)
         configWriter.writeConfigurationFile(StandardLocations.getMediathekXmlFile())
         writeBlacklistRules()
         writeAboRules()
@@ -246,9 +246,5 @@ class Daten private constructor() {
                 }
             }
 
-        private val INSTANCE = Daten()
-
-        @JvmStatic
-        fun getInstance(): Daten = INSTANCE
     }
 }

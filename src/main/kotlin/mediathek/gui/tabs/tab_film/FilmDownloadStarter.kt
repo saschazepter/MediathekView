@@ -32,6 +32,7 @@ import javax.swing.JFrame
 import javax.swing.JOptionPane
 
 fun startDownloads(
+    daten: Daten,
     parent: JFrame,
     films: List<DatenFilm>,
     pSet: DatenPset?,
@@ -41,13 +42,13 @@ fun startDownloads(
         return
     }
 
-    if (!Daten.getInstance().listePset.hasDownloadProgramSet()) {
-        MissingProgramSetDialog.showMissingDownloadProgramSet(parent)
+    if (!daten.listePset.hasDownloadProgramSet()) {
+        MissingProgramSetDialog.showMissingDownloadProgramSet(parent, daten)
         return
     }
 
-    val effectiveProgramSet = pSet ?: Daten.getInstance().listePset.listeSpeichern.first()
-    val downloadsList = Daten.getInstance().listeDownloads
+    val effectiveProgramSet = pSet ?: daten.listePset.listeSpeichern.first()
+    val downloadsList = daten.listeDownloads
 
     if (films.size > 1) {
         val dialog = DialogAddMoreDownload(parent, effectiveProgramSet)
@@ -76,10 +77,10 @@ fun startDownloads(
                 downloadsList.addMitNummer(datenDownload)
                 MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
                 if (result.startImmediately()) {
-                    DownloadStartActions.start(datenDownload)
+                    DownloadStartActions.start(daten, datenDownload)
                 }
             } else {
-                showSingleDownloadDialog(parent, film, effectiveProgramSet, requestedResolution)
+                showSingleDownloadDialog(daten, parent, film, effectiveProgramSet, requestedResolution)
             }
         }
 
@@ -91,7 +92,7 @@ fun startDownloads(
         return
     }
 
-    showSingleDownloadDialog(parent, film, effectiveProgramSet, requestedResolution)
+    showSingleDownloadDialog(daten, parent, film, effectiveProgramSet, requestedResolution)
 }
 
 private fun confirmDuplicateDownload(parent: JFrame): Boolean {
@@ -104,10 +105,11 @@ private fun confirmDuplicateDownload(parent: JFrame): Boolean {
 }
 
 private fun showSingleDownloadDialog(
+    daten: Daten,
     parent: JFrame,
     datenFilm: DatenFilm,
     pSet: DatenPset,
     requestedResolution: FilmResolution.Enum?,
 ) {
-    DialogAddDownload(parent, datenFilm, pSet, Optional.ofNullable(requestedResolution)).isVisible = true
+    DialogAddDownload(parent, daten, datenFilm, pSet, Optional.ofNullable(requestedResolution)).isVisible = true
 }

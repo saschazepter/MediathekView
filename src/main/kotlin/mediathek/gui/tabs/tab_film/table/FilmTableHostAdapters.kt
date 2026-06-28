@@ -18,6 +18,7 @@
 
 package mediathek.gui.tabs.tab_film.table
 
+import mediathek.config.Daten
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.gui.tabs.tab_film.actions.FilmActionHost
@@ -32,6 +33,7 @@ import javax.swing.JFrame
 import javax.swing.JScrollPane
 
 class FilmTableReloadHostAdapter(
+    private val daten: Daten,
     private val owner: Component,
     private val tableProvider: () -> MVFilmTable,
     private val searchFieldDataProvider: () -> SearchFieldData,
@@ -41,6 +43,8 @@ class FilmTableReloadHostAdapter(
     private val updateFilmDataAction: () -> Unit,
 ) : FilmTableReloader.Host {
     override fun table(): MVFilmTable = tableProvider()
+
+    override fun daten(): Daten = daten
 
     override fun owner(): Component = owner
 
@@ -62,6 +66,7 @@ class FilmTableReloadHostAdapter(
 }
 
 class TableContextMenuHostAdapter(
+    private val daten: Daten,
     private val tableProvider: () -> MVFilmTable,
     private val currentlySelectedFilmProvider: () -> Optional<DatenFilm>,
     private val filmAtRowProvider: (Int) -> Optional<DatenFilm>,
@@ -74,6 +79,8 @@ class TableContextMenuHostAdapter(
     private val actionsProvider: () -> FilmUiActions,
 ) : TableContextMenuHandler.Host {
     override fun table(): MVFilmTable = tableProvider()
+
+    override fun daten(): Daten = daten
 
     override fun getCurrentlySelectedFilm(): Optional<DatenFilm> = currentlySelectedFilmProvider()
 
@@ -105,6 +112,7 @@ class TableContextMenuHostAdapter(
 }
 
 class FilmTableInstallerHostAdapter(
+    private val daten: Daten,
     private val tableProvider: () -> MVFilmTable,
     private val filmListScrollPane: JScrollPane,
     private val ownerComponent: Component,
@@ -117,6 +125,8 @@ class FilmTableInstallerHostAdapter(
     private val selectionUpdatesSuspendedProvider: () -> Boolean,
 ) : FilmTableInstaller.Host {
     override fun table(): MVFilmTable = tableProvider()
+
+    override fun daten(): Daten = daten
 
     override fun filmListScrollPane(): JScrollPane = filmListScrollPane
 

@@ -18,6 +18,7 @@
 
 package mediathek.mainwindow
 
+import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.DatenFilm
 import mediathek.gui.actions.ManageAboAction
@@ -29,6 +30,7 @@ import org.apache.logging.log4j.LogManager
 import java.awt.Window
 
 class MainWindowDialogCoordinator(
+    private val daten: Daten,
     private val owner: Window,
     private val settingsDialogHost: SettingsDialogHost,
     private val showMemoryMonitorAction: MemoryMonitorAction,
@@ -83,7 +85,7 @@ class MainWindowDialogCoordinator(
     }
 
     fun getSettingsDialog(): DialogEinstellungen =
-        settingsDialog ?: DialogEinstellungen(settingsDialogHost).also {
+        settingsDialog ?: DialogEinstellungen(settingsDialogHost, daten).also {
             settingsDialog = it
         }
 

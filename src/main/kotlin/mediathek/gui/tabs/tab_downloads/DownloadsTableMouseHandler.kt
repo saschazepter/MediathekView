@@ -217,10 +217,10 @@ class DownloadsTableMouseHandler(
     private fun enableAboActions(itemChangeAbo: JMenuItem, itemDelAbo: JMenuItem, datenAbo: DatenAbo) {
         itemDelAbo.addActionListener { daten.listeAbo.aboLoeschen(datenAbo) }
         itemChangeAbo.addActionListener {
-            if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(ownerFrame)) {
+            if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(ownerFrame, daten)) {
                 return@addActionListener
             }
-            val dialog = DialogEditAbo(ownerFrame, datenAbo, false)
+            val dialog = DialogEditAbo(ownerFrame, daten, datenAbo, false)
             dialog.isVisible = true
             if (dialog.successful()) {
                 daten.listeAbo.aenderungMelden()
@@ -249,7 +249,7 @@ class DownloadsTableMouseHandler(
             return
         }
 
-        val pSetPlay = Daten.getInstance().listePset.psetAbspielen
+        val pSetPlay = daten.listePset.psetAbspielen
         if (pSetPlay == null) {
             showMissingPlayerMessage()
         } else {

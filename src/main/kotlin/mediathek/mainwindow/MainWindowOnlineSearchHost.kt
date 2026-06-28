@@ -18,6 +18,7 @@
 
 package mediathek.mainwindow
 
+import mediathek.config.Daten
 import mediathek.daten.DatenFilm
 import mediathek.gui.actions.UrlHyperlinkAction
 import mediathek.gui.tabs.tab_film.startDownloads
@@ -28,6 +29,7 @@ import java.util.function.Consumer
 import javax.swing.JFrame
 
 class MainWindowOnlineSearchHost(
+    private val daten: Daten,
     private val ownerFrame: JFrame,
     private val updateCurrentFilm: Consumer<DatenFilm?>,
     private val showFilmInfoAction: Runnable,
@@ -43,6 +45,7 @@ class MainWindowOnlineSearchHost(
 
     override fun startDownload(results: List<OnlineSearchResult>) {
         startDownloads(
+            daten,
             ownerFrame,
             results.map { it.toDatenFilm() },
             null,

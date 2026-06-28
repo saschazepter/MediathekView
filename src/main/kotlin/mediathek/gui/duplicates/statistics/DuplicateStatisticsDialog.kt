@@ -20,6 +20,7 @@ import javax.swing.JTable
 
 class DuplicateStatisticsDialog(
     owner: Window,
+    private val daten: Daten,
     private val action: AbstractAction,
 ) : DuplicateStatisticsDialogBase(owner) {
     private val applicationConfiguration = ApplicationConfiguration.getInstance()
@@ -53,7 +54,7 @@ class DuplicateStatisticsDialog(
     }
 
     private fun setupCommonTable() {
-        val commonStats = Daten.getInstance().commonStatistics
+        val commonStats = daten.commonStatistics
         val sortedList = SortedList(commonStats, compareBy(FilmStatistics::sender))
         val model = GlazedListsSwing.eventTableModelWithThreadProxyList(sortedList, tableFormat)
         model.addTableModelListener { updateTotalCommonStats() }
@@ -61,7 +62,7 @@ class DuplicateStatisticsDialog(
     }
 
     private fun setupDuplicatesTable() {
-        val duplicateStats = Daten.getInstance().duplicateStatistics
+        val duplicateStats = daten.duplicateStatistics
         val sortedList = SortedList(duplicateStats, compareBy(FilmStatistics::sender))
         val model = GlazedListsSwing.eventTableModelWithThreadProxyList(sortedList, tableFormat)
         model.addTableModelListener { updateTotalDuplicatesStats() }
@@ -81,14 +82,14 @@ class DuplicateStatisticsDialog(
 
     private fun updateTotalCommonStats() {
         resizeSenderColumnWidth(tblCommon)
-        val statisticsList = Daten.getInstance().commonStatistics
+        val statisticsList = daten.commonStatistics
         val total = statisticsList.sumCounts()
         lblTotalCommon.text = "Gesamtanzahl Filme: $total"
     }
 
     private fun updateTotalDuplicatesStats() {
         resizeSenderColumnWidth(tblDuplicates)
-        val statisticsList = Daten.getInstance().duplicateStatistics
+        val statisticsList = daten.duplicateStatistics
         val total = statisticsList.sumCounts()
         lblTotalDuplicates.text = "Gesamtanzahl Duplikate: $total"
     }

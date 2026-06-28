@@ -13,7 +13,9 @@ import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 import javax.swing.SwingUtilities
 
-class ToggleBlacklistAction : AbstractAction() {
+class ToggleBlacklistAction(
+    private val daten: Daten,
+) : AbstractAction() {
     private val enabledIcon: FontIcon = IconUtils.windowBarSpecificToolbarIcon(MaterialDesignL.LIST_STATUS)
     private val disabledIcon: FontIcon = IconUtils.windowBarSpecificToolbarIcon(MaterialDesignL.LIST_STATUS, Color.RED)
     private var blacklistIsOn: Boolean = ApplicationConfiguration.getInstance().isBlacklistEnabled
@@ -48,7 +50,7 @@ class ToggleBlacklistAction : AbstractAction() {
         blacklistIsOn = !blacklistIsOn
 
         ApplicationConfiguration.getInstance().isBlacklistEnabled = blacklistIsOn
-        Daten.getInstance().listeBlacklist.filterListe()
+        daten.listeBlacklist.filterListe()
         MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
     }
 }
