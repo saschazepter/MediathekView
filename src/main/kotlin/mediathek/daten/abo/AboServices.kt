@@ -3,19 +3,44 @@ package mediathek.daten.abo
 import kotlinx.coroutines.*
 import mediathek.config.Daten
 import mediathek.controller.history.AboHistoryController
+import mediathek.daten.DatenFilm
 import mediathek.daten.ListeAbo
+import mediathek.gui.messages.AboListChangedEvent
+import mediathek.tool.MessageBus
 import org.apache.logging.log4j.LogManager
 import java.util.concurrent.ExecutionException
 
 class AboServices(daten: Daten) {
+    private val daten: Daten = daten
     private val historyScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val filmAssignmentService = AboFilmAssignmentService()
     private var completedAboHistory: AboHistoryController? = null
     private var historyJob: Deferred<Unit>? = null
 
-    val list: ListeAbo = ListeAbo(daten)
+    val list: ListeAbo = ListeAbo(::handleListChanged)
 
     val historyController: AboHistoryController
         get() = completedAboHistory!!
+
+    fun findAboForFilm(film: DatenFilm, checkLength: Boolean): DatenAbo? =
+        filmAssignmentService.findAboForFilm(film, checkLength)
+
+    fun assignAbosToFilms(removeMissingAbos: Boolean) {
+        filmAssignmentService.assignAbosToFilms(
+            list.assignmentSnapshot(),
+            daten.filmCatalog.allFilms,
+            removeMissingAbos,
+        )
+    }
+
+    fun notifyListChanged() {
+        handleListChanged()
+    }
+
+    private fun handleListChanged() {
+        assignAbosToFilms(removeMissingAbos = true)
+        MessageBus.messageBus.publishAsync(AboListChangedEvent())
+    }
 
     fun launchHistoryDataLoading() {
         logger.trace("launching async history data loading")

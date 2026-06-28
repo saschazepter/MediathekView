@@ -176,7 +176,7 @@ class DownloadAndQuitRunner(
 
     private suspend fun prepareAboSearch(daten: Daten) = withContext(Dispatchers.Default) {
         logger.info("Preparing abo matches for {} film(s)...", daten.filmCatalog.allFilms.size)
-        daten.abos.list.setAboFuerFilm(daten.filmCatalog.allFilms, false)
+        daten.abos.assignAbosToFilms(removeMissingAbos = false)
     }
 
     private suspend fun updateAboDownloadSizes(downloads: List<DatenDownload>) = withContext(Dispatchers.IO) {

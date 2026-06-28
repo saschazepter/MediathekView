@@ -198,7 +198,7 @@ class DownloadsTableMouseHandler(
         val itemDelAbo = JMenuItem("Abo löschen")
         val datenAbo = datenDownload
             ?.film
-            ?.let { film -> daten.abos.list.getAboForFilmFast(film, false) }
+            ?.let { film -> daten.abos.findAboForFilm(film, false) }
 
         if (datenAbo == null) {
             submenueAbo.isEnabled = false
@@ -223,7 +223,7 @@ class DownloadsTableMouseHandler(
             val dialog = DialogEditAbo(ownerFrame, daten, datenAbo, false)
             dialog.isVisible = true
             if (dialog.successful()) {
-                daten.abos.list.aenderungMelden()
+                daten.abos.notifyListChanged()
             }
         }
     }

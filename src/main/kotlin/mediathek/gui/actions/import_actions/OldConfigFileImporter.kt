@@ -71,7 +71,7 @@ class OldConfigFileImporter(
 
         if (foundAbos > 0) {
             daten.abos.list.finishLoading()
-            daten.abos.list.aenderungMelden()
+            daten.abos.notifyListChanged()
         }
         if (foundBlacklistEntries > 0)
             daten.blacklist.rules.filterListAndNotifyListeners()

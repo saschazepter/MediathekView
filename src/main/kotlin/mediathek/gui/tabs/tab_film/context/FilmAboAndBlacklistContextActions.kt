@@ -94,7 +94,7 @@ class FilmAboAndBlacklistContextActions(
         itemAbo: JMenuItem,
         itemAboMitTitel: JMenuItem,
     ) {
-        if (daten.abos.list.getAboForFilmFast(film, false) != null) {
+        if (daten.abos.findAboForFilm(film, false) != null) {
             itemAbo.isEnabled = false
             itemAboMitTitel.isEnabled = false
         } else {
@@ -110,7 +110,7 @@ class FilmAboAndBlacklistContextActions(
             selectedFilmAtPopupPoint()?.let { film ->
                 host.setSelectionUpdatesSuspended(true)
                 try {
-                    val datenAbo = daten.abos.list.getAboForFilmFast(film, false)
+                    val datenAbo = daten.abos.findAboForFilm(film, false)
                     if (datenAbo != null) {
                         daten.abos.list.aboLoeschen(datenAbo)
                     } else {

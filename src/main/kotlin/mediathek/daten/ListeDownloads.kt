@@ -254,7 +254,6 @@ class ListeDownloads(
         val defaultPset = daten.programSets.list.getPsetAbo("")
         val today = LocalDate.now(DateUtil.MV_DEFAULT_TIMEZONE)
 
-        val listeAbo = daten.abos.list
         val listeBlacklist = daten.blacklist.rules
         val aboHistoryController = daten.abos.historyController
         val listeFilme = daten.filmCatalog.allFilms
@@ -265,7 +264,7 @@ class ListeDownloads(
         }
 
         for (film in listeFilme) {
-            val abo = listeAbo.getAboForFilmFast(film, true) ?: continue
+            val abo = daten.abos.findAboForFilm(film, true) ?: continue
             if (!abo.isActive) {
                 continue
             }

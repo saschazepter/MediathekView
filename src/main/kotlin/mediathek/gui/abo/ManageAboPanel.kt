@@ -666,7 +666,7 @@ class ManageAboPanel(
             }
             try {
                 withContext(Dispatchers.Default) {
-                    daten.abos.list.aenderungMelden()
+                    daten.abos.notifyListChanged()
                 }
             } finally {
                 progressJob.cancel()
