@@ -6,8 +6,8 @@ import mediathek.daten.ListePset
 import mediathek.daten.blacklist.ListeBlacklist
 
 interface ConfigDataStore {
-    val listePset: ListePset
-    val listeDownloads: ListeDownloads
-    val listeBlacklist: ListeBlacklist
-    val listeAbo: ListeAbo
+    val configProgramSets: ListePset
+    val configDownloads: ListeDownloads
+    val configBlacklistRules: ListeBlacklist
+    val configAbos: ListeAbo
 }

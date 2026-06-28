@@ -83,7 +83,7 @@ class IoXmlSchreiben @JvmOverloads constructor(
         writer.writeCharacters("\n\n")
         writeNewLine(writer)
         // Proggruppen schreiben, bei Konfig-Datei
-        for (datenPset in daten.listePset) {
+        for (datenPset in daten.configProgramSets) {
             writeProgramSet(writer, datenPset)
             for (datenProg in datenPset.listeProg) {
                 xmlSchreibenDaten(writer, DatenProg.TAG, DatenProg.XML_NAMES, datenProg.toArray(), true)
@@ -103,7 +103,7 @@ class IoXmlSchreiben @JvmOverloads constructor(
 
     private fun writeDownloads() {
         try {
-            DownloadStorage.write(downloadStoragePath, daten.listeDownloads)
+            DownloadStorage.write(downloadStoragePath, daten.configDownloads)
         } catch (ex: Exception) {
             logger.error("writeDownloads error!", ex)
         }

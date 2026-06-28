@@ -28,18 +28,16 @@ import mediathek.controller.BlacklistRuleStorage
 import mediathek.controller.ConfigDataStore
 import mediathek.controller.IoXmlLesen
 import mediathek.controller.IoXmlSchreiben
-import mediathek.controller.history.AboHistoryController
 import mediathek.controller.starter.DownloadServices
-import mediathek.controller.starter.DownloadStartCoordinator
-import mediathek.daten.*
+import mediathek.daten.ListeAbo
+import mediathek.daten.ListeDownloads
+import mediathek.daten.ListePset
+import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.daten.blacklist.ListeBlacklist
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.bookmark.BookmarkServices
-import mediathek.gui.bookmark.BookmarkDataList
-import mediathek.gui.duplicates.FilmStatistics
 import mediathek.tool.GermanStringSorter
 import mediathek.tool.ReplaceList
 import mediathek.tool.SenderListBoxModel
@@ -57,53 +55,20 @@ class Daten : ConfigDataStore {
     val bookmarks: BookmarkServices = BookmarkServices(this)
     val abos: AboServices = AboServices(this)
 
-    override val listePset: ListePset
+    override val configProgramSets: ListePset
         get() = programSets.list
-    val duplicateStatistics: EventList<FilmStatistics>
-        get() = filmCatalog.duplicateStatistics
-    val commonStatistics: EventList<FilmStatistics>
-        get() = filmCatalog.commonStatistics
-    val filmeLaden: FilmeLaden
-        get() = filmCatalog.loader
-
-    /**
-     * "source" list of all entries, contains everything
-     */
-    val listeFilme: ListeFilme
-        get() = filmCatalog.allFilms
-    override val listeDownloads: ListeDownloads
+    override val configDownloads: ListeDownloads
         get() = downloads.queue
-    val listeDownloadsButton: ListeDownloads
-        get() = downloads.buttonQueue
-    override val listeBlacklist: ListeBlacklist
+    override val configBlacklistRules: ListeBlacklist
         get() = blacklist.rules
-    val listeBookmarkList: BookmarkDataList
-        get() = bookmarks.list
-    override val listeAbo: ListeAbo
+    override val configAbos: ListeAbo
         get() = abos.list
-    val downloadInfos: DownloadInfos
-        get() = downloads.info
-    val downloadStartCoordinator: DownloadStartCoordinator
-        get() = downloads.starter
-
-    /**
-     * "the" final list of films after all filtering is done.
-     * Defaults to no lucene index unless changed at startup.
-     */
-    var listeFilmeNachBlackList: ListeFilme
-        get() = filmCatalog.filteredFilms
-        set(value) {
-            filmCatalog.filteredFilms = value
-        }
 
     private var backupAlreadyHandled = false
 
     val allSendersList: EventList<String> = SortedList(SenderListBoxModel.providedSenderList).apply {
         setComparator(GermanStringSorter)
     }
-
-    val aboHistoryController: AboHistoryController
-        get() = abos.historyController
 
     fun allesLaden(): Boolean {
         if (!load()) {
@@ -127,12 +92,12 @@ class Daten : ConfigDataStore {
     }
 
     private fun clearKonfig() {
-        listePset.clear()
+        programSets.list.clear()
         ReplaceList.clear()
-        listeAbo.clear()
-        listeDownloads.clear()
-        listeBlacklist.clear()
-        listeBookmarkList.clear()
+        abos.list.clear()
+        downloads.queue.clear()
+        blacklist.rules.clear()
+        bookmarks.list.clear()
     }
 
     private fun load(): Boolean {
@@ -212,7 +177,7 @@ class Daten : ConfigDataStore {
 
     private fun writeBlacklistRules() {
         try {
-            BlacklistRuleStorage.write(StandardLocations.getBlacklistRulesFilePath(), listeBlacklist)
+            BlacklistRuleStorage.write(StandardLocations.getBlacklistRulesFilePath(), blacklist.rules)
         } catch (ex: Exception) {
             logger.error("Failed to write blacklist rules", ex)
         }
@@ -220,7 +185,7 @@ class Daten : ConfigDataStore {
 
     private fun writeAboRules() {
         try {
-            AboRuleStorage.write(StandardLocations.getAboRulesFilePath(), listeAbo)
+            AboRuleStorage.write(StandardLocations.getAboRulesFilePath(), abos.list)
         } catch (ex: Exception) {
             logger.error("Failed to write abo rules", ex)
         }
