@@ -297,7 +297,14 @@ class GuiFilme(
             requestedResolution,
             programSetExporter(),
         ) { film, effectivePSet, resolution ->
-            DialogAddDownload(ownerFrame, daten, film, effectivePSet, Optional.ofNullable(resolution)).isVisible = true
+            DialogAddDownload(
+                ownerFrame,
+                daten.programSets,
+                daten.downloads,
+                film,
+                effectivePSet,
+                Optional.ofNullable(resolution),
+            ).isVisible = true
         }
     }
 

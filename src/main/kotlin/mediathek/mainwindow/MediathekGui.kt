@@ -773,7 +773,9 @@ open class MediathekGui private constructor(
 
     private fun createOnlineSearchHost(): OnlineSearchHost =
         MainWindowOnlineSearchHost(
-            daten,
+            daten.programSets,
+            daten.downloads,
+            programSetExporter(),
             ownerFrame(),
             { film: DatenFilm? -> dialogCoordinator.updateFilmInfoCurrentFilm(film) },
             { getFilmInfoDialog().showInfo() }

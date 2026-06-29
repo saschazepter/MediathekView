@@ -18,11 +18,10 @@
 
 package mediathek.mainwindow
 
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
-import mediathek.controller.IoXmlSchreiben
+import mediathek.controller.starter.DownloadServices
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
+import mediathek.daten.ProgramSetRepository
 import mediathek.gui.actions.UrlHyperlinkAction
 import mediathek.gui.dialog.add_download.DialogAddDownload
 import mediathek.gui.tabs.tab_film.startDownloads
@@ -35,7 +34,9 @@ import java.util.function.Consumer
 import javax.swing.JFrame
 
 class MainWindowOnlineSearchHost(
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val downloads: DownloadServices,
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
     private val ownerFrame: JFrame,
     private val updateCurrentFilm: Consumer<DatenFilm?>,
     private val showFilmInfoAction: Runnable,
@@ -51,15 +52,22 @@ class MainWindowOnlineSearchHost(
 
     override fun startDownload(results: List<OnlineSearchResult>) {
         startDownloads(
-            daten.programSets,
-            daten.downloads,
+            programSets,
+            downloads,
             ownerFrame,
             results.map { it.toDatenFilm() },
             null,
             null,
-            programSetExporter(),
+            programSetExporter,
         ) { film, pSet, requestedResolution ->
-            DialogAddDownload(ownerFrame, daten, film, pSet, Optional.ofNullable(requestedResolution)).isVisible = true
+            DialogAddDownload(
+                ownerFrame,
+                programSets,
+                downloads,
+                film,
+                pSet,
+                Optional.ofNullable(requestedResolution),
+            ).isVisible = true
         }
     }
 
@@ -69,9 +77,4 @@ class MainWindowOnlineSearchHost(
 
     private fun OnlineSearchResult.toDatenFilm(): DatenFilm =
         OnlineSearchFilmAdapter.toDatenFilm(this)
-
-    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
-        BiConsumer { programSets, target ->
-            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
-        }
 }

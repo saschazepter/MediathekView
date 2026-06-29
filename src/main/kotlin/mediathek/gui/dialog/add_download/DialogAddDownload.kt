@@ -24,11 +24,11 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.swing.Swing
-import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.config.MVColor
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.starter.DownloadStartActions
+import mediathek.controller.starter.DownloadServices
 import mediathek.daten.*
 import mediathek.gui.dialog.download.DownloadQualityLiveInfoText
 import mediathek.gui.dialog.download.DownloadQualityResolutionSizeLoadResult
@@ -56,7 +56,8 @@ import kotlin.time.Duration.Companion.seconds
 
 class DialogAddDownload(
     private val ownerFrame: Frame,
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val downloads: DownloadServices,
     private val film: DatenFilm,
     /**
      * The currently selected pSet or null when no selection.
@@ -92,7 +93,7 @@ class DialogAddDownload(
     private var initialSizeLookupStatusIsError: Boolean = false
     private var ffprobePath: Path? = null
     private var orgPfad = ""
-    private val listeSpeichern: ListePset = daten.programSets.list.listeSpeichern
+    private val listeSpeichern: ListePset = programSets.list.listeSpeichern
     private lateinit var resolutionButtonLabels: ResolutionButtonLabels
     private lateinit var cbPathTextComponent: JTextComponent
     private lateinit var datenDownload: DatenDownload
@@ -484,7 +485,7 @@ class DialogAddDownload(
     }
 
     private fun addDownloadToQueue(startAutomatically: Boolean) {
-        daten.downloads.addDownload(datenDownload)
+        downloads.addDownload(datenDownload)
         messageBus.publishAsync(DownloadListChangedEvent())
 
         if (startAutomatically) {
