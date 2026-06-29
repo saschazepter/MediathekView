@@ -18,7 +18,6 @@
 
 package mediathek.gui.tabs.tab_film.table
 
-import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.starter.DownloadServices
 import mediathek.daten.DatenFilm
@@ -43,7 +42,6 @@ import javax.swing.ListSelectionModel
 class FilmTableInstaller(private val host: Host) {
     interface Host {
         fun table(): MVFilmTable
-        fun daten(): Daten
         fun downloads(): DownloadServices
         fun filmListScrollPane(): JScrollPane
         fun ownerComponent(): Component

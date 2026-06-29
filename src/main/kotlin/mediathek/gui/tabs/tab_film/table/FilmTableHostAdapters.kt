@@ -35,7 +35,7 @@ import javax.swing.JFrame
 import javax.swing.JScrollPane
 
 class FilmTableReloadHostAdapter(
-    private val daten: Daten,
+    private val filmCatalog: FilmCatalog,
     private val owner: Component,
     private val tableProvider: () -> MVFilmTable,
     private val searchFieldDataProvider: () -> SearchFieldData,
@@ -46,7 +46,7 @@ class FilmTableReloadHostAdapter(
 ) : FilmTableReloader.Host {
     override fun table(): MVFilmTable = tableProvider()
 
-    override fun filmCatalog(): FilmCatalog = daten.filmCatalog
+    override fun filmCatalog(): FilmCatalog = filmCatalog
 
     override fun owner(): Component = owner
 
@@ -114,7 +114,7 @@ class TableContextMenuHostAdapter(
 }
 
 class FilmTableInstallerHostAdapter(
-    private val daten: Daten,
+    private val downloads: DownloadServices,
     private val tableProvider: () -> MVFilmTable,
     private val filmListScrollPane: JScrollPane,
     private val ownerComponent: Component,
@@ -128,9 +128,7 @@ class FilmTableInstallerHostAdapter(
 ) : FilmTableInstaller.Host {
     override fun table(): MVFilmTable = tableProvider()
 
-    override fun daten(): Daten = daten
-
-    override fun downloads(): DownloadServices = daten.downloads
+    override fun downloads(): DownloadServices = downloads
 
     override fun filmListScrollPane(): JScrollPane = filmListScrollPane
 

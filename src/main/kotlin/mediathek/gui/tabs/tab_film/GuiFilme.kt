@@ -440,7 +440,7 @@ class GuiFilme(
             { filmUiActions },
         )
         val tableInstallerHost = FilmTableInstallerHostAdapter(
-            daten,
+            daten.downloads,
             { tabelle },
             filmListScrollPane,
             this,
@@ -548,7 +548,7 @@ class GuiFilme(
         filterController: FilmFilterController,
     ): FilmTableReloader {
         val tableReloadHost = FilmTableReloadHostAdapter(
-            daten,
+            daten.filmCatalog,
             ownerFrame,
             { tabelle },
             {
