@@ -38,8 +38,8 @@ class FilmlistPostLoadTasks(
     private val host: FilmListLoadHost? = null,
 ) {
     suspend fun run(writeFilmList: Boolean) {
-        RefreshAboWorker(daten, label, progressBar).execute()
-        BlacklistFilterWorker(daten, label, progressBar).execute()
+        RefreshAboWorker(daten.abos, label, progressBar).execute()
+        BlacklistFilterWorker(daten.blacklist, label, progressBar).execute()
 
         if (ApplicationConfiguration.getInstance().evaluateFilmDuplicates) {
             FilmDuplicateEvaluationTask(daten.filmCatalog).run()

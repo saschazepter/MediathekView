@@ -22,12 +22,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
-import mediathek.config.Daten
+import mediathek.daten.abo.AboServices
 import javax.swing.JLabel
 import javax.swing.JProgressBar
 
 class RefreshAboWorker(
-    private val daten: Daten,
+    private val abos: AboServices,
     private val progLabel: JLabel,
     private val progressBar: JProgressBar,
 ) : Runnable {
@@ -42,7 +42,7 @@ class RefreshAboWorker(
         }
 
         withContext(Dispatchers.IO) {
-            daten.abos.assignAbosToFilms(removeMissingAbos = false)
+            abos.assignAbosToFilms(removeMissingAbos = false)
         }
     }
 }
