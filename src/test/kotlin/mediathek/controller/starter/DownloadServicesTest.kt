@@ -75,6 +75,21 @@ internal class DownloadServicesTest {
         assertEquals(1L, daten.downloads.unfinishedDownloads())
     }
 
+    @Test
+    fun returnsUnfinishedDownloadsForSource() {
+        val manualDownload = download(DownloadRunState().apply { status = StartStatus.RUNNING })
+        val aboDownload = download(DownloadRunState().apply { status = StartStatus.INITIALIZED }).apply {
+            quelle = DownloadSource.ABO
+        }
+        val finishedManualDownload = download(DownloadRunState().apply { status = StartStatus.FINISHED })
+        daten.downloads.queue.add(manualDownload)
+        daten.downloads.queue.add(aboDownload)
+        daten.downloads.queue.add(finishedManualDownload)
+
+        assertEquals(listOf(manualDownload), daten.downloads.unfinishedDownloads(DownloadSource.DOWNLOAD))
+        assertEquals(listOf(manualDownload, aboDownload), daten.downloads.unfinishedDownloads(DownloadSource.ALL))
+    }
+
     private fun buttonDownload(
         filmUrl: String,
         downloadUrl: String,

@@ -134,19 +134,6 @@ class ListeDownloads(
             return info
         }
 
-    /**
-     * Return a List of all not yet finished downloads.
-     *
-     * @param quelle the download source to include
-     * @return A list with all download objects.
-     */
-    @Synchronized
-    fun getListOfStartsNotFinished(quelle: DownloadSource): List<DatenDownload> =
-        filter { download ->
-            download.runtime.runState?.isBeforeFinished == true &&
-                (quelle == DownloadSource.ALL || download.quelle == quelle)
-        }
-
     @Synchronized
     fun buttonStartsPutzen() {
         // Starts durch Button die fertig sind, löschen
