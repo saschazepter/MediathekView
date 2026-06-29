@@ -58,7 +58,7 @@ internal class OldConfigFileImporterTest {
                 """.trimIndent(),
             )
 
-            val result = OldConfigFileImporter(daten).importAboBlacklist(
+            val result = OldConfigFileImporter(daten.abos, daten.blacklist).importAboBlacklist(
                 configFile.toString(),
                 importAbo = true,
                 importBlacklist = false,

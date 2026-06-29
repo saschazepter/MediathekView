@@ -1,8 +1,9 @@
 package mediathek.gui.actions.import_actions
 
-import mediathek.config.Daten
 import mediathek.controller.LegacyAboRuleXml
 import mediathek.controller.LegacyBlacklistRuleXml
+import mediathek.daten.abo.AboServices
+import mediathek.daten.blacklist.BlacklistServices
 import mediathek.gui.messages.ReplaceListChangedEvent
 import mediathek.tool.MessageBus
 import mediathek.tool.ReplaceList
@@ -17,7 +18,8 @@ import javax.xml.stream.XMLStreamException
 import javax.xml.stream.XMLStreamReader
 
 class OldConfigFileImporter(
-    private val daten: Daten,
+    private val abos: AboServices,
+    private val blacklist: BlacklistServices,
 ) {
     private val inFactory: XMLInputFactory = XMLInputFactory.newInstance()
 
@@ -43,7 +45,7 @@ class OldConfigFileImporter(
                             } else if (importBlacklist && parser.localName == LegacyBlacklistRuleXml.TAG) {
                                 try {
                                     val rule = LegacyBlacklistRuleXml.readRule(parser)
-                                    if (daten.blacklist.rules.addWithoutNotification(rule)) {
+                                    if (blacklist.rules.addWithoutNotification(rule)) {
                                         foundBlacklistEntries++
                                     }
                                 }
@@ -70,11 +72,11 @@ class OldConfigFileImporter(
         }
 
         if (foundAbos > 0) {
-            daten.abos.list.finishLoading()
-            daten.abos.notifyListChanged()
+            abos.list.finishLoading()
+            abos.notifyListChanged()
         }
         if (foundBlacklistEntries > 0)
-            daten.blacklist.applyToFilmListAndNotifyListeners()
+            blacklist.applyToFilmListAndNotifyListeners()
         if (foundReplaceListEntries > 0)
             MessageBus.messageBus.publishAsync(ReplaceListChangedEvent())
 
@@ -86,7 +88,7 @@ class OldConfigFileImporter(
     private fun importAboEntry(parser: XMLStreamReader): Boolean {
         return try {
             val datenAbo = LegacyAboRuleXml.readAbo(parser)
-            daten.abos.list.addAboFromConfig(datenAbo)
+            abos.list.addAboFromConfig(datenAbo)
             true
         }
         catch (_: Exception) {

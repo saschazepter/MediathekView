@@ -121,9 +121,9 @@ class MainWindowMenuBuilder(
         exportMenu.add(ExportDecompressedFilmlistAction(daten.filmCatalog.allFilms, ownerFrame))
 
         val importMenu = JMenu("Import")
-        importMenu.add(ImportOldAbosAction(ownerFrame, daten))
-        importMenu.add(ImportOldBlacklistAction(ownerFrame, daten))
-        importMenu.add(ImportOldReplacementListAction(ownerFrame, daten))
+        importMenu.add(ImportOldAbosAction(ownerFrame, daten.abos, daten.blacklist))
+        importMenu.add(ImportOldBlacklistAction(ownerFrame, daten.abos, daten.blacklist))
+        importMenu.add(ImportOldReplacementListAction(ownerFrame, daten.abos, daten.blacklist))
 
         fileMenu.add(exportMenu)
         fileMenu.add(importMenu)
