@@ -20,6 +20,7 @@ package mediathek.gui.tabs.tab_film.lifecycle
 
 import mediathek.config.Daten
 import mediathek.config.application.FilterConfiguration
+import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.tabs.tab_film.FilmToolBar
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog
@@ -43,7 +44,7 @@ class FilmLifecycleHostAdapter(
 ) : FilmLifecycleController.Host {
     override fun messageBusSubscriber(): Any = messageBusSubscriber
 
-    override fun daten(): Daten = daten
+    override fun filmListLoader(): FilmeLaden = daten.filmListLoader
 
     override fun table(): MVFilmTable = tableProvider()
 
