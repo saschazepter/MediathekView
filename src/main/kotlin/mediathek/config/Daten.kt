@@ -20,8 +20,6 @@
 
 package mediathek.config
 
-import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.SortedList
 import mediathek.SplashScreenLifecycle
 import mediathek.controller.AboRuleStorage
 import mediathek.controller.BlacklistRuleStorage
@@ -34,9 +32,7 @@ import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.bookmark.BookmarkServices
-import mediathek.tool.GermanStringSorter
 import mediathek.tool.ReplaceList
-import mediathek.tool.SenderListBoxModel
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Files
 import java.nio.file.Path
@@ -60,10 +56,6 @@ class Daten {
         )
 
     private var backupAlreadyHandled = false
-
-    val allSendersList: EventList<String> = SortedList(SenderListBoxModel.providedSenderList).apply {
-        setComparator(GermanStringSorter)
-    }
 
     fun allesLaden(): Boolean {
         if (!load()) {

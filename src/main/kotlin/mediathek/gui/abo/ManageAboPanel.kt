@@ -271,7 +271,7 @@ class ManageAboPanel(
 
         swingToolBar.add(JLabel("Abos für Sender:"))
         senderCombo.maximumSize = Dimension(150, Int.MAX_VALUE)
-        val model = GlazedListsSwing.eventComboBoxModel(EventListWithEmptyFirstEntry(daten.allSendersList))
+        val model = GlazedListsSwing.eventComboBoxModel(EventListWithEmptyFirstEntry(daten.filmCatalog.allSendersList))
         senderCombo.model = model
         senderCombo.selectedIndex = 0
         senderCombo.addActionListener { applySenderFilter() }

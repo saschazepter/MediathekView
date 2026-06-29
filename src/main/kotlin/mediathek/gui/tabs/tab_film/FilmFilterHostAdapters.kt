@@ -28,7 +28,7 @@ class FilmFilterDataProviderAdapter(
     private val datenProvider: () -> Daten,
 ) : FilmFilterController.DataProvider {
     override fun senderList(): EventList<String> =
-        FilterList(datenProvider().allSendersList, SenderFilmlistLoadApprover::isApproved)
+        FilterList(datenProvider().filmCatalog.allSendersList, SenderFilmlistLoadApprover::isApproved)
 
     override fun getThemen(senders: Collection<String>): List<String> =
         datenProvider().filmCatalog.filteredFilms.getThemen(senders)
