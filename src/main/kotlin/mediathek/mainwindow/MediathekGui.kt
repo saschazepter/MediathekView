@@ -806,7 +806,14 @@ open class MediathekGui private constructor(
 
     private fun createTabFilme(daten: Daten): GuiFilme =
         GuiFilme(
-            daten,
+            daten.programSets,
+            daten.filmCatalog,
+            daten.abos,
+            daten.blacklist,
+            daten.bookmarks,
+            daten.downloads,
+            daten.filmListLoader,
+            programSetExporter(),
             this,
             toggleBlacklistAction,
             editBlacklistAction,
