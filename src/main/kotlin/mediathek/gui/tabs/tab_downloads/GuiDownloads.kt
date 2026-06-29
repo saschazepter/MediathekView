@@ -200,7 +200,7 @@ class GuiDownloads(
     }
 
     private fun setupDownloadListTable() {
-        tabelle = MVDownloadsTable(daten)
+        tabelle = MVDownloadsTable(daten.downloads)
         tableSelection = DownloadsTableSelection(tabelle, this)
         downloadListScrollPane.viewport.view = tabelle
     }

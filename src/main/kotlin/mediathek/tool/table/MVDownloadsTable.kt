@@ -19,7 +19,7 @@
 package mediathek.tool.table
 
 import mediathek.audiothek.ui.table.TriStateTableRowSorter
-import mediathek.config.Daten
+import mediathek.controller.starter.DownloadServices
 import mediathek.daten.DatenDownload
 import mediathek.controller.DownloadColumns
 import mediathek.tool.models.TModelDownload
@@ -39,7 +39,7 @@ import javax.swing.table.TableModel
 private val logger = LogManager.getLogger()
 
 class MVDownloadsTable(
-    private val daten: Daten,
+    private val downloads: DownloadServices,
 ) : PersistentColumnConfigurationTable(
     DownloadColumns.COUNT,
     DownloadColumns.visibilityStore(),
@@ -163,7 +163,7 @@ class MVDownloadsTable(
             val download = tableModel.getValueAt(convertRowIndexToModel(row), DownloadColumns.REF) as DatenDownload
             downloadsInTableOrder.add(download)
         }
-        daten.downloads.reorderQueueToMatch(downloadsInTableOrder)
+        downloads.reorderQueueToMatch(downloadsInTableOrder)
     }
 
     override fun spaltenAusschalten() {
@@ -257,7 +257,7 @@ class MVDownloadsTable(
                 downloadsToMove.add(download)
             }
 
-            daten.downloads.moveDownloadsTo(insertionIndex, downloadsToMove)
+            downloads.moveDownloadsTo(insertionIndex, downloadsToMove)
             rowSorter?.sortKeys = null
             restoreSelectedTableRows()
         }
