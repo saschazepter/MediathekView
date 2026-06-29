@@ -582,7 +582,7 @@ class GuiDownloads(
         if (downloads.isEmpty()) {
             return
         }
-        daten.downloads.queue.downloadsVorziehen(downloads)
+        daten.downloads.advanceDownloads(downloads)
     }
 
     fun zielordnerOeffnen() {

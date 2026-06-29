@@ -10,6 +10,7 @@ import mediathek.daten.DownloadSource
 import mediathek.daten.ListeDownloads
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.messages.DownloadListChangedEvent
+import mediathek.gui.messages.DownloadQueueRankChangedEvent
 import mediathek.gui.messages.StartEvent
 import mediathek.tool.MessageBus
 import mediathek.tool.datum.DateUtil
@@ -125,6 +126,17 @@ class DownloadServices(
         if (found) {
             MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
         }
+    }
+
+    fun advanceDownloads(downloads: List<DatenDownload>) {
+        synchronized(queue) {
+            for (download in downloads) {
+                queue.remove(download)
+                queue.addFirst(download)
+            }
+        }
+
+        MessageBus.messageBus.publishAsync(DownloadQueueRankChangedEvent())
     }
 
     fun searchAboDownloads(parent: JFrame?): List<DatenDownload> = synchronized(queue) {

@@ -27,7 +27,6 @@ import mediathek.controller.starter.DownloadStartActions
 import mediathek.controller.starter.StartStatus
 import mediathek.gui.messages.ButtonStartEvent
 import mediathek.gui.messages.DownloadListChangedEvent
-import mediathek.gui.messages.DownloadQueueRankChangedEvent
 import mediathek.tool.MessageBus
 import mediathek.tool.models.TModelDownload
 import org.apache.logging.log4j.LogManager
@@ -95,16 +94,6 @@ class ListeDownloads(
         for (download in this) {
             download.runtime.runState?.requestStop()
         }
-    }
-
-    @Synchronized
-    fun downloadsVorziehen(downloads: ArrayList<DatenDownload>) {
-        for (download in downloads) {
-            remove(download)
-            addFirst(download)
-        }
-
-        MessageBus.messageBus.publishAsync(DownloadQueueRankChangedEvent())
     }
 
     @Synchronized
