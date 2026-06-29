@@ -22,6 +22,9 @@ import mediathek.controller.starter.DownloadInvocationRequest
 import mediathek.controller.starter.DownloadProgramInvocationBuilder
 import mediathek.controller.starter.DownloadRuntimeText
 import mediathek.controller.starter.DownloadRuntimeState
+import mediathek.controller.starter.DownloadTarget
+import mediathek.controller.starter.DownloadTargetBuilder
+import mediathek.controller.starter.DownloadTargetRequest
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.abo.DatenAbo
 import mediathek.tool.*
