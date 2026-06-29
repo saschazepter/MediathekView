@@ -1,8 +1,11 @@
 package mediathek.gui.dialogEinstellungen
 
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.controller.IoXmlSchreiben
+import mediathek.daten.DatenPset
 import mediathek.gui.dialogEinstellungen.allgemein.LuceneDirectoryModePanel
 import mediathek.gui.dialogEinstellungen.allgemein.PanelEinstellungen
 import mediathek.gui.dialogEinstellungen.blacklist.PanelBlacklist
@@ -14,6 +17,7 @@ import java.awt.Component
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import java.util.*
+import java.util.function.BiConsumer
 import javax.swing.JPanel
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
@@ -88,10 +92,13 @@ class DialogEinstellungen(
         )
 
         val dateinamen = SettingsPage(NAME_DATEINAME, createPanel = { PanelDateinamen() })
-        val pset = SettingsPage(NAME_PROGRAMMSET, createPanel = { PanelPset(this, daten) })
+        val pset = SettingsPage(
+            NAME_PROGRAMMSET,
+            createPanel = { PanelPset(this, daten.programSets, programSetExporter()) },
+        )
         val psetImport = SettingsPage(
             NAME_PROGRAMMSET_IMPORTIEREN,
-            createPanel = { PanelPsetImport(daten, this) },
+            createPanel = { PanelPsetImport(daten.programSets, programSetExporter(), this) },
         )
         val download = SettingsPage(NAME_BANDWIDTH, createPanel = { PanelDownload() })
 
@@ -185,6 +192,11 @@ class DialogEinstellungen(
         ApplicationConfiguration.getInstance()
             .setSettingsDialogBounds(location.x, location.y, size.width, size.height)
     }
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+        }
 
     private fun beenden() {
         storeSizeInConfig()

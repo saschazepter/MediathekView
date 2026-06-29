@@ -1,12 +1,10 @@
 package mediathek.gui.dialogEinstellungen;
 
 import mediathek.config.CommandLineOptions;
-import mediathek.config.Daten;
-import mediathek.config.DatenXmlConfigDataFactory;
-import mediathek.controller.IoXmlSchreiben;
 import mediathek.daten.DatenPset;
 import mediathek.daten.ListePset;
 import mediathek.daten.ListePsetVorlagen;
+import mediathek.daten.ProgramSetRepository;
 import mediathek.daten.ProgramSetTemplateResolver;
 import mediathek.swing.IconUtils;
 import mediathek.tool.GuiFunktionenProgramme;
@@ -28,15 +26,22 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.Arrays;
+import java.util.function.BiConsumer;
 
 public class PanelPsetImport extends JPanel {
     private final ListePsetVorlagen listePsetVorlagen = new ListePsetVorlagen();
     private static final Logger logger = LogManager.getLogger();
-    private final Daten daten;
+    private final ProgramSetRepository programSets;
+    private final BiConsumer<DatenPset[], String> programSetExporter;
     private final JFrame parentComponent;
 
-    public PanelPsetImport(Daten d, JFrame parentComponent) {
-        daten = d;
+    public PanelPsetImport(
+            ProgramSetRepository programSets,
+            BiConsumer<DatenPset[], String> programSetExporter,
+            JFrame parentComponent
+    ) {
+        this.programSets = programSets;
+        this.programSetExporter = programSetExporter;
         this.parentComponent = parentComponent;
         initComponents();
         init();
@@ -107,15 +112,11 @@ public class PanelPsetImport extends JPanel {
     private boolean addSetVorlagen(ListePset listePset, boolean setVersion) {
         return GuiFunktionenProgramme.addSetVorlagen(
                 parentComponent,
-                daten.getProgramSets(),
+                programSets,
                 listePset,
                 setVersion,
-                this::exportProgramSets
+                programSetExporter
         );
-    }
-
-    private void exportProgramSets(DatenPset[] programSets, String target) {
-        new IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target);
     }
 
     private void tabelleLaden() {

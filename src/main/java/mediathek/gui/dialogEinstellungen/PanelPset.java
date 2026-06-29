@@ -1,10 +1,8 @@
 package mediathek.gui.dialogEinstellungen;
 
-import mediathek.config.Daten;
-import mediathek.config.DatenXmlConfigDataFactory;
 import mediathek.config.application.ApplicationConfiguration;
-import mediathek.controller.IoXmlSchreiben;
 import mediathek.daten.DatenPset;
+import mediathek.daten.ProgramSetRepository;
 import mediathek.gui.dialogEinstellungen.pset.PanelPsetKurz;
 import mediathek.gui.dialogEinstellungen.pset.PanelPsetLang;
 import net.miginfocom.layout.AC;
@@ -14,14 +12,21 @@ import net.miginfocom.swing.MigLayout;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.function.BiConsumer;
 
 public class PanelPset extends JPanel {
     private final JFrame parentComponent;
-    private final Daten daten;
+    private final ProgramSetRepository programSets;
+    private final BiConsumer<DatenPset[], String> programSetExporter;
 
-    public PanelPset(JFrame parentComponent, Daten daten) {
+    public PanelPset(
+            JFrame parentComponent,
+            ProgramSetRepository programSets,
+            BiConsumer<DatenPset[], String> programSetExporter
+    ) {
         this.parentComponent = parentComponent;
-        this.daten = daten;
+        this.programSets = programSets;
+        this.programSetExporter = programSetExporter;
 
         initComponents();
         var applicationConfiguration = ApplicationConfiguration.getInstance();
@@ -41,18 +46,14 @@ public class PanelPset extends JPanel {
         if (jCheckBoxAlleEinstellungen.isSelected()) {
             jPanelPset.add(new PanelPsetLang(
                     parentComponent,
-                    daten.getProgramSets(),
-                    daten.getProgramSets().getList(),
-                    this::exportProgramSets
+                    programSets,
+                    programSets.getList(),
+                    programSetExporter
             ), BorderLayout.CENTER);
         } else {
-            jPanelPset.add(new PanelPsetKurz(parentComponent, daten.getProgramSets().getList()), BorderLayout.CENTER);
+            jPanelPset.add(new PanelPsetKurz(parentComponent, programSets.getList()), BorderLayout.CENTER);
         }
         jPanelPset.updateUI();
-    }
-
-    private void exportProgramSets(DatenPset[] programSets, String target) {
-        new IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target);
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
