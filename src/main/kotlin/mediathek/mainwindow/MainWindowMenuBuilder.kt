@@ -140,11 +140,11 @@ class MainWindowMenuBuilder(
         viewMenu.add(showMemoryMonitorAction)
         viewMenu.add(showBandwidthUsageAction)
         viewMenu.addSeparator()
-        viewMenu.add(ShowFilmStatisticsAction(ownerFrame, daten))
-        viewMenu.add(ShowDuplicateStatisticsAction(ownerFrame, daten))
+        viewMenu.add(ShowFilmStatisticsAction(ownerFrame, daten.filmCatalog))
+        viewMenu.add(ShowDuplicateStatisticsAction(ownerFrame, daten.filmCatalog))
         viewMenu.add(JMenuItem("Übersicht aller Duplikate anzeigen...").apply {
             addActionListener {
-                FilmDuplicateOverviewDialog(ownerFrame, daten).isVisible = true
+                FilmDuplicateOverviewDialog(ownerFrame, daten.filmCatalog).isVisible = true
             }
         })
         viewMenu.addSeparator()

@@ -7,8 +7,8 @@ package mediathek.gui.duplicates.statistics
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.swing.GlazedListsSwing
-import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.duplicates.FilmStatistics
 import mediathek.tool.withReadLock
 import org.apache.logging.log4j.LogManager
@@ -20,7 +20,7 @@ import javax.swing.JTable
 
 class DuplicateStatisticsDialog(
     owner: Window,
-    private val daten: Daten,
+    private val filmCatalog: FilmCatalog,
     private val action: AbstractAction,
 ) : DuplicateStatisticsDialogBase(owner) {
     private val applicationConfiguration = ApplicationConfiguration.getInstance()
@@ -54,7 +54,7 @@ class DuplicateStatisticsDialog(
     }
 
     private fun setupCommonTable() {
-        val commonStats = daten.filmCatalog.commonStatistics
+        val commonStats = filmCatalog.commonStatistics
         val sortedList = SortedList(commonStats, compareBy(FilmStatistics::sender))
         val model = GlazedListsSwing.eventTableModelWithThreadProxyList(sortedList, tableFormat)
         model.addTableModelListener { updateTotalCommonStats() }
@@ -62,7 +62,7 @@ class DuplicateStatisticsDialog(
     }
 
     private fun setupDuplicatesTable() {
-        val duplicateStats = daten.filmCatalog.duplicateStatistics
+        val duplicateStats = filmCatalog.duplicateStatistics
         val sortedList = SortedList(duplicateStats, compareBy(FilmStatistics::sender))
         val model = GlazedListsSwing.eventTableModelWithThreadProxyList(sortedList, tableFormat)
         model.addTableModelListener { updateTotalDuplicatesStats() }
@@ -82,14 +82,14 @@ class DuplicateStatisticsDialog(
 
     private fun updateTotalCommonStats() {
         resizeSenderColumnWidth(tblCommon)
-        val statisticsList = daten.filmCatalog.commonStatistics
+        val statisticsList = filmCatalog.commonStatistics
         val total = statisticsList.sumCounts()
         lblTotalCommon.text = "Gesamtanzahl Filme: $total"
     }
 
     private fun updateTotalDuplicatesStats() {
         resizeSenderColumnWidth(tblDuplicates)
-        val statisticsList = daten.filmCatalog.duplicateStatistics
+        val statisticsList = filmCatalog.duplicateStatistics
         val total = statisticsList.sumCounts()
         lblTotalDuplicates.text = "Gesamtanzahl Duplikate: $total"
     }

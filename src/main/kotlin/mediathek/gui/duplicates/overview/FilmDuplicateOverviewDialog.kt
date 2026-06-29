@@ -9,8 +9,8 @@ import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.swing.GlazedListsSwing
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import mediathek.config.Daten
 import mediathek.daten.DatenFilm
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.duplicates.details.DuplicateFilmDetailsTableFormat
 import mediathek.tool.EscapeKeyHandler
 import java.awt.Window
@@ -21,7 +21,7 @@ import javax.swing.tree.TreeSelectionModel
 
 class FilmDuplicateOverviewDialog(
     owner: Window,
-    private val daten: Daten,
+    private val filmCatalog: FilmCatalog,
 ) : FilmDuplicateOverviewDialogBase(owner) {
     private val dialogScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val filmList: EventList<DatenFilm> = BasicEventList()
@@ -58,7 +58,7 @@ class FilmDuplicateOverviewDialog(
     private fun loadDuplicateTree() {
         dialogScope.launch {
             val rootNode = withContext(Dispatchers.Default) {
-                createDuplicateRootNode(daten.filmCatalog.allFilms.snapshot())
+                createDuplicateRootNode(filmCatalog.allFilms.snapshot())
             }
             tree.model = DefaultTreeModel(rootNode)
         }
@@ -106,7 +106,7 @@ class FilmDuplicateOverviewDialog(
     private fun findDuplicateFilms(film: DatenFilm): List<DatenFilm> {
         val normalUrl = film.urlNormalQuality
         val highQualityUrl = film.highQualityUrl
-        return daten.filmCatalog.allFilms.snapshot()
+        return filmCatalog.allFilms.snapshot()
             .asSequence()
             .filter { item -> !item.isLivestream }
             .filter { item ->

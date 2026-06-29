@@ -86,7 +86,7 @@ class FilmFileAndDuplicateContextActions(
     private fun createDuplicateDetailsMenuItem(film: DatenFilm): JMenuItem =
         JMenuItem("Zusammengehörige Filme anzeigen...").apply {
             addActionListener {
-                DuplicateFilmDetailsDialog(host.ownerFrame(), daten, film).isVisible = true
+                DuplicateFilmDetailsDialog(host.ownerFrame(), daten.filmCatalog, film).isVisible = true
             }
         }
 
