@@ -89,7 +89,7 @@ open class MediathekGui private constructor(
     FilmListLoadHost {
     private val disposed = AtomicBoolean()
     private val editBlacklistAction = EditBlacklistAction(this, daten)
-    private val toggleBlacklistAction = ToggleBlacklistAction(daten)
+    private val toggleBlacklistAction = ToggleBlacklistAction(daten.blacklist)
     private val selectedListItemsProperty = ListSelectedItemsProperty(0)
     private val tabbedPane = PositionSavingTabbedPane()
     private val jMenuHilfe = JMenu()

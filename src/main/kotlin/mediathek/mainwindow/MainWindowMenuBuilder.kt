@@ -174,7 +174,7 @@ class MainWindowMenuBuilder(
         helpMenu.add(ResetAboHistoryAction(ownerFrame, daten))
         helpMenu.addSeparator()
         helpMenu.add(DeleteLocalFilmlistAction(quitHost))
-        helpMenu.add(DeleteBookmarksAction(daten, filmBookmarkHost))
+        helpMenu.add(DeleteBookmarksAction(daten.bookmarks, filmBookmarkHost))
         helpMenu.addSeparator()
         helpMenu.add(ResetFilterDialogPosition(filmBookmarkHost))
         helpMenu.addSeparator()

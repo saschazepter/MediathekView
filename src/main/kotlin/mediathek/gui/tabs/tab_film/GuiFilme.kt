@@ -137,7 +137,7 @@ class GuiFilme(
         selectionController = selectionComponents.selectionController
         bookmarkController = selectionComponents.bookmarkController
         val bookmarkActionHost = createBookmarkActionHost()
-        val deleteBookmarksAction = DeleteBookmarksAction(daten, bookmarkActionHost)
+        val deleteBookmarksAction = DeleteBookmarksAction(daten.bookmarks, bookmarkActionHost)
         val filmActions = createFilmActions(deleteBookmarksAction, selectionComponents)
         copyHqUrlToClipboardActionValue = filmActions.copyHqUrlToClipboardAction
         copyNormalUrlToClipboardActionValue = filmActions.copyNormalUrlToClipboardAction
@@ -282,7 +282,7 @@ class GuiFilme(
     ): FilmActions {
         val selectionController = selectionComponents.selectionController
         val filmActionHost = selectionComponents.filmActionHost
-        val playFilmAction = PlayFilmAction(daten, { selectionController.startFilm(it) }) { ownerFrame }
+        val playFilmAction = PlayFilmAction(daten.programSets, { selectionController.startFilm(it) }) { ownerFrame }
         val saveFilmAction = SaveFilmAction(filmActionHost)
         val copyHqUrlToClipboardAction =
             CopyUrlToClipboardAction(filmActionHost, FilmResolution.Enum.HIGH_QUALITY)
