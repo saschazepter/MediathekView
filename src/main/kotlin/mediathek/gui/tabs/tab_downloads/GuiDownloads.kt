@@ -470,12 +470,12 @@ class GuiDownloads(
             return
         }
 
-        val listeDownloads = daten.downloads.queue
-        rememberAboSizes(listeDownloads)
+        rememberAboSizes(daten.downloads.queuedDownloads())
         daten.downloads.refreshAboDownloads()
         daten.downloads.searchAboDownloads(ownerFrame)
-        listeDownloads.restoreKnownAboSizes()
-        rememberAboSizes(listeDownloads)
+        val updatedDownloads = daten.downloads.queuedDownloads()
+        updatedDownloads.restoreKnownAboSizes()
+        rememberAboSizes(updatedDownloads)
         reloadTable()
         updateUnknownDownloadSizes()
 
@@ -545,7 +545,7 @@ class GuiDownloads(
         }
 
     private fun updateUnknownDownloadSizes() {
-        downloadSizeLookupService.updateFilmSizes(daten.downloads.queue.toList())
+        downloadSizeLookupService.updateFilmSizes(daten.downloads.queuedDownloads())
     }
 
     @Synchronized

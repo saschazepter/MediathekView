@@ -150,6 +150,17 @@ internal class DownloadServicesTest {
     }
 
     @Test
+    fun returnsQueuedDownloadSnapshot() {
+        val download = namedDownload("snapshot")
+        daten.downloads.queue.add(download)
+
+        val snapshot = daten.downloads.queuedDownloads()
+        daten.downloads.queue.clear()
+
+        assertEquals(listOf(download), snapshot)
+    }
+
+    @Test
     fun reordersQueueToMatchDownloadOrder() {
         val firstDownload = namedDownload("first")
         val secondDownload = namedDownload("second")

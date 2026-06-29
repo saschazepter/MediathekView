@@ -259,6 +259,10 @@ class DownloadServices(
         buttonQueue.firstOrNull { download -> download.filmUrl == filmUrl }
     }
 
+    fun queuedDownloads(): List<DatenDownload> = synchronized(queue) {
+        queue.toList()
+    }
+
     fun reloadTableModel(model: TModelDownload, filter: DownloadListFilter) {
         synchronized(queue) {
             DownloadTableModelUpdater.reload(model, queue, filter)
