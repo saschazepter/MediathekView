@@ -58,7 +58,7 @@ class TableContextMenuHandler(
 
     private val daten = host.daten()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
-    private val filmTableButtonClickHandler = FilmTableButtonClickHandler(host, daten)
+    private val filmTableButtonClickHandler = FilmTableButtonClickHandler(host, daten.downloads)
     private val filmAboAndBlacklistContextActions =
         FilmAboAndBlacklistContextActions(host, daten, this::selectedFilmAtPopupPoint)
     private val jDownloadHelper = JDownloadHelper(host.ownerFrame())

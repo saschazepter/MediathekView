@@ -364,7 +364,7 @@ class GuiFilme(
     ): ViewComponents {
         val selectionController = selectionComponents.selectionController
         val filmUiActions = filmActions.filmUiActions
-        val psetButtonsPanel = PsetButtonsPanel(daten) { pset -> selectionController.startFilm(pset) }
+        val psetButtonsPanel = PsetButtonsPanel(daten.programSets) { pset -> selectionController.startFilm(pset) }
         val viewHost = object : FilmViewController.Host {
             override fun psetButtonsTab() = psetButtonsTab
 
