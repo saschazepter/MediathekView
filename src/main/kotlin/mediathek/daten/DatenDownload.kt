@@ -18,6 +18,7 @@
 
 package mediathek.daten
 
+import mediathek.controller.starter.DownloadRuntimeText
 import mediathek.controller.starter.DownloadRuntimeState
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.abo.DatenAbo

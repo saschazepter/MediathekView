@@ -1,5 +1,6 @@
 package mediathek.daten
 
+import mediathek.controller.starter.DownloadRuntimeText
 import mediathek.tool.FileSize
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
