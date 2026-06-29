@@ -319,7 +319,10 @@ open class MediathekGui private constructor(
         )
         mainWindowLifecycle = MainWindowLifecycle(
             this,
-            daten,
+            daten.downloads,
+            daten.filmListLoader,
+            daten.blacklist,
+            daten.bookmarks,
             this,
             ::handleLookAndFeelChange,
             filmlistDownloadProgressListener,
@@ -499,7 +502,7 @@ open class MediathekGui private constructor(
     }
 
     private fun performGeoCountryStartupCheck() {
-        GeoCountryStartupCheck(daten, this, { performAustrianVlcCheck() }).perform()
+        GeoCountryStartupCheck(daten.blacklist, this, { performAustrianVlcCheck() }).perform()
     }
 
     private fun mapFilmUrlCopyCommands() {
