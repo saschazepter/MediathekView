@@ -93,7 +93,13 @@ class StartupFilmlistLoader(
     }
 
     private suspend fun runPostLoadTasks() =
-        FilmlistPostLoadTasks(daten, progressLabel, progressBar).run(writeFilmList = false)
+        FilmlistPostLoadTasks(
+            daten.filmCatalog,
+            daten.abos,
+            daten.blacklist,
+            progressLabel,
+            progressBar,
+        ).run(writeFilmList = false)
 
     override fun close() {
         if (closed.compareAndSet(false, true)) {

@@ -18,9 +18,10 @@
 
 package mediathek.filmlisten
 
-import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.IndexedFilmList
+import mediathek.daten.abo.AboServices
+import mediathek.daten.blacklist.BlacklistServices
 import mediathek.gui.duplicates.CommonStatsEvaluationTask
 import mediathek.gui.duplicates.FilmDuplicateEvaluationTask
 import mediathek.gui.tasks.BlacklistFilterWorker
@@ -32,26 +33,28 @@ import javax.swing.JLabel
 import javax.swing.JProgressBar
 
 class FilmlistPostLoadTasks(
-    private val daten: Daten,
+    private val filmCatalog: FilmCatalog,
+    private val abos: AboServices,
+    private val blacklist: BlacklistServices,
     private val label: JLabel,
     private val progressBar: JProgressBar,
     private val host: FilmListLoadHost? = null,
 ) {
     suspend fun run(writeFilmList: Boolean) {
-        RefreshAboWorker(daten.abos, label, progressBar).execute()
-        BlacklistFilterWorker(daten.blacklist, label, progressBar).execute()
+        RefreshAboWorker(abos, label, progressBar).execute()
+        BlacklistFilterWorker(blacklist, label, progressBar).execute()
 
         if (ApplicationConfiguration.getInstance().evaluateFilmDuplicates) {
-            FilmDuplicateEvaluationTask(daten.filmCatalog).run()
+            FilmDuplicateEvaluationTask(filmCatalog).run()
         }
 
-        CommonStatsEvaluationTask(daten.filmCatalog).run()
+        CommonStatsEvaluationTask(filmCatalog).run()
 
         if (writeFilmList) {
-            FilmlistWriterWorker(daten.filmCatalog.allFilms, label, progressBar).run()
+            FilmlistWriterWorker(filmCatalog.allFilms, label, progressBar).run()
         }
-        if (daten.filmCatalog.filteredFilms is IndexedFilmList) {
-            LuceneIndexWorker(daten.filmCatalog, label, progressBar, host).execute()
+        if (filmCatalog.filteredFilms is IndexedFilmList) {
+            LuceneIndexWorker(filmCatalog, label, progressBar, host).execute()
         }
     }
 }

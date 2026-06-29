@@ -31,11 +31,11 @@ import mediathek.gui.bookmark.BookmarkServices
 class Daten {
     val programSets: ProgramSetRepository = ProgramSetRepository()
     val filmCatalog: FilmCatalog = FilmCatalog()
-    val filmListLoader: FilmeLaden = FilmeLaden(this)
-    val downloads: DownloadServices = DownloadServices(this)
     val blacklist: BlacklistServices = BlacklistServices(filmCatalog)
     val bookmarks: BookmarkServices = BookmarkServices(filmCatalog.allFilms)
     val abos: AboServices = AboServices(filmCatalog.allFilms)
+    val filmListLoader: FilmeLaden = FilmeLaden(filmCatalog, abos, blacklist)
+    val downloads: DownloadServices = DownloadServices(this)
 
     val configurationPersistence: DatenConfigurationPersistence = DatenConfigurationPersistence(
         programSets = programSets,
