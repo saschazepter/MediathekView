@@ -9,6 +9,8 @@ import mediathek.daten.DownloadInfos
 import mediathek.daten.DownloadSource
 import mediathek.daten.ListeDownloads
 import mediathek.gui.dialog.MissingProgramSetDialog
+import mediathek.gui.messages.DownloadListChangedEvent
+import mediathek.tool.MessageBus
 import mediathek.tool.datum.DateUtil
 import java.time.LocalDate
 import java.util.function.Predicate
@@ -24,6 +26,58 @@ class DownloadServices(
 
     fun refreshAboDownloads() {
         queue.abosAuffrischen()
+    }
+
+    fun cleanupFinishedDownloads() {
+        var found = false
+        synchronized(queue) {
+            val iterator = queue.iterator()
+            while (iterator.hasNext()) {
+                val download = iterator.next()
+                when (download.runtime.runState?.status) {
+                    StartStatus.FINISHED -> {
+                        // alles was fertig/fehlerhaft ist, kommt beim putzen weg
+                        iterator.remove()
+                        found = true
+                    }
+
+                    StartStatus.ERROR -> {
+                        // fehlerhafte werden zurückgesetzt
+                        DownloadLifecycleActions.reset(download)
+                        found = true
+                    }
+
+                    else -> Unit
+                }
+            }
+        }
+        if (found) {
+            MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
+        }
+    }
+
+    fun cleanupFinishedDownload(download: DatenDownload) {
+        var found = false
+        synchronized(queue) {
+            when (download.runtime.runState?.status) {
+                StartStatus.FINISHED -> {
+                    // alles was fertig/fehlerhaft ist, kommt beim putzen weg
+                    queue.remove(download)
+                    found = true
+                }
+
+                StartStatus.ERROR -> {
+                    // fehlerhafte werden zurückgesetzt
+                    DownloadLifecycleActions.reset(download)
+                    found = true
+                }
+
+                else -> Unit
+            }
+        }
+        if (found) {
+            MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
+        }
     }
 
     fun searchAboDownloads(parent: JFrame?): List<DatenDownload> = synchronized(queue) {

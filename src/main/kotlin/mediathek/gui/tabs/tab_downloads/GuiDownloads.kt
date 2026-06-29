@@ -550,12 +550,12 @@ class GuiDownloads(
 
     @Synchronized
     fun cleanupDownloads() {
-        daten.downloads.queue.listePutzen()
+        daten.downloads.cleanupFinishedDownloads()
     }
 
     @Synchronized
     fun downloadsAufraeumen(datenDownload: DatenDownload) {
-        daten.downloads.queue.listePutzen(datenDownload)
+        daten.downloads.cleanupFinishedDownload(datenDownload)
     }
 
     private fun getSelDownloads(): ArrayList<DatenDownload> = tableSelection.selectedDownloadsOrShowError()

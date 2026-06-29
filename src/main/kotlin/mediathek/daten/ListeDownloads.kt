@@ -57,59 +57,6 @@ class ListeDownloads(
     }
 
     @Synchronized
-    fun listePutzen() {
-        // fertige Downloads löschen
-        // fehlerhafte zurücksetzen
-        var found = false
-        val iterator = iterator()
-        while (iterator.hasNext()) {
-            val download = iterator.next()
-            when (download.runtime.runState?.status) {
-                StartStatus.FINISHED -> {
-                    // alles was fertig/fehlerhaft ist, kommt beim putzen weg
-                    iterator.remove()
-                    found = true
-                }
-
-                StartStatus.ERROR -> {
-                    // fehlerhafte werden zurückgesetzt
-                    DownloadLifecycleActions.reset(download)
-                    found = true
-                }
-
-                else -> Unit
-            }
-        }
-        if (found) {
-            MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
-        }
-    }
-
-    @Synchronized
-    fun listePutzen(datenDownload: DatenDownload) {
-        // fertigen Download löschen
-        var found = false
-        when (datenDownload.runtime.runState?.status) {
-            StartStatus.FINISHED -> {
-                // alles was fertig/fehlerhaft ist, kommt beim putzen weg
-                remove(datenDownload)
-                found = true
-            }
-
-            StartStatus.ERROR -> {
-                // fehlerhafte werden zurückgesetzt
-                DownloadLifecycleActions.reset(datenDownload)
-                found = true
-            }
-
-            else -> Unit
-        }
-        if (found) {
-            MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
-        }
-    }
-
-    @Synchronized
     fun abosAuffrischen() {
         // fehlerhafte und nicht gestartete löschen, wird nicht gemeldet ob was gefunden wurde
         val iterator = iterator()

@@ -319,7 +319,7 @@ class DownloadAndQuitRunner(
 
     private fun persistState(daten: Daten) {
         logger.info("Persisting download and configuration state...")
-        daten.downloads.queue.listePutzen()
+        daten.downloads.cleanupFinishedDownloads()
         SeenHistoryController().use { history ->
             history.performMaintenance()
         }
