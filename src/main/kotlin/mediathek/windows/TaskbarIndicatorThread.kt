@@ -18,7 +18,7 @@
 
 package mediathek.windows
 
-import mediathek.config.Daten
+import mediathek.controller.starter.DownloadServices
 import mediathek.tool.threads.IndicatorThread
 import org.apache.logging.log4j.LogManager
 import java.awt.Taskbar
@@ -28,7 +28,7 @@ import javax.swing.JFrame
 import kotlin.time.Duration.Companion.milliseconds
 import kotlin.time.toJavaDuration
 
-internal class TaskbarIndicatorThread(parent: JFrame, daten: Daten) : IndicatorThread(daten) {
+internal class TaskbarIndicatorThread(parent: JFrame, downloads: DownloadServices) : IndicatorThread(downloads) {
     private val parent: JFrame
     private val setThreadExecutionState: MethodHandle?
 

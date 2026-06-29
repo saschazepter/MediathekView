@@ -18,11 +18,12 @@
 
 package mediathek.mac
 
-import mediathek.config.Daten
+import mediathek.controller.starter.DownloadServices
 import mediathek.gui.progress.ThreadedDownloadProgressIndicator
 import java.awt.Taskbar
 
-class MacDownloadProgressIndicator(daten: Daten) : ThreadedDownloadProgressIndicator({ OsxIndicatorThread(daten) }) {
+class MacDownloadProgressIndicator(downloads: DownloadServices) :
+    ThreadedDownloadProgressIndicator({ OsxIndicatorThread(downloads) }) {
     private val powerManager = OsxPowerManager()
 
     override fun onDownloadStarted(activeDownloadCount: Int) {

@@ -50,7 +50,7 @@ class MediathekGuiMac(daten: Daten) : MediathekGui(
     daten,
     ::MacNotificationCenter,
     MacComputerShutdown(),
-    { _ -> MacDownloadProgressIndicator(daten) },
+    { _ -> MacDownloadProgressIndicator(daten.downloads) },
     MacMainWindowToolbarInstaller,
     MainWindowTabPlacementController(false),
     MacMainWindowMenuPolicy,
