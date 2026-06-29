@@ -2,12 +2,14 @@ package mediathek.controller.starter
 
 import mediathek.config.CommandLineOptions
 import mediathek.config.Daten
+import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
 import mediathek.daten.DownloadInfos
 import mediathek.daten.DownloadSource
 import mediathek.daten.DownloadStartInfo
+import mediathek.daten.DownloadType
 import mediathek.daten.ListeDownloads
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.messages.ButtonStartEvent
@@ -211,6 +213,38 @@ class DownloadServices(
         return found
     }
 
+    fun nextStart(): DatenDownload? = synchronized(queue) {
+        val maxNumDownloads = ApplicationConfiguration.getInstance().maxSimultaneousDownloads
+        if (queue.isNotEmpty() && canStartMore(maxNumDownloads)) {
+            return@synchronized queue.firstOrNull { download ->
+                download.runtime.runState?.status == StartStatus.INITIALIZED
+            }
+        }
+
+        null
+    }
+
+    fun restartDownload(): DatenDownload? = synchronized(queue) {
+        if (!canStartMore(1)) {
+            return@synchronized null
+        }
+        for (download in queue) {
+            val state = download.runtime.runState ?: continue
+
+            if (state.status == StartStatus.ERROR && state.countRestarted < Konstanten.MAX_DOWNLOAD_RESTARTS) {
+                val restarted = state.countRestarted
+                if (download.art == DownloadType.DIRECT) {
+                    DownloadLifecycleActions.reset(download)
+                    DownloadStartActions.start(download)
+                    download.runtime.runState?.countRestarted = restarted + 1
+                    return@synchronized download
+                }
+            }
+        }
+
+        null
+    }
+
     fun requestStopForShutdown() {
         synchronized(queue) {
             for (download in queue) {
@@ -327,6 +361,19 @@ class DownloadServices(
             queue.listeNummerieren()
         }
         addedDownloads
+    }
+
+    private fun canStartMore(max: Int): Boolean {
+        var count = 0
+        for (download in queue) {
+            if (download.runtime.runState?.isRunning == true) {
+                ++count
+                if (count >= max) {
+                    return false
+                }
+            }
+        }
+        return true
     }
 
     fun shutdown() {

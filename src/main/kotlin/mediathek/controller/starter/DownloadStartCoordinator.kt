@@ -127,11 +127,10 @@ class DownloadStartCoordinator(private val daten: Daten) {
     private fun getNextStart(): DatenDownload? {
         // get: erstes passendes Element der Liste zurückgeben oder null
         // und versuchen dass bei mehreren laufenden Downloads ein anderer Sender gesucht wird
-        val listeDownloads = daten.downloads.queue
-        var download = listeDownloads.nextStart
+        var download = daten.downloads.nextStart()
         if (download == null) {
             // dann versuchen einen Fehlerhaften nochmal zu starten
-            download = listeDownloads.restartDownload
+            download = daten.downloads.restartDownload()
             if (download != null) {
                 reStartmeldung(download)
             }

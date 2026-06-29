@@ -19,11 +19,6 @@
  */
 package mediathek.daten
 
-import mediathek.config.Konstanten
-import mediathek.config.application.ApplicationConfiguration
-import mediathek.controller.starter.DownloadLifecycleActions
-import mediathek.controller.starter.DownloadStartActions
-import mediathek.controller.starter.StartStatus
 import mediathek.tool.models.TModelDownload
 import java.util.*
 
@@ -55,57 +50,4 @@ class ListeDownloads : LinkedList<DatenDownload>() {
             download.nr = index++
         }
     }
-
-    @get:Synchronized
-    val nextStart: DatenDownload?
-        get() {
-            // get: erstes passendes Element der Liste zurückgeben oder null
-            // und versuchen dass bei mehreren laufenden Downloads ein anderer Sender gesucht wird
-            val maxNumDownloads = ApplicationConfiguration.getInstance().maxSimultaneousDownloads
-            if (isNotEmpty() && canStartMore(maxNumDownloads)) {
-                return nextPossibleDownload()
-            }
-
-            return null
-        }
-
-    @get:Synchronized
-    val restartDownload: DatenDownload?
-        get() {
-            // Versuch einen Fehlgeschlagenen Download zu finden um ihn wieder zu starten
-            // die Fehler laufen aber einzeln, vorsichtshalber
-            if (!canStartMore(1)) {
-                return null
-            }
-            for (download in this) {
-                val state = download.runtime.runState ?: continue
-
-                if (state.status == StartStatus.ERROR && state.countRestarted < Konstanten.MAX_DOWNLOAD_RESTARTS) {
-                    val restarted = state.countRestarted
-                    if (download.art == DownloadType.DIRECT) {
-                        DownloadLifecycleActions.reset(download)
-                        DownloadStartActions.start(download)
-                        download.runtime.runState?.countRestarted = restarted + 1
-                        return download
-                    }
-                }
-            }
-            return null
-        }
-
-    private fun canStartMore(max: Int): Boolean {
-        var count = 0
-        for (download in this) {
-            if (download.runtime.runState?.isRunning == true) {
-                ++count
-                if (count >= max) {
-                    return false
-                }
-            }
-        }
-        return true
-    }
-
-    private fun nextPossibleDownload(): DatenDownload? =
-        firstOrNull { download -> download.runtime.runState?.status == StartStatus.INITIALIZED }
 }

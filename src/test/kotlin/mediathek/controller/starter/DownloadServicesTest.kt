@@ -4,6 +4,7 @@ import mediathek.config.Daten
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
 import mediathek.daten.DownloadSource
+import mediathek.daten.DownloadType
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -102,6 +103,44 @@ internal class DownloadServicesTest {
         daten.downloads.requestStopForShutdown()
 
         assertTrue(runState.stoppen)
+    }
+
+    @Test
+    fun returnsNextInitializedDownload() {
+        val finishedDownload = download(DownloadRunState().apply { status = StartStatus.FINISHED })
+        val initializedDownload = download(DownloadRunState().apply { status = StartStatus.INITIALIZED })
+        val laterInitializedDownload = download(DownloadRunState().apply { status = StartStatus.INITIALIZED })
+        daten.downloads.queue.add(finishedDownload)
+        daten.downloads.queue.add(initializedDownload)
+        daten.downloads.queue.add(laterInitializedDownload)
+
+        assertSame(initializedDownload, daten.downloads.nextStart())
+    }
+
+    @Test
+    fun restartsErroredDirectDownload() {
+        val erroredDownload = download(DownloadRunState().apply {
+            status = StartStatus.ERROR
+            countRestarted = 1
+        })
+        daten.downloads.queue.add(erroredDownload)
+
+        assertSame(erroredDownload, daten.downloads.restartDownload())
+
+        val restartedState = erroredDownload.runtime.runState
+        assertEquals(StartStatus.INITIALIZED, restartedState?.status)
+        assertEquals(2, restartedState?.countRestarted)
+    }
+
+    @Test
+    fun ignoresErroredProgramDownloadForRestart() {
+        val programDownload = download(DownloadRunState().apply { status = StartStatus.ERROR }).apply {
+            art = DownloadType.PROGRAM
+        }
+        daten.downloads.queue.add(programDownload)
+
+        assertNull(daten.downloads.restartDownload())
+        assertEquals(StartStatus.ERROR, programDownload.runtime.runState?.status)
     }
 
     @Test
