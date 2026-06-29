@@ -25,6 +25,7 @@ import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
+import mediathek.gui.actions.CreateNewAboAction
 import mediathek.gui.tabs.tab_film.JDownloadHelper
 import mediathek.gui.tabs.tab_film.PyLoadHelper
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
@@ -59,8 +60,21 @@ class TableContextMenuHandler(
     private val daten = host.daten()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val filmTableButtonClickHandler = FilmTableButtonClickHandler(host, daten.downloads)
-    private val filmAboAndBlacklistContextActions =
-        FilmAboAndBlacklistContextActions(host, daten, this::selectedFilmAtPopupPoint)
+    private val createAboAction = CreateNewAboAction(daten, daten.abos.list) { host.ownerFrame() }
+    private val filmAboAndBlacklistContextActions = FilmAboAndBlacklistContextActions(
+        host,
+        daten.abos,
+        daten.blacklist,
+        { film, withTitle ->
+            createAboAction.createAbo(
+                aboname = film.thema,
+                filmSender = film.sender,
+                filmThema = film.thema,
+                filmTitel = if (withTitle) film.title else "",
+            )
+        },
+        this::selectedFilmAtPopupPoint,
+    )
     private val jDownloadHelper = JDownloadHelper(host.ownerFrame())
     private val pyLoadHelper = PyLoadHelper(host.ownerFrame())
     private val filmSpecificContextMenuBuilder = FilmSpecificContextMenuBuilder(host, jDownloadHelper, pyLoadHelper)
