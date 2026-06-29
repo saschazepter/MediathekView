@@ -427,7 +427,12 @@ class GuiFilme(
 
         }
         val tableContextMenuHost = TableContextMenuHostAdapter(
-            daten,
+            daten.downloads,
+            daten.programSets,
+            daten.filmCatalog,
+            daten.abos,
+            daten.blacklist,
+            programSetExporter(),
             { tabelle },
             selectionController::getCurrentlySelectedFilm,
             selectionController::getFilm,

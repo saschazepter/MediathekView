@@ -18,10 +18,12 @@
 
 package mediathek.gui.tabs.tab_film.table
 
-import mediathek.config.Daten
 import mediathek.controller.starter.DownloadServices
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
+import mediathek.daten.ProgramSetRepository
+import mediathek.daten.abo.AboServices
+import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.tabs.tab_film.actions.FilmActionHost
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
@@ -31,6 +33,7 @@ import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import mediathek.tool.table.MVFilmTable
 import java.awt.Component
 import java.util.*
+import java.util.function.BiConsumer
 import javax.swing.JFrame
 import javax.swing.JScrollPane
 
@@ -68,7 +71,12 @@ class FilmTableReloadHostAdapter(
 }
 
 class TableContextMenuHostAdapter(
-    private val daten: Daten,
+    private val downloads: DownloadServices,
+    private val programSets: ProgramSetRepository,
+    private val filmCatalog: FilmCatalog,
+    private val abos: AboServices,
+    private val blacklist: BlacklistServices,
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
     private val tableProvider: () -> MVFilmTable,
     private val currentlySelectedFilmProvider: () -> Optional<DatenFilm>,
     private val filmAtRowProvider: (Int) -> Optional<DatenFilm>,
@@ -82,7 +90,17 @@ class TableContextMenuHostAdapter(
 ) : TableContextMenuHandler.Host {
     override fun table(): MVFilmTable = tableProvider()
 
-    override fun daten(): Daten = daten
+    override fun downloads(): DownloadServices = downloads
+
+    override fun programSets(): ProgramSetRepository = programSets
+
+    override fun filmCatalog(): FilmCatalog = filmCatalog
+
+    override fun abos(): AboServices = abos
+
+    override fun blacklist(): BlacklistServices = blacklist
+
+    override fun programSetExporter(): BiConsumer<Array<DatenPset>, String> = programSetExporter
 
     override fun getCurrentlySelectedFilm(): Optional<DatenFilm> = currentlySelectedFilmProvider()
 

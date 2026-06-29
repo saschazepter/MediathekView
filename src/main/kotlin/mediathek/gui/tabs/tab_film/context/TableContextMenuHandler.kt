@@ -22,11 +22,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.swing.Swing
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
-import mediathek.controller.IoXmlSchreiben
+import mediathek.controller.starter.DownloadServices
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
+import mediathek.daten.ProgramSetRepository
+import mediathek.daten.abo.AboServices
+import mediathek.daten.blacklist.BlacklistServices
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.actions.CreateNewAboAction
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.tabs.tab_film.JDownloadHelper
@@ -50,7 +52,12 @@ class TableContextMenuHandler(
 ) : MouseAdapter() {
     interface Host {
         fun table(): MVFilmTable
-        fun daten(): Daten
+        fun downloads(): DownloadServices
+        fun programSets(): ProgramSetRepository
+        fun filmCatalog(): FilmCatalog
+        fun abos(): AboServices
+        fun blacklist(): BlacklistServices
+        fun programSetExporter(): BiConsumer<Array<DatenPset>, String>
         fun getCurrentlySelectedFilm(): Optional<DatenFilm>
         fun getFilm(row: Int): Optional<DatenFilm>
         fun playSelectedFilm()
@@ -62,30 +69,29 @@ class TableContextMenuHandler(
         fun actions(): FilmUiActions
     }
 
-    private val daten = host.daten()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
-    private val filmTableButtonClickHandler = FilmTableButtonClickHandler(host, daten.downloads)
+    private val filmTableButtonClickHandler = FilmTableButtonClickHandler(host, host.downloads())
     private val createAboAction = CreateNewAboAction(
-        daten.programSets,
-        daten.filmCatalog,
-        daten.abos,
+        host.programSets(),
+        host.filmCatalog(),
+        host.abos(),
         { host.ownerFrame() },
         { parent ->
-            MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten.programSets) { importParent, standardSets ->
+            MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, host.programSets()) { importParent, standardSets ->
                 GuiFunktionenProgramme.addSetVorlagen(
                     importParent,
-                    daten.programSets,
+                    host.programSets(),
                     standardSets,
                     true,
-                    programSetExporter(),
+                    host.programSetExporter(),
                 )
             }
         },
     )
     private val filmAboAndBlacklistContextActions = FilmAboAndBlacklistContextActions(
         host,
-        daten.abos,
-        daten.blacklist,
+        host.abos(),
+        host.blacklist(),
         { film, withTitle ->
             createAboAction.createAbo(
                 aboname = film.thema,
@@ -100,12 +106,12 @@ class TableContextMenuHandler(
     private val pyLoadHelper = PyLoadHelper(host.ownerFrame())
     private val filmSpecificContextMenuBuilder = FilmSpecificContextMenuBuilder(host, jDownloadHelper, pyLoadHelper)
     private val filmFileAndDuplicateContextActions =
-        FilmFileAndDuplicateContextActions(host, daten.filmCatalog, daten.blacklist, uiScope)
+        FilmFileAndDuplicateContextActions(host, host.filmCatalog(), host.blacklist(), uiScope)
     private val filmPrintAndHistoryContextActions =
         FilmPrintAndHistoryContextActions(host, this::selectedFilmAtPopupPoint)
     private val contextMenuBuilder = FilmContextMenuBuilder(
         host,
-        daten.programSets,
+        host.programSets(),
         filmAboAndBlacklistContextActions,
         filmSpecificContextMenuBuilder,
         filmPrintAndHistoryContextActions::addActions,
@@ -185,11 +191,6 @@ class TableContextMenuHandler(
             null
         }
     }
-
-    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
-        BiConsumer { programSets, target ->
-            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
-        }
 
     private data class ButtonCell(val row: Int, val column: Int)
 }
