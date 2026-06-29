@@ -72,7 +72,7 @@ class MainWindowPlatformIntegration(
     fun initializeSystemTray() {
         val useTray = ApplicationConfiguration.getInstance().useTray
         if (tray == null && useTray) {
-            tray = systemTrayController.initialize(daten, trayHost)
+            tray = systemTrayController.initialize(daten.filmCatalog, daten.downloads, trayHost)
         } else if (tray != null && !useTray) {
             closeSystemTray()
         }
