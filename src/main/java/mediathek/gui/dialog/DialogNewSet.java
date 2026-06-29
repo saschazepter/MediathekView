@@ -1,7 +1,7 @@
 package mediathek.gui.dialog;
 
-import mediathek.config.Daten;
 import mediathek.config.Konstanten;
+import mediathek.daten.ProgramSetRepository;
 import mediathek.tool.EscapeKeyHandler;
 import mediathek.tool.GetFile;
 import mediathek.tool.SVGIconUtilities;
@@ -13,12 +13,12 @@ import java.awt.*;
 public class DialogNewSet extends JDialog {
     public boolean ok;
     public boolean morgen = true;
-    private final Daten daten;
+    private final ProgramSetRepository programSets;
     private final JFrame parent;
 
-    public DialogNewSet(JFrame pparent, Daten daten) {
+    public DialogNewSet(JFrame pparent, ProgramSetRepository programSets) {
         super(pparent, true);
-        this.daten = daten;
+        this.programSets = programSets;
         initComponents();
         parent = pparent;
         if (parent != null) {
@@ -60,7 +60,7 @@ public class DialogNewSet extends JDialog {
         jButtonReplace.addActionListener(_ -> {
             int ret = JOptionPane.showConfirmDialog(parent, "Alle Sets zurücksetzen?", "Alle Sets zurücksetzen!", JOptionPane.YES_NO_OPTION);
             if (ret == JOptionPane.OK_OPTION) {
-                daten.getProgramSets().getList().clear();
+                programSets.getList().clear();
                 ok = true;
                 beenden();
             }

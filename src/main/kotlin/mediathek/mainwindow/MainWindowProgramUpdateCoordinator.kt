@@ -18,13 +18,16 @@
 
 package mediathek.mainwindow
 
-import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.daten.DatenPset
+import mediathek.daten.ProgramSetRepository
 import mediathek.update.ProgramUpdateCheck
 import mediathek.update.ProgramUpdateHost
+import java.util.function.BiConsumer
 
 class MainWindowProgramUpdateCoordinator(
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
     private val host: ProgramUpdateHost,
 ) : AutoCloseable {
     private var programUpdateChecker: ProgramUpdateCheck? = null
@@ -36,7 +39,7 @@ class MainWindowProgramUpdateCoordinator(
     fun update(active: Boolean) {
         if (active) {
             close()
-            programUpdateChecker = ProgramUpdateCheck(host, daten).also { it.start() }
+            programUpdateChecker = ProgramUpdateCheck(host, programSets, programSetExporter).also { it.start() }
         } else {
             close()
         }

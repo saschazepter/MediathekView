@@ -185,7 +185,7 @@ open class MediathekGui private constructor(
     private val downloadProgressIndicator: DownloadProgressIndicator = requireNotNull(downloadProgressIndicatorFactory.apply(this))
     private val startupOrchestrator: MainWindowStartupOrchestrator
     private val platformIntegration: MainWindowPlatformIntegration
-    private val programUpdateCoordinator = MainWindowProgramUpdateCoordinator(daten, this)
+    private val programUpdateCoordinator = MainWindowProgramUpdateCoordinator(daten.programSets, programSetExporter(), this)
     private val shutdownRuntime = MainWindowShutdownRuntime()
     private val statusBarController =
         MainWindowStatusBarController(

@@ -20,13 +20,11 @@ package mediathek.update
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenPset
 import mediathek.daten.ListePset
 import mediathek.daten.ListePsetVorlagen
+import mediathek.daten.ProgramSetRepository
 import mediathek.daten.ProgramSetTemplateResolver
 import mediathek.gui.dialog.DialogNewSet
 import mediathek.tool.GuiFunktionen
@@ -45,7 +43,8 @@ import kotlin.time.Duration.Companion.seconds
  */
 class ProgramUpdateCheck(
     private val host: ProgramUpdateHost,
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : AutoCloseable {
     private val job = SupervisorJob()
     private val scope = CoroutineScope(job + Dispatchers.IO + CoroutineExceptionHandler { _, ex ->
@@ -143,7 +142,7 @@ class ProgramUpdateCheck(
     }
 
     private fun confirmStandardPsetUpdate(parent: JFrame, standardPset: ListePset): Boolean {
-        val dialogNewSet = DialogNewSet(parent, daten)
+        val dialogNewSet = DialogNewSet(parent, programSets)
         dialogNewSet.isVisible = true
         if (dialogNewSet.ok) {
             return true
@@ -164,7 +163,7 @@ class ProgramUpdateCheck(
         copySaveSettingsFromExistingSet(standardPset)
         prepareImportedSetsForExistingConfiguration(standardPset)
 
-        GuiFunktionenProgramme.addSetVorlagen(parent, daten.programSets, standardPset, true, programSetExporter())
+        GuiFunktionenProgramme.addSetVorlagen(parent, programSets, standardPset, true, programSetExporter)
         logger.info("Setanlegen: OK")
         logger.info("==========================================")
     }
@@ -215,17 +214,12 @@ class ProgramUpdateCheck(
         }
     }
 
-    private fun currentPsets(): ListePset = daten.programSets.list
+    private fun currentPsets(): ListePset = programSets.list
 
     override fun close() {
         job.cancel()
         logger.debug("ProgramUpdateCheck closed.")
     }
-
-    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
-        BiConsumer { programSets, target ->
-            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
-        }
 
     private companion object {
         private val logger = LogManager.getLogger(ProgramUpdateCheck::class.java)
