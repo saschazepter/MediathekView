@@ -484,7 +484,7 @@ class DialogAddDownload(
     }
 
     private fun addDownloadToQueue(startAutomatically: Boolean) {
-        daten.downloads.queue.addMitNummer(datenDownload)
+        daten.downloads.addDownload(datenDownload)
         messageBus.publishAsync(DownloadListChangedEvent())
 
         if (startAutomatically) {

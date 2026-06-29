@@ -48,7 +48,6 @@ fun startDownloads(
     }
 
     val effectiveProgramSet = pSet ?: daten.programSets.list.listeSpeichern.first()
-    val downloadsList = daten.downloads.queue
 
     if (films.size > 1) {
         val dialog = DialogAddMoreDownload(parent, effectiveProgramSet)
@@ -58,7 +57,7 @@ fun startDownloads(
         }
 
         for (film in films) {
-            if (downloadsList.getDownloadUrlFilm(film.urlNormalQuality) != null && !confirmDuplicateDownload(parent)) {
+            if (daten.downloads.findDownloadByFilmUrl(film.urlNormalQuality) != null && !confirmDuplicateDownload(parent)) {
                 continue
             }
 
@@ -74,7 +73,7 @@ fun startDownloads(
                     result.info(),
                     result.subtitle(),
                 )
-                downloadsList.addMitNummer(datenDownload)
+                daten.downloads.addDownload(datenDownload)
                 MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
                 if (result.startImmediately()) {
                     DownloadStartActions.start(datenDownload)
@@ -88,7 +87,7 @@ fun startDownloads(
     }
 
     val film = films.first()
-    if (downloadsList.getDownloadUrlFilm(film.urlNormalQuality) != null && !confirmDuplicateDownload(parent)) {
+    if (daten.downloads.findDownloadByFilmUrl(film.urlNormalQuality) != null && !confirmDuplicateDownload(parent)) {
         return
     }
 

@@ -106,6 +106,46 @@ internal class DownloadServicesTest {
     }
 
     @Test
+    fun addsAndRenumbersDownloads() {
+        val firstDownload = download(DownloadRunState().apply { status = StartStatus.INITIALIZED }).apply {
+            filmUrl = "https://example.invalid/first"
+        }
+        val secondDownload = download(DownloadRunState().apply { status = StartStatus.INITIALIZED }).apply {
+            filmUrl = "https://example.invalid/second"
+        }
+
+        daten.downloads.addDownload(firstDownload)
+        daten.downloads.addDownload(secondDownload)
+
+        assertEquals(listOf(firstDownload, secondDownload), daten.downloads.queue)
+        assertEquals(1, firstDownload.nr)
+        assertEquals(2, secondDownload.nr)
+        assertSame(secondDownload, daten.downloads.findDownloadByFilmUrl("https://example.invalid/second"))
+    }
+
+    @Test
+    fun addsAndRenumbersButtonDownloads() {
+        val firstDownload = buttonDownload(
+            filmUrl = "https://example.invalid/first",
+            downloadUrl = "https://example.invalid/first.mp4",
+            status = StartStatus.RUNNING,
+        )
+        val secondDownload = buttonDownload(
+            filmUrl = "https://example.invalid/second",
+            downloadUrl = "https://example.invalid/second.mp4",
+            status = StartStatus.RUNNING,
+        )
+
+        daten.downloads.addButtonDownload(firstDownload)
+        daten.downloads.addButtonDownload(secondDownload)
+
+        assertEquals(listOf(firstDownload, secondDownload), daten.downloads.buttonQueue)
+        assertEquals(1, firstDownload.nr)
+        assertEquals(2, secondDownload.nr)
+        assertSame(firstDownload, daten.downloads.findButtonDownloadByFilmUrl("https://example.invalid/first"))
+    }
+
+    @Test
     fun returnsNextInitializedDownload() {
         val finishedDownload = download(DownloadRunState().apply { status = StartStatus.FINISHED })
         val initializedDownload = download(DownloadRunState().apply { status = StartStatus.INITIALIZED })

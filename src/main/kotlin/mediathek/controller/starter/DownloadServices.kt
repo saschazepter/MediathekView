@@ -213,6 +213,28 @@ class DownloadServices(
         return found
     }
 
+    fun addDownload(download: DatenDownload) {
+        synchronized(queue) {
+            queue.add(download)
+            renumber(queue)
+        }
+    }
+
+    fun addButtonDownload(download: DatenDownload) {
+        synchronized(buttonQueue) {
+            buttonQueue.add(download)
+            renumber(buttonQueue)
+        }
+    }
+
+    fun findDownloadByFilmUrl(filmUrl: String): DatenDownload? = synchronized(queue) {
+        queue.firstOrNull { download -> download.filmUrl == filmUrl }
+    }
+
+    fun findButtonDownloadByFilmUrl(filmUrl: String): DatenDownload? = synchronized(buttonQueue) {
+        buttonQueue.firstOrNull { download -> download.filmUrl == filmUrl }
+    }
+
     fun nextStart(): DatenDownload? = synchronized(queue) {
         val maxNumDownloads = ApplicationConfiguration.getInstance().maxSimultaneousDownloads
         if (queue.isNotEmpty() && canStartMore(maxNumDownloads)) {
@@ -374,6 +396,13 @@ class DownloadServices(
             }
         }
         return true
+    }
+
+    private fun renumber(downloads: ListeDownloads) {
+        var index = 1
+        for (download in downloads) {
+            download.nr = index++
+        }
     }
 
     fun shutdown() {

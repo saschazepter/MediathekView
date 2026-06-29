@@ -76,7 +76,7 @@ class DownloadStartCoordinator(private val daten: Daten) {
                 film.bookmark?.seen = true
             }
             // und jetzt noch in die Downloadliste damit die Farbe im Tab Filme passt
-            daten.downloads.buttonQueue.addMitNummer(download)
+            daten.downloads.addButtonDownload(download)
         }
     }
 

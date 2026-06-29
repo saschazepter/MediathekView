@@ -90,8 +90,7 @@ class CellRendererFilme(
             when (columnModelIndex) {
                 DatenFilm.FILM_DAUER -> text = datenFilm.filmLengthAsString
                 DatenFilm.FILM_ABSPIELEN -> {
-                    val datenDownload = daten.downloads.buttonQueue
-                        .getDownloadUrlFilm(datenFilm.urlNormalQuality)
+                    val datenDownload = daten.downloads.findButtonDownloadByFilmUrl(datenFilm.urlNormalQuality)
                     handleButtonStartColumn(datenDownload, isSelected)
                 }
 

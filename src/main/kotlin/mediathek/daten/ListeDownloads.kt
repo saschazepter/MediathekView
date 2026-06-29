@@ -24,16 +24,6 @@ import java.util.*
 
 class ListeDownloads : LinkedList<DatenDownload>() {
     @Synchronized
-    fun addMitNummer(download: DatenDownload) {
-        add(download)
-        listeNummerieren()
-    }
-
-    @Synchronized
-    fun getDownloadUrlFilm(urlFilm: String): DatenDownload? =
-        firstOrNull { download -> download.filmUrl == urlFilm }
-
-    @Synchronized
     fun getModel(tModel: TModelDownload, filter: DownloadListFilter) {
         DownloadTableModelUpdater.reload(tModel, this, filter)
     }
