@@ -28,8 +28,8 @@ import mediathek.cli.CliShutdownSignal
 import mediathek.cli.DownloadAndQuitRunner
 import mediathek.config.*
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.controller.SenderFilmlistLoadApprover
 import mediathek.controller.IoXmlSchreiben
+import mediathek.controller.SenderFilmlistLoadApprover
 import mediathek.controller.history.SeenHistoryController
 import mediathek.controller.history.SeenHistoryMigrator
 import mediathek.daten.DatenPset
@@ -71,8 +71,8 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.security.Security
 import java.time.format.DateTimeFormatter
-import java.util.function.BiConsumer
 import java.util.concurrent.ExecutionException
+import java.util.function.BiConsumer
 import javax.imageio.ImageIO
 import javax.swing.*
 import kotlin.system.exitProcess

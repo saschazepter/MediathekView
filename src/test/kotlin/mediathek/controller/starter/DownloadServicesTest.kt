@@ -1,19 +1,15 @@
 package mediathek.controller.starter
 
 import mediathek.config.Daten
+import mediathek.controller.DownloadColumns
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
-import mediathek.controller.DownloadColumns
 import mediathek.daten.DownloadSource
 import mediathek.daten.DownloadType
 import mediathek.daten.abo.DatenAbo
 import mediathek.tool.models.TModelDownload
 import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 

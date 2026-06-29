@@ -1,11 +1,7 @@
 package mediathek.gui.dialogEinstellungen;
 
 import mediathek.config.CommandLineOptions;
-import mediathek.daten.DatenPset;
-import mediathek.daten.ListePset;
-import mediathek.daten.ListePsetVorlagen;
-import mediathek.daten.ProgramSetRepository;
-import mediathek.daten.ProgramSetTemplateResolver;
+import mediathek.daten.*;
 import mediathek.swing.IconUtils;
 import mediathek.tool.GuiFunktionenProgramme;
 import mediathek.tool.SVGIconUtilities;

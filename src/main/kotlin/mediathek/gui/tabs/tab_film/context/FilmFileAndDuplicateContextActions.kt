@@ -23,8 +23,8 @@ import mediathek.config.Konstanten
 import mediathek.config.StandardLocations
 import mediathek.daten.DatenFilm
 import mediathek.daten.blacklist.BlacklistServices
-import mediathek.filmlisten.writer.FilmListWriter
 import mediathek.filmlisten.FilmCatalog
+import mediathek.filmlisten.writer.FilmListWriter
 import mediathek.gui.duplicates.details.DuplicateFilmDetailsDialog
 import mediathek.tool.FileDialogs
 import mediathek.tool.MVInfoFile

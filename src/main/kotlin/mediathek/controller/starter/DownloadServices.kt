@@ -3,16 +3,10 @@ package mediathek.controller.starter
 import mediathek.config.CommandLineOptions
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.daten.ProgramSetRepository
-import mediathek.daten.DatenDownload
-import mediathek.daten.DatenFilm
-import mediathek.daten.DatenPset
-import mediathek.daten.DownloadSource
-import mediathek.daten.DownloadType
+import mediathek.daten.*
 import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
-import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.messages.ButtonStartEvent
 import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.gui.messages.DownloadQueueRankChangedEvent
@@ -23,7 +17,7 @@ import mediathek.tool.datum.DateUtil
 import mediathek.tool.models.TModelDownload
 import org.apache.logging.log4j.LogManager
 import java.time.LocalDate
-import java.util.LinkedList
+import java.util.*
 import java.util.function.Predicate
 import javax.swing.JFrame
 

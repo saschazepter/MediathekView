@@ -1,11 +1,7 @@
 package mediathek.daten
 
 import mediathek.controller.DownloadConfig
-import mediathek.controller.starter.DownloadInvocationRequest
-import mediathek.controller.starter.DownloadProgramInvocationBuilder
-import mediathek.controller.starter.DownloadRuntimeText
-import mediathek.controller.starter.DownloadTargetBuilder
-import mediathek.controller.starter.DownloadTargetRequest
+import mediathek.controller.starter.*
 import mediathek.tool.FileSize
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue

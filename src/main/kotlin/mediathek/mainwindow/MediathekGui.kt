@@ -22,11 +22,7 @@ import com.formdev.flatlaf.extras.components.FlatButton
 import mediathek.SplashScreenLifecycle
 import mediathek.audiothek.repository.AudioRepository
 import mediathek.audiothek.ui.main.AudiothekPanel
-import mediathek.config.CommandLineOptions
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
-import mediathek.config.Konstanten
-import mediathek.config.MVColor
+import mediathek.config.*
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenFilm
@@ -62,11 +58,8 @@ import java.awt.event.KeyEvent
 import java.beans.PropertyChangeEvent
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.function.BiConsumer
-import java.util.function.Consumer
+import java.util.function.*
 import java.util.function.Function
-import java.util.function.IntConsumer
-import java.util.function.Supplier
 import javax.swing.*
 
 open class MediathekGui private constructor(

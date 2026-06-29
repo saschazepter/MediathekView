@@ -4,7 +4,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.DatenPset
-import mediathek.daten.ListePset
 import mediathek.daten.ListePsetVorlagen
 import mediathek.daten.ProgramSetRepository
 import mediathek.daten.ProgramSetTemplateResolver

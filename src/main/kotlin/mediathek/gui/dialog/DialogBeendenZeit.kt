@@ -21,8 +21,8 @@ package mediathek.gui.dialog
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Konstanten
-import mediathek.controller.starter.DownloadStartActions
 import mediathek.controller.starter.DownloadServices
+import mediathek.controller.starter.DownloadStartActions
 import mediathek.daten.DatenDownload
 import mediathek.swing.AppTerminationIndefiniteProgress
 import mediathek.tool.EscapeKeyHandler

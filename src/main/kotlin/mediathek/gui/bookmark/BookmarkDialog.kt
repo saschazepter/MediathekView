@@ -31,8 +31,8 @@ import kotlinx.coroutines.swing.Swing
 import mediathek.audiothek.ui.table.CenteredTextCellRenderer
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.controller.starter.DownloadServices
 import mediathek.controller.history.SeenHistoryController
+import mediathek.controller.starter.DownloadServices
 import mediathek.daten.DatenFilm
 import mediathek.daten.ProgramSetRepository
 import mediathek.gui.bookmark.renderer.*

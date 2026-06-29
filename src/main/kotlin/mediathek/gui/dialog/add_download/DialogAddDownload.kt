@@ -27,8 +27,8 @@ import kotlinx.coroutines.swing.Swing
 import mediathek.config.Konstanten
 import mediathek.config.MVColor
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.controller.starter.DownloadStartActions
 import mediathek.controller.starter.DownloadServices
+import mediathek.controller.starter.DownloadStartActions
 import mediathek.daten.*
 import mediathek.gui.dialog.download.DownloadQualityLiveInfoText
 import mediathek.gui.dialog.download.DownloadQualityResolutionSizeLoadResult

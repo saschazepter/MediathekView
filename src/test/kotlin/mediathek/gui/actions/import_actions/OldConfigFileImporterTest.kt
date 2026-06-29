@@ -2,9 +2,9 @@ package mediathek.gui.actions.import_actions
 
 import mediathek.config.Daten
 import mediathek.daten.abo.FilmLengthState
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir

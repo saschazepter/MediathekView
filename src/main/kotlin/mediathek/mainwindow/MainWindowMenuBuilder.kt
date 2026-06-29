@@ -30,9 +30,9 @@ import mediathek.gui.actions.export.ExportReadableFilmlistAction
 import mediathek.gui.actions.import_actions.ImportOldAbosAction
 import mediathek.gui.actions.import_actions.ImportOldBlacklistAction
 import mediathek.gui.actions.import_actions.ImportOldReplacementListAction
-import mediathek.gui.duplicates.overview.FilmDuplicateOverviewDialog
-import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.bookmark.BookmarkServices
+import mediathek.gui.dialog.MissingProgramSetDialog
+import mediathek.gui.duplicates.overview.FilmDuplicateOverviewDialog
 import mediathek.gui.history.ResetAboHistoryAction
 import mediathek.gui.history.ResetDownloadHistoryAction
 import mediathek.gui.tabs.tab_downloads.GuiDownloads
@@ -41,8 +41,8 @@ import mediathek.logging.LogDialog
 import mediathek.sqlite.RecoverHistoryDbAction
 import mediathek.tool.GuiFunktionen
 import mediathek.tool.GuiFunktionenProgramme
-import java.util.function.Supplier
 import java.util.function.BiConsumer
+import java.util.function.Supplier
 import javax.swing.*
 
 class MainWindowMenuBuilder(

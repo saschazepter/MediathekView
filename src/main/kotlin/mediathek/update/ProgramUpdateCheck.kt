@@ -21,11 +21,7 @@ package mediathek.update
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.daten.DatenPset
-import mediathek.daten.ListePset
-import mediathek.daten.ListePsetVorlagen
-import mediathek.daten.ProgramSetRepository
-import mediathek.daten.ProgramSetTemplateResolver
+import mediathek.daten.*
 import mediathek.gui.dialog.DialogNewSet
 import mediathek.tool.GuiFunktionen
 import mediathek.tool.GuiFunktionenProgramme

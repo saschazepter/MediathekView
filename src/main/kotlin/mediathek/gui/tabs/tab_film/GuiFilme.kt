@@ -23,11 +23,7 @@ import kotlinx.coroutines.swing.Swing
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.config.application.FilterConfiguration
 import mediathek.controller.starter.DownloadServices
-import mediathek.daten.DatenFilm
-import mediathek.daten.DatenPset
-import mediathek.daten.FilmResolution
-import mediathek.daten.IndexedFilmList
-import mediathek.daten.ProgramSetRepository
+import mediathek.daten.*
 import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
@@ -35,10 +31,10 @@ import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.actions.DeleteBookmarksAction
 import mediathek.gui.actions.ManageBookmarkAction
 import mediathek.gui.actions.PlayFilmAction
-import mediathek.gui.bookmark.BookmarkServices
 import mediathek.gui.bookmark.BookmarkDialog
-import mediathek.gui.dialog.add_download.DialogAddDownload
+import mediathek.gui.bookmark.BookmarkServices
 import mediathek.gui.dialog.DialogFilmBeschreibung
+import mediathek.gui.dialog.add_download.DialogAddDownload
 import mediathek.gui.messages.*
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
 import mediathek.gui.tabs.DescriptionTabController
@@ -94,7 +90,7 @@ class GuiFilme(
     private val copyHqUrlToClipboardActionValue: CopyUrlToClipboardAction
     private val copyNormalUrlToClipboardActionValue: CopyUrlToClipboardAction
     private var swingFilterDialog: SwingFilterDialog? = null
-    private lateinit var swingFilterDialogFactory: () -> SwingFilterDialog
+    private var swingFilterDialogFactory: () -> SwingFilterDialog
     private val toggleFilterDialogVisibilityActionValue: ToggleFilterDialogVisibilityAction
     private val reloadTableScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val filterController: FilmFilterController

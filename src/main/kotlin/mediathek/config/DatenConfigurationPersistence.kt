@@ -21,11 +21,7 @@
 package mediathek.config
 
 import mediathek.SplashScreenLifecycle
-import mediathek.controller.AboRuleStorage
-import mediathek.controller.BlacklistRuleStorage
-import mediathek.controller.IoXmlLesen
-import mediathek.controller.IoXmlSchreiben
-import mediathek.controller.XmlConfigData
+import mediathek.controller.*
 import mediathek.controller.starter.DownloadServices
 import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices

@@ -18,12 +18,12 @@
 
 package mediathek.gui.tabs.tab_downloads
 
+import mediathek.controller.DownloadColumns
 import mediathek.controller.starter.DownloadServices
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
-import mediathek.controller.DownloadColumns
 import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
 import mediathek.daten.abo.DatenAbo

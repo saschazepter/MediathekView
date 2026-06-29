@@ -25,8 +25,8 @@ import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmlistPostLoadTasks
 import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmlistPostLoadTasks
 import mediathek.filmlisten.reader.FilmListReader
 import mediathek.gui.messages.FilmListReadStartEvent
 import mediathek.gui.messages.FilmListReadStopEvent

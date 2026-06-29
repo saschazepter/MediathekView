@@ -25,8 +25,8 @@ import kotlinx.coroutines.withContext
 import mediathek.audiothek.model.AudioEntry
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.DatenFilm
-import mediathek.gui.messages.history.FilmSeenStateChangedEvent
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
+import mediathek.gui.messages.history.FilmSeenStateChangedEvent
 import mediathek.sqlite.SeenHistoryCorruptionHandler
 import mediathek.tool.MessageBus
 import mediathek.tool.sql.SqlDatabaseConfig
