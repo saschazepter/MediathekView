@@ -35,7 +35,7 @@ class DownloadServices(
 ) {
     private val queue: LinkedList<DatenDownload> = LinkedList()
     private val buttonQueue: LinkedList<DatenDownload> = LinkedList()
-    private val info: DownloadInfos = DownloadInfos(daten)
+    private val info: DownloadInfos = DownloadInfos(::unfinishedDownloads)
     private val starter: DownloadStartCoordinator = DownloadStartCoordinator(daten)
 
     fun refreshAboDownloads() {
