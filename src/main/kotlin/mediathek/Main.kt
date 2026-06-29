@@ -29,8 +29,10 @@ import mediathek.cli.DownloadAndQuitRunner
 import mediathek.config.*
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.SenderFilmlistLoadApprover
+import mediathek.controller.IoXmlSchreiben
 import mediathek.controller.history.SeenHistoryController
 import mediathek.controller.history.SeenHistoryMigrator
+import mediathek.daten.DatenPset
 import mediathek.daten.IndexedFilmList
 import mediathek.daten.abo.AboServices
 import mediathek.gui.dialog.DialogStarteinstellungen
@@ -69,6 +71,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.security.Security
 import java.time.format.DateTimeFormatter
+import java.util.function.BiConsumer
 import java.util.concurrent.ExecutionException
 import javax.imageio.ImageIO
 import javax.swing.*
@@ -742,7 +745,10 @@ object Main {
             ReplaceList.init() // einmal ein Muster anlegen, für Linux/OS X ist es bereits aktiv!
             SplashScreenLifecycle.close()
 
-            val dialog = DialogStarteinstellungen(null, daten)
+            val programSetExporter = BiConsumer<Array<DatenPset>, String> { programSets, target ->
+                IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+            }
+            val dialog = DialogStarteinstellungen(null, daten.programSets, daten.blacklist, programSetExporter)
             if (dialog.showDialog() == DialogStarteinstellungen.ResultCode.CANCELLED) {
                 //show termination dialog
                 JOptionPane.showMessageDialog(

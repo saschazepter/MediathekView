@@ -132,7 +132,19 @@ open class MediathekGui private constructor(
     )
     private val showBandwidthUsageAction = ShowBandwidthUsageAction(this)
     private val dialogCoordinator =
-        MainWindowDialogCoordinator(daten, this, this, showMemoryMonitorAction, showBandwidthUsageAction, manageAboAction)
+        MainWindowDialogCoordinator(
+            daten.programSets,
+            daten.filmCatalog,
+            daten.filmListLoader,
+            daten.blacklist,
+            daten.configurationPersistence,
+            programSetExporter(),
+            this,
+            this,
+            showMemoryMonitorAction,
+            showBandwidthUsageAction,
+            manageAboAction,
+        )
     private val showLuceneTutorialAction = ShowLuceneTutorialAction(this)
     private val onlineSearchTab: MainWindowTab by lazy(LazyThreadSafetyMode.NONE) {
         MainWindowTab(

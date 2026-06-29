@@ -2,14 +2,13 @@ package mediathek.gui.dialog
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenPset
 import mediathek.daten.ListePset
 import mediathek.daten.ListePsetVorlagen
+import mediathek.daten.ProgramSetRepository
 import mediathek.daten.ProgramSetTemplateResolver
+import mediathek.daten.blacklist.BlacklistServices
 import mediathek.gui.dialogEinstellungen.PanelEinstellungenGeo
 import mediathek.gui.dialogEinstellungen.PanelProgrammPfade
 import mediathek.gui.dialogEinstellungen.pset.PanelPsetKurz
@@ -26,7 +25,9 @@ import kotlin.coroutines.CoroutineContext
 
 class DialogStarteinstellungen(
     parent: JFrame?,
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val blacklist: BlacklistServices,
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : DialogStarteinstellungenBase(parent), CoroutineScope {
     private enum class State { START, PFAD, PSET, FERTIG }
 
@@ -89,7 +90,7 @@ class DialogStarteinstellungen(
     }
 
     private fun createLayout() {
-        val panelEinstellungenGeo = PanelEinstellungenGeo(parentComponent, true, daten.blacklist)
+        val panelEinstellungenGeo = PanelEinstellungenGeo(parentComponent, true, blacklist)
         jPanelExtra.layout = BorderLayout()
         jPanelExtra.add(panelEinstellungenGeo, BorderLayout.CENTER)
     }
@@ -160,14 +161,14 @@ class DialogStarteinstellungen(
     private suspend fun statusPset() {
         jButtonAnpassen.isVisible = false
         jCheckBoxAlleEinstellungen.isVisible = true
-        if (daten.programSets.list.isEmpty()) {
+        if (programSets.list.isEmpty()) {
             addStandardSetWithNavigationLock(parentComponent)
         }
 
         if (jCheckBoxAlleEinstellungen.isSelected) {
-            setMainContent(PanelPsetLang(parentComponent, daten.programSets, daten.programSets.list, programSetExporter()))
+            setMainContent(PanelPsetLang(parentComponent, programSets, programSets.list, programSetExporter))
         } else {
-            setMainContent(PanelPsetKurz(parentComponent, daten.programSets.list))
+            setMainContent(PanelPsetKurz(parentComponent, programSets.list))
         }
         status = State.FERTIG
         setContinueButtonText()
@@ -179,7 +180,7 @@ class DialogStarteinstellungen(
         } ?: return false
 
         ProgramSetTemplateResolver.replaceTemplates(parent, pSet)
-        daten.programSets.addProgramSets(pSet)
+        programSets.addProgramSets(pSet)
         ApplicationConfiguration.getInstance().standardProgramSetVersion = pSet.version
         return true
     }
@@ -219,11 +220,6 @@ class DialogStarteinstellungen(
         jButtonAnpassen.isEnabled = enabled
         jCheckBoxAlleEinstellungen.isEnabled = enabled
     }
-
-    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
-        BiConsumer { programSets, target ->
-            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
-        }
 
     companion object {
         private const val CONTINUE_TEXT = "Weiter"

@@ -1,11 +1,13 @@
 package mediathek.gui.dialogEinstellungen
 
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
+import mediathek.config.DatenConfigurationPersistence
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenPset
+import mediathek.daten.ProgramSetRepository
+import mediathek.daten.blacklist.BlacklistServices
+import mediathek.filmlisten.FilmCatalog
+import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.dialogEinstellungen.allgemein.LuceneDirectoryModePanel
 import mediathek.gui.dialogEinstellungen.allgemein.PanelEinstellungen
 import mediathek.gui.dialogEinstellungen.blacklist.PanelBlacklist
@@ -26,7 +28,12 @@ import javax.swing.tree.TreeSelectionModel
 
 class DialogEinstellungen(
     private val host: SettingsDialogHost,
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val filmCatalog: FilmCatalog,
+    private val filmListLoader: FilmeLaden,
+    private val blacklist: BlacklistServices,
+    private val configurationPersistence: DatenConfigurationPersistence,
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : DialogEinstellungenBase() {
     init {
         initTree()
@@ -71,7 +78,7 @@ class DialogEinstellungen(
             )
         val geoEinstellungen = SettingsPage(
             NAME_ALLGEMEINE_EINSTELLUNGEN_GEO,
-            createPanel = { PanelEinstellungenGeo(this, blacklist = daten.blacklist) },
+            createPanel = { PanelEinstellungenGeo(this, blacklist = blacklist) },
         )
         val colorEinstellungen = SettingsPage(
             NAME_ALLGEMEINE_EINSTELLUNGEN_COLOR,
@@ -84,21 +91,21 @@ class DialogEinstellungen(
 
         val filmlisteLaden = SettingsPage(
             NAME_FILMLISTE_LADEN,
-            createPanel = { PanelFilmlisteLaden(true, host.ownerFrame(), daten.filmCatalog, daten.filmListLoader) },
+            createPanel = { PanelFilmlisteLaden(true, host.ownerFrame(), filmCatalog, filmListLoader) },
         )
-        val blacklist = SettingsPage(
+        val blacklistSettings = SettingsPage(
             NAME_BLACKLIST,
-            createPanel = { PanelBlacklist(daten.blacklist, daten.filmCatalog, daten.filmListLoader, this) },
+            createPanel = { PanelBlacklist(blacklist, filmCatalog, filmListLoader, this) },
         )
 
         val dateinamen = SettingsPage(NAME_DATEINAME, createPanel = { PanelDateinamen() })
         val pset = SettingsPage(
             NAME_PROGRAMMSET,
-            createPanel = { PanelPset(this, daten.programSets, programSetExporter()) },
+            createPanel = { PanelPset(this, programSets, programSetExporter) },
         )
         val psetImport = SettingsPage(
             NAME_PROGRAMMSET_IMPORTIEREN,
-            createPanel = { PanelPsetImport(daten.programSets, programSetExporter(), this) },
+            createPanel = { PanelPsetImport(programSets, programSetExporter, this) },
         )
         val download = SettingsPage(NAME_BANDWIDTH, createPanel = { PanelDownload() })
 
@@ -116,7 +123,7 @@ class DialogEinstellungen(
         )
         val filme = SettingsPage(
             title = NAME_FILMLISTE,
-            children = listOf(filmlisteLaden, blacklist),
+            children = listOf(filmlisteLaden, blacklistSettings),
             redirectTo = filmlisteLaden,
         )
         val aufzeichnen = SettingsPage(
@@ -193,14 +200,9 @@ class DialogEinstellungen(
             .setSettingsDialogBounds(location.x, location.y, size.width, size.height)
     }
 
-    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
-        BiConsumer { programSets, target ->
-            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
-        }
-
     private fun beenden() {
         storeSizeInConfig()
-        daten.configurationPersistence.saveAll()
+        configurationPersistence.saveAll()
         dispose()
     }
 
