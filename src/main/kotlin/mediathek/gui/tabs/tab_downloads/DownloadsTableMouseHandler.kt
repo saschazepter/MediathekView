@@ -220,7 +220,7 @@ class DownloadsTableMouseHandler(
             if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(ownerFrame, daten)) {
                 return@addActionListener
             }
-            val dialog = DialogEditAbo(ownerFrame, daten, datenAbo, false)
+            val dialog = DialogEditAbo(ownerFrame, daten.programSets, daten.filmCatalog, daten.abos, datenAbo, false)
             dialog.isVisible = true
             if (dialog.successful()) {
                 daten.abos.notifyListChanged()

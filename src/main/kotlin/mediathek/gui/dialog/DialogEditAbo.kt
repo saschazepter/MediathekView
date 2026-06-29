@@ -1,11 +1,13 @@
 package mediathek.gui.dialog
 
-import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.config.MVColor
 import mediathek.daten.abo.AboTags
+import mediathek.daten.abo.AboServices
 import mediathek.daten.abo.DatenAbo
 import mediathek.daten.abo.FilmLengthState
+import mediathek.daten.ProgramSetRepository
+import mediathek.filmlisten.FilmCatalog
 import mediathek.swing.centerOnScreen
 import mediathek.tool.*
 import mediathek.tool.datum.DateUtil
@@ -19,7 +21,9 @@ import javax.swing.text.JTextComponent
 
 class DialogEditAbo(
     parent: JFrame,
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val filmCatalog: FilmCatalog,
+    private val abos: AboServices,
     private val aktAbo: DatenAbo,
     private val isMultiEditMode: Boolean,
 ) : DialogEditAboBase(parent) {
@@ -37,8 +41,8 @@ class DialogEditAbo(
 
     init {
         configureFilmLengthButtons()
-        configureComboBoxes(daten)
-        configurePathValidation(daten)
+        configureComboBoxes()
+        configurePathValidation()
         configureActions(parent)
 
         initializeExtraPanel()
@@ -56,14 +60,14 @@ class DialogEditAbo(
         }
     }
 
-    private fun configureComboBoxes(daten: Daten) {
+    private fun configureComboBoxes() {
         jScrollPane1.verticalScrollBar.unitIncrement = 16
-        comboboxPSet.model = DefaultComboBoxModel(daten.programSets.list.listeAbo.objectDataCombo)
-        comboboxSender.model = SenderListComboBoxModel(daten.filmCatalog.allSendersList)
+        comboboxPSet.model = DefaultComboBoxModel(programSets.list.listeAbo.objectDataCombo)
+        comboboxSender.model = SenderListComboBoxModel(filmCatalog.allSendersList)
     }
 
-    private fun configurePathValidation(daten: Daten) {
-        val pfade = aboTargetPaths(daten)
+    private fun configurePathValidation() {
+        val pfade = aboTargetPaths()
         if (!pfade.contains(aktAbo.zielpfad)) {
             pfade.add(0, aktAbo.zielpfad)
         }
@@ -76,8 +80,8 @@ class DialogEditAbo(
         editorComp.document.addDocumentListener(CheckPathDocListener())
     }
 
-    private fun aboTargetPaths(daten: Daten): MutableList<String> =
-        daten.abos.list
+    private fun aboTargetPaths(): MutableList<String> =
+        abos.list
             .map { abo -> abo.zielpfad }
             .distinct()
             .sortedWith(GermanStringSorter)

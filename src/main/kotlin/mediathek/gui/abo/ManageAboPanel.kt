@@ -58,7 +58,13 @@ class ManageAboPanel(
 ) : JPanel() {
     private val tabelle = AboTable()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
-    private val createAboAction = CreateNewAboAction(daten, daten.abos.list) { owner }
+    private val createAboAction = CreateNewAboAction(
+        daten.programSets,
+        daten.filmCatalog,
+        daten.abos,
+        { owner },
+        { parent -> MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten) },
+    )
     private var tableBinding: AboTableBinding
     private lateinit var tableColumnSettings: AboTableColumnSettings
     private val infoPanel = JXStatusBar()
@@ -157,7 +163,7 @@ class ManageAboPanel(
             return
         }
 
-        val dialog = DialogEditAbo(owner, daten, dialogAbo, multiEdit)
+        val dialog = DialogEditAbo(owner, daten.programSets, daten.filmCatalog, daten.abos, dialogAbo, multiEdit)
         dialog.title = EDIT_ABO_TEXT
         dialog.isVisible = true
         if (!dialog.successful()) {

@@ -26,6 +26,7 @@ import mediathek.config.Daten
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.gui.actions.CreateNewAboAction
+import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.tabs.tab_film.JDownloadHelper
 import mediathek.gui.tabs.tab_film.PyLoadHelper
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
@@ -60,7 +61,13 @@ class TableContextMenuHandler(
     private val daten = host.daten()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val filmTableButtonClickHandler = FilmTableButtonClickHandler(host, daten.downloads)
-    private val createAboAction = CreateNewAboAction(daten, daten.abos.list) { host.ownerFrame() }
+    private val createAboAction = CreateNewAboAction(
+        daten.programSets,
+        daten.filmCatalog,
+        daten.abos,
+        { host.ownerFrame() },
+        { parent -> MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten) },
+    )
     private val filmAboAndBlacklistContextActions = FilmAboAndBlacklistContextActions(
         host,
         daten.abos,

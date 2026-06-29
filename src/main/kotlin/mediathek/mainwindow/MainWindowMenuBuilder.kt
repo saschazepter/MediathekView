@@ -27,6 +27,7 @@ import mediathek.gui.actions.import_actions.ImportOldAbosAction
 import mediathek.gui.actions.import_actions.ImportOldBlacklistAction
 import mediathek.gui.actions.import_actions.ImportOldReplacementListAction
 import mediathek.gui.duplicates.overview.FilmDuplicateOverviewDialog
+import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.history.ResetAboHistoryAction
 import mediathek.gui.history.ResetDownloadHistoryAction
 import mediathek.gui.tabs.tab_downloads.GuiDownloads
@@ -209,7 +210,15 @@ class MainWindowMenuBuilder(
     }
 
     private fun createAboMenu() {
-        aboMenu.add(CreateNewAboAction(daten, daten.abos.list) { ownerFrame })
+        aboMenu.add(
+            CreateNewAboAction(
+                daten.programSets,
+                daten.filmCatalog,
+                daten.abos,
+                { ownerFrame },
+                { parent -> MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten) },
+            )
+        )
         aboMenu.add(ShowAboHistoryAction(ownerFrame, daten.abos.historyController))
         aboMenu.addSeparator()
         aboMenu.add(manageAboAction)
