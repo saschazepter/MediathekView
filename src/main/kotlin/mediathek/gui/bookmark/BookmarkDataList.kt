@@ -20,10 +20,10 @@ package mediathek.gui.bookmark
 
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
-import mediathek.config.Daten
 import mediathek.config.StandardLocations
 import mediathek.controller.history.SeenHistoryController
 import mediathek.daten.DatenFilm
+import mediathek.daten.ListeFilme
 import mediathek.gui.messages.BookmarkRefreshCompletedEvent
 import mediathek.gui.messages.history.FilmSeenStateChangedEvent
 import mediathek.tool.MessageBus
@@ -39,7 +39,7 @@ import java.util.*
  * Stores a full list of bookmarked movies.
  */
 class BookmarkDataList(
-    private val daten: Daten,
+    private val allFilms: ListeFilme,
 ) {
     private val bookmarks = BasicEventList<BookmarkData>()
 
@@ -223,10 +223,9 @@ class BookmarkDataList(
             ArrayList(bookmarks)
         }
 
-        val listeFilme = daten.filmCatalog.allFilms
         val filmSnapshot: List<DatenFilm> =
-            synchronized(listeFilme) {
-                ArrayList(listeFilme)
+            synchronized(allFilms) {
+                ArrayList(allFilms)
             }
         val requestedHashes = bookmarkSnapshot
             .asSequence()

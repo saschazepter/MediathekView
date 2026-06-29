@@ -1,9 +1,9 @@
 package mediathek.gui.bookmark
 
-import mediathek.config.Daten
+import mediathek.daten.ListeFilme
 
-class BookmarkServices(daten: Daten) {
-    val list: BookmarkDataList = BookmarkDataList(daten)
+class BookmarkServices(allFilms: ListeFilme) {
+    val list: BookmarkDataList = BookmarkDataList(allFilms)
 
     fun loadFromFile() {
         list.loadFromFile()

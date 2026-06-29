@@ -32,7 +32,7 @@ class Daten {
     val filmCatalog: FilmCatalog = FilmCatalog(this)
     val downloads: DownloadServices = DownloadServices(this)
     val blacklist: BlacklistServices = BlacklistServices(this)
-    val bookmarks: BookmarkServices = BookmarkServices(this)
+    val bookmarks: BookmarkServices = BookmarkServices(filmCatalog.allFilms)
     val abos: AboServices = AboServices(filmCatalog.allFilms)
 
     val configurationPersistence: DatenConfigurationPersistence = DatenConfigurationPersistence(this)
