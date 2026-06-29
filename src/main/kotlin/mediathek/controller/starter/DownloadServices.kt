@@ -10,6 +10,7 @@ import mediathek.daten.DownloadSource
 import mediathek.daten.DownloadStartInfo
 import mediathek.daten.ListeDownloads
 import mediathek.gui.dialog.MissingProgramSetDialog
+import mediathek.gui.messages.ButtonStartEvent
 import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.gui.messages.DownloadQueueRankChangedEvent
 import mediathek.gui.messages.StartEvent
@@ -190,6 +191,24 @@ class DownloadServices(
         }
 
         return false
+    }
+
+    fun cleanupFinishedButtonDownloads(): Boolean {
+        var found = false
+        synchronized(buttonQueue) {
+            val iterator = buttonQueue.iterator()
+            while (iterator.hasNext()) {
+                val download = iterator.next()
+                if (download.runtime.runState?.isAtLeastFinished == true && download.quelle == DownloadSource.BUTTON) {
+                    iterator.remove()
+                    found = true
+                }
+            }
+        }
+        if (found) {
+            MessageBus.messageBus.publishAsync(ButtonStartEvent())
+        }
+        return found
     }
 
     fun requestStopForShutdown() {

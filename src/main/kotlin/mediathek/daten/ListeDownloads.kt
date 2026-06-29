@@ -24,8 +24,6 @@ import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.starter.DownloadLifecycleActions
 import mediathek.controller.starter.DownloadStartActions
 import mediathek.controller.starter.StartStatus
-import mediathek.gui.messages.ButtonStartEvent
-import mediathek.tool.MessageBus
 import mediathek.tool.models.TModelDownload
 import java.util.*
 
@@ -55,24 +53,6 @@ class ListeDownloads : LinkedList<DatenDownload>() {
         var index = 1
         for (download in this) {
             download.nr = index++
-        }
-    }
-
-    @Synchronized
-    fun buttonStartsPutzen() {
-        // Starts durch Button die fertig sind, löschen
-        var found = false
-        val iterator = iterator()
-        while (iterator.hasNext()) {
-            val download = iterator.next()
-            if (download.runtime.runState?.isAtLeastFinished == true && download.quelle == DownloadSource.BUTTON) {
-                // dann ist er fertig oder abgebrochen
-                iterator.remove()
-                found = true
-            }
-        }
-        if (found) {
-            MessageBus.messageBus.publishAsync(ButtonStartEvent())
         }
     }
 

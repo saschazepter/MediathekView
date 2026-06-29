@@ -110,7 +110,7 @@ class DownloadStartCoordinator(private val daten: Daten) {
                 return
             }
 
-            daten.downloads.buttonQueue.buttonStartsPutzen() // Button Starts aus der Liste löschen
+            daten.downloads.cleanupFinishedButtonDownloads() // Button Starts aus der Liste löschen
         } catch (ex: Exception) {
             logger.error("Fehler im Starter-Scheduler:", ex)
         }

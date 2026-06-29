@@ -56,6 +56,42 @@ internal class DownloadServicesTest {
     }
 
     @Test
+    fun removesFinishedButtonDownloads() {
+        val finishedButtonDownload = buttonDownload(
+            filmUrl = "https://example.invalid/finished",
+            downloadUrl = "https://example.invalid/finished.mp4",
+            status = StartStatus.FINISHED,
+        )
+        val runningButtonDownload = buttonDownload(
+            filmUrl = "https://example.invalid/running",
+            downloadUrl = "https://example.invalid/running.mp4",
+            status = StartStatus.RUNNING,
+        )
+        val finishedManualDownload = download(DownloadRunState().apply { status = StartStatus.FINISHED })
+        daten.downloads.buttonQueue.add(finishedButtonDownload)
+        daten.downloads.buttonQueue.add(runningButtonDownload)
+        daten.downloads.buttonQueue.add(finishedManualDownload)
+
+        assertTrue(daten.downloads.cleanupFinishedButtonDownloads())
+
+        assertEquals(listOf(runningButtonDownload, finishedManualDownload), daten.downloads.buttonQueue)
+    }
+
+    @Test
+    fun reportsNoFinishedButtonDownloads() {
+        val runningButtonDownload = buttonDownload(
+            filmUrl = "https://example.invalid/running",
+            downloadUrl = "https://example.invalid/running.mp4",
+            status = StartStatus.RUNNING,
+        )
+        daten.downloads.buttonQueue.add(runningButtonDownload)
+
+        assertFalse(daten.downloads.cleanupFinishedButtonDownloads())
+
+        assertEquals(listOf(runningButtonDownload), daten.downloads.buttonQueue)
+    }
+
+    @Test
     fun requestsStopForQueuedDownloadsDuringShutdown() {
         val runState = DownloadRunState().apply {
             status = StartStatus.RUNNING
