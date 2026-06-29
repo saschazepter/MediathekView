@@ -23,9 +23,7 @@ import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
 import mediathek.daten.abo.AboFilmAssignmentService
 import mediathek.daten.abo.DatenAbo
-import mediathek.gui.messages.AboListChangedEvent
 import mediathek.tool.Filter
-import mediathek.tool.MessageBus
 import mediathek.tool.withReadLock
 import mediathek.tool.withWriteLock
 import java.util.*
@@ -38,7 +36,7 @@ class ListeAbo(
 
     fun addAbo(datenAbo: DatenAbo) {
         if (addAboSortedWithoutNotification(datenAbo)) {
-            aenderungMelden()
+            notifyChanged()
         }
     }
 
@@ -62,7 +60,7 @@ class ListeAbo(
 
     fun aboLoeschen(abo: DatenAbo) {
         if (removeAboWithoutNotification(abo)) {
-            aenderungMelden()
+            notifyChanged()
         }
     }
 
@@ -119,8 +117,8 @@ class ListeAbo(
         }
     }
 
-    internal fun aenderungMelden() {
-        onChanged?.invoke() ?: MessageBus.messageBus.publishAsync(AboListChangedEvent())
+    private fun notifyChanged() {
+        onChanged?.invoke()
     }
 
     /**
