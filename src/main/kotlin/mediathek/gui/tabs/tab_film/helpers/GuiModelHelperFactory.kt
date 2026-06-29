@@ -18,21 +18,21 @@
 
 package mediathek.gui.tabs.tab_film.helpers
 
-import mediathek.config.Daten
 import mediathek.daten.IndexedFilmList
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import java.awt.Component
 
 object GuiModelHelperFactory {
     fun createGuiModelHelper(
-        daten: Daten,
+        filmCatalog: FilmCatalog,
         owner: Component,
         searchFieldData: SearchFieldData,
         filterController: FilmFilterController
-    ): GuiModelHelper = if (daten.filmCatalog.filteredFilms is IndexedFilmList) {
-        LuceneGuiFilmeModelHelper(daten, owner, searchFieldData, filterController)
+    ): GuiModelHelper = if (filmCatalog.filteredFilms is IndexedFilmList) {
+        LuceneGuiFilmeModelHelper(filmCatalog, owner, searchFieldData, filterController)
     } else {
-        GuiFilmeModelHelper(daten, searchFieldData, filterController)
+        GuiFilmeModelHelper(filmCatalog, searchFieldData, filterController)
     }
 }

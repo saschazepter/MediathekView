@@ -18,17 +18,17 @@
 
 package mediathek.gui.tabs.tab_film.helpers
 
-import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.history.SeenHistoryController
 import mediathek.daten.DatenFilm
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import java.util.stream.Stream
 import javax.swing.table.TableModel
 
 class GuiFilmeModelHelper(
-    private val daten: Daten,
+    private val filmCatalog: FilmCatalog,
     searchFieldData: SearchFieldData,
     filterController: FilmFilterController,
 ) : GuiModelHelper {
@@ -42,7 +42,7 @@ class GuiFilmeModelHelper(
             }
         }
 
-    private fun allFilms(): Collection<DatenFilm> = daten.filmCatalog.filteredFilms
+    private fun allFilms(): Collection<DatenFilm> = filmCatalog.filteredFilms
 
     private fun filterFilms(
         allFilms: Collection<DatenFilm>,

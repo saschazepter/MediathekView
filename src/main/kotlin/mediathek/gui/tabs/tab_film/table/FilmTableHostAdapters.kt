@@ -22,6 +22,7 @@ import mediathek.config.Daten
 import mediathek.controller.starter.DownloadServices
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.tabs.tab_film.actions.FilmActionHost
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.context.TableContextMenuHandler
@@ -45,7 +46,7 @@ class FilmTableReloadHostAdapter(
 ) : FilmTableReloader.Host {
     override fun table(): MVFilmTable = tableProvider()
 
-    override fun daten(): Daten = daten
+    override fun filmCatalog(): FilmCatalog = daten.filmCatalog
 
     override fun owner(): Component = owner
 

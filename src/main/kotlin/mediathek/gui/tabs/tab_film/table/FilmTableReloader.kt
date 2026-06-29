@@ -20,7 +20,7 @@ package mediathek.gui.tabs.tab_film.table
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import mediathek.config.Daten
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.messages.TableModelChangeEvent
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.helpers.GuiModelHelperFactory
@@ -36,7 +36,7 @@ class FilmTableReloader(private val host: Host) {
     interface Host {
         fun table(): MVFilmTable
 
-        fun daten(): Daten
+        fun filmCatalog(): FilmCatalog
 
         fun owner(): Component
 
@@ -86,7 +86,7 @@ class FilmTableReloader(private val host: Host) {
             val result = runCatching {
                 withContext(modelDispatcher) {
                     val helper = GuiModelHelperFactory.createGuiModelHelper(
-                        host.daten(),
+                        host.filmCatalog(),
                         host.owner(),
                         host.searchFieldData(),
                         host.filterController(),
