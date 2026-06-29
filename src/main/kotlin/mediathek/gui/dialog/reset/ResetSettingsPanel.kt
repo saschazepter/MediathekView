@@ -18,13 +18,11 @@
 
 package mediathek.gui.dialog.reset
 
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.config.Konstanten
-import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenPset
 import mediathek.daten.ListePset
 import mediathek.daten.ListePsetVorlagen
+import mediathek.daten.ProgramSetRepository
 import mediathek.gui.dialog.DialogHilfe
 import mediathek.mainwindow.SettingsResetHost
 import mediathek.tool.GetFile
@@ -35,7 +33,8 @@ import javax.swing.JOptionPane
 
 class ResetSettingsPanel(
     private val host: SettingsResetHost,
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : ResetSettingsPanelBase() {
     private val parent = host.ownerFrame()
 
@@ -45,17 +44,17 @@ class ResetSettingsPanel(
             DialogHilfe(parent, true, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_RESET)).isVisible = true
         }
         jButtonResetSets.addActionListener {
-            val listePset = daten.programSets.list
+            val listePset = programSets.list
             val previousPsets = ListePset()
             previousPsets.addAll(listePset)
 
             listePset.clear()
             if (!GuiFunktionenProgramme.addSetVorlagen(
                     parent,
-                    daten.programSets,
+                    programSets,
                     ListePsetVorlagen.getStandarset(parent, true),
                     true,
-                    programSetExporter(),
+                    programSetExporter,
                 )
             ) {
                 listePset.clear()
@@ -77,11 +76,6 @@ class ResetSettingsPanel(
             }
         }
     }
-
-    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
-        BiConsumer { programSets, target ->
-            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
-        }
 
     private companion object {
         private const val RESET_MESSAGE = "<html>Es werden <b>ALLE</b> von Ihnen erzeugten Änderungen gelöscht.<br>" +

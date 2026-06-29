@@ -175,7 +175,7 @@ class MainWindowMenuBuilder(
         helpMenu.addSeparator()
         helpMenu.add(ShowLogWindowAction(logDialog))
         helpMenu.addSeparator()
-        helpMenu.add(ResetSettingsAction(settingsResetHost, daten))
+        helpMenu.add(ResetSettingsAction(settingsResetHost, daten.programSets, programSetExporter()))
         helpMenu.add(ResetDownloadHistoryAction(ownerFrame))
         helpMenu.add(ResetAboHistoryAction(ownerFrame, daten.abos.historyController))
         helpMenu.addSeparator()
