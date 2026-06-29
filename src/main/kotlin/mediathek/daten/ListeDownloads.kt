@@ -80,14 +80,6 @@ class ListeDownloads(
         }
     }
 
-    /**
-     * Get the number of unfinished download tasks.
-     *
-     * @return number of unfinished tasks
-     */
-    @Synchronized
-    fun unfinishedDownloads(): Long = count { download -> download.runNotFinished() }.toLong()
-
     @Synchronized
     fun getDownloadUrlFilm(urlFilm: String): DatenDownload? =
         firstOrNull { download -> download.filmUrl == urlFilm }

@@ -4,6 +4,7 @@ import mediathek.config.Daten
 import mediathek.daten.DatenDownload
 import mediathek.daten.DownloadSource
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
@@ -64,6 +65,14 @@ internal class DownloadServicesTest {
         daten.downloads.requestStopForShutdown()
 
         assertTrue(runState.stoppen)
+    }
+
+    @Test
+    fun countsOnlyUnfinishedDownloads() {
+        daten.downloads.queue.add(download(DownloadRunState().apply { status = StartStatus.RUNNING }))
+        daten.downloads.queue.add(download(DownloadRunState().apply { status = StartStatus.FINISHED }))
+
+        assertEquals(1L, daten.downloads.unfinishedDownloads())
     }
 
     private fun buttonDownload(

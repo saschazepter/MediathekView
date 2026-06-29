@@ -101,7 +101,7 @@ class DialogBeenden(
         downloadMonitorJob = coroutineScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    while (daten.downloads.queue.unfinishedDownloads() > 0) {
+                    while (daten.downloads.unfinishedDownloads() > 0) {
                         ensureActive()
                         delay(1_000.milliseconds)
                     }

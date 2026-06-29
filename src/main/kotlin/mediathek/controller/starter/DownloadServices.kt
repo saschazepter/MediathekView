@@ -163,6 +163,10 @@ class DownloadServices(
         }
     }
 
+    fun unfinishedDownloads(): Long = synchronized(queue) {
+        queue.count { download -> download.runNotFinished() }.toLong()
+    }
+
     fun searchAboDownloads(parent: JFrame?): List<DatenDownload> = synchronized(queue) {
         // in der Filmliste nach passenden Filmen suchen und
         // in die Liste der Downloads eintragen
