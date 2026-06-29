@@ -83,8 +83,8 @@ class DownloadAndQuitRunner(
 
         logger.info("Loading downloads from abos...")
         prepareAboSearch(daten)
-        daten.downloads.queue.abosAuffrischen()
-        val addedDownloads = daten.downloads.queue.abosSuchen(null)
+        daten.downloads.refreshAboDownloads()
+        val addedDownloads = daten.downloads.searchAboDownloads(null)
         updateAboDownloadSizes(addedDownloads)
 
         val downloadsToStart = collectDownloadsToStart(daten)

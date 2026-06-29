@@ -472,8 +472,8 @@ class GuiDownloads(
 
         val listeDownloads = daten.downloads.queue
         rememberAboSizes(listeDownloads)
-        listeDownloads.abosAuffrischen()
-        listeDownloads.abosSuchen(ownerFrame)
+        daten.downloads.refreshAboDownloads()
+        daten.downloads.searchAboDownloads(ownerFrame)
         listeDownloads.restoreKnownAboSizes()
         rememberAboSizes(listeDownloads)
         reloadTable()
