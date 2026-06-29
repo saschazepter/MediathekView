@@ -1,6 +1,7 @@
 package mediathek.controller
 
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.daten.*
 import mediathek.daten.abo.DatenAbo
 import mediathek.daten.abo.FilmLengthState
@@ -71,7 +72,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
-                    daten.xmlConfigData,
+                    DatenXmlConfigDataFactory.from(daten),
                     downloadStoragePath = tempDir.resolve("downloads.json"),
                     blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
                 ).datenLesen(configFile),
@@ -108,7 +109,7 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenReturnsFalseWhenFileDoesNotExist() {
-        assertFalse(IoXmlLesen(daten.xmlConfigData).datenLesen(tempDir.resolve("missing.xml")))
+        assertFalse(IoXmlLesen(DatenXmlConfigDataFactory.from(daten)).datenLesen(tempDir.resolve("missing.xml")))
     }
 
     @Test
@@ -145,7 +146,7 @@ internal class IoXmlLesenTest {
 
         assertTrue(
             IoXmlLesen(
-                daten.xmlConfigData,
+                DatenXmlConfigDataFactory.from(daten),
                 downloadStoragePath = storageFile,
                 blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
             ).datenLesen(configFile),
@@ -196,7 +197,7 @@ internal class IoXmlLesenTest {
 
         assertTrue(
             IoXmlLesen(
-                daten.xmlConfigData,
+                DatenXmlConfigDataFactory.from(daten),
                 downloadStoragePath = storageFile,
                 blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
             ).datenLesen(configFile),
@@ -233,7 +234,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
-                    daten.xmlConfigData,
+                    DatenXmlConfigDataFactory.from(daten),
                     downloadStoragePath = downloadStorageFile,
                     blacklistRuleStoragePath = blacklistStorageFile,
                 ).datenLesen(configFile),
@@ -275,7 +276,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
-                    daten.xmlConfigData,
+                    DatenXmlConfigDataFactory.from(daten),
                     downloadStoragePath = downloadStorageFile,
                     blacklistRuleStoragePath = blacklistStorageFile,
                 ).datenLesen(configFile),
@@ -322,7 +323,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
-                    daten.xmlConfigData,
+                    DatenXmlConfigDataFactory.from(daten),
                     downloadStoragePath = tempDir.resolve("downloads.json"),
                     blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
                     aboRuleStoragePath = aboRulesFile,
@@ -382,7 +383,7 @@ internal class IoXmlLesenTest {
 
             assertTrue(
                 IoXmlLesen(
-                    daten.xmlConfigData,
+                    DatenXmlConfigDataFactory.from(daten),
                     downloadStoragePath = tempDir.resolve("downloads.json"),
                     blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
                     aboRuleStoragePath = aboRulesFile,

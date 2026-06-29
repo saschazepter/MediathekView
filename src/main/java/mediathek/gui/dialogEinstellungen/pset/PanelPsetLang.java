@@ -22,6 +22,7 @@ import ca.odell.glazedlists.swing.AdvancedTableModel;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
 import mediathek.audiothek.ui.table.TriStateTableRowSorter;
 import mediathek.config.Daten;
+import mediathek.config.DatenXmlConfigDataFactory;
 import mediathek.config.Konstanten;
 import mediathek.config.application.ApplicationConfiguration;
 import mediathek.controller.IoXmlSchreiben;
@@ -829,7 +830,7 @@ public class PanelPsetLang extends JPanel {
             if (resultFile != null) {
                 var ziel = resultFile.getAbsolutePath();
 
-                var configWriter = new IoXmlSchreiben(daten.getXmlConfigData());
+                var configWriter = new IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten));
                 configWriter.exportPset(liste.toArray(new DatenPset[0]), ziel);
                 JOptionPane.showMessageDialog(this,
                         "Das Programmset wurde erfolgreich exportiert.",

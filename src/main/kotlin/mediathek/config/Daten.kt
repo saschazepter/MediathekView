@@ -20,7 +20,6 @@
 
 package mediathek.config
 
-import mediathek.controller.XmlConfigData
 import mediathek.controller.starter.DownloadServices
 import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
@@ -35,14 +34,6 @@ class Daten {
     val blacklist: BlacklistServices = BlacklistServices(this)
     val bookmarks: BookmarkServices = BookmarkServices(this)
     val abos: AboServices = AboServices(filmCatalog.allFilms)
-
-    val xmlConfigData: XmlConfigData
-        get() = XmlConfigData(
-            programSets = programSets.list,
-            downloads = downloads,
-            blacklistRules = blacklist.rules,
-            abos = abos.list,
-        )
 
     private val configurationPersistence = DatenConfigurationPersistence(this)
 

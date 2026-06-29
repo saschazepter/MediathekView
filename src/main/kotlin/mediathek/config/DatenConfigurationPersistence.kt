@@ -53,7 +53,7 @@ class DatenConfigurationPersistence(
             backupAlreadyHandled = ConfigurationBackupService.createConfigurationBackupCopies()
         }
 
-        val configWriter = IoXmlSchreiben(daten.xmlConfigData)
+        val configWriter = IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten))
         configWriter.writeConfigurationFile(StandardLocations.getMediathekXmlFile())
         writeBlacklistRules()
         writeAboRules()
@@ -72,7 +72,7 @@ class DatenConfigurationPersistence(
         val xmlFilePath = StandardLocations.getMediathekXmlFile()
 
         if (Files.exists(xmlFilePath)) {
-            val configReader = IoXmlLesen(daten.xmlConfigData)
+            val configReader = IoXmlLesen(DatenXmlConfigDataFactory.from(daten))
             if (configReader.datenLesen(xmlFilePath)) {
                 return true
             }
@@ -121,7 +121,7 @@ class DatenConfigurationPersistence(
             for (path in backupPaths) {
                 clearConfiguration()
                 logger.info("Versuch Backup zu laden: {}", path.toString())
-                val configReader = IoXmlLesen(daten.xmlConfigData)
+                val configReader = IoXmlLesen(DatenXmlConfigDataFactory.from(daten))
                 if (configReader.datenLesen(path)) {
                     logger.info("Backup hat geklappt: {}", path.toString())
                     return true

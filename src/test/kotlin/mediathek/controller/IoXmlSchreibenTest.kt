@@ -1,6 +1,7 @@
 package mediathek.controller
 
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.controller.starter.DownloadRunState
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.*
@@ -54,7 +55,7 @@ internal class IoXmlSchreibenTest {
         }
         val exportFile = tempDir.resolve("pset.xml")
 
-        IoXmlSchreiben(daten.xmlConfigData).exportPset(arrayOf(pset), exportFile.toString())
+        IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(arrayOf(pset), exportFile.toString())
 
         assertTrue(Files.exists(exportFile))
         val imported = ListePsetVorlagen.importPsetFile(exportFile.toString(), false)
@@ -107,7 +108,8 @@ internal class IoXmlSchreibenTest {
         val configFile = tempDir.resolve("mediathek.xml")
         val storageFile = tempDir.resolve("downloads.json")
 
-        IoXmlSchreiben(daten.xmlConfigData, downloadStoragePath = storageFile).writeConfigurationFile(configFile)
+        IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten), downloadStoragePath = storageFile)
+            .writeConfigurationFile(configFile)
 
         val xml = Files.readString(configFile)
         assertTrue(Files.exists(storageFile))
@@ -130,7 +132,10 @@ internal class IoXmlSchreibenTest {
             )
             val configFile = tempDir.resolve("mediathek.xml")
 
-            IoXmlSchreiben(daten.xmlConfigData, downloadStoragePath = tempDir.resolve("downloads.json")).writeConfigurationFile(configFile)
+            IoXmlSchreiben(
+                DatenXmlConfigDataFactory.from(daten),
+                downloadStoragePath = tempDir.resolve("downloads.json"),
+            ).writeConfigurationFile(configFile)
 
             val xml = Files.readString(configFile)
             assertFalse(xml.contains("<Abonnement>"))
