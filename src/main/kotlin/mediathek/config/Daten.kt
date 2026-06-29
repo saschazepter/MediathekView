@@ -26,6 +26,7 @@ import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
 import mediathek.filmlisten.FilmeLaden
+import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.bookmark.BookmarkServices
 
 class Daten {
@@ -35,7 +36,13 @@ class Daten {
     val bookmarks: BookmarkServices = BookmarkServices(filmCatalog.allFilms)
     val abos: AboServices = AboServices(filmCatalog.allFilms)
     val filmListLoader: FilmeLaden = FilmeLaden(filmCatalog, abos, blacklist)
-    val downloads: DownloadServices = DownloadServices(this)
+    val downloads: DownloadServices = DownloadServices(
+        filmCatalog,
+        programSets,
+        abos,
+        blacklist,
+        showMissingAboProgramSet = { parent -> MissingProgramSetDialog.showMissingAboProgramSet(parent, this) },
+    )
 
     val configurationPersistence: DatenConfigurationPersistence = DatenConfigurationPersistence(
         programSets = programSets,

@@ -1,14 +1,17 @@
 package mediathek.controller.starter
 
 import mediathek.config.CommandLineOptions
-import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.daten.ProgramSetRepository
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.daten.DownloadSource
 import mediathek.daten.DownloadType
+import mediathek.daten.abo.AboServices
+import mediathek.daten.blacklist.BlacklistServices
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.messages.ButtonStartEvent
 import mediathek.gui.messages.DownloadListChangedEvent
@@ -31,12 +34,16 @@ data class DownloadProgressSnapshot(
 )
 
 class DownloadServices(
-    private val daten: Daten,
+    private val filmCatalog: FilmCatalog,
+    private val programSets: ProgramSetRepository,
+    private val abos: AboServices,
+    private val blacklist: BlacklistServices,
+    private val showMissingAboProgramSet: (JFrame?) -> Unit,
 ) {
     private val queue: LinkedList<DatenDownload> = LinkedList()
     private val buttonQueue: LinkedList<DatenDownload> = LinkedList()
     private val info: DownloadInfos = DownloadInfos(::unfinishedDownloads)
-    private val starter: DownloadStartCoordinator = DownloadStartCoordinator(daten)
+    private val starter: DownloadStartCoordinator = DownloadStartCoordinator(this, abos::historyController)
 
     fun refreshAboDownloads() {
         synchronized(queue) {
@@ -68,7 +75,7 @@ class DownloadServices(
     fun reconnectFilms() {
         logger.info("Filme in Downloads eintragen")
         synchronized(queue) {
-            val films = daten.filmCatalog.allFilms
+            val films = filmCatalog.allFilms
             queue.filter { download -> download.film == null }
                 .forEach { download ->
                     download.film = films.getFilmByUrl_klein_hoch_hd(download.downloadUrl)
@@ -243,6 +250,10 @@ class DownloadServices(
 
     fun setDialogOwner(owner: MainWindowHandle?) {
         starter.setDialogOwner(owner)
+    }
+
+    fun startStarter() {
+        starter.start()
     }
 
     fun startWithProgram(pSet: DatenPset, film: DatenFilm, resolution: String) {
@@ -425,19 +436,19 @@ class DownloadServices(
 
         // prüfen ob in "alle Filme" oder nur "nach Blacklist" gesucht werden soll
         val checkWithBlackList = ApplicationConfiguration.getInstance().blacklistApplyToAbo
-        val defaultPset = daten.programSets.list.getPsetAbo("")
+        val defaultPset = programSets.list.getPsetAbo("")
         val today = LocalDate.now(DateUtil.MV_DEFAULT_TIMEZONE)
 
-        val aboHistoryController = daten.abos.historyController
-        val listeFilme = daten.filmCatalog.allFilms
+        val aboHistoryController = abos.historyController
+        val listeFilme = filmCatalog.allFilms
         val blacklistFilter: Predicate<DatenFilm> = if (checkWithBlackList) {
-            daten.blacklist.createDownloadsPredicate()
+            blacklist.createDownloadsPredicate()
         } else {
             Predicate { true }
         }
 
         for (film in listeFilme) {
-            val abo = daten.abos.findAboForFilm(film, true) ?: continue
+            val abo = abos.findAboForFilm(film, true) ?: continue
             if (!abo.isActive) {
                 continue
             }
@@ -450,7 +461,7 @@ class DownloadServices(
                 continue
             }
 
-            val pset = if (abo.psetName.isEmpty()) defaultPset else daten.programSets.list.getPsetAbo(abo.psetName)
+            val pset = if (abo.psetName.isEmpty()) defaultPset else programSets.list.getPsetAbo(abo.psetName)
             if (pset != null) {
                 // mit der tatsächlichen URL prüfen, ob die URL schon in der Downloadliste ist
                 val downloadUrl = film.getUrlFuerAufloesung(pset.aufloesung)
@@ -473,7 +484,7 @@ class DownloadServices(
                 if (parent == null || CommandLineOptions.isDownloadAndQuit()) {
                     throw IllegalStateException("Kein Programmset für Abo \"${abo.name}\" konfiguriert.")
                 }
-                MissingProgramSetDialog.showMissingAboProgramSet(parent, daten)
+                showMissingAboProgramSet(parent)
                 break
             }
         }

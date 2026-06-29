@@ -104,6 +104,7 @@ class DownloadAndQuitRunner(
 
         logger.info("Starting {} abo download(s)...", downloadsToStart.size)
         DownloadStartActions.startAll(downloadsToStart)
+        daten.downloads.startStarter()
         if (shutdownRequested.get()) {
             stopDownloads(downloadsToStart)
         }

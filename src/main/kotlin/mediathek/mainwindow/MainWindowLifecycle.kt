@@ -97,6 +97,7 @@ class MainWindowLifecycle(
         }
 
         daten.downloads.setDialogOwner(dialogOwner)
+        daten.downloads.startStarter()
         downloadDialogOwnerRegistered = true
     }
 
