@@ -8,7 +8,6 @@ import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.daten.DownloadListFilter
-import mediathek.daten.DownloadInfos
 import mediathek.daten.DownloadSource
 import mediathek.daten.DownloadStartInfo
 import mediathek.daten.DownloadTableModelUpdater

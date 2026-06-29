@@ -1,7 +1,7 @@
-package mediathek.daten
+package mediathek.controller.starter
 
 import mediathek.config.Daten
-import mediathek.controller.starter.StartStatus
+import mediathek.daten.DownloadSource
 import mediathek.gui.messages.DownloadInfoUpdateAvailableEvent
 import mediathek.gui.messages.TimerEvent
 import mediathek.tool.BandwidthFormatter
