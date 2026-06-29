@@ -19,7 +19,7 @@
 package mediathek.gui.tabs.tab_downloads
 
 import mediathek.config.Daten
-import mediathek.daten.DownloadStartInfo
+import mediathek.controller.starter.DownloadStartInfo
 import mediathek.gui.messages.UpdateStatusBarLeftDisplayEvent
 import mediathek.tool.MessageBus.messageBus
 import net.engio.mbassy.listener.Handler
