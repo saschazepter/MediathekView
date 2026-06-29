@@ -10,6 +10,7 @@ import mediathek.daten.DownloadSource
 import mediathek.daten.ListeDownloads
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.messages.DownloadListChangedEvent
+import mediathek.gui.messages.StartEvent
 import mediathek.tool.MessageBus
 import mediathek.tool.datum.DateUtil
 import java.time.LocalDate
@@ -73,6 +74,52 @@ class DownloadServices(
                 }
 
                 else -> Unit
+            }
+        }
+        if (found) {
+            MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
+        }
+    }
+
+    fun cancelDownloads(downloads: Collection<DatenDownload>?) {
+        var found = false
+        if (downloads != null) {
+            synchronized(queue) {
+                for (download in downloads) {
+                    if (queue.contains(download)) {
+                        // nur dann ist er in der Liste
+                        download.runtime.runState?.let { state ->
+                            if (state.isBeforeFinished) {
+                                state.requestStop()
+                            }
+                            if (state.isRunning) {
+                                DownloadLifecycleActions.markInterrupted(download)
+                            }
+                        }
+                        DownloadLifecycleActions.reset(download)
+                        found = true
+                    }
+                }
+            }
+        }
+        if (found) {
+            MessageBus.messageBus.publishAsync(StartEvent())
+        }
+    }
+
+    fun deleteDownloads(downloads: Collection<DatenDownload>?) {
+        var found = false
+        if (downloads != null) {
+            synchronized(queue) {
+                for (download in downloads) {
+                    val state = download.runtime.runState
+                    if (state?.isBeforeFinished == true) {
+                        state.requestStop()
+                    }
+                    if (queue.remove(download)) {
+                        found = true
+                    }
+                }
             }
         }
         if (found) {

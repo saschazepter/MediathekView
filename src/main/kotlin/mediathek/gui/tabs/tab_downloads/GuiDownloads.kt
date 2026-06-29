@@ -674,7 +674,7 @@ class GuiDownloads(
             }
 
             downloadsToDelete.forEach(::evictDownloadSizeCache)
-            daten.downloads.queue.downloadLoeschen(downloadsToDelete)
+            daten.downloads.deleteDownloads(downloadsToDelete)
             reloadTable()
             selectSingleRowAfterDeletion(rowToSelectAfterDeletion)
         } catch (ex: Exception) {
@@ -752,7 +752,7 @@ class GuiDownloads(
             downloadsToStart.add(download)
         }
 
-        daten.downloads.queue.downloadAbbrechen(downloadsToCancel)
+        daten.downloads.cancelDownloads(downloadsToCancel)
 
         val dialogBeenden = DialogBeendenZeit(ownerFrame, daten, downloadsToStart)
         dialogBeenden.isVisible = true
@@ -832,7 +832,7 @@ class GuiDownloads(
             }
         }
 
-        daten.downloads.queue.downloadAbbrechen(downloadsToCancel)
+        daten.downloads.cancelDownloads(downloadsToCancel)
 
         if (skipManualDownloads) {
             downloadsToStart.removeIf { download -> !download.isFromAbo || download.isAutomaticStartBlockedByAbo }
@@ -857,7 +857,7 @@ class GuiDownloads(
                 downloadsToStop.add(datenDownload)
             }
         }
-        daten.downloads.queue.downloadAbbrechen(downloadsToStop)
+        daten.downloads.cancelDownloads(downloadsToStop)
     }
 
     private fun updateFilmData() {

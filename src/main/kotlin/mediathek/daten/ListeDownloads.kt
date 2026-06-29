@@ -28,7 +28,6 @@ import mediathek.controller.starter.StartStatus
 import mediathek.gui.messages.ButtonStartEvent
 import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.gui.messages.DownloadQueueRankChangedEvent
-import mediathek.gui.messages.StartEvent
 import mediathek.tool.MessageBus
 import mediathek.tool.models.TModelDownload
 import org.apache.logging.log4j.LogManager
@@ -120,50 +119,6 @@ class ListeDownloads(
                 MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
                 break
             }
-        }
-    }
-
-    @Synchronized
-    fun downloadAbbrechen(downloads: ArrayList<DatenDownload>?) {
-        var found = false
-        if (downloads != null) {
-            for (download in downloads) {
-                if (contains(download)) {
-                    // nur dann ist er in der Liste
-                    download.runtime.runState?.let { state ->
-                        if (state.isBeforeFinished) {
-                            state.requestStop()
-                        }
-                        if (state.isRunning) {
-                            DownloadLifecycleActions.markInterrupted(download)
-                        }
-                    }
-                    DownloadLifecycleActions.reset(download)
-                    found = true
-                }
-            }
-        }
-        if (found) {
-            MessageBus.messageBus.publishAsync(StartEvent())
-        }
-    }
-
-    @Synchronized
-    fun downloadLoeschen(downloads: ArrayList<DatenDownload>?) {
-        var found = false
-        if (downloads != null) {
-            for (download in downloads) {
-                val state = download.runtime.runState
-                if (state?.isBeforeFinished == true) {
-                    state.requestStop()
-                }
-                if (remove(download)) {
-                    found = true
-                }
-            }
-        }
-        if (found) {
-            MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
         }
     }
 
