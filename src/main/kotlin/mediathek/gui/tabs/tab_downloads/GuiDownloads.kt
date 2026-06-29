@@ -29,7 +29,7 @@ import mediathek.controller.starter.DownloadStartActions
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
-import mediathek.daten.DownloadColumns
+import mediathek.controller.DownloadColumns
 import mediathek.controller.starter.DownloadListFilter
 import mediathek.filmeSuchen.ListenerFilmeLaden
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent

@@ -23,6 +23,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.controller.DownloadColumns
 import mediathek.controller.starter.DownloadProgressText
 import mediathek.daten.*
 import mediathek.gui.dialog.DialogHilfe

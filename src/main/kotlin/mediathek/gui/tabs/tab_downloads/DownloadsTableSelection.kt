@@ -20,7 +20,7 @@ package mediathek.gui.tabs.tab_downloads
 
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
-import mediathek.daten.DownloadColumns
+import mediathek.controller.DownloadColumns
 import mediathek.tool.NoSelectionErrorDialog
 import mediathek.tool.table.MVDownloadsTable
 import org.apache.logging.log4j.LogManager

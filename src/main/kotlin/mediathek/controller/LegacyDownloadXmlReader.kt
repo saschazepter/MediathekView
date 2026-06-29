@@ -19,7 +19,6 @@
 package mediathek.controller
 
 import mediathek.daten.DatenDownload
-import mediathek.daten.DownloadColumns
 import javax.xml.stream.XMLStreamConstants
 import javax.xml.stream.XMLStreamException
 import javax.xml.stream.XMLStreamReader

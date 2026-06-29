@@ -21,7 +21,7 @@ package mediathek.tool.table
 import mediathek.audiothek.ui.table.TriStateTableRowSorter
 import mediathek.config.Daten
 import mediathek.daten.DatenDownload
-import mediathek.daten.DownloadColumns
+import mediathek.controller.DownloadColumns
 import mediathek.tool.models.TModelDownload
 import org.apache.logging.log4j.LogManager
 import java.awt.Cursor

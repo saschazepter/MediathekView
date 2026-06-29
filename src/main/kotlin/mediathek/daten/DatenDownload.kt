@@ -18,6 +18,7 @@
 
 package mediathek.daten
 
+import mediathek.controller.DownloadColumns
 import mediathek.controller.DownloadConfig
 import mediathek.controller.LegacyDownloadXmlReader
 import mediathek.controller.starter.DownloadInvocationRequest
