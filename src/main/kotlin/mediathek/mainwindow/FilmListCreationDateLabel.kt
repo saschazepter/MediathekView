@@ -18,8 +18,8 @@
 
 package mediathek.mainwindow
 
-import mediathek.config.Daten
 import mediathek.daten.FilmListMetaData
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.messages.FilmListReadStopEvent
 import mediathek.tool.MessageBus
 import net.engio.mbassy.listener.Handler
@@ -29,10 +29,10 @@ import javax.swing.JLabel
 import javax.swing.SwingUtilities
 
 class FilmListCreationDateLabel(
-    private val daten: Daten,
+    private val filmCatalog: FilmCatalog,
 ) : JLabel(), PropertyChangeListener {
     init {
-        val blacklist = daten.filmCatalog.filteredFilms
+        val blacklist = filmCatalog.filteredFilms
         setText(blacklist.metaData)
         blacklist.addMetaDataChangeListener(this)
 
@@ -47,7 +47,7 @@ class FilmListCreationDateLabel(
     @Suppress("UNUSED_PARAMETER")
     @Handler
     private fun handleFilmListStop(event: FilmListReadStopEvent) {
-        setText(daten.filmCatalog.filteredFilms.metaData)
+        setText(filmCatalog.filteredFilms.metaData)
     }
 
     override fun propertyChange(evt: PropertyChangeEvent) {

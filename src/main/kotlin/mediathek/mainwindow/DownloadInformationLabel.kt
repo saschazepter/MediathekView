@@ -18,8 +18,8 @@
 
 package mediathek.mainwindow
 
-import mediathek.config.Daten
 import mediathek.controller.starter.DownloadProgressSnapshot
+import mediathek.controller.starter.DownloadServices
 import mediathek.gui.messages.DownloadInfoUpdateAvailableEvent
 import mediathek.tool.FileSize
 import mediathek.tool.MessageBus
@@ -28,7 +28,7 @@ import javax.swing.JLabel
 import javax.swing.SwingUtilities
 
 class DownloadInformationLabel(
-    private val daten: Daten,
+    private val downloads: DownloadServices,
 ) : JLabel() {
     init {
         MessageBus.messageBus.subscribe(this)
@@ -41,18 +41,18 @@ class DownloadInformationLabel(
     }
 
     private fun setInfoFilme() {
-        text = buildDownloadInfoText(daten)
+        text = buildDownloadInfoText(downloads)
     }
 
-    private fun buildDownloadInfoText(daten: Daten): String {
-        val info = daten.downloads.startInfo()
+    private fun buildDownloadInfoText(downloads: DownloadServices): String {
+        val info = downloads.startInfo()
         return buildString {
             append(totalDownloadsText(info.total_num_download_list_entries))
 
             if (info.hasValues()) {
                 append(": ")
                 append(activeDownloadsText(info.running))
-                appendRunningDetails(info.running, daten.downloads.progressSnapshot())
+                appendRunningDetails(info.running, downloads.progressSnapshot())
                 append(waitingDownloadsText(info.initialized))
                 appendFinishedDownloads(info.finished)
                 appendFailedDownloads(info.error)

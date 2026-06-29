@@ -40,7 +40,12 @@ class MainWindowStatusBarController(
     private lateinit var statusBar: FixedRedrawStatusBar
 
     fun createStatusBar() {
-        statusBar = FixedRedrawStatusBar(daten, filmTableRowCount, selectedListItemsProperty)
+        statusBar = FixedRedrawStatusBar(
+            daten.filmCatalog,
+            daten.downloads,
+            filmTableRowCount,
+            selectedListItemsProperty,
+        )
         contentPane.add(statusBar, BorderLayout.SOUTH)
     }
 
