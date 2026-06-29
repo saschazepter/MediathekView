@@ -22,8 +22,6 @@ import mediathek.audiothek.ui.table.TriStateTableRowSorter
 import mediathek.config.Daten
 import mediathek.daten.DatenDownload
 import mediathek.daten.DownloadColumns
-import mediathek.gui.messages.DownloadQueueRankChangedEvent
-import mediathek.tool.MessageBus
 import mediathek.tool.models.TModelDownload
 import org.apache.logging.log4j.LogManager
 import java.awt.Cursor
@@ -159,13 +157,13 @@ class MVDownloadsTable(
     @Synchronized
     fun sortDownloadListByTableRows() {
         val tableModel = model
-        val downloads = daten.downloads.queue
+        val downloadsInTableOrder = ArrayList<DatenDownload>()
 
         for (row in 0 until rowCount) {
             val download = tableModel.getValueAt(convertRowIndexToModel(row), DownloadColumns.REF) as DatenDownload
-            downloads.remove(download)
-            downloads.add(download)
+            downloadsInTableOrder.add(download)
         }
+        daten.downloads.reorderQueueToMatch(downloadsInTableOrder)
     }
 
     override fun spaltenAusschalten() {
@@ -257,14 +255,11 @@ class MVDownloadsTable(
 
                 val download = tableModel.getValueAt(convertRowIndexToModel(row), DownloadColumns.REF) as DatenDownload
                 downloadsToMove.add(download)
-                daten.downloads.queue.remove(download)
             }
 
-            daten.downloads.queue.addAll(insertionIndex, downloadsToMove)
+            daten.downloads.moveDownloadsTo(insertionIndex, downloadsToMove)
             rowSorter?.sortKeys = null
             restoreSelectedTableRows()
-
-            MessageBus.messageBus.publishAsync(DownloadQueueRankChangedEvent())
         }
 
         override fun exportDone(source: JComponent, data: Transferable, action: Int) {

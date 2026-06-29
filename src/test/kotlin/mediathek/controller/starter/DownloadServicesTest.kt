@@ -149,6 +149,34 @@ internal class DownloadServicesTest {
     }
 
     @Test
+    fun reordersQueueToMatchDownloadOrder() {
+        val firstDownload = namedDownload("first")
+        val secondDownload = namedDownload("second")
+        val thirdDownload = namedDownload("third")
+        daten.downloads.queue.add(firstDownload)
+        daten.downloads.queue.add(secondDownload)
+        daten.downloads.queue.add(thirdDownload)
+
+        daten.downloads.reorderQueueToMatch(listOf(thirdDownload, firstDownload, secondDownload))
+
+        assertEquals(listOf(thirdDownload, firstDownload, secondDownload), daten.downloads.queue)
+    }
+
+    @Test
+    fun movesDownloadsToQueueIndex() {
+        val firstDownload = namedDownload("first")
+        val secondDownload = namedDownload("second")
+        val thirdDownload = namedDownload("third")
+        daten.downloads.queue.add(firstDownload)
+        daten.downloads.queue.add(secondDownload)
+        daten.downloads.queue.add(thirdDownload)
+
+        daten.downloads.moveDownloadsTo(0, listOf(thirdDownload))
+
+        assertEquals(listOf(thirdDownload, firstDownload, secondDownload), daten.downloads.queue)
+    }
+
+    @Test
     fun reloadsDownloadTableModel() {
         val model = TModelDownload()
         val download = download(DownloadRunState().apply { status = StartStatus.INITIALIZED })
@@ -322,6 +350,11 @@ internal class DownloadServicesTest {
         DatenDownload().apply {
             quelle = DownloadSource.DOWNLOAD
             runtime.runState = runState
+        }
+
+    private fun namedDownload(name: String): DatenDownload =
+        download(DownloadRunState().apply { status = StartStatus.INITIALIZED }).apply {
+            filmUrl = "https://example.invalid/$name"
         }
 
     private fun aboDownload(runState: DownloadRunState?): DatenDownload =

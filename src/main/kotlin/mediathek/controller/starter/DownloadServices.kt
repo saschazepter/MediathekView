@@ -182,6 +182,27 @@ class DownloadServices(
         MessageBus.messageBus.publishAsync(DownloadQueueRankChangedEvent())
     }
 
+    fun reorderQueueToMatch(downloadsInOrder: List<DatenDownload>) {
+        synchronized(queue) {
+            for (download in downloadsInOrder) {
+                if (queue.remove(download)) {
+                    queue.add(download)
+                }
+            }
+        }
+    }
+
+    fun moveDownloadsTo(insertionIndex: Int, downloads: List<DatenDownload>) {
+        synchronized(queue) {
+            for (download in downloads) {
+                queue.remove(download)
+            }
+            queue.addAll(insertionIndex.coerceIn(0, queue.size), downloads)
+        }
+
+        MessageBus.messageBus.publishAsync(DownloadQueueRankChangedEvent())
+    }
+
     fun cancelRunningButtonDownloadByFilmUrl(filmUrl: String): Boolean {
         synchronized(buttonQueue) {
             for (download in buttonQueue) {
