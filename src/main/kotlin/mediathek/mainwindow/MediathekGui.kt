@@ -178,7 +178,8 @@ open class MediathekGui private constructor(
     private val shutdownRuntime = MainWindowShutdownRuntime()
     private val statusBarController =
         MainWindowStatusBarController(
-            daten,
+            daten.filmCatalog,
+            daten.downloads,
             contentPane,
             selectedListItemsProperty,
             ::getFilmTableRowCount,
@@ -284,7 +285,7 @@ open class MediathekGui private constructor(
         loadFilmListAction = LoadFilmListAction { filmlistLoadCoordinator.performFilmListLoadOperation(false) }
         showFilmInformationAction = ShowFilmInformationAction(::getFilmInfoDialog)
         filmlistReloadCoordinator = MainWindowFilmlistReloadCoordinator(
-            daten,
+            daten.downloads,
             loadFilmListAction,
         ) { filmlistLoadCoordinator.performFilmListLoadOperation(false) }
         val filmListListener: ListenerFilmeLaden = MainWindowFilmListListener(

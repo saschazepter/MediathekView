@@ -20,10 +20,13 @@ package mediathek.mainwindow
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import mediathek.config.Daten
 import mediathek.config.StandardLocations
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.daten.abo.AboServices
+import mediathek.daten.blacklist.BlacklistServices
+import mediathek.filmlisten.FilmCatalog
 import mediathek.filmlisten.FilmlistPostLoadTasks
+import mediathek.filmlisten.FilmeLaden
 import mediathek.filmlisten.reader.FilmListReader
 import mediathek.gui.messages.FilmListReadStartEvent
 import mediathek.gui.messages.FilmListReadStopEvent
@@ -39,7 +42,10 @@ fun interface StartupFilmlistLoadCompletion {
 }
 
 class StartupFilmlistLoader(
-    private val daten: Daten,
+    private val filmCatalog: FilmCatalog,
+    private val filmListLoader: FilmeLaden,
+    private val abos: AboServices,
+    private val blacklist: BlacklistServices,
     private val progressLabel: JLabel,
     private val progressBar: JProgressBar,
     private val completion: StartupFilmlistLoadCompletion,
@@ -80,7 +86,7 @@ class StartupFilmlistLoader(
         try {
             FilmListReader().use { reader ->
                 val loadNumDays = ApplicationConfiguration.getInstance().filmListLoadNumDays
-                reader.readFilmListe(StandardLocations.getFilmlistFilePathString(), daten.filmCatalog.allFilms, loadNumDays)
+                reader.readFilmListe(StandardLocations.getFilmlistFilePathString(), filmCatalog.allFilms, loadNumDays)
             }
         } finally {
             MessageBus.messageBus.publishAsync(FilmListReadStopEvent())
@@ -89,14 +95,14 @@ class StartupFilmlistLoader(
 
     private fun startRemoteFilmlistUpdateIfNeeded(): Boolean {
         logger.trace("Check for filmlist updates")
-        return daten.filmListLoader.startAutomaticStartupUpdateIfNeeded()
+        return filmListLoader.startAutomaticStartupUpdateIfNeeded()
     }
 
     private suspend fun runPostLoadTasks() =
         FilmlistPostLoadTasks(
-            daten.filmCatalog,
-            daten.abos,
-            daten.blacklist,
+            filmCatalog,
+            abos,
+            blacklist,
             progressLabel,
             progressBar,
         ).run(writeFilmList = false)

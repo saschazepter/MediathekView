@@ -36,7 +36,10 @@ class MainWindowFilmlistLoadCoordinator(
     fun loadStartupFilmlist() {
         statusBarController.installStartupProgress()
         startupFilmlistLoader = StartupFilmlistLoader(
-            daten,
+            daten.filmCatalog,
+            daten.filmListLoader,
+            daten.abos,
+            daten.blacklist,
             statusBarController.startupProgressLabel,
             statusBarController.startupProgressBar,
             ::finishStartupFilmlistLoad,
