@@ -209,7 +209,9 @@ open class MediathekGui private constructor(
     private val filmlistReloadCoordinator: MainWindowFilmlistReloadCoordinator
     private val quitController = MainWindowQuitController(
         this,
-        daten,
+        daten.downloads,
+        daten.bookmarks,
+        daten.configurationPersistence,
         this,
         dialogCoordinator,
         tabRegistry,
