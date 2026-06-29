@@ -32,6 +32,7 @@ import mediathek.controller.SenderFilmlistLoadApprover
 import mediathek.controller.history.SeenHistoryController
 import mediathek.controller.history.SeenHistoryMigrator
 import mediathek.daten.IndexedFilmList
+import mediathek.daten.abo.AboServices
 import mediathek.gui.dialog.DialogStarteinstellungen
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider
 import mediathek.logging.SwingAppender
@@ -104,8 +105,8 @@ object Main {
                 performBackgroundStartup(cleanupMediaDb = !GraphicsEnvironment.isHeadless())
                 loadConfigurationDataCli(daten)
                 migrateSeenHistory()
-                daten.launchHistoryDataLoading()
-                daten.waitForHistoryDataLoadingToComplete()
+                daten.abos.launchHistoryDataLoading()
+                daten.abos.waitForHistoryDataLoadingToComplete()
                 withContext(Dispatchers.IO) {
                     daten.bookmarks.loadFromFile()
                 }
@@ -130,7 +131,7 @@ object Main {
         activateNewMaxFilmLength()
 
         migrateSeenHistory()
-        daten.launchHistoryDataLoading()
+        daten.abos.launchHistoryDataLoading()
         withContext(Dispatchers.IO) {
             daten.bookmarks.loadFromFile()
             removeLuceneIndexDirectory()
@@ -870,7 +871,7 @@ object Main {
             SplashScreenLifecycle.update(UIProgressState.WAIT_FOR_HISTORY_DATA)
         }
 
-        waitForHistoryDataLoadingToComplete(daten)
+        waitForHistoryDataLoadingToComplete(daten.abos)
 
         withContext(Dispatchers.Swing) {
             SplashScreenLifecycle.update(UIProgressState.START_UI)
@@ -890,10 +891,10 @@ object Main {
         }
     }
 
-    private suspend fun waitForHistoryDataLoadingToComplete(daten: Daten) {
+    private suspend fun waitForHistoryDataLoadingToComplete(abos: AboServices) {
         try {
             withContext(Dispatchers.IO) {
-                daten.waitForHistoryDataLoadingToComplete()
+                abos.waitForHistoryDataLoadingToComplete()
             }
         } catch (exception: InterruptedException) {
             Thread.currentThread().interrupt()

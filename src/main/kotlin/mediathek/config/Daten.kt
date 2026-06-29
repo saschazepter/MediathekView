@@ -27,7 +27,6 @@ import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.bookmark.BookmarkServices
-import java.util.concurrent.ExecutionException
 
 class Daten {
     val programSets: ProgramSetRepository = ProgramSetRepository()
@@ -48,15 +47,6 @@ class Daten {
     private val configurationPersistence = DatenConfigurationPersistence(this)
 
     fun allesLaden(): Boolean = configurationPersistence.loadAll()
-
-    fun launchHistoryDataLoading() {
-        abos.launchHistoryDataLoading()
-    }
-
-    @Throws(ExecutionException::class, InterruptedException::class)
-    fun waitForHistoryDataLoadingToComplete() {
-        abos.waitForHistoryDataLoadingToComplete()
-    }
 
     fun allesSpeichern() = configurationPersistence.saveAll()
 }
