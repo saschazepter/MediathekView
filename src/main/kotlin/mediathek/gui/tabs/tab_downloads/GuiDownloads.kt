@@ -407,7 +407,7 @@ class GuiDownloads(
         if (now - lastUpdate.get() >= 500) {
             lastUpdate.set(now)
             SwingUtilities.invokeLater {
-                daten.downloads.queue.setModelProgress(model)
+                daten.downloads.updateTableModelProgress(model)
             }
         }
     }
@@ -441,7 +441,7 @@ class GuiDownloads(
 
         val displayFilter = filterController.displayFilter
         val viewFilter = filterController.viewFilter
-        daten.downloads.queue.getModel(
+        daten.downloads.reloadTableModel(
             model,
             DownloadListFilter(
                 onlyAbos = displayFilter.onlyAbos(),

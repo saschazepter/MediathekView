@@ -3,8 +3,11 @@ package mediathek.controller.starter
 import mediathek.config.Daten
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
+import mediathek.daten.DownloadColumns
+import mediathek.daten.DownloadListFilter
 import mediathek.daten.DownloadSource
 import mediathek.daten.DownloadType
+import mediathek.tool.models.TModelDownload
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -143,6 +146,18 @@ internal class DownloadServicesTest {
         assertEquals(1, firstDownload.nr)
         assertEquals(2, secondDownload.nr)
         assertSame(firstDownload, daten.downloads.findButtonDownloadByFilmUrl("https://example.invalid/first"))
+    }
+
+    @Test
+    fun reloadsDownloadTableModel() {
+        val model = TModelDownload()
+        val download = download(DownloadRunState().apply { status = StartStatus.INITIALIZED })
+        daten.downloads.queue.add(download)
+
+        daten.downloads.reloadTableModel(model, allDownloadsFilter())
+
+        assertEquals(1, model.rowCount)
+        assertSame(download, model.getValueAt(0, DownloadColumns.REF))
     }
 
     @Test
@@ -315,4 +330,15 @@ internal class DownloadServicesTest {
             aboName = "Abo"
             runtime.runState = runState
         }
+
+    private fun allDownloadsFilter(): DownloadListFilter =
+        DownloadListFilter(
+            onlyAbos = false,
+            onlyDownloads = false,
+            onlyNotStarted = false,
+            onlyStarted = false,
+            onlyWaiting = false,
+            onlyRun = false,
+            onlyFinished = false,
+        )
 }

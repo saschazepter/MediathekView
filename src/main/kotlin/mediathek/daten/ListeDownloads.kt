@@ -19,20 +19,9 @@
  */
 package mediathek.daten
 
-import mediathek.tool.models.TModelDownload
 import java.util.*
 
 class ListeDownloads : LinkedList<DatenDownload>() {
-    @Synchronized
-    fun getModel(tModel: TModelDownload, filter: DownloadListFilter) {
-        DownloadTableModelUpdater.reload(tModel, this, filter)
-    }
-
-    @Synchronized
-    fun setModelProgress(tModel: TModelDownload) {
-        DownloadTableModelUpdater.updateProgress(tModel)
-    }
-
     @Synchronized
     fun listeNummerieren() {
         var index = 1

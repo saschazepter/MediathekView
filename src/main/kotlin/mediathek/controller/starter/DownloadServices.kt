@@ -6,9 +6,11 @@ import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
+import mediathek.daten.DownloadListFilter
 import mediathek.daten.DownloadInfos
 import mediathek.daten.DownloadSource
 import mediathek.daten.DownloadStartInfo
+import mediathek.daten.DownloadTableModelUpdater
 import mediathek.daten.DownloadType
 import mediathek.daten.ListeDownloads
 import mediathek.gui.dialog.MissingProgramSetDialog
@@ -18,6 +20,7 @@ import mediathek.gui.messages.DownloadQueueRankChangedEvent
 import mediathek.gui.messages.StartEvent
 import mediathek.tool.MessageBus
 import mediathek.tool.datum.DateUtil
+import mediathek.tool.models.TModelDownload
 import org.apache.logging.log4j.LogManager
 import java.time.LocalDate
 import java.util.function.Predicate
@@ -235,6 +238,18 @@ class DownloadServices(
         buttonQueue.firstOrNull { download -> download.filmUrl == filmUrl }
     }
 
+    fun reloadTableModel(model: TModelDownload, filter: DownloadListFilter) {
+        synchronized(queue) {
+            DownloadTableModelUpdater.reload(model, queue, filter)
+        }
+    }
+
+    fun updateTableModelProgress(model: TModelDownload) {
+        synchronized(queue) {
+            DownloadTableModelUpdater.updateProgress(model)
+        }
+    }
+
     fun nextStart(): DatenDownload? = synchronized(queue) {
         val maxNumDownloads = ApplicationConfiguration.getInstance().maxSimultaneousDownloads
         if (queue.isNotEmpty() && canStartMore(maxNumDownloads)) {
@@ -380,7 +395,7 @@ class DownloadServices(
         }
 
         if (addedDownloads.isNotEmpty()) {
-            queue.listeNummerieren()
+            renumber(queue)
         }
         addedDownloads
     }
