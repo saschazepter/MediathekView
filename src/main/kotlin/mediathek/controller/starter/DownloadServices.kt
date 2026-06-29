@@ -251,6 +251,18 @@ class DownloadServices(
         }
     }
 
+    fun addLoadedDownload(download: DatenDownload) {
+        synchronized(queue) {
+            queue.add(download)
+        }
+    }
+
+    fun addLoadedDownloads(downloads: Collection<DatenDownload>) {
+        synchronized(queue) {
+            queue.addAll(downloads)
+        }
+    }
+
     fun findDownloadByFilmUrl(filmUrl: String): DatenDownload? = synchronized(queue) {
         queue.firstOrNull { download -> download.filmUrl == filmUrl }
     }
@@ -266,6 +278,12 @@ class DownloadServices(
     fun clearQueuedDownloads() {
         synchronized(queue) {
             queue.clear()
+        }
+    }
+
+    fun renumberQueuedDownloads() {
+        synchronized(queue) {
+            renumber(queue)
         }
     }
 

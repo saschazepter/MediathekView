@@ -150,6 +150,27 @@ internal class DownloadServicesTest {
     }
 
     @Test
+    fun addsLoadedDownloadsWithoutRenumberingUntilRequested() {
+        val firstDownload = namedDownload("first").apply {
+            nr = 42
+        }
+        val secondDownload = namedDownload("second").apply {
+            nr = 99
+        }
+
+        daten.downloads.addLoadedDownloads(listOf(firstDownload, secondDownload))
+
+        assertEquals(listOf(firstDownload, secondDownload), daten.downloads.queue)
+        assertEquals(42, firstDownload.nr)
+        assertEquals(99, secondDownload.nr)
+
+        daten.downloads.renumberQueuedDownloads()
+
+        assertEquals(1, firstDownload.nr)
+        assertEquals(2, secondDownload.nr)
+    }
+
+    @Test
     fun returnsQueuedDownloadSnapshot() {
         val download = namedDownload("snapshot")
         daten.downloads.queue.add(download)

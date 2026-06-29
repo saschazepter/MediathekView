@@ -218,7 +218,7 @@ class IoXmlLesen @JvmOverloads constructor(
             val download = DatenDownload.readFromConfig(parser)
             // abo entries will be generated...but we need this for CLI so far
             if (readLegacyDownload && !download.isFromAbo) {
-                configData.downloads.add(download)
+                configData.downloads.addLoadedDownload(download)
                 return true
             }
         } catch (ex: Exception) {
@@ -229,7 +229,7 @@ class IoXmlLesen @JvmOverloads constructor(
 
     private fun readDownloadsFromJson() {
         try {
-            configData.downloads.addAll(DownloadStorage.read(downloadStoragePath))
+            configData.downloads.addLoadedDownloads(DownloadStorage.read(downloadStoragePath))
         } catch (ex: Exception) {
             logger.error("Failed to read downloads from {}", downloadStoragePath, ex)
         }
@@ -253,7 +253,7 @@ class IoXmlLesen @JvmOverloads constructor(
 
     private fun writeMigratedDownloads() {
         try {
-            DownloadStorage.write(downloadStoragePath, configData.downloads)
+            DownloadStorage.write(downloadStoragePath, configData.downloads.queuedDownloads())
         } catch (ex: Exception) {
             logger.error("Failed to migrate downloads to {}", downloadStoragePath, ex)
         }
@@ -287,15 +287,8 @@ class IoXmlLesen @JvmOverloads constructor(
     }
 
     private fun sortLists() {
-        renumberDownloads()
+        configData.downloads.renumberQueuedDownloads()
         configData.abos.finishLoading()
-    }
-
-    private fun renumberDownloads() {
-        var index = 1
-        for (download in configData.downloads) {
-            download.nr = index++
-        }
     }
 
     private inline fun XMLStreamReader.use(block: (XMLStreamReader) -> Unit) {

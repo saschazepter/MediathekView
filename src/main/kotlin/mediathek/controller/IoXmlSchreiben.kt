@@ -103,7 +103,7 @@ class IoXmlSchreiben @JvmOverloads constructor(
 
     private fun writeDownloads() {
         try {
-            DownloadStorage.write(downloadStoragePath, configData.downloads)
+            DownloadStorage.write(downloadStoragePath, configData.downloads.queuedDownloads())
         } catch (ex: Exception) {
             logger.error("writeDownloads error!", ex)
         }

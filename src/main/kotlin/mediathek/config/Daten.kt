@@ -54,7 +54,7 @@ class Daten {
     val xmlConfigData: XmlConfigData
         get() = XmlConfigData(
             programSets = programSets.list,
-            downloads = downloads.queue,
+            downloads = downloads,
             blacklistRules = blacklist.rules,
             abos = abos.list,
         )
