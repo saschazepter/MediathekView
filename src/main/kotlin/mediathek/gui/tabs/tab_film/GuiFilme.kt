@@ -377,7 +377,7 @@ class GuiFilme(
     private fun createFilterComponents(filterConfiguration: FilterConfiguration): FilterComponents {
         val filterController = FilmFilterController(
             filterConfiguration,
-            FilmFilterDataProviderAdapter { daten },
+            FilmFilterDataProviderAdapter(daten.filmCatalog),
             object : FilmFilterController.ReloadRequester {
                 override fun requestTableReload() {
                     this@GuiFilme.requestTableReload()
@@ -577,7 +577,7 @@ class GuiFilme(
     ): FilmLifecycleController {
         val lifecycleHost = FilmLifecycleHostAdapter(
             this,
-            daten,
+            daten.filmListLoader,
             { tabelle },
             filterConfiguration,
             bookmarkStartupReloadCoordinator,
