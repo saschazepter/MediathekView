@@ -38,7 +38,7 @@ internal class DownloadServicesTest {
             downloadUrl = "https://example.invalid/download.mp4",
             status = StartStatus.RUNNING,
         )
-        daten.downloads.buttonQueue.add(download)
+        addButtonDownload(download)
 
         assertTrue(daten.downloads.cancelRunningButtonDownloadByFilmUrl("https://example.invalid/film"))
 
@@ -53,7 +53,7 @@ internal class DownloadServicesTest {
             status = StartStatus.INITIALIZED,
         )
         val runState = download.runtime.runState
-        daten.downloads.buttonQueue.add(download)
+        addButtonDownload(download)
 
         assertFalse(daten.downloads.cancelRunningButtonDownloadByFilmUrl("https://example.invalid/film"))
 
@@ -73,13 +73,13 @@ internal class DownloadServicesTest {
             status = StartStatus.RUNNING,
         )
         val finishedManualDownload = download(DownloadRunState().apply { status = StartStatus.FINISHED })
-        daten.downloads.buttonQueue.add(finishedButtonDownload)
-        daten.downloads.buttonQueue.add(runningButtonDownload)
-        daten.downloads.buttonQueue.add(finishedManualDownload)
+        addButtonDownload(finishedButtonDownload)
+        addButtonDownload(runningButtonDownload)
+        addButtonDownload(finishedManualDownload)
 
         assertTrue(daten.downloads.cleanupFinishedButtonDownloads())
 
-        assertEquals(listOf(runningButtonDownload, finishedManualDownload), daten.downloads.buttonQueue)
+        assertEquals(listOf(runningButtonDownload, finishedManualDownload), daten.downloads.buttonDownloads())
     }
 
     @Test
@@ -89,11 +89,11 @@ internal class DownloadServicesTest {
             downloadUrl = "https://example.invalid/running.mp4",
             status = StartStatus.RUNNING,
         )
-        daten.downloads.buttonQueue.add(runningButtonDownload)
+        addButtonDownload(runningButtonDownload)
 
         assertFalse(daten.downloads.cleanupFinishedButtonDownloads())
 
-        assertEquals(listOf(runningButtonDownload), daten.downloads.buttonQueue)
+        assertEquals(listOf(runningButtonDownload), daten.downloads.buttonDownloads())
     }
 
     @Test
@@ -102,7 +102,7 @@ internal class DownloadServicesTest {
             status = StartStatus.RUNNING
         }
         val download = download(runState)
-        daten.downloads.queue.add(download)
+        addQueuedDownload(download)
 
         daten.downloads.requestStopForShutdown()
 
@@ -121,7 +121,7 @@ internal class DownloadServicesTest {
         daten.downloads.addDownload(firstDownload)
         daten.downloads.addDownload(secondDownload)
 
-        assertEquals(listOf(firstDownload, secondDownload), daten.downloads.queue)
+        assertEquals(listOf(firstDownload, secondDownload), daten.downloads.queuedDownloads())
         assertEquals(1, firstDownload.nr)
         assertEquals(2, secondDownload.nr)
         assertSame(secondDownload, daten.downloads.findDownloadByFilmUrl("https://example.invalid/second"))
@@ -143,7 +143,7 @@ internal class DownloadServicesTest {
         daten.downloads.addButtonDownload(firstDownload)
         daten.downloads.addButtonDownload(secondDownload)
 
-        assertEquals(listOf(firstDownload, secondDownload), daten.downloads.buttonQueue)
+        assertEquals(listOf(firstDownload, secondDownload), daten.downloads.buttonDownloads())
         assertEquals(1, firstDownload.nr)
         assertEquals(2, secondDownload.nr)
         assertSame(firstDownload, daten.downloads.findButtonDownloadByFilmUrl("https://example.invalid/first"))
@@ -160,7 +160,7 @@ internal class DownloadServicesTest {
 
         daten.downloads.addLoadedDownloads(listOf(firstDownload, secondDownload))
 
-        assertEquals(listOf(firstDownload, secondDownload), daten.downloads.queue)
+        assertEquals(listOf(firstDownload, secondDownload), daten.downloads.queuedDownloads())
         assertEquals(42, firstDownload.nr)
         assertEquals(99, secondDownload.nr)
 
@@ -173,7 +173,7 @@ internal class DownloadServicesTest {
     @Test
     fun returnsQueuedDownloadSnapshot() {
         val download = namedDownload("snapshot")
-        daten.downloads.queue.add(download)
+        addQueuedDownload(download)
 
         val snapshot = daten.downloads.queuedDownloads()
         daten.downloads.clearQueuedDownloads()
@@ -183,11 +183,11 @@ internal class DownloadServicesTest {
 
     @Test
     fun clearsQueuedDownloads() {
-        daten.downloads.queue.add(namedDownload("queued"))
+        addQueuedDownload(namedDownload("queued"))
 
         daten.downloads.clearQueuedDownloads()
 
-        assertTrue(daten.downloads.queue.isEmpty())
+        assertTrue(daten.downloads.queuedDownloads().isEmpty())
     }
 
     @Test
@@ -195,13 +195,13 @@ internal class DownloadServicesTest {
         val firstDownload = namedDownload("first")
         val secondDownload = namedDownload("second")
         val thirdDownload = namedDownload("third")
-        daten.downloads.queue.add(firstDownload)
-        daten.downloads.queue.add(secondDownload)
-        daten.downloads.queue.add(thirdDownload)
+        addQueuedDownload(firstDownload)
+        addQueuedDownload(secondDownload)
+        addQueuedDownload(thirdDownload)
 
         daten.downloads.reorderQueueToMatch(listOf(thirdDownload, firstDownload, secondDownload))
 
-        assertEquals(listOf(thirdDownload, firstDownload, secondDownload), daten.downloads.queue)
+        assertEquals(listOf(thirdDownload, firstDownload, secondDownload), daten.downloads.queuedDownloads())
     }
 
     @Test
@@ -209,20 +209,20 @@ internal class DownloadServicesTest {
         val firstDownload = namedDownload("first")
         val secondDownload = namedDownload("second")
         val thirdDownload = namedDownload("third")
-        daten.downloads.queue.add(firstDownload)
-        daten.downloads.queue.add(secondDownload)
-        daten.downloads.queue.add(thirdDownload)
+        addQueuedDownload(firstDownload)
+        addQueuedDownload(secondDownload)
+        addQueuedDownload(thirdDownload)
 
         daten.downloads.moveDownloadsTo(0, listOf(thirdDownload))
 
-        assertEquals(listOf(thirdDownload, firstDownload, secondDownload), daten.downloads.queue)
+        assertEquals(listOf(thirdDownload, firstDownload, secondDownload), daten.downloads.queuedDownloads())
     }
 
     @Test
     fun reloadsDownloadTableModel() {
         val model = TModelDownload()
         val download = download(DownloadRunState().apply { status = StartStatus.INITIALIZED })
-        daten.downloads.queue.add(download)
+        addQueuedDownload(download)
 
         daten.downloads.reloadTableModel(model, allDownloadsFilter())
 
@@ -235,9 +235,9 @@ internal class DownloadServicesTest {
         val finishedDownload = download(DownloadRunState().apply { status = StartStatus.FINISHED })
         val initializedDownload = download(DownloadRunState().apply { status = StartStatus.INITIALIZED })
         val laterInitializedDownload = download(DownloadRunState().apply { status = StartStatus.INITIALIZED })
-        daten.downloads.queue.add(finishedDownload)
-        daten.downloads.queue.add(initializedDownload)
-        daten.downloads.queue.add(laterInitializedDownload)
+        addQueuedDownload(finishedDownload)
+        addQueuedDownload(initializedDownload)
+        addQueuedDownload(laterInitializedDownload)
 
         assertSame(initializedDownload, daten.downloads.nextStart())
     }
@@ -248,7 +248,7 @@ internal class DownloadServicesTest {
             status = StartStatus.ERROR
             countRestarted = 1
         })
-        daten.downloads.queue.add(erroredDownload)
+        addQueuedDownload(erroredDownload)
 
         assertSame(erroredDownload, daten.downloads.restartDownload())
 
@@ -262,7 +262,7 @@ internal class DownloadServicesTest {
         val programDownload = download(DownloadRunState().apply { status = StartStatus.ERROR }).apply {
             art = DownloadType.PROGRAM
         }
-        daten.downloads.queue.add(programDownload)
+        addQueuedDownload(programDownload)
 
         assertNull(daten.downloads.restartDownload())
         assertEquals(StartStatus.ERROR, programDownload.runtime.runState?.status)
@@ -270,8 +270,8 @@ internal class DownloadServicesTest {
 
     @Test
     fun countsOnlyUnfinishedDownloads() {
-        daten.downloads.queue.add(download(DownloadRunState().apply { status = StartStatus.RUNNING }))
-        daten.downloads.queue.add(download(DownloadRunState().apply { status = StartStatus.FINISHED }))
+        addQueuedDownload(download(DownloadRunState().apply { status = StartStatus.RUNNING }))
+        addQueuedDownload(download(DownloadRunState().apply { status = StartStatus.FINISHED }))
 
         assertEquals(1L, daten.downloads.unfinishedDownloads())
     }
@@ -283,9 +283,9 @@ internal class DownloadServicesTest {
             quelle = DownloadSource.ABO
         }
         val finishedManualDownload = download(DownloadRunState().apply { status = StartStatus.FINISHED })
-        daten.downloads.queue.add(manualDownload)
-        daten.downloads.queue.add(aboDownload)
-        daten.downloads.queue.add(finishedManualDownload)
+        addQueuedDownload(manualDownload)
+        addQueuedDownload(aboDownload)
+        addQueuedDownload(finishedManualDownload)
 
         assertEquals(listOf(manualDownload), daten.downloads.unfinishedDownloads(DownloadSource.DOWNLOAD))
         assertEquals(listOf(manualDownload, aboDownload), daten.downloads.unfinishedDownloads(DownloadSource.ALL))
@@ -301,10 +301,10 @@ internal class DownloadServicesTest {
         }
         val alreadyStartedAbo = aboDownload(DownloadRunState().apply { status = StartStatus.INITIALIZED })
         val manualDownload = download(null)
-        daten.downloads.queue.add(startableAbo)
-        daten.downloads.queue.add(blockedAbo)
-        daten.downloads.queue.add(alreadyStartedAbo)
-        daten.downloads.queue.add(manualDownload)
+        addQueuedDownload(startableAbo)
+        addQueuedDownload(blockedAbo)
+        addQueuedDownload(alreadyStartedAbo)
+        addQueuedDownload(manualDownload)
 
         assertEquals(listOf(startableAbo), daten.downloads.automaticAboDownloadsToStart())
     }
@@ -322,10 +322,10 @@ internal class DownloadServicesTest {
         val buttonDownload = download(DownloadRunState().apply { status = StartStatus.RUNNING }).apply {
             quelle = DownloadSource.BUTTON
         }
-        daten.downloads.queue.add(initialized)
-        daten.downloads.queue.add(runningAbo)
-        daten.downloads.queue.add(finishedDeferred)
-        daten.downloads.queue.add(buttonDownload)
+        addQueuedDownload(initialized)
+        addQueuedDownload(runningAbo)
+        addQueuedDownload(finishedDeferred)
+        addQueuedDownload(buttonDownload)
 
         val info = daten.downloads.startInfo()
 
@@ -355,8 +355,8 @@ internal class DownloadServicesTest {
             downloadUrl = film.urlNormalQuality
         }
         daten.filmCatalog.allFilms.add(film)
-        daten.downloads.queue.add(matchingDownload)
-        daten.downloads.queue.add(alreadyConnectedDownload)
+        addQueuedDownload(matchingDownload)
+        addQueuedDownload(alreadyConnectedDownload)
 
         daten.downloads.reconnectFilms()
 
@@ -377,15 +377,15 @@ internal class DownloadServicesTest {
         val manualDownload = download(DownloadRunState().apply { status = StartStatus.INITIALIZED }).apply {
             isDeferred = true
         }
-        daten.downloads.queue.add(unstartedAbo)
-        daten.downloads.queue.add(erroredAbo)
-        daten.downloads.queue.add(runningAbo)
-        daten.downloads.queue.add(interruptedAbo)
-        daten.downloads.queue.add(manualDownload)
+        addQueuedDownload(unstartedAbo)
+        addQueuedDownload(erroredAbo)
+        addQueuedDownload(runningAbo)
+        addQueuedDownload(interruptedAbo)
+        addQueuedDownload(manualDownload)
 
         daten.downloads.refreshAboDownloads()
 
-        assertEquals(listOf(erroredAbo, runningAbo, interruptedAbo, manualDownload), daten.downloads.queue)
+        assertEquals(listOf(erroredAbo, runningAbo, interruptedAbo, manualDownload), daten.downloads.queuedDownloads())
         assertNull(erroredAbo.runtime.runState)
         assertFalse(runningAbo.isDeferred)
         assertTrue(interruptedAbo.isInterrupted)
@@ -423,6 +423,14 @@ internal class DownloadServicesTest {
             aboName = "Abo"
             runtime.runState = runState
         }
+
+    private fun addQueuedDownload(download: DatenDownload) {
+        daten.downloads.addLoadedDownload(download)
+    }
+
+    private fun addButtonDownload(download: DatenDownload) {
+        daten.downloads.addButtonDownload(download)
+    }
 
     private fun allDownloadsFilter(): DownloadListFilter =
         DownloadListFilter(

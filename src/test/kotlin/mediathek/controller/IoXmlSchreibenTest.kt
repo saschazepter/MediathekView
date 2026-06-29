@@ -84,11 +84,9 @@ internal class IoXmlSchreibenTest {
 
     @Test
     fun writeConfigurationFileWritesDownloadsToJsonOnly() {
-        val downloads = daten.downloads.queue
-        val originalDownloads = ArrayList(downloads)
-        try {
-            downloads.clear()
-            downloads.add(
+        daten.downloads.clearQueuedDownloads()
+        daten.downloads.addLoadedDownloads(
+            listOf(
                 DatenDownload().apply {
                     title = "Queued Download"
                     downloadUrl = "https://example.invalid/download.mp4"
@@ -97,8 +95,6 @@ internal class IoXmlSchreibenTest {
                     quelle = DownloadSource.DOWNLOAD
                     init()
                 },
-            )
-            downloads.add(
                 DatenDownload().apply {
                     title = "Finished Download"
                     art = DownloadType.DIRECT
@@ -106,20 +102,17 @@ internal class IoXmlSchreibenTest {
                     runtime.runState = DownloadRunState().also { it.status = StartStatus.FINISHED }
                     init()
                 },
-            )
-            val configFile = tempDir.resolve("mediathek.xml")
-            val storageFile = tempDir.resolve("downloads.json")
+            ),
+        )
+        val configFile = tempDir.resolve("mediathek.xml")
+        val storageFile = tempDir.resolve("downloads.json")
 
-            IoXmlSchreiben(daten.xmlConfigData, downloadStoragePath = storageFile).writeConfigurationFile(configFile)
+        IoXmlSchreiben(daten.xmlConfigData, downloadStoragePath = storageFile).writeConfigurationFile(configFile)
 
-            val xml = Files.readString(configFile)
-            assertTrue(Files.exists(storageFile))
-            assertFalse(xml.contains("<Downlad>"))
-            assertEquals(listOf("Queued Download"), DownloadStorage.read(storageFile).map(DatenDownload::title))
-        } finally {
-            downloads.clear()
-            downloads.addAll(originalDownloads)
-        }
+        val xml = Files.readString(configFile)
+        assertTrue(Files.exists(storageFile))
+        assertFalse(xml.contains("<Downlad>"))
+        assertEquals(listOf("Queued Download"), DownloadStorage.read(storageFile).map(DatenDownload::title))
     }
 
     @Test

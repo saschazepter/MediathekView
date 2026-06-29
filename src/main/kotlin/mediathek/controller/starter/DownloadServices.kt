@@ -29,8 +29,8 @@ import javax.swing.JFrame
 class DownloadServices(
     private val daten: Daten,
 ) {
-    val queue: LinkedList<DatenDownload> = LinkedList()
-    val buttonQueue: LinkedList<DatenDownload> = LinkedList()
+    private val queue: LinkedList<DatenDownload> = LinkedList()
+    private val buttonQueue: LinkedList<DatenDownload> = LinkedList()
     val info: DownloadInfos = DownloadInfos(daten)
     val starter: DownloadStartCoordinator = DownloadStartCoordinator(daten)
 
@@ -273,6 +273,10 @@ class DownloadServices(
 
     fun queuedDownloads(): List<DatenDownload> = synchronized(queue) {
         queue.toList()
+    }
+
+    fun buttonDownloads(): List<DatenDownload> = synchronized(buttonQueue) {
+        buttonQueue.toList()
     }
 
     fun clearQueuedDownloads() {

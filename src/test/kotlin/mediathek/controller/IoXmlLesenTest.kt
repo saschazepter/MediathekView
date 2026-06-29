@@ -113,15 +113,12 @@ internal class IoXmlLesenTest {
 
     @Test
     fun datenLesenMigratesLegacyDownloadsToJson() {
-        val downloads = daten.downloads.queue
-        val originalDownloads = ArrayList(downloads)
-        try {
-            downloads.clear()
-            val configFile = tempDir.resolve("mediathek.xml")
-            val storageFile = tempDir.resolve("downloads.json")
-            Files.writeString(
-                configFile,
-                """
+        daten.downloads.clearQueuedDownloads()
+        val configFile = tempDir.resolve("mediathek.xml")
+        val storageFile = tempDir.resolve("downloads.json")
+        Files.writeString(
+            configFile,
+            """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <Mediathek>
                     <Downlad>
@@ -144,43 +141,37 @@ internal class IoXmlLesenTest {
                     </Downlad>
                 </Mediathek>
                 """.trimIndent(),
-            )
+        )
 
-            assertTrue(
-                IoXmlLesen(
-                    daten.xmlConfigData,
-                    downloadStoragePath = storageFile,
-                    blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
-                ).datenLesen(configFile),
-            )
+        assertTrue(
+            IoXmlLesen(
+                daten.xmlConfigData,
+                downloadStoragePath = storageFile,
+                blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
+            ).datenLesen(configFile),
+        )
 
-            assertTrue(Files.exists(storageFile))
-            assertEquals(2, downloads.size)
-            assertEquals("Legacy Download", downloads[0].title)
-            assertEquals(1, downloads[0].nr)
-            assertEquals("Second Legacy Download", downloads[1].title)
-            assertEquals(2, downloads[1].nr)
-            assertEquals(
-                listOf("Legacy Download", "Second Legacy Download"),
-                DownloadStorage.read(storageFile).map(DatenDownload::title),
-            )
-        } finally {
-            downloads.clear()
-            downloads.addAll(originalDownloads)
-        }
+        val downloads = daten.downloads.queuedDownloads()
+        assertTrue(Files.exists(storageFile))
+        assertEquals(2, downloads.size)
+        assertEquals("Legacy Download", downloads[0].title)
+        assertEquals(1, downloads[0].nr)
+        assertEquals("Second Legacy Download", downloads[1].title)
+        assertEquals(2, downloads[1].nr)
+        assertEquals(
+            listOf("Legacy Download", "Second Legacy Download"),
+            DownloadStorage.read(storageFile).map(DatenDownload::title),
+        )
     }
 
     @Test
     fun datenLesenUsesJsonDownloadsWhenPresent() {
-        val downloads = daten.downloads.queue
-        val originalDownloads = ArrayList(downloads)
-        try {
-            downloads.clear()
-            val configFile = tempDir.resolve("mediathek.xml")
-            val storageFile = tempDir.resolve("downloads.json")
-            Files.writeString(
-                configFile,
-                """
+        daten.downloads.clearQueuedDownloads()
+        val configFile = tempDir.resolve("mediathek.xml")
+        val storageFile = tempDir.resolve("downloads.json")
+        Files.writeString(
+            configFile,
+            """
                 <?xml version="1.0" encoding="UTF-8"?>
                 <Mediathek>
                     <Downlad>
@@ -190,33 +181,30 @@ internal class IoXmlLesenTest {
                     </Downlad>
                 </Mediathek>
                 """.trimIndent(),
-            )
-            DownloadStorage.write(
-                storageFile,
-                listOf(
-                    DatenDownload().apply {
-                        title = "JSON Download"
-                        art = DownloadType.DIRECT
-                        quelle = DownloadSource.DOWNLOAD
-                        init()
-                    },
-                ),
-            )
+        )
+        DownloadStorage.write(
+            storageFile,
+            listOf(
+                DatenDownload().apply {
+                    title = "JSON Download"
+                    art = DownloadType.DIRECT
+                    quelle = DownloadSource.DOWNLOAD
+                    init()
+                },
+            ),
+        )
 
-            assertTrue(
-                IoXmlLesen(
-                    daten.xmlConfigData,
-                    downloadStoragePath = storageFile,
-                    blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
-                ).datenLesen(configFile),
-            )
+        assertTrue(
+            IoXmlLesen(
+                daten.xmlConfigData,
+                downloadStoragePath = storageFile,
+                blacklistRuleStoragePath = tempDir.resolve("blacklist-rules.json"),
+            ).datenLesen(configFile),
+        )
 
-            assertEquals(1, downloads.size)
-            assertEquals("JSON Download", downloads.single().title)
-        } finally {
-            downloads.clear()
-            downloads.addAll(originalDownloads)
-        }
+        val downloads = daten.downloads.queuedDownloads()
+        assertEquals(1, downloads.size)
+        assertEquals("JSON Download", downloads.single().title)
     }
 
     @Test
