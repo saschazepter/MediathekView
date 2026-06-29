@@ -26,7 +26,6 @@ import mediathek.controller.starter.DownloadLifecycleActions
 import mediathek.controller.starter.DownloadStartActions
 import mediathek.controller.starter.StartStatus
 import mediathek.gui.messages.ButtonStartEvent
-import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.tool.MessageBus
 import mediathek.tool.models.TModelDownload
 import org.apache.logging.log4j.LogManager
@@ -93,21 +92,6 @@ class ListeDownloads(
     fun requestStopForShutdown() {
         for (download in this) {
             download.runtime.runState?.requestStop()
-        }
-    }
-
-    @Synchronized
-    fun delDownloadButton(url: String) {
-        for (download in this) {
-            if (download.downloadUrl == url) {
-                val state = download.runtime.runState
-                if (state?.isBeforeFinished == true) {
-                    state.requestStop()
-                }
-                DownloadLifecycleActions.reset(download)
-                MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
-                break
-            }
         }
     }
 

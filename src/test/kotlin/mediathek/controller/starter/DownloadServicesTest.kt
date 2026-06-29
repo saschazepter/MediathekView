@@ -1,0 +1,69 @@
+package mediathek.controller.starter
+
+import mediathek.config.Daten
+import mediathek.daten.DatenDownload
+import mediathek.daten.DownloadSource
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+
+internal class DownloadServicesTest {
+    private lateinit var daten: Daten
+
+    @BeforeEach
+    fun setUp() {
+        daten = Daten()
+    }
+
+    @AfterEach
+    fun tearDown() {
+        daten.downloads.shutdown()
+    }
+
+    @Test
+    fun cancelsRunningButtonDownloadByFilmUrl() {
+        val download = buttonDownload(
+            filmUrl = "https://example.invalid/film",
+            downloadUrl = "https://example.invalid/download.mp4",
+            status = StartStatus.RUNNING,
+        )
+        daten.downloads.buttonQueue.add(download)
+
+        assertTrue(daten.downloads.cancelRunningButtonDownloadByFilmUrl("https://example.invalid/film"))
+
+        assertNull(download.runtime.runState)
+    }
+
+    @Test
+    fun ignoresButtonDownloadsThatAreNotRunning() {
+        val download = buttonDownload(
+            filmUrl = "https://example.invalid/film",
+            downloadUrl = "https://example.invalid/download.mp4",
+            status = StartStatus.INITIALIZED,
+        )
+        val runState = download.runtime.runState
+        daten.downloads.buttonQueue.add(download)
+
+        assertFalse(daten.downloads.cancelRunningButtonDownloadByFilmUrl("https://example.invalid/film"))
+
+        assertSame(runState, download.runtime.runState)
+    }
+
+    private fun buttonDownload(
+        filmUrl: String,
+        downloadUrl: String,
+        status: StartStatus,
+    ): DatenDownload =
+        DatenDownload().apply {
+            this.filmUrl = filmUrl
+            this.downloadUrl = downloadUrl
+            quelle = DownloadSource.BUTTON
+            runtime.runState = DownloadRunState().apply {
+                this.status = status
+            }
+        }
+}

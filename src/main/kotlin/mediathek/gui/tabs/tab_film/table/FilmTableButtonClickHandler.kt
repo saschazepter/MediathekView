@@ -19,7 +19,6 @@
 package mediathek.gui.tabs.tab_film.table
 
 import mediathek.config.Daten
-import mediathek.controller.starter.StartStatus
 import mediathek.daten.DatenFilm
 import mediathek.gui.tabs.tab_film.context.TableContextMenuHandler
 
@@ -49,13 +48,7 @@ class FilmTableButtonClickHandler(
 
         when (host.table().convertColumnIndexToModel(column)) {
             DatenFilm.FILM_ABSPIELEN -> host.getCurrentlySelectedFilm().ifPresent { film ->
-                var dontPlay = false
-                val download = daten.downloads.buttonQueue.getDownloadUrlFilm(film.urlNormalQuality)
-                if (download?.runtime?.runState?.status == StartStatus.RUNNING) {
-                    dontPlay = true
-                    daten.downloads.buttonQueue.delDownloadButton(film.urlNormalQuality)
-                }
-                if (!dontPlay) {
+                if (!daten.downloads.cancelRunningButtonDownloadByFilmUrl(film.urlNormalQuality)) {
                     host.playSelectedFilm()
                 }
             }

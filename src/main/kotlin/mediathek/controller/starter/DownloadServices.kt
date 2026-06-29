@@ -139,6 +139,22 @@ class DownloadServices(
         MessageBus.messageBus.publishAsync(DownloadQueueRankChangedEvent())
     }
 
+    fun cancelRunningButtonDownloadByFilmUrl(filmUrl: String): Boolean {
+        synchronized(buttonQueue) {
+            for (download in buttonQueue) {
+                val state = download.runtime.runState
+                if (download.filmUrl == filmUrl && state?.status == StartStatus.RUNNING) {
+                    state.requestStop()
+                    DownloadLifecycleActions.reset(download)
+                    MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
+                    return true
+                }
+            }
+        }
+
+        return false
+    }
+
     fun searchAboDownloads(parent: JFrame?): List<DatenDownload> = synchronized(queue) {
         // in der Filmliste nach passenden Filmen suchen und
         // in die Liste der Downloads eintragen
