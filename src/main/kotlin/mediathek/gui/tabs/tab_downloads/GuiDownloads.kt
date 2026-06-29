@@ -20,8 +20,10 @@ package mediathek.gui.tabs.tab_downloads
 
 import com.github.benmanes.caffeine.cache.Caffeine
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.controller.IoXmlSchreiben
 import mediathek.controller.history.AboHistoryEntry
 import mediathek.controller.starter.DirectDownloadPartFiles
 import mediathek.controller.starter.DownloadLifecycleActions
@@ -29,6 +31,7 @@ import mediathek.controller.starter.DownloadStartActions
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
+import mediathek.daten.DatenPset
 import mediathek.controller.DownloadColumns
 import mediathek.controller.starter.DownloadListFilter
 import mediathek.filmeSuchen.ListenerFilmeLaden
@@ -59,6 +62,7 @@ import java.awt.event.KeyEvent
 import java.io.File
 import java.util.*
 import java.util.concurrent.atomic.AtomicLong
+import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.LongConsumer
 import java.util.function.Predicate
@@ -319,7 +323,17 @@ class GuiDownloads(
         model = TModelDownload()
         tabelle.model = model
         tabelle.addMouseListener(
-            DownloadsTableMouseHandler(this, tabelle, daten, ownerFrame, showFilmInformationAction)
+            DownloadsTableMouseHandler(
+                this,
+                tabelle,
+                daten.programSets,
+                daten.filmCatalog,
+                daten.abos,
+                daten.downloads,
+                programSetExporter(),
+                ownerFrame,
+                showFilmInformationAction,
+            )
         )
         tabelle.selectionModel.addListSelectionListener { event ->
             if (!event.valueIsAdjusting) {
@@ -340,6 +354,11 @@ class GuiDownloads(
             }
         )
     }
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+        }
 
     @Suppress("UNUSED_PARAMETER")
     @Handler

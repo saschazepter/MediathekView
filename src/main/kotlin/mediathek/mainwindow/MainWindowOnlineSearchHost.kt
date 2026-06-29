@@ -19,12 +19,18 @@
 package mediathek.mainwindow
 
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
+import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenFilm
+import mediathek.daten.DatenPset
 import mediathek.gui.actions.UrlHyperlinkAction
+import mediathek.gui.dialog.add_download.DialogAddDownload
 import mediathek.gui.tabs.tab_film.startDownloads
 import mediathek.gui.tabs.tab_online_search.OnlineSearchFilmAdapter
 import mediathek.gui.tabs.tab_online_search.OnlineSearchHost
 import mediathek.gui.tabs.tab_online_search.OnlineSearchResult
+import java.util.*
+import java.util.function.BiConsumer
 import java.util.function.Consumer
 import javax.swing.JFrame
 
@@ -45,12 +51,16 @@ class MainWindowOnlineSearchHost(
 
     override fun startDownload(results: List<OnlineSearchResult>) {
         startDownloads(
-            daten,
+            daten.programSets,
+            daten.downloads,
             ownerFrame,
             results.map { it.toDatenFilm() },
             null,
             null,
-        )
+            programSetExporter(),
+        ) { film, pSet, requestedResolution ->
+            DialogAddDownload(ownerFrame, daten, film, pSet, Optional.ofNullable(requestedResolution)).isVisible = true
+        }
     }
 
     override fun playResult(result: OnlineSearchResult) {
@@ -59,4 +69,9 @@ class MainWindowOnlineSearchHost(
 
     private fun OnlineSearchResult.toDatenFilm(): DatenFilm =
         OnlineSearchFilmAdapter.toDatenFilm(this)
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+        }
 }

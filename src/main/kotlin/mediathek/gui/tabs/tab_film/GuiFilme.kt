@@ -21,8 +21,10 @@ package mediathek.gui.tabs.tab_film
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.config.application.FilterConfiguration
+import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.daten.FilmResolution
@@ -31,6 +33,7 @@ import mediathek.gui.actions.DeleteBookmarksAction
 import mediathek.gui.actions.ManageBookmarkAction
 import mediathek.gui.actions.PlayFilmAction
 import mediathek.gui.bookmark.BookmarkDialog
+import mediathek.gui.dialog.add_download.DialogAddDownload
 import mediathek.gui.dialog.DialogFilmBeschreibung
 import mediathek.gui.messages.*
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
@@ -60,6 +63,8 @@ import mediathek.tool.table.MVFilmTable
 import net.engio.mbassy.listener.Handler
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.BorderLayout
+import java.util.*
+import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.LongConsumer
 import javax.swing.*
@@ -195,8 +200,8 @@ class GuiFilme(
         val selectionHost = FilmSelectionHostAdapter(
             { tabelle },
             this,
-            ownerFrame,
-            { daten },
+            this::startFilmDownloads,
+            { pset, film, resolution -> daten.downloads.startWithProgram(pset, film, resolution) },
             { filterConfiguration.isShowHighQualityOnly },
             currentFilm,
         )
@@ -211,7 +216,7 @@ class GuiFilme(
             override fun downloads() = daten.downloads
 
             override fun addDownloads(films: List<DatenFilm>) {
-                startDownloads(daten, ownerFrame, films, null, null)
+                startFilmDownloads(films, null, null)
             }
 
             override fun editFilmDescription(film: DatenFilm) {
@@ -277,6 +282,29 @@ class GuiFilme(
     private fun editFilmDescription(film: DatenFilm) {
         DialogFilmBeschreibung(ownerFrame, daten, film).isVisible = true
     }
+
+    private fun startFilmDownloads(
+        films: List<DatenFilm>,
+        pSet: DatenPset?,
+        requestedResolution: FilmResolution.Enum?,
+    ) {
+        startDownloads(
+            daten.programSets,
+            daten.downloads,
+            ownerFrame,
+            films,
+            pSet,
+            requestedResolution,
+            programSetExporter(),
+        ) { film, effectivePSet, resolution ->
+            DialogAddDownload(ownerFrame, daten, film, effectivePSet, Optional.ofNullable(resolution)).isVisible = true
+        }
+    }
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+        }
 
     private fun createSearchFieldHost(): SearchField.Host =
         object : SearchField.Host {

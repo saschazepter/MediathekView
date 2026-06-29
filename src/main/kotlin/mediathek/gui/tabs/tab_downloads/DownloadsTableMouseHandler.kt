@@ -18,15 +18,16 @@
 
 package mediathek.gui.tabs.tab_downloads
 
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
-import mediathek.controller.IoXmlSchreiben
+import mediathek.controller.starter.DownloadServices
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.controller.DownloadColumns
+import mediathek.daten.ProgramSetRepository
+import mediathek.daten.abo.AboServices
 import mediathek.daten.abo.DatenAbo
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.dialog.DialogEditAbo
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.swing.IconUtils
@@ -45,7 +46,11 @@ import javax.swing.*
 class DownloadsTableMouseHandler(
     private val downloadsTab: GuiDownloads,
     private val tabelle: MVDownloadsTable,
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val filmCatalog: FilmCatalog,
+    private val abos: AboServices,
+    private val downloads: DownloadServices,
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
     private val ownerFrame: JFrame,
     private val showFilmInformationAction: Action,
 ) : MouseAdapter() {
@@ -202,7 +207,7 @@ class DownloadsTableMouseHandler(
         val itemDelAbo = JMenuItem("Abo löschen")
         val datenAbo = datenDownload
             ?.film
-            ?.let { film -> daten.abos.findAboForFilm(film, false) }
+            ?.let { film -> abos.findAboForFilm(film, false) }
 
         if (datenAbo == null) {
             submenueAbo.isEnabled = false
@@ -219,24 +224,24 @@ class DownloadsTableMouseHandler(
     }
 
     private fun enableAboActions(itemChangeAbo: JMenuItem, itemDelAbo: JMenuItem, datenAbo: DatenAbo) {
-        itemDelAbo.addActionListener { daten.abos.list.aboLoeschen(datenAbo) }
+        itemDelAbo.addActionListener { abos.list.aboLoeschen(datenAbo) }
         itemChangeAbo.addActionListener {
-            if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(ownerFrame, daten.programSets) { parent, standardSets ->
+            if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(ownerFrame, programSets) { parent, standardSets ->
                     GuiFunktionenProgramme.addSetVorlagen(
                         parent,
-                        daten.programSets,
+                        programSets,
                         standardSets,
                         true,
-                        programSetExporter(),
+                        programSetExporter,
                     )
                 }
             ) {
                 return@addActionListener
             }
-            val dialog = DialogEditAbo(ownerFrame, daten.programSets, daten.filmCatalog, daten.abos, datenAbo, false)
+            val dialog = DialogEditAbo(ownerFrame, programSets, filmCatalog, abos, datenAbo, false)
             dialog.isVisible = true
             if (dialog.successful()) {
-                daten.abos.notifyListChanged()
+                abos.notifyListChanged()
             }
         }
     }
@@ -262,7 +267,7 @@ class DownloadsTableMouseHandler(
             return
         }
 
-        val pSetPlay = daten.programSets.list.psetAbspielen
+        val pSetPlay = programSets.list.psetAbspielen
         if (pSetPlay == null) {
             showMissingPlayerMessage()
         } else {
@@ -277,7 +282,7 @@ class DownloadsTableMouseHandler(
             urlNormalQuality = download.downloadUrl
             lowQualityUrl = ""
         }
-        daten.downloads.startWithProgram(gruppe, filmClone, "")
+        downloads.startWithProgram(gruppe, filmClone, "")
     }
 
     private fun showMissingPlayerMessage() {
@@ -306,8 +311,4 @@ class DownloadsTableMouseHandler(
         }
     }
 
-    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
-        BiConsumer { programSets, target ->
-            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
-        }
 }

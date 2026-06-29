@@ -18,48 +18,47 @@
 
 package mediathek.gui.tabs.tab_film
 
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.config.Konstanten
-import mediathek.controller.IoXmlSchreiben
+import mediathek.controller.starter.DownloadServices
 import mediathek.controller.starter.DownloadStartActions
 import mediathek.daten.*
 import mediathek.gui.dialog.MissingProgramSetDialog
-import mediathek.gui.dialog.add_download.DialogAddDownload
 import mediathek.gui.dialog.add_download.DialogAddMoreDownload
 import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.MessageBus
-import java.util.*
 import java.util.function.BiConsumer
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 
 fun startDownloads(
-    daten: Daten,
+    programSets: ProgramSetRepository,
+    downloads: DownloadServices,
     parent: JFrame,
     films: List<DatenFilm>,
     pSet: DatenPset?,
     requestedResolution: FilmResolution.Enum?,
+    programSetExporter: BiConsumer<Array<DatenPset>, String>,
+    showSingleDownloadDialog: (DatenFilm, DatenPset, FilmResolution.Enum?) -> Unit,
 ) {
     if (films.isEmpty()) {
         return
     }
 
-    if (!daten.programSets.list.hasDownloadProgramSet()) {
-        MissingProgramSetDialog.showMissingDownloadProgramSet(parent, daten.programSets) { importParent, standardSets ->
+    if (!programSets.list.hasDownloadProgramSet()) {
+        MissingProgramSetDialog.showMissingDownloadProgramSet(parent, programSets) { importParent, standardSets ->
             GuiFunktionenProgramme.addSetVorlagen(
                 importParent,
-                daten.programSets,
+                programSets,
                 standardSets,
                 true,
-                programSetExporter(daten),
+                programSetExporter,
             )
         }
         return
     }
 
-    val effectiveProgramSet = pSet ?: daten.programSets.list.listeSpeichern.first()
+    val effectiveProgramSet = pSet ?: programSets.list.listeSpeichern.first()
 
     if (films.size > 1) {
         val dialog = DialogAddMoreDownload(parent, effectiveProgramSet)
@@ -69,7 +68,7 @@ fun startDownloads(
         }
 
         for (film in films) {
-            if (daten.downloads.findDownloadByFilmUrl(film.urlNormalQuality) != null && !confirmDuplicateDownload(parent)) {
+            if (downloads.findDownloadByFilmUrl(film.urlNormalQuality) != null && !confirmDuplicateDownload(parent)) {
                 continue
             }
 
@@ -85,13 +84,13 @@ fun startDownloads(
                     result.info(),
                     result.subtitle(),
                 )
-                daten.downloads.addDownload(datenDownload)
+                downloads.addDownload(datenDownload)
                 MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
                 if (result.startImmediately()) {
                     DownloadStartActions.start(datenDownload)
                 }
             } else {
-                showSingleDownloadDialog(daten, parent, film, effectiveProgramSet, requestedResolution)
+                showSingleDownloadDialog(film, effectiveProgramSet, requestedResolution)
             }
         }
 
@@ -99,11 +98,11 @@ fun startDownloads(
     }
 
     val film = films.first()
-    if (daten.downloads.findDownloadByFilmUrl(film.urlNormalQuality) != null && !confirmDuplicateDownload(parent)) {
+    if (downloads.findDownloadByFilmUrl(film.urlNormalQuality) != null && !confirmDuplicateDownload(parent)) {
         return
     }
 
-    showSingleDownloadDialog(daten, parent, film, effectiveProgramSet, requestedResolution)
+    showSingleDownloadDialog(film, effectiveProgramSet, requestedResolution)
 }
 
 private fun confirmDuplicateDownload(parent: JFrame): Boolean {
@@ -114,18 +113,3 @@ private fun confirmDuplicateDownload(parent: JFrame): Boolean {
         JOptionPane.YES_NO_OPTION,
     ) == JOptionPane.YES_OPTION
 }
-
-private fun showSingleDownloadDialog(
-    daten: Daten,
-    parent: JFrame,
-    datenFilm: DatenFilm,
-    pSet: DatenPset,
-    requestedResolution: FilmResolution.Enum?,
-) {
-    DialogAddDownload(parent, daten, datenFilm, pSet, Optional.ofNullable(requestedResolution)).isVisible = true
-}
-
-private fun programSetExporter(daten: Daten): BiConsumer<Array<DatenPset>, String> =
-    BiConsumer { programSets, target ->
-        IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
-    }
