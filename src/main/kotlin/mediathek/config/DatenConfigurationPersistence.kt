@@ -25,6 +25,12 @@ import mediathek.controller.AboRuleStorage
 import mediathek.controller.BlacklistRuleStorage
 import mediathek.controller.IoXmlLesen
 import mediathek.controller.IoXmlSchreiben
+import mediathek.controller.XmlConfigData
+import mediathek.controller.starter.DownloadServices
+import mediathek.daten.ProgramSetRepository
+import mediathek.daten.abo.AboServices
+import mediathek.daten.blacklist.BlacklistServices
+import mediathek.gui.bookmark.BookmarkServices
 import mediathek.tool.ReplaceList
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Files
@@ -32,7 +38,11 @@ import java.nio.file.Path
 import javax.swing.JOptionPane
 
 class DatenConfigurationPersistence(
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val downloads: DownloadServices,
+    private val blacklist: BlacklistServices,
+    private val abos: AboServices,
+    private val bookmarks: BookmarkServices,
 ) {
     private var backupAlreadyHandled = false
 
@@ -53,26 +63,26 @@ class DatenConfigurationPersistence(
             backupAlreadyHandled = ConfigurationBackupService.createConfigurationBackupCopies()
         }
 
-        val configWriter = IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten))
+        val configWriter = IoXmlSchreiben(configData())
         configWriter.writeConfigurationFile(StandardLocations.getMediathekXmlFile())
         writeBlacklistRules()
         writeAboRules()
     }
 
     private fun clearConfiguration() {
-        daten.programSets.clear()
+        programSets.clear()
         ReplaceList.clear()
-        daten.abos.list.clear()
-        daten.downloads.clearQueuedDownloads()
-        daten.blacklist.rules.clear()
-        daten.bookmarks.list.clear()
+        abos.list.clear()
+        downloads.clearQueuedDownloads()
+        blacklist.rules.clear()
+        bookmarks.list.clear()
     }
 
     private fun load(): Boolean {
         val xmlFilePath = StandardLocations.getMediathekXmlFile()
 
         if (Files.exists(xmlFilePath)) {
-            val configReader = IoXmlLesen(DatenXmlConfigDataFactory.from(daten))
+            val configReader = IoXmlLesen(configData())
             if (configReader.datenLesen(xmlFilePath)) {
                 return true
             }
@@ -121,7 +131,7 @@ class DatenConfigurationPersistence(
             for (path in backupPaths) {
                 clearConfiguration()
                 logger.info("Versuch Backup zu laden: {}", path.toString())
-                val configReader = IoXmlLesen(DatenXmlConfigDataFactory.from(daten))
+                val configReader = IoXmlLesen(configData())
                 if (configReader.datenLesen(path)) {
                     logger.info("Backup hat geklappt: {}", path.toString())
                     return true
@@ -134,7 +144,7 @@ class DatenConfigurationPersistence(
 
     private fun writeBlacklistRules() {
         try {
-            BlacklistRuleStorage.write(StandardLocations.getBlacklistRulesFilePath(), daten.blacklist.rules)
+            BlacklistRuleStorage.write(StandardLocations.getBlacklistRulesFilePath(), blacklist.rules)
         } catch (ex: Exception) {
             logger.error("Failed to write blacklist rules", ex)
         }
@@ -142,11 +152,19 @@ class DatenConfigurationPersistence(
 
     private fun writeAboRules() {
         try {
-            AboRuleStorage.write(StandardLocations.getAboRulesFilePath(), daten.abos.list)
+            AboRuleStorage.write(StandardLocations.getAboRulesFilePath(), abos.list)
         } catch (ex: Exception) {
             logger.error("Failed to write abo rules", ex)
         }
     }
+
+    private fun configData(): XmlConfigData =
+        XmlConfigData(
+            programSets = programSets.list,
+            downloads = downloads,
+            blacklistRules = blacklist.rules,
+            abos = abos.list,
+        )
 
     private companion object {
         private val logger = LogManager.getLogger(DatenConfigurationPersistence::class.java)

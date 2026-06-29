@@ -35,5 +35,11 @@ class Daten {
     val bookmarks: BookmarkServices = BookmarkServices(filmCatalog.allFilms)
     val abos: AboServices = AboServices(filmCatalog.allFilms)
 
-    val configurationPersistence: DatenConfigurationPersistence = DatenConfigurationPersistence(this)
+    val configurationPersistence: DatenConfigurationPersistence = DatenConfigurationPersistence(
+        programSets = programSets,
+        downloads = downloads,
+        blacklist = blacklist,
+        abos = abos,
+        bookmarks = bookmarks,
+    )
 }
