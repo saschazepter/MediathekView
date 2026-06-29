@@ -87,7 +87,7 @@ class DownloadAndQuitRunner(
         val addedDownloads = daten.downloads.searchAboDownloads(null)
         updateAboDownloadSizes(addedDownloads)
 
-        val downloadsToStart = collectDownloadsToStart(daten)
+        val downloadsToStart = daten.downloads.automaticAboDownloadsToStart()
         activeDownloads = downloadsToStart
         if (shutdownRequested.get()) {
             logger.info("CLI shutdown requested before downloads were started.")
@@ -208,19 +208,6 @@ class DownloadAndQuitRunner(
             val numDays = ApplicationConfiguration.getInstance().filmListLoadNumDays
             reader.readFilmListe(StandardLocations.getFilmlistFilePathString(), daten.filmCatalog.allFilms, numDays)
         }
-    }
-
-    private fun collectDownloadsToStart(daten: Daten): ArrayList<DatenDownload> {
-        val downloadsToStart = ArrayList<DatenDownload>()
-        for (download in daten.downloads.queue) {
-            if (!download.isFromAbo || download.isAutomaticStartBlockedByAbo) {
-                continue
-            }
-            if (download.runtime.runState == null) {
-                downloadsToStart.add(download)
-            }
-        }
-        return downloadsToStart
     }
 
     private suspend fun monitorDownloads(downloads: List<DatenDownload>): Int {

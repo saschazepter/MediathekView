@@ -322,6 +322,14 @@ class DownloadServices(
         }
     }
 
+    fun automaticAboDownloadsToStart(): List<DatenDownload> = synchronized(queue) {
+        queue.filter { download ->
+            download.isFromAbo &&
+                !download.isAutomaticStartBlockedByAbo &&
+                download.runtime.runState == null
+        }
+    }
+
     fun startInfo(): DownloadStartInfo = synchronized(queue) {
         val info = DownloadStartInfo()
         info.total_num_download_list_entries = queue.size

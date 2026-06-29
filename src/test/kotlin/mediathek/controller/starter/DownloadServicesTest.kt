@@ -7,6 +7,7 @@ import mediathek.daten.DownloadColumns
 import mediathek.daten.DownloadListFilter
 import mediathek.daten.DownloadSource
 import mediathek.daten.DownloadType
+import mediathek.daten.abo.DatenAbo
 import mediathek.tool.models.TModelDownload
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -250,6 +251,24 @@ internal class DownloadServicesTest {
     }
 
     @Test
+    fun returnsAutomaticAboDownloadsToStart() {
+        val startableAbo = aboDownload(null)
+        val blockedAbo = aboDownload(null).apply {
+            abo = DatenAbo().apply {
+                isDoNotStartAutomatically = true
+            }
+        }
+        val alreadyStartedAbo = aboDownload(DownloadRunState().apply { status = StartStatus.INITIALIZED })
+        val manualDownload = download(null)
+        daten.downloads.queue.add(startableAbo)
+        daten.downloads.queue.add(blockedAbo)
+        daten.downloads.queue.add(alreadyStartedAbo)
+        daten.downloads.queue.add(manualDownload)
+
+        assertEquals(listOf(startableAbo), daten.downloads.automaticAboDownloadsToStart())
+    }
+
+    @Test
     fun buildsDownloadStartInfo() {
         val initialized = download(DownloadRunState().apply { status = StartStatus.INITIALIZED })
         val runningAbo = download(DownloadRunState().apply { status = StartStatus.RUNNING }).apply {
@@ -346,7 +365,7 @@ internal class DownloadServicesTest {
             }
         }
 
-    private fun download(runState: DownloadRunState): DatenDownload =
+    private fun download(runState: DownloadRunState?): DatenDownload =
         DatenDownload().apply {
             quelle = DownloadSource.DOWNLOAD
             runtime.runState = runState
