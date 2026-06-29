@@ -89,13 +89,6 @@ class ListeDownloads(
     fun unfinishedDownloads(): Long = count { download -> download.runNotFinished() }.toLong()
 
     @Synchronized
-    fun requestStopForShutdown() {
-        for (download in this) {
-            download.runtime.runState?.requestStop()
-        }
-    }
-
-    @Synchronized
     fun getDownloadUrlFilm(urlFilm: String): DatenDownload? =
         firstOrNull { download -> download.filmUrl == urlFilm }
 

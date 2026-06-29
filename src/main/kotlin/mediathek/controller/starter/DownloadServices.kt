@@ -155,6 +155,14 @@ class DownloadServices(
         return false
     }
 
+    fun requestStopForShutdown() {
+        synchronized(queue) {
+            for (download in queue) {
+                download.runtime.runState?.requestStop()
+            }
+        }
+    }
+
     fun searchAboDownloads(parent: JFrame?): List<DatenDownload> = synchronized(queue) {
         // in der Filmliste nach passenden Filmen suchen und
         // in die Liste der Downloads eintragen

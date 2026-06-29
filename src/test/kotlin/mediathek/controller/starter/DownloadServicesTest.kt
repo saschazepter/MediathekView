@@ -53,6 +53,19 @@ internal class DownloadServicesTest {
         assertSame(runState, download.runtime.runState)
     }
 
+    @Test
+    fun requestsStopForQueuedDownloadsDuringShutdown() {
+        val runState = DownloadRunState().apply {
+            status = StartStatus.RUNNING
+        }
+        val download = download(runState)
+        daten.downloads.queue.add(download)
+
+        daten.downloads.requestStopForShutdown()
+
+        assertTrue(runState.stoppen)
+    }
+
     private fun buttonDownload(
         filmUrl: String,
         downloadUrl: String,
@@ -65,5 +78,11 @@ internal class DownloadServicesTest {
             runtime.runState = DownloadRunState().apply {
                 this.status = status
             }
+        }
+
+    private fun download(runState: DownloadRunState): DatenDownload =
+        DatenDownload().apply {
+            quelle = DownloadSource.DOWNLOAD
+            runtime.runState = runState
         }
 }
