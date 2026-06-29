@@ -28,12 +28,18 @@ import java.util.LinkedList
 import java.util.function.Predicate
 import javax.swing.JFrame
 
+data class DownloadProgressSnapshot(
+    val bandwidthText: String,
+    val activeBytes: Long,
+    val totalBytes: Long,
+)
+
 class DownloadServices(
     private val daten: Daten,
 ) {
     private val queue: LinkedList<DatenDownload> = LinkedList()
     private val buttonQueue: LinkedList<DatenDownload> = LinkedList()
-    val info: DownloadInfos = DownloadInfos(daten)
+    private val info: DownloadInfos = DownloadInfos(daten)
     private val starter: DownloadStartCoordinator = DownloadStartCoordinator(daten)
 
     fun refreshAboDownloads() {
@@ -250,6 +256,13 @@ class DownloadServices(
     fun delayNewStarts() {
         starter.delayNewStarts()
     }
+
+    fun progressSnapshot(): DownloadProgressSnapshot =
+        DownloadProgressSnapshot(
+            bandwidthText = info.bandwidthStr,
+            activeBytes = info.byteAktDownloads,
+            totalBytes = info.byteAlleDownloads,
+        )
 
     fun addDownload(download: DatenDownload) {
         synchronized(queue) {

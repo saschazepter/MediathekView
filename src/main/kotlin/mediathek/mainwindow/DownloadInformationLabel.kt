@@ -19,7 +19,7 @@
 package mediathek.mainwindow
 
 import mediathek.config.Daten
-import mediathek.daten.DownloadInfos
+import mediathek.controller.starter.DownloadProgressSnapshot
 import mediathek.gui.messages.DownloadInfoUpdateAvailableEvent
 import mediathek.tool.FileSize
 import mediathek.tool.MessageBus
@@ -52,7 +52,7 @@ class DownloadInformationLabel(
             if (info.hasValues()) {
                 append(": ")
                 append(activeDownloadsText(info.running))
-                appendRunningDetails(info.running, daten.downloads.info)
+                appendRunningDetails(info.running, daten.downloads.progressSnapshot())
                 append(waitingDownloadsText(info.initialized))
                 appendFinishedDownloads(info.finished)
                 appendFailedDownloads(info.error)
@@ -60,13 +60,13 @@ class DownloadInformationLabel(
         }
     }
 
-    private fun StringBuilder.appendRunningDetails(runningDownloads: Int, downloadInfos: DownloadInfos) {
+    private fun StringBuilder.appendRunningDetails(runningDownloads: Int, progress: DownloadProgressSnapshot) {
         if (runningDownloads <= 0) {
             return
         }
 
-        appendBandwidth(downloadInfos.bandwidthStr)
-        appendDownloadSize(downloadInfos.byteAktDownloads, downloadInfos.byteAlleDownloads)
+        appendBandwidth(progress.bandwidthText)
+        appendDownloadSize(progress.activeBytes, progress.totalBytes)
     }
 
     private fun StringBuilder.appendBandwidth(bandwidth: String) {

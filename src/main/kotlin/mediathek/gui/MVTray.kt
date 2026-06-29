@@ -176,7 +176,7 @@ class MVTray(
 
                     if (info.running > 0) {
                         append(" (")
-                        append(daten.downloads.info.bandwidthStr)
+                        append(daten.downloads.progressSnapshot().bandwidthText)
                         append(')')
                     }
 
