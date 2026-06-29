@@ -12,7 +12,6 @@ import mediathek.daten.DownloadSource
 import mediathek.daten.DownloadStartInfo
 import mediathek.daten.DownloadTableModelUpdater
 import mediathek.daten.DownloadType
-import mediathek.daten.ListeDownloads
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.messages.ButtonStartEvent
 import mediathek.gui.messages.DownloadListChangedEvent
@@ -23,14 +22,15 @@ import mediathek.tool.datum.DateUtil
 import mediathek.tool.models.TModelDownload
 import org.apache.logging.log4j.LogManager
 import java.time.LocalDate
+import java.util.LinkedList
 import java.util.function.Predicate
 import javax.swing.JFrame
 
 class DownloadServices(
     private val daten: Daten,
 ) {
-    val queue: ListeDownloads = ListeDownloads()
-    val buttonQueue: ListeDownloads = ListeDownloads()
+    val queue: LinkedList<DatenDownload> = LinkedList()
+    val buttonQueue: LinkedList<DatenDownload> = LinkedList()
     val info: DownloadInfos = DownloadInfos(daten)
     val starter: DownloadStartCoordinator = DownloadStartCoordinator(daten)
 
@@ -470,7 +470,7 @@ class DownloadServices(
         return true
     }
 
-    private fun renumber(downloads: ListeDownloads) {
+    private fun renumber(downloads: Iterable<DatenDownload>) {
         var index = 1
         for (download in downloads) {
             download.nr = index++
