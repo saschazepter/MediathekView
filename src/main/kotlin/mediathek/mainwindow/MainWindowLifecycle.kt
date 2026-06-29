@@ -74,7 +74,7 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.blacklist.rules.setZeitraumFilterValueProvider(zeitraumFilterValueProvider)
+        daten.blacklist.setZeitraumFilterValueProvider(zeitraumFilterValueProvider)
         daten.filmCatalog.loader.setUiHost(filmListLoadHost)
         daten.filmCatalog.loader.addFilmLoadListener(filmListListener)
         daten.filmCatalog.loader.addFilmLoadListener(bookmarkRefreshListener)
@@ -144,7 +144,7 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.blacklist.rules.setZeitraumFilterValueProvider(null)
+        daten.blacklist.setZeitraumFilterValueProvider(null)
         daten.filmCatalog.loader.setUiHost(null)
         daten.filmCatalog.loader.removeFilmLoadListener(bookmarkRefreshListener)
         daten.filmCatalog.loader.removeFilmLoadListener(filmListListener)

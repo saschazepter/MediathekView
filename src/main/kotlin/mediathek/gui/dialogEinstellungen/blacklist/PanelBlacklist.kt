@@ -263,7 +263,7 @@ class PanelBlacklist(
                         daten.blacklist.applyToFilmList()
                     }
                     if (refreshSequence == blacklistRefreshSequence) {
-                        MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
+                        daten.blacklist.notifyChanged()
                     }
                 } catch (exception: CancellationException) {
                     throw exception

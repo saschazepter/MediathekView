@@ -50,7 +50,6 @@ class ToggleBlacklistAction(
         blacklistIsOn = !blacklistIsOn
 
         ApplicationConfiguration.getInstance().isBlacklistEnabled = blacklistIsOn
-        daten.blacklist.applyToFilmList()
-        MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
+        daten.blacklist.applyToFilmListAndNotifyListeners()
     }
 }

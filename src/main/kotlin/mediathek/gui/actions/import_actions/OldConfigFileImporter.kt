@@ -74,7 +74,7 @@ class OldConfigFileImporter(
             daten.abos.notifyListChanged()
         }
         if (foundBlacklistEntries > 0)
-            daten.blacklist.rules.filterListAndNotifyListeners()
+            daten.blacklist.applyToFilmListAndNotifyListeners()
         if (foundReplaceListEntries > 0)
             MessageBus.messageBus.publishAsync(ReplaceListChangedEvent())
 

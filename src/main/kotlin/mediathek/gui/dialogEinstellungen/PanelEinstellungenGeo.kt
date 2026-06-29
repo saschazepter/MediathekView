@@ -8,7 +8,6 @@ import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.Country
 import mediathek.gui.dialog.DialogHilfe
-import mediathek.gui.messages.BlacklistChangedEvent
 import mediathek.gui.messages.GeoStateChangedEvent
 import mediathek.tool.GeoLocationDetector
 import mediathek.tool.GetFile
@@ -148,9 +147,8 @@ class PanelEinstellungenGeo @JvmOverloads constructor(
     }
 
     private fun filterBlacklistAndNotifyChanges() {
-        daten.blacklist.applyToFilmList()
+        daten.blacklist.applyToFilmListAndNotifyListeners()
         MessageBus.messageBus.publishAsync(GeoStateChangedEvent())
-        MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
     }
 
     companion object {

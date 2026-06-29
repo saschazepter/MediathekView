@@ -24,7 +24,6 @@ import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.Country
-import mediathek.gui.messages.BlacklistChangedEvent
 import mediathek.gui.messages.GeoStateChangedEvent
 import mediathek.tool.GeoLocationDetector
 import mediathek.tool.MessageBus
@@ -103,9 +102,8 @@ class GeoCountryStartupCheck(
 
         if (answer == JOptionPane.YES_OPTION) {
             ApplicationConfiguration.getInstance().geographicLocation = mismatch.detectedCountry
-            daten.blacklist.applyToFilmList()
+            daten.blacklist.applyToFilmListAndNotifyListeners()
             MessageBus.messageBus.publishAsync(GeoStateChangedEvent())
-            MessageBus.messageBus.publishAsync(BlacklistChangedEvent())
         }
     }
 

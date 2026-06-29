@@ -116,7 +116,6 @@ class FilmFileAndDuplicateContextActions(
 
     private suspend fun performDuplicateRemoval(film: DatenFilm) {
         val completeFilmList = daten.filmCatalog.allFilms
-        val filteredFilmList = daten.blacklist.rules
         val duplicateList = findDuplicates(completeFilmList.snapshot(), film)
         val filmCount = duplicateList.size
 
@@ -157,7 +156,7 @@ class FilmFileAndDuplicateContextActions(
 
         writeResult
             .onSuccess {
-                filteredFilmList.filterListAndNotifyListeners()
+                daten.blacklist.applyToFilmListAndNotifyListeners()
                 JOptionPane.showMessageDialog(
                     host.ownerFrame(),
                     "Duplikate wurden entfernt.",
