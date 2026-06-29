@@ -18,14 +18,14 @@
 
 package mediathek.gui.duplicates
 
-import mediathek.config.Daten
 import mediathek.daten.ListeFilme
+import mediathek.filmlisten.FilmCatalog
 import org.apache.logging.log4j.LogManager
 
 class FilmDuplicateEvaluationTask(
-    private val daten: Daten,
+    private val filmCatalog: FilmCatalog,
 ) : Runnable {
-    private val listeFilme: ListeFilme = daten.filmCatalog.allFilms
+    private val listeFilme: ListeFilme = filmCatalog.allFilms
 
     private fun printDuplicateStatistics() {
         val statisticsMap = listeFilme.parallelStream()
@@ -33,7 +33,7 @@ class FilmDuplicateEvaluationTask(
             .countFilmsBySender()
         val duplicateCount = statisticsMap.values.sum()
 
-        replaceFilmStatistics(daten.filmCatalog.duplicateStatistics, statisticsMap)
+        replaceFilmStatistics(filmCatalog.duplicateStatistics, statisticsMap)
 
         logger.trace("Number of duplicates: {}", duplicateCount)
     }

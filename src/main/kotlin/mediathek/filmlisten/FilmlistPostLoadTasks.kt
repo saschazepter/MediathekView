@@ -42,10 +42,10 @@ class FilmlistPostLoadTasks(
         BlacklistFilterWorker(daten, label, progressBar).execute()
 
         if (ApplicationConfiguration.getInstance().evaluateFilmDuplicates) {
-            FilmDuplicateEvaluationTask(daten).run()
+            FilmDuplicateEvaluationTask(daten.filmCatalog).run()
         }
 
-        CommonStatsEvaluationTask(daten).run()
+        CommonStatsEvaluationTask(daten.filmCatalog).run()
 
         if (writeFilmList) {
             FilmlistWriterWorker(daten, label, progressBar).run()
