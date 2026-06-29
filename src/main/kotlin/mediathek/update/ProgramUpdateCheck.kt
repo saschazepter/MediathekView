@@ -21,7 +21,9 @@ package mediathek.update
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenPset
 import mediathek.daten.ListePset
 import mediathek.daten.ListePsetVorlagen
@@ -33,6 +35,7 @@ import mediathek.tool.NetUtils
 import org.apache.logging.log4j.LogManager
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.function.BiConsumer
 import javax.swing.JFrame
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.Duration.Companion.seconds
@@ -161,7 +164,7 @@ class ProgramUpdateCheck(
         copySaveSettingsFromExistingSet(standardPset)
         prepareImportedSetsForExistingConfiguration(standardPset)
 
-        GuiFunktionenProgramme.addSetVorlagen(parent, daten, standardPset, true)
+        GuiFunktionenProgramme.addSetVorlagen(parent, daten.programSets, standardPset, true, programSetExporter())
         logger.info("Setanlegen: OK")
         logger.info("==========================================")
     }
@@ -218,6 +221,11 @@ class ProgramUpdateCheck(
         job.cancel()
         logger.debug("ProgramUpdateCheck closed.")
     }
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+        }
 
     private companion object {
         private val logger = LogManager.getLogger(ProgramUpdateCheck::class.java)

@@ -24,6 +24,9 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.audiothek.ui.table.CenteredTextCellRenderer
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
+import mediathek.controller.IoXmlSchreiben
+import mediathek.daten.DatenPset
 import mediathek.daten.abo.AboTags
 import mediathek.daten.abo.DatenAbo
 import mediathek.filmeSuchen.ListenerFilmeLaden
@@ -48,6 +51,7 @@ import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.time.LocalDate
+import java.util.function.BiConsumer
 import javax.swing.*
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -181,7 +185,18 @@ class ManageAboPanel(
 
     private fun ensureAboProgramSetAvailable(parent: JFrame): Boolean =
         MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten.programSets) { importParent, standardSets ->
-            GuiFunktionenProgramme.addSetVorlagen(importParent, daten, standardSets, true)
+            GuiFunktionenProgramme.addSetVorlagen(
+                importParent,
+                daten.programSets,
+                standardSets,
+                true,
+                programSetExporter(),
+            )
+        }
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
         }
 
     private fun DatenAbo.copyForEditDialog(): DatenAbo =

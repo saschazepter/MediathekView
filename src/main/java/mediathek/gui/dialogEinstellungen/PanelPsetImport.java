@@ -2,6 +2,9 @@ package mediathek.gui.dialogEinstellungen;
 
 import mediathek.config.CommandLineOptions;
 import mediathek.config.Daten;
+import mediathek.config.DatenXmlConfigDataFactory;
+import mediathek.controller.IoXmlSchreiben;
+import mediathek.daten.DatenPset;
 import mediathek.daten.ListePset;
 import mediathek.daten.ListePsetVorlagen;
 import mediathek.daten.ProgramSetTemplateResolver;
@@ -77,7 +80,7 @@ public class PanelPsetImport extends JPanel {
             colModel.getColumn(jTableVorlagen.convertColumnIndexToView(ListePsetVorlagen.PGR_VERSION_NR)).setPreferredWidth(0);
             colModel.getColumn(jTableVorlagen.convertColumnIndexToView(ListePsetVorlagen.PGR_VERSION_NR)).setMaxWidth(0);
         }
-        jButtonImportStandard.addActionListener(_ -> GuiFunktionenProgramme.addSetVorlagen(parentComponent, daten, ListePsetVorlagen.getStandarset(parentComponent, true), true));
+        jButtonImportStandard.addActionListener(_ -> addSetVorlagen(ListePsetVorlagen.getStandarset(parentComponent, true), true));
     }
 
     private void importDatei(String datei) {
@@ -89,7 +92,7 @@ public class PanelPsetImport extends JPanel {
         }
 
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        GuiFunktionenProgramme.addSetVorlagen(parentComponent, daten, listePset, false);
+        addSetVorlagen(listePset, false);
     }
 
     private void importText() {
@@ -98,7 +101,21 @@ public class PanelPsetImport extends JPanel {
             // damit die Variablen ersetzt werden
             ProgramSetTemplateResolver.replaceTemplates(parentComponent, listePset);
         }
-        GuiFunktionenProgramme.addSetVorlagen(parentComponent, daten, listePset, false);
+        addSetVorlagen(listePset, false);
+    }
+
+    private boolean addSetVorlagen(ListePset listePset, boolean setVersion) {
+        return GuiFunktionenProgramme.addSetVorlagen(
+                parentComponent,
+                daten.getProgramSets(),
+                listePset,
+                setVersion,
+                this::exportProgramSets
+        );
+    }
+
+    private void exportProgramSets(DatenPset[] programSets, String target) {
+        new IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target);
     }
 
     private void tabelleLaden() {

@@ -3,7 +3,10 @@ package mediathek.gui.dialog
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.controller.IoXmlSchreiben
+import mediathek.daten.DatenPset
 import mediathek.daten.ListePset
 import mediathek.daten.ListePsetVorlagen
 import mediathek.daten.ProgramSetTemplateResolver
@@ -17,6 +20,7 @@ import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+import java.util.function.BiConsumer
 import javax.swing.JFrame
 import kotlin.coroutines.CoroutineContext
 
@@ -161,7 +165,7 @@ class DialogStarteinstellungen(
         }
 
         if (jCheckBoxAlleEinstellungen.isSelected) {
-            setMainContent(PanelPsetLang(parentComponent, daten, daten.programSets.list))
+            setMainContent(PanelPsetLang(parentComponent, daten.programSets, daten.programSets.list, programSetExporter()))
         } else {
             setMainContent(PanelPsetKurz(parentComponent, daten.programSets.list))
         }
@@ -215,6 +219,11 @@ class DialogStarteinstellungen(
         jButtonAnpassen.isEnabled = enabled
         jCheckBoxAlleEinstellungen.isEnabled = enabled
     }
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+        }
 
     companion object {
         private const val CONTINUE_TEXT = "Weiter"

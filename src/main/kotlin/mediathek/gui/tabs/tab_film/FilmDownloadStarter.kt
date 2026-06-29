@@ -19,7 +19,9 @@
 package mediathek.gui.tabs.tab_film
 
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.config.Konstanten
+import mediathek.controller.IoXmlSchreiben
 import mediathek.controller.starter.DownloadStartActions
 import mediathek.daten.*
 import mediathek.gui.dialog.MissingProgramSetDialog
@@ -29,6 +31,7 @@ import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.MessageBus
 import java.util.*
+import java.util.function.BiConsumer
 import javax.swing.JFrame
 import javax.swing.JOptionPane
 
@@ -45,7 +48,13 @@ fun startDownloads(
 
     if (!daten.programSets.list.hasDownloadProgramSet()) {
         MissingProgramSetDialog.showMissingDownloadProgramSet(parent, daten.programSets) { importParent, standardSets ->
-            GuiFunktionenProgramme.addSetVorlagen(importParent, daten, standardSets, true)
+            GuiFunktionenProgramme.addSetVorlagen(
+                importParent,
+                daten.programSets,
+                standardSets,
+                true,
+                programSetExporter(daten),
+            )
         }
         return
     }
@@ -115,3 +124,8 @@ private fun showSingleDownloadDialog(
 ) {
     DialogAddDownload(parent, daten, datenFilm, pSet, Optional.ofNullable(requestedResolution)).isVisible = true
 }
+
+private fun programSetExporter(daten: Daten): BiConsumer<Array<DatenPset>, String> =
+    BiConsumer { programSets, target ->
+        IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+    }

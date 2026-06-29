@@ -23,6 +23,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
+import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.gui.actions.CreateNewAboAction
@@ -37,6 +39,7 @@ import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.*
+import java.util.function.BiConsumer
 import javax.swing.JFrame
 
 /**
@@ -69,7 +72,13 @@ class TableContextMenuHandler(
         { host.ownerFrame() },
         { parent ->
             MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten.programSets) { importParent, standardSets ->
-                GuiFunktionenProgramme.addSetVorlagen(importParent, daten, standardSets, true)
+                GuiFunktionenProgramme.addSetVorlagen(
+                    importParent,
+                    daten.programSets,
+                    standardSets,
+                    true,
+                    programSetExporter(),
+                )
             }
         },
     )
@@ -176,6 +185,11 @@ class TableContextMenuHandler(
             null
         }
     }
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+        }
 
     private data class ButtonCell(val row: Int, val column: Int)
 }

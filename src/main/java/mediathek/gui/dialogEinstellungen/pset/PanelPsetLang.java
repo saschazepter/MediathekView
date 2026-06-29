@@ -21,11 +21,8 @@ package mediathek.gui.dialogEinstellungen.pset;
 import ca.odell.glazedlists.swing.AdvancedTableModel;
 import ca.odell.glazedlists.swing.GlazedListsSwing;
 import mediathek.audiothek.ui.table.TriStateTableRowSorter;
-import mediathek.config.Daten;
-import mediathek.config.DatenXmlConfigDataFactory;
 import mediathek.config.Konstanten;
 import mediathek.config.application.ApplicationConfiguration;
-import mediathek.controller.IoXmlSchreiben;
 import mediathek.controller.starter.RuntimeExec;
 import mediathek.daten.*;
 import mediathek.gui.messages.ProgramSetChangedEvent;
@@ -58,14 +55,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 public class PanelPsetLang extends JPanel {
     private static final ProgramTableFormat PROGRAM_TABLE_FORMAT = new ProgramTableFormat();
 
     private int neuZaehler;
-    private final Daten daten;
+    private final ProgramSetRepository programSets;
     private final ListePset listePset;
+    private final BiConsumer<DatenPset[], String> programSetExporter;
     private final MVTable tabellePset;
     private final JTable tabelleProgramme;
     private final PsetNameCellRenderer psetNameRenderer = new PsetNameCellRenderer();
@@ -75,9 +74,15 @@ public class PanelPsetLang extends JPanel {
     private ListeProg currentProgramList;
     private boolean stopBeob;
 
-    public PanelPsetLang(JFrame parentComponent, Daten daten, ListePset llistePset) {
+    public PanelPsetLang(
+            JFrame parentComponent,
+            ProgramSetRepository programSets,
+            ListePset llistePset,
+            BiConsumer<DatenPset[], String> programSetExporter
+    ) {
         this.parentComponent = parentComponent;
-        this.daten = daten;
+        this.programSets = programSets;
+        this.programSetExporter = programSetExporter;
         initComponents();
         tabellePset = new MVPsetTable();
         jScrollPane3.setViewportView(tabellePset);
@@ -183,7 +188,7 @@ public class PanelPsetLang extends JPanel {
     private void installProgramSetActions() {
         jButtonAbspielen.addActionListener(_ -> {
             if (getPset() instanceof DatenPset pset) {
-                daten.getProgramSets().activateAsPlayer(pset);
+                programSets.activateAsPlayer(pset);
                 nurtabellePset();
             }
         });
@@ -408,7 +413,7 @@ public class PanelPsetLang extends JPanel {
         final int row = tabellePset.getSelectedRow();
         if (row != -1) {
             var gruppe = listePset.get(tabellePset.convertRowIndexToModel(row));
-            daten.getProgramSets().addProgramSet(gruppe.copy());
+            programSets.addProgramSet(gruppe.copy());
             tabellePset();
         } else {
             NoSelectionErrorDialog.show(this);
@@ -701,7 +706,7 @@ public class PanelPsetLang extends JPanel {
      * Send message that changes to the Pset were performed.
      */
     private void notifyProgramSetChanged() {
-        daten.getProgramSets().notifyChanged();
+        programSets.notifyChanged();
     }
 
     private void fillTextProgramme() {
@@ -774,7 +779,7 @@ public class PanelPsetLang extends JPanel {
     private void setAufAb(boolean auf) {
         var row = tabellePset.getSelectedRow();
         if (row != -1) {
-            var neu = daten.getProgramSets().move(tabellePset.convertRowIndexToModel(row), auf);
+            var neu = programSets.move(tabellePset.convertRowIndexToModel(row), auf);
             neu = tabellePset.convertRowIndexToView(neu);
             tabellePset.setRowSelectionInterval(neu, neu);
             tabellePset.scrollRectToVisible(tabellePset.getCellRect(neu, 0, false));
@@ -784,7 +789,7 @@ public class PanelPsetLang extends JPanel {
     }
 
     private void setNeu() {
-        daten.getProgramSets().addProgramSet(new DatenPset("Neu-" + ++neuZaehler));
+        programSets.addProgramSet(new DatenPset("Neu-" + ++neuZaehler));
         tabellePset();
     }
 
@@ -804,7 +809,7 @@ public class PanelPsetLang extends JPanel {
                 var modelRows = Arrays.stream(rows)
                         .map(tabellePset::convertRowIndexToModel)
                         .toArray();
-                daten.getProgramSets().removeAtIndexes(modelRows);
+                programSets.removeAtIndexes(modelRows);
                 tabellePset();
             }
         } else {
@@ -830,8 +835,7 @@ public class PanelPsetLang extends JPanel {
             if (resultFile != null) {
                 var ziel = resultFile.getAbsolutePath();
 
-                var configWriter = new IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten));
-                configWriter.exportPset(liste.toArray(new DatenPset[0]), ziel);
+                programSetExporter.accept(liste.toArray(new DatenPset[0]), ziel);
                 JOptionPane.showMessageDialog(this,
                         "Das Programmset wurde erfolgreich exportiert.",
                         Konstanten.PROGRAMMNAME, JOptionPane.INFORMATION_MESSAGE);

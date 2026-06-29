@@ -20,6 +20,9 @@ package mediathek.mainwindow
 
 import mediathek.config.CommandLineOptions
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
+import mediathek.controller.IoXmlSchreiben
+import mediathek.daten.DatenPset
 import mediathek.gui.actions.*
 import mediathek.gui.actions.export.ExportDecompressedFilmlistAction
 import mediathek.gui.actions.export.ExportReadableFilmlistAction
@@ -37,6 +40,7 @@ import mediathek.sqlite.RecoverHistoryDbAction
 import mediathek.tool.GuiFunktionen
 import mediathek.tool.GuiFunktionenProgramme
 import java.util.function.Supplier
+import java.util.function.BiConsumer
 import javax.swing.*
 
 class MainWindowMenuBuilder(
@@ -219,7 +223,13 @@ class MainWindowMenuBuilder(
                 { ownerFrame },
                 { parent ->
                     MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten.programSets) { importParent, standardSets ->
-                        GuiFunktionenProgramme.addSetVorlagen(importParent, daten, standardSets, true)
+                        GuiFunktionenProgramme.addSetVorlagen(
+                            importParent,
+                            daten.programSets,
+                            standardSets,
+                            true,
+                            programSetExporter(),
+                        )
                     }
                 },
             )
@@ -228,4 +238,9 @@ class MainWindowMenuBuilder(
         aboMenu.addSeparator()
         aboMenu.add(manageAboAction)
     }
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+        }
 }

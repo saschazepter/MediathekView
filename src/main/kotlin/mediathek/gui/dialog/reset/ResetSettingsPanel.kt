@@ -19,7 +19,10 @@
 package mediathek.gui.dialog.reset
 
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
 import mediathek.config.Konstanten
+import mediathek.controller.IoXmlSchreiben
+import mediathek.daten.DatenPset
 import mediathek.daten.ListePset
 import mediathek.daten.ListePsetVorlagen
 import mediathek.gui.dialog.DialogHilfe
@@ -27,6 +30,7 @@ import mediathek.mainwindow.SettingsResetHost
 import mediathek.tool.GetFile
 import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.SVGIconUtilities
+import java.util.function.BiConsumer
 import javax.swing.JOptionPane
 
 class ResetSettingsPanel(
@@ -48,9 +52,10 @@ class ResetSettingsPanel(
             listePset.clear()
             if (!GuiFunktionenProgramme.addSetVorlagen(
                     parent,
-                    daten,
+                    daten.programSets,
                     ListePsetVorlagen.getStandarset(parent, true),
                     true,
+                    programSetExporter(),
                 )
             ) {
                 listePset.clear()
@@ -72,6 +77,11 @@ class ResetSettingsPanel(
             }
         }
     }
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+        }
 
     private companion object {
         private const val RESET_MESSAGE = "<html>Es werden <b>ALLE</b> von Ihnen erzeugten Änderungen gelöscht.<br>" +

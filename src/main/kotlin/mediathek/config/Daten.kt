@@ -20,7 +20,9 @@
 
 package mediathek.config
 
+import mediathek.controller.IoXmlSchreiben
 import mediathek.controller.starter.DownloadServices
+import mediathek.daten.DatenPset
 import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
@@ -29,6 +31,7 @@ import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.bookmark.BookmarkServices
 import mediathek.tool.GuiFunktionenProgramme
+import java.util.function.BiConsumer
 
 class Daten {
     val programSets: ProgramSetRepository = ProgramSetRepository()
@@ -44,7 +47,13 @@ class Daten {
         blacklist,
         showMissingAboProgramSet = { parent ->
             MissingProgramSetDialog.showMissingAboProgramSet(parent, programSets) { importParent, standardSets ->
-                GuiFunktionenProgramme.addSetVorlagen(importParent, this, standardSets, true)
+                GuiFunktionenProgramme.addSetVorlagen(
+                    importParent,
+                    programSets,
+                    standardSets,
+                    true,
+                    programSetExporter(),
+                )
             }
         },
     )
@@ -56,4 +65,9 @@ class Daten {
         abos = abos,
         bookmarks = bookmarks,
     )
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(this)).exportPset(programSets, target)
+        }
 }

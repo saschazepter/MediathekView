@@ -19,6 +19,8 @@
 package mediathek.gui.tabs.tab_downloads
 
 import mediathek.config.Daten
+import mediathek.config.DatenXmlConfigDataFactory
+import mediathek.controller.IoXmlSchreiben
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
@@ -37,6 +39,7 @@ import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.util.function.BiConsumer
 import javax.swing.*
 
 class DownloadsTableMouseHandler(
@@ -219,7 +222,13 @@ class DownloadsTableMouseHandler(
         itemDelAbo.addActionListener { daten.abos.list.aboLoeschen(datenAbo) }
         itemChangeAbo.addActionListener {
             if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(ownerFrame, daten.programSets) { parent, standardSets ->
-                    GuiFunktionenProgramme.addSetVorlagen(parent, daten, standardSets, true)
+                    GuiFunktionenProgramme.addSetVorlagen(
+                        parent,
+                        daten.programSets,
+                        standardSets,
+                        true,
+                        programSetExporter(),
+                    )
                 }
             ) {
                 return@addActionListener
@@ -296,4 +305,9 @@ class DownloadsTableMouseHandler(
             )
         }
     }
+
+    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
+        BiConsumer { programSets, target ->
+            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+        }
 }

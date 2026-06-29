@@ -1,7 +1,10 @@
 package mediathek.gui.dialogEinstellungen;
 
 import mediathek.config.Daten;
+import mediathek.config.DatenXmlConfigDataFactory;
 import mediathek.config.application.ApplicationConfiguration;
+import mediathek.controller.IoXmlSchreiben;
+import mediathek.daten.DatenPset;
 import mediathek.gui.dialogEinstellungen.pset.PanelPsetKurz;
 import mediathek.gui.dialogEinstellungen.pset.PanelPsetLang;
 import net.miginfocom.layout.AC;
@@ -36,11 +39,20 @@ public class PanelPset extends JPanel {
     private void setupPSetVisiblePanels() {
         jPanelPset.removeAll();
         if (jCheckBoxAlleEinstellungen.isSelected()) {
-            jPanelPset.add(new PanelPsetLang(parentComponent, daten, daten.getProgramSets().getList()), BorderLayout.CENTER);
+            jPanelPset.add(new PanelPsetLang(
+                    parentComponent,
+                    daten.getProgramSets(),
+                    daten.getProgramSets().getList(),
+                    this::exportProgramSets
+            ), BorderLayout.CENTER);
         } else {
             jPanelPset.add(new PanelPsetKurz(parentComponent, daten.getProgramSets().getList()), BorderLayout.CENTER);
         }
         jPanelPset.updateUI();
+    }
+
+    private void exportProgramSets(DatenPset[] programSets, String target) {
+        new IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target);
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
