@@ -2,7 +2,7 @@ package mediathek.gui.actions.export
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import mediathek.config.Daten
+import mediathek.daten.ListeFilme
 import mediathek.filmlisten.writer.FilmListWriter
 import java.io.File
 import kotlin.math.roundToInt
@@ -13,7 +13,7 @@ data class FilmlistExportSettings(
 )
 
 class FilmlistExportWorker(
-    private val daten: Daten,
+    private val films: ListeFilme,
     private val selectedFile: File,
     private val exportSettings: FilmlistExportSettings,
     private val uiScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing),
@@ -37,7 +37,7 @@ class FilmlistExportWorker(
         }
         writer.writeFilmList(
             selectedFile.absolutePath,
-            daten.filmCatalog.allFilms
+            films
         ) { prog ->
             uiScope.launch {
                 onProgress((100.0 * prog).roundToInt())

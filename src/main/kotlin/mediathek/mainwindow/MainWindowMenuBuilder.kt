@@ -117,8 +117,8 @@ class MainWindowMenuBuilder(
         fileMenu.addSeparator()
 
         val exportMenu = JMenu("Export")
-        exportMenu.add(ExportReadableFilmlistAction(daten, ownerFrame))
-        exportMenu.add(ExportDecompressedFilmlistAction(daten, ownerFrame))
+        exportMenu.add(ExportReadableFilmlistAction(daten.filmCatalog.allFilms, ownerFrame))
+        exportMenu.add(ExportDecompressedFilmlistAction(daten.filmCatalog.allFilms, ownerFrame))
 
         val importMenu = JMenu("Import")
         importMenu.add(ImportOldAbosAction(ownerFrame, daten))

@@ -1,11 +1,11 @@
 package mediathek.gui.actions.export
 
-import mediathek.config.Daten
+import mediathek.daten.ListeFilme
 import javax.swing.JFrame
 
-class ExportDecompressedFilmlistAction(daten: Daten, parent: JFrame) : AbstractExportFilmlistAction(
+class ExportDecompressedFilmlistAction(films: ListeFilme, parent: JFrame) : AbstractExportFilmlistAction(
     actionName = "Dekomprimierte Filmliste...",
-    daten = daten,
+    films = films,
     saveDialogTitle = "Lesbare Filmliste sichern",
     exportSettings = FilmlistExportSettings(
         compressSender = false,
