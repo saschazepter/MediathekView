@@ -182,9 +182,8 @@ public class PanelPsetLang extends JPanel {
     private void installProgramSetActions() {
         jButtonAbspielen.addActionListener(_ -> {
             if (getPset() instanceof DatenPset pset) {
-                listePset.activateAsPlayer(pset);
+                daten.getProgramSets().activateAsPlayer(pset);
                 nurtabellePset();
-                notifyProgramSetChanged();
             }
         });
         jCheckBoxSpeichern.addActionListener(_ -> updateSelectedProgramSet(pset -> pset.setSpeichern(jCheckBoxSpeichern.isSelected()), true));
@@ -408,9 +407,8 @@ public class PanelPsetLang extends JPanel {
         final int row = tabellePset.getSelectedRow();
         if (row != -1) {
             var gruppe = listePset.get(tabellePset.convertRowIndexToModel(row));
-            listePset.addPset(gruppe.copy());
+            daten.getProgramSets().addProgramSet(gruppe.copy());
             tabellePset();
-            notifyProgramSetChanged();
         } else {
             NoSelectionErrorDialog.show(this);
         }
@@ -702,7 +700,7 @@ public class PanelPsetLang extends JPanel {
      * Send message that changes to the Pset were performed.
      */
     private void notifyProgramSetChanged() {
-        MessageBus.getMessageBus().publish(new ProgramSetChangedEvent());
+        daten.getProgramSets().notifyChanged();
     }
 
     private void fillTextProgramme() {
@@ -775,20 +773,18 @@ public class PanelPsetLang extends JPanel {
     private void setAufAb(boolean auf) {
         var row = tabellePset.getSelectedRow();
         if (row != -1) {
-            var neu = listePset.auf(tabellePset.convertRowIndexToModel(row), auf);
+            var neu = daten.getProgramSets().move(tabellePset.convertRowIndexToModel(row), auf);
             neu = tabellePset.convertRowIndexToView(neu);
             tabellePset.setRowSelectionInterval(neu, neu);
             tabellePset.scrollRectToVisible(tabellePset.getCellRect(neu, 0, false));
-            notifyProgramSetChanged();
         } else {
             NoSelectionErrorDialog.show(this);
         }
     }
 
     private void setNeu() {
-        listePset.addPset(new DatenPset("Neu-" + ++neuZaehler));
+        daten.getProgramSets().addProgramSet(new DatenPset("Neu-" + ++neuZaehler));
         tabellePset();
-        notifyProgramSetChanged();
     }
 
     private void setLoeschen() {
@@ -804,13 +800,11 @@ public class PanelPsetLang extends JPanel {
             }
             var ret = JOptionPane.showConfirmDialog(parentComponent, text, "Löschen?", JOptionPane.YES_NO_OPTION);
             if (ret == JOptionPane.OK_OPTION) {
-                for (int i = rows.length - 1; i >= 0; --i) {
-                    var delRow = tabellePset.convertRowIndexToModel(rows[i]);
-                    ((NonEditableTableModel) tabellePset.getModel()).removeRow(delRow);
-                    listePset.remove(delRow);
-                }
+                var modelRows = Arrays.stream(rows)
+                        .map(tabellePset::convertRowIndexToModel)
+                        .toArray();
+                daten.getProgramSets().removeAtIndexes(modelRows);
                 tabellePset();
-                notifyProgramSetChanged();
             }
         } else {
             NoSelectionErrorDialog.show(this);

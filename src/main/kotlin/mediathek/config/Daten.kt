@@ -87,7 +87,7 @@ class Daten {
     }
 
     private fun clearKonfig() {
-        programSets.list.clear()
+        programSets.clear()
         ReplaceList.clear()
         abos.list.clear()
         downloads.queue.clear()

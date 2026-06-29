@@ -25,6 +25,7 @@ import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.DatenPset
 import mediathek.daten.ListePset
 import mediathek.daten.ListePsetVorlagen
+import mediathek.daten.ProgramSetTemplateResolver
 import mediathek.gui.dialog.DialogNewSet
 import mediathek.tool.GuiFunktionen
 import mediathek.tool.GuiFunktionenProgramme
@@ -154,7 +155,7 @@ class ProgramUpdateCheck(
     }
 
     private fun installStandardPset(parent: JFrame, standardPset: ListePset) {
-        ListePset.progMusterErsetzen(parent, standardPset)
+        ProgramSetTemplateResolver.replaceTemplates(parent, standardPset)
 
         updateInstalledStandardPsetVersion(standardPset)
         copySaveSettingsFromExistingSet(standardPset)

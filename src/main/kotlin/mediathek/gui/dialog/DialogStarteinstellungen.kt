@@ -6,6 +6,7 @@ import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.ListePset
 import mediathek.daten.ListePsetVorlagen
+import mediathek.daten.ProgramSetTemplateResolver
 import mediathek.gui.dialogEinstellungen.PanelEinstellungenGeo
 import mediathek.gui.dialogEinstellungen.PanelProgrammPfade
 import mediathek.gui.dialogEinstellungen.pset.PanelPsetKurz
@@ -173,8 +174,8 @@ class DialogStarteinstellungen(
             ListePsetVorlagen.getStandarset(parent, false)
         } ?: return false
 
-        ListePset.progMusterErsetzen(parent, pSet)
-        daten.programSets.list.addPset(pSet)
+        ProgramSetTemplateResolver.replaceTemplates(parent, pSet)
+        daten.programSets.addProgramSets(pSet)
         ApplicationConfiguration.getInstance().standardProgramSetVersion = pSet.version
         return true
     }

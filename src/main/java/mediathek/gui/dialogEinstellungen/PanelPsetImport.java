@@ -4,6 +4,7 @@ import mediathek.config.CommandLineOptions;
 import mediathek.config.Daten;
 import mediathek.daten.ListePset;
 import mediathek.daten.ListePsetVorlagen;
+import mediathek.daten.ProgramSetTemplateResolver;
 import mediathek.swing.IconUtils;
 import mediathek.tool.GuiFunktionenProgramme;
 import mediathek.tool.SVGIconUtilities;
@@ -84,7 +85,7 @@ public class PanelPsetImport extends JPanel {
         ListePset listePset = ListePsetVorlagen.importPsetFile(datei, true);
         if (listePset != null) {
             // damit die Variablen ersetzt werden
-            ListePset.progMusterErsetzen(parentComponent, listePset);
+            ProgramSetTemplateResolver.replaceTemplates(parentComponent, listePset);
         }
 
         setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -95,7 +96,7 @@ public class PanelPsetImport extends JPanel {
         ListePset listePset = ListePsetVorlagen.importPsetText(jTextAreaImport.getText(), true);
         if (listePset != null) {
             // damit die Variablen ersetzt werden
-            ListePset.progMusterErsetzen(parentComponent, listePset);
+            ProgramSetTemplateResolver.replaceTemplates(parentComponent, listePset);
         }
         GuiFunktionenProgramme.addSetVorlagen(parentComponent, daten, listePset, false);
     }
