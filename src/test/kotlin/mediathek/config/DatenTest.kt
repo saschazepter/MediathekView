@@ -18,19 +18,16 @@ internal class DatenTest {
     lateinit var tempDir: Path
 
     private val previousPortableBaseDirectory = StandardLocations.portableBaseDirectory
-    private var previousBackupAlreadyHandled = false
     private lateinit var daten: Daten
 
     @BeforeEach
     fun setUp() {
         daten = Daten()
-        previousBackupAlreadyHandled = backupAlreadyHandled
     }
 
     @AfterEach
     fun tearDown() {
         StandardLocations.portableBaseDirectory = previousPortableBaseDirectory
-        backupAlreadyHandled = previousBackupAlreadyHandled
         daten.downloads.shutdown()
     }
 
@@ -93,18 +90,6 @@ internal class DatenTest {
         } finally {
             abos.clear()
             abos.addAll(originalAbos)
-        }
-    }
-
-    private var backupAlreadyHandled: Boolean
-        get() = backupAlreadyHandledField.getBoolean(daten)
-        set(value) {
-            backupAlreadyHandledField.setBoolean(daten, value)
-        }
-
-    private companion object {
-        private val backupAlreadyHandledField = Daten::class.java.getDeclaredField("backupAlreadyHandled").apply {
-            isAccessible = true
         }
     }
 }
