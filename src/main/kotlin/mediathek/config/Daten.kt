@@ -90,7 +90,7 @@ class Daten {
         programSets.clear()
         ReplaceList.clear()
         abos.list.clear()
-        downloads.queue.clear()
+        downloads.clearQueuedDownloads()
         blacklist.rules.clear()
         bookmarks.list.clear()
     }

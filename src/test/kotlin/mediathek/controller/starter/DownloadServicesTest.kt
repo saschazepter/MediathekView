@@ -155,9 +155,18 @@ internal class DownloadServicesTest {
         daten.downloads.queue.add(download)
 
         val snapshot = daten.downloads.queuedDownloads()
-        daten.downloads.queue.clear()
+        daten.downloads.clearQueuedDownloads()
 
         assertEquals(listOf(download), snapshot)
+    }
+
+    @Test
+    fun clearsQueuedDownloads() {
+        daten.downloads.queue.add(namedDownload("queued"))
+
+        daten.downloads.clearQueuedDownloads()
+
+        assertTrue(daten.downloads.queue.isEmpty())
     }
 
     @Test

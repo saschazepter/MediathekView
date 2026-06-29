@@ -263,6 +263,12 @@ class DownloadServices(
         queue.toList()
     }
 
+    fun clearQueuedDownloads() {
+        synchronized(queue) {
+            queue.clear()
+        }
+    }
+
     fun reloadTableModel(model: TModelDownload, filter: DownloadListFilter) {
         synchronized(queue) {
             DownloadTableModelUpdater.reload(model, queue, filter)

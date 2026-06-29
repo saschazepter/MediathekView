@@ -125,11 +125,20 @@ internal class IoXmlLesenTest {
                 <?xml version="1.0" encoding="UTF-8"?>
                 <Mediathek>
                     <Downlad>
-                        <Nr>1</Nr>
+                        <Nr>42</Nr>
                         <Sender>ARD</Sender>
                         <Thema>Legacy Topic</Thema>
                         <Titel>Legacy Download</Titel>
                         <URL>https://example.invalid/legacy.mp4</URL>
+                        <Art>1</Art>
+                        <Quelle>2</Quelle>
+                    </Downlad>
+                    <Downlad>
+                        <Nr>99</Nr>
+                        <Sender>ZDF</Sender>
+                        <Thema>Legacy Topic</Thema>
+                        <Titel>Second Legacy Download</Titel>
+                        <URL>https://example.invalid/second-legacy.mp4</URL>
                         <Art>1</Art>
                         <Quelle>2</Quelle>
                     </Downlad>
@@ -146,9 +155,15 @@ internal class IoXmlLesenTest {
             )
 
             assertTrue(Files.exists(storageFile))
-            assertEquals(1, downloads.size)
-            assertEquals("Legacy Download", downloads.single().title)
-            assertEquals("Legacy Download", DownloadStorage.read(storageFile).single().title)
+            assertEquals(2, downloads.size)
+            assertEquals("Legacy Download", downloads[0].title)
+            assertEquals(1, downloads[0].nr)
+            assertEquals("Second Legacy Download", downloads[1].title)
+            assertEquals(2, downloads[1].nr)
+            assertEquals(
+                listOf("Legacy Download", "Second Legacy Download"),
+                DownloadStorage.read(storageFile).map(DatenDownload::title),
+            )
         } finally {
             downloads.clear()
             downloads.addAll(originalDownloads)

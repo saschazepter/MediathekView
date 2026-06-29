@@ -21,12 +21,4 @@ package mediathek.daten
 
 import java.util.*
 
-class ListeDownloads : LinkedList<DatenDownload>() {
-    @Synchronized
-    fun listeNummerieren() {
-        var index = 1
-        for (download in this) {
-            download.nr = index++
-        }
-    }
-}
+class ListeDownloads : LinkedList<DatenDownload>()

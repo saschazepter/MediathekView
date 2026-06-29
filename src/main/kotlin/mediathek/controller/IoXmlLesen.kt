@@ -287,8 +287,15 @@ class IoXmlLesen @JvmOverloads constructor(
     }
 
     private fun sortLists() {
-        configData.downloads.listeNummerieren()
+        renumberDownloads()
         configData.abos.finishLoading()
+    }
+
+    private fun renumberDownloads() {
+        var index = 1
+        for (download in configData.downloads) {
+            download.nr = index++
+        }
     }
 
     private inline fun XMLStreamReader.use(block: (XMLStreamReader) -> Unit) {
