@@ -35,6 +35,7 @@ import mediathek.filmeSuchen.ListenerFilmeLaden
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent
 import mediathek.gui.actions.*
 import mediathek.gui.dialog.DialogBeendenZeit
+import mediathek.gui.dialog.DialogFilmBeschreibung
 import mediathek.gui.dialog.edit_download.DialogEditDownload
 import mediathek.gui.messages.*
 import mediathek.gui.tabs.DescriptionTabController
@@ -105,7 +106,7 @@ class GuiDownloads(
     private val toolBarRow = DownloadsToolBarRow(swingToolBar, displayFilterToolBar, configToolBar)
     private val lastUpdate = AtomicLong(0)
     private val cbShowDownloadDescription = JCheckBoxMenuItem("Filmbeschreibung anzeigen")
-    private val descriptionTabController = DescriptionTabController(daten = daten)
+    private val descriptionTabController = DescriptionTabController({ ownerFrame }, ::editFilmDescription)
     private val markFilmAsSeenAction = MarkFilmAsSeenAction(::getSelFilme)
     private val markFilmAsUnseenAction = MarkFilmAsUnseenAction(::getSelFilme)
     private val filterController = DownloadsFilterController(displayFilterToolBar, ::reloadTable)
@@ -176,6 +177,10 @@ class GuiDownloads(
     }
 
     private fun getSelectedDownloadsFromTable(): List<DatenDownload> = tableSelection.selectedDownloadsForLookup()
+
+    private fun editFilmDescription(film: DatenFilm) {
+        DialogFilmBeschreibung(ownerFrame, daten, film).isVisible = true
+    }
 
     private fun setupDownloadSizeSelectionUpdater() {
         tabelle.selectionModel.addListSelectionListener { event ->

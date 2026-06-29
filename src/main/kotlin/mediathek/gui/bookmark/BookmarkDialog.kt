@@ -29,13 +29,14 @@ import ca.odell.glazedlists.swing.TableComparatorChooser
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.audiothek.ui.table.CenteredTextCellRenderer
-import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.controller.starter.DownloadServices
 import mediathek.controller.history.SeenHistoryController
+import mediathek.daten.DatenFilm
+import mediathek.daten.ProgramSetRepository
 import mediathek.gui.bookmark.renderer.*
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel
-import mediathek.gui.tabs.tab_film.startDownloads
 import mediathek.swing.IconOnlyButton
 import mediathek.swing.IconUtils
 import mediathek.swing.NoIconMenuItem
@@ -57,12 +58,16 @@ import javax.swing.*
 
 class BookmarkDialog(
     owner: JFrame,
-    private val daten: Daten,
+    private val bookmarks: BookmarkServices,
+    private val programSets: ProgramSetRepository,
+    private val downloads: DownloadServices,
+    private val addDownloads: (List<DatenFilm>) -> Unit,
+    editFilmDescription: (DatenFilm) -> Unit,
     private val repaintFilmTab: Runnable,
 ) : JDialog(owner) {
     private val ownerFrame = owner
     private val applicationConfiguration = ApplicationConfiguration.getInstance()
-    private val filmDescriptionPanel = FilmDescriptionPanel(daten = daten)
+    private val filmDescriptionPanel = FilmDescriptionPanel({ ownerFrame }, editFilmDescription)
     private val noteArea = JTextArea()
     private val table = JTable()
     private val playFilmAction = PlayFilmAction()
@@ -240,7 +245,7 @@ class BookmarkDialog(
 
     private fun setupTable() {
         val bookmarkConnector = GlazedLists.beanConnector(BookmarkData::class.java) as ObservableElementList.Connector<BookmarkData>
-        val sourceEventList = daten.bookmarks.list.getEventList()
+        val sourceEventList = bookmarks.list.getEventList()
 
         val sortedList = sourceEventList.withReadLock {
             val observedBookmarks = ObservableElementList(sourceEventList, bookmarkConnector)
@@ -320,7 +325,7 @@ class BookmarkDialog(
         addNoteAction.isEnabled = selectionModel.selected.size == 1 && selectionModel.selected.isNotEmpty()
     }
 
-    private fun selectedPlayableFilm(): mediathek.daten.DatenFilm? =
+    private fun selectedPlayableFilm(): DatenFilm? =
         selectionModel.selected.singleOrNull()?.datenFilm
 
     private fun selectedDownloadableFilms() =
@@ -343,7 +348,7 @@ class BookmarkDialog(
     private fun persistBookmarksAsync() {
         uiScope.launch {
             withContext(Dispatchers.IO) {
-                daten.bookmarks.saveToFile()
+                bookmarks.saveToFile()
             }
         }
     }
@@ -357,7 +362,7 @@ class BookmarkDialog(
 
         override fun actionPerformed(event: java.awt.event.ActionEvent?) {
             val film = selectedPlayableFilm() ?: return
-            val pSet = daten.programSets.list.psetAbspielen
+            val pSet = programSets.list.psetAbspielen
             if (pSet == null) {
                 JOptionPane.showMessageDialog(
                     this@BookmarkDialog,
@@ -369,7 +374,7 @@ class BookmarkDialog(
                 return
             }
 
-            daten.downloads.startWithProgram(pSet, film, "")
+            downloads.startWithProgram(pSet, film, "")
         }
     }
 
@@ -387,7 +392,7 @@ class BookmarkDialog(
                 return
             }
 
-            startDownloads(daten, ownerFrame, films, null, null)
+            addDownloads(films)
 
             val skippedBookmarks = selectedBookmarks.size - films.size
             if (skippedBookmarks > 0) {
@@ -486,7 +491,7 @@ class BookmarkDialog(
         }
 
         override fun actionPerformed(event: java.awt.event.ActionEvent?) {
-            val bookmarkList = daten.bookmarks.list
+            val bookmarkList = bookmarks.list
             val bookmarksToRemove = ArrayList(selectionModel.selected)
             for (bookmark in bookmarksToRemove) {
                 bookmarkList.removeBookmark(bookmark)

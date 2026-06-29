@@ -31,6 +31,7 @@ import mediathek.gui.actions.DeleteBookmarksAction
 import mediathek.gui.actions.ManageBookmarkAction
 import mediathek.gui.actions.PlayFilmAction
 import mediathek.gui.bookmark.BookmarkDialog
+import mediathek.gui.dialog.DialogFilmBeschreibung
 import mediathek.gui.messages.*
 import mediathek.gui.messages.history.DownloadHistoryChangedEvent
 import mediathek.gui.tabs.DescriptionTabController
@@ -131,7 +132,7 @@ class GuiFilme(
 
     init {
         val psetButtonsTab = JTabbedPane()
-        val descriptionTabController = DescriptionTabController({ ownerFrame }, daten)
+        val descriptionTabController = DescriptionTabController({ ownerFrame }, ::editFilmDescription)
         val filterConfiguration = ApplicationConfiguration.getInstance().createFilterConfiguration()
         val selectionComponents = createSelectionComponents(filterConfiguration)
         selectionController = selectionComponents.selectionController
@@ -203,7 +204,19 @@ class GuiFilme(
         val bookmarkHost = object : FilmBookmarkController.Host {
             override fun ownerFrame() = ownerFrame
 
-            override fun daten() = daten
+            override fun bookmarks() = daten.bookmarks
+
+            override fun programSets() = daten.programSets
+
+            override fun downloads() = daten.downloads
+
+            override fun addDownloads(films: List<DatenFilm>) {
+                startDownloads(daten, ownerFrame, films, null, null)
+            }
+
+            override fun editFilmDescription(film: DatenFilm) {
+                this@GuiFilme.editFilmDescription(film)
+            }
 
             override fun repaintOwner() {
                 repaint()
@@ -260,6 +273,10 @@ class GuiFilme(
                 repaint()
             }
         }
+
+    private fun editFilmDescription(film: DatenFilm) {
+        DialogFilmBeschreibung(ownerFrame, daten, film).isVisible = true
+    }
 
     private fun createSearchFieldHost(): SearchField.Host =
         object : SearchField.Host {
