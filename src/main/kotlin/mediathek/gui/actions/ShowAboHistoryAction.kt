@@ -18,7 +18,7 @@
 
 package mediathek.gui.actions
 
-import mediathek.config.Daten
+import mediathek.controller.history.AboHistoryController
 import mediathek.gui.history.AboHistoryDialog
 import java.awt.Frame
 import java.awt.event.ActionEvent
@@ -26,14 +26,14 @@ import javax.swing.AbstractAction
 
 class ShowAboHistoryAction(
     private val owner: Frame,
-    private val daten: Daten,
+    private val historyController: AboHistoryController,
 ) : AbstractAction() {
     init {
         putValue(NAME, "Abo-Historie anzeigen...")
     }
 
     override fun actionPerformed(event: ActionEvent?) {
-        AboHistoryDialog(owner, daten).apply {
+        AboHistoryDialog(owner, historyController).apply {
             pack()
             isVisible = true
         }

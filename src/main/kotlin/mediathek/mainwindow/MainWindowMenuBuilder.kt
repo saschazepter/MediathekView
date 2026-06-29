@@ -171,7 +171,7 @@ class MainWindowMenuBuilder(
         helpMenu.addSeparator()
         helpMenu.add(ResetSettingsAction(settingsResetHost, daten))
         helpMenu.add(ResetDownloadHistoryAction(ownerFrame))
-        helpMenu.add(ResetAboHistoryAction(ownerFrame, daten))
+        helpMenu.add(ResetAboHistoryAction(ownerFrame, daten.abos.historyController))
         helpMenu.addSeparator()
         helpMenu.add(DeleteLocalFilmlistAction(quitHost))
         helpMenu.add(DeleteBookmarksAction(daten.bookmarks, filmBookmarkHost))
@@ -210,7 +210,7 @@ class MainWindowMenuBuilder(
 
     private fun createAboMenu() {
         aboMenu.add(CreateNewAboAction(daten, daten.abos.list) { ownerFrame })
-        aboMenu.add(ShowAboHistoryAction(ownerFrame, daten))
+        aboMenu.add(ShowAboHistoryAction(ownerFrame, daten.abos.historyController))
         aboMenu.addSeparator()
         aboMenu.add(manageAboAction)
     }

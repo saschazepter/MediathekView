@@ -21,7 +21,7 @@ package mediathek.gui.history
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.audiothek.ui.table.TriStateTableRowSorter
-import mediathek.config.Daten
+import mediathek.controller.history.AboHistoryController
 import mediathek.controller.history.AboHistoryEntry
 import mediathek.gui.messages.history.AboHistoryChangedEvent
 import mediathek.tool.EscapeKeyHandler
@@ -44,9 +44,8 @@ import javax.swing.table.AbstractTableModel
 
 class AboHistoryDialog(
     owner: Frame?,
-    daten: Daten,
+    private val controller: AboHistoryController,
 ) : JDialog(owner, "Abo-Historie", true) {
-    private val controller = daten.abos.historyController
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val deleteAction = object : AbstractAction("Einträge löschen") {
         override fun actionPerformed(e: java.awt.event.ActionEvent?) {
