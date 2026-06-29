@@ -26,6 +26,7 @@ import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.dialog.add_download.DialogAddDownload
 import mediathek.gui.dialog.add_download.DialogAddMoreDownload
 import mediathek.gui.messages.DownloadListChangedEvent
+import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.MessageBus
 import java.util.*
 import javax.swing.JFrame
@@ -43,7 +44,9 @@ fun startDownloads(
     }
 
     if (!daten.programSets.list.hasDownloadProgramSet()) {
-        MissingProgramSetDialog.showMissingDownloadProgramSet(parent, daten)
+        MissingProgramSetDialog.showMissingDownloadProgramSet(parent, daten.programSets) { importParent, standardSets ->
+            GuiFunktionenProgramme.addSetVorlagen(importParent, daten, standardSets, true)
+        }
         return
     }
 

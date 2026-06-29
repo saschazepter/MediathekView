@@ -63,7 +63,7 @@ class ManageAboPanel(
         daten.filmCatalog,
         daten.abos,
         { owner },
-        { parent -> MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten) },
+        this::ensureAboProgramSetAvailable,
     )
     private var tableBinding: AboTableBinding
     private lateinit var tableColumnSettings: AboTableColumnSettings
@@ -159,7 +159,7 @@ class ManageAboPanel(
         val multiEdit = selectedAbos.size > 1
         val dialogAbo = if (multiEdit) editedAbo.copyForEditDialog() else editedAbo
 
-        if (!MissingProgramSetDialog.ensureAboProgramSetAvailable(owner, daten)) {
+        if (!ensureAboProgramSetAvailable(owner)) {
             return
         }
 
@@ -178,6 +178,11 @@ class ManageAboPanel(
 
         processAboChanges()
     }
+
+    private fun ensureAboProgramSetAvailable(parent: JFrame): Boolean =
+        MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten.programSets) { importParent, standardSets ->
+            GuiFunktionenProgramme.addSetVorlagen(importParent, daten, standardSets, true)
+        }
 
     private fun DatenAbo.copyForEditDialog(): DatenAbo =
         DatenAbo().also { copy ->

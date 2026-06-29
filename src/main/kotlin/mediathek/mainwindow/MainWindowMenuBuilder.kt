@@ -35,6 +35,7 @@ import mediathek.gui.tabs.tab_film.GuiFilme
 import mediathek.logging.LogDialog
 import mediathek.sqlite.RecoverHistoryDbAction
 import mediathek.tool.GuiFunktionen
+import mediathek.tool.GuiFunktionenProgramme
 import java.util.function.Supplier
 import javax.swing.*
 
@@ -216,7 +217,11 @@ class MainWindowMenuBuilder(
                 daten.filmCatalog,
                 daten.abos,
                 { ownerFrame },
-                { parent -> MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten) },
+                { parent ->
+                    MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten.programSets) { importParent, standardSets ->
+                        GuiFunktionenProgramme.addSetVorlagen(importParent, daten, standardSets, true)
+                    }
+                },
             )
         )
         aboMenu.add(ShowAboHistoryAction(ownerFrame, daten.abos.historyController))

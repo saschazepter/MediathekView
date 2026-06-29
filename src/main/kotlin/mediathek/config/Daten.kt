@@ -28,6 +28,7 @@ import mediathek.filmlisten.FilmCatalog
 import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.bookmark.BookmarkServices
+import mediathek.tool.GuiFunktionenProgramme
 
 class Daten {
     val programSets: ProgramSetRepository = ProgramSetRepository()
@@ -41,7 +42,11 @@ class Daten {
         programSets,
         abos,
         blacklist,
-        showMissingAboProgramSet = { parent -> MissingProgramSetDialog.showMissingAboProgramSet(parent, this) },
+        showMissingAboProgramSet = { parent ->
+            MissingProgramSetDialog.showMissingAboProgramSet(parent, programSets) { importParent, standardSets ->
+                GuiFunktionenProgramme.addSetVorlagen(importParent, this, standardSets, true)
+            }
+        },
     )
 
     val configurationPersistence: DatenConfigurationPersistence = DatenConfigurationPersistence(

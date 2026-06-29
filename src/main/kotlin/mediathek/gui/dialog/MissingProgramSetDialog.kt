@@ -18,10 +18,10 @@
 
 package mediathek.gui.dialog
 
-import mediathek.config.Daten
 import mediathek.config.Konstanten
+import mediathek.daten.ListePset
 import mediathek.daten.ListePsetVorlagen
-import mediathek.tool.GuiFunktionenProgramme
+import mediathek.daten.ProgramSetRepository
 import javax.swing.JFrame
 import javax.swing.JLabel
 import javax.swing.JOptionPane
@@ -32,52 +32,68 @@ object MissingProgramSetDialog {
 
     private val options = arrayOf("Standardsets importieren", "Schließen")
 
-    fun ensureAboProgramSetAvailable(parent: JFrame?, daten: Daten): Boolean {
-        if (hasAboProgramSet(daten)) {
+    fun ensureAboProgramSetAvailable(
+        parent: JFrame?,
+        programSets: ProgramSetRepository,
+        importStandardProgramSets: (JFrame?, ListePset?) -> Unit,
+    ): Boolean {
+        if (hasAboProgramSet(programSets)) {
             return true
         }
 
-        showMissingAboProgramSet(parent, daten)
-        return hasAboProgramSet(daten)
+        showMissingAboProgramSet(parent, programSets, importStandardProgramSets)
+        return hasAboProgramSet(programSets)
     }
 
-    fun showMissingAboProgramSet(parent: JFrame?, daten: Daten) {
-        showMissingProgramSetIfNeeded(parent, daten, ::hasAboProgramSet, ::createAboMessageLabel)
+    fun showMissingAboProgramSet(
+        parent: JFrame?,
+        programSets: ProgramSetRepository,
+        importStandardProgramSets: (JFrame?, ListePset?) -> Unit,
+    ) {
+        showMissingProgramSetIfNeeded(
+            parent,
+            programSets,
+            ::hasAboProgramSet,
+            ::createAboMessageLabel,
+            importStandardProgramSets,
+        )
     }
 
-    fun showMissingDownloadProgramSet(parent: JFrame?, daten: Daten) {
-        showMissingProgramSetIfNeeded(parent, daten, ::hasDownloadProgramSet, ::createDownloadMessageLabel)
+    fun showMissingDownloadProgramSet(
+        parent: JFrame?,
+        programSets: ProgramSetRepository,
+        importStandardProgramSets: (JFrame?, ListePset?) -> Unit,
+    ) {
+        showMissingProgramSetIfNeeded(
+            parent,
+            programSets,
+            ::hasDownloadProgramSet,
+            ::createDownloadMessageLabel,
+            importStandardProgramSets,
+        )
     }
 
     private fun showMissingProgramSetIfNeeded(
         parent: JFrame?,
-        daten: Daten,
-        hasProgramSet: (Daten) -> Boolean,
+        programSets: ProgramSetRepository,
+        hasProgramSet: (ProgramSetRepository) -> Boolean,
         createMessageLabel: () -> JLabel,
+        importStandardProgramSets: (JFrame?, ListePset?) -> Unit,
     ) {
-        if (hasProgramSet(daten)) {
+        if (hasProgramSet(programSets)) {
             return
         }
 
         if (showImportPrompt(parent, createMessageLabel()) == IMPORT_OPTION_INDEX) {
-            importStandardProgramSets(parent, daten)
+            importStandardProgramSets(parent, ListePsetVorlagen.getStandarset(parent, true))
         }
     }
 
-    private fun hasAboProgramSet(daten: Daten): Boolean =
-        daten.programSets.list.hasAboProgramSet()
+    private fun hasAboProgramSet(programSets: ProgramSetRepository): Boolean =
+        programSets.list.hasAboProgramSet()
 
-    private fun hasDownloadProgramSet(daten: Daten): Boolean =
-        daten.programSets.list.hasDownloadProgramSet()
-
-    private fun importStandardProgramSets(parent: JFrame?, daten: Daten) {
-        GuiFunktionenProgramme.addSetVorlagen(
-            parent,
-            daten,
-            ListePsetVorlagen.getStandarset(parent, true),
-            true,
-        )
-    }
+    private fun hasDownloadProgramSet(programSets: ProgramSetRepository): Boolean =
+        programSets.list.hasDownloadProgramSet()
 
     private fun showImportPrompt(parent: JFrame?, messageLabel: JLabel): Int =
         JOptionPane.showOptionDialog(
