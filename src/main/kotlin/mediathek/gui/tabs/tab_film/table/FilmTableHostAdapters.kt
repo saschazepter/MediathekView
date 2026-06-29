@@ -19,6 +19,7 @@
 package mediathek.gui.tabs.tab_film.table
 
 import mediathek.config.Daten
+import mediathek.controller.starter.DownloadServices
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.gui.tabs.tab_film.actions.FilmActionHost
@@ -127,6 +128,8 @@ class FilmTableInstallerHostAdapter(
     override fun table(): MVFilmTable = tableProvider()
 
     override fun daten(): Daten = daten
+
+    override fun downloads(): DownloadServices = daten.downloads
 
     override fun filmListScrollPane(): JScrollPane = filmListScrollPane
 

@@ -18,8 +18,8 @@
 
 package mediathek.tool.cellrenderer
 
-import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.controller.starter.DownloadServices
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
@@ -36,7 +36,7 @@ import java.time.format.DateTimeParseException
 import javax.swing.JTable
 
 class CellRendererFilme(
-    private val daten: Daten,
+    private val downloads: DownloadServices,
 ) : CellRendererBaseWithStart() {
     private val stopIcons = rendererIconPair(
         normal = IconUtils.of(FontAwesomeSolid.STOP),
@@ -90,7 +90,7 @@ class CellRendererFilme(
             when (columnModelIndex) {
                 DatenFilm.FILM_DAUER -> text = datenFilm.filmLengthAsString
                 DatenFilm.FILM_ABSPIELEN -> {
-                    val datenDownload = daten.downloads.findButtonDownloadByFilmUrl(datenFilm.urlNormalQuality)
+                    val datenDownload = downloads.findButtonDownloadByFilmUrl(datenFilm.urlNormalQuality)
                     handleButtonStartColumn(datenDownload, isSelected)
                 }
 
