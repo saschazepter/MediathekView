@@ -19,10 +19,11 @@
 package mediathek.mainwindow
 
 import mediathek.config.CommandLineOptions
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
-import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenPset
+import mediathek.daten.ProgramSetRepository
+import mediathek.daten.abo.AboServices
+import mediathek.daten.blacklist.BlacklistServices
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.actions.*
 import mediathek.gui.actions.export.ExportDecompressedFilmlistAction
 import mediathek.gui.actions.export.ExportReadableFilmlistAction
@@ -31,6 +32,7 @@ import mediathek.gui.actions.import_actions.ImportOldBlacklistAction
 import mediathek.gui.actions.import_actions.ImportOldReplacementListAction
 import mediathek.gui.duplicates.overview.FilmDuplicateOverviewDialog
 import mediathek.gui.dialog.MissingProgramSetDialog
+import mediathek.gui.bookmark.BookmarkServices
 import mediathek.gui.history.ResetAboHistoryAction
 import mediathek.gui.history.ResetDownloadHistoryAction
 import mediathek.gui.tabs.tab_downloads.GuiDownloads
@@ -48,7 +50,12 @@ class MainWindowMenuBuilder(
     private val settingsResetHost: SettingsResetHost,
     private val quitHost: MainWindowQuitHost,
     private val filmBookmarkHost: FilmBookmarkHost,
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val filmCatalog: FilmCatalog,
+    private val abos: AboServices,
+    private val blacklist: BlacklistServices,
+    private val bookmarks: BookmarkServices,
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
     private val menuBar: JMenuBar,
     private val fileMenu: JMenu,
     private val filmMenu: JMenu,
@@ -123,13 +130,13 @@ class MainWindowMenuBuilder(
         fileMenu.addSeparator()
 
         val exportMenu = JMenu("Export")
-        exportMenu.add(ExportReadableFilmlistAction(daten.filmCatalog.allFilms, ownerFrame))
-        exportMenu.add(ExportDecompressedFilmlistAction(daten.filmCatalog.allFilms, ownerFrame))
+        exportMenu.add(ExportReadableFilmlistAction(filmCatalog.allFilms, ownerFrame))
+        exportMenu.add(ExportDecompressedFilmlistAction(filmCatalog.allFilms, ownerFrame))
 
         val importMenu = JMenu("Import")
-        importMenu.add(ImportOldAbosAction(ownerFrame, daten.abos, daten.blacklist))
-        importMenu.add(ImportOldBlacklistAction(ownerFrame, daten.abos, daten.blacklist))
-        importMenu.add(ImportOldReplacementListAction(ownerFrame, daten.abos, daten.blacklist))
+        importMenu.add(ImportOldAbosAction(ownerFrame, abos, blacklist))
+        importMenu.add(ImportOldBlacklistAction(ownerFrame, abos, blacklist))
+        importMenu.add(ImportOldReplacementListAction(ownerFrame, abos, blacklist))
 
         fileMenu.add(exportMenu)
         fileMenu.add(importMenu)
@@ -146,11 +153,11 @@ class MainWindowMenuBuilder(
         viewMenu.add(showMemoryMonitorAction)
         viewMenu.add(showBandwidthUsageAction)
         viewMenu.addSeparator()
-        viewMenu.add(ShowFilmStatisticsAction(ownerFrame, daten.filmCatalog))
-        viewMenu.add(ShowDuplicateStatisticsAction(ownerFrame, daten.filmCatalog))
+        viewMenu.add(ShowFilmStatisticsAction(ownerFrame, filmCatalog))
+        viewMenu.add(ShowDuplicateStatisticsAction(ownerFrame, filmCatalog))
         viewMenu.add(JMenuItem("Übersicht aller Duplikate anzeigen...").apply {
             addActionListener {
-                FilmDuplicateOverviewDialog(ownerFrame, daten.filmCatalog).isVisible = true
+                FilmDuplicateOverviewDialog(ownerFrame, filmCatalog).isVisible = true
             }
         })
         viewMenu.addSeparator()
@@ -175,12 +182,12 @@ class MainWindowMenuBuilder(
         helpMenu.addSeparator()
         helpMenu.add(ShowLogWindowAction(logDialog))
         helpMenu.addSeparator()
-        helpMenu.add(ResetSettingsAction(settingsResetHost, daten.programSets, programSetExporter()))
+        helpMenu.add(ResetSettingsAction(settingsResetHost, programSets, programSetExporter))
         helpMenu.add(ResetDownloadHistoryAction(ownerFrame))
-        helpMenu.add(ResetAboHistoryAction(ownerFrame, daten.abos.historyController))
+        helpMenu.add(ResetAboHistoryAction(ownerFrame, abos.historyController))
         helpMenu.addSeparator()
         helpMenu.add(DeleteLocalFilmlistAction(quitHost))
-        helpMenu.add(DeleteBookmarksAction(daten.bookmarks, filmBookmarkHost))
+        helpMenu.add(DeleteBookmarksAction(bookmarks, filmBookmarkHost))
         helpMenu.addSeparator()
         helpMenu.add(ResetFilterDialogPosition(filmBookmarkHost))
         helpMenu.addSeparator()
@@ -217,30 +224,25 @@ class MainWindowMenuBuilder(
     private fun createAboMenu() {
         aboMenu.add(
             CreateNewAboAction(
-                daten.programSets,
-                daten.filmCatalog,
-                daten.abos,
+                programSets,
+                filmCatalog,
+                abos,
                 { ownerFrame },
                 { parent ->
-                    MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten.programSets) { importParent, standardSets ->
+                    MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, programSets) { importParent, standardSets ->
                         GuiFunktionenProgramme.addSetVorlagen(
                             importParent,
-                            daten.programSets,
+                            programSets,
                             standardSets,
                             true,
-                            programSetExporter(),
+                            programSetExporter,
                         )
                     }
                 },
             )
         )
-        aboMenu.add(ShowAboHistoryAction(ownerFrame, daten.abos.historyController))
+        aboMenu.add(ShowAboHistoryAction(ownerFrame, abos.historyController))
         aboMenu.addSeparator()
         aboMenu.add(manageAboAction)
     }
-
-    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
-        BiConsumer { programSets, target ->
-            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
-        }
 }

@@ -331,7 +331,8 @@ open class MediathekGui private constructor(
         ) { getCurrentZeitraumFilterValue() }
         searchProgramUpdateAction = SearchProgramUpdateAction(this)
         platformIntegration = MainWindowPlatformIntegration(
-            daten,
+            daten.filmCatalog,
+            daten.downloads,
             this,
             this,
             loadFilmListAction,
@@ -663,7 +664,12 @@ open class MediathekGui private constructor(
             this,
             this,
             this,
-            daten,
+            daten.programSets,
+            daten.filmCatalog,
+            daten.abos,
+            daten.blacklist,
+            daten.bookmarks,
+            programSetExporter(),
             jMenuBar,
             jMenuDatei,
             jMenuFilme,
