@@ -1,11 +1,11 @@
 package mediathek.daten.blacklist
 
 import kotlinx.coroutines.*
-import mediathek.config.Daten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.Country
 import mediathek.daten.DatenFilm
 import mediathek.daten.IndexedFilmList
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.messages.BlacklistChangedEvent
 import mediathek.gui.tabs.tab_film.filter.ZeitraumSpinner
 import mediathek.tool.MessageBus
@@ -13,7 +13,7 @@ import java.util.function.Predicate
 import kotlin.time.Duration.Companion.days
 
 class BlacklistServices(
-    private val daten: Daten,
+    private val filmCatalog: FilmCatalog,
 ) {
     private val geoblockingPredicate = GeoblockingPredicate()
 
@@ -38,8 +38,8 @@ class BlacklistServices(
     val rules: ListeBlacklist = ListeBlacklist(::applyToFilmListAndNotifyListeners)
 
     fun applyToFilmList() {
-        val completeFilmList = daten.filmCatalog.allFilms
-        val filteredList = daten.filmCatalog.filteredFilms
+        val completeFilmList = filmCatalog.allFilms
+        val filteredList = filmCatalog.filteredFilms
 
         filteredList.clear()
         loadCurrentFilterSettings()
@@ -119,7 +119,7 @@ class BlacklistServices(
         val filters = mutableListOf<(DatenFilm) -> Boolean>()
 
         // Keep it for the old-style search. It is useless for Lucene.
-        if (daten.filmCatalog.filteredFilms !is IndexedFilmList && daysLowerBoundary != 0L) {
+        if (filmCatalog.filteredFilms !is IndexedFilmList && daysLowerBoundary != 0L) {
             filters.add(::checkDate)
         }
 

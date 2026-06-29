@@ -31,7 +31,7 @@ class Daten {
     val programSets: ProgramSetRepository = ProgramSetRepository()
     val filmCatalog: FilmCatalog = FilmCatalog(this)
     val downloads: DownloadServices = DownloadServices(this)
-    val blacklist: BlacklistServices = BlacklistServices(this)
+    val blacklist: BlacklistServices = BlacklistServices(filmCatalog)
     val bookmarks: BookmarkServices = BookmarkServices(filmCatalog.allFilms)
     val abos: AboServices = AboServices(filmCatalog.allFilms)
 

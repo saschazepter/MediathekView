@@ -70,7 +70,7 @@ internal class ApplyBlacklistFilterPredicateTest {
 
     @Test
     fun downloadsPredicateUsesCompiledSnapshot() {
-        val blacklist = BlacklistServices(Daten())
+        val blacklist = BlacklistServices(Daten().filmCatalog)
         blacklist.rules.addWithoutNotification(BlacklistRule("ARD", "", "tagesschau", ""))
 
         val predicate = blacklist.createDownloadsPredicate()
@@ -86,7 +86,7 @@ internal class ApplyBlacklistFilterPredicateTest {
 
     @Test
     fun downloadsPredicateIgnoresInactiveRules() {
-        val blacklist = BlacklistServices(Daten())
+        val blacklist = BlacklistServices(Daten().filmCatalog)
         blacklist.rules.addWithoutNotification(BlacklistRule("ARD", "", "tagesschau", "", active = false))
 
         val predicate = blacklist.createDownloadsPredicate()
