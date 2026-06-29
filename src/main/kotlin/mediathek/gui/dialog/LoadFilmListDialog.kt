@@ -1,8 +1,9 @@
 package mediathek.gui.dialog
 
-import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.filmlisten.FilmCatalog
+import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.actions.DisposeDialogAction
 import mediathek.gui.dialogEinstellungen.PanelFilmlisteLaden
 import mediathek.swing.centerOnScreen
@@ -21,7 +22,8 @@ import javax.swing.JScrollPane
 
 class LoadFilmListDialog(
     owner: Frame?,
-    private val daten: Daten,
+    private val filmCatalog: FilmCatalog,
+    private val filmListLoader: FilmeLaden,
 ) : JDialog(owner, "Filmliste laden", true) {
     private val contentPanel: PanelFilmlisteLaden
     private val logger: Logger = LogManager.getLogger()
@@ -37,7 +39,6 @@ class LoadFilmListDialog(
 
         val btn = JButton("Filmliste laden")
         btn.addActionListener {
-            val filmeLaden = daten.filmListLoader
             val immerNeuLaden = contentPanel.hasSenderSelectionChanged()
             if (immerNeuLaden && !contentPanel.updateCheckBox.isSelected) {
                 logger.trace("Sender list was changed loading full list...")
@@ -45,7 +46,7 @@ class LoadFilmListDialog(
 
             if (FilmListUpdateType.fromConfig() == FilmListUpdateType.AUTOMATIC) {
                 //easy, just load
-                filmeLaden.loadFilmlist("", immerNeuLaden)
+                filmListLoader.loadFilmlist("", immerNeuLaden)
             } else {
                 //manual or extend
                 val strUrl = contentPanel.urlTextField.text
@@ -63,9 +64,9 @@ class LoadFilmListDialog(
                     )
                 }
                 if (contentPanel.updateCheckBox.isSelected)
-                    filmeLaden.updateFilmlist(strUrl)
+                    filmListLoader.updateFilmlist(strUrl)
                 else
-                    filmeLaden.loadFilmlist(strUrl, immerNeuLaden)
+                    filmListLoader.loadFilmlist(strUrl, immerNeuLaden)
             }
             dispose()
         }
@@ -109,7 +110,7 @@ class LoadFilmListDialog(
     init {
         defaultCloseOperation = DISPOSE_ON_CLOSE
         contentPane.layout = BorderLayout()
-        contentPanel = PanelFilmlisteLaden(false, requireNotNull(owner), daten)
+        contentPanel = PanelFilmlisteLaden(false, requireNotNull(owner), filmCatalog, filmListLoader)
         val scrollPane = JScrollPane(contentPanel)
         contentPane.add(scrollPane, BorderLayout.CENTER)
         createButtonPanel()

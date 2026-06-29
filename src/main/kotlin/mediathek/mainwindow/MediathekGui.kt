@@ -196,7 +196,14 @@ open class MediathekGui private constructor(
             ::getFilmTableRowCount,
             ::runOnEventDispatchThreadAndWait,
         )
-    private val filmlistLoadCoordinator = MainWindowFilmlistLoadCoordinator(this, daten, statusBarController)
+    private val filmlistLoadCoordinator = MainWindowFilmlistLoadCoordinator(
+        this,
+        daten.filmCatalog,
+        daten.filmListLoader,
+        daten.abos,
+        daten.blacklist,
+        statusBarController,
+    )
     private val filmlistDownloadProgressListener =
         FilmlistProgressPresenter(SwingDispatch, statusBarController::showProgress)
     private val filmlistReloadCoordinator: MainWindowFilmlistReloadCoordinator

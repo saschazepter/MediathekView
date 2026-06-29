@@ -80,7 +80,7 @@ class DialogEinstellungen(
 
         val filmlisteLaden = SettingsPage(
             NAME_FILMLISTE_LADEN,
-            createPanel = { PanelFilmlisteLaden(true, host.ownerFrame(), daten) },
+            createPanel = { PanelFilmlisteLaden(true, host.ownerFrame(), daten.filmCatalog, daten.filmListLoader) },
         )
         val blacklist = SettingsPage(
             NAME_BLACKLIST,
