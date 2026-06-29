@@ -51,7 +51,7 @@ class FilmlistPostLoadTasks(
             FilmlistWriterWorker(daten.filmCatalog.allFilms, label, progressBar).run()
         }
         if (daten.filmCatalog.filteredFilms is IndexedFilmList) {
-            LuceneIndexWorker(daten, label, progressBar, host).execute()
+            LuceneIndexWorker(daten.filmCatalog, label, progressBar, host).execute()
         }
     }
 }
