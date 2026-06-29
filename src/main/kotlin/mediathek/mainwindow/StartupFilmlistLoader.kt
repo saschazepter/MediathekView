@@ -89,7 +89,7 @@ class StartupFilmlistLoader(
 
     private fun startRemoteFilmlistUpdateIfNeeded(): Boolean {
         logger.trace("Check for filmlist updates")
-        return daten.filmCatalog.loader.startAutomaticStartupUpdateIfNeeded()
+        return daten.filmListLoader.startAutomaticStartupUpdateIfNeeded()
     }
 
     private suspend fun runPostLoadTasks() =

@@ -122,7 +122,7 @@ class PanelBlacklist(
             return
         }
         MessageBus.messageBus.subscribe(this)
-        daten.filmCatalog.loader.addFilmLoadListener(filmLoadListener)
+        daten.filmListLoader.addFilmLoadListener(filmLoadListener)
         listenersRegistered = true
     }
 
@@ -131,7 +131,7 @@ class PanelBlacklist(
             return
         }
         MessageBus.messageBus.unsubscribe(this)
-        daten.filmCatalog.loader.removeFilmLoadListener(filmLoadListener)
+        daten.filmListLoader.removeFilmLoadListener(filmLoadListener)
         listenersRegistered = false
     }
 

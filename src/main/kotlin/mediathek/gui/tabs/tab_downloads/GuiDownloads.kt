@@ -904,7 +904,7 @@ class GuiDownloads(
         add(downloadListArea, BorderLayout.CENTER)
         add(toolBarRow, BorderLayout.NORTH)
 
-        daten.filmCatalog.loader.addFilmLoadListener(object : ListenerFilmeLaden() {
+        daten.filmListLoader.addFilmLoadListener(object : ListenerFilmeLaden() {
             override fun start(event: ListenerFilmeLadenEvent) {
                 loadFilmlist = true
                 SwingUtilities.invokeLater {

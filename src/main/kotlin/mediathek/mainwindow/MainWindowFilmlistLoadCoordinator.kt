@@ -48,14 +48,14 @@ class MainWindowFilmlistLoadCoordinator(
         if (manualMode || FilmListUpdateType.MANUAL.isConfigured()) {
             LoadFilmListDialog(owner, daten).isVisible = true
         } else {
-            daten.filmCatalog.loader.loadFilmlist("", false)
+            daten.filmListLoader.loadFilmlist("", false)
         }
     }
 
     private fun finishStartupFilmlistLoad(remoteUpdateStarted: Boolean, failed: Boolean) {
         try {
             if (!remoteUpdateStarted) {
-                daten.filmCatalog.loader.completeStartupFilmListLoad(failed)
+                daten.filmListLoader.completeStartupFilmListLoad(failed)
             }
         } finally {
             statusBarController.uninstallStartupProgress()

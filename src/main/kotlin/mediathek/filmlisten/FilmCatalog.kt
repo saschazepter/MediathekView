@@ -3,14 +3,12 @@ package mediathek.filmlisten
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.SortedList
-import mediathek.config.Daten
 import mediathek.daten.ListeFilme
 import mediathek.gui.duplicates.FilmStatistics
 import mediathek.tool.GermanStringSorter
 import mediathek.tool.SenderListBoxModel
 
-class FilmCatalog(daten: Daten) {
-    val loader: FilmeLaden = FilmeLaden(daten)
+class FilmCatalog {
     val allFilms: ListeFilme = ListeFilme()
     val allSendersList: EventList<String> = SortedList(SenderListBoxModel.providedSenderList).apply {
         setComparator(GermanStringSorter)

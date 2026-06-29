@@ -64,7 +64,7 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.filmCatalog.loader.addFilmLoadListener(filmlistProgressListener)
+        daten.filmListLoader.addFilmLoadListener(filmlistProgressListener)
         filmlistProgressListenerRegistered = true
     }
 
@@ -75,9 +75,9 @@ class MainWindowLifecycle(
         }
 
         daten.blacklist.setZeitraumFilterValueProvider(zeitraumFilterValueProvider)
-        daten.filmCatalog.loader.setUiHost(filmListLoadHost)
-        daten.filmCatalog.loader.addFilmLoadListener(filmListListener)
-        daten.filmCatalog.loader.addFilmLoadListener(bookmarkRefreshListener)
+        daten.filmListLoader.setUiHost(filmListLoadHost)
+        daten.filmListLoader.addFilmLoadListener(filmListListener)
+        daten.filmListLoader.addFilmLoadListener(bookmarkRefreshListener)
         filmListListenersRegistered = true
     }
 
@@ -145,9 +145,9 @@ class MainWindowLifecycle(
         }
 
         daten.blacklist.setZeitraumFilterValueProvider(null)
-        daten.filmCatalog.loader.setUiHost(null)
-        daten.filmCatalog.loader.removeFilmLoadListener(bookmarkRefreshListener)
-        daten.filmCatalog.loader.removeFilmLoadListener(filmListListener)
+        daten.filmListLoader.setUiHost(null)
+        daten.filmListLoader.removeFilmLoadListener(bookmarkRefreshListener)
+        daten.filmListLoader.removeFilmLoadListener(filmListListener)
         filmListListenersRegistered = false
     }
 
@@ -156,7 +156,7 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.filmCatalog.loader.removeFilmLoadListener(filmlistProgressListener)
+        daten.filmListLoader.removeFilmLoadListener(filmlistProgressListener)
         filmlistProgressListenerRegistered = false
     }
 

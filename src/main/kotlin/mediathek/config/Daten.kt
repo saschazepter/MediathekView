@@ -25,11 +25,13 @@ import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
+import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.bookmark.BookmarkServices
 
 class Daten {
     val programSets: ProgramSetRepository = ProgramSetRepository()
-    val filmCatalog: FilmCatalog = FilmCatalog(this)
+    val filmCatalog: FilmCatalog = FilmCatalog()
+    val filmListLoader: FilmeLaden = FilmeLaden(this)
     val downloads: DownloadServices = DownloadServices(this)
     val blacklist: BlacklistServices = BlacklistServices(filmCatalog)
     val bookmarks: BookmarkServices = BookmarkServices(filmCatalog.allFilms)

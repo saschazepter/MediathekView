@@ -55,7 +55,7 @@ class FilmLifecycleController(private val host: Host) {
 
     fun start() {
         MessageBus.messageBus.subscribe(host.messageBusSubscriber())
-        host.daten().filmCatalog.loader.addFilmLoadListener(filmListReloadListener)
+        host.daten().filmListLoader.addFilmLoadListener(filmListReloadListener)
         launchOnSwing { host.requestTableReload() }
     }
 
@@ -63,7 +63,7 @@ class FilmLifecycleController(private val host: Host) {
         host.saveTableConfiguration()
         host.swingFilterDialog()?.dispose()
         host.closeFilterSelectionModel()
-        host.daten().filmCatalog.loader.removeFilmLoadListener(filmListReloadListener)
+        host.daten().filmListLoader.removeFilmLoadListener(filmListReloadListener)
         uiScope.cancel()
     }
 

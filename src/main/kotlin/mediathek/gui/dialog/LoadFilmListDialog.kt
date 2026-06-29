@@ -37,7 +37,7 @@ class LoadFilmListDialog(
 
         val btn = JButton("Filmliste laden")
         btn.addActionListener {
-            val filmeLaden = daten.filmCatalog.loader
+            val filmeLaden = daten.filmListLoader
             val immerNeuLaden = contentPanel.hasSenderSelectionChanged()
             if (immerNeuLaden && !contentPanel.updateCheckBox.isSelected) {
                 logger.trace("Sender list was changed loading full list...")

@@ -101,7 +101,7 @@ class ManageAboPanel(
         updateInfoText()
 
         MessageBus.messageBus.subscribe(this)
-        daten.filmCatalog.loader.addFilmLoadListener(filmLoadListener)
+        daten.filmListLoader.addFilmLoadListener(filmLoadListener)
 
         initListeners()
         initializeTable()
@@ -124,7 +124,7 @@ class ManageAboPanel(
     override fun removeNotify() {
         if (!disposed) {
             disposed = true
-            daten.filmCatalog.loader.removeFilmLoadListener(filmLoadListener)
+            daten.filmListLoader.removeFilmLoadListener(filmLoadListener)
             countRefreshJob?.cancel()
             uiScope.cancel()
             tableBinding.dispose()
@@ -304,7 +304,7 @@ class ManageAboPanel(
         }
 
     private fun initializeAboFilmCounts() {
-        if (daten.filmCatalog.loader.isFilmListImportRunning) {
+        if (daten.filmListLoader.isFilmListImportRunning) {
             markAboFilmCountsLoading()
         } else {
             scheduleAboFilmCountRefresh()
