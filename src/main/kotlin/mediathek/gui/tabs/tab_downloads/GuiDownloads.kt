@@ -19,21 +19,24 @@
 package mediathek.gui.tabs.tab_downloads
 
 import com.github.benmanes.caffeine.cache.Caffeine
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
+import mediathek.config.DatenConfigurationPersistence
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.controller.IoXmlSchreiben
 import mediathek.controller.history.AboHistoryEntry
 import mediathek.controller.starter.DirectDownloadPartFiles
 import mediathek.controller.starter.DownloadLifecycleActions
+import mediathek.controller.starter.DownloadServices
 import mediathek.controller.starter.DownloadStartActions
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
+import mediathek.daten.ProgramSetRepository
+import mediathek.daten.abo.AboServices
 import mediathek.controller.DownloadColumns
 import mediathek.controller.starter.DownloadListFilter
+import mediathek.filmlisten.FilmCatalog
+import mediathek.filmlisten.FilmeLaden
 import mediathek.filmeSuchen.ListenerFilmeLaden
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent
 import mediathek.gui.actions.*
@@ -73,7 +76,13 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.time.toJavaDuration
 
 class GuiDownloads(
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val filmCatalog: FilmCatalog,
+    private val abos: AboServices,
+    private val downloads: DownloadServices,
+    private val filmListLoader: FilmeLaden,
+    private val configurationPersistence: DatenConfigurationPersistence,
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
     private val ownerFrame: JFrame,
     private val showFilmInformationAction: Action,
     private val selectedListItemsCount: LongConsumer,
@@ -114,7 +123,7 @@ class GuiDownloads(
     private val markFilmAsSeenAction = MarkFilmAsSeenAction(::getSelFilme)
     private val markFilmAsUnseenAction = MarkFilmAsUnseenAction(::getSelFilme)
     private val filterController = DownloadsFilterController(displayFilterToolBar, ::reloadTable)
-    private val startInfoProperty = DownloadStartInfoProperty(daten.downloads)
+    private val startInfoProperty = DownloadStartInfoProperty(downloads)
     private val statusBar = DownloadsStatusBar(startInfoProperty)
     private val downloadSizeCacheSnapshot = DownloadSizeCacheStorage.load()
     private val downloadSizeLookupService = DownloadSizeLookupService(
@@ -183,7 +192,7 @@ class GuiDownloads(
     private fun getSelectedDownloadsFromTable(): List<DatenDownload> = tableSelection.selectedDownloadsForLookup()
 
     private fun editFilmDescription(film: DatenFilm) {
-        DialogFilmBeschreibung(ownerFrame, daten.programSets, film).isVisible = true
+        DialogFilmBeschreibung(ownerFrame, programSets, film).isVisible = true
     }
 
     private fun setupDownloadSizeSelectionUpdater() {
@@ -209,7 +218,7 @@ class GuiDownloads(
     }
 
     private fun setupDownloadListTable() {
-        tabelle = MVDownloadsTable(daten.downloads)
+        tabelle = MVDownloadsTable(downloads)
         tableSelection = DownloadsTableSelection(tabelle, this)
         downloadListScrollPane.viewport.view = tabelle
     }
@@ -326,11 +335,11 @@ class GuiDownloads(
             DownloadsTableMouseHandler(
                 this,
                 tabelle,
-                daten.programSets,
-                daten.filmCatalog,
-                daten.abos,
-                daten.downloads,
-                programSetExporter(),
+                programSets,
+                filmCatalog,
+                abos,
+                downloads,
+                programSetExporter,
                 ownerFrame,
                 showFilmInformationAction,
             )
@@ -355,11 +364,6 @@ class GuiDownloads(
         )
     }
 
-    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
-        BiConsumer { programSets, target ->
-            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
-        }
-
     @Suppress("UNUSED_PARAMETER")
     @Handler
     private fun handleRestartDownloadEvent(event: RestartDownloadEvent) {
@@ -375,7 +379,7 @@ class GuiDownloads(
     private fun reloadAndSave() {
         SwingUtilities.invokeLater {
             reloadTable()
-            daten.configurationPersistence.saveAll()
+            configurationPersistence.saveAll()
         }
     }
 
@@ -394,7 +398,7 @@ class GuiDownloads(
     private fun handleDownloadListChange(event: DownloadListChangedEvent) {
         SwingUtilities.invokeLater {
             reloadTable()
-            daten.configurationPersistence.saveAll()
+            configurationPersistence.saveAll()
         }
     }
 
@@ -431,7 +435,7 @@ class GuiDownloads(
         if (now - lastUpdate.get() >= 500) {
             lastUpdate.set(now)
             SwingUtilities.invokeLater {
-                daten.downloads.updateTableModelProgress(model)
+                downloads.updateTableModelProgress(model)
             }
         }
     }
@@ -465,7 +469,7 @@ class GuiDownloads(
 
         val displayFilter = filterController.displayFilter
         val viewFilter = filterController.viewFilter
-        daten.downloads.reloadTableModel(
+        downloads.reloadTableModel(
             model,
             DownloadListFilter(
                 onlyAbos = displayFilter.onlyAbos(),
@@ -494,10 +498,10 @@ class GuiDownloads(
             return
         }
 
-        rememberAboSizes(daten.downloads.queuedDownloads())
-        daten.downloads.refreshAboDownloads()
-        daten.downloads.searchAboDownloads(ownerFrame)
-        val updatedDownloads = daten.downloads.queuedDownloads()
+        rememberAboSizes(downloads.queuedDownloads())
+        downloads.refreshAboDownloads()
+        downloads.searchAboDownloads(ownerFrame)
+        val updatedDownloads = downloads.queuedDownloads()
         updatedDownloads.restoreKnownAboSizes()
         rememberAboSizes(updatedDownloads)
         reloadTable()
@@ -569,17 +573,17 @@ class GuiDownloads(
         }
 
     private fun updateUnknownDownloadSizes() {
-        downloadSizeLookupService.updateFilmSizes(daten.downloads.queuedDownloads())
+        downloadSizeLookupService.updateFilmSizes(downloads.queuedDownloads())
     }
 
     @Synchronized
     fun cleanupDownloads() {
-        daten.downloads.cleanupFinishedDownloads()
+        downloads.cleanupFinishedDownloads()
     }
 
     @Synchronized
     fun downloadsAufraeumen(datenDownload: DatenDownload) {
-        daten.downloads.cleanupFinishedDownload(datenDownload)
+        downloads.cleanupFinishedDownload(datenDownload)
     }
 
     private fun getSelDownloads(): ArrayList<DatenDownload> = tableSelection.selectedDownloadsOrShowError()
@@ -606,7 +610,7 @@ class GuiDownloads(
         if (downloads.isEmpty()) {
             return
         }
-        daten.downloads.advanceDownloads(downloads)
+        this.downloads.advanceDownloads(downloads)
     }
 
     fun zielordnerOeffnen() {
@@ -694,11 +698,11 @@ class GuiDownloads(
             }
 
             if (aboUrls.isNotEmpty()) {
-                daten.abos.historyController.add(aboUrls)
+                abos.historyController.add(aboUrls)
             }
 
             downloadsToDelete.forEach(::evictDownloadSizeCache)
-            daten.downloads.deleteDownloads(downloadsToDelete)
+            this.downloads.deleteDownloads(downloadsToDelete)
             reloadTable()
             selectSingleRowAfterDeletion(rowToSelectAfterDeletion)
         } catch (ex: Exception) {
@@ -769,16 +773,16 @@ class GuiDownloads(
                     }
                     downloadsToCancel.add(download)
                     if (download.isFromAbo) {
-                        daten.abos.historyController.removeUrl(download.historyUrl)
+                        abos.historyController.removeUrl(download.historyUrl)
                     }
                 }
             }
             downloadsToStart.add(download)
         }
 
-        daten.downloads.cancelDownloads(downloadsToCancel)
+        downloads.cancelDownloads(downloadsToCancel)
 
-        val dialogBeenden = DialogBeendenZeit(ownerFrame, daten.downloads, downloadsToStart)
+        val dialogBeenden = DialogBeendenZeit(ownerFrame, downloads, downloadsToStart)
         dialogBeenden.isVisible = true
         if (dialogBeenden.applicationCanTerminate()) {
             quitApplication.test(dialogBeenden.isShutdownRequested())
@@ -807,7 +811,7 @@ class GuiDownloads(
         val selectedDownloads = if (processAllDownloads) addAllDownloadsToList() else getSelDownloads()
 
         if (!starten) {
-            daten.downloads.delayNewStarts()
+            downloads.delayNewStarts()
         }
 
         var answer = -1
@@ -846,7 +850,7 @@ class GuiDownloads(
                         }
                         downloadsToCancel.add(download)
                         if (download.isFromAbo) {
-                            daten.abos.historyController.removeUrl(download.historyUrl)
+                            abos.historyController.removeUrl(download.historyUrl)
                         }
                     }
                 }
@@ -856,7 +860,7 @@ class GuiDownloads(
             }
         }
 
-        daten.downloads.cancelDownloads(downloadsToCancel)
+        downloads.cancelDownloads(downloadsToCancel)
 
         if (skipManualDownloads) {
             downloadsToStart.removeIf { download -> !download.isFromAbo || download.isAutomaticStartBlockedByAbo }
@@ -881,7 +885,7 @@ class GuiDownloads(
                 downloadsToStop.add(datenDownload)
             }
         }
-        daten.downloads.cancelDownloads(downloadsToStop)
+        downloads.cancelDownloads(downloadsToStop)
     }
 
     private fun updateFilmData() {
@@ -928,7 +932,7 @@ class GuiDownloads(
         add(downloadListArea, BorderLayout.CENTER)
         add(toolBarRow, BorderLayout.NORTH)
 
-        daten.filmListLoader.addFilmLoadListener(object : ListenerFilmeLaden() {
+        filmListLoader.addFilmLoadListener(object : ListenerFilmeLaden() {
             override fun start(event: ListenerFilmeLadenEvent) {
                 loadFilmlist = true
                 SwingUtilities.invokeLater {
@@ -941,7 +945,7 @@ class GuiDownloads(
                 SwingUtilities.invokeLater {
                     refreshDownloadListAction.isEnabled = true
                 }
-                daten.downloads.reconnectFilms()
+                downloads.reconnectFilms()
                 if (ApplicationConfiguration.getInstance().searchAbosImmediately) {
                     updateDownloads()
                 } else {

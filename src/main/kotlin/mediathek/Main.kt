@@ -102,7 +102,14 @@ object Main {
         printDirectoryPaths()
 
         if (CommandLineOptions.isDownloadAndQuit()) {
-            val downloadAndQuitRunner = DownloadAndQuitRunner(daten)
+            val downloadAndQuitRunner = DownloadAndQuitRunner(
+                daten.downloads,
+                daten.filmCatalog,
+                daten.filmListLoader,
+                daten.abos,
+                daten.bookmarks,
+                daten.configurationPersistence,
+            )
             CliShutdownSignal.install(downloadAndQuitRunner::requestShutdown).use {
                 installSingleInstanceHandler(false)
                 performBackgroundStartup(cleanupMediaDb = !GraphicsEnvironment.isHeadless())

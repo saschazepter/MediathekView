@@ -818,7 +818,13 @@ open class MediathekGui private constructor(
 
     private fun createTabDownloads(daten: Daten): GuiDownloads =
         GuiDownloads(
-            daten,
+            daten.programSets,
+            daten.filmCatalog,
+            daten.abos,
+            daten.downloads,
+            daten.filmListLoader,
+            daten.configurationPersistence,
+            programSetExporter(),
             this,
             showFilmInformationAction,
             { setSelectedListItemsCount(it) },
