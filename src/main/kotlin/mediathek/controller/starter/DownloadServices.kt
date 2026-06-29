@@ -15,6 +15,7 @@ import mediathek.gui.messages.DownloadQueueRankChangedEvent
 import mediathek.gui.messages.StartEvent
 import mediathek.tool.MessageBus
 import mediathek.tool.datum.DateUtil
+import org.apache.logging.log4j.LogManager
 import java.time.LocalDate
 import java.util.function.Predicate
 import javax.swing.JFrame
@@ -22,13 +23,25 @@ import javax.swing.JFrame
 class DownloadServices(
     private val daten: Daten,
 ) {
-    val queue: ListeDownloads = ListeDownloads(daten)
-    val buttonQueue: ListeDownloads = ListeDownloads(daten)
+    val queue: ListeDownloads = ListeDownloads()
+    val buttonQueue: ListeDownloads = ListeDownloads()
     val info: DownloadInfos = DownloadInfos(daten)
     val starter: DownloadStartCoordinator = DownloadStartCoordinator(daten)
 
     fun refreshAboDownloads() {
         queue.abosAuffrischen()
+    }
+
+    fun reconnectFilms() {
+        logger.info("Filme in Downloads eintragen")
+        synchronized(queue) {
+            val films = daten.filmCatalog.allFilms
+            queue.filter { download -> download.film == null }
+                .forEach { download ->
+                    download.film = films.getFilmByUrl_klein_hoch_hd(download.downloadUrl)
+                    download.setGroesse("")
+                }
+        }
     }
 
     fun cleanupFinishedDownloads() {
@@ -276,5 +289,9 @@ class DownloadServices(
 
     fun shutdown() {
         starter.shutdown()
+    }
+
+    companion object {
+        private val logger = LogManager.getLogger(DownloadServices::class.java)
     }
 }

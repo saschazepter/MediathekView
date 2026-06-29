@@ -19,7 +19,6 @@
  */
 package mediathek.daten
 
-import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.starter.DownloadLifecycleActions
@@ -28,29 +27,13 @@ import mediathek.controller.starter.StartStatus
 import mediathek.gui.messages.ButtonStartEvent
 import mediathek.tool.MessageBus
 import mediathek.tool.models.TModelDownload
-import org.apache.logging.log4j.LogManager
 import java.util.*
 
-class ListeDownloads(
-    private val daten: Daten,
-) : LinkedList<DatenDownload>() {
+class ListeDownloads : LinkedList<DatenDownload>() {
     @Synchronized
     fun addMitNummer(download: DatenDownload) {
         add(download)
         listeNummerieren()
-    }
-
-    @Synchronized
-    fun filmEintragen() {
-        // bei einmal Downloads nach einem Programmstart/Neuladen der Filmliste
-        // den Film wieder eintragen
-        logger.info("Filme in Downloads eintragen")
-        val listeFilme = daten.filmCatalog.allFilms
-        filter { download -> download.film == null }
-            .forEach { download ->
-                download.film = listeFilme.getFilmByUrl_klein_hoch_hd(download.downloadUrl)
-                download.setGroesse("")
-            }
     }
 
     @Synchronized
@@ -172,8 +155,4 @@ class ListeDownloads(
 
     private fun nextPossibleDownload(): DatenDownload? =
         firstOrNull { download -> download.runtime.runState?.status == StartStatus.INITIALIZED }
-
-    companion object {
-        private val logger = LogManager.getLogger(ListeDownloads::class.java)
-    }
 }

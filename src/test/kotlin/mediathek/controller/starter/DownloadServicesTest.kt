@@ -2,6 +2,7 @@ package mediathek.controller.starter
 
 import mediathek.config.Daten
 import mediathek.daten.DatenDownload
+import mediathek.daten.DatenFilm
 import mediathek.daten.DownloadSource
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -118,6 +119,31 @@ internal class DownloadServicesTest {
         assertEquals(1, info.running)
         assertEquals(1, info.finished)
         assertEquals(0, info.error)
+    }
+
+    @Test
+    fun reconnectsDownloadsToLoadedFilms() {
+        val film = DatenFilm().apply {
+            urlNormalQuality = "https://example.invalid/video.mp4"
+        }
+        val matchingDownload = DatenDownload().apply {
+            downloadUrl = film.urlNormalQuality
+        }
+        val existingFilm = DatenFilm().apply {
+            urlNormalQuality = "https://example.invalid/existing.mp4"
+        }
+        val alreadyConnectedDownload = DatenDownload().apply {
+            this.film = existingFilm
+            downloadUrl = film.urlNormalQuality
+        }
+        daten.filmCatalog.allFilms.add(film)
+        daten.downloads.queue.add(matchingDownload)
+        daten.downloads.queue.add(alreadyConnectedDownload)
+
+        daten.downloads.reconnectFilms()
+
+        assertSame(film, matchingDownload.film)
+        assertSame(existingFilm, alreadyConnectedDownload.film)
     }
 
     private fun buttonDownload(

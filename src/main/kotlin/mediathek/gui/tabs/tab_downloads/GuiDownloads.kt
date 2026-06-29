@@ -917,7 +917,7 @@ class GuiDownloads(
                 SwingUtilities.invokeLater {
                     refreshDownloadListAction.isEnabled = true
                 }
-                daten.downloads.queue.filmEintragen()
+                daten.downloads.reconnectFilms()
                 if (ApplicationConfiguration.getInstance().searchAbosImmediately) {
                     updateDownloads()
                 } else {
