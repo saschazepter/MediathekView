@@ -6,6 +6,7 @@ import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
+import mediathek.daten.DatenPset
 import mediathek.daten.DownloadListFilter
 import mediathek.daten.DownloadInfos
 import mediathek.daten.DownloadSource
@@ -17,6 +18,7 @@ import mediathek.gui.messages.ButtonStartEvent
 import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.gui.messages.DownloadQueueRankChangedEvent
 import mediathek.gui.messages.StartEvent
+import mediathek.mainwindow.MainWindowHandle
 import mediathek.tool.MessageBus
 import mediathek.tool.datum.DateUtil
 import mediathek.tool.models.TModelDownload
@@ -32,7 +34,7 @@ class DownloadServices(
     private val queue: LinkedList<DatenDownload> = LinkedList()
     private val buttonQueue: LinkedList<DatenDownload> = LinkedList()
     val info: DownloadInfos = DownloadInfos(daten)
-    val starter: DownloadStartCoordinator = DownloadStartCoordinator(daten)
+    private val starter: DownloadStartCoordinator = DownloadStartCoordinator(daten)
 
     fun refreshAboDownloads() {
         synchronized(queue) {
@@ -235,6 +237,18 @@ class DownloadServices(
             MessageBus.messageBus.publishAsync(ButtonStartEvent())
         }
         return found
+    }
+
+    fun setDialogOwner(owner: MainWindowHandle?) {
+        starter.setDialogOwner(owner)
+    }
+
+    fun startWithProgram(pSet: DatenPset, film: DatenFilm, resolution: String) {
+        starter.urlMitProgrammStarten(pSet, film, resolution)
+    }
+
+    fun delayNewStarts() {
+        starter.delayNewStarts()
     }
 
     fun addDownload(download: DatenDownload) {

@@ -96,7 +96,7 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.downloads.starter.setDialogOwner(dialogOwner)
+        daten.downloads.setDialogOwner(dialogOwner)
         downloadDialogOwnerRegistered = true
     }
 
@@ -135,7 +135,7 @@ class MainWindowLifecycle(
             return
         }
 
-        daten.downloads.starter.setDialogOwner(null)
+        daten.downloads.setDialogOwner(null)
         downloadDialogOwnerRegistered = false
     }
 

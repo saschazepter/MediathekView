@@ -783,7 +783,7 @@ class GuiDownloads(
         val selectedDownloads = if (processAllDownloads) addAllDownloadsToList() else getSelDownloads()
 
         if (!starten) {
-            daten.downloads.starter.delayNewStarts()
+            daten.downloads.delayNewStarts()
         }
 
         var answer = -1

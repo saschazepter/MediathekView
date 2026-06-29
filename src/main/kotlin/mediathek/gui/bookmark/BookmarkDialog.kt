@@ -369,7 +369,7 @@ class BookmarkDialog(
                 return
             }
 
-            daten.downloads.starter.urlMitProgrammStarten(pSet, film, "")
+            daten.downloads.startWithProgram(pSet, film, "")
         }
     }
 

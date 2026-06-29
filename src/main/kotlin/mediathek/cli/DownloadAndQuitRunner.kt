@@ -282,7 +282,7 @@ class DownloadAndQuitRunner(
             return
         }
 
-        daten.downloads.starter.delayNewStarts()
+        daten.downloads.delayNewStarts()
         for (download in downloads) {
             val start = download.runtime.runState
             if (start == null) {

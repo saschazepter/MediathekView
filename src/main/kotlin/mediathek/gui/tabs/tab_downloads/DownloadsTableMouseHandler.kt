@@ -264,7 +264,7 @@ class DownloadsTableMouseHandler(
             urlNormalQuality = download.downloadUrl
             lowQualityUrl = ""
         }
-        daten.downloads.starter.urlMitProgrammStarten(gruppe, filmClone, "")
+        daten.downloads.startWithProgram(gruppe, filmClone, "")
     }
 
     private fun showMissingPlayerMessage() {
