@@ -7,6 +7,7 @@ import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
 import mediathek.daten.DownloadInfos
 import mediathek.daten.DownloadSource
+import mediathek.daten.DownloadStartInfo
 import mediathek.daten.ListeDownloads
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.gui.messages.DownloadListChangedEvent
@@ -172,6 +173,36 @@ class DownloadServices(
             download.runtime.runState?.isBeforeFinished == true &&
                 (source == DownloadSource.ALL || download.quelle == source)
         }
+    }
+
+    fun startInfo(): DownloadStartInfo = synchronized(queue) {
+        val info = DownloadStartInfo()
+        info.total_num_download_list_entries = queue.size
+
+        for (download in queue) {
+            if (!download.isDeferred) {
+                info.total_starts++
+            }
+            if (download.isFromAbo) {
+                info.num_abos++
+            } else {
+                info.num_downloads++
+            }
+            val state = download.runtime.runState
+            if (
+                state != null &&
+                (download.quelle == DownloadSource.ABO || download.quelle == DownloadSource.DOWNLOAD)
+            ) {
+                when (state.status) {
+                    StartStatus.INITIALIZED -> info.initialized++
+                    StartStatus.RUNNING -> info.running++
+                    StartStatus.FINISHED -> info.finished++
+                    StartStatus.ERROR -> info.error++
+                }
+            }
+        }
+
+        info
     }
 
     fun searchAboDownloads(parent: JFrame?): List<DatenDownload> = synchronized(queue) {

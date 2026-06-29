@@ -45,7 +45,7 @@ class DownloadInformationLabel(
     }
 
     private fun buildDownloadInfoText(daten: Daten): String {
-        val info = daten.downloads.queue.starts
+        val info = daten.downloads.startInfo()
         return buildString {
             append(totalDownloadsText(info.total_num_download_list_entries))
 

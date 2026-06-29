@@ -102,38 +102,6 @@ class ListeDownloads(
         }
     }
 
-    @get:Synchronized
-    val starts: DownloadStartInfo
-        get() {
-            val info = DownloadStartInfo()
-            info.total_num_download_list_entries = size
-
-            for (download in this) {
-                if (!download.isDeferred) {
-                    info.total_starts++
-                }
-                if (download.isFromAbo) {
-                    info.num_abos++
-                } else {
-                    info.num_downloads++
-                }
-                val state = download.runtime.runState
-                if (
-                    state != null &&
-                    (download.quelle == DownloadSource.ABO || download.quelle == DownloadSource.DOWNLOAD)
-                ) {
-                    when (state.status) {
-                        StartStatus.INITIALIZED -> info.initialized++
-                        StartStatus.RUNNING -> info.running++
-                        StartStatus.FINISHED -> info.finished++
-                        StartStatus.ERROR -> info.error++
-                    }
-                }
-            }
-
-            return info
-        }
-
     @Synchronized
     fun buttonStartsPutzen() {
         // Starts durch Button die fertig sind, löschen

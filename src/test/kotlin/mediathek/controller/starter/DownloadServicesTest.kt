@@ -90,6 +90,36 @@ internal class DownloadServicesTest {
         assertEquals(listOf(manualDownload, aboDownload), daten.downloads.unfinishedDownloads(DownloadSource.ALL))
     }
 
+    @Test
+    fun buildsDownloadStartInfo() {
+        val initialized = download(DownloadRunState().apply { status = StartStatus.INITIALIZED })
+        val runningAbo = download(DownloadRunState().apply { status = StartStatus.RUNNING }).apply {
+            quelle = DownloadSource.ABO
+            aboName = "Abo"
+        }
+        val finishedDeferred = download(DownloadRunState().apply { status = StartStatus.FINISHED }).apply {
+            isDeferred = true
+        }
+        val buttonDownload = download(DownloadRunState().apply { status = StartStatus.RUNNING }).apply {
+            quelle = DownloadSource.BUTTON
+        }
+        daten.downloads.queue.add(initialized)
+        daten.downloads.queue.add(runningAbo)
+        daten.downloads.queue.add(finishedDeferred)
+        daten.downloads.queue.add(buttonDownload)
+
+        val info = daten.downloads.startInfo()
+
+        assertEquals(4, info.total_num_download_list_entries)
+        assertEquals(3, info.total_starts)
+        assertEquals(1, info.num_abos)
+        assertEquals(3, info.num_downloads)
+        assertEquals(1, info.initialized)
+        assertEquals(1, info.running)
+        assertEquals(1, info.finished)
+        assertEquals(0, info.error)
+    }
+
     private fun buttonDownload(
         filmUrl: String,
         downloadUrl: String,

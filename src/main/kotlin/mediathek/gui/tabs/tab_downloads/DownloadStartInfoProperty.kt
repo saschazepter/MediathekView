@@ -31,7 +31,7 @@ class DownloadStartInfoProperty(
 ) {
     private val pcs = PropertyChangeSupport(this)
 
-    var info: DownloadStartInfo = daten.downloads.queue.starts
+    var info: DownloadStartInfo = daten.downloads.startInfo()
         set(value) {
             val oldValue = field
             field = value
@@ -45,7 +45,7 @@ class DownloadStartInfoProperty(
     @Suppress("UNUSED_PARAMETER")
     @Handler
     private fun handleLeftDisplayUpdate(event: UpdateStatusBarLeftDisplayEvent) {
-        info = daten.downloads.queue.starts
+        info = daten.downloads.startInfo()
     }
 
     fun addStartInfoChangeListener(listener: PropertyChangeListener) {

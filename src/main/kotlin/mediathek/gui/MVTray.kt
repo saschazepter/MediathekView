@@ -50,7 +50,7 @@ class MVTray(
             }
 
             // Anzahl, Anz-Abo, Anz-Down, nicht gestarted, laufen, fertig OK, fertig fehler
-            val info = daten.downloads.queue.starts
+            val info = daten.downloads.startInfo()
             if (info.error > 0) {
                 // es gibt welche mit Fehler
                 if (trayState != TrayState.ERROR) {
@@ -165,7 +165,7 @@ class MVTray(
 
     private val infoTextDownloads: String
         get() {
-            val info = daten.downloads.queue.starts
+            val info = daten.downloads.startInfo()
             return buildString {
                 append("Downloads: ")
                 append(info.total_starts)
