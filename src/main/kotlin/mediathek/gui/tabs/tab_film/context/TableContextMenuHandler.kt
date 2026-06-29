@@ -69,6 +69,7 @@ class TableContextMenuHandler(
         FilmPrintAndHistoryContextActions(host, this::selectedFilmAtPopupPoint)
     private val contextMenuBuilder = FilmContextMenuBuilder(
         host,
+        daten.programSets,
         filmAboAndBlacklistContextActions,
         filmSpecificContextMenuBuilder,
         filmPrintAndHistoryContextActions::addActions,
