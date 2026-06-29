@@ -290,7 +290,7 @@ open class MediathekGui private constructor(
         val filmListListener: ListenerFilmeLaden = MainWindowFilmListListener(
             SwingDispatch,
             { loadFilmListAction },
-            { daten.allesSpeichern() },
+            { daten.configurationPersistence.saveAll() },
             { filmlistReloadCoordinator.setupAutomaticFilmlistReload() }
         )
         mainWindowLifecycle = MainWindowLifecycle(

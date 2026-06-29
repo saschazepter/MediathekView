@@ -311,7 +311,7 @@ class DownloadAndQuitRunner(
             history.performMaintenance()
         }
         daten.bookmarks.saveToFile()
-        daten.allesSpeichern()
+        daten.configurationPersistence.saveAll()
         ApplicationConfiguration.getInstance().writeConfiguration()
     }
 

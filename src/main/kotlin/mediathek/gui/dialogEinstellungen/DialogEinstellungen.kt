@@ -185,7 +185,7 @@ class DialogEinstellungen(
 
     private fun beenden() {
         storeSizeInConfig()
-        daten.allesSpeichern()
+        daten.configurationPersistence.saveAll()
         dispose()
     }
 

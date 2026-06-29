@@ -32,7 +32,7 @@ internal class DatenTest {
     }
 
     @Test
-    fun allesSpeichernWritesBlacklistRulesToJsonOnly() {
+    fun configurationPersistenceWritesBlacklistRulesToJsonOnly() {
         StandardLocations.portableBaseDirectory = tempDir.toString()
         val blacklist = daten.blacklist.rules
         val originalBlacklist = ArrayList(blacklist)
@@ -41,7 +41,7 @@ internal class DatenTest {
             blacklist.add(BlacklistRule(sender = "ARD", thema = "News", titel = "tagesschau"))
             blacklist.add(BlacklistRule(sender = "ARD", thema = "News", titel = "tagesschau"))
 
-            daten.allesSpeichern()
+            daten.configurationPersistence.saveAll()
 
             val xml = Files.readString(StandardLocations.getMediathekXmlFile())
             assertTrue(Files.exists(StandardLocations.getBlacklistRulesFilePath()))
@@ -60,7 +60,7 @@ internal class DatenTest {
     }
 
     @Test
-    fun allesSpeichernWritesAboRulesToJsonOnly() {
+    fun configurationPersistenceWritesAboRulesToJsonOnly() {
         StandardLocations.portableBaseDirectory = tempDir.toString()
         val abos = daten.abos.list
         val originalAbos = ArrayList(abos)
@@ -75,7 +75,7 @@ internal class DatenTest {
                 },
             )
 
-            daten.allesSpeichern()
+            daten.configurationPersistence.saveAll()
 
             val xml = Files.readString(StandardLocations.getMediathekXmlFile())
             assertTrue(Files.exists(StandardLocations.getAboRulesFilePath()))

@@ -35,9 +35,5 @@ class Daten {
     val bookmarks: BookmarkServices = BookmarkServices(this)
     val abos: AboServices = AboServices(filmCatalog.allFilms)
 
-    private val configurationPersistence = DatenConfigurationPersistence(this)
-
-    fun allesLaden(): Boolean = configurationPersistence.loadAll()
-
-    fun allesSpeichern() = configurationPersistence.saveAll()
+    val configurationPersistence: DatenConfigurationPersistence = DatenConfigurationPersistence(this)
 }

@@ -75,7 +75,7 @@ class MainWindowShutdownCoordinator(
             .background("Close notification center", closeNotificationCenter)
             .edt("Dispose main window tabs", tabRegistry::disposeTabs)
             .background("Stop all downloads") { daten.downloads.requestStopForShutdown() }
-            .background("Save app data", daten::allesSpeichern)
+            .background("Save app data") { daten.configurationPersistence.saveAll() }
             .background("Close seen history database", SeenHistoryController::closeSharedStore)
             .edt("Close main window", owner::dispose)
             .background("Write app config") { ApplicationConfiguration.getInstance().writeConfiguration() }

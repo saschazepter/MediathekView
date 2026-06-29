@@ -351,7 +351,7 @@ class GuiDownloads(
     private fun reloadAndSave() {
         SwingUtilities.invokeLater {
             reloadTable()
-            daten.allesSpeichern()
+            daten.configurationPersistence.saveAll()
         }
     }
 
@@ -370,7 +370,7 @@ class GuiDownloads(
     private fun handleDownloadListChange(event: DownloadListChangedEvent) {
         SwingUtilities.invokeLater {
             reloadTable()
-            daten.allesSpeichern()
+            daten.configurationPersistence.saveAll()
         }
     }
 

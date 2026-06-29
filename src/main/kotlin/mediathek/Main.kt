@@ -264,7 +264,7 @@ object Main {
     }
 
     private fun loadConfigurationDataCli(daten: Daten) {
-        if (!daten.allesLaden()) {
+        if (!daten.configurationPersistence.loadAll()) {
             logger.error("CLI download mode requires an existing valid configuration and does not support interactive setup or repair.")
             exitProcess(1)
         }
@@ -737,7 +737,7 @@ object Main {
     }
 
     private suspend fun loadConfigurationData(daten: Daten) = withContext(Dispatchers.Swing) {
-        if (!daten.allesLaden()) {
+        if (!daten.configurationPersistence.loadAll()) {
             // erster Start
             ReplaceList.init() // einmal ein Muster anlegen, für Linux/OS X ist es bereits aktiv!
             SplashScreenLifecycle.close()
