@@ -778,7 +778,7 @@ class GuiDownloads(
 
         daten.downloads.cancelDownloads(downloadsToCancel)
 
-        val dialogBeenden = DialogBeendenZeit(ownerFrame, daten, downloadsToStart)
+        val dialogBeenden = DialogBeendenZeit(ownerFrame, daten.downloads, downloadsToStart)
         dialogBeenden.isVisible = true
         if (dialogBeenden.applicationCanTerminate()) {
             quitApplication.test(dialogBeenden.isShutdownRequested())

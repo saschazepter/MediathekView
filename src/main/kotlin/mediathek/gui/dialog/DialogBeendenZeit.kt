@@ -20,9 +20,9 @@ package mediathek.gui.dialog
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.controller.starter.DownloadStartActions
+import mediathek.controller.starter.DownloadServices
 import mediathek.daten.DatenDownload
 import mediathek.swing.AppTerminationIndefiniteProgress
 import mediathek.tool.EscapeKeyHandler
@@ -42,7 +42,7 @@ import kotlin.time.Duration.Companion.seconds
 
 class DialogBeendenZeit(
     parent: JFrame?,
-    private val daten: Daten,
+    private val downloads: DownloadServices,
     private val listeDownloadsStarten: ArrayList<DatenDownload>,
 ) : DialogBeendenZeitBase(parent) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
@@ -125,7 +125,7 @@ class DialogBeendenZeit(
                 DownloadStartActions.startAll(listeDownloadsStarten)
 
                 withContext(Dispatchers.IO) {
-                    while (daten.downloads.unfinishedDownloads() > 0) {
+                    while (downloads.unfinishedDownloads() > 0) {
                         ensureActive()
                         delay(1.seconds)
                     }
