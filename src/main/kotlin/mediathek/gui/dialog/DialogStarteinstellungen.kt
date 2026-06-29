@@ -89,7 +89,7 @@ class DialogStarteinstellungen(
     }
 
     private fun createLayout() {
-        val panelEinstellungenGeo = PanelEinstellungenGeo(parentComponent, true, daten)
+        val panelEinstellungenGeo = PanelEinstellungenGeo(parentComponent, true, daten.blacklist)
         jPanelExtra.layout = BorderLayout()
         jPanelExtra.add(panelEinstellungenGeo, BorderLayout.CENTER)
     }

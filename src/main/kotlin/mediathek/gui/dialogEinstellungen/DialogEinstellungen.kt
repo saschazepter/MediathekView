@@ -67,7 +67,7 @@ class DialogEinstellungen(
             )
         val geoEinstellungen = SettingsPage(
             NAME_ALLGEMEINE_EINSTELLUNGEN_GEO,
-            createPanel = { PanelEinstellungenGeo(this, daten = daten) },
+            createPanel = { PanelEinstellungenGeo(this, blacklist = daten.blacklist) },
         )
         val colorEinstellungen = SettingsPage(
             NAME_ALLGEMEINE_EINSTELLUNGEN_COLOR,

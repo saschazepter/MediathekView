@@ -183,7 +183,7 @@ class GuiDownloads(
     private fun getSelectedDownloadsFromTable(): List<DatenDownload> = tableSelection.selectedDownloadsForLookup()
 
     private fun editFilmDescription(film: DatenFilm) {
-        DialogFilmBeschreibung(ownerFrame, daten, film).isVisible = true
+        DialogFilmBeschreibung(ownerFrame, daten.programSets, film).isVisible = true
     }
 
     private fun setupDownloadSizeSelectionUpdater() {
