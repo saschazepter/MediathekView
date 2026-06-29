@@ -146,6 +146,34 @@ internal class DownloadServicesTest {
         assertSame(existingFilm, alreadyConnectedDownload.film)
     }
 
+    @Test
+    fun refreshAboDownloadsRemovesResetsAndClearsDeferredEntries() {
+        val unstartedAbo = aboDownload(null)
+        val erroredAbo = aboDownload(DownloadRunState().apply { status = StartStatus.ERROR })
+        val runningAbo = aboDownload(DownloadRunState().apply { status = StartStatus.RUNNING }).apply {
+            isDeferred = true
+        }
+        val interruptedAbo = aboDownload(DownloadRunState().apply { status = StartStatus.RUNNING }).apply {
+            isInterruptedFlag = true
+        }
+        val manualDownload = download(DownloadRunState().apply { status = StartStatus.INITIALIZED }).apply {
+            isDeferred = true
+        }
+        daten.downloads.queue.add(unstartedAbo)
+        daten.downloads.queue.add(erroredAbo)
+        daten.downloads.queue.add(runningAbo)
+        daten.downloads.queue.add(interruptedAbo)
+        daten.downloads.queue.add(manualDownload)
+
+        daten.downloads.refreshAboDownloads()
+
+        assertEquals(listOf(erroredAbo, runningAbo, interruptedAbo, manualDownload), daten.downloads.queue)
+        assertNull(erroredAbo.runtime.runState)
+        assertFalse(runningAbo.isDeferred)
+        assertTrue(interruptedAbo.isInterrupted)
+        assertFalse(manualDownload.isDeferred)
+    }
+
     private fun buttonDownload(
         filmUrl: String,
         downloadUrl: String,
@@ -163,6 +191,13 @@ internal class DownloadServicesTest {
     private fun download(runState: DownloadRunState): DatenDownload =
         DatenDownload().apply {
             quelle = DownloadSource.DOWNLOAD
+            runtime.runState = runState
+        }
+
+    private fun aboDownload(runState: DownloadRunState?): DatenDownload =
+        DatenDownload().apply {
+            quelle = DownloadSource.ABO
+            aboName = "Abo"
             runtime.runState = runState
         }
 }

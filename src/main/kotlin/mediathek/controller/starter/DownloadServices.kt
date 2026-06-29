@@ -29,7 +29,30 @@ class DownloadServices(
     val starter: DownloadStartCoordinator = DownloadStartCoordinator(daten)
 
     fun refreshAboDownloads() {
-        queue.abosAuffrischen()
+        synchronized(queue) {
+            // fehlerhafte und nicht gestartete löschen, wird nicht gemeldet ob was gefunden wurde
+            val iterator = queue.iterator()
+            while (iterator.hasNext()) {
+                val download = iterator.next()
+                if (download.isInterrupted) {
+                    // guter Rat teuer was da besser wäre??
+                    download.setGroesseFromFilm() // bei den Abgebrochenen wird die tatsächliche Dateigröße angezeigt
+                    continue
+                }
+                if (!download.isFromAbo) {
+                    continue
+                }
+                when (download.runtime.runState?.status) {
+                    null -> iterator.remove() // noch nicht gestartet
+                    StartStatus.ERROR -> DownloadLifecycleActions.reset(download) // fehlerhafte
+                    else -> Unit
+                }
+            }
+
+            queue.forEach { download ->
+                DownloadLifecycleActions.clearDeferred(download)
+            }
+        }
     }
 
     fun reconnectFilms() {

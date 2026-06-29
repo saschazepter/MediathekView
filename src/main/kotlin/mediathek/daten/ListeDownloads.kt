@@ -37,33 +37,6 @@ class ListeDownloads : LinkedList<DatenDownload>() {
     }
 
     @Synchronized
-    fun abosAuffrischen() {
-        // fehlerhafte und nicht gestartete löschen, wird nicht gemeldet ob was gefunden wurde
-        val iterator = iterator()
-        while (iterator.hasNext()) {
-            val download = iterator.next()
-            if (download.isInterrupted) {
-                // guter Rat teuer was da besser wäre??
-                // wird auch nach dem Neuladen der Filmliste aufgerufen: also Finger weg
-                download.setGroesseFromFilm() // bei den Abgebrochenen wird die tatsächliche Dateigröße angezeigt
-                continue
-            }
-            if (!download.isFromAbo) {
-                continue
-            }
-            when (download.runtime.runState?.status) {
-                null -> iterator.remove() // noch nicht gestartet
-                StartStatus.ERROR -> DownloadLifecycleActions.reset(download) // fehlerhafte
-                else -> Unit
-            }
-        }
-
-        forEach { download ->
-            DownloadLifecycleActions.clearDeferred(download)
-        }
-    }
-
-    @Synchronized
     fun getDownloadUrlFilm(urlFilm: String): DatenDownload? =
         firstOrNull { download -> download.filmUrl == urlFilm }
 
