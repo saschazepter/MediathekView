@@ -23,14 +23,15 @@ import ca.odell.glazedlists.swing.GlazedListsSwing
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.audiothek.ui.table.CenteredTextCellRenderer
-import mediathek.config.Daten
-import mediathek.config.DatenXmlConfigDataFactory
-import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenPset
+import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboTags
+import mediathek.daten.abo.AboServices
 import mediathek.daten.abo.DatenAbo
 import mediathek.filmeSuchen.ListenerFilmeLaden
 import mediathek.filmeSuchen.ListenerFilmeLadenEvent
+import mediathek.filmlisten.FilmCatalog
+import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.actions.CreateNewAboAction
 import mediathek.gui.dialog.DialogEditAbo
 import mediathek.gui.dialog.MissingProgramSetDialog
@@ -58,14 +59,18 @@ import kotlin.time.Duration.Companion.milliseconds
 class ManageAboPanel(
     dialog: JDialog,
     private val owner: JFrame,
-    private val daten: Daten,
+    private val programSets: ProgramSetRepository,
+    private val filmCatalog: FilmCatalog,
+    private val abos: AboServices,
+    private val filmListLoader: FilmeLaden,
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : JPanel() {
     private val tabelle = AboTable()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val createAboAction = CreateNewAboAction(
-        daten.programSets,
-        daten.filmCatalog,
-        daten.abos,
+        programSets,
+        filmCatalog,
+        abos,
         { owner },
         this::ensureAboProgramSetAvailable,
     )
@@ -105,13 +110,13 @@ class ManageAboPanel(
     init {
         initComponents()
 
-        tableBinding = AboTableBinding(tabelle, daten.abos.list, this::filmCountForAbo)
+        tableBinding = AboTableBinding(tabelle, abos.list, this::filmCountForAbo)
         setupToolBar()
         setupInfoPanel()
         updateInfoText()
 
         MessageBus.messageBus.subscribe(this)
-        daten.filmListLoader.addFilmLoadListener(filmLoadListener)
+        filmListLoader.addFilmLoadListener(filmLoadListener)
 
         initListeners()
         initializeTable()
@@ -134,7 +139,7 @@ class ManageAboPanel(
     override fun removeNotify() {
         if (!disposed) {
             disposed = true
-            daten.filmListLoader.removeFilmLoadListener(filmLoadListener)
+            filmListLoader.removeFilmLoadListener(filmLoadListener)
             countRefreshJob?.cancel()
             uiScope.cancel()
             tableBinding.dispose()
@@ -167,7 +172,7 @@ class ManageAboPanel(
             return
         }
 
-        val dialog = DialogEditAbo(owner, daten.programSets, daten.filmCatalog, daten.abos, dialogAbo, multiEdit)
+        val dialog = DialogEditAbo(owner, programSets, filmCatalog, abos, dialogAbo, multiEdit)
         dialog.title = EDIT_ABO_TEXT
         dialog.isVisible = true
         if (!dialog.successful()) {
@@ -177,26 +182,21 @@ class ManageAboPanel(
         if (multiEdit) {
             applyMultiEdit(dialogAbo, selectedAbos, dialog.multiEditCbIndices)
         } else {
-            daten.abos.list.fireAboChanged(editedAbo)
+            abos.list.fireAboChanged(editedAbo)
         }
 
         processAboChanges()
     }
 
     private fun ensureAboProgramSetAvailable(parent: JFrame): Boolean =
-        MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, daten.programSets) { importParent, standardSets ->
+        MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, programSets) { importParent, standardSets ->
             GuiFunktionenProgramme.addSetVorlagen(
                 importParent,
-                daten.programSets,
+                programSets,
                 standardSets,
                 true,
-                programSetExporter(),
+                programSetExporter,
             )
-        }
-
-    private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =
-        BiConsumer { programSets, target ->
-            IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
         }
 
     private fun DatenAbo.copyForEditDialog(): DatenAbo =
@@ -241,7 +241,7 @@ class ManageAboPanel(
                     }
                 }
             }
-            daten.abos.list.fireAboChanged(targetAbo)
+            abos.list.fireAboChanged(targetAbo)
         }
     }
 
@@ -297,19 +297,19 @@ class ManageAboPanel(
 
         swingToolBar.add(JLabel("Abos für Sender:"))
         senderCombo.maximumSize = Dimension(150, Int.MAX_VALUE)
-        val model = GlazedListsSwing.eventComboBoxModel(EventListWithEmptyFirstEntry(daten.filmCatalog.allSendersList))
+        val model = GlazedListsSwing.eventComboBoxModel(EventListWithEmptyFirstEntry(filmCatalog.allSendersList))
         senderCombo.model = model
         senderCombo.selectedIndex = 0
         senderCombo.addActionListener { applySenderFilter() }
         swingToolBar.add(senderCombo)
     }
 
-    private fun numActiveAbos(): Int = daten.abos.list.count { abo -> abo.isActive }
+    private fun numActiveAbos(): Int = abos.list.count { abo -> abo.isActive }
 
-    private fun numInactiveAbos(): Int = daten.abos.list.count { abo -> !abo.isActive }
+    private fun numInactiveAbos(): Int = abos.list.count { abo -> !abo.isActive }
 
     private fun updateInfoText() {
-        val listeAbo = daten.abos.list
+        val listeAbo = abos.list
         val numAbos = listeAbo.size
 
         totalAbos.text = if (numAbos == 1) {
@@ -330,7 +330,7 @@ class ManageAboPanel(
         }
 
     private fun initializeAboFilmCounts() {
-        if (daten.filmListLoader.isFilmListImportRunning) {
+        if (filmListLoader.isFilmListImportRunning) {
             markAboFilmCountsLoading()
         } else {
             scheduleAboFilmCountRefresh()
@@ -349,8 +349,8 @@ class ManageAboPanel(
             countRefreshJob = launch {
                 val counts = withContext(Dispatchers.Default) {
                     AboFilmCounts.countMatchingFilms(
-                        daten.abos.list.withReadLock { toList() },
-                        daten.filmCatalog.allFilms.snapshot(),
+                        abos.list.withReadLock { toList() },
+                        filmCatalog.allFilms.snapshot(),
                     )
                 }
                 if (!disposed && refreshSequence == countRefreshSequence) {
@@ -374,20 +374,20 @@ class ManageAboPanel(
 
     private fun applyAboFilmCounts(counts: Map<DatenAbo, Int>) {
         val changedAbos = if (aboFilmCountsLoading) {
-            daten.abos.list.withReadLock { toList() }
+            abos.list.withReadLock { toList() }
         } else {
             AboFilmCounts.changedAbos(aboFilmCounts, counts)
         }
         aboFilmCounts = counts
         aboFilmCountsLoading = false
         if (changedAbos.isNotEmpty()) {
-            daten.abos.list.fireAbosChanged(changedAbos)
+            abos.list.fireAbosChanged(changedAbos)
         }
     }
 
     private fun markAboFilmCountsLoading() {
         aboFilmCountsLoading = true
-        daten.abos.list.fireAbosChanged(daten.abos.list.withReadLock { toList() })
+        abos.list.fireAbosChanged(abos.list.withReadLock { toList() })
     }
 
     private fun setupKeyMap() {
@@ -642,7 +642,7 @@ class ManageAboPanel(
             val ret = JOptionPane.showConfirmDialog(this, text, "Abo löschen", JOptionPane.YES_NO_OPTION)
             if (ret == JOptionPane.OK_OPTION) {
                 try {
-                    daten.abos.list.removeAbosWithoutNotification(selectedAbos)
+                    abos.list.removeAbosWithoutNotification(selectedAbos)
                 } catch (e: Exception) {
                     logger.error("aboLoeschen", e)
                 }
@@ -665,7 +665,7 @@ class ManageAboPanel(
         if (selectedAbos.isNotEmpty()) {
             for (abo in selectedAbos) {
                 abo.isActive = ein
-                daten.abos.list.fireAboChanged(abo)
+                abos.list.fireAboChanged(abo)
             }
             tabelle.requestFocusInWindow()
 
@@ -692,7 +692,7 @@ class ManageAboPanel(
             }
             try {
                 withContext(Dispatchers.Default) {
-                    daten.abos.notifyListChanged()
+                    abos.notifyListChanged()
                 }
             } finally {
                 progressJob.cancel()
