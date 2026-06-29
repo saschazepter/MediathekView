@@ -18,6 +18,8 @@
 
 package mediathek.daten
 
+import mediathek.controller.DownloadConfig
+import mediathek.controller.LegacyDownloadXmlReader
 import mediathek.controller.starter.DownloadInvocationRequest
 import mediathek.controller.starter.DownloadProgramInvocationBuilder
 import mediathek.controller.starter.DownloadRuntimeText
