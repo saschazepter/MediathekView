@@ -18,7 +18,7 @@
 
 package mediathek.gui.tabs.tab_downloads
 
-import mediathek.config.Daten
+import mediathek.controller.starter.DownloadServices
 import mediathek.controller.starter.DownloadStartInfo
 import mediathek.gui.messages.UpdateStatusBarLeftDisplayEvent
 import mediathek.tool.MessageBus.messageBus
@@ -27,11 +27,11 @@ import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
 
 class DownloadStartInfoProperty(
-    private val daten: Daten,
+    private val downloads: DownloadServices,
 ) {
     private val pcs = PropertyChangeSupport(this)
 
-    var info: DownloadStartInfo = daten.downloads.startInfo()
+    var info: DownloadStartInfo = downloads.startInfo()
         set(value) {
             val oldValue = field
             field = value
@@ -45,7 +45,7 @@ class DownloadStartInfoProperty(
     @Suppress("UNUSED_PARAMETER")
     @Handler
     private fun handleLeftDisplayUpdate(event: UpdateStatusBarLeftDisplayEvent) {
-        info = daten.downloads.startInfo()
+        info = downloads.startInfo()
     }
 
     fun addStartInfoChangeListener(listener: PropertyChangeListener) {

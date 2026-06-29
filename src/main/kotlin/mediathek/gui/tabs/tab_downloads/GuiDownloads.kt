@@ -109,7 +109,7 @@ class GuiDownloads(
     private val markFilmAsSeenAction = MarkFilmAsSeenAction(::getSelFilme)
     private val markFilmAsUnseenAction = MarkFilmAsUnseenAction(::getSelFilme)
     private val filterController = DownloadsFilterController(displayFilterToolBar, ::reloadTable)
-    private val startInfoProperty = DownloadStartInfoProperty(daten)
+    private val startInfoProperty = DownloadStartInfoProperty(daten.downloads)
     private val statusBar = DownloadsStatusBar(startInfoProperty)
     private val downloadSizeCacheSnapshot = DownloadSizeCacheStorage.load()
     private val downloadSizeLookupService = DownloadSizeLookupService(
