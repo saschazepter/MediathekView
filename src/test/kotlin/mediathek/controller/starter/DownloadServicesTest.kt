@@ -4,7 +4,6 @@ import mediathek.config.Daten
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
 import mediathek.daten.DownloadColumns
-import mediathek.daten.DownloadListFilter
 import mediathek.daten.DownloadSource
 import mediathek.daten.DownloadType
 import mediathek.daten.abo.DatenAbo

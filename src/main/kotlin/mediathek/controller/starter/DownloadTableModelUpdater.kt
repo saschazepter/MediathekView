@@ -20,7 +20,6 @@ package mediathek.controller.starter
 
 import mediathek.daten.DatenDownload
 import mediathek.daten.DownloadColumns
-import mediathek.daten.DownloadListFilter
 import mediathek.tool.models.TModelDownload
 
 internal object DownloadTableModelUpdater {
