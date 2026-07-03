@@ -76,6 +76,7 @@ open class MediathekGui private constructor(
     systemTrayController: MainWindowSystemTrayController,
     private val disableF10MenuShortcut: Boolean,
     private val afterMenusInitialized: Consumer<MainWindowQuitHost>,
+    private val startupFilmlistPreload: StartupFilmlistPreload? = null,
 ) : JFrame(),
     FilmBookmarkHost,
     DownloadControlHost,
@@ -208,6 +209,7 @@ open class MediathekGui private constructor(
         daten.abos,
         daten.blacklist,
         statusBarController,
+        startupFilmlistPreload,
     )
     private val filmlistDownloadProgressListener =
         FilmlistProgressPresenter(SwingDispatch, statusBarController::showProgress)
@@ -244,6 +246,7 @@ open class MediathekGui private constructor(
         computerShutdown: ComputerShutdown,
         darkModeActionPlacement: MainWindowDarkModeActionPlacement,
         systemTrayController: MainWindowSystemTrayController,
+        startupFilmlistPreload: StartupFilmlistPreload? = null,
     ) : this(
         daten,
         notificationCenterFactory,
@@ -258,6 +261,7 @@ open class MediathekGui private constructor(
         systemTrayController,
         true,
         Consumer {},
+        startupFilmlistPreload,
     )
 
     protected constructor(
@@ -273,6 +277,7 @@ open class MediathekGui private constructor(
         systemTrayController: MainWindowSystemTrayController,
         disableF10MenuShortcut: Boolean,
         afterMenusInitialized: Consumer<MainWindowQuitHost>,
+        startupFilmlistPreload: StartupFilmlistPreload? = null,
     ) : this(
         daten,
         notificationCenterFactory,
@@ -287,6 +292,7 @@ open class MediathekGui private constructor(
         systemTrayController,
         disableF10MenuShortcut,
         afterMenusInitialized,
+        startupFilmlistPreload,
     )
 
     protected constructor(
@@ -295,6 +301,7 @@ open class MediathekGui private constructor(
         computerShutdown: ComputerShutdown,
         downloadProgressIndicatorFactory: Function<JFrame, DownloadProgressIndicator>,
         darkModeActionPlacement: MainWindowDarkModeActionPlacement,
+        startupFilmlistPreload: StartupFilmlistPreload? = null,
     ) : this(
         daten,
         notificationCenterFactory,
@@ -309,6 +316,7 @@ open class MediathekGui private constructor(
         DefaultMainWindowSystemTrayController,
         true,
         Consumer {},
+        startupFilmlistPreload,
     )
 
     init {

@@ -22,6 +22,7 @@ import mediathek.config.Daten
 import mediathek.config.Konstanten
 import mediathek.mainwindow.MainWindowDarkModeActionPlacement
 import mediathek.mainwindow.MediathekGui
+import mediathek.mainwindow.StartupFilmlistPreload
 import mediathek.shutdown.X11ComputerShutdown
 import mediathek.tool.notification.GenericNotificationCenter
 import mediathek.tool.notification.INotificationCenter
@@ -45,12 +46,16 @@ private fun createNotificationCenter(): INotificationCenter {
     return GenericNotificationCenter()
 }
 
-class MediathekGuiX11(daten: Daten) : MediathekGui(
+class MediathekGuiX11(
+    daten: Daten,
+    startupFilmlistPreload: StartupFilmlistPreload? = null,
+) : MediathekGui(
     daten,
     ::createNotificationCenter,
     X11ComputerShutdown(),
     MainWindowDarkModeActionPlacement.MENU_BAR,
     X11MainWindowSystemTrayController,
+    startupFilmlistPreload,
 ) {
     init {
         setupX11WindowManagerClassName()
