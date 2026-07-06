@@ -33,7 +33,6 @@ class MainWindowFilmlistLoadCoordinator(
     private val abos: AboServices,
     private val blacklist: BlacklistServices,
     private val statusBarController: MainWindowStatusBarController,
-    private val startupFilmlistPreload: StartupFilmlistPreload? = null,
 ) : AutoCloseable {
     private var startupFilmlistLoader: StartupFilmlistLoader? = null
 
@@ -50,7 +49,6 @@ class MainWindowFilmlistLoadCoordinator(
             statusBarController.startupProgressLabel,
             statusBarController.startupProgressBar,
             ::finishStartupFilmlistLoad,
-            startupFilmlistPreload,
         )
         startupFilmlistLoader?.start()
     }

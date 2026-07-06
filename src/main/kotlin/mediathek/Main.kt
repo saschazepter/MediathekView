@@ -40,7 +40,6 @@ import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider
 import mediathek.logging.SwingAppender
 import mediathek.mac.MediathekGuiMac
 import mediathek.mainwindow.MediathekGui
-import mediathek.mainwindow.StartupFilmlistPreload
 import mediathek.tool.*
 import mediathek.tool.affinity.Affinity
 import mediathek.tool.dns.IPvPreferenceMode
@@ -155,8 +154,7 @@ object Main {
             daten.filmCatalog.filteredFilms = IndexedFilmList()
         }
 
-        val startupFilmlistPreload = StartupFilmlistPreload.start(daten.filmCatalog)
-        startGuiMode(daten, startupFilmlistPreload)
+        startGuiMode(daten)
     }
 
     private suspend fun parseCommandLine(args: Array<String>): CommandLine.ParseResult {
@@ -865,7 +863,7 @@ object Main {
         }
     }
 
-    private suspend fun startGuiMode(daten: Daten, startupFilmlistPreload: StartupFilmlistPreload) {
+    private suspend fun startGuiMode(daten: Daten) {
         withContext(Dispatchers.Swing) {
             SplashScreenLifecycle.update(UIProgressState.INIT_FX)
 
@@ -889,7 +887,7 @@ object Main {
 
         withContext(Dispatchers.Swing) {
             SplashScreenLifecycle.update(UIProgressState.START_UI)
-            val window = getPlatformWindow(daten, startupFilmlistPreload)
+            val window = getPlatformWindow(daten)
             window.start()
             SplashScreenLifecycle.close()
             window.isVisible = true
@@ -918,11 +916,11 @@ object Main {
         }
     }
 
-    private fun getPlatformWindow(daten: Daten, startupFilmlistPreload: StartupFilmlistPreload): MediathekGui {
+    private fun getPlatformWindow(daten: Daten): MediathekGui {
         return when {
-            SystemUtils.IS_OS_MAC_OSX -> MediathekGuiMac(daten, startupFilmlistPreload)
-            SystemUtils.IS_OS_WINDOWS -> MediathekGuiWindows(daten, startupFilmlistPreload)
-            SystemUtils.IS_OS_LINUX -> MediathekGuiX11(daten, startupFilmlistPreload)
+            SystemUtils.IS_OS_MAC_OSX -> MediathekGuiMac(daten)
+            SystemUtils.IS_OS_WINDOWS -> MediathekGuiWindows(daten)
+            SystemUtils.IS_OS_LINUX -> MediathekGuiX11(daten)
             else -> {
                 JOptionPane.showMessageDialog(
                     null,

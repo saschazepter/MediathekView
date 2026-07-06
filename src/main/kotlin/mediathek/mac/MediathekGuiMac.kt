@@ -46,10 +46,7 @@ import javax.swing.JTabbedPane
 import javax.swing.JToolBar
 import kotlin.time.Duration.Companion.seconds
 
-class MediathekGuiMac(
-    daten: Daten,
-    startupFilmlistPreload: StartupFilmlistPreload? = null,
-) : MediathekGui(
+class MediathekGuiMac(daten: Daten) : MediathekGui(
     daten,
     ::MacNotificationCenter,
     MacComputerShutdown(),
@@ -62,7 +59,6 @@ class MediathekGuiMac(
     NoOpMainWindowSystemTrayController,
     false,
     ::setupUserInterfaceForOsx,
-    startupFilmlistPreload,
 ) {
     private val architectureCheckScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
