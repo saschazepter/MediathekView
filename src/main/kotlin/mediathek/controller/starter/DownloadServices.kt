@@ -13,6 +13,7 @@ import mediathek.gui.messages.DownloadQueueRankChangedEvent
 import mediathek.gui.messages.StartEvent
 import mediathek.mainwindow.MainWindowHandle
 import mediathek.tool.MessageBus
+import mediathek.tool.ReplacementRules
 import mediathek.tool.datum.DateUtil
 import mediathek.tool.models.TModelDownload
 import org.apache.logging.log4j.LogManager
@@ -32,6 +33,7 @@ class DownloadServices(
     private val programSets: ProgramSetRepository,
     private val abos: AboServices,
     private val blacklist: BlacklistServices,
+    internal val replacementRules: ReplacementRules,
     private val showMissingAboProgramSet: (JFrame?) -> Unit,
 ) {
     private val queue: LinkedList<DatenDownload> = LinkedList()
@@ -468,7 +470,7 @@ class DownloadServices(
                 }
 
                 // dann in die Liste schreiben
-                val download = DatenDownload(pset, film, DownloadSource.ABO, abo, "", "", "")
+                val download = DatenDownload(pset, film, DownloadSource.ABO, abo, "", "", "", replacementRules)
                 queue.add(download)
                 addedDownloads.add(download)
             } else {

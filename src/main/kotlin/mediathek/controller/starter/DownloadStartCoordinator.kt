@@ -75,7 +75,7 @@ class DownloadStartCoordinator(
         // Quelle "Button" ist immer ein vom User gestarteter Film, also Quelle_Button!!!!!!!!!!!
         val url = film.urlNormalQuality
         if (url.isNotEmpty()) {
-            val download = DatenDownload(pSet, film, DownloadSource.BUTTON, null, "", "", aufloesung)
+            val download = DatenDownload(pSet, film, DownloadSource.BUTTON, null, "", "", aufloesung, downloads.replacementRules)
             download.runtime.startRun()
             launchDownloadThread(download)
             // gestartete Filme (originalURL des Films) auch in die History eintragen

@@ -5,6 +5,7 @@ import mediathek.daten.DatenPset;
 import mediathek.daten.ProgramSetRepository;
 import mediathek.gui.dialogEinstellungen.pset.PanelPsetKurz;
 import mediathek.gui.dialogEinstellungen.pset.PanelPsetLang;
+import mediathek.tool.ReplacementRules;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
@@ -17,15 +18,18 @@ import java.util.function.BiConsumer;
 public class PanelPset extends JPanel {
     private final JFrame parentComponent;
     private final ProgramSetRepository programSets;
+    private final ReplacementRules replacementRules;
     private final BiConsumer<DatenPset[], String> programSetExporter;
 
     public PanelPset(
             JFrame parentComponent,
             ProgramSetRepository programSets,
+            ReplacementRules replacementRules,
             BiConsumer<DatenPset[], String> programSetExporter
     ) {
         this.parentComponent = parentComponent;
         this.programSets = programSets;
+        this.replacementRules = replacementRules;
         this.programSetExporter = programSetExporter;
 
         initComponents();
@@ -48,7 +52,8 @@ public class PanelPset extends JPanel {
                     parentComponent,
                     programSets,
                     programSets.getList(),
-                    programSetExporter
+                    programSetExporter,
+                    replacementRules
             ), BorderLayout.CENTER);
         } else {
             jPanelPset.add(new PanelPsetKurz(parentComponent, programSets.getList()), BorderLayout.CENTER);

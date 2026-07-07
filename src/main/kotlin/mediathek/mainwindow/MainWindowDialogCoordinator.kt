@@ -31,6 +31,7 @@ import mediathek.gui.actions.MemoryMonitorAction
 import mediathek.gui.actions.ShowBandwidthUsageAction
 import mediathek.gui.dialogEinstellungen.DialogEinstellungen
 import mediathek.gui.filmInformation.FilmInfoDialog
+import mediathek.tool.ReplacementRules
 import org.apache.logging.log4j.LogManager
 import java.awt.Window
 import java.util.function.BiConsumer
@@ -40,6 +41,7 @@ class MainWindowDialogCoordinator(
     private val filmCatalog: FilmCatalog,
     private val filmListLoader: FilmeLaden,
     private val blacklist: BlacklistServices,
+    private val replacementRules: ReplacementRules,
     private val configurationPersistence: DatenConfigurationPersistence,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
     private val owner: Window,
@@ -102,6 +104,7 @@ class MainWindowDialogCoordinator(
             filmCatalog,
             filmListLoader,
             blacklist,
+            replacementRules,
             configurationPersistence,
             programSetExporter,
         ).also {

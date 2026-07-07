@@ -52,6 +52,7 @@ class DatenDownload() : Comparable<DatenDownload> {
     private var websiteUrl = ""
     private var legacyTypeText: String? = null
     private var legacySourceText: String? = null
+    private var replacementRules: ReplacementRules? = null
 
     constructor(
         pSet: DatenPset,
@@ -61,7 +62,9 @@ class DatenDownload() : Comparable<DatenDownload> {
         name: String,
         pfad: String,
         aufloesung: String,
+        replacementRules: ReplacementRules? = null,
     ) : this() {
+        this.replacementRules = replacementRules
         this.film = film
         this.pSet = pSet
         this.abo = abo
@@ -95,7 +98,7 @@ class DatenDownload() : Comparable<DatenDownload> {
 
         setGroesseFromFilm()
 
-        aufrufBauen(pSet, film, abo, name, pfad)
+        buildInvocation(pSet, film, abo, name, pfad)
         init()
     }
 
@@ -109,7 +112,8 @@ class DatenDownload() : Comparable<DatenDownload> {
         aufloesung: String,
         info: Boolean,
         subtitle: Boolean,
-    ) : this(pSet, film, quelle, abo, name, pfad, aufloesung) {
+        replacementRules: ReplacementRules? = null,
+    ) : this(pSet, film, quelle, abo, name, pfad, aufloesung, replacementRules) {
         isInfoFile = info
         isSubtitle = subtitle
     }
@@ -427,11 +431,11 @@ class DatenDownload() : Comparable<DatenDownload> {
     val textBandbreite: String
         get() = DownloadRuntimeText.bandwidth(runtime.runState)
 
-    fun checkAufrufBauen(): Boolean =
+    fun canBuildInvocation(): Boolean =
         pSet != null && film != null
 
-    fun aufrufBauen() {
-        aufrufBauen(
+    fun rebuildInvocation() {
+        buildInvocation(
             checkNotNull(pSet),
             checkNotNull(film),
             abo,
@@ -440,7 +444,7 @@ class DatenDownload() : Comparable<DatenDownload> {
         )
     }
 
-    private fun aufrufBauen(pSet: DatenPset, film: DatenFilm, abo: DatenAbo?, nname: String, ppfad: String) {
+    private fun buildInvocation(pSet: DatenPset, film: DatenFilm, abo: DatenAbo?, nname: String, ppfad: String) {
         try {
             val programm = pSet.getProgUrl(downloadUrl)
             pSet.zielDateiname = pSet.zielDateiname.replace("%n", "").replace("%p", "")
@@ -469,7 +473,7 @@ class DatenDownload() : Comparable<DatenDownload> {
                 applyInvocation(programm)
             }
         } catch (ex: Exception) {
-            logger.error("aufrufBauen", ex)
+            logger.error("buildInvocation", ex)
         }
     }
 
@@ -489,6 +493,7 @@ class DatenDownload() : Comparable<DatenDownload> {
             downloadUrl = downloadUrl,
             topic = topic,
             title = title,
+            replacementRules = replacementRules,
         )
 
     private fun applyTarget(target: DownloadTarget) {

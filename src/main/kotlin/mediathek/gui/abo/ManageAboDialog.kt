@@ -7,6 +7,7 @@ import mediathek.daten.abo.AboServices
 import mediathek.filmlisten.FilmCatalog
 import mediathek.filmlisten.FilmeLaden
 import mediathek.tool.EscapeKeyHandler
+import mediathek.tool.ReplacementRules
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.util.function.BiConsumer
@@ -18,6 +19,7 @@ class ManageAboDialog(
     private val programSets: ProgramSetRepository,
     private val filmCatalog: FilmCatalog,
     private val abos: AboServices,
+    private val replacementRules: ReplacementRules,
     private val filmListLoader: FilmeLaden,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : JDialog(owner) {
@@ -60,7 +62,7 @@ class ManageAboDialog(
         defaultCloseOperation = DISPOSE_ON_CLOSE
         isResizable = true
         isModal = true
-        aboPanel = ManageAboPanel(this, owner, programSets, filmCatalog, abos, filmListLoader, programSetExporter)
+        aboPanel = ManageAboPanel(this, owner, programSets, filmCatalog, abos, replacementRules, filmListLoader, programSetExporter)
         val contentPane = contentPane
         contentPane.layout = BorderLayout()
         contentPane.add(aboPanel, BorderLayout.CENTER)

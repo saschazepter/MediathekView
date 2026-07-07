@@ -236,7 +236,7 @@ class ExternalProgramDownload(
                 DialogContinueDownload.DownloadResult.RESTART_WITH_NEW_NAME -> {
                     if (dialogContinueDownload.isNewName) {
                         // jetzt den Programmaufruf nochmal mit dem geaenderten Dateinamen nochmal bauen
-                        datenDownload.aufrufBauen()
+                        datenDownload.rebuildInvocation()
                         MessageBus.messageBus.publishAsync(DownloadListChangedEvent())
                         createDirectory(logFailure = false)
                         file = File(datenDownload.targetPathFileName)

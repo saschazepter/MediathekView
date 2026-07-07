@@ -59,6 +59,7 @@ import mediathek.gui.tabs.tab_film.table.*
 import mediathek.gui.tabs.tab_film.view.FilmViewController
 import mediathek.mainwindow.FilmBookmarkHost
 import mediathek.tool.MessageBus
+import mediathek.tool.ReplacementRules
 import mediathek.tool.table.MVFilmTable
 import net.engio.mbassy.listener.Handler
 import org.jdesktop.swingx.VerticalLayout
@@ -77,6 +78,7 @@ class GuiFilme(
     private val blacklist: BlacklistServices,
     private val bookmarks: BookmarkServices,
     private val downloads: DownloadServices,
+    private val replacementRules: ReplacementRules,
     private val filmListLoader: FilmeLaden,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
     private val ownerFrame: JFrame,
@@ -286,7 +288,7 @@ class GuiFilme(
         }
 
     private fun editFilmDescription(film: DatenFilm) {
-        DialogFilmBeschreibung(ownerFrame, programSets, film).isVisible = true
+        DialogFilmBeschreibung(ownerFrame, programSets, film, replacementRules).isVisible = true
     }
 
     private fun startFilmDownloads(
@@ -439,6 +441,7 @@ class GuiFilme(
             programSets,
             filmCatalog,
             abos,
+            replacementRules,
             blacklist,
             programSetExporter,
             { tabelle },

@@ -14,6 +14,7 @@ import mediathek.gui.dialogEinstellungen.blacklist.PanelBlacklist
 import mediathek.mainwindow.SettingsDialogHost
 import mediathek.tool.EscapeKeyHandler
 import mediathek.tool.GetIcon
+import mediathek.tool.ReplacementRules
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.event.WindowAdapter
@@ -32,6 +33,7 @@ class DialogEinstellungen(
     private val filmCatalog: FilmCatalog,
     private val filmListLoader: FilmeLaden,
     private val blacklist: BlacklistServices,
+    private val replacementRules: ReplacementRules,
     private val configurationPersistence: DatenConfigurationPersistence,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : DialogEinstellungenBase() {
@@ -98,10 +100,10 @@ class DialogEinstellungen(
             createPanel = { PanelBlacklist(blacklist, filmCatalog, filmListLoader, this) },
         )
 
-        val dateinamen = SettingsPage(NAME_DATEINAME, createPanel = { PanelDateinamen() })
+        val dateinamen = SettingsPage(NAME_DATEINAME, createPanel = { PanelDateinamen(replacementRules) })
         val pset = SettingsPage(
             NAME_PROGRAMMSET,
-            createPanel = { PanelPset(this, programSets, programSetExporter) },
+            createPanel = { PanelPset(this, programSets, replacementRules, programSetExporter) },
         )
         val psetImport = SettingsPage(
             NAME_PROGRAMMSET_IMPORTIEREN,

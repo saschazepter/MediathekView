@@ -37,6 +37,7 @@ class DialogFilmBeschreibung(
     private val parent: JFrame?,
     private val programSets: ProgramSetRepository,
     private val datenFilm: DatenFilm,
+    private val replacementRules: ReplacementRules,
 ) : DialogFilmBeschreibungBase(parent) {
     private val dialogScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
 
@@ -113,10 +114,10 @@ class DialogFilmBeschreibung(
 
     private fun buildDestinationPath(): String {
         val applicationConfiguration = ApplicationConfiguration.getInstance()
-        val title = FilenameUtils.replaceLeerDateiname(
+        val title = FilenameUtils.replaceEmptyFilename(
             datenFilm.title,
             false,
-            applicationConfiguration.useFilenameReplaceTable,
+            replacementRules.takeIf { applicationConfiguration.useFilenameReplaceTable },
             applicationConfiguration.onlyAsciiFilenames,
         )
         val saveProgramSets = programSets.list.listeSpeichern

@@ -36,6 +36,7 @@ import mediathek.gui.tabs.tab_film.PyLoadHelper
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.table.FilmTableButtonClickHandler
 import mediathek.tool.GuiFunktionenProgramme
+import mediathek.tool.ReplacementRules
 import mediathek.tool.table.MVFilmTable
 import java.awt.Point
 import java.awt.event.MouseAdapter
@@ -56,6 +57,7 @@ class TableContextMenuHandler(
         fun programSets(): ProgramSetRepository
         fun filmCatalog(): FilmCatalog
         fun abos(): AboServices
+        fun replacementRules(): ReplacementRules
         fun blacklist(): BlacklistServices
         fun programSetExporter(): BiConsumer<Array<DatenPset>, String>
         fun getCurrentlySelectedFilm(): Optional<DatenFilm>
@@ -75,6 +77,7 @@ class TableContextMenuHandler(
         host.programSets(),
         host.filmCatalog(),
         host.abos(),
+        host.replacementRules(),
         { host.ownerFrame() },
         { parent ->
             MissingProgramSetDialog.ensureAboProgramSetAvailable(parent, host.programSets()) { importParent, standardSets ->

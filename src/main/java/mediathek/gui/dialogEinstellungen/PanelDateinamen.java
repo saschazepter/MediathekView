@@ -1,10 +1,8 @@
 package mediathek.gui.dialogEinstellungen;
 
 import mediathek.config.application.ApplicationConfiguration;
-import mediathek.gui.messages.ReplaceListChangedEvent;
 import mediathek.tool.*;
 import mediathek.tool.models.NonEditableTableModel;
-import net.engio.mbassy.listener.Handler;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -15,21 +13,26 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
+import java.util.Optional;
 
 public class PanelDateinamen extends JPanel {
-    private boolean stopBeob;
-
-    @Handler
-    private void handleReplaceListChange(ReplaceListChangedEvent e) {
-        SwingUtilities.invokeLater(() -> {
-            tabelleLaden();
-            setTextfelder();
-        });
+    @FunctionalInterface
+    interface AddReplacementRuleDialog {
+        Optional<ReplaceEntry> show(Component parent);
     }
 
-    public PanelDateinamen() {
+    private final ReplacementRules replacementRules;
+    private final AddReplacementRuleDialog addReplacementRuleDialog;
+    private boolean stopBeob;
+
+    public PanelDateinamen(ReplacementRules replacementRules) {
+        this(replacementRules, PanelDateinamen::showAddReplacementRuleDialog);
+    }
+
+    PanelDateinamen(ReplacementRules replacementRules, AddReplacementRuleDialog addReplacementRuleDialog) {
+        this.replacementRules = replacementRules;
+        this.addReplacementRuleDialog = addReplacementRuleDialog;
         initComponents();
-        MessageBus.getMessageBus().subscribe(this);
 
         jLabelAlert.setVisible(false);
         jLabelAlert.setText("");
@@ -39,61 +42,63 @@ public class PanelDateinamen extends JPanel {
         jButtonUp.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/arrow-up.svg"));
         jButtonDown.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/arrow-down.svg"));
         jButtonReset.addActionListener(_ -> {
-            ReplaceList.init();
-            tabelleLaden();
-            setTextfelder();
+            replacementRules.initDefaults();
+            reloadTable();
+            updateTextFields();
         });
         jButtonPlus.addActionListener(_ -> {
-            ReplaceList.add("von", "nach");
-            tabelleLaden();
-            tabelle.setRowSelectionInterval(tabelle.getRowCount() - 1, tabelle.getRowCount() - 1);
-            setTextfelder();
+            addReplacementRuleDialog.show(this).ifPresent(entry -> {
+                replacementRules.add(entry.getFrom(), entry.getTo());
+                reloadTable();
+                tabelle.setRowSelectionInterval(tabelle.getRowCount() - 1, tabelle.getRowCount() - 1);
+                updateTextFields();
+            });
         });
         jButtonMinus.addActionListener(_ -> {
             final int selectedTableRow = tabelle.getSelectedRow();
             if (selectedTableRow != -1) {
-                ReplaceList.removeAt(selectedTableRow);
-                tabelleLaden();
-                setTextfelder();
+                replacementRules.removeAt(tabelle.convertRowIndexToModel(selectedTableRow));
+                reloadTable();
+                updateTextFields();
             }
         });
-        jButtonUp.addActionListener(_ -> upDown(true));
-        jButtonDown.addActionListener(_ -> upDown(false));
-        tabelleLaden();
-        setTextfelder();
+        jButtonUp.addActionListener(_ -> moveSelectedRule(true));
+        jButtonDown.addActionListener(_ -> moveSelectedRule(false));
+        reloadTable();
+        updateTextFields();
         tabelle.getSelectionModel().addListSelectionListener(new BeobachterTableSelect());
         jTextFieldVon.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
-                setVon();
+                updateFromText();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                setVon();
+                updateFromText();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                setVon();
+                updateFromText();
             }
         });
         jTextFieldNach.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
             public void insertUpdate(DocumentEvent e) {
-                setNach();
+                updateToText();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
-                setNach();
+                updateToText();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                setNach();
+                updateToText();
             }
         });
 
@@ -111,49 +116,120 @@ public class PanelDateinamen extends JPanel {
         jCheckBoxAscii.setSelected(applicationConfiguration.getOnlyAsciiFilenames());
     }
 
-    private void setVon() {
+    private void updateFromText() {
         if (!stopBeob) {
             final int selectedTableRow = tabelle.getSelectedRow();
             if (selectedTableRow != -1) {
-                ReplaceList.setFrom(tabelle.convertRowIndexToModel(selectedTableRow), jTextFieldVon.getText()); // leer wird beim suchen aussortiert
-                tabelleLaden();
+                replacementRules.setFrom(tabelle.convertRowIndexToModel(selectedTableRow), jTextFieldVon.getText());
+                reloadTable();
             }
         }
     }
 
-    private void setNach() {
+    private void updateToText() {
         if (!stopBeob) {
             final int selectedTableRow = tabelle.getSelectedRow();
             if (selectedTableRow != -1) {
-                ReplaceList.setTo(tabelle.convertRowIndexToModel(selectedTableRow), jTextFieldNach.getText());
-                tabelleLaden();
+                replacementRules.setTo(tabelle.convertRowIndexToModel(selectedTableRow), jTextFieldNach.getText());
+                reloadTable();
             }
         }
     }
 
-    private void upDown(boolean auf) {
+    private void moveSelectedRule(boolean up) {
         final int rows = tabelle.getSelectedRow();
         if (rows != -1) {
             final int row = tabelle.convertRowIndexToModel(rows);
-            final int neu = ReplaceList.up(row, auf);
-            tabelleLaden();
-            tabelle.setRowSelectionInterval(neu, neu);
-            tabelle.scrollRectToVisible(tabelle.getCellRect(neu, 0, true));
+            final int newIndex = replacementRules.up(row, up);
+            reloadTable();
+            tabelle.setRowSelectionInterval(newIndex, newIndex);
+            tabelle.scrollRectToVisible(tabelle.getCellRect(newIndex, 0, true));
         } else {
             NoSelectionErrorDialog.show(this);
         }
 
     }
 
-    private void tabelleLaden() {
+    private static Optional<ReplaceEntry> showAddReplacementRuleDialog(Component parent) {
+        var dialog = new JDialog(SwingUtilities.getWindowAncestor(parent), "Neue Ersetzungsregel", Dialog.ModalityType.APPLICATION_MODAL);
+        var fromField = new JTextField(24);
+        var toField = new JTextField(24);
+        var okButton = new JButton("OK");
+        var cancelButton = new JButton("Abbrechen");
+        var result = new ReplaceEntry[1];
+
+        okButton.setEnabled(false);
+        fromField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                updateOkButton();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                updateOkButton();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                updateOkButton();
+            }
+
+            private void updateOkButton() {
+                okButton.setEnabled(!fromField.getText().isEmpty());
+            }
+        });
+
+        okButton.addActionListener(_ -> {
+            result[0] = new ReplaceEntry(fromField.getText(), toField.getText());
+            dialog.dispose();
+        });
+        cancelButton.addActionListener(_ -> dialog.dispose());
+
+        var inputPanel = new JPanel(new GridBagLayout());
+        var constraints = new GridBagConstraints();
+        constraints.insets = new Insets(4, 4, 4, 4);
+        constraints.anchor = GridBagConstraints.WEST;
+        inputPanel.add(new JLabel("Von:"), constraints);
+        constraints.gridx = 1;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.weightx = 1.0;
+        inputPanel.add(fromField, constraints);
+        constraints.gridx = 0;
+        constraints.gridy = 1;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.weightx = 0.0;
+        inputPanel.add(new JLabel("Nach:"), constraints);
+        constraints.gridx = 1;
+        constraints.fill = GridBagConstraints.HORIZONTAL;
+        constraints.weightx = 1.0;
+        inputPanel.add(toField, constraints);
+
+        var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        buttonPanel.add(okButton);
+        buttonPanel.add(cancelButton);
+
+        dialog.getContentPane().setLayout(new BorderLayout(8, 8));
+        dialog.getContentPane().add(inputPanel, BorderLayout.CENTER);
+        dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
+        dialog.getRootPane().setDefaultButton(okButton);
+        dialog.pack();
+        dialog.setLocationRelativeTo(parent);
+        fromField.requestFocusInWindow();
+        dialog.setVisible(true);
+
+        return Optional.ofNullable(result[0]);
+    }
+
+    private void reloadTable() {
         stopBeob = true;
         int selectedTableRow = tabelle.getSelectedRow();
         if (selectedTableRow != -1)
             selectedTableRow = tabelle.convertRowIndexToModel(selectedTableRow);
 
-        var model = new NonEditableTableModel(new Object[][]{}, ReplaceList.columnNames());
+        var model = new NonEditableTableModel(new Object[][]{}, replacementRules.columnNames());
         model.setRowCount(0);
-        for (ReplaceEntry entry : ReplaceList.entries()) {
+        for (ReplaceEntry entry : replacementRules.entries()) {
             model.addRow(entry.toArray());
         }
 
@@ -169,20 +245,25 @@ public class PanelDateinamen extends JPanel {
         } else if (tabelle.getRowCount() > 0) {
             tabelle.setRowSelectionInterval(0, 0);
         }
-        jLabelAlert.setVisible(ReplaceList.check());
+        jLabelAlert.setVisible(replacementRules.check());
         stopBeob = false;
     }
 
-    private void setTextfelder() {
+    private void updateTextFields() {
+        stopBeob = true;
         final int selectedTableRow = tabelle.getSelectedRow();
-        if (selectedTableRow != -1) {
-            var model = tabelle.getModel();
-            var modelRow = tabelle.convertRowIndexToModel(selectedTableRow);
-            jTextFieldVon.setText(model.getValueAt(modelRow, ReplaceList.VON_NR).toString());
-            jTextFieldNach.setText(model.getValueAt(modelRow, ReplaceList.NACH_NR).toString());
-        } else {
-            jTextFieldVon.setText("");
-            jTextFieldNach.setText("");
+        try {
+            if (selectedTableRow != -1) {
+                var model = tabelle.getModel();
+                var modelRow = tabelle.convertRowIndexToModel(selectedTableRow);
+                jTextFieldVon.setText(model.getValueAt(modelRow, ReplacementRules.VON_NR).toString());
+                jTextFieldNach.setText(model.getValueAt(modelRow, ReplacementRules.NACH_NR).toString());
+            } else {
+                jTextFieldVon.setText("");
+                jTextFieldNach.setText("");
+            }
+        } finally {
+            stopBeob = false;
         }
 
         jTextFieldNach.setEnabled(selectedTableRow >= 0);
@@ -461,7 +542,7 @@ public class PanelDateinamen extends JPanel {
             if (!stopBeob) {
                 if (!event.getValueIsAdjusting()) {
                     stopBeob = true;
-                    setTextfelder();
+                    updateTextFields();
                     stopBeob = false;
                 }
             }

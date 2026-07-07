@@ -31,6 +31,7 @@ import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.bookmark.BookmarkServices
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.tool.GuiFunktionenProgramme
+import mediathek.tool.ReplacementRules
 import java.util.function.BiConsumer
 
 class Daten {
@@ -39,12 +40,14 @@ class Daten {
     val blacklist: BlacklistServices = BlacklistServices(filmCatalog)
     val bookmarks: BookmarkServices = BookmarkServices(filmCatalog.allFilms)
     val abos: AboServices = AboServices(filmCatalog.allFilms)
+    val replacementRules: ReplacementRules = ReplacementRules()
     val filmListLoader: FilmeLaden = FilmeLaden(filmCatalog, abos, blacklist)
     val downloads: DownloadServices = DownloadServices(
         filmCatalog,
         programSets,
         abos,
         blacklist,
+        replacementRules,
         showMissingAboProgramSet = { parent ->
             MissingProgramSetDialog.showMissingAboProgramSet(parent, programSets) { importParent, standardSets ->
                 GuiFunktionenProgramme.addSetVorlagen(
@@ -64,6 +67,7 @@ class Daten {
         blacklist = blacklist,
         abos = abos,
         bookmarks = bookmarks,
+        replacementRules = replacementRules,
     )
 
     private fun programSetExporter(): BiConsumer<Array<DatenPset>, String> =

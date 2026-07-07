@@ -45,6 +45,7 @@ import mediathek.gui.tabs.actions.MarkFilmAsUnseenAction
 import mediathek.tool.DirOpenAction
 import mediathek.tool.DownloadSizeState
 import mediathek.tool.MessageBus
+import mediathek.tool.ReplacementRules
 import mediathek.tool.cellrenderer.CellRendererDownloads
 import mediathek.tool.datum.Datum
 import mediathek.tool.listener.BeobTableHeader
@@ -75,6 +76,7 @@ class GuiDownloads(
     private val filmCatalog: FilmCatalog,
     private val abos: AboServices,
     private val downloads: DownloadServices,
+    private val replacementRules: ReplacementRules,
     private val filmListLoader: FilmeLaden,
     private val configurationPersistence: DatenConfigurationPersistence,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
@@ -187,7 +189,7 @@ class GuiDownloads(
     private fun getSelectedDownloadsFromTable(): List<DatenDownload> = tableSelection.selectedDownloadsForLookup()
 
     private fun editFilmDescription(film: DatenFilm) {
-        DialogFilmBeschreibung(ownerFrame, programSets, film).isVisible = true
+        DialogFilmBeschreibung(ownerFrame, programSets, film, replacementRules).isVisible = true
     }
 
     private fun setupDownloadSizeSelectionUpdater() {

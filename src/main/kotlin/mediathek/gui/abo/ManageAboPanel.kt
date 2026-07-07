@@ -62,6 +62,7 @@ class ManageAboPanel(
     private val programSets: ProgramSetRepository,
     private val filmCatalog: FilmCatalog,
     private val abos: AboServices,
+    private val replacementRules: ReplacementRules,
     private val filmListLoader: FilmeLaden,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : JPanel() {
@@ -71,6 +72,7 @@ class ManageAboPanel(
         programSets,
         filmCatalog,
         abos,
+        replacementRules,
         { owner },
         this::ensureAboProgramSetAvailable,
     )

@@ -276,7 +276,12 @@ class FilenameUtils private constructor() {
          * @param name Dateiname
          * @return Bereinigte Fassung
          */
-        fun replaceLeerDateiname(name: String, isPath: Boolean, userReplace: Boolean, onlyAscii: Boolean): String {
+        fun replaceEmptyFilename(
+            name: String,
+            isPath: Boolean,
+            replacementRules: ReplacementRules?,
+            onlyAscii: Boolean,
+        ): String {
             var ret = name
             var isWindowsPath = false
             if (SystemUtils.IS_OS_WINDOWS && isPath && ret.length > 1 && ret[1] == ':') {
@@ -286,8 +291,8 @@ class FilenameUtils private constructor() {
             }
 
             // zuerst die Ersetzungstabelle mit den Wünschen des Users
-            if (userReplace) {
-                ret = ReplaceList.replace(ret, isPath)
+            if (replacementRules != null) {
+                ret = replacementRules.replace(ret, isPath)
             }
 
             // und wenn gewünscht: "NUR Ascii-Zeichen"

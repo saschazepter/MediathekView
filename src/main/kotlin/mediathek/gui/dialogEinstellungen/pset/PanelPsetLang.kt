@@ -44,7 +44,8 @@ class PanelPsetLang(
     private val parentComponent: JFrame?,
     private val programSets: ProgramSetRepository,
     private val listePset: ListePset,
-    private val programSetExporter: BiConsumer<Array<DatenPset>, String>
+    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
+    private val replacementRules: ReplacementRules? = null,
 ) : PanelPsetLangBase() {
     private var neuZaehler = 0
     private val tabellePset: MVTable = MVPsetTable()
@@ -862,10 +863,10 @@ class PanelPsetLang(
             val entryName = liste.first().name
             val name = if (entryName.isEmpty()) "Name.xml" else "$entryName.xml"
             val applicationConfiguration = ApplicationConfiguration.getInstance()
-            val fileName = FilenameUtils.replaceLeerDateiname(
+            val fileName = FilenameUtils.replaceEmptyFilename(
                 name,
                 false,
-                applicationConfiguration.useFilenameReplaceTable,
+                replacementRules.takeIf { applicationConfiguration.useFilenameReplaceTable },
                 applicationConfiguration.onlyAsciiFilenames
             )
             val resultFile = FileDialogs.chooseSaveFileLocation(parentFrame(), "PSet exportieren", fileName)

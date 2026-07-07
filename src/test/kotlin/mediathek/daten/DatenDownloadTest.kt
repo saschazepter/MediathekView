@@ -372,7 +372,7 @@ internal class DatenDownloadTest {
 
         copiedDownload.programInvocation = ""
         copiedDownload.programInvocationArray = ""
-        copiedDownload.aufrufBauen()
+        copiedDownload.rebuildInvocation()
 
         assertTrue(copiedDownload.programInvocation.contains("--web https://example.invalid/film-page"))
     }

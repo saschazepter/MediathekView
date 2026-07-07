@@ -27,7 +27,7 @@ import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.gui.bookmark.BookmarkServices
-import mediathek.tool.ReplaceList
+import mediathek.tool.ReplacementRules
 import org.apache.logging.log4j.LogManager
 import java.nio.file.Files
 import java.nio.file.Path
@@ -39,6 +39,7 @@ class DatenConfigurationPersistence(
     private val blacklist: BlacklistServices,
     private val abos: AboServices,
     private val bookmarks: BookmarkServices,
+    private val replacementRules: ReplacementRules,
 ) {
     private var backupAlreadyHandled = false
 
@@ -67,7 +68,7 @@ class DatenConfigurationPersistence(
 
     private fun clearConfiguration() {
         programSets.clear()
-        ReplaceList.clear()
+        replacementRules.clear()
         abos.list.clear()
         downloads.clearQueuedDownloads()
         blacklist.rules.clear()
@@ -160,6 +161,7 @@ class DatenConfigurationPersistence(
             downloads = downloads,
             blacklistRules = blacklist.rules,
             abos = abos.list,
+            replacementRules = replacementRules,
         )
 
     private companion object {

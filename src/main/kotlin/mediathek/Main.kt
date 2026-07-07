@@ -752,7 +752,7 @@ object Main {
     private suspend fun loadConfigurationData(daten: Daten) = withContext(Dispatchers.Swing) {
         if (!daten.configurationPersistence.loadAll()) {
             // erster Start
-            ReplaceList.init() // einmal ein Muster anlegen, für Linux/OS X ist es bereits aktiv!
+            daten.replacementRules.initDefaults() // einmal ein Muster anlegen, für Linux/OS X ist es bereits aktiv!
             SplashScreenLifecycle.close()
 
             val programSetExporter = BiConsumer<Array<DatenPset>, String> { programSets, target ->
