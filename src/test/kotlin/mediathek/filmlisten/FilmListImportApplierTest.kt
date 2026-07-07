@@ -31,6 +31,19 @@ class FilmListImportApplierTest {
     }
 
     @Test
+    fun `applyImportedFilms clears stale new flags when film urls existed before`() {
+        val first = film("ARD", "First").apply { isNew = true }
+        val second = film("ZDF", "Second").apply { isNew = true }
+        val films = filmList(first, second)
+        val oldFilmUrls = setOf(first.urlNormalQuality, second.urlNormalQuality)
+
+        FilmListImportApplier.applyImportedFilms(films, ListeFilme(), oldFilmUrls)
+
+        assertFalse(first.isNew)
+        assertFalse(second.isNew)
+    }
+
+    @Test
     fun `applyImportedFilms merges diff list and transfers metadata`() {
         val oldFilm = film("ARD", "Old")
         val replacement = film("ARD", "Replacement")

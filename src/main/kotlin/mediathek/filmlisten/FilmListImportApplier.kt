@@ -18,7 +18,6 @@
 
 package mediathek.filmlisten
 
-import mediathek.daten.DatenFilm
 import mediathek.daten.ListeFilme
 import org.apache.logging.log4j.LogManager
 import java.time.Instant
@@ -29,10 +28,11 @@ import java.util.*
 
 internal object FilmListImportApplier {
     fun collectFilmUrls(listeFilme: ListeFilme): Set<String> =
-        listeFilme.parallelStream()
-            .map { film -> film.urlNormalQuality }
-            .toList()
-            .toHashSet()
+        synchronized(listeFilme) {
+            HashSet<String>(listeFilme.size + 1, 1f).apply {
+                listeFilme.forEach { film -> add(film.urlNormalQuality) }
+            }
+        }
 
     fun applyImportedFilms(listeFilme: ListeFilme, diffListe: ListeFilme, oldFilmUrls: Set<String>) {
         val readDate = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm")
@@ -61,14 +61,11 @@ internal object FilmListImportApplier {
      * Search through history and mark new films.
      */
     private fun findAndMarkNewFilms(listeFilme: ListeFilme, oldFilmUrls: Set<String>) {
-        // reset all current new films to false
-        listeFilme.parallelStream()
-            .filter(DatenFilm::isNew)
-            .forEach { film -> film.isNew = false }
-        // mark new entries
-        listeFilme.parallelStream()
-            .filter { film -> film.urlNormalQuality !in oldFilmUrls }
-            .forEach { film -> film.isNew = true }
+        synchronized(listeFilme) {
+            listeFilme.forEach { film ->
+                film.isNew = film.urlNormalQuality !in oldFilmUrls
+            }
+        }
     }
 
     private val logger = LogManager.getLogger(FilmListImportApplier::class.java)
