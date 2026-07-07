@@ -37,6 +37,7 @@ import mediathek.daten.IndexedFilmList
 import mediathek.daten.abo.AboServices
 import mediathek.gui.dialog.DialogStarteinstellungen
 import mediathek.gui.tabs.tab_film.filter.FilmLengthSlider
+import mediathek.logging.JavaUtilLoggingConfiguration
 import mediathek.logging.SwingAppender
 import mediathek.mac.MediathekGuiMac
 import mediathek.mainwindow.MediathekGui
@@ -80,13 +81,15 @@ import kotlin.system.exitProcess
 object Main {
     private const val LOG4J_SHUTDOWN_CALLBACK_REGISTRY = "mediathek.tool.Log4jShutdownCallbackRegistry"
     private const val MAC_SYSTEM_PROPERTY_APPLE_LAF_USE_SCREEN_MENU_BAR = "apple.laf.useScreenMenuBar"
+
+    init {
+        JavaUtilLoggingConfiguration.install()
+        System.setProperty("log4j.shutdownCallbackRegistry", LOG4J_SHUTDOWN_CALLBACK_REGISTRY)
+    }
+
     private val logger: Logger = LogManager.getLogger(Main::class.java)
 
     private var singleInstanceWatcher: SingleInstance? = null
-
-    init {
-        System.setProperty("log4j.shutdownCallbackRegistry", LOG4J_SHUTDOWN_CALLBACK_REGISTRY)
-    }
 
     @JvmStatic
     fun main(args: Array<String>) = runBlocking {
@@ -411,6 +414,7 @@ object Main {
 
     private fun setupEnvironmentProperties() {
         System.setProperty("file.encoding", "UTF-8")
+        JavaUtilLoggingConfiguration.install()
 
         //enable full strength crypto if not already done
         Security.setProperty("crypto.policy", "unlimited")
