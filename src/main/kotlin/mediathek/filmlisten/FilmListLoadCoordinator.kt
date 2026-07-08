@@ -38,7 +38,7 @@ private enum class NoUpdateCompletion {
     POST_PROCESS,
 }
 
-class FilmeLaden(
+class FilmListLoadCoordinator(
     private val filmCatalog: FilmCatalog,
     abos: AboServices,
     blacklist: BlacklistServices,
@@ -369,6 +369,6 @@ class FilmeLaden(
     }
 
     companion object {
-        private val logger = LogManager.getLogger(FilmeLaden::class.java)
+        private val logger = LogManager.getLogger(FilmListLoadCoordinator::class.java)
     }
 }

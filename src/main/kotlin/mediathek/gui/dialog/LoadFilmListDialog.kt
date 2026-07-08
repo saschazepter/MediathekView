@@ -3,7 +3,7 @@ package mediathek.gui.dialog
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.actions.DisposeDialogAction
 import mediathek.gui.dialogEinstellungen.PanelFilmlisteLaden
 import mediathek.swing.centerOnScreen
@@ -23,7 +23,7 @@ import javax.swing.JScrollPane
 class LoadFilmListDialog(
     owner: Frame?,
     private val filmCatalog: FilmCatalog,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
 ) : JDialog(owner, "Filmliste laden", true) {
     private val contentPanel: PanelFilmlisteLaden
     private val logger: Logger = LogManager.getLogger()

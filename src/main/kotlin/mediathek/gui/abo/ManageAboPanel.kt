@@ -31,7 +31,7 @@ import mediathek.daten.abo.DatenAbo
 import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.actions.CreateNewAboAction
 import mediathek.gui.dialog.DialogEditAbo
 import mediathek.gui.dialog.MissingProgramSetDialog
@@ -63,7 +63,7 @@ class ManageAboPanel(
     private val filmCatalog: FilmCatalog,
     private val abos: AboServices,
     private val replacementRules: ReplacementRules,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : JPanel() {
     private val tabelle = AboTable()

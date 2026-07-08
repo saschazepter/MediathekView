@@ -19,7 +19,7 @@
 package mediathek.mainwindow
 
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.dialog.LoadFilmListDialog
 import mediathek.tool.FilmListUpdateType
 import javax.swing.JFrame
@@ -27,7 +27,7 @@ import javax.swing.JFrame
 class MainWindowFilmlistLoadCoordinator(
     private val owner: JFrame,
     private val filmCatalog: FilmCatalog,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val statusBarController: MainWindowStatusBarController,
 ) : AutoCloseable {
     private var startupFilmlistLoader: StartupFilmlistLoader? = null

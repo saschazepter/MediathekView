@@ -23,7 +23,7 @@ import kotlinx.coroutines.swing.Swing
 import mediathek.config.application.FilterConfiguration
 import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.filmlisten.FilmListLoadListener
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.messages.*
 import mediathek.gui.messages.history.SeenHistoryChangedEvent
 import mediathek.gui.tabs.tab_film.FilmToolBar
@@ -36,7 +36,7 @@ import mediathek.tool.table.MVFilmTable
 class FilmLifecycleController(private val host: Host) {
     interface Host {
         fun messageBusSubscriber(): Any
-        fun filmListLoader(): FilmeLaden
+        fun filmListLoader(): FilmListLoadCoordinator
         fun table(): MVFilmTable
         fun filterConfiguration(): FilterConfiguration
         fun bookmarkStartupReloadCoordinator(): BookmarkStartupReloadCoordinator

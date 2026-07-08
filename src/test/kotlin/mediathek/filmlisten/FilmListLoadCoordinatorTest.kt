@@ -20,7 +20,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 @ResourceLock("SenderFilmlistLoadApprover")
-class FilmeLadenTest {
+class FilmListLoadCoordinatorTest {
     @TempDir
     lateinit var tempDir: Path
 
@@ -278,18 +278,18 @@ class FilmeLadenTest {
         awaitNotRunning(loader)
     }
 
-    private fun loader(): FilmeLaden {
+    private fun loader(): FilmListLoadCoordinator {
         val filmCatalog = FilmCatalog()
-        return FilmeLaden(
+        return FilmListLoadCoordinator(
             filmCatalog,
             AboServices(filmCatalog.allFilms),
             BlacklistServices(filmCatalog),
         )
     }
 
-    private fun loader(importer: FilmListImporter): FilmeLaden {
+    private fun loader(importer: FilmListImporter): FilmListLoadCoordinator {
         val filmCatalog = FilmCatalog()
-        return FilmeLaden(
+        return FilmListLoadCoordinator(
             filmCatalog,
             AboServices(filmCatalog.allFilms),
             BlacklistServices(filmCatalog),
@@ -314,7 +314,7 @@ class FilmeLadenTest {
         return handle
     }
 
-    private suspend fun awaitNotRunning(loader: FilmeLaden) {
+    private suspend fun awaitNotRunning(loader: FilmListLoadCoordinator) {
         withTimeout(5_000) {
             while (loader.isFilmListLoadRunning) {
                 delay(10)

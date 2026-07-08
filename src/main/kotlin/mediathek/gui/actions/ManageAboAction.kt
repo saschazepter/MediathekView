@@ -4,7 +4,7 @@ import mediathek.daten.DatenPset
 import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.abo.ManageAboDialog
 import mediathek.swing.IconUtils
 import mediathek.tool.ReplacementRules
@@ -20,7 +20,7 @@ class ManageAboAction(
     private val filmCatalog: FilmCatalog,
     private val abos: AboServices,
     private val replacementRules: ReplacementRules,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : AbstractAction() {
     private var dialog: ManageAboDialog? = null

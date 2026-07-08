@@ -34,7 +34,7 @@ import mediathek.daten.abo.AboServices
 import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.filmlisten.reader.FilmListReader
 import mediathek.gui.bookmark.BookmarkServices
 import mediathek.tool.BandwidthFormatter
@@ -47,7 +47,7 @@ import kotlin.time.Duration.Companion.seconds
 class DownloadAndQuitRunner(
     private val downloads: DownloadServices,
     private val filmCatalog: FilmCatalog,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val abos: AboServices,
     private val bookmarks: BookmarkServices,
     private val configurationPersistence: DatenConfigurationPersistence,

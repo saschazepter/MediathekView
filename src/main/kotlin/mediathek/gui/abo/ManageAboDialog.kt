@@ -5,7 +5,7 @@ import mediathek.daten.DatenPset
 import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.tool.EscapeKeyHandler
 import mediathek.tool.ReplacementRules
 import java.awt.BorderLayout
@@ -20,7 +20,7 @@ class ManageAboDialog(
     private val filmCatalog: FilmCatalog,
     private val abos: AboServices,
     private val replacementRules: ReplacementRules,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : JDialog(owner) {
     private val applicationConfiguration = ApplicationConfiguration.getInstance()

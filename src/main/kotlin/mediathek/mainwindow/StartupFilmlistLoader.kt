@@ -27,7 +27,7 @@ import mediathek.filmlisten.FilmListLoadHandle
 import mediathek.filmlisten.FilmListLoadPresenter
 import mediathek.filmlisten.FilmListProgressHandle
 import mediathek.filmlisten.FilmListStatusBarWidgets
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.filmlisten.reader.FilmListReader
 import mediathek.gui.messages.FilmListReadStartEvent
 import mediathek.gui.messages.FilmListReadStopEvent
@@ -44,7 +44,7 @@ fun interface StartupFilmlistLoadCompletion {
 
 class StartupFilmlistLoader(
     private val filmCatalog: FilmCatalog,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val progressLabel: JLabel,
     private val progressBar: JProgressBar,
     private val completion: StartupFilmlistLoadCompletion,

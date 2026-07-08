@@ -28,7 +28,7 @@ import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.SenderFilmlistLoadApprover
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.messages.FilmListImportTypeChangedEvent
 import mediathek.swing.IconUtils
 import mediathek.tool.*
@@ -46,7 +46,7 @@ class PanelFilmlisteLaden(
     inSettingsDialog: Boolean,
     private val owner: Frame,
     private val filmCatalog: FilmCatalog,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
 ) : PanelFilmlisteLadenBase() {
     private val applicationConfiguration = ApplicationConfiguration.getInstance()
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)

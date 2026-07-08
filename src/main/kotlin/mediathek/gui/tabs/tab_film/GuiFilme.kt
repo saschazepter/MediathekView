@@ -27,7 +27,7 @@ import mediathek.daten.*
 import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.actions.DeleteBookmarksAction
 import mediathek.gui.actions.ManageBookmarkAction
 import mediathek.gui.actions.PlayFilmAction
@@ -79,7 +79,7 @@ class GuiFilme(
     private val bookmarks: BookmarkServices,
     private val downloads: DownloadServices,
     private val replacementRules: ReplacementRules,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
     private val ownerFrame: JFrame,
     private val toggleBlacklistAction: Action,

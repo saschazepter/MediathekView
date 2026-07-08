@@ -29,7 +29,7 @@ import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.dialog.HelpTextDialog
 import mediathek.gui.messages.BlacklistAboSettingChangedEvent
 import mediathek.gui.messages.BlacklistChangedEvent
@@ -53,7 +53,7 @@ import javax.swing.table.TableStringConverter
 class PanelBlacklist(
     private val blacklist: BlacklistServices,
     private val filmCatalog: FilmCatalog,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val parentComponent: JFrame?,
 ) : PanelBlacklistBase() {
     private val aboSettingEventSource = Any()

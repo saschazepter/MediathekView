@@ -7,7 +7,7 @@ import mediathek.daten.DatenPset
 import mediathek.daten.ProgramSetRepository
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.dialogEinstellungen.allgemein.LuceneDirectoryModePanel
 import mediathek.gui.dialogEinstellungen.allgemein.PanelEinstellungen
 import mediathek.gui.dialogEinstellungen.blacklist.PanelBlacklist
@@ -31,7 +31,7 @@ class DialogEinstellungen(
     private val host: SettingsDialogHost,
     private val programSets: ProgramSetRepository,
     private val filmCatalog: FilmCatalog,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val blacklist: BlacklistServices,
     private val replacementRules: ReplacementRules,
     private val configurationPersistence: DatenConfigurationPersistence,

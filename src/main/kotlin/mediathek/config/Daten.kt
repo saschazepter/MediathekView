@@ -27,7 +27,7 @@ import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.bookmark.BookmarkServices
 import mediathek.gui.dialog.MissingProgramSetDialog
 import mediathek.tool.GuiFunktionenProgramme
@@ -41,7 +41,7 @@ class Daten {
     val bookmarks: BookmarkServices = BookmarkServices(filmCatalog.allFilms)
     val abos: AboServices = AboServices(filmCatalog.allFilms)
     val replacementRules: ReplacementRules = ReplacementRules()
-    val filmListLoader: FilmeLaden = FilmeLaden(filmCatalog, abos, blacklist)
+    val filmListLoader: FilmListLoadCoordinator = FilmListLoadCoordinator(filmCatalog, abos, blacklist)
     val downloads: DownloadServices = DownloadServices(
         filmCatalog,
         programSets,

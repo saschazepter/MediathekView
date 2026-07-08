@@ -22,7 +22,7 @@ import mediathek.controller.starter.DownloadServices
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.filmlisten.FilmListLoadListener
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.filmlisten.NoOpFilmListLoadPresenter
 import mediathek.gui.bookmark.BookmarkServices
 import mediathek.gui.messages.TableModelChangeEvent
@@ -34,7 +34,7 @@ import javax.swing.UIManager
 class MainWindowLifecycle(
     private val messageBusSubscriber: Any,
     private val downloads: DownloadServices,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val blacklist: BlacklistServices,
     private val bookmarks: BookmarkServices,
     private val dialogOwner: MainWindowHandle,

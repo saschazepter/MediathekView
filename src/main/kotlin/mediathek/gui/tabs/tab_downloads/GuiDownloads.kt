@@ -33,7 +33,7 @@ import mediathek.daten.abo.AboServices
 import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.actions.*
 import mediathek.gui.dialog.DialogBeendenZeit
 import mediathek.gui.dialog.DialogFilmBeschreibung
@@ -77,7 +77,7 @@ class GuiDownloads(
     private val abos: AboServices,
     private val downloads: DownloadServices,
     private val replacementRules: ReplacementRules,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val configurationPersistence: DatenConfigurationPersistence,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
     private val ownerFrame: JFrame,

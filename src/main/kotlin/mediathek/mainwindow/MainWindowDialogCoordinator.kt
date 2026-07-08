@@ -25,7 +25,7 @@ import mediathek.daten.DatenPset
 import mediathek.daten.ProgramSetRepository
 import mediathek.daten.blacklist.BlacklistServices
 import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.gui.actions.ManageAboAction
 import mediathek.gui.actions.MemoryMonitorAction
 import mediathek.gui.actions.ShowBandwidthUsageAction
@@ -39,7 +39,7 @@ import java.util.function.BiConsumer
 class MainWindowDialogCoordinator(
     private val programSets: ProgramSetRepository,
     private val filmCatalog: FilmCatalog,
-    private val filmListLoader: FilmeLaden,
+    private val filmListLoader: FilmListLoadCoordinator,
     private val blacklist: BlacklistServices,
     private val replacementRules: ReplacementRules,
     private val configurationPersistence: DatenConfigurationPersistence,
