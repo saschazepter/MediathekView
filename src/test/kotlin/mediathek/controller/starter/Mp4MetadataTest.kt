@@ -2,9 +2,7 @@ package mediathek.controller.starter
 
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files
@@ -47,9 +45,10 @@ internal class Mp4MetadataTest {
         assertEquals("2026-07-08", metadata["date"])
         assertEquals("Ein Fall an der Küste.", metadata["description"])
         assertEquals("Ein Fall an der Küste.", metadata["synopsis"])
-        assertEquals("MediathekView", metadata["comment"])
+        assertEquals("Ein Fall an der Küste.", metadata["comment"])
         assertFalse(metadata.keys.any { it.startsWith("mediathekview_") })
         assertFalse(metadata.values.any { it.contains("example.invalid") })
+        assertFalse(metadata.values.any { it == "MediathekView" })
     }
 
     @Test
@@ -68,8 +67,8 @@ internal class Mp4MetadataTest {
         assertEquals("ZDF", metadata["artist"])
         assertEquals("Doku", metadata["album"])
         assertEquals("2026-07-08", metadata["date"])
-        assertEquals("MediathekView", metadata["comment"])
         assertTrue("description" !in metadata)
+        assertTrue("comment" !in metadata)
     }
 
     @Test
@@ -96,7 +95,7 @@ internal class Mp4MetadataTest {
             },
         )
 
-        assertEquals(setOf("title", "artist", "album", "date", "comment"), captured.keys)
+        assertEquals(setOf("title", "artist", "album", "date"), captured.keys)
     }
 
     @Test

@@ -50,7 +50,7 @@ internal object Mp4Metadata {
             putIfNotBlank("date", toIsoDate(download.date.ifBlank { film?.sendeDatum.orEmpty() }))
             putIfNotBlank("description", description)
             putIfNotBlank("synopsis", description)
-            putIfNotBlank("comment", "MediathekView")
+            putIfNotBlank("comment", description)
         }.filterKeys { it in standardTagNames }
     }
 

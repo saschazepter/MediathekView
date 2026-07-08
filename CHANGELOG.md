@@ -1,3 +1,6 @@
+# **15.0.1**
+- **FEATURE:** Optionales Schreiben von MP4-Metadaten nach dem Download hinzugefügt. Die Funktion kann pro Download oder über ein Programmset aktiviert werden und schreibt Standard-MP4-Tags wieTitel, Sender, Thema, Sendedatum und Beschreibung in fertige MP4-Dateien.
+
 # **15.0.0**
 - **Diese Version ist NICHT abwärtskompatibel mit älteren MediathekView-Versionen.**
 - JetBrains Runtime JBR 25.0.2 wird verwendet
