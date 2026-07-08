@@ -26,8 +26,8 @@ import mediathek.config.MVColor
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.blacklist.BlacklistRule
 import mediathek.daten.blacklist.BlacklistServices
-import mediathek.filmeSuchen.ListenerFilmeLaden
-import mediathek.filmeSuchen.ListenerFilmeLadenEvent
+import mediathek.filmlisten.FilmListLoadProgress
+import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmCatalog
 import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.dialog.HelpTextDialog
@@ -58,8 +58,8 @@ class PanelBlacklist(
 ) : PanelBlacklistBase() {
     private val aboSettingEventSource = Any()
     private val tableModel = BlacklistRuleTableModel(blacklist.rules)
-    private val filmLoadListener = object : ListenerFilmeLaden() {
-        override fun fertig(event: ListenerFilmeLadenEvent) {
+    private val filmLoadListener = object : FilmListLoadListener {
+        override fun loadFinished(event: FilmListLoadProgress) {
             comboThemaLaden()
             scheduleFilteredCountRefresh()
         }
@@ -126,7 +126,7 @@ class PanelBlacklist(
             return
         }
         MessageBus.messageBus.subscribe(this)
-        filmListLoader.addFilmLoadListener(filmLoadListener)
+        filmListLoader.addLoadListener(filmLoadListener)
         listenersRegistered = true
     }
 
@@ -135,7 +135,7 @@ class PanelBlacklist(
             return
         }
         MessageBus.messageBus.unsubscribe(this)
-        filmListLoader.removeFilmLoadListener(filmLoadListener)
+        filmListLoader.removeLoadListener(filmLoadListener)
         listenersRegistered = false
     }
 

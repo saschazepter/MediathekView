@@ -18,8 +18,8 @@
 
 package mediathek.mainwindow
 
-import mediathek.filmeSuchen.ListenerFilmeLaden
-import mediathek.filmeSuchen.ListenerFilmeLadenEvent
+import mediathek.filmlisten.FilmListLoadProgress
+import mediathek.filmlisten.FilmListLoadListener
 import mediathek.swing.SwingDispatcher
 import java.util.function.Supplier
 import javax.swing.Action
@@ -29,17 +29,17 @@ class MainWindowFilmListListener(
     private val loadFilmListAction: Supplier<Action>,
     private val saveFilmListState: Runnable,
     private val setupAutomaticFilmlistReload: Runnable,
-) : ListenerFilmeLaden() {
-    override fun start(event: ListenerFilmeLadenEvent) {
+) : FilmListLoadListener {
+    override fun loadStarted(event: FilmListLoadProgress) {
         setLoadActionEnabled(false)
     }
 
-    override fun fertig(event: ListenerFilmeLadenEvent) {
+    override fun loadFinished(event: FilmListLoadProgress) {
         setLoadActionEnabled(true)
         saveFilmListState.run()
     }
 
-    override fun fertigOnlyOne(event: ListenerFilmeLadenEvent) {
+    override fun firstLoadFinished(event: FilmListLoadProgress) {
         uiDispatcher.dispatch(setupAutomaticFilmlistReload)
     }
 

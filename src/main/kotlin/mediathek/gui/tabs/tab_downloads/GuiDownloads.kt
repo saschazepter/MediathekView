@@ -30,8 +30,8 @@ import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
-import mediathek.filmeSuchen.ListenerFilmeLaden
-import mediathek.filmeSuchen.ListenerFilmeLadenEvent
+import mediathek.filmlisten.FilmListLoadProgress
+import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmCatalog
 import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.actions.*
@@ -929,15 +929,15 @@ class GuiDownloads(
         add(downloadListArea, BorderLayout.CENTER)
         add(toolBarRow, BorderLayout.NORTH)
 
-        filmListLoader.addFilmLoadListener(object : ListenerFilmeLaden() {
-            override fun start(event: ListenerFilmeLadenEvent) {
+        filmListLoader.addLoadListener(object : FilmListLoadListener {
+            override fun loadStarted(event: FilmListLoadProgress) {
                 loadFilmlist = true
                 SwingUtilities.invokeLater {
                     refreshDownloadListAction.isEnabled = false
                 }
             }
 
-            override fun fertig(event: ListenerFilmeLadenEvent) {
+            override fun loadFinished(event: FilmListLoadProgress) {
                 loadFilmlist = false
                 SwingUtilities.invokeLater {
                     refreshDownloadListAction.isEnabled = true

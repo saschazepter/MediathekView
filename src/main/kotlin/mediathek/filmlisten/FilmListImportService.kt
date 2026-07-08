@@ -20,7 +20,6 @@ package mediathek.filmlisten
 
 import mediathek.config.StandardLocations
 import mediathek.daten.ListeFilme
-import mediathek.filmeSuchen.ListenerFilmeLaden
 import mediathek.filmlisten.reader.FilmListReader
 import mediathek.tool.FilmListUpdateType
 import mediathek.tool.http.MVHttpClient
@@ -48,17 +47,42 @@ internal interface FilmListImportFeedback {
     fun showExceptionMessage(message: String, ex: Exception, showDialogs: Boolean)
 }
 
+internal interface FilmListImporter {
+    fun importFromUrl(
+        dateiUrl: String,
+        listeFilme: ListeFilme,
+        days: Int,
+        immerNeuLaden: Boolean,
+        prepareImport: () -> Set<String>,
+    ): FilmListImportOutcome
+
+    fun importFromFile(
+        pfad: String,
+        listeFilme: ListeFilme,
+        days: Int,
+        prepareImport: () -> Set<String>,
+    ): FilmListImportOutcome
+
+    fun importAdditionalFromFile(
+        pfad: String,
+        days: Int,
+        oldFilmUrls: Set<String>,
+    ): FilmListImportOutcome
+
+    fun reloadSavedFilmList(listeFilme: ListeFilme, days: Int)
+}
+
 internal class FilmListImportService(
     private val feedback: FilmListImportFeedback,
-    progressListener: ListenerFilmeLaden,
-) {
+    progressListener: FilmListLoadListener,
+) : FilmListImporter {
     private val filmListReader = FilmListReader()
 
     init {
-        filmListReader.addAdListener(progressListener)
+        filmListReader.addProgressListener(progressListener)
     }
 
-    fun importFromUrl(
+    override fun importFromUrl(
         dateiUrl: String,
         listeFilme: ListeFilme,
         days: Int,
@@ -83,7 +107,7 @@ internal class FilmListImportService(
         )
     }
 
-    fun importFromFile(
+    override fun importFromFile(
         pfad: String,
         listeFilme: ListeFilme,
         days: Int,
@@ -101,7 +125,7 @@ internal class FilmListImportService(
         )
     }
 
-    fun importAdditionalFromFile(
+    override fun importAdditionalFromFile(
         pfad: String,
         days: Int,
         oldFilmUrls: Set<String>,
@@ -114,7 +138,7 @@ internal class FilmListImportService(
         )
     }
 
-    fun reloadSavedFilmList(listeFilme: ListeFilme, days: Int) {
+    override fun reloadSavedFilmList(listeFilme: ListeFilme, days: Int) {
         listeFilme.clear()
         FilmListReader().use { reader ->
             reader.readFilmListe(StandardLocations.getFilmlistFilePathString(), listeFilme, days)

@@ -20,9 +20,10 @@ package mediathek.mainwindow
 
 import mediathek.controller.starter.DownloadServices
 import mediathek.daten.blacklist.BlacklistServices
-import mediathek.filmeSuchen.ListenerFilmeLaden
-import mediathek.filmeSuchen.ListenerFilmeLadenEvent
+import mediathek.filmlisten.FilmListLoadProgress
+import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmeLaden
+import mediathek.filmlisten.NoOpFilmListLoadPresenter
 import mediathek.gui.bookmark.BookmarkServices
 import mediathek.gui.messages.TableModelChangeEvent
 import mediathek.tool.MessageBus
@@ -38,8 +39,8 @@ class MainWindowLifecycle(
     private val bookmarks: BookmarkServices,
     private val dialogOwner: MainWindowHandle,
     private val lookAndFeelListener: PropertyChangeListener,
-    private val filmlistProgressListener: ListenerFilmeLaden,
-    private val filmListListener: ListenerFilmeLaden,
+    private val filmlistProgressListener: FilmListLoadListener,
+    private val filmListListener: FilmListLoadListener,
     private val filmListLoadHost: FilmListLoadHost,
     private val zeitraumFilterValueProvider: () -> String?,
 ) : AutoCloseable {
@@ -48,8 +49,9 @@ class MainWindowLifecycle(
     private var lookAndFeelListenerRegistered = false
     private var filmlistProgressListenerRegistered = false
     private var filmListListenersRegistered = false
-    private val bookmarkRefreshListener = object : ListenerFilmeLaden() {
-        override fun fertig(@Suppress("UNUSED_PARAMETER") event: ListenerFilmeLadenEvent) {
+    private val filmListLoadPresenter = SwingFilmListLoadPresenter()
+    private val bookmarkRefreshListener = object : FilmListLoadListener {
+        override fun loadFinished(@Suppress("UNUSED_PARAMETER") event: FilmListLoadProgress) {
             bookmarks.list.refreshFromCurrentFilmListAsync()
         }
     }
@@ -70,7 +72,7 @@ class MainWindowLifecycle(
             return
         }
 
-        filmListLoader.addFilmLoadListener(filmlistProgressListener)
+        filmListLoader.addLoadListener(filmlistProgressListener)
         filmlistProgressListenerRegistered = true
     }
 
@@ -81,9 +83,10 @@ class MainWindowLifecycle(
         }
 
         blacklist.setZeitraumFilterValueProvider(zeitraumFilterValueProvider)
-        filmListLoader.setUiHost(filmListLoadHost)
-        filmListLoader.addFilmLoadListener(filmListListener)
-        filmListLoader.addFilmLoadListener(bookmarkRefreshListener)
+        filmListLoadPresenter.setHost(filmListLoadHost)
+        filmListLoader.setLoadPresenter(filmListLoadPresenter)
+        filmListLoader.addLoadListener(filmListListener)
+        filmListLoader.addLoadListener(bookmarkRefreshListener)
         filmListListenersRegistered = true
     }
 
@@ -152,9 +155,10 @@ class MainWindowLifecycle(
         }
 
         blacklist.setZeitraumFilterValueProvider(null)
-        filmListLoader.setUiHost(null)
-        filmListLoader.removeFilmLoadListener(bookmarkRefreshListener)
-        filmListLoader.removeFilmLoadListener(filmListListener)
+        filmListLoadPresenter.setHost(null)
+        filmListLoader.setLoadPresenter(NoOpFilmListLoadPresenter)
+        filmListLoader.removeLoadListener(bookmarkRefreshListener)
+        filmListLoader.removeLoadListener(filmListListener)
         filmListListenersRegistered = false
     }
 
@@ -163,7 +167,7 @@ class MainWindowLifecycle(
             return
         }
 
-        filmListLoader.removeFilmLoadListener(filmlistProgressListener)
+        filmListLoader.removeLoadListener(filmlistProgressListener)
         filmlistProgressListenerRegistered = false
     }
 

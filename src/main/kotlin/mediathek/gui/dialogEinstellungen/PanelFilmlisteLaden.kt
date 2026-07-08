@@ -88,7 +88,7 @@ class PanelFilmlisteLaden(
         btnReloadFilmlist.icon = IconUtils.of(FontAwesomeSolid.REDO_ALT)
         btnReloadFilmlist.addActionListener {
             filmCatalog.allFilms.clear()
-            filmListLoader.loadFilmlist("", hasSenderSelectionChanged())
+            filmListLoader.startFilmlistLoad("", hasSenderSelectionChanged())
         }
     }
 

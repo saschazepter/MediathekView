@@ -16,48 +16,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package mediathek.filmlisten
+package mediathek.mainwindow
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
 import mediathek.config.CommandLineOptions
 import mediathek.config.Konstanten
-import mediathek.mainwindow.FilmListLoadHost
-import mediathek.mainwindow.StatusBarProgressHandle
+import mediathek.filmlisten.FilmListIndexingHost
+import mediathek.filmlisten.FilmListLoadPresenter
+import mediathek.filmlisten.FilmListProgressHandle
+import mediathek.filmlisten.FilmListStatusBarWidgets
+import mediathek.filmlisten.NoOpFilmListLoadPresenter
 import mediathek.tool.SwingErrorDialog
 import org.apache.logging.log4j.LogManager
 import java.awt.GraphicsEnvironment
-import javax.swing.JLabel
 import javax.swing.JOptionPane
-import javax.swing.JProgressBar
+import javax.swing.SwingUtilities
 
-internal data class FilmListStatusBarWidgets(
-    val handle: StatusBarProgressHandle,
-    val attachedToStatusBar: Boolean,
-    val host: FilmListLoadHost?,
-) {
-    val label: JLabel
-        get() = handle.label()
-
-    val progressBar: JProgressBar
-        get() = handle.progressBar()
-}
-
-internal class FilmListLoadUi(
-    private val scope: CoroutineScope,
-) : FilmListImportFeedback {
+internal class SwingFilmListLoadPresenter(
+    host: FilmListLoadHost? = null,
+) : FilmListLoadPresenter {
     @Volatile
-    private var host: FilmListLoadHost? = null
+    private var host: FilmListLoadHost? = host
 
     fun setHost(host: FilmListLoadHost?) {
         this.host = host
     }
-
-    val currentHost: FilmListLoadHost?
-        get() = host
 
     override fun showNoUpdateAvailable(showDialogs: Boolean) {
         val dialogHost = dialogHost()
@@ -84,7 +69,7 @@ internal class FilmListLoadUi(
         }
     }
 
-    fun showLoadFailedDialog() {
+    override fun showLoadFailedDialog() {
         val dialogHost = dialogHost() ?: return
         runOnSwing {
             JOptionPane.showMessageDialog(
@@ -96,26 +81,25 @@ internal class FilmListLoadUi(
         }
     }
 
-    suspend fun attachStatusBarWidgets(host: FilmListLoadHost?): FilmListStatusBarWidgets {
-        if (host != null) {
-            return withContext(Dispatchers.Swing) {
-                FilmListStatusBarWidgets(
-                    handle = host.showStatusBarProgress(),
-                    attachedToStatusBar = true,
-                    host = host,
-                )
-            }
+    override suspend fun <T> withStatusBarWidgets(block: suspend (FilmListStatusBarWidgets) -> T): T {
+        val statusHost = host
+        if (statusHost == null) {
+            return NoOpFilmListLoadPresenter.withStatusBarWidgets(block)
         }
-        return FilmListStatusBarWidgets(NoStatusBarProgressHandle(), attachedToStatusBar = false, host = null)
-    }
 
-    suspend fun detachStatusBarWidgets(widgets: FilmListStatusBarWidgets) {
-        if (widgets.attachedToStatusBar) {
+        val widgets = withContext(Dispatchers.Swing) {
+            val handle = statusHost.showStatusBarProgress()
+            FilmListStatusBarWidgets(
+                handle = StatusBarProgressHandleAdapter(handle),
+                host = FilmListLoadHostAdapter(statusHost),
+            )
+        }
+        try {
+            return block(widgets)
+        } finally {
             withContext(Dispatchers.Swing) {
                 widgets.handle.close()
             }
-        } else {
-            widgets.handle.close()
         }
     }
 
@@ -128,25 +112,35 @@ internal class FilmListLoadUi(
     }
 
     private fun runOnSwing(action: () -> Unit) {
-        scope.launch(Dispatchers.Swing) {
-            action()
+        SwingUtilities.invokeLater(action)
+    }
+
+    private class StatusBarProgressHandleAdapter(
+        private val delegate: StatusBarProgressHandle,
+    ) : FilmListProgressHandle {
+        override fun label() = delegate.label()
+
+        override fun progressBar() = delegate.progressBar()
+
+        override fun close() {
+            delegate.close()
         }
     }
 
-    private class NoStatusBarProgressHandle : StatusBarProgressHandle {
-        private val label = JLabel()
-        private val progressBar = JProgressBar()
+    private class FilmListLoadHostAdapter(
+        private val delegate: FilmListLoadHost,
+    ) : FilmListIndexingHost {
+        override fun ownerFrame() = delegate.ownerFrame()
 
-        override fun label(): JLabel = label
+        override fun quitApplication() = delegate.quitApplication()
 
-        override fun progressBar(): JProgressBar = progressBar
-
-        override fun close() {
+        override fun setFilmIndexingActionsEnabled(enabled: Boolean) {
+            delegate.setFilmIndexingActionsEnabled(enabled)
         }
     }
 
     private companion object {
-        private val logger = LogManager.getLogger(FilmListLoadUi::class.java)
+        private val logger = LogManager.getLogger(SwingFilmListLoadPresenter::class.java)
         private const val NO_UPDATE_AVAILABLE = "Es ist keine aktuellere Filmliste verfügbar."
     }
 }

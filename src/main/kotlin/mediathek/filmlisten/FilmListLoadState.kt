@@ -18,13 +18,29 @@
 
 package mediathek.filmlisten
 
-data class FilmListLoadOptions(
-    val writeAfterLoad: Boolean,
-    val postProcessWhenNoUpdate: Boolean = false,
-) {
-    companion object {
-        fun normal(): FilmListLoadOptions = FilmListLoadOptions(true)
+import java.util.concurrent.atomic.AtomicReference
 
-        fun readOnly(): FilmListLoadOptions = FilmListLoadOptions(false)
+internal class FilmListLoadState {
+    private val phase = AtomicReference(FilmListLoadPhase.IDLE)
+
+    val isRunning: Boolean
+        get() = phase.get() != FilmListLoadPhase.IDLE
+
+    fun tryBegin(): Boolean = phase.compareAndSet(FilmListLoadPhase.IDLE, FilmListLoadPhase.IMPORTING)
+
+    fun startPostLoad() {
+        check(phase.compareAndSet(FilmListLoadPhase.IMPORTING, FilmListLoadPhase.POST_PROCESSING)) {
+            "Post-load work can only start after a filmlist import has started."
+        }
+    }
+
+    fun finish() {
+        phase.set(FilmListLoadPhase.IDLE)
+    }
+
+    private enum class FilmListLoadPhase {
+        IDLE,
+        IMPORTING,
+        POST_PROCESSING,
     }
 }

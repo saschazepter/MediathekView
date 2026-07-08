@@ -27,14 +27,16 @@ import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.ListeFilme
 import mediathek.daten.abo.AboServices
 import mediathek.daten.blacklist.BlacklistServices
-import mediathek.filmeSuchen.ListenerFilmeLaden
-import mediathek.filmeSuchen.ListenerFilmeLadenEvent
 import mediathek.gui.messages.FilmListReadStopEvent
-import mediathek.mainwindow.FilmListLoadHost
 import mediathek.tool.FilmListUpdateType
 import mediathek.tool.MessageBus
 import org.apache.logging.log4j.LogManager
 import kotlin.coroutines.cancellation.CancellationException
+
+private enum class NoUpdateCompletion {
+    COMPLETE_LOAD,
+    POST_PROCESS,
+}
 
 class FilmeLaden(
     private val filmCatalog: FilmCatalog,
@@ -42,125 +44,206 @@ class FilmeLaden(
     blacklist: BlacklistServices,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-    private val ui = FilmListLoadUi(scope)
     private val events = FilmListLoadEventDispatcher(scope)
-    private val postLoadRunner = FilmListPostLoadRunner(filmCatalog, abos, blacklist, scope, ui)
-    private val importState = FilmListImportState()
-    private val importService = FilmListImportService(
-        feedback = ui,
-        progressListener = object : ListenerFilmeLaden() {
+    private val postLoadRunner = FilmListPostLoadRunner(filmCatalog, abos, blacklist, scope)
+    private val loadState = FilmListLoadState()
+    private var presenter: FilmListLoadPresenter = NoOpFilmListLoadPresenter
+    private var importService: FilmListImporter = createImportService()
+
+    internal constructor(
+        filmCatalog: FilmCatalog,
+        abos: AboServices,
+        blacklist: BlacklistServices,
+        importService: FilmListImporter,
+    ) : this(filmCatalog, abos, blacklist) {
+        this.importService = importService
+    }
+
+    private fun createImportService(): FilmListImporter = FilmListImportService(
+        feedback = PresenterFilmListImportFeedback { presenter },
+        progressListener = object : FilmListLoadListener {
             @Synchronized
-            override fun start(event: ListenerFilmeLadenEvent) {
-                events.notifyStart(event)
+            override fun loadStarted(progress: FilmListLoadProgress) {
+                events.notifyStart(progress)
             }
 
             @Synchronized
-            override fun progress(event: ListenerFilmeLadenEvent) {
-                events.notifyProgress(event)
+            override fun loadProgress(progress: FilmListLoadProgress) {
+                events.notifyProgress(progress)
             }
 
-            @Suppress("UNUSED_PARAMETER")
             @Synchronized
-            override fun fertig(event: ListenerFilmeLadenEvent) {
+            override fun loadFinished(progress: FilmListLoadProgress) {
                 // handled by the async import methods below
             }
         },
     )
+
     private fun displayLogInfo(listeFilme: ListeFilme) {
         logger.info("Alte Liste erstellt am: {}", listeFilme.metaData.generationDateTimeAsString)
         logger.info("  Anzahl Filme: {}", listeFilme.size)
         logger.info("  Anzahl Neue: {}", listeFilme.countNewFilms())
     }
 
-    fun loadFilmlist(dateiUrl: String, immerNeuLaden: Boolean): Boolean =
-        loadFilmlist(dateiUrl, immerNeuLaden, FilmListLoadOptions.normal())
+    fun startFilmlistLoad(dateiUrl: String, immerNeuLaden: Boolean): FilmListLoadHandle =
+        startFilmlistLoad(dateiUrl, immerNeuLaden, persistAfterLoad = true)
 
-    fun startAutomaticStartupUpdateIfNeeded(): Boolean {
+    fun startAutomaticStartupUpdate(): FilmListLoadHandle {
         if (!shouldStartAutomaticStartupUpdate()) {
-            return false
+            return FilmListLoadHandle.skipped()
         }
 
-        return loadFilmlist("", true, FilmListLoadOptions(writeAfterLoad = true, postProcessWhenNoUpdate = true))
+        return startFilmlistLoadWithNoUpdatePostProcessing("", true, persistAfterLoad = true)
     }
 
     private fun shouldStartAutomaticStartupUpdate(): Boolean =
         FilmListUpdateType.fromConfig() == FilmListUpdateType.AUTOMATIC &&
             filmCatalog.allFilms.needsUpdate()
 
-    fun loadFilmlist(dateiUrl: String, immerNeuLaden: Boolean, loadOptions: FilmListLoadOptions): Boolean {
+    internal fun startFilmlistLoad(
+        dateiUrl: String,
+        immerNeuLaden: Boolean,
+        persistAfterLoad: Boolean,
+    ): FilmListLoadHandle = startFilmlistLoad(
+        dateiUrl = dateiUrl,
+        immerNeuLaden = immerNeuLaden,
+        persistAfterLoad = persistAfterLoad,
+        noUpdateCompletion = NoUpdateCompletion.COMPLETE_LOAD,
+    )
+
+    internal fun startFilmlistLoadWithNoUpdatePostProcessing(
+        dateiUrl: String,
+        immerNeuLaden: Boolean,
+        persistAfterLoad: Boolean,
+    ): FilmListLoadHandle = startFilmlistLoad(
+        dateiUrl = dateiUrl,
+        immerNeuLaden = immerNeuLaden,
+        persistAfterLoad = persistAfterLoad,
+        noUpdateCompletion = NoUpdateCompletion.POST_PROCESS,
+    )
+
+    private fun startFilmlistLoad(
+        dateiUrl: String,
+        immerNeuLaden: Boolean,
+        persistAfterLoad: Boolean,
+        noUpdateCompletion: NoUpdateCompletion,
+    ): FilmListLoadHandle {
         // damit wird die Filmliste geladen UND auch gleich im Konfig-Ordner gespeichert
         val listeFilme = filmCatalog.allFilms
 
-        logger.trace("loadFilmlist(String,boolean,FilmListLoadOptions)")
+        logger.trace("startFilmlistLoad(String,boolean,boolean,boolean)")
         logger.info("")
         displayLogInfo(listeFilme)
 
-        if (!importState.tryBegin()) {
-            return false
-        }
-
-        val days = loadNumDays
-        if (dateiUrl.isEmpty()) {
-            logger.info("Filmliste laden (Netzwerk)")
-            runImportAsync(
-                operationName = "importFromUrl",
-                options = loadOptions,
-            ) {
-                importService.importFromUrl(dateiUrl, listeFilme, days, immerNeuLaden, ::prepareLoad)
-            }
-        } else {
-            logger.info("Filmliste laden von: {}", dateiUrl)
-            runImportAsync(
-                operationName = "importFromFile",
-                options = loadOptions,
-            ) {
-                importService.importFromFile(dateiUrl, listeFilme, days, ::prepareLoad)
+        return beginLoadOperationOrSkip { operation ->
+            if (dateiUrl.isEmpty()) {
+                startFullFilmListImportFromUrl(
+                    listeFilme = listeFilme,
+                    immerNeuLaden = immerNeuLaden,
+                    persistAfterLoad = persistAfterLoad,
+                    noUpdateCompletion = noUpdateCompletion,
+                    operation = operation,
+                )
+            } else {
+                startFullFilmListImportFromFile(
+                    dateiUrl = dateiUrl,
+                    listeFilme = listeFilme,
+                    persistAfterLoad = persistAfterLoad,
+                    noUpdateCompletion = noUpdateCompletion,
+                    operation = operation,
+                )
             }
         }
-        return true
     }
 
-    fun updateFilmlist(dateiUrl: String) {
+    private fun startFullFilmListImportFromUrl(
+        listeFilme: ListeFilme,
+        immerNeuLaden: Boolean,
+        persistAfterLoad: Boolean,
+        noUpdateCompletion: NoUpdateCompletion,
+        operation: FilmListLoadOperation,
+    ) {
+        logger.info("Filmliste laden (Netzwerk)")
+        runImportAsync(
+            operationName = "importFromUrl",
+            persistAfterLoad = persistAfterLoad,
+            operation = operation,
+            completeNoUpdate = { finishNoUpdateImport(noUpdateCompletion, operation) },
+        ) {
+            importService.importFromUrl("", listeFilme, loadNumDays, immerNeuLaden, ::prepareLoad)
+        }
+    }
+
+    private fun startFullFilmListImportFromFile(
+        dateiUrl: String,
+        listeFilme: ListeFilme,
+        persistAfterLoad: Boolean,
+        noUpdateCompletion: NoUpdateCompletion,
+        operation: FilmListLoadOperation,
+    ) {
+        logger.info("Filmliste laden von: {}", dateiUrl)
+        runImportAsync(
+            operationName = "importFromFile",
+            persistAfterLoad = persistAfterLoad,
+            operation = operation,
+            completeNoUpdate = { finishNoUpdateImport(noUpdateCompletion, operation) },
+        ) {
+            importService.importFromFile(dateiUrl, listeFilme, loadNumDays, ::prepareLoad)
+        }
+    }
+
+    fun startFilmlistUpdate(dateiUrl: String): FilmListLoadHandle {
         // damit wird die Filmliste mit einer weiteren aktualisiert (die bestehende bleibt
         // erhalten) UND auch gleich im Konfig-Ordner gespeichert
         logger.debug("Filme laden (Update), start")
         logger.info("")
         displayLogInfo(filmCatalog.allFilms)
 
-        if (!beginLoad()) {
-            return
+        return beginLoadOperationOrSkip { operation ->
+            startAdditionalFilmListImport(dateiUrl, operation)
         }
+    }
 
+    private fun startAdditionalFilmListImport(
+        dateiUrl: String,
+        operation: FilmListLoadOperation,
+    ) {
         logger.info("Filmliste laden von: {}", dateiUrl)
         val sourceUrl = dateiUrl.ifEmpty {
             StandardLocations.getFilmListUrl(FilmListDownloadType.FULL)
         }
         val oldFilmUrls = prepareLoad()
         runImportAsync(
-            operationName = "importFromFile",
-            options = FilmListLoadOptions.normal(),
+            operationName = "importAdditionalFromFile",
+            persistAfterLoad = true,
+            operation = operation,
+            completeNoUpdate = { finishLoad(FilmListLoadProgress.completed(failed = false), operation) },
         ) {
             importService.importAdditionalFromFile(sourceUrl, loadNumDays, oldFilmUrls)
         }
     }
 
-    fun addFilmLoadListener(listener: ListenerFilmeLaden) {
+    fun addLoadListener(listener: FilmListLoadListener) {
         events.addListener(listener)
     }
 
-    fun removeFilmLoadListener(listener: ListenerFilmeLaden) {
+    fun removeLoadListener(listener: FilmListLoadListener) {
         events.removeListener(listener)
     }
 
-    fun setUiHost(host: FilmListLoadHost?) {
-        ui.setHost(host)
+    internal fun setLoadPresenter(presenter: FilmListLoadPresenter) {
+        this.presenter = presenter
     }
 
-    val isFilmListImportRunning: Boolean
-        get() = importState.isRunning
+    val isFilmListLoadRunning: Boolean
+        get() = loadState.isRunning
 
-    private fun beginLoad(): Boolean {
-        return importState.tryBegin()
+    private fun beginLoadOperationOrSkip(startLoad: (FilmListLoadOperation) -> Unit): FilmListLoadHandle {
+        val operation = FilmListLoadOperation.begin(loadState)
+        if (operation.handle.started) {
+            startLoad(operation)
+        }
+        return operation.handle
     }
 
     private fun prepareLoad(): Set<String> {
@@ -174,13 +257,16 @@ class FilmeLaden(
 
     private fun runImportAsync(
         operationName: String,
-        options: FilmListLoadOptions,
+        persistAfterLoad: Boolean,
+        operation: FilmListLoadOperation,
+        completeNoUpdate: suspend () -> Unit,
         importAction: () -> FilmListImportOutcome,
     ) {
         scope.launch {
             val outcome = try {
                 importAction()
             } catch (ex: CancellationException) {
+                operation.completeExceptionally(ex)
                 throw ex
             } catch (ex: Exception) {
                 logger.error(operationName, ex)
@@ -189,29 +275,35 @@ class FilmeLaden(
 
             logger.trace("Filme laden, ende")
             if (outcome.result == FilmListImportResult.NO_UPDATE) {
-                importState.finish()
-                if (options.postProcessWhenNoUpdate) {
-                    val statusBarWidgets = ui.attachStatusBarWidgets(ui.currentHost)
-                    startPostLoadWork(writeFilmList = false, statusBarWidgets)
-                } else {
-                    events.notifyFinished(ListenerFilmeLadenEvent("", "", 100, 100, false))
-                }
+                completeNoUpdate()
                 return@launch
             }
             finishImport(
-                ListenerFilmeLadenEvent("", "", 0, 0, outcome.result != FilmListImportResult.SUCCESS),
-                options,
+                failed = outcome.result != FilmListImportResult.SUCCESS,
+                persistAfterLoad,
                 outcome.oldFilmUrls,
                 outcome.importedDiffList,
+                operation,
             )
         }
     }
 
+    private suspend fun finishNoUpdateImport(
+        noUpdateCompletion: NoUpdateCompletion,
+        operation: FilmListLoadOperation,
+    ) {
+        when (noUpdateCompletion) {
+            NoUpdateCompletion.COMPLETE_LOAD -> finishLoad(FilmListLoadProgress.completed(failed = false), operation)
+            NoUpdateCompletion.POST_PROCESS -> startPostLoadWork(persistFilmList = false, operation)
+        }
+    }
+
     private suspend fun finishImport(
-        event: ListenerFilmeLadenEvent,
-        options: FilmListLoadOptions,
+        failed: Boolean,
+        persistAfterLoad: Boolean,
         oldFilmUrls: Set<String>,
         diffListe: ListeFilme,
+        operation: FilmListLoadOperation,
     ) {
         // Abos eintragen in der gesamten Liste vor Blacklist da das nur beim Ändern der Filmliste oder
         // beim Ändern von Abos gemacht wird
@@ -220,20 +312,7 @@ class FilmeLaden(
         val listeFilme = filmCatalog.allFilms
         FilmListImportApplier.applyImportedFilms(listeFilme, diffListe, oldFilmUrls)
 
-        val host = ui.currentHost
-        importState.finish()
-        val writeFilmList = if (event.fehler) {
-            logger.info("")
-            logger.info("Filmliste laden war fehlerhaft, alte Liste wird wieder geladen")
-            ui.showLoadFailedDialog()
-
-            importService.reloadSavedFilmList(listeFilme, loadNumDays)
-            logger.info("")
-
-            false
-        } else {
-            options.writeAfterLoad
-        }
+        val persistFilmList = if (failed) restoreSavedFilmListAfterFailure(listeFilme) else persistAfterLoad
 
         logger.info("")
         logger.info("Jetzige Liste erstellt am: {}", listeFilme.metaData.generationDateTimeAsString)
@@ -242,16 +321,51 @@ class FilmeLaden(
         logger.info("")
 
         MessageBus.messageBus.publish(FilmListReadStopEvent())
-        val statusBarWidgets = ui.attachStatusBarWidgets(host)
-        startPostLoadWork(writeFilmList, statusBarWidgets)
+        startPostLoadWork(persistFilmList, operation, failed)
     }
 
-    fun completeStartupFilmListLoad(failed: Boolean) {
-        events.notifyFinished(ListenerFilmeLadenEvent("", "", 100, 100, failed))
+    private fun restoreSavedFilmListAfterFailure(listeFilme: ListeFilme): Boolean {
+        logger.info("")
+        logger.info("Filmliste laden war fehlerhaft, alte Liste wird wieder geladen")
+        presenter.showLoadFailedDialog()
+
+        importService.reloadSavedFilmList(listeFilme, loadNumDays)
+        logger.info("")
+
+        return false
     }
 
-    private fun startPostLoadWork(writeFilmList: Boolean, widgets: FilmListStatusBarWidgets) {
-        postLoadRunner.start(writeFilmList, widgets, events::notifyFinished)
+    internal fun startStartupPostLoad(failed: Boolean, startupPresenter: FilmListLoadPresenter): FilmListLoadHandle =
+        beginLoadOperationOrSkip { operation ->
+            scope.launch {
+                if (failed) {
+                    finishLoad(FilmListLoadProgress.completed(failed = true), operation)
+                } else {
+                    operation.startPostLoad()
+                    postLoadRunner.start(persistFilmList = false, startupPresenter) { progress ->
+                        finishLoad(progress, operation)
+                    }
+                }
+            }
+        }
+
+    private suspend fun startPostLoadWork(
+        persistFilmList: Boolean,
+        operation: FilmListLoadOperation,
+        failed: Boolean = false,
+    ) {
+        operation.startPostLoad()
+        postLoadRunner.start(persistFilmList, presenter) { progress ->
+            finishLoad(progress.copy(failed = progress.failed || failed), operation)
+        }
+    }
+
+    private fun finishLoad(
+        progress: FilmListLoadProgress,
+        operation: FilmListLoadOperation,
+    ) {
+        events.notifyFinished(progress)
+        operation.finish(progress)
     }
 
     companion object {

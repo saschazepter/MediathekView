@@ -21,8 +21,8 @@ package mediathek.gui.tabs.tab_film.lifecycle
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.application.FilterConfiguration
-import mediathek.filmeSuchen.ListenerFilmeLaden
-import mediathek.filmeSuchen.ListenerFilmeLadenEvent
+import mediathek.filmlisten.FilmListLoadProgress
+import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.messages.*
 import mediathek.gui.messages.history.SeenHistoryChangedEvent
@@ -55,7 +55,7 @@ class FilmLifecycleController(private val host: Host) {
 
     fun start() {
         MessageBus.messageBus.subscribe(host.messageBusSubscriber())
-        host.filmListLoader().addFilmLoadListener(filmListReloadListener)
+        host.filmListLoader().addLoadListener(filmListReloadListener)
         launchOnSwing { host.requestTableReload() }
     }
 
@@ -63,7 +63,7 @@ class FilmLifecycleController(private val host: Host) {
         host.saveTableConfiguration()
         host.swingFilterDialog()?.dispose()
         host.closeFilterSelectionModel()
-        host.filmListLoader().removeFilmLoadListener(filmListReloadListener)
+        host.filmListLoader().removeLoadListener(filmListReloadListener)
         uiScope.cancel()
     }
 
@@ -130,14 +130,14 @@ class FilmLifecycleController(private val host: Host) {
         uiScope.launch { block() }
     }
 
-    private fun createFilmListReloadListener(): ListenerFilmeLaden =
-        object : ListenerFilmeLaden() {
-            override fun start(@Suppress("UNUSED_PARAMETER") event: ListenerFilmeLadenEvent) {
+    private fun createFilmListReloadListener(): FilmListLoadListener =
+        object : FilmListLoadListener {
+            override fun loadStarted(@Suppress("UNUSED_PARAMETER") event: FilmListLoadProgress) {
                 launchOnSwing { host.swingFilterDialog()?.onFilmDataLoadingStarted() }
                 host.bookmarkStartupReloadCoordinator().onFilmListLoadingStarted()
             }
 
-            override fun fertig(@Suppress("UNUSED_PARAMETER") event: ListenerFilmeLadenEvent) {
+            override fun loadFinished(@Suppress("UNUSED_PARAMETER") event: FilmListLoadProgress) {
                 launchOnSwing {
                     host.swingFilterDialog()?.onFilmDataLoaded()
                     if (host.bookmarkStartupReloadCoordinator()

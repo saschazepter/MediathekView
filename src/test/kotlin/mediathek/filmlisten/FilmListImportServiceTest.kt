@@ -4,7 +4,6 @@ import com.sun.net.httpserver.HttpServer
 import mediathek.controller.SenderFilmlistLoadApprover
 import mediathek.daten.DatenFilm
 import mediathek.daten.ListeFilme
-import mediathek.filmeSuchen.ListenerFilmeLaden
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
@@ -101,6 +100,18 @@ class FilmListImportServiceTest {
     }
 
     @Test
+    fun `importFromFile forwards reader progress to import progress listener`() {
+        val progressListener = RecordingImportProgressListener()
+        val service = service(progressListener = progressListener)
+        val source = writeFilmList("progress.json", filmEntry("APPROVED", "New", "New title")).toString()
+
+        service.importFromFile(source, ListeFilme(), 0) { emptySet() }
+
+        assertEquals(source, progressListener.startedSource)
+        assertEquals(source, progressListener.finishedSource)
+    }
+
+    @Test
     fun `importFromUrl returns no update for not modified response without preparing import`() {
         val films = ListeFilme().apply { add(film("APPROVED", "Current", "Current title")) }
         val feedback = RecordingFeedback()
@@ -123,10 +134,13 @@ class FilmListImportServiceTest {
         }
     }
 
-    private fun service(feedback: FilmListImportFeedback = RecordingFeedback()): FilmListImportService =
+    private fun service(
+        feedback: FilmListImportFeedback = RecordingFeedback(),
+        progressListener: FilmListLoadListener = NoOpImportProgressListener,
+    ): FilmListImportService =
         FilmListImportService(
             feedback = feedback,
-            progressListener = ListenerFilmeLaden(),
+            progressListener = progressListener,
         )
 
     private fun withNotModifiedServer(block: (String) -> Unit) {
@@ -152,6 +166,29 @@ class FilmListImportServiceTest {
         }
 
         override fun showExceptionMessage(message: String, ex: Exception, showDialogs: Boolean) = Unit
+    }
+
+    private object NoOpImportProgressListener : FilmListLoadListener {
+        override fun loadStarted(progress: FilmListLoadProgress) = Unit
+
+        override fun loadProgress(progress: FilmListLoadProgress) = Unit
+
+        override fun loadFinished(progress: FilmListLoadProgress) = Unit
+    }
+
+    private class RecordingImportProgressListener : FilmListLoadListener {
+        var startedSource: String? = null
+        var finishedSource: String? = null
+
+        override fun loadStarted(progress: FilmListLoadProgress) {
+            startedSource = progress.senderUrl
+        }
+
+        override fun loadProgress(progress: FilmListLoadProgress) = Unit
+
+        override fun loadFinished(progress: FilmListLoadProgress) {
+            finishedSource = progress.senderUrl
+        }
     }
 
     private fun approveOnly(vararg senders: String) {

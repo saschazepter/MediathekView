@@ -46,7 +46,7 @@ class LoadFilmListDialog(
 
             if (FilmListUpdateType.fromConfig() == FilmListUpdateType.AUTOMATIC) {
                 //easy, just load
-                filmListLoader.loadFilmlist("", immerNeuLaden)
+                filmListLoader.startFilmlistLoad("", immerNeuLaden)
             } else {
                 //manual or extend
                 val strUrl = contentPanel.urlTextField.text
@@ -64,9 +64,9 @@ class LoadFilmListDialog(
                     )
                 }
                 if (contentPanel.updateCheckBox.isSelected)
-                    filmListLoader.updateFilmlist(strUrl)
+                    filmListLoader.startFilmlistUpdate(strUrl)
                 else
-                    filmListLoader.loadFilmlist(strUrl, immerNeuLaden)
+                    filmListLoader.startFilmlistLoad(strUrl, immerNeuLaden)
             }
             dispose()
         }

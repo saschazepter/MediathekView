@@ -18,17 +18,13 @@
 
 package mediathek.filmlisten
 
-import java.util.concurrent.atomic.AtomicBoolean
+data class FilmListLoadResult(
+    val failed: Boolean,
+    val skipped: Boolean = false,
+) {
+    companion object {
+        fun finished(failed: Boolean): FilmListLoadResult = FilmListLoadResult(failed = failed)
 
-internal class FilmListImportState {
-    private val running = AtomicBoolean(false)
-
-    val isRunning: Boolean
-        get() = running.get()
-
-    fun tryBegin(): Boolean = running.compareAndSet(false, true)
-
-    fun finish() {
-        running.set(false)
+        fun skipped(): FilmListLoadResult = FilmListLoadResult(failed = false, skipped = true)
     }
 }

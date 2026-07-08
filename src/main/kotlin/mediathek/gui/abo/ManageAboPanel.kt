@@ -28,8 +28,8 @@ import mediathek.daten.ProgramSetRepository
 import mediathek.daten.abo.AboServices
 import mediathek.daten.abo.AboTags
 import mediathek.daten.abo.DatenAbo
-import mediathek.filmeSuchen.ListenerFilmeLaden
-import mediathek.filmeSuchen.ListenerFilmeLadenEvent
+import mediathek.filmlisten.FilmListLoadProgress
+import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmCatalog
 import mediathek.filmlisten.FilmeLaden
 import mediathek.gui.actions.CreateNewAboAction
@@ -87,19 +87,19 @@ class ManageAboPanel(
     private val infiniteProgressPanel = InfiniteProgressPanel()
     private val btnEditAbo = JButton()
     private val scrollPane = JScrollPane(tabelle)
-    private val filmLoadListener = object : ListenerFilmeLaden() {
+    private val filmLoadListener = object : FilmListLoadListener {
         @Suppress("UNUSED_PARAMETER")
-        override fun start(event: ListenerFilmeLadenEvent) {
+        override fun loadStarted(event: FilmListLoadProgress) {
             markAboFilmCountsLoadingFromLoad()
         }
 
         @Suppress("UNUSED_PARAMETER")
-        override fun fertig(event: ListenerFilmeLadenEvent) {
+        override fun loadFinished(event: FilmListLoadProgress) {
             scheduleAboFilmCountRefresh()
         }
 
         @Suppress("UNUSED_PARAMETER")
-        override fun fertigOnlyOne(event: ListenerFilmeLadenEvent) {
+        override fun firstLoadFinished(event: FilmListLoadProgress) {
             scheduleAboFilmCountRefresh()
         }
     }
@@ -118,7 +118,7 @@ class ManageAboPanel(
         updateInfoText()
 
         MessageBus.messageBus.subscribe(this)
-        filmListLoader.addFilmLoadListener(filmLoadListener)
+        filmListLoader.addLoadListener(filmLoadListener)
 
         initListeners()
         initializeTable()
@@ -141,7 +141,7 @@ class ManageAboPanel(
     override fun removeNotify() {
         if (!disposed) {
             disposed = true
-            filmListLoader.removeFilmLoadListener(filmLoadListener)
+            filmListLoader.removeLoadListener(filmLoadListener)
             countRefreshJob?.cancel()
             uiScope.cancel()
             tableBinding.dispose()
@@ -332,7 +332,7 @@ class ManageAboPanel(
         }
 
     private fun initializeAboFilmCounts() {
-        if (filmListLoader.isFilmListImportRunning) {
+        if (filmListLoader.isFilmListLoadRunning) {
             markAboFilmCountsLoading()
         } else {
             scheduleAboFilmCountRefresh()

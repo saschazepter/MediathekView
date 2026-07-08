@@ -27,7 +27,7 @@ import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.IoXmlSchreiben
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
-import mediathek.filmeSuchen.ListenerFilmeLaden
+import mediathek.filmlisten.FilmListLoadListener
 import mediathek.gui.actions.*
 import mediathek.gui.bookmark.BookmarkDialog
 import mediathek.gui.dialogEinstellungen.DialogEinstellungen
@@ -207,8 +207,6 @@ open class MediathekGui private constructor(
         this,
         daten.filmCatalog,
         daten.filmListLoader,
-        daten.abos,
-        daten.blacklist,
         statusBarController,
     )
     private val filmlistDownloadProgressListener =
@@ -320,7 +318,7 @@ open class MediathekGui private constructor(
             daten.downloads,
             loadFilmListAction,
         ) { filmlistLoadCoordinator.performFilmListLoadOperation(false) }
-        val filmListListener: ListenerFilmeLaden = MainWindowFilmListListener(
+        val filmListListener: FilmListLoadListener = MainWindowFilmListListener(
             SwingDispatch,
             { loadFilmListAction },
             { daten.configurationPersistence.saveAll() },
