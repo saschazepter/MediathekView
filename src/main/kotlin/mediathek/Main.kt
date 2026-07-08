@@ -749,28 +749,30 @@ object Main {
         }
     }
 
-    private suspend fun loadConfigurationData(daten: Daten) = withContext(Dispatchers.Swing) {
-        if (!daten.configurationPersistence.loadAll()) {
+    private suspend fun loadConfigurationData(daten: Daten) {
+        if (!daten.configurationPersistence.loadAllForGui()) {
             // erster Start
-            daten.replacementRules.initDefaults() // einmal ein Muster anlegen, für Linux/OS X ist es bereits aktiv!
-            SplashScreenLifecycle.close()
+            withContext(Dispatchers.Swing) {
+                daten.replacementRules.initDefaults() // einmal ein Muster anlegen, für Linux/OS X ist es bereits aktiv!
+                SplashScreenLifecycle.close()
 
-            val programSetExporter = BiConsumer<Array<DatenPset>, String> { programSets, target ->
-                IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
-            }
-            val dialog = DialogStarteinstellungen(null, daten.programSets, daten.blacklist, programSetExporter)
-            if (dialog.showDialog() == DialogStarteinstellungen.ResultCode.CANCELLED) {
-                //show termination dialog
-                JOptionPane.showMessageDialog(
-                    null,
-                    "<html>Sie haben die Einrichtung des Programms abgebrochen.<br>" +
-                        "MediathekView muss deshalb beendet werden.</html>",
-                    Konstanten.PROGRAMMNAME,
-                    JOptionPane.ERROR_MESSAGE
-                )
+                val programSetExporter = BiConsumer<Array<DatenPset>, String> { programSets, target ->
+                    IoXmlSchreiben(DatenXmlConfigDataFactory.from(daten)).exportPset(programSets, target)
+                }
+                val dialog = DialogStarteinstellungen(null, daten.programSets, daten.blacklist, programSetExporter)
+                if (dialog.showDialog() == DialogStarteinstellungen.ResultCode.CANCELLED) {
+                    //show termination dialog
+                    JOptionPane.showMessageDialog(
+                        null,
+                        "<html>Sie haben die Einrichtung des Programms abgebrochen.<br>" +
+                            "MediathekView muss deshalb beendet werden.</html>",
+                        Konstanten.PROGRAMMNAME,
+                        JOptionPane.ERROR_MESSAGE
+                    )
 
-                deleteSettingsDirectory()
-                exitProcess(1)
+                    deleteSettingsDirectory()
+                    exitProcess(1)
+                }
             }
         }
         applyRuntimeConfigOverrides()
