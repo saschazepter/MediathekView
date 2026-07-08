@@ -109,7 +109,9 @@ class DialogFilmBeschreibung(
     }
 
     private suspend fun writeInfoFile(path: Path) = withContext(Dispatchers.IO) {
-        MVInfoFile().writeInfoFile(datenFilm, path, datenFilm.urlNormalQuality.toHttpUrlOrNull())
+        val url = datenFilm.urlNormalQuality.toHttpUrlOrNull()
+            ?: throw IOException("Cannot write info file for invalid download URL: ${datenFilm.urlNormalQuality}")
+        MVInfoFile().writeInfoFile(datenFilm, path, url)
     }
 
     private fun buildDestinationPath(): String {
