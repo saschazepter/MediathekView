@@ -18,6 +18,8 @@
 
 package mediathek.controller.history
 
+import com.google.common.hash.BloomFilter
+import com.google.common.hash.Funnels
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -28,10 +30,12 @@ import mediathek.sqlite.SeenHistoryCorruptionHandler
 import mediathek.tool.MessageBus
 import mediathek.tool.sql.SqlDatabaseConfig
 import org.apache.logging.log4j.LogManager
+import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.sql.SQLException
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
+import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -56,10 +60,6 @@ class SeenHistoryController : AutoCloseable {
     }
 
     internal fun markSeen(entry: SeenHistoryEntry): Boolean {
-        if (SeenHistoryCache.contains(entry.source, entry.url)) {
-            return false
-        }
-
         val inserted = runStoreCatching("markSeen single", false) {
             insertSeenEntry(entry)
         }
@@ -162,7 +162,11 @@ class SeenHistoryController : AutoCloseable {
 
     internal fun hasBeenSeen(source: SeenHistorySource, url: String): Boolean {
         if (SeenHistoryCache.isPrepared(source)) {
-            return SeenHistoryCache.contains(source, url)
+            return hasBeenSeenFromPreparedCache(source, url) {
+                runStoreCatching("hasBeenSeen", false) {
+                    containsUrl(source, url)
+                }
+            }
         }
 
         return runStoreCatching("hasBeenSeen", false) {
@@ -240,6 +244,23 @@ class SeenHistoryController : AutoCloseable {
             }
         }
 
+        fun prepareSharedMemoryCache(source: SeenHistorySource) {
+            SeenHistoryController().use { controller ->
+                controller.prepareMemoryCache(source)
+            }
+        }
+
+        fun hasBeenSeenFromSharedCache(source: SeenHistorySource, url: String): Boolean {
+            if (!SeenHistoryCache.isPrepared(source)) {
+                prepareSharedMemoryCache(source)
+            }
+            return hasBeenSeenFromPreparedCache(source, url) {
+                runSharedStoreCatching("hasBeenSeen", false) {
+                    containsUrl(source, url)
+                }
+            }
+        }
+
         fun closeSharedStore() {
             runBlocking {
                 withContext(databaseDispatcher) {
@@ -255,6 +276,43 @@ class SeenHistoryController : AutoCloseable {
             }
         }
 
+        private fun <T> runSharedStoreCatching(
+            errorMessage: String,
+            fallback: T,
+            block: suspend SeenHistoryStore.() -> T
+        ): T {
+            return try {
+                runBlocking {
+                    withContext(databaseDispatcher) {
+                        sharedStore().block()
+                    }
+                }
+            } catch (ex: SQLException) {
+                logger.error(errorMessage, ex)
+                fallback
+            }
+        }
+
+        private fun hasBeenSeenFromPreparedCache(
+            source: SeenHistorySource,
+            url: String,
+            exactLookup: () -> Boolean,
+        ): Boolean {
+            if (url.isBlank()) {
+                return false
+            }
+            if (SeenHistoryCache.containsVerified(source, url)) {
+                return true
+            }
+            if (!SeenHistoryCache.mightContain(source, url)) {
+                return false
+            }
+
+            val seen = exactLookup()
+            SeenHistoryCache.recordLookup(source, url, seen)
+            return seen
+        }
+
     }
 }
 
@@ -267,26 +325,28 @@ internal data class SeenHistoryEntry(
 
 internal object SeenHistoryCache {
     private val lock = Any()
-    private val urlCaches = SeenHistorySource.entries.associateWith {
-        java.util.concurrent.ConcurrentHashMap.newKeySet<String>()
-    }
-    private val preparedSources = java.util.concurrent.ConcurrentHashMap.newKeySet<SeenHistorySource>()
+    private val caches = SeenHistorySource.entries.associateWith { SourceCache() }
 
-    fun isPrepared(source: SeenHistorySource): Boolean = preparedSources.contains(source)
+    fun isPrepared(source: SeenHistorySource): Boolean =
+        cacheFor(source).bloomFilter != null
 
-    fun size(source: SeenHistorySource): Int = cacheFor(source).size
+    fun size(source: SeenHistorySource): Long =
+        cacheFor(source).bloomFilter?.approximateElementCount() ?: 0L
 
-    fun contains(source: SeenHistorySource, url: String): Boolean =
-        isPrepared(source) && url.isNotBlank() && cacheFor(source).contains(url)
+    fun containsVerified(source: SeenHistorySource, url: String): Boolean =
+        url.isNotBlank() && cacheFor(source).verifiedSeenUrls.contains(url)
+
+    fun mightContain(source: SeenHistorySource, url: String): Boolean =
+        url.isNotBlank() && cacheFor(source).bloomFilter?.mightContain(url) == true
 
     fun load(source: SeenHistorySource, urls: Set<String>) {
         synchronized(lock) {
             if (isPrepared(source)) {
                 return
             }
-            cacheFor(source).clear()
-            cacheFor(source).addAll(urls)
-            preparedSources.add(source)
+            val cache = cacheFor(source)
+            cache.verifiedSeenUrls.clear()
+            cache.bloomFilter = createBloomFilter(urls)
         }
     }
 
@@ -302,9 +362,14 @@ internal object SeenHistoryCache {
             return
         }
         synchronized(lock) {
-            if (isPrepared(source)) {
-                urls.asSequence().filter(String::isNotBlank).forEach(cacheFor(source)::add)
-            }
+            val cache = cacheFor(source)
+            val bloomFilter = cache.bloomFilter ?: return
+            urls.asSequence()
+                .filter(String::isNotBlank)
+                .forEach { url ->
+                    bloomFilter.put(url)
+                    cache.verifiedSeenUrls.add(url)
+                }
         }
     }
 
@@ -316,23 +381,54 @@ internal object SeenHistoryCache {
     }
 
     fun remove(source: SeenHistorySource, urls: Collection<String>) {
-        if (!isPrepared(source) || urls.isEmpty()) {
+        if (urls.isEmpty()) {
             return
         }
         synchronized(lock) {
-            if (isPrepared(source)) {
-                urls.asSequence().filter(String::isNotBlank).forEach(cacheFor(source)::remove)
-            }
+            val cache = cacheFor(source)
+            urls.asSequence().filter(String::isNotBlank).forEach(cache.verifiedSeenUrls::remove)
+        }
+    }
+
+    fun recordLookup(source: SeenHistorySource, url: String, seen: Boolean) {
+        if (url.isBlank()) {
+            return
+        }
+        val verifiedSeenUrls = cacheFor(source).verifiedSeenUrls
+        if (seen) {
+            verifiedSeenUrls.add(url)
+        } else {
+            verifiedSeenUrls.remove(url)
         }
     }
 
     fun clear() {
         synchronized(lock) {
-            urlCaches.values.forEach(MutableSet<String>::clear)
-            preparedSources.clear()
+            caches.values.forEach { cache ->
+                cache.bloomFilter = null
+                cache.verifiedSeenUrls.clear()
+            }
         }
     }
 
-    private fun cacheFor(source: SeenHistorySource): MutableSet<String> =
-        urlCaches.getValue(source)
+    private fun cacheFor(source: SeenHistorySource): SourceCache =
+        caches.getValue(source)
+
+    private fun createBloomFilter(urls: Set<String>): BloomFilter<CharSequence> {
+        val bloomFilter = BloomFilter.create(
+            Funnels.stringFunnel(StandardCharsets.UTF_8),
+            urls.size.toLong().coerceAtLeast(1),
+            FALSE_POSITIVE_PROBABILITY,
+        )
+        urls.asSequence().filter(String::isNotBlank).forEach(bloomFilter::put)
+        return bloomFilter
+    }
+
+    private class SourceCache {
+        @Volatile
+        var bloomFilter: BloomFilter<CharSequence>? = null
+        val verifiedSeenUrls: MutableSet<String> = ConcurrentHashMap.newKeySet()
+    }
+
+    private const val FALSE_POSITIVE_PROBABILITY = 0.000001
 }

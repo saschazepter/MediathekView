@@ -73,6 +73,7 @@
         <dd-plist.version>1.29</dd-plist.version>
         <flatlaf.version>3.7.1</flatlaf.version>
         <glazedlists.version>9ace85251cc0f8e70eebc9dfdb2cb2a920cb0275</glazedlists.version>
+        <guava.version>33.5.0-jre</guava.version>
         <ikonli.version>12.4.0</ikonli.version>
         <jackson.version>3.2.0</jackson.version>
         <jaffree.version>2024.08.29</jaffree.version>
@@ -345,6 +346,12 @@
             <groupId>com.github.ben-manes.caffeine</groupId>
             <artifactId>caffeine</artifactId>
             <version>${caffeine.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${guava.version}</version>
         </dependency>
 
         <dependency>

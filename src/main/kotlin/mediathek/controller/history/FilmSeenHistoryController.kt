@@ -92,15 +92,11 @@ class FilmSeenHistoryController : AutoCloseable {
         private val logger = LogManager.getLogger()
 
         fun prepareSharedMemoryCache() {
-            FilmSeenHistoryController().use { it.prepareMemoryCache() }
+            SeenHistoryController.prepareSharedMemoryCache(SeenHistorySource.FILM)
         }
 
-        fun hasBeenSeenFromSharedCache(film: DatenFilm): Boolean {
-            if (!SeenHistoryCache.isPrepared(SeenHistorySource.FILM)) {
-                prepareSharedMemoryCache()
-            }
-            return SeenHistoryCache.contains(SeenHistorySource.FILM, film.urlNormalQuality)
-        }
+        fun hasBeenSeenFromSharedCache(film: DatenFilm): Boolean =
+            SeenHistoryController.hasBeenSeenFromSharedCache(SeenHistorySource.FILM, film.urlNormalQuality)
     }
 }
 
