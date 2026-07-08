@@ -98,4 +98,19 @@ internal class Mp4MetadataTest {
 
         assertEquals(setOf("title", "artist", "album", "date", "comment"), captured.keys)
     }
+
+    @Test
+    fun remuxOutputMapsInputFileByIndexInsteadOfFilterLabel() {
+        val output = Mp4Metadata.remuxOutput(
+            tempDir.resolve("out.mp4"),
+            mapOf("title" to "Smoke Title"),
+        )
+
+        val arguments = output.buildArguments()
+
+        assertEquals("0", arguments[arguments.indexOf("-map") + 1])
+        assertFalse("[0]" in arguments)
+        assertEquals("copy", arguments[arguments.indexOf("-c") + 1])
+        assertEquals("title=Smoke Title", arguments[arguments.indexOf("-metadata") + 1])
+    }
 }

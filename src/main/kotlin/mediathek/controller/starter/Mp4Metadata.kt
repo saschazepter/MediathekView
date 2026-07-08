@@ -90,21 +90,25 @@ internal object Mp4Metadata {
         target: Path,
         metadata: Map<String, String>,
     ): Boolean {
+        FFmpeg.atPath(ffmpegExecutable.parent)
+            .setOverwriteOutput(true)
+            .addArgument("-xerror")
+            .addInput(UrlInput.fromPath(source))
+            .addOutput(remuxOutput(target, metadata))
+            .execute()
+        return true
+    }
+
+    internal fun remuxOutput(target: Path, metadata: Map<String, String>): UrlOutput {
         var output = UrlOutput.toPath(target)
-            .addMap("0")
+            .addMap(0)
             .copyAllCodecs()
 
         metadata.forEach { (key, value) ->
             output = output.addArguments("-metadata", "$key=$value")
         }
 
-        FFmpeg.atPath(ffmpegExecutable.parent)
-            .setOverwriteOutput(true)
-            .addArgument("-xerror")
-            .addInput(UrlInput.fromUrl(source.toString()))
-            .addOutput(output)
-            .execute()
-        return true
+        return output
     }
 
     private fun MutableMap<String, String>.putIfNotBlank(key: String, value: String) {
