@@ -374,6 +374,7 @@ class DialogAddDownload(
             setGroesse(getFilmSize())
             isInfoFile = jCheckBoxInfodatei.isSelected
             isSubtitle = jCheckBoxSubtitle.isSelected
+            isMp4Metadata = jCheckBoxMp4Metadata.isSelected
         }
 
         addDownloadToQueue(startAutomatically)
@@ -388,6 +389,7 @@ class DialogAddDownload(
         selectResolution()
         updateSubtitleCheckbox()
         updateInfoFileCreationCheckBox()
+        updateMp4MetadataCheckBox()
         setNameFilm()
     }
 
@@ -441,6 +443,10 @@ class DialogAddDownload(
         } else {
             jCheckBoxSubtitle.setSelected(activeProgramSet.shouldDownloadSubtitle())
         }
+    }
+
+    private fun updateMp4MetadataCheckBox() {
+        jCheckBoxMp4Metadata.isSelected = activeProgramSet.shouldWriteMp4Metadata()
     }
 
     private fun setNameFilm() {

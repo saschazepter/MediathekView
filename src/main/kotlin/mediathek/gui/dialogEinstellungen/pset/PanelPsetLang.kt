@@ -211,6 +211,9 @@ class PanelPsetLang(
         jCheckBoxSubtitle.addActionListener {
             updateSelectedProgramSet({ it.setSubtitle(jCheckBoxSubtitle.isSelected) }, false)
         }
+        jCheckBoxMp4Metadata.addActionListener {
+            updateSelectedProgramSet({ it.setMp4Metadata(jCheckBoxMp4Metadata.isSelected) }, false)
+        }
 
         jCheckBoxSpotlight.isEnabled = SystemUtils.IS_OS_MAC_OSX
         jCheckBoxSpotlight.addActionListener {
@@ -650,6 +653,7 @@ class PanelPsetLang(
             jCheckBoxThema.isSelected = pSet.isThemaAnlegen
             jCheckBoxInfodatei.isSelected = pSet.shouldCreateInfofile()
             jCheckBoxSubtitle.isSelected = pSet.shouldDownloadSubtitle()
+            jCheckBoxMp4Metadata.isSelected = pSet.shouldWriteMp4Metadata()
             jCheckBoxSpotlight.isEnabled = SystemUtils.IS_OS_MAC_OSX
             jCheckBoxSpotlight.isSelected = pSet.isSpotlight
             jScrollPane1.border = BorderFactory.createTitledBorder(
@@ -691,6 +695,7 @@ class PanelPsetLang(
             jCheckBoxThema.isSelected = false
             jCheckBoxInfodatei.isSelected = false
             jCheckBoxSubtitle.isSelected = false
+            jCheckBoxMp4Metadata.isSelected = false
             jCheckBoxSpotlight.isSelected = false
             jTextFieldSetName.text = ""
             tfGruppeDirektSuffix.text = ""

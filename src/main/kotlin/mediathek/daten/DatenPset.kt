@@ -44,6 +44,7 @@ class DatenPset() : Comparable<DatenPset> {
     private var infodatei: Boolean? = null
     private var spotlight: Boolean? = null
     private var subtitle: Boolean? = null
+    private var mp4Metadata: Boolean? = null
 
     @set:JvmName("setNameValue")
     var name: String = ""
@@ -127,6 +128,8 @@ class DatenPset() : Comparable<DatenPset> {
      */
     fun shouldCreateInfofile(): Boolean = infodatei == true
 
+    fun shouldWriteMp4Metadata(): Boolean = mp4Metadata == true
+
     fun getPraefixDirekt(): String = praefixDirekt
 
     fun getSuffixDirekt(): String = suffixDirekt
@@ -139,6 +142,10 @@ class DatenPset() : Comparable<DatenPset> {
 
     fun setSubtitle(subtitle: Boolean) {
         this.subtitle = subtitle
+    }
+
+    fun setMp4Metadata(mp4Metadata: Boolean) {
+        this.mp4Metadata = mp4Metadata
     }
 
     fun setName(name: String?) {
@@ -173,6 +180,7 @@ class DatenPset() : Comparable<DatenPset> {
             PROGRAMMSET_INFODATEI -> boolToString(infodatei)
             PROGRAMMSET_SPOTLIGHT -> boolToString(spotlight)
             PROGRAMMSET_SUBTITLE -> boolToString(subtitle)
+            PROGRAMMSET_MP4_METADATA -> boolToString(mp4Metadata)
             else -> throw ArrayIndexOutOfBoundsException(index)
         }
 
@@ -202,6 +210,7 @@ class DatenPset() : Comparable<DatenPset> {
             PROGRAMMSET_INFODATEI -> infodatei = parseBoolean(normalizedValue)
             PROGRAMMSET_SPOTLIGHT -> spotlight = parseBoolean(normalizedValue)
             PROGRAMMSET_SUBTITLE -> subtitle = parseBoolean(normalizedValue)
+            PROGRAMMSET_MP4_METADATA -> mp4Metadata = parseBoolean(normalizedValue)
             else -> throw ArrayIndexOutOfBoundsException(index)
         }
     }
@@ -230,6 +239,7 @@ class DatenPset() : Comparable<DatenPset> {
             boolToString(infodatei),
             boolToString(spotlight),
             boolToString(subtitle),
+            boolToString(mp4Metadata),
         )
 
     fun copyFrom(values: Array<out String?>?) {
@@ -378,6 +388,7 @@ class DatenPset() : Comparable<DatenPset> {
         infodatei = null
         spotlight = null
         subtitle = null
+        mp4Metadata = null
     }
 
     private fun initializeDefaults() {
@@ -410,6 +421,9 @@ class DatenPset() : Comparable<DatenPset> {
         }
         if (this[PROGRAMMSET_SUBTITLE].isEmpty()) {
             subtitle = false
+        }
+        if (this[PROGRAMMSET_MP4_METADATA].isEmpty()) {
+            mp4Metadata = false
         }
         if (this[PROGRAMMSET_AUFLOESUNG].isEmpty()) {
             aufloesungValue = FilmResolution.Enum.NORMAL
@@ -455,9 +469,10 @@ class DatenPset() : Comparable<DatenPset> {
         const val PROGRAMMSET_INFODATEI = 19
         const val PROGRAMMSET_SPOTLIGHT = 20
         const val PROGRAMMSET_SUBTITLE = 21
+        const val PROGRAMMSET_MP4_METADATA = 22
 
         const val TAG = "Programmset"
-        const val MAX_ELEM = 22
+        const val MAX_ELEM = 23
 
         val COLUMN_NAMES: Array<String> = arrayOf(
             "Setname",
@@ -482,6 +497,7 @@ class DatenPset() : Comparable<DatenPset> {
             "Infodatei",
             "Spotlight",
             "Untertitel",
+            "MP4-Metadaten",
         )
 
         val XML_NAMES: Array<String> = arrayOf(
@@ -507,6 +523,7 @@ class DatenPset() : Comparable<DatenPset> {
             "Infodatei",
             "Spotlight",
             "Untertitel",
+            "MP4-Metadaten",
         )
 
         private val logger = LogManager.getLogger(DatenPset::class.java)

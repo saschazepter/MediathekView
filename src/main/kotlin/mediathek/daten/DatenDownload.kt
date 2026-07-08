@@ -91,6 +91,7 @@ class DatenDownload() : Comparable<DatenDownload> {
 
         isInfoFile = pSet.shouldCreateInfofile()
         isSubtitle = pSet.shouldDownloadSubtitle()
+        isMp4Metadata = pSet.shouldWriteMp4Metadata()
         isSpotlight = pSet.isSpotlight
         geo = if (!film.hasCountries()) "" else film.countriesAsString
 
@@ -330,6 +331,7 @@ class DatenDownload() : Comparable<DatenDownload> {
             infoFile = isInfoFile,
             spotlight = isSpotlight,
             subtitle = isSubtitle,
+            mp4Metadata = isMp4Metadata,
             downloadManager = isDownloadManager,
         )
 
@@ -387,6 +389,7 @@ class DatenDownload() : Comparable<DatenDownload> {
         target.isInfoFile = isInfoFile
         target.isSubtitle = isSubtitle
         target.isSpotlight = isSpotlight
+        target.isMp4Metadata = isMp4Metadata
         target.quelle = quelle
         target.art = art
         target.websiteUrl = websiteUrl
@@ -424,6 +427,8 @@ class DatenDownload() : Comparable<DatenDownload> {
     var isSubtitle: Boolean = false
 
     var isSpotlight: Boolean = false
+
+    var isMp4Metadata: Boolean = false
 
     val textRestzeit: String
         get() = DownloadRuntimeText.remainingTime(runtime.runState)
@@ -599,6 +604,7 @@ class DatenDownload() : Comparable<DatenDownload> {
                 download.isInfoFile = config.infoFile
                 download.isSpotlight = config.spotlight
                 download.isSubtitle = config.subtitle
+                download.isMp4Metadata = config.mp4Metadata
                 download.isDownloadManager = config.downloadManager
                 download.init()
             }

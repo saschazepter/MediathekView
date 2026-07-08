@@ -302,10 +302,12 @@ internal class DatenDownloadTest {
             setFileSize("123")
         }
         val programSet = createProgramSet()
+        programSet.setMp4Metadata(true)
 
         val download = DatenDownload(programSet, film, DownloadSource.ABO, null, "", "", "")
 
         assertEquals(123L * FileSize.ONE_MIB, download.runtime.filmSize.size)
+        assertTrue(download.isMp4Metadata)
     }
 
     @Test
@@ -375,6 +377,27 @@ internal class DatenDownloadTest {
         copiedDownload.rebuildInvocation()
 
         assertTrue(copiedDownload.programInvocation.contains("--web https://example.invalid/film-page"))
+    }
+
+    @Test
+    fun copyPreservesMp4MetadataFlag() {
+        val download = DatenDownload().apply {
+            isMp4Metadata = true
+        }
+
+        assertTrue(download.copy.isMp4Metadata)
+    }
+
+    @Test
+    fun convertsMp4MetadataAtConfigBoundary() {
+        val download = DatenDownload().apply {
+            title = "Title"
+            isMp4Metadata = true
+        }
+
+        val restored = DatenDownload.fromConfig(download.toConfig())
+
+        assertTrue(restored.isMp4Metadata)
     }
 
     private fun createProgramSet(): DatenPset =
