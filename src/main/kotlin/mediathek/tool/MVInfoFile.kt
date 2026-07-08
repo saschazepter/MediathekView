@@ -141,7 +141,7 @@ internal object MVInfoFileFormatter {
             append(System.lineSeparator())
             append(System.lineSeparator())
             appendSubtitleUrl(data.subtitleUrl)
-            append(splitStringIntoMaxFixedLengthLines(data.description, MAX_LINE_LENGTH))
+            append(splitStringIntoMaxFixedLengthLines(data.description))
             append(System.lineSeparator())
             append(System.lineSeparator())
         }
@@ -168,8 +168,8 @@ internal object MVInfoFileFormatter {
         sb.append(String.format(formatString, "$keyTitle:", value))
             .append(System.lineSeparator())
 
-    private fun splitStringIntoMaxFixedLengthLines(input: String?, lineLength: Int): String =
-        input?.let { WordUtils.wrap(it, lineLength) }.orEmpty()
+    private fun splitStringIntoMaxFixedLengthLines(input: String?): String =
+        input?.let { WordUtils.wrap(it, MAX_LINE_LENGTH) }.orEmpty()
 
     private const val FILM_GROESSE = "Größe"
     private const val FILM_SENDER = "Sender"

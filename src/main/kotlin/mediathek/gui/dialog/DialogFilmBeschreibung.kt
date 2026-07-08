@@ -34,7 +34,7 @@ import javax.swing.JFrame
 import javax.swing.JOptionPane
 
 class DialogFilmBeschreibung(
-    private val parent: JFrame?,
+    parent: JFrame?,
     private val programSets: ProgramSetRepository,
     private val datenFilm: DatenFilm,
     private val replacementRules: ReplacementRules,
