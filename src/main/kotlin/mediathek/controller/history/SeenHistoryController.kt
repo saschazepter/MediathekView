@@ -255,9 +255,7 @@ class SeenHistoryController : AutoCloseable {
                 prepareSharedMemoryCache(source)
             }
             return hasBeenSeenFromPreparedCache(source, url) {
-                runSharedStoreCatching("hasBeenSeen", false) {
-                    containsUrl(source, url)
-                }
+                hasBeenSeenInSharedStore(source, url)
             }
         }
 
@@ -276,20 +274,16 @@ class SeenHistoryController : AutoCloseable {
             }
         }
 
-        private fun <T> runSharedStoreCatching(
-            errorMessage: String,
-            fallback: T,
-            block: suspend SeenHistoryStore.() -> T
-        ): T {
+        private fun hasBeenSeenInSharedStore(source: SeenHistorySource, url: String): Boolean {
             return try {
                 runBlocking {
                     withContext(databaseDispatcher) {
-                        sharedStore().block()
+                        sharedStore().containsUrl(source, url)
                     }
                 }
             } catch (ex: SQLException) {
-                logger.error(errorMessage, ex)
-                fallback
+                logger.error("hasBeenSeen", ex)
+                false
             }
         }
 
