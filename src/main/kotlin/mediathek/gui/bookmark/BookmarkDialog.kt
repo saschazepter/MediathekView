@@ -31,11 +31,11 @@ import kotlinx.coroutines.swing.Swing
 import mediathek.audiothek.ui.table.CenteredTextCellRenderer
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.controller.history.FilmSeenHistoryController
 import mediathek.controller.starter.DownloadServices
 import mediathek.daten.DatenFilm
 import mediathek.daten.ProgramSetRepository
 import mediathek.gui.bookmark.renderer.*
+import mediathek.gui.tabs.actions.FilmSeenHistoryActionRunner
 import mediathek.gui.tabs.tab_film.FilmDescriptionPanel
 import mediathek.swing.IconOnlyButton
 import mediathek.swing.IconUtils
@@ -419,9 +419,7 @@ class BookmarkDialog(
                 selectionModel.selected
                     .mapNotNull { it.datenFilm }
 
-            FilmSeenHistoryController().use { controller ->
-                controller.markSeen(selectedFilms)
-            }
+            FilmSeenHistoryActionRunner.markSeen(selectedFilms)
         }
     }
 
@@ -437,9 +435,7 @@ class BookmarkDialog(
                 selectionModel.selected
                     .mapNotNull { it.datenFilm }
 
-            FilmSeenHistoryController().use { controller ->
-                controller.markUnseen(selectedFilms)
-            }
+            FilmSeenHistoryActionRunner.markUnseen(selectedFilms)
         }
     }
 
