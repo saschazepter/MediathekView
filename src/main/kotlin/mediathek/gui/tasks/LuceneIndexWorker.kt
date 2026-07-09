@@ -17,7 +17,6 @@
  */
 package mediathek.gui.tasks
 
-import com.google.common.base.Stopwatch
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.swing.Swing
@@ -30,6 +29,7 @@ import mediathek.tool.FileUtils.deletePathRecursively
 import mediathek.tool.LuceneDefaultAnalyzer
 import mediathek.tool.SwingErrorDialog
 import mediathek.tool.datum.DateUtil
+import mediathek.tool.time.Stopwatch
 import org.apache.logging.log4j.LogManager
 import org.apache.logging.log4j.Logger
 import org.apache.lucene.document.*

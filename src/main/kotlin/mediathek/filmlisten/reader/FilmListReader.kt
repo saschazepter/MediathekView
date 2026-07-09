@@ -18,7 +18,6 @@
 
 package mediathek.filmlisten.reader
 
-import com.google.common.base.Stopwatch
 import kotlinx.coroutines.*
 import mediathek.config.CommandLineOptions
 import mediathek.config.Konstanten
@@ -36,6 +35,7 @@ import mediathek.tool.datum.DateUtil
 import mediathek.tool.episodes.RuleBasedTitleParser
 import mediathek.tool.episodes.TitleParserManager
 import mediathek.tool.http.MVHttpClient
+import mediathek.tool.time.Stopwatch
 import okhttp3.Request
 import org.apache.commons.lang3.SystemUtils
 import org.apache.logging.log4j.LogManager
