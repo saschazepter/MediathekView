@@ -25,6 +25,7 @@ import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.gui.messages.*
+import mediathek.gui.messages.history.FilmSeenStateChangedEvent
 import mediathek.gui.messages.history.SeenHistoryChangedEvent
 import mediathek.gui.tabs.tab_film.FilmToolBar
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
@@ -85,6 +86,16 @@ class FilmLifecycleController(private val host: Host) {
     fun handleSeenHistoryChangedEvent(@Suppress("UNUSED_PARAMETER") event: SeenHistoryChangedEvent) {
         launchOnSwing {
             host.requestTableReload()
+        }
+    }
+
+    fun handleFilmSeenStateChangedEvent(@Suppress("UNUSED_PARAMETER") event: FilmSeenStateChangedEvent) {
+        launchOnSwing {
+            if (host.filterConfiguration().isShowUnseenOnly) {
+                host.requestTableReload()
+            } else {
+                host.table().repaint()
+            }
         }
     }
 

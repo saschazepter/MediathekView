@@ -64,7 +64,6 @@ class SeenHistoryController : AutoCloseable {
         if (inserted) {
             SeenHistoryCache.add(entry.source, entry.url)
             invalidatePreparedSeenState(entry.source)
-            sendChangeMessage()
         }
         return inserted
     }
@@ -83,7 +82,6 @@ class SeenHistoryController : AutoCloseable {
                     SeenHistoryCache.add(source, urls)
                     invalidatePreparedSeenState(source)
                 }
-            sendChangeMessage()
         }
         return success
     }
@@ -96,7 +94,6 @@ class SeenHistoryController : AutoCloseable {
         if (success) {
             SeenHistoryCache.remove(source, url)
             invalidatePreparedSeenState(source)
-            sendChangeMessage()
         }
         return success
     }
@@ -111,7 +108,6 @@ class SeenHistoryController : AutoCloseable {
         if (success) {
             SeenHistoryCache.remove(source, urls)
             invalidatePreparedSeenState(source)
-            sendChangeMessage()
         }
         return success
     }

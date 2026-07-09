@@ -29,12 +29,16 @@ class FilmSeenHistoryController : AutoCloseable {
 
     fun markUnseen(film: DatenFilm) {
         if (controller.markUnseen(SeenHistorySource.FILM, film.urlNormalQuality)) {
-            updateSeenState(false, listOf(film))
+            updatePreparedSeenState(false, listOf(film))
             sendFilmSeenStateChanged(false, listOf(film))
         }
     }
 
-    fun markUnseen(list: List<DatenFilm>) {
+    fun markUnseen(
+        list: List<DatenFilm>,
+        updatePreparedState: Boolean = true,
+        publishEvent: Boolean = true,
+    ) {
         val urls = list.asSequence()
             .map { it.urlNormalQuality }
             .filter(String::isNotBlank)
@@ -42,8 +46,12 @@ class FilmSeenHistoryController : AutoCloseable {
             .toList()
 
         if (controller.markUnseen(SeenHistorySource.FILM, urls)) {
-            updateSeenState(false, list)
-            sendFilmSeenStateChanged(false, list)
+            if (updatePreparedState) {
+                updatePreparedSeenState(false, list)
+            }
+            if (publishEvent) {
+                sendFilmSeenStateChanged(false, list)
+            }
         }
     }
 
@@ -55,12 +63,16 @@ class FilmSeenHistoryController : AutoCloseable {
 
         val entry = film.toSeenHistoryEntry() ?: return
         if (controller.markSeen(entry)) {
-            updateSeenState(true, listOf(film))
+            updatePreparedSeenState(true, listOf(film))
             sendFilmSeenStateChanged(true, listOf(film))
         }
     }
 
-    fun markSeen(list: List<DatenFilm>) {
+    fun markSeen(
+        list: List<DatenFilm>,
+        updatePreparedState: Boolean = true,
+        publishEvent: Boolean = true,
+    ) {
         val candidates = list
             .asSequence()
             .mapNotNull { film -> film.toSeenHistoryEntry() }
@@ -68,8 +80,12 @@ class FilmSeenHistoryController : AutoCloseable {
             .toList()
 
         if (controller.markSeen(candidates)) {
-            updateSeenState(true, list)
-            sendFilmSeenStateChanged(true, list)
+            if (updatePreparedState) {
+                updatePreparedSeenState(true, list)
+            }
+            if (publishEvent) {
+                sendFilmSeenStateChanged(true, list)
+            }
         }
     }
 
@@ -111,7 +127,7 @@ class FilmSeenHistoryController : AutoCloseable {
             annotationEpoch.incrementAndGet()
         }
 
-        private fun updateSeenState(seen: Boolean, films: Collection<DatenFilm>) {
+        fun updatePreparedSeenState(seen: Boolean, films: Collection<DatenFilm>) {
             val currentEpoch = annotationEpoch.get()
             films.forEach { film ->
                 film.isSeenInHistory = seen

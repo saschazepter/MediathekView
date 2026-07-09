@@ -36,6 +36,7 @@ import mediathek.gui.bookmark.BookmarkServices
 import mediathek.gui.dialog.DialogFilmBeschreibung
 import mediathek.gui.dialog.add_download.DialogAddDownload
 import mediathek.gui.messages.*
+import mediathek.gui.messages.history.FilmSeenStateChangedEvent
 import mediathek.gui.messages.history.SeenHistoryChangedEvent
 import mediathek.gui.tabs.DescriptionTabController
 import mediathek.gui.tabs.actions.MarkFilmAsSeenAction
@@ -679,6 +680,11 @@ class GuiFilme(
     @Handler
     private fun handleSeenHistoryChangedEvent(event: SeenHistoryChangedEvent) {
         lifecycleController.handleSeenHistoryChangedEvent(event)
+    }
+
+    @Handler
+    private fun handleFilmSeenStateChangedEvent(event: FilmSeenStateChangedEvent) {
+        lifecycleController.handleFilmSeenStateChangedEvent(event)
     }
 
     @Handler

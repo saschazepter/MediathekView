@@ -24,6 +24,8 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import mediathek.controller.history.FilmSeenHistoryController
 import mediathek.daten.DatenFilm
+import mediathek.gui.messages.history.FilmSeenStateChangedEvent
+import mediathek.tool.MessageBus
 import org.apache.logging.log4j.LogManager
 import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
@@ -95,18 +97,33 @@ internal object FilmSeenHistoryActionRunner {
             return
         }
 
+        publishSeenState(seen, selectedFilms)
         scope.launch {
             runCatching {
                 FilmSeenHistoryController().use { controller ->
                     if (seen) {
-                        controller.markSeen(selectedFilms)
+                        controller.markSeen(
+                            selectedFilms,
+                            updatePreparedState = false,
+                            publishEvent = false,
+                        )
                     } else {
-                        controller.markUnseen(selectedFilms)
+                        controller.markUnseen(
+                            selectedFilms,
+                            updatePreparedState = false,
+                            publishEvent = false,
+                        )
                     }
                 }
             }.onFailure { ex ->
                 logger.error("Failed to update film seen history", ex)
+                publishSeenState(!seen, selectedFilms)
             }
         }
+    }
+
+    private fun publishSeenState(seen: Boolean, films: List<DatenFilm>) {
+        FilmSeenHistoryController.updatePreparedSeenState(seen, films)
+        MessageBus.messageBus.publishAsync(FilmSeenStateChangedEvent(seen, films))
     }
 }
