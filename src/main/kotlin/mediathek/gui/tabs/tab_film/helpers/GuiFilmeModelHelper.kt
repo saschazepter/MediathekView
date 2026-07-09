@@ -37,6 +37,7 @@ class GuiFilmeModelHelper(
     override val filteredTableModel: TableModel
         get() {
             val allFilms = allFilms()
+            FilmSeenHistoryController.prepareSeenState(allFilms)
             return support.getFilteredTableModel(allFilms) { filterContext ->
                 filterFilms(allFilms, filterContext)
             }
@@ -49,10 +50,6 @@ class GuiFilmeModelHelper(
         filterContext: GuiModelHelperSupport.FilterExecutionContext,
     ): Collection<DatenFilm> {
         val state = filterContext.state
-        if (state.showUnseenOnly) {
-            FilmSeenHistoryController.prepareSharedMemoryCache()
-        }
-
         var stream = allFilms.parallelStream()
             .filterIf(filterContext.hasSelectedSenders) { film -> filterContext.senderFilter(film) }
             .filterIf(state.showNewOnly, DatenFilm::isNew)

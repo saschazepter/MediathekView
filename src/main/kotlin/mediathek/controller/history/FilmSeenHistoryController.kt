@@ -22,12 +22,14 @@ import mediathek.daten.DatenFilm
 import mediathek.gui.messages.history.FilmSeenStateChangedEvent
 import mediathek.tool.MessageBus
 import org.apache.logging.log4j.LogManager
+import java.util.concurrent.atomic.AtomicInteger
 
 class FilmSeenHistoryController : AutoCloseable {
     private val controller = SeenHistoryController()
 
     fun markUnseen(film: DatenFilm) {
         if (controller.markUnseen(SeenHistorySource.FILM, film.urlNormalQuality)) {
+            updateSeenState(false, listOf(film))
             sendFilmSeenStateChanged(false, listOf(film))
         }
     }
@@ -40,6 +42,7 @@ class FilmSeenHistoryController : AutoCloseable {
             .toList()
 
         if (controller.markUnseen(SeenHistorySource.FILM, urls)) {
+            updateSeenState(false, list)
             sendFilmSeenStateChanged(false, list)
         }
     }
@@ -52,6 +55,7 @@ class FilmSeenHistoryController : AutoCloseable {
 
         val entry = film.toSeenHistoryEntry() ?: return
         if (controller.markSeen(entry)) {
+            updateSeenState(true, listOf(film))
             sendFilmSeenStateChanged(true, listOf(film))
         }
     }
@@ -64,19 +68,13 @@ class FilmSeenHistoryController : AutoCloseable {
             .toList()
 
         if (controller.markSeen(candidates)) {
+            updateSeenState(true, list)
             sendFilmSeenStateChanged(true, list)
         }
     }
 
     fun hasBeenSeen(film: DatenFilm): Boolean =
         controller.hasBeenSeen(SeenHistorySource.FILM, film.urlNormalQuality)
-
-    fun prepareMemoryCache() {
-        controller.prepareMemoryCache(SeenHistorySource.FILM)
-    }
-
-    fun isMemoryCachePrepared(): Boolean =
-        controller.isMemoryCachePrepared(SeenHistorySource.FILM)
 
     override fun close() {
         controller.close()
@@ -90,13 +88,36 @@ class FilmSeenHistoryController : AutoCloseable {
 
     companion object {
         private val logger = LogManager.getLogger()
+        private val annotationEpoch = AtomicInteger(1)
 
-        fun prepareSharedMemoryCache() {
-            SeenHistoryController.prepareSharedMemoryCache(SeenHistorySource.FILM)
+        fun prepareSeenState(films: Collection<DatenFilm>) {
+            if (films.isEmpty()) {
+                return
+            }
+
+            val currentEpoch = annotationEpoch.get()
+            if (films.all { film -> film.seenHistoryAnnotationEpoch == currentEpoch }) {
+                return
+            }
+
+            val seenUrls = SeenHistoryController.loadSeenUrlsFromSharedStore(SeenHistorySource.FILM) ?: return
+            films.parallelStream().forEach { film ->
+                film.isSeenInHistory = film.urlNormalQuality.isNotBlank() && film.urlNormalQuality in seenUrls
+                film.seenHistoryAnnotationEpoch = currentEpoch
+            }
         }
 
-        fun hasBeenSeenFromSharedCache(film: DatenFilm): Boolean =
-            SeenHistoryController.hasBeenSeenFromSharedCache(SeenHistorySource.FILM, film.urlNormalQuality)
+        fun invalidateSharedSeenState() {
+            annotationEpoch.incrementAndGet()
+        }
+
+        private fun updateSeenState(seen: Boolean, films: Collection<DatenFilm>) {
+            val currentEpoch = annotationEpoch.get()
+            films.forEach { film ->
+                film.isSeenInHistory = seen
+                film.seenHistoryAnnotationEpoch = currentEpoch
+            }
+        }
     }
 }
 

@@ -250,6 +250,12 @@ class DatenFilm private constructor(
         get() = hasFlag(FLAG_DUPLICATE)
         set(value) = setFlag(FLAG_DUPLICATE, value)
 
+    var isSeenInHistory: Boolean
+        get() = hasFlag(FLAG_SEEN_HISTORY)
+        set(value) = setFlag(FLAG_SEEN_HISTORY, value)
+
+    var seenHistoryAnnotationEpoch: Int = 0
+
     var isAudioVersion: Boolean
         get() = hasFlag(FLAG_AUDIO_VERSION)
         set(value) = setFlag(FLAG_AUDIO_VERSION, value)
@@ -710,6 +716,7 @@ class DatenFilm private constructor(
         private const val FLAG_BURNED_IN_SUBTITLES = 1 shl 5
         private const val FLAG_PLAYLIST = 1 shl 6
         private const val FLAG_DUPLICATE = 1 shl 7
+        private const val FLAG_SEEN_HISTORY = 1 shl 8
         private val sorter = GermanStringSorter
         private val logger = LogManager.getLogger(DatenFilm::class.java)
         private val USE_SHA256_FAST_PATH = RuntimeArchitecture.isIntelOrAmd64Bit

@@ -84,11 +84,7 @@ class FilmLifecycleController(private val host: Host) {
 
     fun handleSeenHistoryChangedEvent(@Suppress("UNUSED_PARAMETER") event: SeenHistoryChangedEvent) {
         launchOnSwing {
-            if (host.filterConfiguration().isShowUnseenOnly) {
-                host.requestTableReload()
-            } else {
-                host.table().fireTableDataChanged(true)
-            }
+            host.requestTableReload()
         }
     }
 

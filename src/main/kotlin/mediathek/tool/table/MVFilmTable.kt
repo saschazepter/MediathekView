@@ -19,7 +19,6 @@
 package mediathek.tool.table
 
 import mediathek.config.MVColor
-import mediathek.controller.history.FilmSeenHistoryController
 import mediathek.daten.DatenFilm
 import mediathek.gui.tabs.tab_film.table.FilmColumnVisibility
 import mediathek.tool.models.FilmColumn
@@ -199,7 +198,7 @@ class MVFilmTable : PersistentColumnConfigurationTable(
         val backgrounds = ArrayList<Color>(4)
         backgrounds.add(defaultRowBackground(viewRow))
 
-        if (FilmSeenHistoryController.hasBeenSeenFromSharedCache(film)) {
+        if (film.isSeenInHistory) {
             backgrounds.add(MVColor.FILM_HISTORY.color)
         }
         if (film.isBookmarked) {

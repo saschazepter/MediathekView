@@ -19,7 +19,6 @@
 package mediathek.gui.tabs.tab_film.helpers
 
 import mediathek.controller.SenderFilmlistLoadApprover
-import mediathek.controller.history.FilmSeenHistoryController
 import mediathek.daten.DatenFilm
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.filter.FilmFilterState
@@ -133,7 +132,7 @@ internal class GuiModelHelperSupport(
             .filter(SenderFilmlistLoadApprover::isApproved)
             .toSet()
 
-    private fun seenCheck(film: DatenFilm): Boolean = !FilmSeenHistoryController.hasBeenSeenFromSharedCache(film)
+    private fun seenCheck(film: DatenFilm): Boolean = !film.isSeenInHistory
 
     private fun createLengthFilterRange(state: FilmFilterState): LengthFilterRange =
         LengthFilterRange(

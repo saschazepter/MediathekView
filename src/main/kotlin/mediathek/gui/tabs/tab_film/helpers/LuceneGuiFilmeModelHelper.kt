@@ -63,6 +63,7 @@ class LuceneGuiFilmeModelHelper(
         get() {
             val allFilms = allFilms()
             check(allFilms is IndexedFilmList) { "Lucene filtering requires an IndexedFilmList" }
+            FilmSeenHistoryController.prepareSeenState(allFilms)
             return support.getFilteredTableModel(allFilms) { filterContext ->
                 filterFilms(allFilms, filterContext)
             }
@@ -77,10 +78,6 @@ class LuceneGuiFilmeModelHelper(
         try {
             LuceneDefaultAnalyzer.buildPerFieldAnalyzer().use { analyzer ->
                 val state = filterContext.state
-
-                if (state.showUnseenOnly) {
-                    FilmSeenHistoryController.prepareSharedMemoryCache()
-                }
 
                 var stream = listeFilme.parallelStream()
 

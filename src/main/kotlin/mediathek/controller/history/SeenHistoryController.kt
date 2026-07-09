@@ -52,6 +52,7 @@ class SeenHistoryController : AutoCloseable {
         }
         if (removed) {
             SeenHistoryCache.clear()
+            invalidatePreparedSeenState()
             sendChangeMessage()
         }
     }
@@ -62,6 +63,7 @@ class SeenHistoryController : AutoCloseable {
         }
         if (inserted) {
             SeenHistoryCache.add(entry.source, entry.url)
+            invalidatePreparedSeenState(entry.source)
             sendChangeMessage()
         }
         return inserted
@@ -77,7 +79,10 @@ class SeenHistoryController : AutoCloseable {
         if (success) {
             candidates
                 .groupBy(SeenHistoryEntry::source, SeenHistoryEntry::url)
-                .forEach { (source, urls) -> SeenHistoryCache.add(source, urls) }
+                .forEach { (source, urls) ->
+                    SeenHistoryCache.add(source, urls)
+                    invalidatePreparedSeenState(source)
+                }
             sendChangeMessage()
         }
         return success
@@ -90,6 +95,7 @@ class SeenHistoryController : AutoCloseable {
         }
         if (success) {
             SeenHistoryCache.remove(source, url)
+            invalidatePreparedSeenState(source)
             sendChangeMessage()
         }
         return success
@@ -104,6 +110,7 @@ class SeenHistoryController : AutoCloseable {
         }
         if (success) {
             SeenHistoryCache.remove(source, urls)
+            invalidatePreparedSeenState(source)
             sendChangeMessage()
         }
         return success
@@ -128,6 +135,11 @@ class SeenHistoryController : AutoCloseable {
     fun isMemoryCachePrepared(source: SeenHistorySource = SeenHistorySource.FILM): Boolean =
         SeenHistoryCache.isPrepared(source)
 
+    internal fun loadSeenUrls(source: SeenHistorySource): Set<String>? =
+        runStoreCatching("loadSeenUrls", null as Set<String>?) {
+            loadUrls(source)
+        }
+
     fun performMaintenance() {
         logger.trace("Start maintenance")
 
@@ -143,6 +155,7 @@ class SeenHistoryController : AutoCloseable {
         }
         if (success) {
             SeenHistoryCache.clear()
+            invalidatePreparedSeenState()
             if (shouldRunHeavyMaintenance) {
                 applicationConfiguration.seenHistoryMaintenanceLastRun = now
             }
@@ -195,6 +208,16 @@ class SeenHistoryController : AutoCloseable {
         MessageBus.messageBus.publishAsync(SeenHistoryChangedEvent())
     }
 
+    private fun invalidatePreparedSeenState() {
+        SeenHistorySource.entries.forEach(::invalidatePreparedSeenState)
+    }
+
+    private fun invalidatePreparedSeenState(source: SeenHistorySource) {
+        if (source == SeenHistorySource.FILM) {
+            FilmSeenHistoryController.invalidateSharedSeenState()
+        }
+    }
+
 
     companion object {
         private val logger = LogManager.getLogger()
@@ -237,18 +260,10 @@ class SeenHistoryController : AutoCloseable {
             }
         }
 
-        fun prepareSharedMemoryCache(source: SeenHistorySource) {
+        fun loadSeenUrlsFromSharedStore(source: SeenHistorySource): Set<String>? =
             SeenHistoryController().use { controller ->
-                controller.prepareMemoryCache(source)
+                controller.loadSeenUrls(source)
             }
-        }
-
-        fun hasBeenSeenFromSharedCache(source: SeenHistorySource, url: String): Boolean {
-            if (!SeenHistoryCache.isPrepared(source)) {
-                prepareSharedMemoryCache(source)
-            }
-            return SeenHistoryCache.contains(source, url)
-        }
 
         fun closeSharedStore() {
             runBlocking {
