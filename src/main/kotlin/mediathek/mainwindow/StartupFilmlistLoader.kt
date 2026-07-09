@@ -22,12 +22,7 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.StandardLocations
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.filmlisten.FilmCatalog
-import mediathek.filmlisten.FilmListLoadHandle
-import mediathek.filmlisten.FilmListLoadPresenter
-import mediathek.filmlisten.FilmListProgressHandle
-import mediathek.filmlisten.FilmListStatusBarWidgets
-import mediathek.filmlisten.FilmListLoadCoordinator
+import mediathek.filmlisten.*
 import mediathek.filmlisten.reader.FilmListReader
 import mediathek.gui.messages.FilmListReadStartEvent
 import mediathek.gui.messages.FilmListReadStopEvent

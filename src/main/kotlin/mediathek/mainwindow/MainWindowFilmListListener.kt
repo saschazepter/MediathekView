@@ -18,8 +18,8 @@
 
 package mediathek.mainwindow
 
-import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.filmlisten.FilmListLoadListener
+import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.swing.SwingDispatcher
 import java.util.function.Supplier
 import javax.swing.Action

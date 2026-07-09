@@ -26,10 +26,10 @@ import mediathek.config.MVColor
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.blacklist.BlacklistRule
 import mediathek.daten.blacklist.BlacklistServices
-import mediathek.filmlisten.FilmListLoadProgress
-import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmCatalog
 import mediathek.filmlisten.FilmListLoadCoordinator
+import mediathek.filmlisten.FilmListLoadListener
+import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.gui.dialog.HelpTextDialog
 import mediathek.gui.messages.BlacklistAboSettingChangedEvent
 import mediathek.gui.messages.BlacklistChangedEvent

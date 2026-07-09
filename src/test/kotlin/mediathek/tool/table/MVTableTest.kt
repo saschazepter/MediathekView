@@ -3,8 +3,8 @@ package mediathek.tool.table
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.DownloadColumn
 import mediathek.daten.DatenDownload
-import mediathek.tool.models.TModelDownload
 import mediathek.tool.models.FilmColumn
+import mediathek.tool.models.TModelDownload
 import mediathek.tool.models.TModelFilm
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

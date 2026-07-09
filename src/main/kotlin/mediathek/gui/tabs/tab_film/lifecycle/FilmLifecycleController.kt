@@ -21,9 +21,9 @@ package mediathek.gui.tabs.tab_film.lifecycle
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.application.FilterConfiguration
-import mediathek.filmlisten.FilmListLoadProgress
-import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmListLoadCoordinator
+import mediathek.filmlisten.FilmListLoadListener
+import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.gui.messages.*
 import mediathek.gui.messages.history.SeenHistoryChangedEvent
 import mediathek.gui.tabs.tab_film.FilmToolBar

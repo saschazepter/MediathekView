@@ -23,11 +23,7 @@ import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
 import mediathek.config.CommandLineOptions
 import mediathek.config.Konstanten
-import mediathek.filmlisten.FilmListIndexingHost
-import mediathek.filmlisten.FilmListLoadPresenter
-import mediathek.filmlisten.FilmListProgressHandle
-import mediathek.filmlisten.FilmListStatusBarWidgets
-import mediathek.filmlisten.NoOpFilmListLoadPresenter
+import mediathek.filmlisten.*
 import mediathek.tool.SwingErrorDialog
 import org.apache.logging.log4j.LogManager
 import java.awt.GraphicsEnvironment

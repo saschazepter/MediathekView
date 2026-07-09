@@ -28,9 +28,9 @@ import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.tabs.tab_film.actions.FilmActionHost
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.context.TableContextMenuHandler
-import mediathek.tool.ReplacementRules
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
+import mediathek.tool.ReplacementRules
 import mediathek.tool.table.MVFilmTable
 import java.awt.Component
 import java.util.*

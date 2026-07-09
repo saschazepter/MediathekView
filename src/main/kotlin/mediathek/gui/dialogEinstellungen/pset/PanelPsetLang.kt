@@ -2,6 +2,8 @@ package mediathek.gui.dialogEinstellungen.pset
 
 import ca.odell.glazedlists.swing.AdvancedTableModel
 import ca.odell.glazedlists.swing.GlazedListsSwing
+import kotlinx.coroutines.*
+import kotlinx.coroutines.swing.Swing
 import mediathek.audiothek.ui.table.TriStateTableRowSorter
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
@@ -13,14 +15,6 @@ import mediathek.tool.*
 import mediathek.tool.cellrenderer.PsetNameCellRenderer
 import mediathek.tool.table.MVPsetTable
 import mediathek.tool.table.MVTable
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.swing.Swing
-import kotlinx.coroutines.withContext
 import net.engio.mbassy.listener.Handler
 import org.apache.commons.lang3.SystemUtils
 import java.awt.Component
@@ -30,11 +24,7 @@ import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.function.BiConsumer
 import java.util.function.Consumer
-import javax.swing.BorderFactory
-import javax.swing.JColorChooser
-import javax.swing.JFrame
-import javax.swing.JOptionPane
-import javax.swing.JTable
+import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 import javax.swing.table.TableModel

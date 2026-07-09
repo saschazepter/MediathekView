@@ -1,12 +1,12 @@
 package mediathek.gui.dialogEinstellungen
 
-import mediathek.tool.ReplacementRules
 import mediathek.tool.ReplaceEntry
+import mediathek.tool.ReplacementRules
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.util.*
 import javax.swing.JButton
 import javax.swing.SwingUtilities
-import java.util.Optional
 
 internal class PanelDateinamenTest {
     @Test

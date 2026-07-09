@@ -2,9 +2,7 @@ package mediathek.tool.models
 
 import mediathek.daten.DatenFilm
 import mediathek.tool.datum.DatumFilm
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import javax.swing.event.TableModelEvent
 
