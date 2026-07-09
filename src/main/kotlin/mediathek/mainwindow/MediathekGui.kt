@@ -426,6 +426,7 @@ open class MediathekGui private constructor(
     override fun dispose() {
         if (disposed.compareAndSet(false, true)) {
             mainWindowLifecycle.close()
+            tabRegistry.disposeTabs()
             filmlistLoadCoordinator.close()
             closeFilmlistDownloadProgress()
             filmlistReloadCoordinator.close()
