@@ -27,27 +27,37 @@ import java.util.function.Supplier
  */
 object NotificationService : Closeable {
     private val logger = LogManager.getLogger()
+    private val lifecycleLock = Any()
     private var notificationCenter: INotificationCenter = NullNotificationCenter()
 
     fun configure(notificationCenterFactory: Supplier<INotificationCenter>, enabled: Boolean) {
-        closeCurrentNotificationCenter()
-        notificationCenter = if (enabled) notificationCenterFactory.get() else NullNotificationCenter()
+        synchronized(lifecycleLock) {
+            val previousNotificationCenter = notificationCenter
+            notificationCenter = NullNotificationCenter()
+            closeNotificationCenter(previousNotificationCenter)
+            notificationCenter = if (enabled) notificationCenterFactory.get() else NullNotificationCenter()
+        }
     }
 
     fun displayNotification(msg: NotificationMessage) {
-        notificationCenter.displayNotification(msg)
+        synchronized(lifecycleLock) {
+            notificationCenter.displayNotification(msg)
+        }
     }
 
     override fun close() {
-        closeCurrentNotificationCenter()
-        notificationCenter = NullNotificationCenter()
+        synchronized(lifecycleLock) {
+            val previousNotificationCenter = notificationCenter
+            notificationCenter = NullNotificationCenter()
+            closeNotificationCenter(previousNotificationCenter)
+        }
     }
 
-    private fun closeCurrentNotificationCenter() {
+    private fun closeNotificationCenter(notificationCenter: INotificationCenter) {
         try {
             notificationCenter.close()
-        } catch (e: Exception) {
-            logger.error("Failed to close notification center", e)
+        } catch (exception: Exception) {
+            logger.error("Failed to close notification center", exception)
         }
     }
 }
