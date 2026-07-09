@@ -44,8 +44,7 @@ import mediathek.logging.LogDialog
 import mediathek.shutdown.ComputerShutdown
 import mediathek.swing.SwingDispatch
 import mediathek.tool.*
-import mediathek.tool.notification.INotificationCenter
-import mediathek.tool.notification.NotificationService
+import mediathek.tool.notification.NotificationBackend
 import mediathek.tool.timer.TimerPool
 import mediathek.update.ProgramUpdateHost
 import net.engio.mbassy.listener.Handler
@@ -64,7 +63,7 @@ import javax.swing.*
 
 open class MediathekGui private constructor(
     private val daten: Daten,
-    notificationCenterFactory: Supplier<INotificationCenter>,
+    notificationBackendFactory: () -> NotificationBackend,
     computerShutdown: ComputerShutdown,
     downloadProgressIndicatorFactory: Function<JFrame, DownloadProgressIndicator>,
     darkModeActionPlacement: MainWindowDarkModeActionPlacement,
@@ -169,7 +168,7 @@ open class MediathekGui private constructor(
     private val audiothekTab: MainWindowTab by lazy(LazyThreadSafetyMode.NONE) {
         MainWindowTab(
             "Audiothek",
-            { AudiothekPanel(AudioRepository(), this) },
+            { AudiothekPanel(AudioRepository(), this, daten.notifications) },
             visible = { ApplicationConfiguration.getInstance().audiothekTabVisible },
             toggleActionFactory = { toggleAudiothekTabAction },
             onComponentCreated = { configureClosableOptionalTab(it, toggleAudiothekTabAction) },
@@ -182,7 +181,7 @@ open class MediathekGui private constructor(
         ToggleAudiothekTabAction(tabbedPane, audiothekTab)
     }
     private val logDialog = LogDialog(this)
-    private val notificationCenterFactory = notificationCenterFactory
+    private val notificationBackendFactory = notificationBackendFactory
     private val darkModeActionPlacement = darkModeActionPlacement
     private val toolbarInstaller = toolbarInstaller
     private val tabPlacementController = tabPlacementController
@@ -240,13 +239,13 @@ open class MediathekGui private constructor(
 
     protected constructor(
         daten: Daten,
-        notificationCenterFactory: Supplier<INotificationCenter>,
+        notificationBackendFactory: () -> NotificationBackend,
         computerShutdown: ComputerShutdown,
         darkModeActionPlacement: MainWindowDarkModeActionPlacement,
         systemTrayController: MainWindowSystemTrayController,
     ) : this(
         daten,
-        notificationCenterFactory,
+        notificationBackendFactory,
         computerShutdown,
         NO_DOWNLOAD_PROGRESS_INDICATOR_FACTORY,
         darkModeActionPlacement,
@@ -262,7 +261,7 @@ open class MediathekGui private constructor(
 
     protected constructor(
         daten: Daten,
-        notificationCenterFactory: Supplier<INotificationCenter>,
+        notificationBackendFactory: () -> NotificationBackend,
         computerShutdown: ComputerShutdown,
         downloadProgressIndicatorFactory: Function<JFrame, DownloadProgressIndicator>,
         toolbarInstaller: MainWindowToolbarInstaller,
@@ -275,7 +274,7 @@ open class MediathekGui private constructor(
         afterMenusInitialized: Consumer<MainWindowQuitHost>,
     ) : this(
         daten,
-        notificationCenterFactory,
+        notificationBackendFactory,
         computerShutdown,
         downloadProgressIndicatorFactory,
         MainWindowDarkModeActionPlacement.TOOL_BAR,
@@ -291,13 +290,13 @@ open class MediathekGui private constructor(
 
     protected constructor(
         daten: Daten,
-        notificationCenterFactory: Supplier<INotificationCenter>,
+        notificationBackendFactory: () -> NotificationBackend,
         computerShutdown: ComputerShutdown,
         downloadProgressIndicatorFactory: Function<JFrame, DownloadProgressIndicator>,
         darkModeActionPlacement: MainWindowDarkModeActionPlacement,
     ) : this(
         daten,
-        notificationCenterFactory,
+        notificationBackendFactory,
         computerShutdown,
         downloadProgressIndicatorFactory,
         darkModeActionPlacement,
@@ -344,6 +343,7 @@ open class MediathekGui private constructor(
             this,
             loadFilmListAction,
             { setupSystemTray() },
+            daten.notifications,
             systemTrayController
         )
         startupOrchestrator = createStartupOrchestrator()
@@ -628,7 +628,7 @@ open class MediathekGui private constructor(
 
     private fun setupNotificationCenter() {
         val showNotifications = ApplicationConfiguration.getInstance().showNotifications
-        NotificationService.configure(notificationCenterFactory, showNotifications)
+        daten.notifications.configure(notificationBackendFactory, showNotifications)
     }
 
     @Handler
@@ -638,7 +638,7 @@ open class MediathekGui private constructor(
     }
 
     private fun closeNotificationCenter() {
-        NotificationService.close()
+        daten.notifications.close()
     }
 
     private fun setupShutdownHook() {

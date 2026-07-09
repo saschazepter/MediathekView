@@ -19,17 +19,21 @@
 package mediathek.tool.notification
 
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 class NotificationServiceTest {
+    private val notificationService = NotificationService()
+
     @AfterEach
     fun closeNotificationService() {
-        NotificationService.close()
+        notificationService.close()
     }
 
     @Test
@@ -39,8 +43,8 @@ class NotificationServiceTest {
         val previousCenterClosed = CountDownLatch(1)
         val reconfigurationStarted = CountDownLatch(1)
         val executor = Executors.newFixedThreadPool(2)
-        val previousCenter = object : INotificationCenter {
-            override fun displayNotification(msg: NotificationMessage) {
+        val previousCenter = object : NotificationBackend {
+            override fun publish(notification: NotificationMessage) {
                 deliveryStarted.countDown()
                 check(releaseDelivery.await(5, TimeUnit.SECONDS)) { "Notification delivery was not released" }
             }
@@ -51,16 +55,16 @@ class NotificationServiceTest {
         }
 
         try {
-            NotificationService.configure({ previousCenter }, true)
+            notificationService.configure({ previousCenter }, true)
 
             val delivery = executor.submit {
-                NotificationService.displayNotification(notificationMessage())
+                notificationService.publish(notificationMessage())
             }
             assertTrue(deliveryStarted.await(5, TimeUnit.SECONDS), "Notification delivery did not start")
 
             val reconfiguration = executor.submit {
                 reconfigurationStarted.countDown()
-                NotificationService.configure({ NullNotificationCenter() }, true)
+                notificationService.configure({ DisabledNotificationBackend }, true)
             }
 
             assertTrue(reconfigurationStarted.await(5, TimeUnit.SECONDS), "Reconfiguration did not start")
@@ -80,10 +84,46 @@ class NotificationServiceTest {
         }
     }
 
-    private fun notificationMessage(): NotificationMessage =
-        NotificationMessage().apply {
-            title = "Title"
-            message = "Message"
-            type = MessageType.INFO
+    @Test
+    fun `close is terminal and idempotent`() {
+        val closes = AtomicInteger()
+        val replacementCreations = AtomicInteger()
+        val backend = object : NotificationBackend {
+            override fun publish(notification: NotificationMessage) {}
+            override fun close() {
+                closes.incrementAndGet()
+            }
         }
+        notificationService.configure({ backend }, true)
+
+        notificationService.close()
+        notificationService.close()
+        notificationService.configure(
+            {
+                replacementCreations.incrementAndGet()
+                DisabledNotificationBackend
+            },
+            true,
+        )
+
+        assertEquals(1, closes.get())
+        assertEquals(0, replacementCreations.get())
+    }
+
+    @Test
+    fun `backend construction failure leaves notifications disabled`() {
+        notificationService.configure({ error("Backend failed") }, true)
+
+        notificationService.publish(notificationMessage())
+    }
+
+    @Test
+    fun `backend linkage failure leaves notifications disabled`() {
+        notificationService.configure({ throw UnsatisfiedLinkError("Backend unavailable") }, true)
+
+        notificationService.publish(notificationMessage())
+    }
+
+    private fun notificationMessage(): NotificationMessage =
+        NotificationMessage("Title", "Message", MessageType.INFO)
 }

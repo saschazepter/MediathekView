@@ -14,6 +14,7 @@ import mediathek.gui.messages.DownloadListChangedEvent
 import mediathek.gui.messages.DownloadStartEvent
 import mediathek.swing.SwingDispatch
 import mediathek.tool.MessageBus
+import mediathek.tool.notification.NotificationPublisher
 import org.apache.logging.log4j.LogManager
 import java.io.File
 import java.io.IOException
@@ -27,6 +28,7 @@ import javax.swing.JFrame
 class ExternalProgramDownload(
     private val aboHistoryControllerProvider: () -> AboHistoryController,
     private val datenDownload: DatenDownload,
+    private val notificationPublisher: NotificationPublisher,
     private val dialogOwnerProvider: () -> JFrame? = { null },
 ) : Thread("EXTERNAL PROGRAM DL THREAD: ${datenDownload.title}") {
 
@@ -63,7 +65,7 @@ class ExternalProgramDownload(
                 logger.error("run()", ex)
                 showDownloadError(ex.localizedMessage)
             } finally {
-                DownloadCompletionHandler.finalizeDownload(datenDownload, start, state)
+                DownloadCompletionHandler.finalizeDownload(datenDownload, start, state, notificationPublisher)
                 waitForPendingDownloads()
                 MessageBus.messageBus.publish(DownloadFinishedEvent(datenDownload))
             }

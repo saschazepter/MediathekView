@@ -25,6 +25,7 @@ import mediathek.gui.MVTray
 import mediathek.mainwindow.DefaultMainWindowSystemTrayController
 import mediathek.mainwindow.MainWindowSystemTrayController
 import mediathek.mainwindow.TrayHost
+import mediathek.tool.notification.NotificationPublisher
 import org.apache.logging.log4j.LogManager
 
 object X11MainWindowSystemTrayController : MainWindowSystemTrayController {
@@ -38,6 +39,15 @@ object X11MainWindowSystemTrayController : MainWindowSystemTrayController {
         }
     }
 
-    override fun initialize(filmCatalog: FilmCatalog, downloads: DownloadServices, owner: TrayHost): MVTray? =
-        DefaultMainWindowSystemTrayController.initialize(filmCatalog, downloads, owner)
+    override fun initialize(
+        filmCatalog: FilmCatalog,
+        downloads: DownloadServices,
+        owner: TrayHost,
+        notificationPublisher: NotificationPublisher,
+    ): MVTray? = DefaultMainWindowSystemTrayController.initialize(
+        filmCatalog,
+        downloads,
+        owner,
+        notificationPublisher,
+    )
 }

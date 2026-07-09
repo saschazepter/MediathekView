@@ -13,7 +13,7 @@ import mediathek.tool.GetIcon
 import mediathek.tool.MessageBus
 import mediathek.tool.notification.MessageType
 import mediathek.tool.notification.NotificationMessage
-import mediathek.tool.notification.NotificationService
+import mediathek.tool.notification.NotificationPublisher
 import net.engio.mbassy.listener.Handler
 import org.apache.logging.log4j.LogManager
 import java.awt.*
@@ -24,6 +24,7 @@ class MVTray(
     private val filmCatalog: FilmCatalog,
     private val downloads: DownloadServices,
     private val host: TrayHost,
+    private val notificationPublisher: NotificationPublisher,
 ) {
     private enum class TrayState {
         IDLE,
@@ -198,11 +199,7 @@ class MVTray(
         }
 
     private fun addNotification(meldung: String) {
-        val msg = NotificationMessage()
-        msg.title = "Programminfos"
-        msg.message = meldung
-        msg.type = MessageType.INFO
-        NotificationService.displayNotification(msg)
+        notificationPublisher.publish(NotificationMessage("Programminfos", meldung, MessageType.INFO))
     }
 
     companion object {

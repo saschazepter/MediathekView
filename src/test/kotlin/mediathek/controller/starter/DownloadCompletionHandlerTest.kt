@@ -3,10 +3,16 @@ package mediathek.controller.starter
 import mediathek.daten.DatenDownload
 import mediathek.daten.DownloadSource
 import mediathek.daten.DownloadType
+import mediathek.tool.notification.DisabledNotificationBackend
+import mediathek.tool.notification.MessageType
+import mediathek.tool.notification.NotificationMessage
+import mediathek.tool.notification.NotificationPublisher
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Files
 import java.nio.file.Path
 import java.time.LocalDateTime
 
@@ -25,10 +31,45 @@ internal class DownloadCompletionHandlerTest {
         download.runtime.runState = start
         DownloadLifecycleActions.markInterrupted(download)
 
-        DownloadCompletionHandler.finalizeDownload(download, start, HttpDownloadState.DOWNLOAD)
+        DownloadCompletionHandler.finalizeDownload(
+            download,
+            start,
+            HttpDownloadState.DOWNLOAD,
+            DisabledNotificationBackend,
+        )
 
         assertNull(download.runtime.runState)
         assertTrue(download.isInterrupted)
+    }
+
+    @Test
+    fun successfulDownloadPublishesNotification() {
+        val download = download("Completed")
+        Files.writeString(Path.of(download.targetPathFileName), "content")
+        val start = DownloadRunState().apply {
+            status = StartStatus.FINISHED
+            startTime = LocalDateTime.now()
+        }
+        download.runtime.runState = start
+        val notifications = mutableListOf<NotificationMessage>()
+
+        DownloadCompletionHandler.finalizeDownload(
+            download,
+            start,
+            HttpDownloadState.DOWNLOAD,
+            NotificationPublisher { notifications += it },
+        )
+
+        assertEquals(
+            listOf(
+                NotificationMessage(
+                    "Download erfolgreich",
+                    "\"Completed\" vom Sender wurde geladen.",
+                    MessageType.INFO,
+                )
+            ),
+            notifications,
+        )
     }
 
     private fun download(title: String): DatenDownload =

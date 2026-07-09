@@ -16,6 +16,7 @@ import mediathek.tool.MessageBus
 import mediathek.tool.ReplacementRules
 import mediathek.tool.datum.DateUtil
 import mediathek.tool.models.TModelDownload
+import mediathek.tool.notification.NotificationPublisher
 import org.apache.logging.log4j.LogManager
 import java.time.LocalDate
 import java.util.*
@@ -34,12 +35,14 @@ class DownloadServices(
     private val abos: AboServices,
     private val blacklist: BlacklistServices,
     internal val replacementRules: ReplacementRules,
+    private val notificationPublisher: NotificationPublisher,
     private val showMissingAboProgramSet: (JFrame?) -> Unit,
 ) {
     private val queue: LinkedList<DatenDownload> = LinkedList()
     private val buttonQueue: LinkedList<DatenDownload> = LinkedList()
     private val info: DownloadInfos = DownloadInfos(::unfinishedDownloads)
-    private val starter: DownloadStartCoordinator = DownloadStartCoordinator(this, abos::historyController)
+    private val starter: DownloadStartCoordinator =
+        DownloadStartCoordinator(this, abos::historyController, notificationPublisher)
 
     fun refreshAboDownloads() {
         synchronized(queue) {

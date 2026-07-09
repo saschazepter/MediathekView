@@ -1,25 +1,59 @@
 package mediathek.tool.notification
 
 import org.apache.logging.log4j.LogManager
-import java.io.IOException
 import java.lang.foreign.*
 import java.lang.invoke.MethodHandle
 import java.lang.invoke.MethodHandles
 import java.lang.invoke.MethodType
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 class MacNotificationCenter(
-    private val fallbackNotificationCenter: INotificationCenter = GenericNotificationCenter()
-) : INotificationCenter {
-    override fun displayNotification(msg: NotificationMessage) {
-        UserNotifications.show(msg, fallbackNotificationCenter)
+    private val fallbackNotificationCenter: NotificationBackend = GenericNotificationCenter()
+) : NotificationBackend {
+    private val lifecycleLock = Any()
+    private val active = AtomicBoolean(true)
+    private var userNotificationsStarted = false
+
+    override fun publish(notification: NotificationMessage) {
+        synchronized(lifecycleLock) {
+            if (!active.get()) {
+                return
+            }
+            try {
+                UserNotifications.show(notification, fallbackNotificationCenter, active)
+                userNotificationsStarted = true
+            } catch (exception: RuntimeException) {
+                logger.error("Failed to initialize macOS notifications", exception)
+                fallbackNotificationCenter.publish(notification)
+            } catch (error: LinkageError) {
+                logger.error("Failed to load macOS notification support", error)
+                fallbackNotificationCenter.publish(notification)
+            }
+        }
     }
 
-    @Throws(IOException::class)
     override fun close() {
-        fallbackNotificationCenter.close()
+        synchronized(lifecycleLock) {
+            if (!active.compareAndSet(true, false)) {
+                return
+            }
+            try {
+                if (userNotificationsStarted) {
+                    UserNotifications.cancel(active)
+                }
+            } finally {
+                fallbackNotificationCenter.close()
+            }
+        }
+    }
+
+    private companion object {
+        private val logger = LogManager.getLogger()
     }
 
     private object UserNotifications {
@@ -35,9 +69,11 @@ class MacNotificationCenter(
         private val arena = Arena.global()
         private val linker = Linker.nativeLinker()
         private val methodHandles = MethodHandles.lookup()
+        private val notificationThread = AtomicReference<Thread>()
         private val notificationExecutor: ExecutorService = Executors.newSingleThreadExecutor { command ->
             Thread(command, "MacNotificationCenter").apply {
                 isDaemon = true
+                notificationThread.set(this)
             }
         }
         private val lookup = SymbolLookup.libraryLookup("/usr/lib/libobjc.dylib", arena)
@@ -69,18 +105,34 @@ class MacNotificationCenter(
             notificationExecutor.execute(AuthorizationResult(granted))
         }
 
-        fun show(message: NotificationMessage, fallbackNotificationCenter: INotificationCenter) {
-            notificationExecutor.execute(ShowNotification(PendingNotification(message), fallbackNotificationCenter))
+        fun show(
+            notification: NotificationMessage,
+            fallbackNotificationCenter: NotificationBackend,
+            active: AtomicBoolean,
+        ) {
+            notificationExecutor.execute(
+                ShowNotification(PendingNotification(notification, active), fallbackNotificationCenter)
+            )
+        }
+
+        fun cancel(active: AtomicBoolean) {
+            runOnNotificationThreadAndWait {
+                pendingNotifications.removeAll { it.belongsTo(active) }
+            }
         }
 
         private fun showOnNotificationThread(
             message: PendingNotification,
-            fallbackNotificationCenter: INotificationCenter
+            fallbackNotificationCenter: NotificationBackend,
         ) {
+            if (!message.isActive()) {
+                return
+            }
+
             try {
                 if (!isRunningFromAppBundle()) {
                     logUnsupportedLaunch()
-                    fallbackNotificationCenter.displayNotification(message.toNotificationMessage())
+                    fallbackNotificationCenter.publish(message.toNotificationMessage())
                     return
                 }
 
@@ -94,6 +146,13 @@ class MacNotificationCenter(
                 }
             } catch (t: Throwable) {
                 logger.error("Failed to display macOS notification", t)
+                if (message.isActive()) {
+                    try {
+                        fallbackNotificationCenter.publish(message.toNotificationMessage())
+                    } catch (fallbackError: RuntimeException) {
+                        logger.error("Failed to display fallback notification", fallbackError)
+                    }
+                }
             }
         }
 
@@ -142,7 +201,7 @@ class MacNotificationCenter(
         }
 
         private fun deliverPending() {
-            val notifications = pendingNotifications.toList()
+            val notifications = pendingNotifications.filter(PendingNotification::isActive)
             pendingNotifications.clear()
 
             notifications.forEach { message ->
@@ -152,6 +211,22 @@ class MacNotificationCenter(
 
         private fun clearPending() {
             pendingNotifications.clear()
+        }
+
+        private fun runOnNotificationThreadAndWait(action: () -> Unit) {
+            if (Thread.currentThread() === notificationThread.get()) {
+                action()
+                return
+            }
+
+            try {
+                notificationExecutor.submit(action).get()
+            } catch (exception: InterruptedException) {
+                Thread.currentThread().interrupt()
+                throw IllegalStateException("Notification shutdown was interrupted", exception)
+            } catch (exception: ExecutionException) {
+                throw IllegalStateException("Notification shutdown failed", exception.cause)
+            }
         }
 
         private fun deliverModern(title: String, body: String) {
@@ -329,7 +404,7 @@ class MacNotificationCenter(
 
         private class ShowNotification(
             private val message: PendingNotification,
-            private val fallbackNotificationCenter: INotificationCenter
+            private val fallbackNotificationCenter: NotificationBackend
         ) : Runnable {
             override fun run() {
                 showOnNotificationThread(message, fallbackNotificationCenter)
@@ -339,17 +414,17 @@ class MacNotificationCenter(
         private data class PendingNotification(
             val title: String,
             val body: String,
-            val type: MessageType
+            val type: MessageType,
+            private val active: AtomicBoolean,
         ) {
-            constructor(message: NotificationMessage) : this(message.title, message.message, message.type)
+            constructor(message: NotificationMessage, active: AtomicBoolean) :
+                this(message.title, message.message, message.type, active)
 
-            fun toNotificationMessage(): NotificationMessage {
-                return NotificationMessage().also {
-                    it.title = title
-                    it.message = body
-                    it.type = type
-                }
-            }
+            fun belongsTo(owner: AtomicBoolean): Boolean = active === owner
+
+            fun isActive(): Boolean = active.get()
+
+            fun toNotificationMessage(): NotificationMessage = NotificationMessage(title, body, type)
         }
 
         private class AuthorizationResult(private val granted: Boolean) : Runnable {
