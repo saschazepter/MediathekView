@@ -89,12 +89,12 @@ class FilmLifecycleController(private val host: Host) {
         }
     }
 
-    fun handleFilmSeenStateChangedEvent(@Suppress("UNUSED_PARAMETER") event: FilmSeenStateChangedEvent) {
+    fun handleFilmSeenStateChangedEvent(event: FilmSeenStateChangedEvent) {
         launchOnSwing {
-            if (host.filterConfiguration().isShowUnseenOnly) {
-                host.requestTableReload()
-            } else {
-                host.table().repaint()
+            when {
+                !host.filterConfiguration().isShowUnseenOnly -> host.table().repaint()
+                event.seen && host.table().removeFilmsFromCurrentModel(event.films) -> Unit
+                else -> host.requestTableReload()
             }
         }
     }

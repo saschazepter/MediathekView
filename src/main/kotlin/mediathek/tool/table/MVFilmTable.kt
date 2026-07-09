@@ -22,6 +22,7 @@ import mediathek.config.MVColor
 import mediathek.daten.DatenFilm
 import mediathek.gui.tabs.tab_film.table.FilmColumnVisibility
 import mediathek.tool.models.FilmColumn
+import mediathek.tool.models.TModelFilm
 import org.apache.logging.log4j.LogManager
 import java.awt.Color
 import java.awt.Component
@@ -61,6 +62,12 @@ class MVFilmTable : PersistentColumnConfigurationTable(
             decorateUnselectedRow(component, row)
         }
         return component
+    }
+
+    fun removeFilmsFromCurrentModel(films: Collection<DatenFilm>): Boolean {
+        val filmModel = model as? TModelFilm ?: return false
+        filmModel.removeFilms(films)
+        return true
     }
 
     override fun getToolTipText(event: MouseEvent): String? {

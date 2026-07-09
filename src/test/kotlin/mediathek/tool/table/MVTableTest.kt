@@ -3,6 +3,7 @@ package mediathek.tool.table
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.DownloadColumn
 import mediathek.daten.DatenDownload
+import mediathek.daten.DatenFilm
 import mediathek.tool.models.FilmColumn
 import mediathek.tool.models.TModelDownload
 import mediathek.tool.models.TModelFilm
@@ -55,6 +56,29 @@ class MVTableTest {
         assertEquals(FilmColumn.TITLE.index, sorter.sortKeys.first().column)
         assertEquals(SortOrder.ASCENDING, sorter.sortKeys.first().sortOrder)
         assertTrue(!sorter.isSortable(FilmColumn.PLAY.index))
+    }
+
+    @Test
+    fun filmTableRemovesSeenFilmsWithoutReplacingSortedModel() {
+        val films = listOf(
+            DatenFilm().apply { title = "C" },
+            DatenFilm().apply { title = "A" },
+            DatenFilm().apply { title = "B" },
+        )
+        val model = TModelFilm().apply { addAll(films) }
+        val table = MVFilmTable().apply {
+            this.model = model
+            rowSorter.sortKeys = listOf(
+                javax.swing.RowSorter.SortKey(FilmColumn.TITLE.index, SortOrder.ASCENDING),
+            )
+        }
+
+        assertTrue(table.removeFilmsFromCurrentModel(listOf(films[2])))
+
+        assertSame(model, table.model)
+        assertEquals(2, table.rowCount)
+        assertEquals("A", table.getValueAt(0, FilmColumn.TITLE.index))
+        assertEquals("C", table.getValueAt(1, FilmColumn.TITLE.index))
     }
 
     @Test

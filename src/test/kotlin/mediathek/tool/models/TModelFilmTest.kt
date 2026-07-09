@@ -57,4 +57,36 @@ internal class TModelFilmTest {
 
         assertTrue(events.isEmpty())
     }
+
+    @Test
+    fun removeFilmsDeletesContiguousFilmsWithOneTableEvent() {
+        val films = List(4) { DatenFilm() }
+        val model = TModelFilm().apply { addAll(films) }
+        val events = mutableListOf<TableModelEvent>()
+        model.addTableModelListener { event -> events += event }
+
+        model.removeFilms(films.subList(1, 3))
+
+        assertEquals(2, model.rowCount)
+        assertSame(films[0], model.getValueAt(0, FilmColumn.REF.index))
+        assertSame(films[3], model.getValueAt(1, FilmColumn.REF.index))
+        val event = events.single()
+        assertEquals(TableModelEvent.DELETE, event.type)
+        assertEquals(1, event.firstRow)
+        assertEquals(2, event.lastRow)
+    }
+
+    @Test
+    fun removeFilmsDeletesSeparatedFilmsFromHighestRowFirst() {
+        val films = List(5) { DatenFilm() }
+        val model = TModelFilm().apply { addAll(films) }
+        val events = mutableListOf<TableModelEvent>()
+        model.addTableModelListener { event -> events += event }
+
+        model.removeFilms(listOf(films[1], films[3]))
+
+        assertEquals(3, model.rowCount)
+        assertEquals(listOf(3, 1), events.map { it.firstRow })
+        assertTrue(events.all { it.type == TableModelEvent.DELETE && it.firstRow == it.lastRow })
+    }
 }

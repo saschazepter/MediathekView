@@ -19,6 +19,8 @@
 package mediathek.tool.models
 
 import mediathek.daten.DatenFilm
+import java.util.Collections
+import java.util.IdentityHashMap
 import javax.swing.table.AbstractTableModel
 
 class TModelFilm(capacity: Int = 0) : AbstractTableModel() {
@@ -46,5 +48,31 @@ class TModelFilm(capacity: Int = 0) : AbstractTableModel() {
         val oldRowCount = dataList.size
         dataList.addAll(listeFilme)
         fireTableRowsInserted(oldRowCount, dataList.lastIndex)
+    }
+
+    fun removeFilms(films: Collection<DatenFilm>) {
+        if (films.isEmpty() || dataList.isEmpty()) {
+            return
+        }
+
+        val filmsToRemove = Collections.newSetFromMap(IdentityHashMap<DatenFilm, Boolean>(films.size))
+        filmsToRemove.addAll(films)
+
+        var deletedRangeEnd = -1
+        for (row in dataList.lastIndex downTo 0) {
+            if (dataList[row] in filmsToRemove) {
+                dataList.removeAt(row)
+                if (deletedRangeEnd == -1) {
+                    deletedRangeEnd = row
+                }
+            } else if (deletedRangeEnd != -1) {
+                fireTableRowsDeleted(row + 1, deletedRangeEnd)
+                deletedRangeEnd = -1
+            }
+        }
+
+        if (deletedRangeEnd != -1) {
+            fireTableRowsDeleted(0, deletedRangeEnd)
+        }
     }
 }
