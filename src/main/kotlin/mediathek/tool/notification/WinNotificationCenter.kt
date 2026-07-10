@@ -1,6 +1,6 @@
 package mediathek.tool.notification
 
-import mediathek.config.Konstanten
+import mediathek.tool.tray.SharedSystemTrayIcon
 import java.awt.SystemTray
 import java.awt.TrayIcon
 
@@ -21,19 +21,14 @@ class WinNotificationCenter : NotificationBackend {
 
     override fun close() {
         synchronized(lifecycleLock) {
-            val currentTrayIcon = trayIcon ?: return
+            trayIcon ?: return
             trayIcon = null
-            SystemTray.getSystemTray().remove(currentTrayIcon)
+            SharedSystemTrayIcon.release(this)
         }
     }
 
     init {
         check(SystemTray.isSupported()) { "System Tray is not supported" }
-        val tray = SystemTray.getSystemTray()
-        val newTrayIcon = TrayIcon(Konstanten.ICON_TRAY, "MediathekView ${Konstanten.MVVERSION}")
-        newTrayIcon.isImageAutoSize = true
-
-        tray.add(newTrayIcon)
-        trayIcon = newTrayIcon
+        trayIcon = SharedSystemTrayIcon.acquire(this)
     }
 }

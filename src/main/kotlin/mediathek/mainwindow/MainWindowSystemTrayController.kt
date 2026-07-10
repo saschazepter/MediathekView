@@ -20,7 +20,8 @@ package mediathek.mainwindow
 
 import mediathek.controller.starter.DownloadServices
 import mediathek.filmlisten.FilmCatalog
-import mediathek.gui.MVTray
+import mediathek.gui.tray.AwtSystemTray
+import mediathek.gui.tray.SystemTraySession
 import mediathek.tool.notification.NotificationPublisher
 
 interface MainWindowSystemTrayController {
@@ -31,7 +32,7 @@ interface MainWindowSystemTrayController {
         downloads: DownloadServices,
         owner: TrayHost,
         notificationPublisher: NotificationPublisher,
-    ): MVTray?
+    ): SystemTraySession?
 }
 
 object DefaultMainWindowSystemTrayController : MainWindowSystemTrayController {
@@ -40,7 +41,14 @@ object DefaultMainWindowSystemTrayController : MainWindowSystemTrayController {
         downloads: DownloadServices,
         owner: TrayHost,
         notificationPublisher: NotificationPublisher,
-    ): MVTray? = MVTray(filmCatalog, downloads, owner, notificationPublisher).systemTray()
+    ): SystemTraySession? = AwtSystemTray.create(
+        filmCatalog,
+        downloads,
+        notificationPublisher,
+        owner::toggleMainWindowVisibility,
+        owner::disableSystemTray,
+        { owner.quitApplication() },
+    )
 }
 
 object NoOpMainWindowSystemTrayController : MainWindowSystemTrayController {
@@ -49,5 +57,5 @@ object NoOpMainWindowSystemTrayController : MainWindowSystemTrayController {
         downloads: DownloadServices,
         owner: TrayHost,
         notificationPublisher: NotificationPublisher,
-    ): MVTray? = null
+    ): SystemTraySession? = null
 }

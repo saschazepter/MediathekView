@@ -21,7 +21,7 @@ package mediathek.x11
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.starter.DownloadServices
 import mediathek.filmlisten.FilmCatalog
-import mediathek.gui.MVTray
+import mediathek.gui.tray.SystemTraySession
 import mediathek.mainwindow.DefaultMainWindowSystemTrayController
 import mediathek.mainwindow.MainWindowSystemTrayController
 import mediathek.mainwindow.TrayHost
@@ -44,7 +44,7 @@ object X11MainWindowSystemTrayController : MainWindowSystemTrayController {
         downloads: DownloadServices,
         owner: TrayHost,
         notificationPublisher: NotificationPublisher,
-    ): MVTray? = DefaultMainWindowSystemTrayController.initialize(
+    ): SystemTraySession? = DefaultMainWindowSystemTrayController.initialize(
         filmCatalog,
         downloads,
         owner,

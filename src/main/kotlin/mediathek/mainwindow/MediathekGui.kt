@@ -446,10 +446,6 @@ open class MediathekGui private constructor(
 
     override fun ownerFrame(): JFrame = this
 
-    override fun showMainWindow() {
-        runOnEventDispatchThread { isVisible = true }
-    }
-
     override fun toggleMainWindowVisibility() {
         runOnEventDispatchThread {
             isVisible = !isVisible
@@ -462,6 +458,15 @@ open class MediathekGui private constructor(
 
     override fun refreshSystemTray() {
         runOnEventDispatchThread { platformIntegration.initializeSystemTray() }
+    }
+
+    override fun disableSystemTray() {
+        runOnEventDispatchThread {
+            isVisible = true
+            ApplicationConfiguration.getInstance().useTray = false
+            platformIntegration.initializeSystemTray()
+            MessageBus.messageBus.publishAsync(TrayIconEvent())
+        }
     }
 
     override fun repaintMainWindow() {
