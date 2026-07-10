@@ -46,7 +46,6 @@ object DefaultMainWindowSystemTrayController : MainWindowSystemTrayController {
         downloads,
         notificationPublisher,
         owner::toggleMainWindowVisibility,
-        owner::disableSystemTray,
         { owner.quitApplication() },
     )
 }

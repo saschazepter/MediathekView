@@ -460,15 +460,6 @@ open class MediathekGui private constructor(
         runOnEventDispatchThread { platformIntegration.initializeSystemTray() }
     }
 
-    override fun disableSystemTray() {
-        runOnEventDispatchThread {
-            isVisible = true
-            ApplicationConfiguration.getInstance().useTray = false
-            platformIntegration.initializeSystemTray()
-            MessageBus.messageBus.publishAsync(TrayIconEvent())
-        }
-    }
-
     override fun repaintMainWindow() {
         runOnEventDispatchThread { repaint() }
     }

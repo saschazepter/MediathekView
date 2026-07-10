@@ -67,6 +67,4 @@ interface SettingsResetHost : MainWindowQuitHost {
 
 interface TrayHost : MainWindowQuitHost {
     fun toggleMainWindowVisibility()
-
-    fun disableSystemTray()
 }

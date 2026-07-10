@@ -23,7 +23,6 @@ internal class AwtSystemTray private constructor(
     private val downloads: DownloadServices,
     private val notificationPublisher: NotificationPublisher,
     private val onToggleMainWindow: () -> Unit,
-    private val onDisableSystemTray: () -> Unit,
     private val onQuitApplication: () -> Unit,
 ) : SystemTraySession {
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
@@ -106,9 +105,6 @@ internal class AwtSystemTray private constructor(
         add(MenuItem("Infos anzeigen").apply {
             addActionListener { showInformation() }
         })
-        add(MenuItem("Trayicon ausblenden").apply {
-            addActionListener { onDisableSystemTray() }
-        })
         addSeparator()
         add(MenuItem("Programm beenden").apply {
             addActionListener { onQuitApplication() }
@@ -164,7 +160,6 @@ internal class AwtSystemTray private constructor(
             downloads: DownloadServices,
             notificationPublisher: NotificationPublisher,
             onToggleMainWindow: () -> Unit,
-            onDisableSystemTray: () -> Unit,
             onQuitApplication: () -> Unit,
         ): SystemTraySession? {
             if (!SystemTray.isSupported()) {
@@ -177,7 +172,6 @@ internal class AwtSystemTray private constructor(
                 downloads,
                 notificationPublisher,
                 onToggleMainWindow,
-                onDisableSystemTray,
                 onQuitApplication,
             )
             return if (tray.install()) {
