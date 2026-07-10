@@ -37,7 +37,7 @@ class GenericNotificationCenter internal constructor(
             return
         }
         if (!SwingUtilities.isEventDispatchThread()) {
-            SwingDispatch.runAndWait("Close generic notification center", Runnable {})
+            SwingDispatch.runAndWait("Close generic notification center") {}
         }
     }
 
