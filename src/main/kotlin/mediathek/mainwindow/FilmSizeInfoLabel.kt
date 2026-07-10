@@ -21,11 +21,13 @@ package mediathek.mainwindow
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.filmlisten.FilmCatalog
+import mediathek.gui.messages.FilmTableRowCountChangedEvent
 import mediathek.gui.messages.UpdateStatusBarLeftDisplayEvent
 import mediathek.tool.MessageBus
 import net.engio.mbassy.listener.Handler
 import java.util.function.IntSupplier
 import javax.swing.JLabel
+import javax.swing.SwingUtilities
 import kotlin.time.Duration.Companion.seconds
 
 class FilmSizeInfoLabel(
@@ -53,9 +55,12 @@ class FilmSizeInfoLabel(
     @Suppress("UNUSED_PARAMETER")
     @Handler
     private fun handleLeftDisplayUpdate(event: UpdateStatusBarLeftDisplayEvent) {
-        uiScope?.launch {
-            updateValues()
-        }
+        dispatchUpdate()
+    }
+
+    @Handler
+    private fun handleFilmTableRowCountChanged(event: FilmTableRowCountChangedEvent) {
+        dispatchUpdate(event.rowCount)
     }
 
     private fun startUpdating() {
@@ -94,9 +99,21 @@ class FilmSizeInfoLabel(
         }
     }
 
-    private fun updateValues() {
+    internal fun updateDisplayedFilmCount(rowCount: Int) {
+        updateValues(rowCount)
+    }
+
+    private fun dispatchUpdate(rowCountOverride: Int? = null) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            updateValues(rowCountOverride)
+        } else {
+            SwingUtilities.invokeLater { updateValues(rowCountOverride) }
+        }
+    }
+
+    private fun updateValues(rowCountOverride: Int? = null) {
         val gesamt = filmCatalog.allFilms.size
-        val rowCount = filmTableRowCount.asInt
+        val rowCount = rowCountOverride ?: filmTableRowCount.asInt
 
         if (gesamt == oldGesamt && rowCount == oldRowCount) {
             return

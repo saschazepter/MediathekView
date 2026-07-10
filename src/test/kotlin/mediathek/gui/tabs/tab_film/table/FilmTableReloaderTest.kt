@@ -1,0 +1,102 @@
+package mediathek.gui.tabs.tab_film.table
+
+import mediathek.config.application.ApplicationConfiguration
+import mediathek.daten.DatenFilm
+import mediathek.filmlisten.FilmCatalog
+import mediathek.gui.tabs.tab_film.filter.FilmFilterController
+import mediathek.gui.tabs.tab_film.helpers.FilmQueryEngine
+import mediathek.gui.tabs.tab_film.search.SearchControlFieldMode
+import mediathek.gui.tabs.tab_film.search.SearchFieldData
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Test
+import java.awt.Component
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
+import javax.swing.JPanel
+import javax.swing.JTable
+
+internal class FilmTableReloaderTest {
+    @Test
+    fun onlyNewestOverlappingQueryIsAppliedAndTableStaysEnabled() {
+        val binding = RecordingBinding()
+        val completed = CountDownLatch(1)
+        val firstStarted = CountDownLatch(1)
+        val queryNumber = AtomicInteger()
+        val firstFilm = film("first")
+        val secondFilm = film("second")
+        val host = TestHost(binding) { completed.countDown() }
+        val reloader = FilmTableReloader(host) {
+            when (queryNumber.incrementAndGet()) {
+                1 -> FilmQueryEngine {
+                    firstStarted.countDown()
+                    Thread.sleep(150)
+                    listOf(firstFilm)
+                }
+
+                else -> FilmQueryEngine { listOf(secondFilm) }
+            }
+        }
+
+        try {
+            reloader.loadTable()
+            assertTrue(firstStarted.await(5, TimeUnit.SECONDS))
+            reloader.loadTable()
+            assertTrue(completed.await(5, TimeUnit.SECONDS))
+
+            assertEquals(listOf(listOf(secondFilm)), binding.replacements)
+            assertEquals(listOf(1), host.statusRowCounts)
+            assertTrue(binding.table.isEnabled)
+        } finally {
+            reloader.dispose()
+        }
+    }
+
+    private class TestHost(
+        private val binding: RecordingBinding,
+        private val completed: () -> Unit,
+    ) : FilmTableReloader.Host {
+        val statusRowCounts = mutableListOf<Int>()
+        private val catalog = FilmCatalog()
+        private val filterController = FilmFilterController(
+            ApplicationConfiguration.getInstance().createFilterConfiguration(),
+        )
+
+        override fun tableBinding(): FilmTableModelBinding = binding
+        override fun filmCatalog(): FilmCatalog = catalog
+        override fun owner(): Component = JPanel()
+        override fun searchFieldData(): SearchFieldData = SearchFieldData("", SearchControlFieldMode.THEMA_TITEL)
+        override fun filterController(): FilmFilterController = filterController
+        override fun setSelectionUpdatesSuspended(suspended: Boolean) = Unit
+        override fun updateStartInfoProperty() {
+            statusRowCounts += binding.rowCount
+        }
+
+        override fun updateFilmData() = Unit
+        override fun onReloadCompleted(fromSearchField: Boolean) = completed()
+    }
+
+    private class RecordingBinding : FilmTableModelBinding {
+        override val table = JTable()
+        val replacements = mutableListOf<List<DatenFilm>>()
+        override val rowCount: Int get() = replacements.lastOrNull()?.size ?: 0
+        override fun filmAtViewRow(viewRow: Int): DatenFilm? = replacements.lastOrNull()?.getOrNull(viewRow)
+        override fun selectedFilms(): List<DatenFilm> = emptyList()
+        override suspend fun replaceFilms(films: Collection<DatenFilm>) {
+            replacements += films.toList()
+        }
+
+        override fun removeFilms(films: Collection<DatenFilm>): Boolean = false
+        override fun rowsChanged(films: Collection<DatenFilm>) = Unit
+        override fun restoreLegacySort(column: Int, descending: Boolean) = Unit
+        override fun clearSorting() = Unit
+        override fun saveState() = Unit
+        override fun dispose() = Unit
+    }
+
+    private fun film(title: String) = DatenFilm().apply {
+        this.title = title
+        urlNormalQuality = "https://example.invalid/$title.mp4"
+    }
+}

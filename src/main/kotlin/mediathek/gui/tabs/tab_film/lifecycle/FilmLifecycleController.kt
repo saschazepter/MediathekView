@@ -27,25 +27,20 @@ import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.gui.messages.*
 import mediathek.gui.messages.history.FilmSeenStateChangedEvent
 import mediathek.gui.messages.history.SeenHistoryChangedEvent
-import mediathek.gui.tabs.tab_film.FilmToolBar
-import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog
-import mediathek.gui.tabs.tab_film.search.SearchField
+import mediathek.gui.tabs.tab_film.table.FilmTableModelBinding
 import mediathek.tool.MessageBus
-import mediathek.tool.table.MVFilmTable
 
 class FilmLifecycleController(private val host: Host) {
     interface Host {
         fun messageBusSubscriber(): Any
         fun filmListLoader(): FilmListLoadCoordinator
-        fun table(): MVFilmTable
+        fun tableBinding(): FilmTableModelBinding
         fun filterConfiguration(): FilterConfiguration
         fun bookmarkStartupReloadCoordinator(): BookmarkStartupReloadCoordinator
         fun swingFilterDialog(): SwingFilterDialog?
-        fun filmToolBar(): FilmToolBar
-        fun searchField(): SearchField
-        fun actions(): FilmUiActions
         fun requestTableReload()
+        fun invalidateTableReloads()
         fun updateStartInfoProperty()
         fun saveTableConfiguration()
         fun closeFilterSelectionModel()
@@ -68,21 +63,6 @@ class FilmLifecycleController(private val host: Host) {
         uiScope.cancel()
     }
 
-    fun handleTableModelChange(event: TableModelChangeEvent) {
-        if (event.active) {
-            launchOnSwing { setFilmControlsEnabled(false) }
-        } else {
-            launchOnSwing {
-                setFilmControlsEnabled(true)
-                if (event.fromSearchField) {
-                    host.searchField().requestFocusInWindow()
-                }
-            }
-        }
-
-        host.swingFilterDialog()?.onTableModelChangeEvent(event)
-    }
-
     fun handleSeenHistoryChangedEvent(@Suppress("UNUSED_PARAMETER") event: SeenHistoryChangedEvent) {
         launchOnSwing {
             host.requestTableReload()
@@ -92,8 +72,11 @@ class FilmLifecycleController(private val host: Host) {
     fun handleFilmSeenStateChangedEvent(event: FilmSeenStateChangedEvent) {
         launchOnSwing {
             when {
-                !host.filterConfiguration().isShowUnseenOnly -> host.table().repaint()
-                event.seen && host.table().removeFilmsFromCurrentModel(event.films) -> Unit
+                !host.filterConfiguration().isShowUnseenOnly -> {
+                    host.tableBinding().rowsChanged(event.films)
+                    host.tableBinding().table.repaint()
+                }
+                event.seen && host.tableBinding().removeFilms(event.films) -> Unit
                 else -> host.requestTableReload()
             }
         }
@@ -101,7 +84,7 @@ class FilmLifecycleController(private val host: Host) {
 
     fun handleButtonStart(@Suppress("UNUSED_PARAMETER") event: ButtonStartEvent) {
         launchOnSwing {
-            host.table().fireTableDataChanged(true)
+            host.tableBinding().table.repaint()
             host.updateStartInfoProperty()
         }
     }
@@ -111,26 +94,15 @@ class FilmLifecycleController(private val host: Host) {
     }
 
     fun handleReloadTableDataEvent(@Suppress("UNUSED_PARAMETER") event: ReloadTableDataEvent) {
-        host.requestTableReload()
+        launchOnSwing { host.requestTableReload() }
     }
 
     fun handleBookmarkRefreshCompletedEvent(@Suppress("UNUSED_PARAMETER") event: BookmarkRefreshCompletedEvent) {
         if (host.bookmarkStartupReloadCoordinator()
                 .onBookmarkRefreshCompleted(host.filterConfiguration().isShowBookMarkedOnly)
         ) {
-            host.requestTableReload()
+            launchOnSwing { host.requestTableReload() }
         }
-    }
-
-    private fun setFilmControlsEnabled(enabled: Boolean) {
-        val actions = host.actions()
-        actions.playFilm.isEnabled = enabled
-        actions.saveFilm.isEnabled = enabled
-        actions.bookmarkAddFilm.isEnabled = enabled
-        actions.bookmarkRemoveFilm.isEnabled = enabled
-        actions.deleteBookmarks.isEnabled = enabled
-        actions.manageBookmarks.isEnabled = enabled
-        host.filmToolBar().isEnabled = enabled
     }
 
     private fun launchOnSwing(block: () -> Unit) {
@@ -140,7 +112,10 @@ class FilmLifecycleController(private val host: Host) {
     private fun createFilmListReloadListener(): FilmListLoadListener =
         object : FilmListLoadListener {
             override fun loadStarted(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
-                launchOnSwing { host.swingFilterDialog()?.onFilmDataLoadingStarted() }
+                launchOnSwing {
+                    host.invalidateTableReloads()
+                    host.swingFilterDialog()?.onFilmDataLoadingStarted()
+                }
                 host.bookmarkStartupReloadCoordinator().onFilmListLoadingStarted()
             }
 

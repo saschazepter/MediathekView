@@ -62,6 +62,7 @@ class FilmFilterController(
     interface DataProvider {
         fun senderList(): EventList<String>
         fun getThemen(senders: Collection<String>): List<String>
+        fun hasFilmData(): Boolean = false
     }
 
     sealed interface FilmDataState {
@@ -133,8 +134,11 @@ class FilmFilterController(
 
     fun selectionObserverRegistry(): SelectionObserverRegistry = selectionObserverRegistry
 
-    fun renderModel(): RenderModel {
-        val availableThemen = dataProvider.getThemen(currentState.checkedChannels)
+    fun loadAvailableThemen(senders: Collection<String>): List<String> = dataProvider.getThemen(senders)
+
+    fun hasFilmData(): Boolean = dataProvider.hasFilmData()
+
+    fun renderModel(availableThemen: List<String>): RenderModel {
         val reconciledState = reconcileThema(availableThemen)
         return RenderModel(
             state = reconciledState,
@@ -218,10 +222,6 @@ class FilmFilterController(
         filmDataState = if (hasAvailableThemen) FilmDataState.Ready else FilmDataState.Loading
     }
 
-    fun initializeFilmData() {
-        initializeFilmData(dataProvider.getThemen(emptySet()).isNotEmpty())
-    }
-
     fun onFilmDataLoaded() {
         filmDataState = FilmDataState.Ready
     }
@@ -260,7 +260,11 @@ class FilmFilterController(
 
     fun restoreCurrentFilterSelection(filter: FilterDTO): Boolean {
         if (filterConfig.currentFilter != filter) {
-            logger.trace("Updating filter lifecycle for reason=selectFilter: from={} to={}", currentState.currentFilter, filter)
+            logger.trace(
+                "Updating filter lifecycle for reason=selectFilter: from={} to={}",
+                currentState.currentFilter,
+                filter
+            )
             filterConfig.currentFilter = filter
             syncStateFromConfig("selectFilter")
             return true

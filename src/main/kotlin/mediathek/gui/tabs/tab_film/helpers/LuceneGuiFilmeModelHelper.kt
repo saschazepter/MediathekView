@@ -48,26 +48,24 @@ import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
 import javax.swing.SwingUtilities
-import javax.swing.table.TableModel
 
 class LuceneGuiFilmeModelHelper(
     private val filmCatalog: FilmCatalog,
     private val owner: Component,
     searchFieldData: SearchFieldData,
     filterController: FilmFilterController,
-) : GuiModelHelper {
+) : FilmQueryEngine {
     private val support = GuiModelHelperSupport(searchFieldData, filterController)
     private val searcherCache = CurrentReaderIndexSearcherCache()
 
-    override val filteredTableModel: TableModel
-        get() {
-            val allFilms = allFilms()
-            check(allFilms is IndexedFilmList) { "Lucene filtering requires an IndexedFilmList" }
-            FilmSeenHistoryController.prepareSeenState(allFilms)
-            return support.getFilteredTableModel(allFilms) { filterContext ->
-                filterFilms(allFilms, filterContext)
-            }
+    override fun query(): List<DatenFilm> {
+        val allFilms = allFilms()
+        check(allFilms is IndexedFilmList) { "Lucene filtering requires an IndexedFilmList" }
+        FilmSeenHistoryController.prepareSeenState(allFilms)
+        return support.getFilteredFilms(allFilms) { filterContext ->
+            filterFilms(allFilms, filterContext)
         }
+    }
 
     private fun allFilms(): Collection<DatenFilm> = filmCatalog.filteredFilms
 

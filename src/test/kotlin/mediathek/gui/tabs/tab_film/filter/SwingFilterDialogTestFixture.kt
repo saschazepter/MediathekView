@@ -41,7 +41,9 @@ internal object SwingFilterDialogTestFixture {
         )
     }
 
-    fun createDialogSetup(): DialogSetup {
+    fun createDialogSetup(
+        getThemen: (Collection<String>) -> List<String> = { emptyList() },
+    ): DialogSetup {
         val requestedNewFilterName = AtomicReference<String?>(null)
         val requestedRenameName = AtomicReference<String?>(null)
         val filterConfiguration = TestFilterConfiguration(XMLConfiguration())
@@ -63,7 +65,7 @@ internal object SwingFilterDialogTestFixture {
                 }
 
                 override fun senderList() = senders
-                override fun getThemen(senders: Collection<String>) = emptyList<String>()
+                override fun getThemen(senders: Collection<String>) = getThemen.invoke(senders)
             },
             reloadRequester = reloadRequester
         )
