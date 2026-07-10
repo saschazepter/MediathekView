@@ -11,9 +11,8 @@ internal class BookmarkTableColumnSettingsManagerTest {
     private val legacyIdPattern = Pattern.compile("\"id\"\\s*:\\s*\"((?:\\\\.|[^\"])*)\"")
     private val manager = BookmarkTableColumnSettingsManager<Any>(JTable(0, 1), "test", null)
     private val extractMethod: Method = manager.javaClass.getDeclaredMethod(
-        "extractJsonStringValue",
+        "extractId",
         String::class.java,
-        String::class.java
     ).apply { isAccessible = true }
 
     @Test
@@ -56,7 +55,7 @@ internal class BookmarkTableColumnSettingsManagerTest {
     }
 
     private fun extractWithIterativeParser(objectJson: String): String? =
-        extractMethod.invoke(manager, objectJson, "id") as String?
+        extractMethod.invoke(manager, objectJson) as String?
 
     private fun extractWithLegacyRegex(objectJson: String): String? {
         val matcher = legacyIdPattern.matcher(objectJson)

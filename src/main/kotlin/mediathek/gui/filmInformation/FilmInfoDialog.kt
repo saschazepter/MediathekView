@@ -43,6 +43,7 @@ import java.awt.image.BufferedImage
 import java.net.URI
 import java.util.*
 import javax.swing.*
+import kotlin.math.roundToInt
 import kotlin.coroutines.cancellation.CancellationException
 
 class FilmInfoDialog(owner: Window) : JDialog(owner) {
@@ -402,6 +403,6 @@ class FilmInfoDialog(owner: Window) : JDialog(owner) {
             }
         }
 
-        private fun Double.toIntRounded(): Int = Math.round(this).toInt()
+        private fun Double.toIntRounded(): Int = roundToInt()
     }
 }

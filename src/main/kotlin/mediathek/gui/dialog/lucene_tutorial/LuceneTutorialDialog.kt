@@ -27,7 +27,7 @@ import java.awt.Window
 import java.net.URISyntaxException
 import javax.swing.JDialog
 import javax.swing.JScrollPane
-import javax.swing.WindowConstants
+
 import javax.swing.event.HyperlinkEvent
 
 class LuceneTutorialDialog(

@@ -31,7 +31,7 @@ import java.awt.event.ActionEvent
 import java.awt.event.KeyEvent
 import java.util.function.Supplier
 import javax.swing.AbstractAction
-import javax.swing.Action
+
 import javax.swing.KeyStroke
 
 class MarkFilmAsSeenAction(

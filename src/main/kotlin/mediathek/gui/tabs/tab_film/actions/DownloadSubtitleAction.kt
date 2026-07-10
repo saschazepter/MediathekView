@@ -34,7 +34,7 @@ import java.awt.event.ActionEvent
 import java.util.*
 import java.util.function.Supplier
 import javax.swing.AbstractAction
-import javax.swing.Action
+
 import javax.swing.JOptionPane
 
 class DownloadSubtitleAction(
@@ -64,9 +64,7 @@ class DownloadSubtitleAction(
         isEnabled = false
         uiScope.launch {
             try {
-                val result = SubtitleExportService.downloadAndExport(film.subtitleUrl, selectedFile.toPath())
-
-                when (result) {
+                when (val result = SubtitleExportService.downloadAndExport(film.subtitleUrl, selectedFile.toPath())) {
                     SubtitleExportResult.InvalidFormat -> {
                         JOptionPane.showMessageDialog(
                             owner,

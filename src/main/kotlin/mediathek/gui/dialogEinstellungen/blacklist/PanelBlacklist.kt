@@ -487,7 +487,7 @@ class PanelBlacklist(
             comboThemaLaden(rule.thema)
             jComboBoxThema.selectedItem = rule.thema
             jTextFieldTitel.text = rule.titel
-            jTextFieldThemaTitel.text = rule.thema_titel
+            jTextFieldThemaTitel.text = rule.topicTitle
         }
     }
 

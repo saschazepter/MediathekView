@@ -121,8 +121,7 @@ class ArteOnlineSearchService(
             language = DEFAULT_STREAM_LANGUAGE,
         ),
     ): OnlineSearchResult? {
-        val attributes = get(configUrl).parseJsonObject(json)
-            .get("data")?.jsonObjectOrNull()
+        val attributes = get(configUrl).parseJsonObject(json)["data"]?.jsonObjectOrNull()
             ?.get("attributes")?.jsonObjectOrNull()
             ?: return null
         val metadata = attributes["metadata"]?.jsonObjectOrNull() ?: return null

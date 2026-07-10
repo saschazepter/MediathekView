@@ -77,7 +77,7 @@ class DownloadServices(
             val films = filmCatalog.allFilms
             queue.filter { download -> download.film == null }
                 .forEach { download ->
-                    download.film = films.getFilmByUrl_klein_hoch_hd(download.downloadUrl)
+                    download.film = films.getFilmByAnyUrl(download.downloadUrl)
                     download.setGroesse("")
                 }
         }
@@ -394,16 +394,16 @@ class DownloadServices(
 
     fun startInfo(): DownloadStartInfo = synchronized(queue) {
         val info = DownloadStartInfo()
-        info.total_num_download_list_entries = queue.size
+        info.totalDownloadListEntries = queue.size
 
         for (download in queue) {
             if (!download.isDeferred) {
-                info.total_starts++
+                info.totalStarts++
             }
             if (download.isFromAbo) {
-                info.num_abos++
+                info.aboCount++
             } else {
-                info.num_downloads++
+                info.downloadCount++
             }
             val state = download.runtime.runState
             if (

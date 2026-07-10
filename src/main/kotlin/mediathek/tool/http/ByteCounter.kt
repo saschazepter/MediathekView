@@ -24,9 +24,6 @@ class ByteCounter {
         return socketFactory
     }
 
-    fun bytesWritten(): Long {
-        return bytesWritten.get()
-    }
 
     fun bytesRead(): Long {
         return bytesRead.get()

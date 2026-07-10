@@ -121,7 +121,4 @@ class BookmarkData() {
         support.addPropertyChangeListener(listener)
     }
 
-    fun removePropertyChangeListener(listener: PropertyChangeListener) {
-        support.removePropertyChangeListener(listener)
-    }
 }

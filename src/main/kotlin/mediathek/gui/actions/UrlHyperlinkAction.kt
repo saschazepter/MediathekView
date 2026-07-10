@@ -13,7 +13,7 @@ import java.awt.event.ActionEvent
 import java.io.IOException
 import java.net.URI
 import javax.swing.AbstractAction
-import javax.swing.Action
+
 
 class UrlHyperlinkAction(
     url: String,

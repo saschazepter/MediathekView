@@ -253,7 +253,7 @@ open class BookmarkTableColumnSettingsManager<E>(
     }
 
     private fun parseColumnSettingObject(objectJson: String): ColumnSetting? {
-        val id = extractJsonStringValue(objectJson, "id")
+        val id = extractId(objectJson)
         val position = extractInt(POSITION_PATTERN, objectJson)
         val width = extractInt(WIDTH_PATTERN, objectJson)
         val visible = extractBoolean(VISIBLE_PATTERN, objectJson)
@@ -286,8 +286,8 @@ open class BookmarkTableColumnSettingsManager<E>(
             append(']')
         }
 
-    private fun extractJsonStringValue(json: String, key: String): String? {
-        val fieldName = "\"$key\""
+    private fun extractId(json: String): String? {
+        val fieldName = "\"id\""
         val keyIndex = json.indexOf(fieldName)
         if (keyIndex < 0) {
             return null

@@ -30,7 +30,7 @@ import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Color
 import javax.swing.Icon
 import javax.swing.JTable
-import javax.swing.SwingConstants
+
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ListSelectionEvent
 import javax.swing.event.TableColumnModelEvent
@@ -67,7 +67,7 @@ open class CellRendererBaseWithStart : CellRendererBase() {
     }
 
     protected fun drawGeolocationIcons(film: DatenFilm, isSelected: Boolean) {
-        horizontalAlignment = SwingConstants.CENTER
+        horizontalAlignment = CENTER
         text = ""
         val curLocation = ApplicationConfiguration.getInstance().geographicLocation
         val lockedForCurrentLocation = film.isGeoBlockedForLocation(curLocation)
@@ -99,7 +99,7 @@ open class CellRendererBaseWithStart : CellRendererBase() {
         foreground = null
         icon = null
         toolTipText = null
-        horizontalAlignment = SwingConstants.LEADING
+        horizontalAlignment = LEADING
     }
 
     /**
@@ -149,9 +149,9 @@ open class CellRendererBaseWithStart : CellRendererBase() {
         }
 
         horizontalTextPosition = if (ApplicationConfiguration.getInstance().listIconPositionRight) {
-            SwingConstants.LEADING
+            LEADING
         } else {
-            SwingConstants.TRAILING
+            TRAILING
         }
     }
 

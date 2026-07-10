@@ -171,7 +171,7 @@ class MVTray(
             val info = downloads.startInfo()
             return buildString {
                 append("Downloads: ")
-                append(info.total_starts)
+                append(info.totalStarts)
 
                 if (info.hasValues()) {
                     append("   [ ")

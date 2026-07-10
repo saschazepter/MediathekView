@@ -169,6 +169,7 @@ class AboHistoryController(
 
     private fun isPersistable(entry: AboHistoryEntry): Boolean = isSupportedUrl(entry.url)
 
+    @Suppress("HttpUrlsUsage")
     private fun isSupportedUrl(url: String): Boolean {
         if (url.isBlank()) {
             return false

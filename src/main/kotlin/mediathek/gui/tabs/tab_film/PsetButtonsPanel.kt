@@ -44,7 +44,7 @@ class PsetButtonsPanel(
         SwingUtilities.invokeLater(this::setupButtonLayout)
     }
 
-    protected fun setupButtonLayout() {
+    private fun setupButtonLayout() {
         btnPanel.removeAll()
 
         for (pset in programSets.list.listeButton) {
