@@ -62,7 +62,7 @@ class ManageAboPanel(
     private val programSets: ProgramSetRepository,
     private val filmCatalog: FilmCatalog,
     private val abos: AboServices,
-    private val replacementRules: ReplacementRules,
+    replacementRules: ReplacementRules,
     private val filmListLoader: FilmListLoadCoordinator,
     private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : JPanel() {
@@ -89,17 +89,17 @@ class ManageAboPanel(
     private val scrollPane = JScrollPane(tabelle)
     private val filmLoadListener = object : FilmListLoadListener {
         @Suppress("UNUSED_PARAMETER")
-        override fun loadStarted(event: FilmListLoadProgress) {
+        override fun loadStarted(progress: FilmListLoadProgress) {
             markAboFilmCountsLoadingFromLoad()
         }
 
         @Suppress("UNUSED_PARAMETER")
-        override fun loadFinished(event: FilmListLoadProgress) {
+        override fun loadFinished(progress: FilmListLoadProgress) {
             scheduleAboFilmCountRefresh()
         }
 
         @Suppress("UNUSED_PARAMETER")
-        override fun firstLoadFinished(event: FilmListLoadProgress) {
+        override fun firstLoadFinished(progress: FilmListLoadProgress) {
             scheduleAboFilmCountRefresh()
         }
     }

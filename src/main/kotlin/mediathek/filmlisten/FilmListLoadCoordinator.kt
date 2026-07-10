@@ -81,8 +81,16 @@ class FilmListLoadCoordinator(
 
     private fun displayLogInfo(listeFilme: ListeFilme) {
         logger.info("Alte Liste erstellt am: {}", listeFilme.metaData.generationDateTimeAsString)
+        logFilmCounts(listeFilme)
+    }
+
+    private fun logFilmCounts(listeFilme: ListeFilme) {
         logger.info("  Anzahl Filme: {}", listeFilme.size)
         logger.info("  Anzahl Neue: {}", listeFilme.countNewFilms())
+    }
+
+    private fun logFilmListSource(dateiUrl: String) {
+        logger.info("Filmliste laden von: {}", dateiUrl)
     }
 
     fun startFilmlistLoad(dateiUrl: String, immerNeuLaden: Boolean): FilmListLoadHandle =
@@ -181,7 +189,7 @@ class FilmListLoadCoordinator(
         noUpdateCompletion: NoUpdateCompletion,
         operation: FilmListLoadOperation,
     ) {
-        logger.info("Filmliste laden von: {}", dateiUrl)
+        logFilmListSource(dateiUrl)
         runImportAsync(
             operationName = "importFromFile",
             persistAfterLoad = persistAfterLoad,
@@ -208,7 +216,7 @@ class FilmListLoadCoordinator(
         dateiUrl: String,
         operation: FilmListLoadOperation,
     ) {
-        logger.info("Filmliste laden von: {}", dateiUrl)
+        logFilmListSource(dateiUrl)
         val sourceUrl = dateiUrl.ifEmpty {
             StandardLocations.getFilmListUrl(FilmListDownloadType.FULL)
         }
@@ -259,7 +267,7 @@ class FilmListLoadCoordinator(
         operationName: String,
         persistAfterLoad: Boolean,
         operation: FilmListLoadOperation,
-        completeNoUpdate: suspend () -> Unit,
+        completeNoUpdate: () -> Unit,
         importAction: () -> FilmListImportOutcome,
     ) {
         scope.launch {
@@ -288,7 +296,7 @@ class FilmListLoadCoordinator(
         }
     }
 
-    private suspend fun finishNoUpdateImport(
+    private fun finishNoUpdateImport(
         noUpdateCompletion: NoUpdateCompletion,
         operation: FilmListLoadOperation,
     ) {
@@ -298,7 +306,7 @@ class FilmListLoadCoordinator(
         }
     }
 
-    private suspend fun finishImport(
+    private fun finishImport(
         failed: Boolean,
         persistAfterLoad: Boolean,
         oldFilmUrls: Set<String>,
@@ -316,8 +324,7 @@ class FilmListLoadCoordinator(
 
         logger.info("")
         logger.info("Jetzige Liste erstellt am: {}", listeFilme.metaData.generationDateTimeAsString)
-        logger.info("  Anzahl Filme: {}", listeFilme.size)
-        logger.info("  Anzahl Neue:  {}", listeFilme.countNewFilms())
+        logFilmCounts(listeFilme)
         logger.info("")
 
         MessageBus.messageBus.publish(FilmListReadStopEvent())
@@ -349,7 +356,7 @@ class FilmListLoadCoordinator(
             }
         }
 
-    private suspend fun startPostLoadWork(
+    private fun startPostLoadWork(
         persistFilmList: Boolean,
         operation: FilmListLoadOperation,
         failed: Boolean = false,

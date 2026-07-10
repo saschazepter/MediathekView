@@ -930,14 +930,14 @@ class GuiDownloads(
         add(toolBarRow, BorderLayout.NORTH)
 
         filmListLoader.addLoadListener(object : FilmListLoadListener {
-            override fun loadStarted(event: FilmListLoadProgress) {
+            override fun loadStarted(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
                 loadFilmlist = true
                 SwingUtilities.invokeLater {
                     refreshDownloadListAction.isEnabled = false
                 }
             }
 
-            override fun loadFinished(event: FilmListLoadProgress) {
+            override fun loadFinished(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
                 loadFilmlist = false
                 SwingUtilities.invokeLater {
                     refreshDownloadListAction.isEnabled = true

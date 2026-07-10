@@ -70,8 +70,8 @@ class LuceneTutorialDialog(
     }
 
     private fun initComponents() {
-        defaultCloseOperation = WindowConstants.DISPOSE_ON_CLOSE
-        type = Window.Type.UTILITY
+        defaultCloseOperation = DISPOSE_ON_CLOSE
+        type = Type.UTILITY
         minimumSize = Dimension(840, 700)
 
         tutorialPane.addHyperlinkListener { event ->

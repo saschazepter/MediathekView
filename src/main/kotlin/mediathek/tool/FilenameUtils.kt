@@ -62,7 +62,7 @@ class FilenameUtils private constructor() {
             ret = if (isPath) {
                 convertPathToNativeEncoding(ret)
             } else {
-                convertToNativeEncoding(ret, false)
+                convertToNativeEncoding(ret)
             }
 
             if (isWindowsPath) {
@@ -107,8 +107,8 @@ class FilenameUtils private constructor() {
          * @param fileName The UTF-16 filename string.
          * @return Natively encoded string for the OS.
          */
-        private fun convertToNativeEncoding(fileName: String, isPath: Boolean): String {
-            var ret = removeIllegalCharacters(fileName, isPath)
+        private fun convertToNativeEncoding(fileName: String): String {
+            var ret = removeIllegalCharacters(fileName, false)
 
             // convert our filename to OS encoding...
             try {
@@ -193,7 +193,7 @@ class FilenameUtils private constructor() {
                 if (onlyAscii) {
                     convertToASCIIEncoding(segment, false)
                 } else {
-                    convertToNativeEncoding(segment, false)
+                    convertToNativeEncoding(segment)
                 },
             )
         }
@@ -299,7 +299,7 @@ class FilenameUtils private constructor() {
             ret = if (onlyAscii) {
                 if (isPath) convertPathToASCIIEncoding(ret) else convertToASCIIEncoding(ret, false)
             } else {
-                if (isPath) convertPathToNativeEncoding(ret) else convertToNativeEncoding(ret, false)
+                if (isPath) convertPathToNativeEncoding(ret) else convertToNativeEncoding(ret)
             }
 
             if (isWindowsPath) {

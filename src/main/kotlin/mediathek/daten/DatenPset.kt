@@ -317,10 +317,6 @@ class DatenPset() : Comparable<DatenPset> {
         return ret
     }
 
-    fun setZielPfad(zielPfad: String?) {
-        this.zielPfad = zielPfad.orEmpty()
-    }
-
     fun copy(): DatenPset {
         val ret = DatenPset()
         ret.copyFrom(toArray())

@@ -38,7 +38,7 @@ class MarkFilmAsSeenAction(
     private val selectedFilms: Supplier<List<DatenFilm>>,
 ) : AbstractAction("Filme als gesehen markieren") {
     init {
-        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK))
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_G, KeyEvent.CTRL_DOWN_MASK))
     }
 
     override fun actionPerformed(event: ActionEvent?) {
@@ -50,7 +50,7 @@ class MarkFilmAsUnseenAction(
     private val selectedFilms: Supplier<List<DatenFilm>>,
 ) : AbstractAction("Filme als ungesehen markieren") {
     init {
-        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK))
+        putValue(ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_N, KeyEvent.CTRL_DOWN_MASK))
     }
 
     override fun actionPerformed(event: ActionEvent?) {

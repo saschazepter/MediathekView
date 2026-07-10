@@ -141,17 +141,17 @@ class DownloadAndQuitRunner(
         val listener = object : FilmListLoadListener {
             private var lastProgress = -1
 
-            override fun loadStarted(event: FilmListLoadProgress) {
+            override fun loadStarted(progress: FilmListLoadProgress) {
                 logger.info("Updating filmlist...")
-                emitFilmlistProgress(event)
+                emitFilmlistProgress(progress)
             }
 
-            override fun loadProgress(event: FilmListLoadProgress) {
-                emitFilmlistProgress(event)
+            override fun loadProgress(progress: FilmListLoadProgress) {
+                emitFilmlistProgress(progress)
             }
 
-            override fun loadFinished(event: FilmListLoadProgress) {
-                if (event.failed) {
+            override fun loadFinished(progress: FilmListLoadProgress) {
+                if (progress.failed) {
                     logger.error("Filmlist update failed.")
                 } else {
                     logger.info("Filmlist update finished.")

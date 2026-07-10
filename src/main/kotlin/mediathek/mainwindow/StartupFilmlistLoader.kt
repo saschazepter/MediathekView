@@ -40,8 +40,8 @@ fun interface StartupFilmlistLoadCompletion {
 class StartupFilmlistLoader(
     private val filmCatalog: FilmCatalog,
     private val filmListLoader: FilmListLoadCoordinator,
-    private val progressLabel: JLabel,
-    private val progressBar: JProgressBar,
+    progressLabel: JLabel,
+    progressBar: JProgressBar,
     private val completion: StartupFilmlistLoadCompletion,
 ) : AutoCloseable {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)

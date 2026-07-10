@@ -30,16 +30,16 @@ class MainWindowFilmListListener(
     private val saveFilmListState: Runnable,
     private val setupAutomaticFilmlistReload: Runnable,
 ) : FilmListLoadListener {
-    override fun loadStarted(event: FilmListLoadProgress) {
+    override fun loadStarted(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
         setLoadActionEnabled(false)
     }
 
-    override fun loadFinished(event: FilmListLoadProgress) {
+    override fun loadFinished(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
         setLoadActionEnabled(true)
         saveFilmListState.run()
     }
 
-    override fun firstLoadFinished(event: FilmListLoadProgress) {
+    override fun firstLoadFinished(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
         uiDispatcher.dispatch(setupAutomaticFilmlistReload)
     }
 

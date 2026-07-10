@@ -232,7 +232,7 @@ abstract class SearchField(protected val host: Host) : JTextField("", 40) {
     }
 }
 
-class LuceneSearchField(host: SearchField.Host) : SearchField(host) {
+class LuceneSearchField(host: Host) : SearchField(host) {
     private val luceneSearchHistoryButton = SearchHistoryButton(SearchControlFieldMode.LUCENE)
 
     init {
@@ -263,7 +263,7 @@ class LuceneSearchField(host: SearchField.Host) : SearchField(host) {
     }
 }
 
-class RegularSearchField(host: SearchField.Host) : SearchField(host) {
+class RegularSearchField(host: Host) : SearchField(host) {
     private val regularSearchHistoryButton = SearchHistoryButton(null)
 
     init {

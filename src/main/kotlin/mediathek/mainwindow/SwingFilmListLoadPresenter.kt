@@ -31,11 +31,8 @@ import javax.swing.JOptionPane
 import javax.swing.SwingUtilities
 
 internal class SwingFilmListLoadPresenter(
-    host: FilmListLoadHost? = null,
+    @Volatile private var host: FilmListLoadHost? = null,
 ) : FilmListLoadPresenter {
-    @Volatile
-    private var host: FilmListLoadHost? = host
-
     fun setHost(host: FilmListLoadHost?) {
         this.host = host
     }
@@ -78,10 +75,7 @@ internal class SwingFilmListLoadPresenter(
     }
 
     override suspend fun <T> withStatusBarWidgets(block: suspend (FilmListStatusBarWidgets) -> T): T {
-        val statusHost = host
-        if (statusHost == null) {
-            return NoOpFilmListLoadPresenter.withStatusBarWidgets(block)
-        }
+        val statusHost = host ?: return NoOpFilmListLoadPresenter.withStatusBarWidgets(block)
 
         val widgets = withContext(Dispatchers.Swing) {
             val handle = statusHost.showStatusBarProgress()

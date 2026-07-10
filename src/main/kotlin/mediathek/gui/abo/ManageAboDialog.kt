@@ -16,12 +16,12 @@ import javax.swing.JFrame
 
 class ManageAboDialog(
     owner: JFrame,
-    private val programSets: ProgramSetRepository,
-    private val filmCatalog: FilmCatalog,
-    private val abos: AboServices,
-    private val replacementRules: ReplacementRules,
-    private val filmListLoader: FilmListLoadCoordinator,
-    private val programSetExporter: BiConsumer<Array<DatenPset>, String>,
+    programSets: ProgramSetRepository,
+    filmCatalog: FilmCatalog,
+    abos: AboServices,
+    replacementRules: ReplacementRules,
+    filmListLoader: FilmListLoadCoordinator,
+    programSetExporter: BiConsumer<Array<DatenPset>, String>,
 ) : JDialog(owner) {
     private val applicationConfiguration = ApplicationConfiguration.getInstance()
     private val aboPanel: ManageAboPanel

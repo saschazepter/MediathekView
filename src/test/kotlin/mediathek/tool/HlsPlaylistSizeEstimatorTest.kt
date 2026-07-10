@@ -332,11 +332,7 @@ internal class HlsPlaylistSizeEstimatorTest {
     fun hlsSpecificClientRejectsPrivateResolvedAddresses() {
         val client = HlsEgressPolicy.clientFor(
             OkHttpClient.Builder()
-                .dns(
-                    Dns {
-                        listOf(InetAddress.getByName("10.0.0.5"))
-                    },
-                )
+                .dns { listOf(InetAddress.getByName("10.0.0.5")) }
                 .build(),
         )
 

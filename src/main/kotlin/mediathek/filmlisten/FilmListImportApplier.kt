@@ -42,7 +42,7 @@ internal object FilmListImportApplier {
         if (!diffListe.isEmpty()) {
             logger.info("Liste Diff gelesen am: {}", readDate)
             logger.info("  Liste Diff erstellt am: {}", diffListe.metaData.generationDateTimeAsString)
-            logger.info("  Anzahl Filme: {}", diffListe.size)
+            logFilmCount(diffListe.size)
 
             listeFilme.updateFromFilmList(diffListe)
             listeFilme.metaData = diffListe.metaData
@@ -51,7 +51,7 @@ internal object FilmListImportApplier {
         } else {
             logger.info("Liste Kompl. gelesen am: {}", readDate)
             logger.info("  Liste Kompl erstellt am: {}", listeFilme.metaData.generationDateTimeAsString)
-            logger.info("  Anzahl Filme: {}", listeFilme.size)
+            logFilmCount(listeFilme.size)
         }
 
         findAndMarkNewFilms(listeFilme, oldFilmUrls)
@@ -66,6 +66,10 @@ internal object FilmListImportApplier {
                 film.isNew = film.urlNormalQuality !in oldFilmUrls
             }
         }
+    }
+
+    private fun logFilmCount(size: Int) {
+        logger.info("  Anzahl Filme: {}", size)
     }
 
     private val logger = LogManager.getLogger(FilmListImportApplier::class.java)

@@ -99,7 +99,6 @@ class ListePsetVorlagen : ArrayList<Array<String>>() {
         const val PGR_URL = "URL"
         const val PGR_URL_NR = 4
         const val PGR_INFO = "Info"
-        const val PGR_INFO_NR = 5
         const val PGR_MAX_ELEM = 6
 
         val PGR_COLUMN_NAMES: Array<String> = arrayOf(PGR_NAME, PGR_BESCHREIBUNG, PGR_VERSION, PGR_BS, PGR_URL, PGR_INFO)

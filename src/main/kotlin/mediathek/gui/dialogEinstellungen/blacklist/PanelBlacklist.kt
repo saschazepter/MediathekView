@@ -59,7 +59,7 @@ class PanelBlacklist(
     private val aboSettingEventSource = Any()
     private val tableModel = BlacklistRuleTableModel(blacklist.rules)
     private val filmLoadListener = object : FilmListLoadListener {
-        override fun loadFinished(event: FilmListLoadProgress) {
+        override fun loadFinished(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
             comboThemaLaden()
             scheduleFilteredCountRefresh()
         }

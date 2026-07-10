@@ -16,6 +16,8 @@ import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.api.parallel.ResourceLock
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.seconds
 
 @ResourceLock("SenderFilmlistLoadApprover")
 class FilmListLoadCoordinatorTest {
@@ -128,7 +130,7 @@ class FilmListLoadCoordinatorTest {
     fun `startFilmlistLoad forwards reader start and progress events`() = runBlocking {
         val loader = loader()
         val listener = RecordingFilmListLoadListener()
-        val source = writeFilmList("progress.json", filmEntry("APPROVED", "New", "New title")).toString()
+        val source = writeFilmList(filmEntry()).toString()
         loader.addLoadListener(listener)
 
         val load = loader.startFilmlistLoad(source, immerNeuLaden = false)
@@ -313,15 +315,15 @@ class FilmListLoadCoordinatorTest {
     }
 
     private suspend fun awaitNotRunning(loader: FilmListLoadCoordinator) {
-        withTimeout(5_000) {
+        withTimeout(5.seconds) {
             while (loader.isFilmListLoadRunning) {
-                delay(10)
+                delay(10.milliseconds)
             }
         }
     }
 
-    private fun writeFilmList(fileName: String, vararg entries: String): Path {
-        val file = tempDir.resolve(fileName)
+    private fun writeFilmList(vararg entries: String): Path {
+        val file = tempDir.resolve("progress.json")
         Files.writeString(
             file,
             buildString {
@@ -335,10 +337,12 @@ class FilmListLoadCoordinatorTest {
         return file
     }
 
-    private fun filmEntry(sender: String, thema: String, title: String): String =
-        listOf(
+    private fun filmEntry(): String {
+        val sender = "APPROVED"
+        val title = "New title"
+        return listOf(
             sender,
-            thema,
+            "New",
             title,
             "15.05.2026",
             "12:00",
@@ -358,6 +362,7 @@ class FilmListLoadCoordinatorTest {
             "",
             "false",
         ).joinToString(prefix = "\"X\":[", postfix = "]") { "\"${it.escapeJson()}\"" }
+    }
 
     private fun String.escapeJson(): String =
         replace("\\", "\\\\")

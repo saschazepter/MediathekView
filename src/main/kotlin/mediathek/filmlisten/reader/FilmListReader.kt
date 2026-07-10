@@ -581,10 +581,9 @@ open class FilmListReader : AutoCloseable {
         while (startIndex < films.size) {
             val endIndex = (startIndex + chunkSize).coerceAtMost(films.size)
             val chunkStartIndex = startIndex
-            val chunkEndIndex = endIndex
             deferredCounts.add(
                 async {
-                    parseSeasonAndEpisodeRange(films, chunkStartIndex, chunkEndIndex)
+                    parseSeasonAndEpisodeRange(films, chunkStartIndex, endIndex)
                 }
             )
             startIndex = endIndex

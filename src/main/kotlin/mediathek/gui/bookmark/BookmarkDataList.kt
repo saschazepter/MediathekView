@@ -182,11 +182,6 @@ class BookmarkDataList(
             }
     }
 
-    fun updateSeen(seen: Boolean, film: DatenFilm) {
-        if (film.isBookmarked) {
-            film.bookmark?.seen = seen
-        }
-    }
 
     @Handler
     private fun handleFilmSeenStateChanged(event: FilmSeenStateChangedEvent) {

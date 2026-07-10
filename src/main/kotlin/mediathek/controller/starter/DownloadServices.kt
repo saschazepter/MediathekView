@@ -35,7 +35,7 @@ class DownloadServices(
     private val abos: AboServices,
     private val blacklist: BlacklistServices,
     internal val replacementRules: ReplacementRules,
-    private val notificationPublisher: NotificationPublisher,
+    notificationPublisher: NotificationPublisher,
     private val showMissingAboProgramSet: (JFrame?) -> Unit,
 ) {
     private val queue: LinkedList<DatenDownload> = LinkedList()

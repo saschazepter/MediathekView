@@ -139,12 +139,12 @@ class FilmLifecycleController(private val host: Host) {
 
     private fun createFilmListReloadListener(): FilmListLoadListener =
         object : FilmListLoadListener {
-            override fun loadStarted(@Suppress("UNUSED_PARAMETER") event: FilmListLoadProgress) {
+            override fun loadStarted(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
                 launchOnSwing { host.swingFilterDialog()?.onFilmDataLoadingStarted() }
                 host.bookmarkStartupReloadCoordinator().onFilmListLoadingStarted()
             }
 
-            override fun loadFinished(@Suppress("UNUSED_PARAMETER") event: FilmListLoadProgress) {
+            override fun loadFinished(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
                 launchOnSwing {
                     host.swingFilterDialog()?.onFilmDataLoaded()
                     if (host.bookmarkStartupReloadCoordinator()

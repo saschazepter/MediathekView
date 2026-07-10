@@ -661,6 +661,7 @@ open class MediathekGui private constructor(
         }
     }
 
+    @Suppress("UsePropertyAccessSyntax")
     private fun createMenuBar() {
         setJMenuBar(menuBuilder.createMenuBar())
         createDarkModeMenuAction()

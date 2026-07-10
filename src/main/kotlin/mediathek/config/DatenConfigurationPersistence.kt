@@ -36,6 +36,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import javax.swing.JOptionPane
 
+@Suppress("LoggingSimilarMessage")
 class DatenConfigurationPersistence(
     private val programSets: ProgramSetRepository,
     private val downloads: DownloadServices,

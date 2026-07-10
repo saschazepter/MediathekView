@@ -6,7 +6,6 @@ import mediathek.daten.DownloadType
 import mediathek.tool.notification.DisabledNotificationBackend
 import mediathek.tool.notification.MessageType
 import mediathek.tool.notification.NotificationMessage
-import mediathek.tool.notification.NotificationPublisher
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -57,8 +56,7 @@ internal class DownloadCompletionHandlerTest {
             download,
             start,
             HttpDownloadState.DOWNLOAD,
-            NotificationPublisher { notifications += it },
-        )
+        ) { notifications += it }
 
         assertEquals(
             listOf(

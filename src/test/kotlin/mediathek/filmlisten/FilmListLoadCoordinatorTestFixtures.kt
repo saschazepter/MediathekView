@@ -8,6 +8,7 @@ import net.engio.mbassy.listener.Handler
 import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.JLabel
 import javax.swing.JProgressBar
+import kotlin.time.Duration.Companion.seconds
 
 internal class BlockingFilmListLoadPresenter : FilmListLoadPresenter {
     private val entered = CompletableDeferred<Unit>()
@@ -38,7 +39,7 @@ internal class BlockingFilmListLoadPresenter : FilmListLoadPresenter {
     }
 
     suspend fun awaitEntered() {
-        withTimeout(5_000) {
+        withTimeout(5.seconds) {
             entered.await()
         }
     }
@@ -122,17 +123,17 @@ internal class RecordingFilmListLoadListener : FilmListLoadListener {
     }
 
     suspend fun awaitStarted(): FilmListLoadProgress =
-        withTimeout(5_000) {
+        withTimeout(5.seconds) {
             startedProgress.await()
         }
 
     suspend fun awaitProgress(): FilmListLoadProgress =
-        withTimeout(5_000) {
+        withTimeout(5.seconds) {
             currentProgress.await()
         }
 
     suspend fun awaitFinished(): FilmListLoadProgress =
-        withTimeout(5_000) {
+        withTimeout(5.seconds) {
             finishedProgress.await()
         }
 }

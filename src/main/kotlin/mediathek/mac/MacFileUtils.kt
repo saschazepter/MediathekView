@@ -32,6 +32,7 @@ object MacFileUtils {
      * Uses the macOS Carbon framework.
      */
     @Throws(IOException::class)
+    @Suppress("LocalVariableName")
     fun moveToTrash(vararg files: File) {
         val failed = mutableListOf<String>()
 

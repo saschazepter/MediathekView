@@ -16,7 +16,7 @@ internal class PanelDateinamenTest {
 
         onEdt {
             val panel = PanelDateinamen(rules) { Optional.of(ReplaceEntry("alpha", "beta")) }
-            button(panel, "jButtonPlus").doClick()
+            plusButton(panel).doClick()
         }
 
         assertEquals(listOf(" ", "alpha"), rules.entries().map { it.from })
@@ -29,15 +29,15 @@ internal class PanelDateinamenTest {
         rules.initDefaults()
 
         onEdt {
-            val panel = PanelDateinamen(rules) { Optional.empty<ReplaceEntry>() }
-            button(panel, "jButtonPlus").doClick()
+            val panel = PanelDateinamen(rules) { Optional.empty() }
+            plusButton(panel).doClick()
         }
 
         assertEquals(listOf(ReplaceEntry(" ", "_")), rules.entries())
     }
 
-    private fun button(panel: PanelDateinamen, name: String): JButton {
-        val field = PanelDateinamen::class.java.getDeclaredField(name)
+    private fun plusButton(panel: PanelDateinamen): JButton {
+        val field = PanelDateinamen::class.java.getDeclaredField("jButtonPlus")
         field.isAccessible = true
         return field.get(panel) as JButton
     }

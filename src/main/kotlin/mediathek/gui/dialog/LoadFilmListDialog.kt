@@ -22,7 +22,7 @@ import javax.swing.JScrollPane
 
 class LoadFilmListDialog(
     owner: Frame?,
-    private val filmCatalog: FilmCatalog,
+    filmCatalog: FilmCatalog,
     private val filmListLoader: FilmListLoadCoordinator,
 ) : JDialog(owner, "Filmliste laden", true) {
     private val contentPanel: PanelFilmlisteLaden

@@ -44,7 +44,7 @@ class DownloadSubtitleAction(
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
 
     init {
-        putValue(Action.NAME, "Untertitel-Datei sofort laden...")
+        putValue(NAME, "Untertitel-Datei sofort laden...")
     }
 
     override fun actionPerformed(e: ActionEvent?) {

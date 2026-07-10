@@ -51,7 +51,7 @@ class MainWindowLifecycle(
     private var filmListListenersRegistered = false
     private val filmListLoadPresenter = SwingFilmListLoadPresenter()
     private val bookmarkRefreshListener = object : FilmListLoadListener {
-        override fun loadFinished(@Suppress("UNUSED_PARAMETER") event: FilmListLoadProgress) {
+        override fun loadFinished(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
             bookmarks.list.refreshFromCurrentFilmListAsync()
         }
     }
@@ -117,7 +117,7 @@ class MainWindowLifecycle(
 
         val messageBus = MessageBus.messageBus
         // Preserve startup behavior: publish current table-model state before subscribing the main window.
-        messageBus.publishAsync(TableModelChangeEvent(true, false))
+        messageBus.publishAsync(TableModelChangeEvent(active = true, fromSearchField = false))
         messageBus.subscribe(messageBusSubscriber)
         messageBusSubscribed = true
     }

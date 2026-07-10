@@ -32,7 +32,7 @@ class FilmlistProgressPresenter(
     private var pendingProgress: ProgressSnapshot? = null
     private var progressDispatchScheduled = false
 
-    override fun loadStarted(event: FilmListLoadProgress) {
+    override fun loadStarted(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
         uiDispatcher.dispatch {
             closeCurrent()
             clearPendingProgress()
@@ -40,9 +40,9 @@ class FilmlistProgressPresenter(
         }
     }
 
-    override fun loadProgress(event: FilmListLoadProgress) {
+    override fun loadProgress(progress: FilmListLoadProgress) {
         val shouldScheduleDispatch = synchronized(progressLock) {
-            pendingProgress = ProgressSnapshot(event.text, event.max, event.progress)
+            pendingProgress = ProgressSnapshot(progress.text, progress.max, progress.progress)
             if (progressDispatchScheduled) {
                 false
             } else {
@@ -56,7 +56,7 @@ class FilmlistProgressPresenter(
         }
     }
 
-    override fun loadFinished(event: FilmListLoadProgress) {
+    override fun loadFinished(@Suppress("UNUSED_PARAMETER") progress: FilmListLoadProgress) {
         close()
     }
 

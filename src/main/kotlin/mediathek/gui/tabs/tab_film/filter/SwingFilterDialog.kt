@@ -107,7 +107,7 @@ class SwingFilterDialog internal constructor(
         )
     }
     private val filterSelectionDataListener = FilterSelectionDataListener()
-    private val filterSelectionActionListener = ActionListener { syncCurrentFilterAndRestore(requestReload = true) }
+    private val filterSelectionActionListener = ActionListener { syncCurrentFilterAndRestore() }
     private val filterSwitchReloadRequester = object : FilmFilterController.ReloadRequester {
         override fun requestTableReload() = filterController.requestTableReload()
         override fun requestZeitraumReload() = filterController.requestZeitraumReload()
@@ -803,7 +803,7 @@ class SwingFilterDialog internal constructor(
         }
     }
 
-    private fun syncCurrentFilterAndRestore(requestReload: Boolean = false) {
+    private fun syncCurrentFilterAndRestore() {
         if (isSuppressed(SuppressedEventType.FILTER_SELECTION)) {
             return
         }
@@ -814,7 +814,7 @@ class SwingFilterDialog internal constructor(
         if (!changed) {
             return
         }
-        FilterSwitchReload.apply(previousState, filterController.state(), requestReload, filterSwitchReloadRequester)
+        FilterSwitchReload.apply(previousState, filterController.state(), true, filterSwitchReloadRequester)
     }
 
     private data class CheckBoxBinding(
