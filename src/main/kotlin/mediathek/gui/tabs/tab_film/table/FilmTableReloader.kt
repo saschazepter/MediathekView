@@ -58,8 +58,6 @@ class FilmTableReloader(
 
         fun setSelectionUpdatesSuspended(suspended: Boolean)
 
-        fun updateStartInfoProperty()
-
         fun updateFilmData()
 
         fun onReloadCompleted(fromSearchField: Boolean)
@@ -143,7 +141,6 @@ class FilmTableReloader(
     ) {
         host.setSelectionUpdatesSuspended(true)
         host.tableBinding().replaceFilms(films)
-        host.updateStartInfoProperty()
         host.updateFilmData()
         host.setSelectionUpdatesSuspended(false)
         host.onReloadCompleted(fromSearchField)

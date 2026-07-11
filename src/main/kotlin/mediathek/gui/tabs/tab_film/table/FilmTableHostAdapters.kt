@@ -46,7 +46,6 @@ class FilmTableReloadHostAdapter(
     private val filterController: FilmFilterController,
     private val applyBlacklistAction: () -> Unit,
     private val setSelectionUpdatesSuspendedAction: (Boolean) -> Unit,
-    private val updateStartInfoPropertyAction: () -> Unit,
     private val updateFilmDataAction: () -> Unit,
     private val reloadCompletedAction: (Boolean) -> Unit,
 ) : FilmTableReloader.Host {
@@ -66,10 +65,6 @@ class FilmTableReloadHostAdapter(
 
     override fun setSelectionUpdatesSuspended(suspended: Boolean) {
         setSelectionUpdatesSuspendedAction(suspended)
-    }
-
-    override fun updateStartInfoProperty() {
-        updateStartInfoPropertyAction()
     }
 
     override fun updateFilmData() {

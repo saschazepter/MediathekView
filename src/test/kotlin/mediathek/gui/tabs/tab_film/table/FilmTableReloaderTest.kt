@@ -46,7 +46,6 @@ internal class FilmTableReloaderTest {
             assertTrue(completed.await(5, TimeUnit.SECONDS))
 
             assertEquals(listOf(listOf(secondFilm)), binding.replacements)
-            assertEquals(listOf(1), host.statusRowCounts)
             assertTrue(binding.table.isEnabled)
         } finally {
             reloader.dispose()
@@ -84,7 +83,6 @@ internal class FilmTableReloaderTest {
         private val completed: () -> Unit,
         private val applyBlacklistAction: () -> Unit = {},
     ) : FilmTableReloader.Host {
-        val statusRowCounts = mutableListOf<Int>()
         private val catalog = FilmCatalog()
         private val filterController = FilmFilterController(
             ApplicationConfiguration.getInstance().createFilterConfiguration(),
@@ -97,10 +95,6 @@ internal class FilmTableReloaderTest {
         override fun filterController(): FilmFilterController = filterController
         override fun applyBlacklist() = applyBlacklistAction()
         override fun setSelectionUpdatesSuspended(suspended: Boolean) = Unit
-        override fun updateStartInfoProperty() {
-            statusRowCounts += binding.rowCount
-        }
-
         override fun updateFilmData() = Unit
         override fun onReloadCompleted(fromSearchField: Boolean) = completed()
     }

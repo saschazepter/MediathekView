@@ -2,8 +2,6 @@ package mediathek.mainwindow
 
 import mediathek.daten.DatenFilm
 import mediathek.filmlisten.FilmCatalog
-import mediathek.gui.messages.FilmTableRowCountChangedEvent
-import mediathek.tool.MessageBus
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import javax.swing.SwingUtilities
@@ -14,7 +12,8 @@ internal class FilmSizeInfoLabelTest {
         val catalog = FilmCatalog().apply {
             repeat(10) { allFilms.add(DatenFilm()) }
         }
-        val label = FilmSizeInfoLabel(catalog) { 10 }
+        val rowCount = FilmTableRowCountProperty(10)
+        val label = FilmSizeInfoLabel(catalog, rowCount)
 
         label.updateDisplayedFilmCount(3)
 
@@ -22,16 +21,17 @@ internal class FilmSizeInfoLabelTest {
     }
 
     @Test
-    fun `committed row count event updates the subscribed label`() {
+    fun `committed row count property updates the subscribed label`() {
         val catalog = FilmCatalog().apply {
             repeat(10) { allFilms.add(DatenFilm()) }
         }
-        val label = FilmSizeInfoLabel(catalog) { 10 }
+        val rowCount = FilmTableRowCountProperty(10)
+        val label = FilmSizeInfoLabel(catalog, rowCount)
 
         try {
             onEdt { label.addNotify() }
 
-            MessageBus.messageBus.publish(FilmTableRowCountChangedEvent(4))
+            rowCount.publish(4)
             onEdt { }
 
             assertEquals("4 Filme (Insgesamt: 10)", label.text)

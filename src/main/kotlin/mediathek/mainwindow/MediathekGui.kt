@@ -87,6 +87,7 @@ open class MediathekGui private constructor(
     private val editBlacklistAction = EditBlacklistAction(this, daten.blacklist, daten.filmCatalog, daten.filmListLoader)
     private val toggleBlacklistAction = ToggleBlacklistAction(daten.blacklist)
     private val selectedListItemsProperty = ListSelectedItemsProperty(0)
+    private val filmTableRowCountProperty = FilmTableRowCountProperty()
     private val tabbedPane = PositionSavingTabbedPane()
     private val jMenuHilfe = JMenu()
     private val settingsAction = SettingsAction()
@@ -199,7 +200,7 @@ open class MediathekGui private constructor(
             daten.downloads,
             contentPane,
             selectedListItemsProperty,
-            ::getFilmTableRowCount,
+            filmTableRowCountProperty,
             ::runOnEventDispatchThreadAndWait,
         )
     private val filmlistLoadCoordinator = MainWindowFilmlistLoadCoordinator(
@@ -463,8 +464,6 @@ open class MediathekGui private constructor(
     override fun repaintMainWindow() {
         runOnEventDispatchThread { repaint() }
     }
-
-    private fun getFilmTableRowCount(): Int = tabs().films.tableRowCount
 
     private fun getCurrentZeitraumFilterValue(): String = tabs().films.currentZeitraumFilterValue
 
@@ -813,6 +812,7 @@ open class MediathekGui private constructor(
             showFilmInformationAction,
             showLuceneTutorialAction,
             { setSelectedListItemsCount(it) },
+            filmTableRowCountProperty::publish,
             { film: DatenFilm? -> dialogCoordinator.updateFilmInfoCurrentFilm(film) }
         )
 

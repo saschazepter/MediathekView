@@ -32,7 +32,6 @@ class FilmLifecycleHostAdapter(
     private val swingFilterDialogProvider: () -> SwingFilterDialog?,
     private val requestTableReloadAction: () -> Unit,
     private val invalidateTableReloadsAction: () -> Unit,
-    private val updateStartInfoPropertyAction: () -> Unit,
     private val saveTableConfigurationAction: () -> Unit,
     private val closeFilterSelectionModelAction: () -> Unit,
 ) : FilmLifecycleController.Host {
@@ -54,10 +53,6 @@ class FilmLifecycleHostAdapter(
 
     override fun invalidateTableReloads() {
         invalidateTableReloadsAction()
-    }
-
-    override fun updateStartInfoProperty() {
-        updateStartInfoPropertyAction()
     }
 
     override fun saveTableConfiguration() {

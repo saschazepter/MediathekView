@@ -68,7 +68,9 @@ import java.util.*
 import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.LongConsumer
+import java.util.function.IntConsumer
 import javax.swing.*
+import javax.swing.event.TableModelListener
 
 class GuiFilme(
     private val programSets: ProgramSetRepository,
@@ -86,6 +88,7 @@ class GuiFilme(
     private val showFilmInformationAction: Action,
     private val showLuceneTutorialAction: Action,
     private val selectedListItemsCount: LongConsumer,
+    private val filmTableRowCount: IntConsumer,
     private val currentFilm: Consumer<DatenFilm?>,
 ) : JPanel() {
     private val copyHqUrlToClipboardActionValue: CopyUrlToClipboardAction
@@ -98,6 +101,7 @@ class GuiFilme(
     private var stopBeob = false
     private val tabelle = JTable()
     private val tableBinding = FilmTableBinding(tabelle)
+    private val tableRowCountListener = TableModelListener { filmTableRowCount.accept(tableBinding.rowCount) }
     private val tableAppearance = ApplicationConfiguration.getInstance().let { configuration ->
         FilmTableAppearance(
             lineBreak = configuration.filmTableLineBreak,
@@ -149,6 +153,7 @@ class GuiFilme(
     )
 
     init {
+        tableBinding.table.model.addTableModelListener(tableRowCountListener)
         val psetButtonsTab = JTabbedPane()
         val descriptionTabController = DescriptionTabController({ ownerFrame }, ::editFilmDescription)
         val filterConfiguration = ApplicationConfiguration.getInstance().createFilterConfiguration()
@@ -569,7 +574,6 @@ class GuiFilme(
             filterController,
             blacklist::applyToFilmList,
             { suspended -> stopBeob = suspended },
-            ::updateStartInfoProperty,
             selectionController::updateFilmData,
             { fromSearchField ->
                 if (fromSearchField) {
@@ -595,7 +599,6 @@ class GuiFilme(
             ::existingSwingFilterDialog,
             ::requestTableReload,
             tableReloader::invalidate,
-            ::updateStartInfoProperty,
             ::tabelleSpeichern,
             filterComponents.filterSelectionComboBoxModel::close,
         )
@@ -630,6 +633,7 @@ class GuiFilme(
         tableReloader.dispose()
         lifecycleController.disposePanel()
         tableSettingsController.dispose()
+        tableBinding.table.model.removeTableModelListener(tableRowCountListener)
         tableBinding.dispose()
     }
 
@@ -650,15 +654,10 @@ class GuiFilme(
 
     private fun onComponentShown() {
         selectionController.updateFilmData()
-        updateStartInfoProperty()
     }
 
     private fun updateSelectedListItemsCount(table: JTable) {
         selectedListItemsCount.accept(table.selectedRowCount.toLong())
-    }
-
-    private fun updateStartInfoProperty() {
-        MessageBus.messageBus.publish(FilmTableRowCountChangedEvent(tableBinding.rowCount))
     }
 
     val tableRowCount: Int
@@ -677,11 +676,6 @@ class GuiFilme(
     @Handler
     private fun handleButtonStart(event: ButtonStartEvent) {
         lifecycleController.handleButtonStart(event)
-    }
-
-    @Handler
-    private fun handleStartEvent(message: StartEvent) {
-        lifecycleController.handleStartEvent(message)
     }
 
     fun showManageBookmarkWindow() {

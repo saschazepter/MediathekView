@@ -91,11 +91,9 @@ internal class FilmFilterSwitchPipelineTest {
         override fun filterController(): FilmFilterController = controller
         override fun applyBlacklist() = Unit
         override fun setSelectionUpdatesSuspended(suspended: Boolean) = Unit
-        override fun updateStartInfoProperty() {
+        override fun updateFilmData() {
             publishedCounts += binding.rowCount
         }
-
-        override fun updateFilmData() = Unit
         override fun onReloadCompleted(fromSearchField: Boolean) = Unit
     }
 

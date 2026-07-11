@@ -41,7 +41,6 @@ class FilmLifecycleController(private val host: Host) {
         fun swingFilterDialog(): SwingFilterDialog?
         fun requestTableReload()
         fun invalidateTableReloads()
-        fun updateStartInfoProperty()
         fun saveTableConfiguration()
         fun closeFilterSelectionModel()
     }
@@ -85,12 +84,7 @@ class FilmLifecycleController(private val host: Host) {
     fun handleButtonStart(@Suppress("UNUSED_PARAMETER") event: ButtonStartEvent) {
         launchOnSwing {
             host.tableBinding().table.repaint()
-            host.updateStartInfoProperty()
         }
-    }
-
-    fun handleStartEvent(@Suppress("UNUSED_PARAMETER") event: StartEvent) {
-        launchOnSwing { host.updateStartInfoProperty() }
     }
 
     fun handleReloadTableDataEvent(@Suppress("UNUSED_PARAMETER") event: ReloadTableDataEvent) {
