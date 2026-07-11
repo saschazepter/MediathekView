@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.*
 
-internal class FilmFilterSelectionSynchronizerTest {
+internal class FilmFilterSelectionControllerTest {
 
     @Test
     fun `combo model selection changes restore the active filter without the dialog`() {
@@ -78,20 +78,20 @@ internal class FilmFilterSelectionSynchronizerTest {
 
         val reloadRequester = RecordingReloadRequester()
         val controller = FilmFilterController(filterConfiguration, reloadRequester = reloadRequester)
+        val selectionController = FilmFilterSelectionController(controller, reloadRequester)
         val model = FilterSelectionComboBoxModel(
             selectedFilterSupplier = controller::currentFilter,
             availableFiltersSupplier = controller::availableFilters,
             filterLockedReader = controller::isFilterLocked,
             selectionObserverRegistry = controller.selectionObserverRegistry(),
+            selectedFilterHandler = selectionController::select,
         )
-        val synchronizer = FilmFilterSelectionSynchronizer(model, controller, reloadRequester)
 
         return TestSetup(
             secondFilter = secondFilter,
             zeitraumFilter = zeitraumFilter,
             controller = controller,
             model = model,
-            synchronizer = synchronizer,
             reloadRequester = reloadRequester,
         )
     }
@@ -101,11 +101,9 @@ internal class FilmFilterSelectionSynchronizerTest {
         val zeitraumFilter: FilterDTO,
         val controller: FilmFilterController,
         val model: FilterSelectionComboBoxModel,
-        val synchronizer: FilmFilterSelectionSynchronizer,
         val reloadRequester: RecordingReloadRequester,
     ) {
         fun close() {
-            synchronizer.close()
             model.close()
         }
     }

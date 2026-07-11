@@ -22,6 +22,7 @@ import ca.odell.glazedlists.BasicEventList
 import mediathek.config.application.FilterConfiguration
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
+import mediathek.gui.tabs.tab_film.filter_selection.FilmFilterSelectionController
 import mediathek.tool.FilterDTO
 import org.apache.commons.configuration2.XMLConfiguration
 import java.awt.GraphicsEnvironment
@@ -78,11 +79,13 @@ internal object SwingFilterDialogTestFixture {
 
         controller.restoreCurrentFilterSelection(firstFilter)
 
+        val selectionController = FilmFilterSelectionController(controller, reloadRequester)
         val model = FilterSelectionComboBoxModel(
             controller::currentFilter,
             controller::availableFilters,
             controller::isFilterLocked,
-            controller.selectionObserverRegistry()
+            controller.selectionObserverRegistry(),
+            selectionController::select,
         )
 
         val dialog = withCrossPlatformLookAndFeel {

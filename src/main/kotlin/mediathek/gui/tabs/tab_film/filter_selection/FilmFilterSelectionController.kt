@@ -21,35 +21,12 @@ package mediathek.gui.tabs.tab_film.filter_selection
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.filter.FilterSwitchReload
 import mediathek.tool.FilterDTO
-import javax.swing.ComboBoxModel
-import javax.swing.event.ListDataEvent
-import javax.swing.event.ListDataListener
 
-internal class FilmFilterSelectionSynchronizer(
-    private val filterSelectionComboBoxModel: ComboBoxModel<FilterDTO>,
+internal class FilmFilterSelectionController(
     private val filterController: FilmFilterController,
     private val reloadRequester: FilmFilterController.ReloadRequester,
-) : AutoCloseable {
-    private val listener = object : ListDataListener {
-        override fun intervalAdded(event: ListDataEvent) = Unit
-        override fun intervalRemoved(event: ListDataEvent) = Unit
-        override fun contentsChanged(event: ListDataEvent) {
-            if (event.index0 == -1 && event.index1 == -1) {
-                syncCurrentFilterAndReload()
-            }
-        }
-    }
-
-    init {
-        filterSelectionComboBoxModel.addListDataListener(listener)
-    }
-
-    override fun close() {
-        filterSelectionComboBoxModel.removeListDataListener(listener)
-    }
-
-    private fun syncCurrentFilterAndReload() {
-        val selectedFilter = filterSelectionComboBoxModel.selectedItem as? FilterDTO ?: return
+) {
+    fun select(selectedFilter: FilterDTO) {
         val previousState = filterController.state()
         if (!filterController.restoreCurrentFilterSelection(selectedFilter)) {
             return

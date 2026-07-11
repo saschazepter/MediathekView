@@ -4,7 +4,7 @@ import mediathek.config.application.FilterConfiguration
 import mediathek.daten.DatenFilm
 import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
-import mediathek.gui.tabs.tab_film.filter_selection.FilmFilterSelectionSynchronizer
+import mediathek.gui.tabs.tab_film.filter_selection.FilmFilterSelectionController
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.gui.tabs.tab_film.search.SearchControlFieldMode
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
@@ -34,12 +34,6 @@ internal class FilmFilterSwitchPipelineTest {
             currentFilter = restrictive
         }
         val controller = FilmFilterController(configuration)
-        val comboModel = FilterSelectionComboBoxModel(
-            controller::currentFilter,
-            controller::availableFilters,
-            controller::isFilterLocked,
-            controller.selectionObserverRegistry(),
-        )
         val catalog = FilmCatalog().apply {
             filteredFilms.addAll(List(6) { index ->
                 DatenFilm().apply {
@@ -52,13 +46,19 @@ internal class FilmFilterSwitchPipelineTest {
         val binding = onEdt { FilmTableBinding(JTable()) }
         val host = PipelineHost(binding, catalog, controller)
         val reloader = FilmTableReloader(host)
-        val synchronizer = FilmFilterSelectionSynchronizer(
-            comboModel,
+        val selectionController = FilmFilterSelectionController(
             controller,
             object : FilmFilterController.ReloadRequester {
                 override fun requestTableReload() = reloader.loadTable()
                 override fun requestZeitraumReload() = reloader.loadTable()
             },
+        )
+        val comboModel = FilterSelectionComboBoxModel(
+            controller::currentFilter,
+            controller::availableFilters,
+            controller::isFilterLocked,
+            controller.selectionObserverRegistry(),
+            selectionController::select,
         )
 
         try {
@@ -71,7 +71,6 @@ internal class FilmFilterSwitchPipelineTest {
             assertEquals(permissive, controller.currentFilter())
             assertEquals(6, host.publishedCounts.last())
         } finally {
-            synchronizer.close()
             comboModel.close()
             reloader.dispose()
             onEdt { binding.dispose() }
@@ -90,6 +89,7 @@ internal class FilmFilterSwitchPipelineTest {
         override fun owner(): Component = JPanel()
         override fun searchFieldData(): SearchFieldData = SearchFieldData("", SearchControlFieldMode.THEMA_TITEL)
         override fun filterController(): FilmFilterController = controller
+        override fun applyBlacklist() = Unit
         override fun setSelectionUpdatesSuspended(suspended: Boolean) = Unit
         override fun updateStartInfoProperty() {
             publishedCounts += binding.rowCount

@@ -45,7 +45,7 @@ import mediathek.gui.tabs.tab_film.actions.*
 import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkController
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog
-import mediathek.gui.tabs.tab_film.filter_selection.FilmFilterSelectionSynchronizer
+import mediathek.gui.tabs.tab_film.filter_selection.FilmFilterSelectionController
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.gui.tabs.tab_film.lifecycle.BookmarkStartupReloadCoordinator
 import mediathek.gui.tabs.tab_film.lifecycle.FilmLifecycleController
@@ -111,7 +111,6 @@ class GuiFilme(
     private val selectionController: FilmSelectionController
     private val tableReloader: FilmTableReloader
     private val tableInstaller: FilmTableInstaller
-    private val filterSelectionSynchronizer: FilmFilterSelectionSynchronizer
 
     private data class SelectionComponents(
         val selectionController: FilmSelectionController,
@@ -195,10 +194,6 @@ class GuiFilme(
 
         tableInstaller.setupTable()
         tableReloader = createTableReloader(installedUi.searchField, filterComponents.filterController)
-        filterSelectionSynchronizer = createFilterSelectionSynchronizer(
-            filterComponents.filterSelectionComboBoxModel,
-            filterComponents.filterController,
-        )
         restoreStartupFilterDialogVisibility()
         lifecycleController = createLifecycleController(
             filterConfiguration,
@@ -402,11 +397,19 @@ class GuiFilme(
                 }
             },
         )
+        val selectionController = FilmFilterSelectionController(
+            filterController,
+            object : FilmFilterController.ReloadRequester {
+                override fun requestTableReload() = this@GuiFilme.requestTableReload()
+                override fun requestZeitraumReload() = this@GuiFilme.requestZeitraumReload()
+            },
+        )
         val filterSelectionComboBoxModel = FilterSelectionComboBoxModel(
             filterController::currentFilter,
             filterController::availableFilters,
             filterController::isFilterLocked,
             filterController.selectionObserverRegistry(),
+            selectionController::select,
         )
 
         return FilterComponents(filterController, filterSelectionComboBoxModel)
@@ -552,19 +555,6 @@ class GuiFilme(
         }
     }
 
-    private fun createFilterSelectionSynchronizer(
-        filterSelectionComboBoxModel: FilterSelectionComboBoxModel,
-        filterController: FilmFilterController,
-    ): FilmFilterSelectionSynchronizer =
-        FilmFilterSelectionSynchronizer(
-            filterSelectionComboBoxModel,
-            filterController,
-            object : FilmFilterController.ReloadRequester {
-                override fun requestTableReload() = this@GuiFilme.requestTableReload()
-                override fun requestZeitraumReload() = this@GuiFilme.requestZeitraumReload()
-            },
-        )
-
     private fun createTableReloader(
         searchField: SearchField,
         filterController: FilmFilterController,
@@ -637,7 +627,6 @@ class GuiFilme(
     }
 
     fun disposePanel() {
-        filterSelectionSynchronizer.close()
         tableReloader.dispose()
         lifecycleController.disposePanel()
         tableSettingsController.dispose()

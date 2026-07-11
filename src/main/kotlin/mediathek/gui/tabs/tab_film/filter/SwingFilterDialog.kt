@@ -107,7 +107,6 @@ class SwingFilterDialog internal constructor(
         )
     }
     private val filterSelectionDataListener = FilterSelectionDataListener()
-    private val filterSelectionActionListener = ActionListener { syncCurrentFilterAndRestore() }
     private val filterSwitchReloadRequester = object : FilmFilterController.ReloadRequester {
         override fun requestTableReload() = filterController.requestTableReload()
         override fun requestZeitraumReload() = filterController.requestZeitraumReload()
@@ -215,7 +214,6 @@ class SwingFilterDialog internal constructor(
         themaRefreshGeneration++
         uiScope.cancel()
         filterSelectionComboBoxModel.removeListDataListener(filterSelectionDataListener)
-        cboxFilterSelection.removeActionListener(filterSelectionActionListener)
         super.dispose()
     }
 
@@ -267,7 +265,6 @@ class SwingFilterDialog internal constructor(
 
     private fun registerLocalListeners() {
         filterSelectionComboBoxModel.addListDataListener(filterSelectionDataListener)
-        cboxFilterSelection.addActionListener(filterSelectionActionListener)
         addComponentListener(FilterDialogComponentListener())
     }
 
@@ -859,28 +856,15 @@ class SwingFilterDialog internal constructor(
     }
 
     private inner class FilterSelectionDataListener : ListDataListener {
-        override fun intervalAdded(event: ListDataEvent) = restoreConfigSettings()
-        override fun intervalRemoved(event: ListDataEvent) = restoreConfigSettings()
-        override fun contentsChanged(event: ListDataEvent) {
-            if (event.index0 == -1 && event.index1 == -1) {
-                return
-            }
-            restoreConfigSettings()
-        }
-    }
+        override fun intervalAdded(event: ListDataEvent) = restoreAfterSelectionModelChange()
+        override fun intervalRemoved(event: ListDataEvent) = restoreAfterSelectionModelChange()
+        override fun contentsChanged(event: ListDataEvent) = restoreAfterSelectionModelChange()
 
-    private fun syncCurrentFilterAndRestore() {
-        if (isSuppressed(SuppressedEventType.FILTER_SELECTION)) {
-            return
+        private fun restoreAfterSelectionModelChange() {
+            if (!isSuppressed(SuppressedEventType.FILTER_SELECTION)) {
+                restoreConfigSettings()
+            }
         }
-        val selectedFilter = cboxFilterSelection.selectedItem as? FilterDTO ?: return
-        val previousState = filterController.state()
-        val changed = filterController.restoreCurrentFilterSelection(selectedFilter)
-        restoreConfigSettings()
-        if (!changed) {
-            return
-        }
-        FilterSwitchReload.apply(previousState, filterController.state(), true, filterSwitchReloadRequester)
     }
 
     private data class CheckBoxBinding(
