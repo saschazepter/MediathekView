@@ -69,7 +69,6 @@ import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.LongConsumer
 import javax.swing.*
-import kotlin.time.Duration.Companion.milliseconds
 
 class GuiFilme(
     private val programSets: ProgramSetRepository,
@@ -94,7 +93,6 @@ class GuiFilme(
     private var swingFilterDialog: SwingFilterDialog? = null
     private var swingFilterDialogFactory: () -> SwingFilterDialog
     private val toggleFilterDialogVisibilityActionValue: ToggleFilterDialogVisibilityAction
-    private val reloadTableScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val filterController: FilmFilterController
     private val bookmarkController: FilmBookmarkController
     private var stopBeob = false
@@ -114,7 +112,6 @@ class GuiFilme(
     private val tableReloader: FilmTableReloader
     private val tableInstaller: FilmTableInstaller
     private val filterSelectionSynchronizer: FilmFilterSelectionSynchronizer
-    private var reloadTableDataJob: Job? = null
 
     private data class SelectionComponents(
         val selectionController: FilmSelectionController,
@@ -580,6 +577,7 @@ class GuiFilme(
                 SearchFieldData(searchField.text, searchField.getSearchMode())
             },
             filterController,
+            blacklist::applyToFilmList,
             { suspended -> stopBeob = suspended },
             ::updateStartInfoProperty,
             selectionController::updateFilmData,
@@ -621,21 +619,11 @@ class GuiFilme(
     }
 
     private fun requestTableReload() {
-        reloadTableDataJob?.cancel()
-        reloadTableDataJob = reloadTableScope.launch {
-            delay(RELOAD_TABLE_DATA_DELAY)
-            tableReloader.loadTable()
-        }
+        tableReloader.requestTableReload()
     }
 
     private fun requestZeitraumReload() {
-        reloadTableDataJob?.cancel()
-        reloadTableDataJob = reloadTableScope.launch {
-            withContext(Dispatchers.Default) {
-                blacklist.applyToFilmList()
-            }
-            tableReloader.loadTable()
-        }
+        tableReloader.requestZeitraumReload()
     }
 
     fun copyHqUrlToClipboardAction(): Action = copyHqUrlToClipboardActionValue
@@ -649,7 +637,6 @@ class GuiFilme(
     }
 
     fun disposePanel() {
-        reloadTableScope.cancel()
         filterSelectionSynchronizer.close()
         tableReloader.dispose()
         lifecycleController.disposePanel()
@@ -734,6 +721,5 @@ class GuiFilme(
 
     companion object {
         const val NAME = "Filme"
-        private val RELOAD_TABLE_DATA_DELAY = 250.milliseconds
     }
 }

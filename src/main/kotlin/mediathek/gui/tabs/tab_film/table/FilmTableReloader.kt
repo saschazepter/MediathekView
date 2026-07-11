@@ -28,6 +28,8 @@ import mediathek.gui.tabs.tab_film.helpers.FilmQueryEngine
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import org.apache.logging.log4j.LogManager
 import java.awt.Component
+import kotlin.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FilmTableReloader(
@@ -52,6 +54,8 @@ class FilmTableReloader(
 
         fun filterController(): FilmFilterController
 
+        fun applyBlacklist()
+
         fun setSelectionUpdatesSuspended(suspended: Boolean)
 
         fun updateStartInfoProperty()
@@ -65,9 +69,10 @@ class FilmTableReloader(
     private val modelDispatcher = Dispatchers.Default.limitedParallelism(1)
     private var modelJob: Job? = null
     private var generation = 0L
+    private var activeRequest: ReloadRequest? = null
 
     fun loadTable() {
-        loadTable(false)
+        submit(ReloadRequest())
     }
 
     fun dispose() {
@@ -79,14 +84,33 @@ class FilmTableReloader(
         generation += 1
         modelJob?.cancel()
         modelJob = null
+        activeRequest = null
     }
 
     fun loadTable(fromSearchField: Boolean) {
+        submit(ReloadRequest(fromSearchField = fromSearchField))
+    }
+
+    fun requestTableReload() {
+        submit(ReloadRequest(debounce = RELOAD_TABLE_DATA_DELAY))
+    }
+
+    fun requestZeitraumReload() {
+        submit(ReloadRequest(rebuildBlacklist = true))
+    }
+
+    private fun submit(request: ReloadRequest) {
+        val mergedRequest = activeRequest?.merge(request) ?: request
+        activeRequest = mergedRequest
         val requestedGeneration = ++generation
         modelJob?.cancel()
         modelJob = uiScope.launch {
             val result = runCatching {
+                delay(mergedRequest.debounce)
                 withContext(modelDispatcher) {
+                    if (mergedRequest.rebuildBlacklist) {
+                        host.applyBlacklist()
+                    }
                     queryEngineFactory(host).query()
                 }
             }
@@ -94,7 +118,8 @@ class FilmTableReloader(
             result.fold(
                 onSuccess = { films ->
                     if (requestedGeneration == generation) {
-                        applyFilteredFilms(films, fromSearchField)
+                        applyFilteredFilms(films, mergedRequest.fromSearchField)
+                        activeRequest = null
                     }
                 },
                 onFailure = { thrown ->
@@ -103,8 +128,9 @@ class FilmTableReloader(
                     }
                     logger.error("Model filtering failed!", thrown)
                     if (requestedGeneration == generation) {
+                        activeRequest = null
                         host.setSelectionUpdatesSuspended(false)
-                        host.onReloadCompleted(fromSearchField)
+                        host.onReloadCompleted(mergedRequest.fromSearchField)
                     }
                 },
             )
@@ -125,5 +151,18 @@ class FilmTableReloader(
 
     private companion object {
         private val logger = LogManager.getLogger()
+        private val RELOAD_TABLE_DATA_DELAY = 250.milliseconds
+    }
+
+    private data class ReloadRequest(
+        val fromSearchField: Boolean = false,
+        val rebuildBlacklist: Boolean = false,
+        val debounce: Duration = Duration.ZERO,
+    ) {
+        fun merge(newer: ReloadRequest): ReloadRequest = ReloadRequest(
+            fromSearchField = fromSearchField || newer.fromSearchField,
+            rebuildBlacklist = rebuildBlacklist || newer.rebuildBlacklist,
+            debounce = newer.debounce,
+        )
     }
 }

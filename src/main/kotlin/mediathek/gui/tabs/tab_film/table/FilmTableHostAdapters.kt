@@ -44,6 +44,7 @@ class FilmTableReloadHostAdapter(
     private val tableBindingProvider: () -> FilmTableModelBinding,
     private val searchFieldDataProvider: () -> SearchFieldData,
     private val filterController: FilmFilterController,
+    private val applyBlacklistAction: () -> Unit,
     private val setSelectionUpdatesSuspendedAction: (Boolean) -> Unit,
     private val updateStartInfoPropertyAction: () -> Unit,
     private val updateFilmDataAction: () -> Unit,
@@ -58,6 +59,10 @@ class FilmTableReloadHostAdapter(
     override fun searchFieldData(): SearchFieldData = searchFieldDataProvider()
 
     override fun filterController(): FilmFilterController = filterController
+
+    override fun applyBlacklist() {
+        applyBlacklistAction()
+    }
 
     override fun setSelectionUpdatesSuspended(suspended: Boolean) {
         setSelectionUpdatesSuspendedAction(suspended)

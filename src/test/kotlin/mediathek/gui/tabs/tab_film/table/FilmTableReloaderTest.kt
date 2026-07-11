@@ -26,7 +26,7 @@ internal class FilmTableReloaderTest {
         val queryNumber = AtomicInteger()
         val firstFilm = film("first")
         val secondFilm = film("second")
-        val host = TestHost(binding) { completed.countDown() }
+        val host = TestHost(binding, completed = completed::countDown)
         val reloader = FilmTableReloader(host) {
             when (queryNumber.incrementAndGet()) {
                 1 -> FilmQueryEngine {
@@ -53,9 +53,36 @@ internal class FilmTableReloaderTest {
         }
     }
 
+    @Test
+    fun debouncedReloadRetainsPendingBlacklistRebuild() {
+        val binding = RecordingBinding()
+        val completed = CountDownLatch(1)
+        val blacklistApplications = AtomicInteger()
+        val queryExecutions = AtomicInteger()
+        val host = TestHost(binding, completed::countDown, blacklistApplications::incrementAndGet)
+        val reloader = FilmTableReloader(host) {
+            FilmQueryEngine {
+                queryExecutions.incrementAndGet()
+                emptyList()
+            }
+        }
+
+        try {
+            reloader.requestZeitraumReload()
+            reloader.requestTableReload()
+
+            assertTrue(completed.await(5, TimeUnit.SECONDS))
+            assertEquals(1, blacklistApplications.get())
+            assertEquals(1, queryExecutions.get())
+        } finally {
+            reloader.dispose()
+        }
+    }
+
     private class TestHost(
         private val binding: RecordingBinding,
         private val completed: () -> Unit,
+        private val applyBlacklistAction: () -> Unit = {},
     ) : FilmTableReloader.Host {
         val statusRowCounts = mutableListOf<Int>()
         private val catalog = FilmCatalog()
@@ -68,6 +95,7 @@ internal class FilmTableReloaderTest {
         override fun owner(): Component = JPanel()
         override fun searchFieldData(): SearchFieldData = SearchFieldData("", SearchControlFieldMode.THEMA_TITEL)
         override fun filterController(): FilmFilterController = filterController
+        override fun applyBlacklist() = applyBlacklistAction()
         override fun setSelectionUpdatesSuspended(suspended: Boolean) = Unit
         override fun updateStartInfoProperty() {
             statusRowCounts += binding.rowCount
