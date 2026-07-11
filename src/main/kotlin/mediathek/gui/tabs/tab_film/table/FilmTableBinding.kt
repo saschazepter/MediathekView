@@ -32,6 +32,7 @@ import javax.swing.SwingUtilities
 import javax.swing.table.AbstractTableModel
 import javax.swing.table.DefaultTableModel
 
+/** Non-suspending row and selection operations are confined to the Swing EDT. */
 interface FilmTableModelBinding {
     val table: JTable
     val rowCount: Int
@@ -40,7 +41,7 @@ interface FilmTableModelBinding {
     fun selectedFilms(): List<DatenFilm>
     suspend fun replaceFilms(films: Collection<DatenFilm>)
     fun removeFilms(films: Collection<DatenFilm>): Boolean
-    fun rowsChanged(films: Collection<DatenFilm>)
+    fun repaintVisibleRows()
     fun dispose()
 }
 
@@ -74,15 +75,23 @@ class FilmTableBinding(
     }
 
     override val rowCount: Int
-        get() = tableModel.rowCount
+        get() {
+            checkEdt()
+            return tableModel.rowCount
+        }
 
-    override fun filmAtViewRow(viewRow: Int): DatenFilm? =
-        viewRow.takeIf { it in 0 until tableModel.rowCount }?.let(tableModel::getElementAt)
+    override fun filmAtViewRow(viewRow: Int): DatenFilm? {
+        checkEdt()
+        return viewRow.takeIf { it in 0 until tableModel.rowCount }?.let(tableModel::getElementAt)
+    }
 
-    override fun selectedFilms(): List<DatenFilm> = table.selectedRows
-        .asSequence()
-        .mapNotNull(::filmAtViewRow)
-        .toList()
+    override fun selectedFilms(): List<DatenFilm> {
+        checkEdt()
+        return table.selectedRows
+            .asSequence()
+            .mapNotNull(::filmAtViewRow)
+            .toList()
+    }
 
     override suspend fun replaceFilms(films: Collection<DatenFilm>) {
         if (disposed) {
@@ -115,6 +124,7 @@ class FilmTableBinding(
     }
 
     override fun removeFilms(films: Collection<DatenFilm>): Boolean {
+        checkEdt()
         if (disposed || films.isEmpty()) {
             return false
         }
@@ -139,12 +149,11 @@ class FilmTableBinding(
         return true
     }
 
-    override fun rowsChanged(films: Collection<DatenFilm>) {
-        if (disposed || films.isEmpty()) {
-            return
+    override fun repaintVisibleRows() {
+        checkEdt()
+        if (!disposed) {
+            table.repaint()
         }
-
-        table.repaint()
     }
 
     override fun dispose() {
@@ -286,6 +295,10 @@ class FilmTableBinding(
         } else {
             SwingUtilities.invokeAndWait(action)
         }
+    }
+
+    private fun checkEdt() {
+        check(SwingUtilities.isEventDispatchThread()) { "Film table access must run on the Swing EDT" }
     }
 
     private data class SelectionSnapshot(

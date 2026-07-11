@@ -110,7 +110,7 @@ internal class FilmTableReloaderTest {
         }
 
         override fun removeFilms(films: Collection<DatenFilm>): Boolean = false
-        override fun rowsChanged(films: Collection<DatenFilm>) = Unit
+        override fun repaintVisibleRows() = Unit
         override fun dispose() = Unit
     }
 

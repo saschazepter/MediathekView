@@ -72,8 +72,7 @@ class FilmLifecycleController(private val host: Host) {
         launchOnSwing {
             when {
                 !host.filterConfiguration().isShowUnseenOnly -> {
-                    host.tableBinding().rowsChanged(event.films)
-                    host.tableBinding().table.repaint()
+                    host.tableBinding().repaintVisibleRows()
                 }
                 event.seen && host.tableBinding().removeFilms(event.films) -> Unit
                 else -> host.requestTableReload()

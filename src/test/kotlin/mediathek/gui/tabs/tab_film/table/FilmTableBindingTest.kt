@@ -19,6 +19,17 @@ import kotlin.time.measureTime
 
 internal class FilmTableBindingTest {
     @Test
+    fun directTableAccessRequiresTheEventDispatchThread() {
+        val fixture = fixture()
+        try {
+            val failure = assertThrows(IllegalStateException::class.java) { fixture.binding.rowCount }
+            assertEquals("Film table access must run on the Swing EDT", failure.message)
+        } finally {
+            onEdt { fixture.binding.dispose() }
+        }
+    }
+
+    @Test
     fun disposalDetachesTheGlazedModelBeforeSwingCanQueryItAgain() {
         val fixture = fixture()
         val glazedModel = fixture.table.model
