@@ -100,16 +100,12 @@ class UndoRedoSupport<E> private constructor(source: EventList<E>) {
                     }
 
                     ListEvent.DELETE -> {
-                        val privateCopyValue = previousElements.removeAt(changeIndex)
-                        val eventValue = listChanges.oldValue
-                        val deleted = if (eventValue === ListEvent.UNKNOWN_VALUE) privateCopyValue else eventValue
+                        val deleted = previousElements.removeAt(changeIndex)
                         edit.add(RemoveEdit(source, changeIndex, deleted))
                     }
 
                     ListEvent.UPDATE -> {
-                        val eventValue = listChanges.oldValue
-                        val previousValue =
-                            if (eventValue === ListEvent.UNKNOWN_VALUE) previousElements[changeIndex] else eventValue
+                        val previousValue = previousElements[changeIndex]
                         val newValue = source[changeIndex]
                         if (newValue !== previousValue) {
                             previousElements[changeIndex] = newValue

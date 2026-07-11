@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test
 internal class SearchTermTest {
     @Test
     fun replacementPreservesMetadataButNotScratchState() {
-        val original = SearchTerm<Any>("old", true, true, null)
+        val original = SearchTerm<Any>("old", isNegated = true, isRequired = true, field = null)
         original.fieldFilterStrings += "temporary"
 
         val replacement = original.newSearchTerm("new")
@@ -39,8 +39,8 @@ internal class SearchTermTest {
         assertTrue(narrow.isConstrainment(broad))
         assertTrue(broad.isRelaxation(narrow))
 
-        val negatedBroad = SearchTerm<Any>("cat", true, false, null)
-        val negatedNarrow = SearchTerm<Any>("catalog", true, false, null)
+        val negatedBroad = SearchTerm<Any>("cat", isNegated = true, isRequired = false, field = null)
+        val negatedNarrow = SearchTerm<Any>("catalog", isNegated = true, isRequired = false, field = null)
         assertTrue(negatedBroad.isConstrainment(negatedNarrow))
         assertFalse(broad.isConstrainment(negatedBroad))
         assertFalse(broad.isConstrainment(SearchTerm<Any>("cat")))

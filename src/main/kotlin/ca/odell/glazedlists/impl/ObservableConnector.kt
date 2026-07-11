@@ -7,7 +7,7 @@ import java.beans.PropertyChangeListener
 import java.util.EventListener
 
 class ObservableConnector<E> : ObservableElementList.Connector<E>, PropertyChangeListener
-    where E : ObservableConnector.PropertyChangeObservable {
+        where E : ObservableConnector.PropertyChangeObservable {
 
     interface PropertyChangeObservable {
         fun addPropertyChangeListener(listener: PropertyChangeListener)

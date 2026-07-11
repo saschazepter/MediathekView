@@ -82,11 +82,11 @@ open class ThreadedMatcherEditor<E> @JvmOverloads constructor(
                 when (matcherEvent.type) {
                     MatcherEditor.Event.MATCH_ALL,
                     MatcherEditor.Event.RELAXED,
-                    -> relaxed = true
+                        -> relaxed = true
 
                     MatcherEditor.Event.MATCH_NONE,
                     MatcherEditor.Event.CONSTRAINED,
-                    -> constrained = true
+                        -> constrained = true
 
                     MatcherEditor.Event.CHANGED -> {
                         constrained = true

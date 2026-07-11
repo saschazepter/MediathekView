@@ -82,6 +82,29 @@ internal class TransactionAndUndoSupportTest {
         assertEquals(1, edits.size, "undo and redo must not create new edits")
     }
 
+    @Test
+    fun undoAndRedoUseTheSnapshotForUpdatesAndRemovals() {
+        val source = basicEventListOf("A", "B")
+        val support = UndoRedoSupport.install(source)
+        val edits = mutableListOf<UndoRedoSupport.Edit>()
+        support.addUndoSupportListener(edits::add)
+
+        source[0] = "C"
+        val updateEdit = edits.removeLast()
+        updateEdit.undo()
+        assertEquals(listOf("A", "B"), source)
+        updateEdit.redo()
+        assertEquals(listOf("C", "B"), source)
+
+        source.removeAt(1)
+        val removeEdit = edits.removeLast()
+        removeEdit.undo()
+        assertEquals(listOf("C", "B"), source)
+        removeEdit.redo()
+        assertEquals(listOf("C"), source)
+        assertTrue(edits.isEmpty(), "undo and redo must not create new edits")
+    }
+
     private fun <E> basicEventListOf(vararg elements: E): BasicEventList<E> =
         BasicEventList<E>().apply { addAll(elements) }
 }
