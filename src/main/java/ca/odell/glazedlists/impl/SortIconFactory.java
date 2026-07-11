@@ -25,10 +25,8 @@ public final class SortIconFactory {
         lookAndFeelResourcePathMap.put("Mac OS X Aqua", "aqua");
         lookAndFeelResourcePathMap.put("Metal/Steel", "metal");
         lookAndFeelResourcePathMap.put("Metal/Ocean", "ocean");
-        lookAndFeelResourcePathMap.put("Classic Windows", "windows");
-        lookAndFeelResourcePathMap.put("Windows XP", "windowsxp");
-        lookAndFeelResourcePathMap.put("Windows Vista", "windowsxp"); // TODO(jessewilson) make Vista-specific icons
-        lookAndFeelResourcePathMap.put("WinLAF", "windowsxp");
+        lookAndFeelResourcePathMap.put("Windows", "windows");
+        lookAndFeelResourcePathMap.put("WinLAF", "windows");
     }
 
     /** the icons to use for indicating sort order */
@@ -57,7 +55,6 @@ public final class SortIconFactory {
         // detect the current look & feel
         String lookAndFeelName = UIManager.getLookAndFeel().getName();
         if(lookAndFeelName.equals("Metal")) lookAndFeelName = PLAFDetector.getMetalTheme();
-        else if(lookAndFeelName.equals("Windows")) lookAndFeelName = PLAFDetector.getWindowsTheme();
         String resourcePath = lookAndFeelResourcePathMap.get(lookAndFeelName);
         if(resourcePath == null) resourcePath = defaultResourcePath;
 
