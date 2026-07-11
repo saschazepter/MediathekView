@@ -2777,7 +2777,8 @@ public final class AutoCompleteSupport<E> {
              */
             @Override
             public void setText(String newText) {
-                // workaround for bug 4530952
+                // Match BasicComboBoxEditor's same-text no-op behavior. This
+                // custom editor replaces Swing's editor text field.
                 if (!equalsText(newText)) {
                     super.setText(newText);
                 }

@@ -24,10 +24,10 @@ import java.util.EventListener;
 public class BeanConnector<E> implements ObservableElementList.Connector<E> {
 
     /** The method to use when installing a PropertyChangeListener on an object. */
-    private Method addListenerMethod;
+    private final Method addListenerMethod;
 
     /** The method to use when uninstalling a PropertyChangeListener on an object. */
-    private Method removeListenerMethod;
+    private final Method removeListenerMethod;
 
     /** The list which contains the elements being observed via this {@link ObservableElementList.Connector}. */
     private ObservableElementChangeHandler<? extends E> list;
@@ -39,16 +39,9 @@ public class BeanConnector<E> implements ObservableElementList.Connector<E> {
     private Matcher<PropertyChangeEvent> eventMatcher = Matchers.trueMatcher();
 
     /**
-     * Reflection is used to install/uninstall the {@link #propertyChangeListener}
-     * on list elements, so we cache the Object[] used in the reflection call
-     * for a speed increase.
-     */
-    private final Object[] reflectionParameters = {propertyChangeListener};
-
-    /**
      * The types taken by the methods which add and remove PropertyChangeListeners.
      */
-    private static final Class[] REFLECTION_TYPES = {PropertyChangeListener.class};
+    private static final Class<?>[] REFLECTION_TYPES = {PropertyChangeListener.class};
 
     /**
      * Constructs a new Connector which uses reflection to add and remove a
@@ -71,15 +64,19 @@ public class BeanConnector<E> implements ObservableElementList.Connector<E> {
      */
     public BeanConnector(Class<E> beanClass) {
         final Method[] methods = beanClass.getMethods();
-        for (int m = 0; m < methods.length; m++) {
-            if(methods[m].getParameterTypes().length != 1) continue;
-            if(methods[m].getParameterTypes()[0] != PropertyChangeListener.class) continue;
-            if(methods[m].getName().startsWith("add")) this.addListenerMethod = methods[m];
-            if(methods[m].getName().startsWith("remove")) this.removeListenerMethod = methods[m];
+        Method addMethod = null;
+        Method removeMethod = null;
+        for (Method method : methods) {
+            if(method.getParameterCount() != 1) continue;
+            if(method.getParameterTypes()[0] != PropertyChangeListener.class) continue;
+            if(method.getName().startsWith("add")) addMethod = method;
+            if(method.getName().startsWith("remove")) removeMethod = method;
         }
 
-        if (this.addListenerMethod == null || this.removeListenerMethod == null)
+        if (addMethod == null || removeMethod == null)
             throw new IllegalArgumentException("Couldn't find listener methods for " + beanClass.getName());
+        this.addListenerMethod = addMethod;
+        this.removeListenerMethod = removeMethod;
     }
 
     /**
@@ -165,7 +162,7 @@ public class BeanConnector<E> implements ObservableElementList.Connector<E> {
     @Override
     public EventListener installListener(E element) {
         try {
-            this.addListenerMethod.invoke(element, this.reflectionParameters);
+            this.addListenerMethod.invoke(element, this.propertyChangeListener);
             return this.propertyChangeListener;
         } catch (IllegalAccessException iae) {
             throw new RuntimeException(iae);
@@ -188,7 +185,7 @@ public class BeanConnector<E> implements ObservableElementList.Connector<E> {
     @Override
     public void uninstallListener(E element, EventListener listener) {
         try {
-            this.removeListenerMethod.invoke(element, this.reflectionParameters);
+            this.removeListenerMethod.invoke(element, this.propertyChangeListener);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {

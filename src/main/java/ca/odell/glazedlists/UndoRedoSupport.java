@@ -12,6 +12,7 @@ import java.util.EventListener;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.Consumer;
 
 /**
  * UndoRedoSupport, as the name suggests, will provide generic support for
@@ -210,11 +211,16 @@ public final class UndoRedoSupport<E> {
      * will be notified of each undoable edit that occurs to the given EventList.
      */
     @FunctionalInterface
-    public interface Listener extends EventListener {
+    public interface Listener extends EventListener, Consumer<Edit> {
         /**
          * Notified of each undoable edit applied to the given EventList.
          */
-        public void undoableEditHappened(Edit edit);
+        void undoableEditHappened(Edit edit);
+
+        @Override
+        default void accept(Edit edit) {
+            undoableEditHappened(edit);
+        }
     }
 
     /**

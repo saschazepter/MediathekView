@@ -4,6 +4,7 @@
 package ca.odell.glazedlists;
 
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * An item that can be compared to a list of filters to see if it matches.
@@ -13,7 +14,7 @@ import java.util.List;
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
 @FunctionalInterface
-public interface TextFilterable {
+public interface TextFilterable extends Consumer<List<String>> {
 
     /**
      * Gets this object as a list of Strings. These Strings
@@ -24,5 +25,10 @@ public interface TextFilterable {
      *      strings to via <code>baseList.add()</code>. This may be a non-empty
      *      List and it is an error to call any method other than add().
      */
-    public void getFilterStrings(List<String> baseList);
+    void getFilterStrings(List<String> baseList);
+
+    @Override
+    default void accept(List<String> baseList) {
+        getFilterStrings(baseList);
+    }
 }

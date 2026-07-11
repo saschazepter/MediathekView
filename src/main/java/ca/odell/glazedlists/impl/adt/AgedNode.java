@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.adt;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 /**
  * A thin wrapper class for Objects to be inserted in the
  * age sorted tree representation of the cache.
@@ -12,14 +14,14 @@ package ca.odell.glazedlists.impl.adt;
 public final class AgedNode {
 
     /** provide times of nodes relative to one-another */
-    private static long nextTimestamp = 0;
+    private static final AtomicLong NEXT_TIMESTAMP = new AtomicLong();
 
     /** The corresponding node in the index tree */
-    private SparseListNode indexNode = null;
+    private final SparseListNode indexNode;
     /** The timestamp corresponding to the last access of this node */
     private long timestamp = 0;
     /** The value to this node */
-    private Object value = null;
+    private final Object value;
 
     /**
      * Creates a new AgedNode object to store in the age sorted tree
@@ -33,8 +35,8 @@ public final class AgedNode {
         timestamp = nextTimestamp();
     }
 
-    private static synchronized final long nextTimestamp() {
-        return nextTimestamp++;
+    private static long nextTimestamp() {
+        return NEXT_TIMESTAMP.getAndIncrement();
     }
 
     /**

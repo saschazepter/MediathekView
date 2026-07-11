@@ -5,6 +5,7 @@ package ca.odell.glazedlists.event;
 
 // standard java event and observer
 import java.util.EventListener;
+import java.util.function.Consumer;
 
 /**
  * Listens and responds to changes in a dynamic list of objects. This could be
@@ -24,7 +25,7 @@ import java.util.EventListener;
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
 @FunctionalInterface
-public interface ListEventListener<E> extends EventListener {
+public interface ListEventListener<E> extends EventListener, Consumer<ListEvent<E>> {
 
     /**
      * When the underlying list changes, this notification allows the
@@ -38,5 +39,10 @@ public interface ListEventListener<E> extends EventListener {
      *
      * @param listChanges a {@link ListEvent} describing the changes to the list
      */
-    public void listChanged(ListEvent<E> listChanges);
+    void listChanged(ListEvent<E> listChanges);
+
+    @Override
+    default void accept(ListEvent<E> listChanges) {
+        listChanged(listChanges);
+    }
 }

@@ -7,6 +7,7 @@ import ca.odell.glazedlists.FilterList;
 
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.function.Consumer;
 
 /**
  * A facility for modifying the {@link Matcher}s which specify the behaviour of a
@@ -58,7 +59,7 @@ public interface MatcherEditor<E> {
      * which uses these events to update its state.
      */
     @FunctionalInterface
-    interface Listener<E> extends EventListener {
+    interface Listener<E> extends EventListener, Consumer<Event<E>> {
 
        /**
         * Indicates a changes has occurred in the Matcher produced by the
@@ -68,6 +69,11 @@ public interface MatcherEditor<E> {
         *      Matcher produced by the MatcherEditor
         */
        void changedMatcher(Event<E> matcherEvent);
+
+       @Override
+       default void accept(Event<E> matcherEvent) {
+           changedMatcher(matcherEvent);
+       }
     }
 
     /**

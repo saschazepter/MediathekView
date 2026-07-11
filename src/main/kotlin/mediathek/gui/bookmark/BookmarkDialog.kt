@@ -244,7 +244,7 @@ class BookmarkDialog(
     }
 
     private fun setupTable() {
-        val bookmarkConnector = GlazedLists.beanConnector(BookmarkData::class.java) as ObservableElementList.Connector<BookmarkData>
+        val bookmarkConnector = GlazedLists.observableConnector<BookmarkData>()
         val sourceEventList = bookmarks.list.getEventList()
 
         val sortedList = sourceEventList.withReadLock {

@@ -289,7 +289,7 @@ public final class DefaultEventSelectionModel<E> implements AdvancedListSelectio
         }
         if(index0 == 0 && index1 == 0 && source.isEmpty())
          {
-            return; // hack for Java 5 compatibility
+            return; // Swing may clear index 0 after an empty model is installed
         }
         source.getReadWriteLock().writeLock().lock();
         try {

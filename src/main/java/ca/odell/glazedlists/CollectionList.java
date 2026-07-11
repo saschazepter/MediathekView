@@ -351,7 +351,7 @@ public class CollectionList<S, E> extends TransformedList<S, E> implements ListE
      * @see GlazedLists#listCollectionListModel()
      */
     @FunctionalInterface
-    public interface Model<E,S> {
+    public interface Model<E,S> extends java.util.function.Function<E, List<S>> {
 
         /**
          * Return a list of the child nodes for a parent node.
@@ -359,7 +359,12 @@ public class CollectionList<S, E> extends TransformedList<S, E> implements ListE
          * @param parent the parent node.
          * @return a List containing the child nodes.
          */
-        public List<S> getChildren(E parent);
+        List<S> getChildren(E parent);
+
+        @Override
+        default List<S> apply(E parent) {
+            return getChildren(parent);
+        }
     }
 
     /**

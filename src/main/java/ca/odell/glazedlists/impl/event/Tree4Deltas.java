@@ -46,8 +46,6 @@ public class Tree4Deltas<E> {
      */
     private boolean initialCapacityKnown = false;
 
-    public boolean horribleHackPreferMostRecentValue = false;
-
     public boolean getAllowContradictingEvents() {
         return allowContradictingEvents;
     }
@@ -78,12 +76,6 @@ public class Tree4Deltas<E> {
         for(int i = startIndex; i < endIndex; i++) {
             int overallIndex = tree.convertIndexColor(i, TARGET_INDICES, ALL_INDICES);
             Element<E> standingChangeToIndex = tree.get(overallIndex, ALL_INDICES);
-
-            if(horribleHackPreferMostRecentValue) {
-                byte newColor = standingChangeToIndex.getColor() == INSERT ? INSERT : UPDATE;
-                tree.set(overallIndex, ALL_INDICES, newColor, oldValue, 1);
-                continue;
-            }
 
             // don't bother updating an inserted element
             if(standingChangeToIndex.getColor() == INSERT) {

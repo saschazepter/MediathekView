@@ -8,6 +8,7 @@ import ca.odell.glazedlists.event.ListEventListener;
 
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
+import java.util.function.Function;
 
 /**
  * A TableModelEventAdapter is used by a {@link DefaultEventTableModel} for
@@ -79,7 +80,7 @@ public interface TableModelEventAdapter<E> extends ListEventListener<E> {
      * @author Holger Brands
      */
     @FunctionalInterface
-    public interface Factory<E> {
+    public interface Factory<E> extends Function<AbstractTableModel, TableModelEventAdapter<E>> {
 
         /**
          * Creates a new {@link TableModelEventAdapter} for the given table model.
@@ -88,5 +89,10 @@ public interface TableModelEventAdapter<E> extends ListEventListener<E> {
          * @return the new {@link TableModelEventAdapter}
          */
         TableModelEventAdapter<E> create(AbstractTableModel tableModel);
+
+        @Override
+        default TableModelEventAdapter<E> apply(AbstractTableModel tableModel) {
+            return create(tableModel);
+        }
     }
 }

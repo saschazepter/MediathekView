@@ -4,6 +4,7 @@
 package ca.odell.glazedlists.swing;
 
 import javax.swing.*;
+import java.util.function.Consumer;
 
 /**
  * This interface is intended to be implemented by custom TableCellRenderers
@@ -15,7 +16,7 @@ import javax.swing.*;
  * @author James Lemieux
  */
 @FunctionalInterface
-public interface SortableRenderer {
+public interface SortableRenderer extends Consumer<Icon> {
 
     /**
      * Sets the icon to display in order to indicate sorting direction or
@@ -24,5 +25,10 @@ public interface SortableRenderer {
      * @param sortIcon the Icon indicating the sort direction or
      *      <code>null</code> if there is not sorting
      */
-    public void setSortIcon(Icon sortIcon);
+    void setSortIcon(Icon sortIcon);
+
+    @Override
+    default void accept(Icon sortIcon) {
+        setSortIcon(sortIcon);
+    }
 }

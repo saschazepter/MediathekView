@@ -3,9 +3,9 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.matchers;
 
-import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 
@@ -48,28 +48,24 @@ import java.util.concurrent.ExecutorService;
  */
 public class ThreadedMatcherEditor<E> extends AbstractMatcherEditorListenerSupport<E> {
 
-    private static final Executor DEFAULT_EXECUTOR = new Executor() {
-        @Override
-        public void execute(Runnable runnable) {
-            new Thread(runnable, "MatcherQueueThread").start();
-        }
-    };
+    private static final Executor DEFAULT_EXECUTOR = runnable ->
+            Thread.ofVirtual().name("MatcherQueueThread").start(runnable);
 
     /** The underlying MatcherEditor whose MatcherEvents are being queued and fired on an alternate Thread. */
     private final MatcherEditor<E> source;
 
     /**
-     * The LinkedList acting as a queue of MatcherEditor.Event in the order in which they are received
+     * The list acting as a queue of MatcherEditor.Event in the order in which they are received
      * from {@link #source}. We take great care to ensure that the queue's monitor is held before it
      * is queried or mutated.
      */
-    private final List<MatcherEditor.Event<E>> matcherEventQueue = new LinkedList<>();
+    private final List<MatcherEditor.Event<E>> matcherEventQueue = new ArrayList<>();
 
     /**
      * The MatcherEditorListener which reacts to MatcherEvents from the {@link #source}
      * by enqueuing them for firing on another Thread at some later time.
      */
-    private MatcherEditor.Listener<E> queuingMatcherEditorListener = new QueuingMatcherEditorListener();
+    private final MatcherEditor.Listener<E> queuingMatcherEditorListener = new QueuingMatcherEditorListener();
 
     /**
      * <tt>true</tt> indicates a Thread is currently executing the
@@ -81,17 +77,17 @@ public class ThreadedMatcherEditor<E> extends AbstractMatcherEditorListenerSuppo
      * The {@link Runnable} containing the logic to drain the queue of MatcherEvents until it is empty.
      * The Runnable is executed on a Thread using {@link #executeMatcherEventQueueRunnable(Runnable)}.
      */
-    private Runnable drainMatcherEventQueueRunnable = new DrainMatcherEventQueueRunnable();
+    private final Runnable drainMatcherEventQueueRunnable = new DrainMatcherEventQueueRunnable();
 
     /** Executor to run the {@link #drainMatcherEventQueueRunnable}*/
-    private Executor executor;
+    private final Executor executor;
 
     /**
      * Creates a ThreadedMatcherEditor which wraps the given <code>source</code>.
      * MatcherEvents fired from the <code>source</code> will be enqueued within
      * this MatcherEditor until they are processed on an alternate Thread.
      * The Thread selection strategy is encapsulated by a default executor,
-     * which always starts a new thread (for backward compatibility).
+     * which starts a lightweight virtual thread.
      * Another constructor is provided for specifying a custom executor.
      *
      * @param source the MatcherEditor to wrap with buffering functionality
@@ -114,14 +110,8 @@ public class ThreadedMatcherEditor<E> extends AbstractMatcherEditorListenerSuppo
      * @see #executeMatcherEventQueueRunnable(Runnable)
      */
     public ThreadedMatcherEditor(MatcherEditor<E> source, Executor executor) {
-        if (source == null) {
-            throw new NullPointerException("source may not be null");
-        }
-        if (executor == null) {
-            throw new NullPointerException("executor may not be null");
-        }
-        this.source = source;
-        this.executor = executor;
+        this.source = Objects.requireNonNull(source, "source may not be null");
+        this.executor = Objects.requireNonNull(executor, "executor may not be null");
         this.source.addMatcherEditorListener(this.queuingMatcherEditorListener);
     }
 
@@ -206,13 +196,11 @@ public class ThreadedMatcherEditor<E> extends AbstractMatcherEditorListenerSuppo
             boolean constrained = false;
             boolean relaxed = false;
 
-            for (Iterator<Event<E>> i = matcherEvents.iterator(); i.hasNext(); ) {
-                switch (i.next().getType()) {
-                    case Event.MATCH_ALL: relaxed = true; break;
-                    case Event.MATCH_NONE: constrained = true; break;
-                    case Event.RELAXED: relaxed = true; break;
-                    case Event.CONSTRAINED: constrained = true; break;
-                    case Event.CHANGED: constrained = relaxed = true; break;
+            for (Event<E> matcherEvent : matcherEvents) {
+                switch (matcherEvent.getType()) {
+                    case Event.MATCH_ALL, Event.RELAXED -> relaxed = true;
+                    case Event.MATCH_NONE, Event.CONSTRAINED -> constrained = true;
+                    case Event.CHANGED -> constrained = relaxed = true;
                 }
             }
 
@@ -228,7 +216,7 @@ public class ThreadedMatcherEditor<E> extends AbstractMatcherEditorListenerSuppo
      * This method executes the given <code>runnable</code> on a Thread.
      * The particular Thread chosen to execute the Runnable is left to the
      * executor provided as constructor argument. When no executor is provided,
-     * a default executor will be used, which constructs a new Thread named
+     * a default executor will be used, which constructs a virtual thread named
      * <code>MatcherQueueThread</code> to execute the <code>runnable</code>
      * each time this method is called. Subclasses may override this method
      * to use any Thread selection strategy they wish, but providing a custom
@@ -255,7 +243,12 @@ public class ThreadedMatcherEditor<E> extends AbstractMatcherEditorListenerSuppo
                 // if necessary, start a Thread to drain the queue
                 if (!isDrainingQueue) {
                     isDrainingQueue = true;
-                    executeMatcherEventQueueRunnable(drainMatcherEventQueueRunnable);
+                    try {
+                        executeMatcherEventQueueRunnable(drainMatcherEventQueueRunnable);
+                    } catch (RuntimeException | Error failure) {
+                        isDrainingQueue = false;
+                        throw failure;
+                    }
                 }
             }
         }
@@ -297,10 +290,7 @@ public class ThreadedMatcherEditor<E> extends AbstractMatcherEditorListenerSuppo
                     // and fire the single coalesced MatcherEvent
                     fireChangedMatcher(matcherEvent);
 
-                } catch(Error e) {
-                    synchronized(matcherEventQueue) { isDrainingQueue = false; }
-                    throw e;
-                } catch(RuntimeException e) {
+                } catch(RuntimeException | Error e) {
                     synchronized(matcherEventQueue) { isDrainingQueue = false; }
                     throw e;
                 }

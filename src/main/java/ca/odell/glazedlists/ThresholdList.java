@@ -277,13 +277,18 @@ public final class ThresholdList<E> extends RangeList<E> {
      * {@link ThresholdList}.
      */
     @FunctionalInterface
-    public interface Evaluator<E> {
+    public interface Evaluator<E> extends java.util.function.ToIntFunction<E> {
         /**
          * Returns an integer value for an {@link Object} to be used to
          * compare that object against a threshold.  This value is
          * not relative to any other object unlike a {@link Comparator}.
          */
-        public int evaluate(E object);
+        int evaluate(E object);
+
+        @Override
+        default int applyAsInt(E object) {
+            return evaluate(object);
+        }
     }
 
     /**

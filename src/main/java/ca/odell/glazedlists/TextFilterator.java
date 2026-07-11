@@ -4,6 +4,7 @@
 package ca.odell.glazedlists;
 
 import java.util.List;
+import java.util.function.BiConsumer;
 
 /**
  * An interface through which a list of Strings for a given object
@@ -15,7 +16,7 @@ import java.util.List;
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
 @FunctionalInterface
-public interface TextFilterator<E> {
+public interface TextFilterator<E> extends BiConsumer<List<String>, E> {
 
     /**
      * Gets the specified object as a list of Strings. These Strings
@@ -27,5 +28,10 @@ public interface TextFilterator<E> {
      *      List and it is an error to call any method other than add().
      * @param element the object to extract the filter strings from.
      */
-    public void getFilterStrings(List<String> baseList, E element);
+    void getFilterStrings(List<String> baseList, E element);
+
+    @Override
+    default void accept(List<String> baseList, E element) {
+        getFilterStrings(baseList, element);
+    }
 }

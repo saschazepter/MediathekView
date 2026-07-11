@@ -32,6 +32,23 @@ internal class ObservableConnectorTest {
         assertEquals(1, updatedElements.size)
     }
 
+    @Test
+    fun reflectiveBeanConnectorStillInstallsAndRemovesListener() {
+        val bean = PlainBean("before")
+        val source = BasicEventList<PlainBean>().apply { add(bean) }
+        val observed = ObservableElementList(source, GlazedLists.beanConnector(PlainBean::class.java))
+        var updateCount = 0
+        observed.addListEventListener { changes ->
+            while (changes.next()) if (changes.type == ListEvent.UPDATE) updateCount++
+        }
+
+        bean.updateValue("after")
+        observed.remove(bean)
+        bean.updateValue("detached")
+
+        assertEquals(1, updateCount)
+    }
+
     private class ObservableBean(initialValue: String) : ObservableConnector.PropertyChangeObservable {
         private val propertyChanges = PropertyChangeSupport(this)
         private var value = initialValue
@@ -47,6 +64,25 @@ internal class ObservableConnectorTest {
         }
 
         override fun removePropertyChangeListener(listener: PropertyChangeListener) {
+            propertyChanges.removePropertyChangeListener(listener)
+        }
+    }
+
+    class PlainBean(initialValue: String) {
+        private val propertyChanges = PropertyChangeSupport(this)
+        private var value = initialValue
+
+        fun updateValue(newValue: String) {
+            val oldValue = value
+            value = newValue
+            propertyChanges.firePropertyChange("value", oldValue, newValue)
+        }
+
+        fun addPropertyChangeListener(listener: PropertyChangeListener) {
+            propertyChanges.addPropertyChangeListener(listener)
+        }
+
+        fun removePropertyChangeListener(listener: PropertyChangeListener) {
             propertyChanges.removePropertyChangeListener(listener)
         }
     }
