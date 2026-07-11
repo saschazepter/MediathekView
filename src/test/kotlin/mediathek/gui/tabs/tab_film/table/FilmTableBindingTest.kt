@@ -59,10 +59,10 @@ internal class FilmTableBindingTest {
             val originalModel = fixture.table.model
             fixture.binding.replaceFilms(listOf(film("C", 1), film("A", 2), film("B", 3)))
 
-            onEdt { fixture.binding.restoreLegacySort(FilmColumn.TITLE.index, descending = false) }
+            onEdt { fixture.binding.sorting.restoreLegacySort(FilmColumn.TITLE.index, descending = false) }
             awaitTitles(fixture, listOf("A", "B", "C"))
 
-            onEdt { fixture.binding.clearSorting() }
+            onEdt { fixture.binding.sorting.clear() }
             awaitTitles(fixture, listOf("C", "A", "B"))
             assertSame(originalModel, fixture.table.model)
         } finally {
@@ -220,7 +220,7 @@ internal class FilmTableBindingTest {
         val table = JTable()
         val binding = onEdt { FilmTableBinding(table) }
         val appearance = FilmTableAppearance(lineBreak = false, showSenderIcons = true, useSmallSenderIcons = true)
-        val settings = onEdt { FilmTableSettingsController(table, binding, appearance) }
+        val settings = onEdt { FilmTableSettingsController(table, binding.sorting, appearance) }
         try {
             assertEquals(FilmColumn.GEO.index, onEdt { table.convertColumnIndexToModel(7) })
             assertTrue(config.getTableColumnSettings("film").isNotBlank())

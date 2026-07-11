@@ -97,7 +97,7 @@ class GuiFilme(
     private val bookmarkController: FilmBookmarkController
     private var stopBeob = false
     private val tabelle = JTable()
-    private val tableBinding: FilmTableModelBinding = FilmTableBinding(tabelle)
+    private val tableBinding = FilmTableBinding(tabelle)
     private val tableAppearance = ApplicationConfiguration.getInstance().let { configuration ->
         FilmTableAppearance(
             lineBreak = configuration.filmTableLineBreak,
@@ -105,7 +105,7 @@ class GuiFilme(
             useSmallSenderIcons = configuration.filmTableUseSmallSenderIcons,
         )
     }
-    private val tableSettingsController = FilmTableSettingsController(tabelle, tableBinding, tableAppearance)
+    private val tableSettingsController = FilmTableSettingsController(tabelle, tableBinding.sorting, tableAppearance)
     private val lifecycleController: FilmLifecycleController
     private val viewController: FilmViewController
     private val selectionController: FilmSelectionController

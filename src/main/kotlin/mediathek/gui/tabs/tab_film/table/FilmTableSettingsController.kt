@@ -25,7 +25,7 @@ import javax.swing.table.TableColumn
 
 internal class FilmTableSettingsController(
     private val table: JTable,
-    private val binding: FilmTableModelBinding,
+    private val sorting: FilmTableSorting,
     private val appearance: FilmTableAppearance,
 ) {
     private val configuration = ApplicationConfiguration.getInstance()
@@ -61,7 +61,7 @@ internal class FilmTableSettingsController(
         configuration.filmTableShowSenderIcons = appearance.showSenderIcons
         configuration.filmTableUseSmallSenderIcons = appearance.useSmallSenderIcons
         configuration.filmTableLineBreak = appearance.lineBreak
-        binding.saveState()
+        sorting.save()
     }
 
     fun dispose() {
@@ -93,7 +93,7 @@ internal class FilmTableSettingsController(
         val legacyState = parseLegacyState(configuration.filmTableColumnConfiguration)
         if (legacyState != null) {
             applyState(legacyState.tableState)
-            legacyState.sort?.let { sort -> binding.restoreLegacySort(sort.column, sort.descending) }
+            legacyState.sort?.let { sort -> sorting.restoreLegacySort(sort.column, sort.descending) }
             saveState()
         } else {
             applyDefaults()
@@ -135,7 +135,7 @@ internal class FilmTableSettingsController(
             setColumnVisible(column.modelIndex, true)
         }
         if (clearSorting) {
-            binding.clearSorting()
+            sorting.clear()
         }
     }
 

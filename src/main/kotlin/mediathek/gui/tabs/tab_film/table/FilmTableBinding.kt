@@ -10,12 +10,9 @@
 
 package mediathek.gui.tabs.tab_film.table
 
-import ca.odell.glazedlists.*
-import ca.odell.glazedlists.gui.AbstractTableComparatorChooser
 import ca.odell.glazedlists.gui.AdvancedTableFormat
 import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.swing.AdvancedTableModel
-import ca.odell.glazedlists.swing.TableComparatorChooser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.CoroutineScope
@@ -25,9 +22,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
 import kotlinx.coroutines.withContext
 import mediathek.daten.DatenFilm
-import mediathek.tool.models.FilmColumn
-import mediathek.swing.table.GlazedSortKeysPersister
-import mediathek.tool.withReadLock
 import java.util.Collections
 import java.util.IdentityHashMap
 import java.util.concurrent.atomic.AtomicLong
@@ -47,9 +41,6 @@ interface FilmTableModelBinding {
     suspend fun replaceFilms(films: Collection<DatenFilm>)
     fun removeFilms(films: Collection<DatenFilm>): Boolean
     fun rowsChanged(films: Collection<DatenFilm>)
-    fun restoreLegacySort(column: Int, descending: Boolean)
-    fun clearSorting()
-    fun saveState()
     fun dispose()
 }
 
@@ -57,13 +48,10 @@ interface FilmTableModelBinding {
 class FilmTableBinding(
     override val table: JTable,
 ) : FilmTableModelBinding {
-    private val sortControlSource = BasicEventList<DatenFilm>()
-    private val sortedFilms = SortedList(sortControlSource, null)
     private val tableFormat = FilmTableFormat()
     private val tableModel = SnapshotFilmTableModel(tableFormat)
     private val selectionModel = DefaultListSelectionModel()
-    private val comparatorChooser: TableComparatorChooser<DatenFilm>
-    private val sortPersister: GlazedSortKeysPersister<DatenFilm>
+    private val sortController: FilmTableSortController
     private val modelDispatcher = Dispatchers.Default.limitedParallelism(1)
     private val modelScope = CoroutineScope(SupervisorJob() + modelDispatcher)
     private val updateGeneration = AtomicLong()
@@ -73,27 +61,16 @@ class FilmTableBinding(
     @Volatile
     private var disposed = false
 
+    internal val sorting: FilmTableSorting
+        get() = sortController
+
     init {
         table.autoCreateRowSorter = false
         table.rowSorter = null
         table.model = tableModel
         selectionModel.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
         table.selectionModel = selectionModel
-        comparatorChooser = TableComparatorChooser.install(
-            table,
-            sortedFilms,
-            AbstractTableComparatorChooser.SINGLE_COLUMN,
-            tableFormat,
-        )
-        NON_SORTABLE_COLUMNS.forEach { column ->
-            comparatorChooser.getComparatorsForColumn(column.index).clear()
-        }
-        sortPersister = GlazedSortKeysPersister(SORT_CONFIG_PREFIX, comparatorChooser)
-        sortPersister.restoreSortState()
-        comparatorChooser.addSortActionListener {
-            sortPersister.saveSortState()
-            scheduleResort()
-        }
+        sortController = FilmTableSortController(table, tableFormat, ::scheduleResort)
     }
 
     override val rowCount: Int
@@ -170,26 +147,6 @@ class FilmTableBinding(
         table.repaint()
     }
 
-    override fun restoreLegacySort(column: Int, descending: Boolean) {
-        if (column !in FilmColumn.entries.indices || FilmColumn.fromIndex(column) in NON_SORTABLE_COLUMNS) {
-            return
-        }
-        comparatorChooser.clearComparator()
-        comparatorChooser.appendComparator(column, 0, descending)
-        sortPersister.saveSortState()
-    }
-
-    override fun clearSorting() {
-        comparatorChooser.clearComparator()
-        sortPersister.saveSortState()
-    }
-
-    override fun saveState() {
-        if (!disposed) {
-            sortPersister.saveSortState()
-        }
-    }
-
     override fun dispose() {
         if (disposed) {
             return
@@ -198,7 +155,7 @@ class FilmTableBinding(
         updateGeneration.incrementAndGet()
         modelScope.cancel()
         runOnEdtAndWait {
-            comparatorChooser.dispose()
+            sortController.dispose()
             table.clearSelection()
             table.selectionModel = DefaultListSelectionModel()
             table.rowSorter = null
@@ -262,7 +219,7 @@ class FilmTableBinding(
     }
 
     private fun prepareDisplayedFilms(): List<DatenFilm> {
-        val comparator = sortedFilms.withReadLock { sortedFilms.comparator }
+        val comparator = sortController.comparator()
         if (excludedFilms.isEmpty() && comparator == null) {
             return sourceFilms
         }
@@ -374,13 +331,4 @@ class FilmTableBinding(
         }
     }
 
-    private companion object {
-        private const val SORT_CONFIG_PREFIX = "film"
-        private val NON_SORTABLE_COLUMNS = setOf(
-            FilmColumn.PLAY,
-            FilmColumn.SAVE,
-            FilmColumn.BOOKMARK,
-            FilmColumn.GEO,
-        )
-    }
 }
