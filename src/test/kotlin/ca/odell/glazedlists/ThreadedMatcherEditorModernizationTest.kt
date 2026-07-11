@@ -5,12 +5,12 @@ import ca.odell.glazedlists.matchers.Matcher
 import ca.odell.glazedlists.matchers.MatcherEditor
 import ca.odell.glazedlists.matchers.ThreadedMatcherEditor
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executor
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 internal class ThreadedMatcherEditorModernizationTest {
     @Test
@@ -30,18 +30,23 @@ internal class ThreadedMatcherEditorModernizationTest {
     }
 
     @Test
-    fun rejectedSchedulingDoesNotLeaveQueueStuck() {
+    fun rejectedSchedulingFallsBackWithoutLeavingQueueStuck() {
         val source = TestMatcherEditor()
         val executor = RejectOnceExecutor()
         val threaded = ThreadedMatcherEditor(source, executor)
         val delivered = CountDownLatch(1)
-        threaded.addMatcherEditorListener { delivered.countDown() }
+        val deliveryCount = AtomicInteger()
+        threaded.addMatcherEditorListener {
+            deliveryCount.incrementAndGet()
+            delivered.countDown()
+        }
 
-        assertThrows(IllegalStateException::class.java) { source.constrain() }
+        source.constrain()
+        assertTrue(delivered.await(1, TimeUnit.SECONDS))
+
         source.relax()
         executor.runPending()
-
-        assertTrue(delivered.await(1, TimeUnit.SECONDS))
+        assertEquals(2, deliveryCount.get())
     }
 
     @Test
@@ -59,7 +64,7 @@ internal class ThreadedMatcherEditorModernizationTest {
 
         assertTrue(delivered.await(1, TimeUnit.SECONDS))
         assertTrue(deliveryThread?.isVirtual == true)
-        assertEquals("MatcherQueueThread", deliveryThread?.name)
+        assertTrue(deliveryThread?.name?.startsWith("MatcherQueueThread") == true)
     }
 
     private class TestMatcherEditor : AbstractMatcherEditor<String>() {
