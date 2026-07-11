@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl;
 
+import org.jspecify.annotations.NonNull;
+
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.BasicEventList;
@@ -243,13 +245,13 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
 
     /** @inheritDoc */
     @Override
-    public Collection<V> values() {
+    public @NonNull Collection<V> values() {
         return valueList;
     }
 
     /** @inheritDoc */
     @Override
-    public Set<K> keySet() {
+    public @NonNull Set<K> keySet() {
         if (this.keySet == null)
             this.keySet = new KeySet();
 
@@ -258,7 +260,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
 
     /** @inheritDoc */
     @Override
-    public Set<Entry<K, V>> entrySet() {
+    public @NonNull Set<Entry<K, V>> entrySet() {
         if (this.entrySet == null)
             this.entrySet = new EntrySet();
 
@@ -384,7 +386,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
 
         /** {@inheritDoc} */
         @Override
-        public Iterator<Entry<K, V>> iterator() {
+        public @NonNull Iterator<Entry<K, V>> iterator() {
             return new EntrySetIterator(keyList.listIterator());
         }
 
@@ -558,7 +560,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
 
         /** {@inheritDoc} */
         @Override
-        public Iterator<K> iterator() {
+        public @NonNull Iterator<K> iterator() {
             return new KeySetIterator(keyList.listIterator());
         }
 

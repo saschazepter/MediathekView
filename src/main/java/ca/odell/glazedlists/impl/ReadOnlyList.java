@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl;
 
+import org.jspecify.annotations.NonNull;
+
 // standard collections
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.TransformedList;
@@ -76,13 +78,13 @@ public final class ReadOnlyList<E> extends TransformedList<E, E> {
 
     /** {@inheritDoc} */
     @Override
-    public Object[] toArray() {
+    public Object @NonNull [] toArray() {
         return source.toArray();
     }
 
     /** {@inheritDoc} */
     @Override
-    public <T>T[] toArray(T[] array) {
+    public <T>T @NonNull [] toArray(T @NonNull [] array) {
         return source.toArray(array);
     }
 

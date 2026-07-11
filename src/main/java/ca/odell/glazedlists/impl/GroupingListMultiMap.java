@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl;
 
+import org.jspecify.annotations.NonNull;
+
 import ca.odell.glazedlists.*;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
@@ -216,13 +218,13 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
     /** {@inheritDoc} */
     @Override
-    public Collection<List<V>> values() {
+    public @NonNull Collection<List<V>> values() {
         return groupingList;
     }
 
     /** {@inheritDoc} */
     @Override
-    public Set<K> keySet() {
+    public @NonNull Set<K> keySet() {
         if (keySet == null)
             keySet = new KeySet();
 
@@ -231,7 +233,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
     /** {@inheritDoc} */
     @Override
-    public Set<Entry<K, List<V>>> entrySet() {
+    public @NonNull Set<Entry<K, List<V>>> entrySet() {
         if (entrySet == null)
             entrySet = new EntrySet();
 
@@ -318,7 +320,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
         /** {@inheritDoc} */
         @Override
-        public Iterator<Entry<K, List<V>>> iterator() {
+        public @NonNull Iterator<Entry<K, List<V>>> iterator() {
             return new EntrySetIterator(keyList.listIterator());
         }
 
@@ -511,7 +513,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
         /** {@inheritDoc} */
         @Override
-        public Iterator<K> iterator() {
+        public @NonNull Iterator<K> iterator() {
             return new KeySetIterator(keyList.listIterator());
         }
 
@@ -646,11 +648,11 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         @Override
         public boolean contains(Object o) { return delegate.contains(o); }
         @Override
-        public Iterator<V> iterator() { return delegate.iterator(); }
+        public @NonNull Iterator<V> iterator() { return delegate.iterator(); }
         @Override
-        public Object[] toArray() { return delegate.toArray(); }
+        public Object @NonNull [] toArray() { return delegate.toArray(); }
         @Override
-        public <T>T[] toArray(T[] a) { return delegate.toArray(a); }
+        public <T>T @NonNull [] toArray(T @NonNull [] a) { return delegate.toArray(a); }
 
         @Override
         public boolean add(V o) {
@@ -659,13 +661,13 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         }
 
         @Override
-        public boolean addAll(Collection<? extends V> c) {
+        public boolean addAll(@NonNull Collection<? extends V> c) {
             checkKeyValueAgreement(key, c);
             return delegate.addAll(c);
         }
 
         @Override
-        public boolean addAll(int index, Collection<? extends V> c) {
+        public boolean addAll(int index, @NonNull Collection<? extends V> c) {
             checkKeyValueAgreement(key, c);
             return delegate.addAll(index, c);
         }
@@ -683,28 +685,28 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         }
 
         @Override
-        public List<V> subList(int fromIndex, int toIndex) {
+        public @NonNull List<V> subList(int fromIndex, int toIndex) {
             return new ValueList(delegate.subList(fromIndex, toIndex));
         }
 
         @Override
-        public ListIterator<V> listIterator() {
+        public @NonNull ListIterator<V> listIterator() {
             return new ValueListIterator(delegate.listIterator());
         }
 
         @Override
-        public ListIterator<V> listIterator(int index) {
+        public @NonNull ListIterator<V> listIterator(int index) {
             return new ValueListIterator(delegate.listIterator(index));
         }
 
         @Override
         public boolean remove(Object o) { return delegate.remove(o); }
         @Override
-        public boolean containsAll(Collection<?> c) { return delegate.containsAll(c); }
+        public boolean containsAll(@NonNull Collection<?> c) { return delegate.containsAll(c); }
         @Override
-        public boolean removeAll(Collection<?> c) { return delegate.removeAll(c); }
+        public boolean removeAll(@NonNull Collection<?> c) { return delegate.removeAll(c); }
         @Override
-        public boolean retainAll(Collection<?> c) { return delegate.retainAll(c); }
+        public boolean retainAll(@NonNull Collection<?> c) { return delegate.retainAll(c); }
         @Override
         public void clear() { delegate.clear(); }
         @Override

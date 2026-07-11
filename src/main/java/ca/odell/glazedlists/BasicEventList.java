@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists;
 
+import org.jspecify.annotations.NonNull;
+
 import ca.odell.glazedlists.event.ListEventAssembler;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.event.ListEventPublisher;
@@ -275,7 +277,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
      * {@inheritDoc}
      */
     @Override
-    public Stream<E> stream() {
+    public @NonNull Stream<E> stream() {
         return data.stream();
     }
 
@@ -283,7 +285,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
      * {@inheritDoc}
      */
     @Override
-    public Stream<E> parallelStream() {
+    public @NonNull Stream<E> parallelStream() {
         return data.parallelStream();
     }
 
@@ -291,7 +293,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
      * {@inheritDoc}
      */
     @Override
-    public Spliterator<E> spliterator() {
+    public @NonNull Spliterator<E> spliterator() {
         return data.spliterator();
     }
 

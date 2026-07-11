@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists;
 
+import org.jspecify.annotations.NonNull;
+
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.impl.adt.barcode2.Element;
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTree;
@@ -671,7 +673,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
 
     /** {@inheritDoc} */
     @Override
-    public Iterator<E> iterator() {
+    public @NonNull Iterator<E> iterator() {
         return new SortedListIterator();
     }
 

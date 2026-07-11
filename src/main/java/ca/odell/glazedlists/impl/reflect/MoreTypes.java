@@ -15,6 +15,8 @@
  */
 package ca.odell.glazedlists.impl.reflect;
 
+import org.jspecify.annotations.NonNull;
+
 import java.io.Serializable;
 import java.io.Serial;
 import java.lang.reflect.GenericArrayType;
@@ -297,12 +299,12 @@ class MoreTypes {
         }
 
         @Override
-        public Type[] getActualTypeArguments() {
+        public Type @NonNull [] getActualTypeArguments() {
             return typeArguments.clone();
         }
 
         @Override
-        public Type getRawType() {
+        public @NonNull Type getRawType() {
             return rawType;
         }
 

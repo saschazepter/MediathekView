@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.adt;
 
+import org.jspecify.annotations.NonNull;
+
 // For Lists and Iterators
 import java.util.AbstractList;
 import java.util.Collections;
@@ -223,7 +225,7 @@ public final class SparseList extends AbstractList {
      * Obtains an {@link Iterator} for this {@link List}.
      */
     @Override
-    public Iterator iterator() {
+    public @NonNull Iterator iterator() {
         if(size == 0) return Collections.EMPTY_LIST.iterator();
         return new SparseListNode.SparseListIterator(this, root);
     }

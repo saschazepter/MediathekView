@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl;
 
+import org.jspecify.annotations.NonNull;
+
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.TransformedList;
 import ca.odell.glazedlists.event.ListEvent;
@@ -177,7 +179,7 @@ public final class ThreadSafeList<E> extends TransformedList<E, E> {
 
     /** {@inheritDoc} */
     @Override
-    public Object[] toArray() {
+    public Object @NonNull [] toArray() {
         getReadWriteLock().readLock().lock();
         try {
             return source.toArray();
@@ -188,7 +190,7 @@ public final class ThreadSafeList<E> extends TransformedList<E, E> {
 
     /** {@inheritDoc} */
     @Override
-    public <T> T[] toArray(T[] array) {
+    public <T> T @NonNull [] toArray(T @NonNull [] array) {
         getReadWriteLock().readLock().lock();
         try {
             return source.toArray(array);

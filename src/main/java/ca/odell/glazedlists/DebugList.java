@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists;
 
+import org.jspecify.annotations.NonNull;
+
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.event.ListEventPublisher;
@@ -315,7 +317,7 @@ public class DebugList<E> extends AbstractEventList<E> {
 
     /** {@inheritDoc} */
     @Override
-    public Object[] toArray() {
+    public Object @NonNull [] toArray() {
         beforeReadOperation();
         try {
             return delegate.toArray();
@@ -326,7 +328,7 @@ public class DebugList<E> extends AbstractEventList<E> {
 
     /** {@inheritDoc} */
     @Override
-    public <T> T[] toArray(T[] array) {
+    public <T> T @NonNull [] toArray(T @NonNull [] array) {
         beforeReadOperation();
         try {
             return delegate.toArray(array);
@@ -509,9 +511,9 @@ public class DebugList<E> extends AbstractEventList<E> {
         }
 
         @Override
-        public Lock readLock() { return readLock; }
+        public @NonNull Lock readLock() { return readLock; }
         @Override
-        public Lock writeLock() { return writeLock; }
+        public @NonNull Lock writeLock() { return writeLock; }
 
         /**
          * Returns <tt>true</tt> if and only if the current Thread holds the
@@ -575,7 +577,7 @@ public class DebugList<E> extends AbstractEventList<E> {
             }
 
             @Override
-            public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
+            public boolean tryLock(long time, @NonNull TimeUnit unit) throws InterruptedException {
                 checkForReadToWriteUpgrade();
                 final boolean success = delegate.tryLock(time, unit);
                 if (success) recordLockAcquisition();
@@ -589,7 +591,7 @@ public class DebugList<E> extends AbstractEventList<E> {
             }
 
             @Override
-            public Condition newCondition() {
+            public @NonNull Condition newCondition() {
                 return delegate.newCondition();
             }
 

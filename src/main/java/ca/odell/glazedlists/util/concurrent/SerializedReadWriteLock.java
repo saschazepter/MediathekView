@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.util.concurrent;
 
+import org.jspecify.annotations.NonNull;
+
 import java.io.ObjectStreamException;
 import java.io.Serializable;
 import java.util.concurrent.locks.Lock;
@@ -24,13 +26,13 @@ public final class SerializedReadWriteLock implements ReadWriteLock, Serializabl
 
     /** {@inheritDoc} */
     @Override
-    public Lock readLock() {
+    public @NonNull Lock readLock() {
         throw new UnsupportedOperationException("SerializedReadWriteLock is only used for serialization");
     }
 
     /** {@inheritDoc} */
     @Override
-    public Lock writeLock() {
+    public @NonNull Lock writeLock() {
         throw new UnsupportedOperationException("SerializedReadWriteLock is only used for serialization");
     }
 

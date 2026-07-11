@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists;
 
+import org.jspecify.annotations.NonNull;
+
 // the Glazed Lists' change objects
 import ca.odell.glazedlists.event.ListEventAssembler;
 import ca.odell.glazedlists.event.ListEventListener;
@@ -140,7 +142,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      * @return an iterator over the elements in this list in proper sequence.
      */
     @Override
-    public Iterator<E> iterator() {
+    public @NonNull Iterator<E> iterator() {
         return new SimpleIterator<>(this);
     }
 
@@ -154,7 +156,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      * @see Arrays#asList
      */
     @Override
-    public Object[] toArray() {
+    public Object @NonNull [] toArray() {
         // copy values into the array
         Object[] array = new Object[size()];
         int index = 0;
@@ -182,7 +184,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      * @throws NullPointerException if the specified array is <tt>null</tt>.
      */
     @Override
-    public <T> T[] toArray(T[] array) {
+    public <T> T @NonNull [] toArray(T @NonNull [] array) {
         // create an array of the same type as the array passed
         if (array.length < size()) {
             array = (T[]) Array.newInstance(array.getClass().getComponentType(), size());
@@ -305,7 +307,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      * @see #add(Object)
      */
     @Override
-    public boolean addAll(Collection<? extends E> values) {
+    public boolean addAll(@NonNull Collection<? extends E> values) {
         return addAll(size(), values);
     }
 
@@ -340,7 +342,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      *        &lt; 0 || index &gt; size()).
      */
     @Override
-    public boolean addAll(int index, Collection<? extends E> values) {
+    public boolean addAll(int index, @NonNull Collection<? extends E> values) {
         // don't do an add of an empty set
         if(index < 0 || index > size()) throw new IndexOutOfBoundsException("Cannot add at " + index + " on list of size " + size());
         if(values.size() == 0) return false;
@@ -391,7 +393,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      * @see #contains(Object)
      */
     @Override
-    public boolean removeAll(Collection<?> values) {
+    public boolean removeAll(@NonNull Collection<?> values) {
         if (isEmpty()) return false;
 
         return removeIf(values::contains);
@@ -422,7 +424,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      * @see #contains(Object)
      */
     @Override
-    public boolean retainAll(Collection<?> values) {
+    public boolean retainAll(@NonNull Collection<?> values) {
         return removeIf(v -> !values.contains(v));
     }
 
@@ -462,7 +464,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      *         supported.
      */
     @Override
-    public boolean removeIf(Predicate<? super E> filter) {
+    public boolean removeIf(@NonNull Predicate<? super E> filter) {
         if (isEmpty()) return false;
 
         Objects.requireNonNull(filter);
@@ -484,7 +486,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      * {@inheritDoc}
      */
     @Override
-    public void replaceAll(UnaryOperator<E> operator) {
+    public void replaceAll(@NonNull UnaryOperator<E> operator) {
         updates.beginEvent(true);                           // nested due to set below
         for (int i = size() - 1; i >= 0; i--) {
             E oldValue = get(i);
@@ -718,7 +720,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      *         sequence).
      */
     @Override
-    public ListIterator<E> listIterator() {
+    public @NonNull ListIterator<E> listIterator() {
         return listIterator(0);
     }
 
@@ -744,7 +746,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      *         &lt; 0 || index &gt; size()).
      */
     @Override
-    public ListIterator<E> listIterator(int index) {
+    public @NonNull ListIterator<E> listIterator(int index) {
         return new EventListIterator<>(this, index);
     }
 
@@ -782,7 +784,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
      *     (fromIndex &lt; 0 || toIndex &gt; size || fromIndex &gt; toIndex).
      */
     @Override
-    public List<E> subList(int fromIndex, int toIndex) {
+    public @NonNull List<E> subList(int fromIndex, int toIndex) {
         return new SubEventList<>(this, fromIndex, toIndex, true);
     }
 

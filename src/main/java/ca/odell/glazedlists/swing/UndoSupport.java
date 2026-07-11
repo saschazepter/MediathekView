@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.swing;
 
+import org.jspecify.annotations.NonNull;
+
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.UndoRedoSupport;
@@ -146,7 +148,7 @@ public final class UndoSupport<E> {
      */
     private class UndoSupportHandler implements UndoRedoSupport.Listener {
         @Override
-        public void undoableEditHappened(UndoRedoSupport.Edit edit) {
+        public void undoableEditHappened(UndoRedoSupport.@NonNull Edit edit) {
             undoManager.addEdit(editAdapter.evaluate(edit));
         }
     }
