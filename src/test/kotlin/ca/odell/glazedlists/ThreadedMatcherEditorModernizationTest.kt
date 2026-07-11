@@ -35,9 +35,10 @@ internal class ThreadedMatcherEditorModernizationTest {
         val executor = RejectOnceExecutor()
         val threaded = ThreadedMatcherEditor(source, executor)
         val delivered = CountDownLatch(1)
+        val secondDelivered = CountDownLatch(1)
         val deliveryCount = AtomicInteger()
         threaded.addMatcherEditorListener {
-            deliveryCount.incrementAndGet()
+            if (deliveryCount.incrementAndGet() == 2) secondDelivered.countDown()
             delivered.countDown()
         }
 
@@ -46,6 +47,7 @@ internal class ThreadedMatcherEditorModernizationTest {
 
         source.relax()
         executor.runPending()
+        assertTrue(secondDelivered.await(1, TimeUnit.SECONDS))
         assertEquals(2, deliveryCount.get())
     }
 
@@ -65,6 +67,21 @@ internal class ThreadedMatcherEditorModernizationTest {
         assertTrue(delivered.await(1, TimeUnit.SECONDS))
         assertTrue(deliveryThread?.isVirtual == true)
         assertTrue(deliveryThread?.name?.startsWith("MatcherQueueThread") == true)
+    }
+
+    @Test
+    fun closeIsIdempotentAndIgnoresLaterSourceEvents() {
+        val source = TestMatcherEditor()
+        val executor = CapturingExecutor()
+        val threaded = ThreadedMatcherEditor(source, executor)
+        var deliveryCount = 0
+        threaded.addMatcherEditorListener { deliveryCount++ }
+
+        threaded.close()
+        threaded.close()
+        source.constrain()
+
+        assertEquals(0, deliveryCount)
     }
 
     private class TestMatcherEditor : AbstractMatcherEditor<String>() {

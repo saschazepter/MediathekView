@@ -50,6 +50,22 @@ internal class ThreadProxyEventListTest {
         EventQueue.invokeAndWait { assertEquals(listOf("A"), proxy) }
     }
 
+    @Test
+    fun disposedProxyIgnoresPendingAndSubsequentSourceChanges() {
+        val source = BasicEventList<String>().apply { add("A") }
+        val proxy = ManualThreadProxyEventList(source)
+        var eventCount = 0
+        proxy.addListEventListener { eventCount++ }
+
+        source += "B"
+        proxy.dispose()
+        source += "C"
+        proxy.runPending()
+
+        assertEquals(listOf("A"), proxy)
+        assertEquals(0, eventCount)
+    }
+
     private class ManualThreadProxyEventList<E>(source: EventList<E>) : ThreadProxyEventList<E>(source) {
         private var pending: Runnable? = null
 

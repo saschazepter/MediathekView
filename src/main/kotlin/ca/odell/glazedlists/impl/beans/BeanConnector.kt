@@ -66,7 +66,7 @@ open class BeanConnector<E> : ObservableElementList.Connector<E> {
         invokeListenerMethod(removeListenerMethod, element)
     }
 
-    override fun setObservableElementList(list: ObservableElementChangeHandler<out E>) {
+    override fun setObservableElementList(list: ObservableElementChangeHandler<out E>?) {
         this.list = list
     }
 

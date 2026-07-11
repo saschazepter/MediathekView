@@ -149,6 +149,7 @@ open class MediathekGui private constructor(
             toggleActionFactory = { toggleOnlineSearchTabAction },
             onComponentCreated = { configureClosableOptionalTab(it, toggleOnlineSearchTabAction) },
             initialComponentFactory = { createDeferredTabPlaceholder("Onlinesuche") },
+            dispose = { (it as OnlineSearchPanel).close() },
         )
     }
     private val toggleOnlineSearchTabAction: ToggleOnlineSearchTabAction by lazy(LazyThreadSafetyMode.NONE) {

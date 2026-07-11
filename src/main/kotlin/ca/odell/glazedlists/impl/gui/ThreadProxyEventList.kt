@@ -21,23 +21,32 @@ abstract class ThreadProxyEventList<E>(source: EventList<E>) :
     @Volatile
     private var scheduled = false
 
+    @Volatile
+    private var disposed = false
+
     init {
         cacheUpdates.addListEventListener(updateRunner)
         source.addListEventListener(this)
     }
 
     final override fun listChanged(listChanges: ListEvent<E>) {
-        if (!scheduled) {
-            updates.beginEvent(true)
-            cacheUpdates.beginEvent(true)
-        }
+        readWriteLock.writeLock().lock()
+        try {
+            if (disposed) return
+            if (!scheduled) {
+                updates.beginEvent(true)
+                cacheUpdates.beginEvent(true)
+            }
 
-        updates.forwardEvent(listChanges)
-        cacheUpdates.forwardEvent(listChanges)
+            updates.forwardEvent(listChanges)
+            cacheUpdates.forwardEvent(listChanges)
 
-        if (!scheduled) {
-            scheduled = true
-            schedule(updateRunner)
+            if (!scheduled) {
+                scheduled = true
+                schedule(updateRunner)
+            }
+        } finally {
+            readWriteLock.writeLock().unlock()
         }
     }
 
@@ -95,14 +104,27 @@ abstract class ThreadProxyEventList<E>(source: EventList<E>) :
     }
 
     override fun dispose() {
-        cacheUpdates.removeListEventListener(updateRunner)
-        super.dispose()
+        readWriteLock.writeLock().lock()
+        try {
+            if (disposed) return
+            disposed = true
+            super.dispose()
+            if (scheduled) {
+                cacheUpdates.discardEvent()
+                updates.discardEvent()
+                scheduled = false
+            }
+            cacheUpdates.removeListEventListener(updateRunner)
+        } finally {
+            readWriteLock.writeLock().unlock()
+        }
     }
 
     private inner class UpdateRunner : Runnable, ListEventListener<E> {
         override fun run() {
             readWriteLock.writeLock().lock()
             try {
+                if (disposed) return
                 cacheUpdates.commitEvent()
                 updates.commitEvent()
             } finally {

@@ -30,6 +30,7 @@ internal class ObservableConnectorTest {
         bean.updateValue("detached")
 
         assertEquals(1, updatedElements.size)
+        observed.dispose()
     }
 
     @Test
@@ -47,6 +48,7 @@ internal class ObservableConnectorTest {
         bean.updateValue("detached")
 
         assertEquals(1, updateCount)
+        observed.dispose()
     }
 
     private class ObservableBean(initialValue: String) : ObservableConnector.PropertyChangeObservable {

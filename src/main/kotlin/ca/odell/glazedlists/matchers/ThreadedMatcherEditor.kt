@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 import kotlin.coroutines.CoroutineContext
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
+import java.util.concurrent.atomic.AtomicBoolean
 
 /**
  * Buffers matcher changes and delivers coalesced events from a coroutine.
@@ -36,8 +37,9 @@ open class ThreadedMatcherEditor<E> @JvmOverloads constructor(
     }
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val matcherEvents = Channel<MatcherEditor.Event<E>>(Channel.UNLIMITED)
+    private val closed = AtomicBoolean()
     private val queuingMatcherEditorListener = MatcherEditor.Listener<E> { event ->
-        matcherEvents.trySend(event).getOrThrow()
+        if (!closed.get()) matcherEvents.trySend(event)
     }
     private val processingJob: Job
 
@@ -109,6 +111,7 @@ open class ThreadedMatcherEditor<E> @JvmOverloads constructor(
     }
 
     override fun close() {
+        if (!closed.compareAndSet(false, true)) return
         source.removeMatcherEditorListener(queuingMatcherEditorListener)
         matcherEvents.close()
         processingJob.cancel()

@@ -34,7 +34,7 @@ class ObservableConnector<E> : ObservableElementList.Connector<E>, PropertyChang
         element.removePropertyChangeListener(this)
     }
 
-    override fun setObservableElementList(list: ObservableElementChangeHandler<out E>) {
+    override fun setObservableElementList(list: ObservableElementChangeHandler<out E>?) {
         this.list = list
     }
 }

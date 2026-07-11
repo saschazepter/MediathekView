@@ -6,6 +6,7 @@ package ca.odell.glazedlists;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.impl.adt.Barcode;
 import ca.odell.glazedlists.impl.adt.BarcodeIterator;
+import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.EventListener;
@@ -479,6 +480,6 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
          * @param list the ObservableElementList implementing {@link ObservableElementChangeHandler} containing the
          *            elements to observe
          */
-        void setObservableElementList(ObservableElementChangeHandler<? extends E> list);
+        void setObservableElementList(@Nullable ObservableElementChangeHandler<? extends E> list);
     }
 }
