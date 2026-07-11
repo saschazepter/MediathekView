@@ -119,8 +119,9 @@ internal class FilmTableSettingsController(
         }
         for (column in allColumns) {
             val visible = statesById[FilmColumn.fromIndex(column.modelIndex).name]?.visible ?: true
-            setColumnVisible(column.modelIndex, visible)
+            applyColumnVisibility(column.modelIndex, visible)
         }
+        refreshTable()
     }
 
     private fun applyDefaults(clearSorting: Boolean = false) {
@@ -132,14 +133,15 @@ internal class FilmTableSettingsController(
         }
         for (column in allColumns) {
             visibleWidths[column.modelIndex] = DEFAULT_WIDTHS[column.modelIndex]
-            setColumnVisible(column.modelIndex, true)
+            applyColumnVisibility(column.modelIndex, true)
         }
+        refreshTable()
         if (clearSorting) {
             sorting.clear()
         }
     }
 
-    private fun setColumnVisible(modelIndex: Int, visible: Boolean) {
+    private fun applyColumnVisibility(modelIndex: Int, visible: Boolean) {
         val column = allColumns.first { it.modelIndex == modelIndex }
         if (visible) {
             val width = visibleWidths[modelIndex].coerceAtLeast(10)
@@ -156,6 +158,14 @@ internal class FilmTableSettingsController(
             column.preferredWidth = 0
             column.width = 0
         }
+    }
+
+    private fun setColumnsVisible(columns: Collection<FilmColumn>, visible: Boolean) {
+        columns.forEach { column -> applyColumnVisibility(column.index, visible) }
+        refreshTable()
+    }
+
+    private fun refreshTable() {
         table.revalidate()
         table.repaint()
     }
@@ -228,12 +238,12 @@ internal class FilmTableSettingsController(
         private fun createPopup(): JPopupMenu = JPopupMenu().apply {
             FilmColumn.entries.filterNot { it in BUTTON_COLUMNS }.forEach { column ->
                 add(JCheckBoxMenuItem(column.title(), allColumns[column.index].maxWidth > 0).apply {
-                    addActionListener { setColumnVisible(column.index, isSelected) }
+                    addActionListener { setColumnsVisible(listOf(column), isSelected) }
                 })
             }
             addSeparator()
             add(JCheckBoxMenuItem("Buttons anzeigen", allColumns[FilmColumn.PLAY.index].maxWidth > 0).apply {
-                addActionListener { BUTTON_COLUMNS.forEach { column -> setColumnVisible(column.index, isSelected) } }
+                addActionListener { setColumnsVisible(BUTTON_COLUMNS, isSelected) }
             })
             addSeparator()
             add(JCheckBoxMenuItem("Sendericons anzeigen", appearance.showSenderIcons).apply {
