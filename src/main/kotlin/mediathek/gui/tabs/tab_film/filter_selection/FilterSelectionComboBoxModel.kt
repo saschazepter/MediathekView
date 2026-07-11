@@ -28,7 +28,7 @@ import java.util.function.Supplier
 import javax.swing.DefaultComboBoxModel
 import javax.swing.SwingUtilities
 
-class FilterSelectionComboBoxModel(
+class FilterSelectionComboBoxModel @JvmOverloads constructor(
     private val selectedFilterSupplier: Supplier<FilterDTO>,
     private val availableFiltersSupplier: Supplier<List<FilterDTO>>,
     private val filterLockedReader: Predicate<FilterDTO>,
