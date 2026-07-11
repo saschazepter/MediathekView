@@ -341,7 +341,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
         out.writeObject(elements);
         out.writeObject(listeners);
         out.writeObject(getPublisher());
-        out.writeObject(new SerializedReadWriteLock());
+        out.writeObject(getReadWriteLock());
     }
 
     /**

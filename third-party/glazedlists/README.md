@@ -25,7 +25,12 @@ of their retained replacements:
 
 The obsolete Java 1.4 lock backport (`Lock`, `ReadWriteLock`, `LockFactory`, and
 `J2SE50LockFactory`) is replaced by `java.util.concurrent.locks` types. The
-default remains a non-fair `ReentrantReadWriteLock`, and the serialization proxy
-continues to restore a fresh unlocked instance.
+default remains a non-fair `ReentrantReadWriteLock`. The legacy serialization
+proxy remains readable and restores a fresh unlocked instance.
+
+Upstream's `impl.testing` package is omitted from production sources. Its useful
+event-consistency and serialization behaviors are covered by JUnit tests under
+`src/test`; obsolete timing helpers and trivial test-data factories are not
+included.
 
 See `LICENSE` in this directory for the upstream licensing terms.
