@@ -48,7 +48,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
-import java.util.Observable;
 import java.util.Set;
 import java.util.SortedSet;
 
@@ -681,13 +680,11 @@ public final class GlazedLists {
 
     /**
      * Create a new Connector for the {@link ObservableElementList} that works
-     * with subclasses of the archaic {@link Observable} base class. Each
-     * element of the ObservableElementList <strong>must</strong> extend the
-     * Observable base class.
+     * with elements implementing {@link ObservableConnector.PropertyChangeObservable}.
      *
-     * @return an ObservableElementList.Connector for objects that extend {@link Observable}
+     * @return an ObservableElementList.Connector for property-change observables
      */
-    public static <E extends Observable> ObservableElementList.Connector<E> observableConnector() {
+    public static <E extends ObservableConnector.PropertyChangeObservable> ObservableElementList.Connector<E> observableConnector() {
         return new ObservableConnector<>();
     }
 

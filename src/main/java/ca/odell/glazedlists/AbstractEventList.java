@@ -523,15 +523,14 @@ public abstract class AbstractEventList<E> implements EventList<E> {
     public boolean equals(Object object) {
         if(object == this) return true;
         if(object == null) return false;
-        if(!(object instanceof List)) return false;
+        if(!(object instanceof List<?> otherList)) return false;
 
         // ensure the lists are the same size
-        List otherList = (List)object;
         if(otherList.size() != size()) return false;
 
         // compare element wise, via iterators
-        Iterator iterA = iterator();
-        Iterator iterB = otherList.iterator();
+        Iterator<E> iterA = iterator();
+        Iterator<?> iterB = otherList.iterator();
         while(iterA.hasNext() && iterB.hasNext()) {
             if(!Objects.equals(iterA.next(), iterB.next())) return false;
         }
@@ -808,7 +807,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
     public String toString() {
         StringBuilder result = new StringBuilder();
         result.append("[");
-        for(Iterator i = iterator(); i.hasNext(); ) {
+        for(Iterator<E> i = iterator(); i.hasNext(); ) {
             result.append(String.valueOf(i.next()));
             if(i.hasNext()) result.append(", ");
         }

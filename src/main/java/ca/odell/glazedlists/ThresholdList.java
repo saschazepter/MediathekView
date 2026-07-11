@@ -249,14 +249,14 @@ public final class ThresholdList<E> extends RangeList<E> {
     /** {@inheritDoc} */
     @Override
     public int getStartIndex() {
-        return sortedSource.sortIndex(new Integer(lowerThreshold));
+        return sortedSource.sortIndex(lowerThreshold);
     }
 
     /** {@inheritDoc} */
     @Override
     public int getEndIndex() {
         // search for the upperThreshold value
-        int index = sortedSource.lastSortIndex(new Integer(upperThreshold));
+        int index = sortedSource.lastSortIndex(upperThreshold);
 
         // if the upperThreshold exists in the sortedSource, convert the exclusive index to an inclusive index
         if (index < sortedSource.size() && evaluator.evaluate(sortedSource.get(index)) == upperThreshold)
@@ -308,9 +308,7 @@ public final class ThresholdList<E> extends RangeList<E> {
          * given when each <code>Object</code> is evaluated using the underlying
          * {@link Evaluator}.
          *
-         * <p>This method is dual-mode as in the case of the Objects passed being
-         * <code>Integer</code>s, it returns the value of
-         * <code>((Integer)alpha).intValue() - ((Integer)beta).intValue()</code>.
+         * <p>This method is dual-mode: Integer arguments are used directly.
          * This is necessary so that a threshold value can be compared against an
          * <code>Object</code>, and vice versa.  This can cause problems however
          * if the underlying {@link Evaluator} were to return the negation
@@ -319,11 +317,11 @@ public final class ThresholdList<E> extends RangeList<E> {
         @Override
         public int compare(E alpha, E beta) {
             int alphaValue;
-            if(alpha instanceof Integer) alphaValue = ((Integer)alpha).intValue();
+            if(alpha instanceof Integer integer) alphaValue = integer;
             else alphaValue = evaluator.evaluate(alpha);
 
             int betaValue;
-            if(beta instanceof Integer) betaValue = ((Integer)beta).intValue();
+            if(beta instanceof Integer integer) betaValue = integer;
             else betaValue = evaluator.evaluate(beta);
 
             if(alphaValue > betaValue) return 1;

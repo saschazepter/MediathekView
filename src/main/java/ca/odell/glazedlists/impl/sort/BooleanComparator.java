@@ -20,8 +20,8 @@ import java.util.Comparator;
      */
     @Override
     public int compare(Boolean alpha, Boolean beta) {
-        final int alphaOrdinal = alpha == null ? 0 : !alpha.booleanValue() ? 1 : 2;
-        final int betaOrdinal = beta == null ? 0 : !beta.booleanValue() ? 1 : 2;
+        final int alphaOrdinal = alpha == null ? 0 : !alpha ? 1 : 2;
+        final int betaOrdinal = beta == null ? 0 : !beta ? 1 : 2;
         return alphaOrdinal - betaOrdinal;
     }
 

@@ -6,34 +6,47 @@ package ca.odell.glazedlists.impl;
 import ca.odell.glazedlists.ObservableElementChangeHandler;
 import ca.odell.glazedlists.ObservableElementList;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.EventListener;
-import java.util.Observable;
-import java.util.Observer;
 
 /**
- * An {@link ObservableElementList.Connector} for the archaic {@link Observable}
- * base class which is rarely used in applications, but apparently used within
- * the <a href="http://eclipsetrader.sourceforge.net/">Eclipse Trader</a>
- * framework, which some Glazed Lists users are using.
+ * An {@link ObservableElementList.Connector} for elements that publish
+ * standard JavaBeans property-change events.
  *
  * @author James Lemieux
  */
-public class ObservableConnector<E extends Observable> implements ObservableElementList.Connector<E>, Observer, EventListener {
+public class ObservableConnector<E extends ObservableConnector.PropertyChangeObservable> implements ObservableElementList.Connector<E>, PropertyChangeListener, EventListener {
+
+    /**
+     * Contract for elements that support standard property-change listeners.
+     */
+    public interface PropertyChangeObservable {
+        void addPropertyChangeListener(PropertyChangeListener listener);
+        void removePropertyChangeListener(PropertyChangeListener listener);
+    }
 
     /** The list which contains the elements being observed via this {@link ObservableElementList.Connector}. */
     private ObservableElementChangeHandler<? extends E> list;
 
     /**
-     * This method is called whenever the observed object is changed. It
+     * This method is called whenever an observed property is changed. It
      * responds by notifying the associated ObservableElementList that the given
-     * {@link Observable} has been changed.
+     * element has been changed.
      *
-     * @param o the Observable that has been updated
-     * @param arg an argument passed to observers which is ignored here
+     * @param event the property-change event
      */
     @Override
-    public void update(Observable o, Object arg) {
-        list.elementChanged(o);
+    public void propertyChange(PropertyChangeEvent event) {
+        update(event);
+    }
+
+    /**
+     * Updates the associated list for a property-change event.
+     */
+    @SuppressWarnings("unchecked")
+    public void update(PropertyChangeEvent event) {
+        list.elementChanged((E) event.getSource());
     }
 
     /**
@@ -45,7 +58,7 @@ public class ObservableConnector<E extends Observable> implements ObservableElem
      */
     @Override
     public EventListener installListener(E element) {
-        element.addObserver(this);
+        element.addPropertyChangeListener(this);
         return this;
     }
 
@@ -58,7 +71,7 @@ public class ObservableConnector<E extends Observable> implements ObservableElem
      */
     @Override
     public void uninstallListener(E element, EventListener listener) {
-        element.deleteObserver(this);
+        element.removePropertyChangeListener(this);
     }
 
     /** {@inheritDoc} */

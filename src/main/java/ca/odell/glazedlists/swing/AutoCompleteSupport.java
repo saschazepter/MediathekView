@@ -16,6 +16,7 @@ import ca.odell.glazedlists.matchers.TextMatcherEditor;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.FocusTraversalPolicy;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -2444,8 +2445,8 @@ public final class AutoCompleteSupport<E> {
             if (oldValue != null && !(oldValue instanceof String))  {
                 try {
                     final Method method = oldValue.getClass().getMethod("valueOf", VALUE_OF_SIGNATURE);
-                    return method.invoke(oldValue, new Object[] {currentString});
-                } catch (Exception ex) {
+                    return method.invoke(oldValue, currentString);
+                } catch (ReflectiveOperationException | RuntimeException ex) {
                     // fail silently and return the current string
                 }
             }
@@ -2729,20 +2730,21 @@ public final class AutoCompleteSupport<E> {
         }
 
         /**
-         * This method is called by Swing when installing this JComboBox as a
-         * TableCellEditor. It ensures that focus will return to the JTable
-         * when the cell edit is complete.
-         *
-         * <p>We override this method to ensure that if the JTextField acting
-         * as the editor of the JComboBox has focus when the cell edit is
-         * complete, focus is returned to the JTable in that case as well.
+         * Propagates the combo box's focus traversal policy to its editor so
+         * focus returns to the table after editing.
          */
         @Override
-        public void setNextFocusableComponent(Component aComponent) {
-            super.setNextFocusableComponent(aComponent);
+        public void setFocusTraversalPolicy(FocusTraversalPolicy policy) {
+            super.setFocusTraversalPolicy(policy);
 
-            // set the next focusable component for the editor as well
-            ((JComponent) getEditor().getEditorComponent()).setNextFocusableComponent(aComponent);
+            ComboBoxEditor comboBoxEditor = getEditor();
+            if(comboBoxEditor == null) return;
+
+            Component editorComponent = comboBoxEditor.getEditorComponent();
+            if(editorComponent instanceof JComponent editor) {
+                editor.setFocusTraversalPolicy(policy);
+                editor.setFocusTraversalPolicyProvider(policy != null);
+            }
         }
 
         /**

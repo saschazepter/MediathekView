@@ -961,7 +961,7 @@ public class FourColorTree <  T0>   {
         if(root == null) return "";
 
         // print it flattened, like a list of colors
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for(FourColorNode n = firstNode(); n != null; n = next(n)) {
             Object color = coder.getColors().get(colorAsIndex(n.color));
             for(  int i = 0; i < n.size; i++  ) {

@@ -510,7 +510,7 @@ public final class Barcode {
 
     @Override
     public String toString() {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for(BarcodeIterator bi = iterator(); bi.hasNext(); ) {
             result.append(bi.next() == Barcode.BLACK ? "X" : "_");
         }

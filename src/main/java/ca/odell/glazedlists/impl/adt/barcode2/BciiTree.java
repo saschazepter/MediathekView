@@ -912,7 +912,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
         if(root == null) return "";
 
         // print it flattened, like a list of colors
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         for(BciiNode n = firstNode(); n != null; n = next(n)) {
             Object color = coder.getColors().get(colorAsIndex(n.color));
             for(/*[ WIDE_NODES_START(true) ]*/ int i = 0; i < n.size; i++/*[ WIDE_NODES_END ]*/) {

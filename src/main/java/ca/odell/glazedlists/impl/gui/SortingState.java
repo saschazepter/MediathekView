@@ -96,9 +96,8 @@ public class SortingState {
     public List<Integer> getSortingColumnIndexes() {
         final List<Integer> sortingColumns = new ArrayList<>();
         final List<SortingState.SortingColumn> recentlyClickedColumns = getRecentlyClickedColumns();
-        for(int c = 0; c < recentlyClickedColumns.size(); c++) {
-            SortingState.SortingColumn clickedColumn = recentlyClickedColumns.get(c);
-            sortingColumns.add(new Integer(clickedColumn.getColumn()));
+        for(SortingState.SortingColumn clickedColumn : recentlyClickedColumns) {
+            sortingColumns.add(clickedColumn.getColumn());
         }
         return sortingColumns;
     }
@@ -197,31 +196,28 @@ public class SortingState {
 
     @Override
     public String toString() {
-        final StringBuffer result = new StringBuffer();
-        for(Iterator<Integer> i = getSortingColumnIndexes().iterator(); i.hasNext();) {
-            final int columnIndex = i.next().intValue();
+        final StringJoiner result = new StringJoiner(", ");
+        for(int columnIndex : getSortingColumnIndexes()) {
             final SortingState.SortingColumn sortingColumn = getColumns().get(columnIndex);
+            final StringBuilder column = new StringBuilder();
 
             // write the column index
-            result.append("column ");
-            result.append(columnIndex);
+            column.append("column ");
+            column.append(columnIndex);
 
             // write the comparator index
             final int comparatorIndex = sortingColumn.getComparatorIndex();
             if(comparatorIndex != 0) {
-                result.append(" comparator ");
-                result.append(comparatorIndex);
+                column.append(" comparator ");
+                column.append(comparatorIndex);
             }
 
             // write reversed
             if(sortingColumn.isReverse()) {
-                result.append(" reversed");
+                column.append(" reversed");
             }
 
-            // add a comma if more columns exist
-            if (i.hasNext()) {
-                result.append(", ");
-            }
+            result.add(column);
         }
         return result.toString();
     }

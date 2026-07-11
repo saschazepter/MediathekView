@@ -222,14 +222,14 @@ class  SimpleNode <  T0>   implements Element<T0> {
      * each of the node values.
      */
     String toString(List colors) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         asTree(0, result, colors);
         return result.toString();
     }
     /**
      * Dump this node as a String for diagnostic and debugging purposes.
      */
-    void asTree(int indentation, StringBuffer out, List colors) {
+    void asTree(int indentation, StringBuilder out, List colors) {
         // write the left subtree
         if(left != null) left.asTree(indentation + 1, out, colors);
 

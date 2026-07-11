@@ -667,20 +667,18 @@ public class ListSelection<E> implements ListEventListener<E> {
 
         // 1. Convert our Collection of values into a SortedSet of indices
         SortedSet<Integer> indicesToSelect = new TreeSet<>();
-        for(Iterator<E> v = values.iterator(); v.hasNext(); ) {
-            E value = v.next();
+        for(E value : values) {
             int index = source.indexOf(value);
             if(index == -1) continue;
-            indicesToSelect.add(new Integer(index));
+            indicesToSelect.add(index);
         }
         if(indicesToSelect.isEmpty()) return false;
 
         // 2. convert the sorted set of Integers into an int[]
         int[] indicesToSelectAsInts = new int[indicesToSelect.size()];
         int arrayIndex = 0;
-        for(Iterator<Integer> i = indicesToSelect.iterator(); i.hasNext(); ) {
-            Integer selectIndex = i.next();
-            indicesToSelectAsInts[arrayIndex] = selectIndex.intValue();
+        for(int selectIndex : indicesToSelect) {
+            indicesToSelectAsInts[arrayIndex] = selectIndex;
             arrayIndex++;
         }
 

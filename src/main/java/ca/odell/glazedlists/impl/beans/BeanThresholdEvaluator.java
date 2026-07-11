@@ -30,7 +30,7 @@ public final class BeanThresholdEvaluator<E> implements ThresholdList.Evaluator<
     public int evaluate(E object) {
         if(beanProperty == null) loadPropertyDescriptors(object);
         Object property = beanProperty.get(object);
-        return ((Integer)property).intValue();
+        return (Integer) property;
     }
 
     /**

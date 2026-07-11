@@ -31,7 +31,7 @@ public class BeanProperty<T> {
     private final boolean identityProperty;
 
     /** the value class */
-    private Class valueClass = null;
+    private Class<?> valueClass = null;
 
     /** the chain of methods for the getter */
     private List<Method> getterChain = null;
@@ -40,8 +40,8 @@ public class BeanProperty<T> {
     private List<Method> setterChain = null;
 
     /** commonly used paramters */
-    private static final Object[] EMPTY_ARGUMENTS = new Object[0];
-    private static final Class[] EMPTY_PARAMETER_TYPES = new Class[0];
+    private static final Object[] EMPTY_ARGUMENTS = {};
+    private static final Class<?>[] EMPTY_PARAMETER_TYPES = {};
 
     /**
      * Creates a new {@link BeanProperty} that gets the specified property from the
@@ -65,7 +65,7 @@ public class BeanProperty<T> {
         // look up the common chain
         final String[] propertyParts = propertyName.split("\\.");
         final List<Method> commonChain = new ArrayList<>(propertyParts.length);
-        Class currentClass = beanClass;
+        Class<?> currentClass = beanClass;
         for(int p = 0; p < propertyParts.length - 1; p++) {
             Method partGetter = findGetterMethod(currentClass, propertyParts[p]);
             commonChain.add(partGetter);
@@ -98,10 +98,10 @@ public class BeanProperty<T> {
     /**
      * Finds a getter of the specified property on the specified class.
      */
-    private Method findGetterMethod(Class targetClass, String property) {
+    private Method findGetterMethod(Class<?> targetClass, String property) {
         Method result;
 
-        Class currentClass = targetClass;
+        Class<?> currentClass = targetClass;
         while(currentClass != null) {
             String getProperty = "get" + capitalize(property);
             result = getMethod(currentClass, getProperty, EMPTY_PARAMETER_TYPES);
@@ -125,11 +125,11 @@ public class BeanProperty<T> {
     /**
      * Finds a setter of the specified property on the specified class.
      */
-    private Method findSetterMethod(Class targetClass, String property) {
+    private Method findSetterMethod(Class<?> targetClass, String property) {
         String setProperty = "set" + capitalize(property);
 
         // loop through the class and its superclasses
-        Class currentClass = targetClass;
+        Class<?> currentClass = targetClass;
         while(currentClass != null) {
 
             // loop through this class' methods
@@ -183,7 +183,7 @@ public class BeanProperty<T> {
      * Returns the specified property with a capitalized first character.
      */
     private String capitalize(String property) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         result.append(Character.toUpperCase(property.charAt(0)));
         result.append(property.substring(1));
         return result.toString();
@@ -192,7 +192,7 @@ public class BeanProperty<T> {
     /**
      * Gets the method with the specified name and arguments.
      */
-    private Method getMethod(Class targetClass, String methodName, Class[] parameterTypes) {
+    private Method getMethod(Class<?> targetClass, String methodName, Class<?>[] parameterTypes) {
         try {
             return targetClass.getMethod(methodName, parameterTypes);
         } catch(NoSuchMethodException e) {
@@ -218,7 +218,7 @@ public class BeanProperty<T> {
      * Gets the class of the property's value. This is the return type and not
      * necessarily the runtime type of the class.
      */
-    public Class getValueClass() {
+    public Class<?> getValueClass() {
         return valueClass;
     }
 
@@ -284,7 +284,7 @@ public class BeanProperty<T> {
 
             // do the remaining setter
             setterMethod = setterChain.get(setterChain.size() - 1);
-            return setterMethod.invoke(currentMember, new Object[] { newValue });
+            return setterMethod.invoke(currentMember, newValue);
         } catch (IllegalArgumentException e) {
             String message = e.getMessage();
 
@@ -306,36 +306,17 @@ public class BeanProperty<T> {
     }
 
     /**
-     * This method was backported from the JDK 1.5 version of java.lang.Class.
-     *
      * Returns the simple name of the given class as given in the
      * source code. Returns an empty string if the underlying class is
      * anonymous.
      *
      * @return the simple name of the given class
      */
-    private static String getSimpleName(Class clazz) {
-        Class declaringClass = clazz.getDeclaringClass();
-        String simpleName = declaringClass == null ? null : declaringClass.getName();
-        if (simpleName == null) { // top level class
-            simpleName = clazz.getName();
-            return simpleName.substring(simpleName.lastIndexOf(".") + 1); // strip the package name
-        }
-
-        // Remove leading "\$[0-9]*" from the name
-        int length = simpleName.length();
-        if (length < 1 || simpleName.charAt(0) != '$')
-            throw new InternalError("Malformed class name");
-        int index = 1;
-        while (index < length && isAsciiDigit(simpleName.charAt(index)))
-            index++;
-        // Eventually, this is the empty string iff this is an anonymous class
-        return simpleName.substring(index);
+    private static String getSimpleName(Class<?> clazz) {
+        return clazz.getSimpleName();
     }
 
     /**
-     * This method was backported from the JDK 1.5 version of java.lang.Class.
-     *
      * Character.isDigit answers <tt>true</tt> to some non-ascii
      * digits. This one does not.
      */
@@ -349,7 +330,7 @@ public class BeanProperty<T> {
         if(this == o) return true;
         if(o == null || getClass() != o.getClass()) return false;
 
-        final BeanProperty that = (BeanProperty) o;
+        final BeanProperty<?> that = (BeanProperty<?>) o;
 
         if(!beanClass.equals(that.beanClass)) return false;
         if(!propertyName.equals(that.propertyName)) return false;

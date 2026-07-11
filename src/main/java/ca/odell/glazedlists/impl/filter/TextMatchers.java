@@ -281,7 +281,7 @@ public final class TextMatchers {
             fieldMap.put(field.getName(), field);
         }
 
-        StringBuffer searchTermText = new StringBuffer();
+        StringBuilder searchTermText = new StringBuilder();
         SearchEngineTextMatcherEditor.Field<E> field = null;
         boolean negated = false, required = false, insideTerm = false, insideQuotedTerm = false;
 
@@ -300,7 +300,7 @@ public final class TextMatchers {
                     }
 
                     // reset the state for collecting the next SearchTerm
-                    searchTermText = new StringBuffer();
+                    searchTermText = new StringBuilder();
                     field = null;
                     negated = required = insideTerm = insideQuotedTerm = false;
 
@@ -312,7 +312,7 @@ public final class TextMatchers {
 
                         // if a field was located, clear the searchTermText as it contains the field name
                         if (field != null) {
-                            searchTermText = new StringBuffer();
+                            searchTermText = new StringBuilder();
                             negated = required = insideTerm = insideQuotedTerm = false;
                             continue;
                         }

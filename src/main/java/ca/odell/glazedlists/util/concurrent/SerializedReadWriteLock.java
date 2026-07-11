@@ -11,10 +11,9 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * A ReadWriteLock dummy implementation that's only used for Java object
- * serialization. The regular lock implementations for Java 1.4 and 1.5 are
- * representated by this class on the serialization stream. Upon
- * deserialization on the target JVM, an appropriate lock implementation is
- * reconstructed according to the capabilities of the target platform.
+ * serialization. Lock implementations are represented by this class on the
+ * serialization stream and reconstructed as a {@link ReentrantReadWriteLock}
+ * when deserialized.
  *
  * @author Holger Brands
  */
