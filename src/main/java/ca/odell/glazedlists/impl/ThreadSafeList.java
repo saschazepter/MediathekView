@@ -6,7 +6,7 @@ package ca.odell.glazedlists.impl;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.TransformedList;
 import ca.odell.glazedlists.event.ListEvent;
-import ca.odell.glazedlists.util.concurrent.ReadWriteLock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -39,7 +39,7 @@ import java.util.function.UnaryOperator;
  * iterator()}, {@link #subList(int,int) subList()}, {@link #stream()}, {@link #parallelStream()},
  * {@link #spliterator()} etc. are not thread safe.
  *
- * @see ca.odell.glazedlists.util.concurrent
+ * @see java.util.concurrent.locks
  * @author <a href="mailto:kevin@swank.ca">Kevin Maltby</a>
  */
 public final class ThreadSafeList<E> extends TransformedList<E, E> {

@@ -5,6 +5,9 @@ package ca.odell.glazedlists.util.concurrent;
 
 import java.io.ObjectStreamException;
 import java.io.Serializable;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * A ReadWriteLock dummy implementation that's only used for Java object
@@ -34,6 +37,6 @@ public final class SerializedReadWriteLock implements ReadWriteLock, Serializabl
 
     /** Recreate an appropriate lock implementation when deserialized on the target JVM. */
     private Object readResolve() throws ObjectStreamException {
-        return LockFactory.DEFAULT.createReadWriteLock();
+        return new ReentrantReadWriteLock();
     }
 }

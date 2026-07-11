@@ -23,4 +23,9 @@ of their retained replacements:
 - `ca.odell.glazedlists.impl.SerializedReadWriteLock`
   (`ca.odell.glazedlists.util.concurrent.SerializedReadWriteLock`)
 
+The obsolete Java 1.4 lock backport (`Lock`, `ReadWriteLock`, `LockFactory`, and
+`J2SE50LockFactory`) is replaced by `java.util.concurrent.locks` types. The
+default remains a non-fair `ReentrantReadWriteLock`, and the serialization proxy
+continues to restore a fresh unlocked instance.
+
 See `LICENSE` in this directory for the upstream licensing terms.

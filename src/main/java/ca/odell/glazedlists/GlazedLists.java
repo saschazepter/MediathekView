@@ -36,7 +36,7 @@ import ca.odell.glazedlists.impl.sort.ReverseComparator;
 import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.matchers.MatcherEditor;
 import ca.odell.glazedlists.matchers.Matchers;
-import ca.odell.glazedlists.util.concurrent.ReadWriteLock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
@@ -490,14 +490,14 @@ public final class GlazedLists {
 
     /**
      * Wraps the source in an {@link EventList} that obtains a
-     * {@link ca.odell.glazedlists.util.concurrent.ReadWriteLock ReadWritLock} for all
+     * {@link ReadWriteLock} for all
      * operations.
      *
      * <p>This provides some support for sharing {@link EventList}s between multiple
      * threads.
      *
      * <p>Using a {@link ThreadSafeList} for concurrent access to lists can be expensive
-     * because a {@link ca.odell.glazedlists.util.concurrent.ReadWriteLock ReadWriteLock}
+     * because a {@link ReadWriteLock}
      * is aquired and released for every operation.
      *
      * <p><strong><font color="#FF0000">Warning:</font></strong> Although this class
@@ -515,7 +515,7 @@ public final class GlazedLists {
      * by {@link TransformedList#iterator() iterator()},
      * {@link TransformedList#subList(int,int) subList()}, etc. are not thread safe.
      *
-     * @see ca.odell.glazedlists.util.concurrent
+     * @see java.util.concurrent.locks
      */
     public static <E> TransformedList<E, E> threadSafeList(EventList<? extends E> source) {
         return new ThreadSafeList<>((EventList<E>) source);

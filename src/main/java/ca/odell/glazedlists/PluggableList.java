@@ -5,7 +5,7 @@ package ca.odell.glazedlists;
 
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventPublisher;
-import ca.odell.glazedlists.util.concurrent.ReadWriteLock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * An {@link EventList} which delegates all List methods to a given source
@@ -65,7 +65,7 @@ public class PluggableList<E> extends TransformedList<E, E> {
 
     /**
      * Creates a new {@link EventList} that shares its
-     * {@link ca.odell.glazedlists.util.concurrent.ReadWriteLock} and
+     * {@link ReadWriteLock} and
      * {@link ca.odell.glazedlists.event.ListEventPublisher} with this
      * {@link PluggableList}. This is necessary when this {@link PluggableList}
      * will be used by multiple threads.
@@ -87,7 +87,7 @@ public class PluggableList<E> extends TransformedList<E, E> {
      * <p>
      * To ensure correct behaviour when this {@link PluggableList} is used by
      * multiple threads, the given <code>source</code> <strong>must</strong>
-     * share the same {@link ca.odell.glazedlists.util.concurrent.ReadWriteLock} and
+     * share the same {@link ReadWriteLock} and
      * {@link ca.odell.glazedlists.event.ListEventPublisher} with this PluggableList.
      *
      * @param source the new source of data for this PluggableList, and all

@@ -6,8 +6,6 @@ package ca.odell.glazedlists;
 import ca.odell.glazedlists.event.ListEventAssembler;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.event.ListEventPublisher;
-import ca.odell.glazedlists.util.concurrent.LockFactory;
-import ca.odell.glazedlists.util.concurrent.ReadWriteLock;
 import ca.odell.glazedlists.util.concurrent.SerializedReadWriteLock;
 
 import java.io.IOException;
@@ -16,6 +14,8 @@ import java.io.ObjectOutputStream;
 import java.io.OptionalDataException;
 import java.io.Serializable;
 import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -55,7 +55,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
      * Creates a {@link BasicEventList}.
      */
     public BasicEventList() {
-        this(LockFactory.DEFAULT.createReadWriteLock());
+        this(new ReentrantReadWriteLock());
     }
 
     /**
@@ -71,7 +71,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
      * <code>initialCapacity</code>.
      */
     public BasicEventList(int initalCapacity) {
-        this(initalCapacity, null, LockFactory.DEFAULT.createReadWriteLock());
+        this(initalCapacity, null, new ReentrantReadWriteLock());
     }
 
     /**
@@ -93,7 +93,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
     public BasicEventList(int initialCapacity, ListEventPublisher publisher, ReadWriteLock readWriteLock) {
         super(publisher);
         this.data = new ArrayList<>(initialCapacity);
-        this.readWriteLock = (readWriteLock == null) ? LockFactory.DEFAULT.createReadWriteLock() : readWriteLock;
+        this.readWriteLock = (readWriteLock == null) ? new ReentrantReadWriteLock() : readWriteLock;
     }
 
     /**
@@ -114,7 +114,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
     public BasicEventList(List<E> list) {
         super(null);
         this.data = list;
-        this.readWriteLock = LockFactory.DEFAULT.createReadWriteLock();
+        this.readWriteLock = new ReentrantReadWriteLock();
     }
 
     /** {@inheritDoc} */
@@ -341,7 +341,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
         out.writeObject(elements);
         out.writeObject(listeners);
         out.writeObject(getPublisher());
-        out.writeObject(getReadWriteLock());
+        out.writeObject(new SerializedReadWriteLock());
     }
 
     /**
@@ -363,7 +363,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
         } catch (OptionalDataException e) {
             if (e.eof)
                 // reading old serialization stream without publisher and lock
-                this.readWriteLock = LockFactory.DEFAULT.createReadWriteLock();
+                this.readWriteLock = new ReentrantReadWriteLock();
             else throw e;
         }
         // 4. Populate the EventList data

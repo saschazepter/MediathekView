@@ -6,10 +6,6 @@ package ca.odell.glazedlists;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.event.ListEventPublisher;
-import ca.odell.glazedlists.util.concurrent.Lock;
-import ca.odell.glazedlists.util.concurrent.LockFactory;
-import ca.odell.glazedlists.util.concurrent.ReadWriteLock;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,6 +13,11 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -501,8 +502,8 @@ public class DebugList<E> extends AbstractEventList<E> {
         private final DebugLock writeLock;
 
         public DebugReadWriteLock() {
-            // decorate normaly read/write locks with Thread recording
-            final ReadWriteLock decorated = LockFactory.DEFAULT.createReadWriteLock();
+            // decorate normal read/write locks with thread recording
+            final ReadWriteLock decorated = new ReentrantReadWriteLock();
             this.readLock = new DebugLock(decorated.readLock(), null);
             this.writeLock = new DebugLock(decorated.writeLock(), this.readLock);
         }
@@ -544,7 +545,7 @@ public class DebugList<E> extends AbstractEventList<E> {
         private static class DebugLock implements Lock {
             private final Lock delegate;
             private final DebugLock readLock;
-            private final List<Thread> threadsHoldingLock = Collections.synchronizedList(new ArrayList<Thread>());
+            private final List<Thread> threadsHoldingLock = Collections.synchronizedList(new ArrayList<>());
 
             public DebugLock(Lock delegate, DebugLock readLock) {
                 this.delegate = delegate;
@@ -553,35 +554,53 @@ public class DebugList<E> extends AbstractEventList<E> {
 
             @Override
             public void lock() {
-                if (this.readLock!=null && this.readLock.getThreadsHoldingLock().contains(Thread.currentThread())) {
-                    throw new IllegalStateException("DebugList detected an attempt to acquire a writeLock from a thread already owning a readLock (deadlock)");
-                }
+                checkForReadToWriteUpgrade();
                 delegate.lock();
+                recordLockAcquisition();
+            }
 
-                // record the current Thread as a lock holder
-                threadsHoldingLock.add(Thread.currentThread());
+            @Override
+            public void lockInterruptibly() throws InterruptedException {
+                checkForReadToWriteUpgrade();
+                delegate.lockInterruptibly();
+                recordLockAcquisition();
             }
 
             @Override
             public boolean tryLock() {
-                if (this.readLock!=null && this.readLock.getThreadsHoldingLock().contains(Thread.currentThread())) {
-                    throw new IllegalStateException("DebugList detected an attempt to acquire a writeLock from a thread already owning a readLock (deadlock)");
-                }
-
+                checkForReadToWriteUpgrade();
                 final boolean success = delegate.tryLock();
+                if (success) recordLockAcquisition();
+                return success;
+            }
 
-                // if the lock was successfully acquired, record the current Thread as a lock holder
-                if (success) threadsHoldingLock.add(Thread.currentThread());
-
+            @Override
+            public boolean tryLock(long time, TimeUnit unit) throws InterruptedException {
+                checkForReadToWriteUpgrade();
+                final boolean success = delegate.tryLock(time, unit);
+                if (success) recordLockAcquisition();
                 return success;
             }
 
             @Override
             public void unlock() {
                 delegate.unlock();
-
-                // remove the current Thread as a lock holder
                 threadsHoldingLock.remove(Thread.currentThread());
+            }
+
+            @Override
+            public Condition newCondition() {
+                return delegate.newCondition();
+            }
+
+            private void checkForReadToWriteUpgrade() {
+                if (readLock != null && readLock.getThreadsHoldingLock().contains(Thread.currentThread())) {
+                    throw new IllegalStateException("DebugList detected an attempt to acquire a writeLock from a thread already owning a readLock (deadlock)");
+                }
+            }
+
+            private void recordLockAcquisition() {
+                threadsHoldingLock.add(Thread.currentThread());
             }
 
             /**

@@ -25,7 +25,7 @@ import java.util.List;
  *
  * <p>Note that any {@link EventList}s returned by the {@link CollectionList.Model}
  * must use the same {@link ca.odell.glazedlists.event.ListEventPublisher} and
- * {@link ca.odell.glazedlists.util.concurrent.ReadWriteLock} as this
+ * {@link java.util.concurrent.locks.ReadWriteLock} as this
  * {@link CollectionList}. This is necessary in order for CollectionList to
  * operate correctly under mult-threaded conditions. An
  * {@link IllegalArgumentException} will be raised if this invariant is violated.

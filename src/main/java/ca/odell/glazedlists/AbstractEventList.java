@@ -10,7 +10,7 @@ import ca.odell.glazedlists.event.ListEventPublisher;
 import ca.odell.glazedlists.impl.EventListIterator;
 import ca.odell.glazedlists.impl.SimpleIterator;
 import ca.odell.glazedlists.impl.SubEventList;
-import ca.odell.glazedlists.util.concurrent.ReadWriteLock;
+import java.util.concurrent.locks.ReadWriteLock;
 
 import java.lang.reflect.Array;
 import java.util.*;
