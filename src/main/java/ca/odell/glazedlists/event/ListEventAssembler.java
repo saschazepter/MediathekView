@@ -32,23 +32,23 @@ public final class ListEventAssembler<E> {
     /** non-null if an event is currently pending */
     private Thread eventThread;
     /** the event level is the number of nested events */
-    protected int eventLevel = 0;
+    protected int eventLevel;
     /** whether to allow nested events */
     protected boolean allowNestedEvents = true;
 
     /** the current reordering array if this change is a reorder */
-    protected int[] reorderMap = null;
+    protected int[] reorderMap;
     /** prefer to use the linear blocks, which are more performant but handle only a subset of all cases */
-    private BlockSequence<E> blockSequence = new BlockSequence<>();
-    private boolean useListBlocksLinear = false;
+    private final BlockSequence<E> blockSequence = new BlockSequence<>();
+    private boolean useListBlocksLinear;
     /** fall back to list tree4deltas, which are capable of all list changes */
-    private Tree4Deltas<E> listDeltas = new Tree4Deltas<>();
+    private final Tree4Deltas<E> listDeltas = new Tree4Deltas<>();
 
     private final SequenceDependenciesEventPublisher publisher;
     private final ListEvent<E> listEvent;
     private final ListEventFormat eventFormat = new ListEventFormat();
     /** true if we're waiting on the publisher to distribute our event */
-    private boolean eventIsBeingPublished = false;
+    private boolean eventIsBeingPublished;
 
     /**
      * Create a new {@link ListEventPublisher} for an {@link EventList} not attached
@@ -126,7 +126,7 @@ public final class ListEventAssembler<E> {
      * the specified index, with the specified previous value.
      */
     public void elementInserted(int index, E newValue) {
-        addChange(ListEvent.INSERT, index, index, ListEvent.<E>unknownValue(), newValue);
+        addChange(ListEvent.INSERT, index, index, ListEvent.unknownValue(), newValue);
     }
     /**
      * Add to the current ListEvent the update of the element at the specified
@@ -140,7 +140,7 @@ public final class ListEventAssembler<E> {
      * index, with the specified previous value.
      */
     public void elementDeleted(int index, E oldValue) {
-        addChange(ListEvent.DELETE, index, index, oldValue, ListEvent.<E>unknownValue());
+        addChange(ListEvent.DELETE, index, index, oldValue, ListEvent.unknownValue());
     }
 
     /**
@@ -148,7 +148,7 @@ public final class ListEventAssembler<E> {
      */
     @Deprecated
     public void elementUpdated(int index, E oldValue) {
-        elementUpdated(index, oldValue, ListEvent.<E>unknownValue());
+        elementUpdated(index, oldValue, ListEvent.unknownValue());
     }
 
     /**
@@ -163,7 +163,7 @@ public final class ListEventAssembler<E> {
      */
     @Deprecated
     public void addChange(int type, int startIndex, int endIndex) {
-        addChange(type, startIndex, endIndex, ListEvent.<E>unknownValue(), ListEvent.<E>unknownValue());
+        addChange(type, startIndex, endIndex, ListEvent.unknownValue(), ListEvent.unknownValue());
     }
     /**
      * Convenience method for appending a single change of the specified type.
@@ -263,8 +263,8 @@ public final class ListEventAssembler<E> {
         if(!isEventEmpty()) throw new IllegalStateException("Cannot combine reorder with other change events");
         // can't reorder an empty list, see bug 91
         if(reorderMap.length == 0) return;
-        addChange(ListEvent.DELETE, 0, reorderMap.length - 1, ListEvent.<E>unknownValue(), ListEvent.<E>unknownValue());
-        addChange(ListEvent.INSERT, 0, reorderMap.length - 1, ListEvent.<E>unknownValue(), ListEvent.<E>unknownValue());
+        addChange(ListEvent.DELETE, 0, reorderMap.length - 1, ListEvent.unknownValue(), ListEvent.unknownValue());
+        addChange(ListEvent.INSERT, 0, reorderMap.length - 1, ListEvent.unknownValue(), ListEvent.unknownValue());
         this.reorderMap = reorderMap;
     }
     /**

@@ -33,7 +33,7 @@ public final class PropertyEventNameMatcher implements Matcher<PropertyChangeEve
      *
      * @see #isMatchPropertyNames()
      */
-    private boolean matchPropertyNames;
+    private final boolean matchPropertyNames;
 
     /**
      * Creates a PropertyEventNameMatcher.

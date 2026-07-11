@@ -72,7 +72,7 @@ public final class FunctionList<S, E> extends TransformedList<S, E> implements R
     /** The sourceElements copy is needed for the dispose method of AdvancedFunctions.
      *  This can be omitted when using a normal function so this indicates whether or not
      *  the source copy is in use. */
-    private boolean needDispose = false;
+    private boolean needDispose;
 
     /** A list of the Objects produced by running the source elements through the {@link #forward} Function. */
     private final List<E> mappedElements;

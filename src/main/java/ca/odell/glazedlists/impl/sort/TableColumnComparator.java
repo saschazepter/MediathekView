@@ -13,14 +13,20 @@ import java.util.Comparator;
  */
 public class TableColumnComparator<E> implements Comparator<E> {
 
-    /** the table format knows to map objects to their fields */
-    private TableFormat<? super E> tableFormat;
+    /**
+     * the table format knows to map objects to their fields
+     */
+    private final TableFormat<? super E> tableFormat;
 
-    /** the field of interest */
-    private int column;
+    /**
+     * the field of interest
+     */
+    private final int column;
 
-    /** comparison is delegated to a ComparableComparator */
-    private Comparator comparator = null;
+    /**
+     * comparison is delegated to a ComparableComparator
+     */
+    private Comparator comparator;
 
     /**
      * Creates a new TableColumnComparator that sorts objects by the specified
@@ -49,12 +55,14 @@ public class TableColumnComparator<E> implements Comparator<E> {
         final Object betaField = tableFormat.getColumnValue(beta, column);
         try {
             return comparator.compare(alphaField, betaField);
-        // throw a 'nicer' exception if the class does not implement Comparable
-        } catch (ClassCastException e) {
+            // throw a 'nicer' exception if the class does not implement Comparable
+        }
+        catch (ClassCastException e) {
             final IllegalStateException illegalStateException;
-            if(comparator == GlazedLists.comparableComparator()) {
+            if (comparator == GlazedLists.comparableComparator()) {
                 illegalStateException = new IllegalStateException("TableComparatorChooser can not sort objects \"" + alphaField + "\", \"" + betaField + "\" that do not implement Comparable.");
-            } else {
+            }
+            else {
                 illegalStateException = new IllegalStateException("TableComparatorChooser can not sort objects \"" + alphaField + "\", \"" + betaField + "\" using the provided Comparator.");
             }
             illegalStateException.initCause(e);
@@ -68,16 +76,18 @@ public class TableColumnComparator<E> implements Comparator<E> {
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         final TableColumnComparator that = (TableColumnComparator) o;
 
-        if (column != that.column) return false;
-        if (!comparator.equals(that.comparator)) return false;
-        if (!tableFormat.equals(that.tableFormat)) return false;
-
-        return true;
+        if (column != that.column)
+            return false;
+        if (!comparator.equals(that.comparator))
+            return false;
+        return tableFormat.equals(that.tableFormat);
     }
 
     @Override

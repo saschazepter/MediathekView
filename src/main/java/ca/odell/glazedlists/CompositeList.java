@@ -41,7 +41,7 @@ import java.util.Iterator;
 public class CompositeList<E> extends CollectionList<EventList<E>, E> {
 
     public CompositeList() {
-        super(new BasicEventList<EventList<E>>(), (Model)GlazedLists.listCollectionListModel());
+        super(new BasicEventList<>(), (Model)GlazedLists.listCollectionListModel());
     }
 
     /**
@@ -59,7 +59,7 @@ public class CompositeList<E> extends CollectionList<EventList<E>, E> {
      */
     @Deprecated
     public CompositeList(ReadWriteLock lock) {
-        super(new BasicEventList<EventList<E>>(lock), (Model)GlazedLists.listCollectionListModel());
+        super(new BasicEventList<>(lock), (Model)GlazedLists.listCollectionListModel());
     }
 
     /**
@@ -75,7 +75,7 @@ public class CompositeList<E> extends CollectionList<EventList<E>, E> {
      * @param lock the {@link ReadWriteLock} to use within the {@link CompositeList}
      */
     public CompositeList(ListEventPublisher publisher, ReadWriteLock lock) {
-        super(new BasicEventList<EventList<E>>(publisher, lock), (Model)GlazedLists.listCollectionListModel());
+        super(new BasicEventList<>(publisher, lock), (Model)GlazedLists.listCollectionListModel());
     }
 
     /**

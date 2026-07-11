@@ -47,7 +47,7 @@ import java.util.function.BiConsumer;
 public class FunctionListMap<K, V> implements DisposableMap<K, V> {
 
     /** The keys of this Map (used to remove entries from the {@link #delegate}) */
-    private List<K> keyList;
+    private final List<K> keyList;
 
     /** The keyList of this Map made to look like a Set (it is build lazily in {@link #keySet()}) */
     private KeySet keySet;
@@ -64,7 +64,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
     /** The delegate Map which is kept in synch with changes. */
     private final Map<K, V> delegate;
 
-    private ListEventListener<V> eventListener;
+    private final ListEventListener<V> eventListener;
 
 
     /**

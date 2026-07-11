@@ -1159,7 +1159,7 @@ public class ListSelection<E> implements ListEventListener<E> {
          * @param changeStart The first zero-relative index affected by a change in selection.
          * @param changeEnd   The last zero-relative index affected by a change in selection.
          */
-        public void selectionChanged(int changeStart, int changeEnd);
+        void selectionChanged(int changeStart, int changeEnd);
 
     }
 

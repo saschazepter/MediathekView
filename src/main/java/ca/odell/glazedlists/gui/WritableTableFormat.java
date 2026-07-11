@@ -30,7 +30,7 @@ public interface WritableTableFormat<E> extends TableFormat<E> {
      * @return true if the object and column are editable, false otherwise.
      * @since 2004-August-27, as a replacement for isColumnEditable(int).
      */
-    public boolean isEditable(E baseObject, int column);
+    boolean isEditable(E baseObject, int column);
 
     /**
      * Sets the specified field of the base object to the edited value. When
@@ -45,5 +45,5 @@ public interface WritableTableFormat<E> extends TableFormat<E> {
      *      If not null, the DefaultEventTableModel will set() this revised value in
      *      the list and overwrite the previous value.
      */
-    public E setColumnValue(E baseObject, Object editedValue, int column);
+    E setColumnValue(E baseObject, Object editedValue, int column);
 }

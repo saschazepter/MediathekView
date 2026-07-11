@@ -18,50 +18,60 @@ import java.util.*;
  */
 public class TextMatcher<E> implements Matcher<E> {
 
-    /** the filterator is used as an alternative to implementing the TextFilterable interface */
+    /**
+     * the filterator is used as an alternative to implementing the TextFilterable interface
+     */
     private final TextFilterator<? super E> filterator;
 
-    /** one of {@link TextMatcherEditor#CONTAINS}, {@link TextMatcherEditor#STARTS_WITH} or {@link TextMatcherEditor#REGULAR_EXPRESSION} */
+    /**
+     * one of {@link TextMatcherEditor#CONTAINS}, {@link TextMatcherEditor#STARTS_WITH} or {@link TextMatcherEditor#REGULAR_EXPRESSION}
+     */
     private final int mode;
 
-    /** one of {@link TextMatcherEditor#IDENTICAL_STRATEGY}, {@link TextMatcherEditor#NORMALIZED_STRATEGY} or {@link ca.odell.glazedlists.matchers.GlazedListsICU4J#UNICODE_TEXT_SEARCH_STRATEGY} */
+    /**
+     * one of the built-in text-matching strategies or a custom strategy
+     */
     private final Object strategy;
 
-    /** the search terms being matched */
+    /**
+     * the search terms being matched
+     */
     private final SearchTerm[] searchTerms;
 
-    /** a parallel array to locate filter substrings in arbitrary text */
+    /**
+     * a parallel array to locate filter substrings in arbitrary text
+     */
     private final TextSearchStrategy[] filterStrategies;
 
-    /** a heavily recycled list of filter Strings, call clear() before use */
+    /**
+     * a heavily recycled list of filter Strings, call clear() before use
+     */
     private final List<String> filterStrings = new ArrayList<>();
 
     /**
      * @param searchTerms an array of search terms to be matched
-     * @param filterator the object that will extract filter Strings from each
-     *      object to be matched; <code>null</code> indicates the objects
-     *      implement {@link TextFilterable}
-     * @param mode one of {@link TextMatcherEditor#CONTAINS},
-     *      {@link TextMatcherEditor#STARTS_WITH} or {@link TextMatcherEditor#REGULAR_EXPRESSION}
-     *      which indicates where to locate the search terms for a successful match
-     * @param strategy one of {@link TextMatcherEditor#IDENTICAL_STRATEGY},
-     *      {@link TextMatcherEditor#NORMALIZED_STRATEGY} or
-     *      {@link ca.odell.glazedlists.matchers.GlazedListsICU4J#UNICODE_TEXT_SEARCH_STRATEGY}
-     *      which indicates what kind of algorithm to use when determining a match
+     * @param filterator  the object that will extract filter Strings from each
+     *                    object to be matched; <code>null</code> indicates the objects
+     *                    implement {@link TextFilterable}
+     * @param mode        one of {@link TextMatcherEditor#CONTAINS},
+     *                    {@link TextMatcherEditor#STARTS_WITH} or {@link TextMatcherEditor#REGULAR_EXPRESSION}
+     *                    which indicates where to locate the search terms for a successful match
+     * @param strategy    one of the built-in text-matching strategies or a custom strategy
+     *                    which indicates what kind of algorithm to use when determining a match
      */
     public TextMatcher(SearchTerm[] searchTerms, TextFilterator<? super E> filterator, int mode, Object strategy) {
         if (mode == TextMatcherEditor.REGULAR_EXPRESSION && strategy == TextMatcherEditor.NORMALIZED_STRATEGY)
             throw new IllegalArgumentException("TextMatcher does not support normalized character matching with Regular Expressions");
 
         this.filterator = filterator;
-        this.searchTerms = TextMatchers.normalizeSearchTerms(searchTerms, (TextSearchStrategy.Factory)strategy);
+        this.searchTerms = TextMatchers.normalizeSearchTerms(searchTerms, (TextSearchStrategy.Factory) strategy);
         this.mode = mode;
         this.strategy = strategy;
 
         // build the parallel list of TextSearchStrategies for the new searchTerms
         filterStrategies = new TextSearchStrategy[this.searchTerms.length];
-        for(int i = 0; i < this.searchTerms.length; i++) {
-            filterStrategies[i] = selectTextSearchStrategy(this.searchTerms[i], mode, (TextSearchStrategy.Factory)strategy);
+        for (int i = 0; i < this.searchTerms.length; i++) {
+            filterStrategies[i] = selectTextSearchStrategy(this.searchTerms[i], mode, (TextSearchStrategy.Factory) strategy);
         }
     }
 
@@ -70,7 +80,7 @@ public class TextMatcher<E> implements Matcher<E> {
      * terms for a successful match.
      *
      * @return one of {@link TextMatcherEditor#CONTAINS}, {@link TextMatcherEditor#STARTS_WITH}
-     *      or {@link TextMatcherEditor#REGULAR_EXPRESSION}
+     * or {@link TextMatcherEditor#REGULAR_EXPRESSION}
      */
     public int getMode() {
         return mode;
@@ -79,8 +89,7 @@ public class TextMatcher<E> implements Matcher<E> {
     /**
      * Returns the strategy which indicates what kind of algorithm to use when determining a match.
      *
-     * @return one of {@link TextMatcherEditor#IDENTICAL_STRATEGY}, {@link TextMatcherEditor#NORMALIZED_STRATEGY} or
-     *      {@link ca.odell.glazedlists.matchers.GlazedListsICU4J#UNICODE_TEXT_SEARCH_STRATEGY}
+     * @return one of the built-in text-matching strategies or a custom strategy
      */
     public Object getStrategy() {
         return strategy;
@@ -105,7 +114,9 @@ public class TextMatcher<E> implements Matcher<E> {
         return strings;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean matches(E element) {
         return TextMatchers.matches(filterStrings, filterator, searchTerms, filterStrategies, element);
@@ -139,15 +150,13 @@ public class TextMatcher<E> implements Matcher<E> {
      * This local factory method allows fine grained control over the choice of
      * text search strategies for a given <code>filter</code>.
      *
-     * @param filter the filter for which to locate a TextSearchStrategy
-     * @param mode the type of search behaviour to use; either
-     *      {@link TextMatcherEditor#CONTAINS}, {@link TextMatcherEditor#STARTS_WITH}
-     *      or {@link TextMatcherEditor#REGULAR_EXPRESSION}
-     * @param strategy a hint about the character matching strategy to use; either
-     *      {@link TextMatcherEditor#IDENTICAL_STRATEGY}, {@link TextMatcherEditor#NORMALIZED_STRATEGY}
-     *      or {@link ca.odell.glazedlists.matchers.GlazedListsICU4J#UNICODE_TEXT_SEARCH_STRATEGY}
+     * @param filter   the filter for which to locate a TextSearchStrategy
+     * @param mode     the type of search behaviour to use; either
+     *                 {@link TextMatcherEditor#CONTAINS}, {@link TextMatcherEditor#STARTS_WITH}
+     *                 or {@link TextMatcherEditor#REGULAR_EXPRESSION}
+     * @param strategy the character matching strategy to use
      * @return a TextSearchStrategy capable of locating the given
-     *      <code>filter</code> within arbitrary text
+     * <code>filter</code> within arbitrary text
      */
     private static TextSearchStrategy selectTextSearchStrategy(SearchTerm filter, int mode, TextSearchStrategy.Factory strategy) {
         final TextSearchStrategy result = strategy.create(mode, filter.getText());
@@ -161,22 +170,26 @@ public class TextMatcher<E> implements Matcher<E> {
      */
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         TextMatcher that = (TextMatcher) o;
 
         Set<SearchTerm> thisSearchTerms = new HashSet<>(Arrays.asList(searchTerms));
         Set<SearchTerm> thatSearchTerms = new HashSet<>(Arrays.asList(that.searchTerms));
 
-        if (mode != that.mode) return false;
-        if (!thisSearchTerms.equals(thatSearchTerms)) return false;
-        if (!strategy.equals(that.strategy)) return false;
-
-        return true;
+        if (mode != that.mode)
+            return false;
+        if (!thisSearchTerms.equals(thatSearchTerms))
+            return false;
+        return strategy.equals(that.strategy);
     }
 
-    /** @inheritDoc */
+    /**
+     * @inheritDoc
+     */
     @Override
     public int hashCode() {
         int result;

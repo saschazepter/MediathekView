@@ -15,19 +15,19 @@ import java.util.NoSuchElementException;
 public class BarcodeIterator implements Iterator {
 
     /** keep a reference for removes in the trailing whitespace */
-    private Barcode barcode = null;
+    private Barcode barcode;
 
     /** the current node being inspected */
-    private BarcodeNode currentNode = null;
+    private BarcodeNode currentNode;
 
     /** the number of requests on the current node */
     private int localIndex = -1;
 
     /** the number of black elements before this node */
-    private int blackSoFar = 0;
+    private int blackSoFar;
 
     /** the number of white elements before this node */
-    private int whiteSoFar = 0;
+    private int whiteSoFar;
 
     /**
      * Creates a new Iterator for the given Barcode.

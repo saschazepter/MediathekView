@@ -21,8 +21,8 @@ public interface DisposableMap<K, V> extends Map<K, V> {
      * may eventually be garbage collected.
      *
      * <p>A {@link DisposableMap} will be garbage collected without a call to
-     * {@link #dispose()}, but not before its source {@link EventList} is garbage
-     * collected. By calling {@link #dispose()}, you allow the {@link DisposableMap}
+     * {@code dispose()}, but not before its source {@link EventList} is garbage
+     * collected. By calling {@code dispose()}, you allow the {@link DisposableMap}
      * to be garbage collected before its source {@link EventList}. This is
      * necessary for situations where a {@link DisposableMap} is short-lived but
      * its source {@link EventList} is long-lived.
@@ -30,5 +30,5 @@ public interface DisposableMap<K, V> extends Map<K, V> {
      * <p><strong><font color="#FF0000">Warning:</font></strong> It is an error
      * to call any method on a {@link DisposableMap} after it has been disposed.
      */
-    public void dispose();
+    void dispose();
 }

@@ -51,7 +51,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
     /*[ COLORED_END ]*/
 
     /** the tree's root, or <code>null</code> for an empty tree */
-    private /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ root = null;
+    private /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ root;
 
     /**
      * a list to add all nodes to that must be removed from
@@ -59,7 +59,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
      * which allows us a chance to do rotations without losing our position
      * in the tree.
      */
-    private final List</*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/> zeroQueue = new ArrayList</*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/>();
+    private final List</*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/> zeroQueue = new ArrayList<>();
 
     /**
      * The comparator to use when performing ordering operations on the tree.
@@ -368,7 +368,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
      * to the root. The counts of the specified color are adjusted by delta
      * (which may be positive or negative).
      */
-    private final void fixCountsThruRoot(/*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ node, /*[ COLORED_START ]*/ byte color, /*[ COLORED_END ]*/ int delta) {
+    private void fixCountsThruRoot(/*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ node, /*[ COLORED_START ]*/ byte color, /*[ COLORED_END ]*/ int delta) {
         /*[ GENERATED_CODE_START
         forloop(`i', 0, VAR_LAST_COLOR_INDEX, `m4_ifelse(VAR_COLOUR_COUNT,`1',`for( ; node != null; node = node.parent) node.'counti(i)` += delta;
         ', `if(color == 'indexToBit(i)`) {
@@ -418,7 +418,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
      *      the opposite side of the tree, whereas on an insert we only delete
      *      as far as necessary.
      */
-    private final void fixHeightPostChange(/*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ node, boolean allTheWayToRoot) {
+    private void fixHeightPostChange(/*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ node, boolean allTheWayToRoot) {
 
         // update the height
         for(; node != null; node = node.parent) {
@@ -471,7 +471,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
      *
      * @return the new root of the subtree
      */
-    private final /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ rotateLeft(/*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ subtreeRoot) {
+    private /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ rotateLeft(/*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ subtreeRoot) {
         assert(subtreeRoot.left != null);
         // subtreeRoot is D
         // newSubtreeRoot is B
@@ -508,7 +508,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
 
         return newSubtreeRoot;
     }
-    private final /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ rotateRight(/*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ subtreeRoot) {
+    private /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ rotateRight(/*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ subtreeRoot) {
         assert(subtreeRoot.right != null);
         // subtreeRoot is D
         // newSubtreeRoot is B

@@ -35,5 +35,5 @@ public interface SortingStrategy {
      * @param shift <tt>true</tt> if the shift key was down at the time of the click
      * @param control <tt>true</tt> if the control key was down at the time of the click
      */
-    public void columnClicked(SortingState sortingState, int column, int clicks, boolean shift, boolean control);
+    void columnClicked(SortingState sortingState, int column, int clicks, boolean shift, boolean control);
 }

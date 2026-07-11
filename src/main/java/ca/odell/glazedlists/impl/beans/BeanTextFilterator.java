@@ -17,10 +17,10 @@ import java.util.List;
 public class BeanTextFilterator<D,E> implements TextFilterator<E>, Filterator<D,E> {
 
     /** Java Beans property names */
-    private String[] propertyNames;
+    private final String[] propertyNames;
 
     /** methods for extracting field values */
-    private BeanProperty[] beanProperties = null;
+    private BeanProperty[] beanProperties;
 
     /**
      * Create a BeanTextFilterator that uses the specified property names.

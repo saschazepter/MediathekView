@@ -55,7 +55,7 @@ public class StartsWithCaseInsensitiveTextSearchStrategy extends AbstractTextSea
      */
     @FunctionalInterface
     private interface IndexOfStrategy {
-        public int indexOf(String text);
+        int indexOf(String text);
     }
 
     /**
@@ -93,8 +93,8 @@ public class StartsWithCaseInsensitiveTextSearchStrategy extends AbstractTextSea
         private final int subtextLength;
 
         /** The array of characters comprising the subtext. */
-        private char[] subtextCharsUpper;
-        private char[] subtextCharsLower;
+        private final char[] subtextCharsUpper;
+        private final char[] subtextCharsLower;
 
         public MultiCharacterIndexOfStrategy(String prefix) {
             // record the length of the prefix

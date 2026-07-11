@@ -19,8 +19,8 @@ public class CircularArrayList<T> extends AbstractList<T> {
   // size = 5
   // arrayLength = 8
 
-  int head = 0;
-  int size = 0;
+  int head;
+  int size;
   Object[] values = new Object[10];
 
   int arrayLength = values.length;

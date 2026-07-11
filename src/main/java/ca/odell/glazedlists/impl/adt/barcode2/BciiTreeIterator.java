@@ -34,7 +34,7 @@ public class BciiTreeIterator/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/
     int count4;
     /*[ EXAMPLE_END ]*/
 
-    private BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ tree;
+    private final BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ tree;
     private BciiNode/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ node;
     private int index;
 

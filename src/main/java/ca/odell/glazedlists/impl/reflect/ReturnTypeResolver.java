@@ -41,7 +41,7 @@ public interface ReturnTypeResolver {
      * @return the most precise Class type that is known to be returned by the
      *      given <code>method</code>
      */
-    public Class<?> getReturnType(Class<?> clazz, Method method);
+    Class<?> getReturnType(Class<?> clazz, Method method);
 
     /**
      * Locates and returns the most precise type of the first parameter for the
@@ -57,5 +57,5 @@ public interface ReturnTypeResolver {
      *      the given <code>method</code>
      * @throws IndexOutOfBoundsException if the given method has no parameters.
      */
-    public Class<?> getFirstParameterType(Class<?> clazz, Method method);
+    Class<?> getFirstParameterType(Class<?> clazz, Method method);
 }

@@ -9,7 +9,7 @@ package ca.odell.glazedlists.impl.adt;
  */
 public class IntArrayList {
     private int[] data;
-    private int size = 0;
+    private int size;
 
 
     /**

@@ -4,6 +4,7 @@
 package ca.odell.glazedlists.impl.sort;
 
 // for specifying a sorting algorithm
+
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -16,7 +17,9 @@ import java.util.List;
  */
 public final class ComparatorChain<T> implements Comparator<T> {
 
-    /** the comparators to execute in sequence */
+    /**
+     * the comparators to execute in sequence
+     */
     private final Comparator<T>[] comparators;
 
     /**
@@ -36,7 +39,8 @@ public final class ComparatorChain<T> implements Comparator<T> {
     public int compare(T alpha, T beta) {
         for (int i = 0; i < comparators.length; i++) {
             int compareResult = comparators[i].compare(alpha, beta);
-            if(compareResult != 0) return compareResult;
+            if (compareResult != 0)
+                return compareResult;
         }
         return 0;
     }
@@ -49,20 +53,24 @@ public final class ComparatorChain<T> implements Comparator<T> {
         return comparators;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
-        if(this == o) return true;
-        if(o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         final ComparatorChain that = (ComparatorChain) o;
 
-        if(!Arrays.equals(comparators, that.comparators)) return false;
-
-        return true;
+        return Arrays.equals(comparators, that.comparators);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return 0;

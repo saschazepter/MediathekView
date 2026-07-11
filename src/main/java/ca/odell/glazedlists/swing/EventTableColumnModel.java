@@ -213,7 +213,7 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
         try {
             for (int i = 0, n = swingThreadSource.size(); i < n; i++) {
                 TableColumn column = swingThreadSource.get(i);
-                x = x - column.getWidth();
+                x -= column.getWidth();
                 if (x < 0)
                     return i;
             }
@@ -408,8 +408,8 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
      * may eventually be garbage collected.
      *
      * <p>An {@link EventTableColumnModel} will be garbage collected without a
-     * call to {@link #dispose()}, but not before its source {@link EventList}
-     * is garbage collected. By calling {@link #dispose()}, you allow the
+     * call to {@code dispose()}, but not before its source {@link EventList}
+     * is garbage collected. By calling {@code dispose()}, you allow the
      * {@link EventTableColumnModel} to be garbage collected before its source
      * {@link EventList}. This is necessary for situations where an
      * {@link EventTableColumnModel} is short-lived but its source

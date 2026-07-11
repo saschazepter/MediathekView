@@ -15,12 +15,12 @@ public interface TableFormat<E> {
     /**
      * The number of columns to display.
      */
-    public int getColumnCount();
+    int getColumnCount();
 
     /**
      * Gets the title of the specified column.
      */
-    public String getColumnName(int column);
+    String getColumnName(int column);
 
     /**
      * Gets the value of the specified field for the specified object. This
@@ -28,5 +28,5 @@ public interface TableFormat<E> {
      * column. If you have defined a custom renderer, you may choose to return
      * simply the baseObject.
      */
-    public Object getColumnValue(E baseObject, int column);
+    Object getColumnValue(E baseObject, int column);
 }

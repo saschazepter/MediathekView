@@ -57,11 +57,10 @@ import java.util.Comparator;
  * {@link AdvancedTableFormat#getColumnComparator} method will be used to
  * populate the initial column {@link Comparator}s.
  *
+ * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  * @see <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=4">Bug 4</a>
  * @see <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=31">Bug 31</a>
  * @see <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=391">Bug 391</a>
- *
- * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
 public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E> {
 
@@ -71,22 +70,34 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
      */
     private SortArrowHeaderRenderer sortArrowHeaderRenderer;
 
-    /** listen for UI delegate changes to the table header */
+    /**
+     * listen for UI delegate changes to the table header
+     */
     private final TableHeaderUIHandler tableHeaderUIHandler = new TableHeaderUIHandler();
 
-    /** listen for table and property change events */
+    /**
+     * listen for table and property change events
+     */
     private final TableModelHandler tableModelHandler = new TableModelHandler();
 
-    /** the table being sorted */
+    /**
+     * the table being sorted
+     */
     private JTable table;
 
-    /** listeners to sort change events */
+    /**
+     * listeners to sort change events
+     */
     private ActionListener sortListener;
 
-    /** the sort icons to use */
+    /**
+     * the sort icons to use
+     */
     private static Icon[] icons = SortIconFactory.loadIcons();
 
-    /** when somebody clicks on the header, update the sorting state */
+    /**
+     * when somebody clicks on the header, update the sorting state
+     */
     private final HeaderClickHandler headerClickHandler;
 
     /**
@@ -110,20 +121,20 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
      */
     @Deprecated
     public TableComparatorChooser(JTable table, SortedList<E> sortedList, Object strategy) {
-        this(table, sortedList,strategy,((AdvancedTableModel<E>)table.getModel()).getTableFormat());
+        this(table, sortedList, strategy, ((AdvancedTableModel<E>) table.getModel()).getTableFormat());
     }
 
     /**
      * Creates and installs a TableComparatorChooser.
      *
-     * @param table the table with headers that can be clicked on
-     * @param sortedList the sorted list to update
-     * @param strategy an implementations of {@link ca.odell.glazedlists.impl.gui.SortingStrategy}, typically one of
-     *      <ul>
-     *          <li> {@link ca.odell.glazedlists.gui.AbstractTableComparatorChooser#SINGLE_COLUMN}
-     *          <li> {@link ca.odell.glazedlists.gui.AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE}
-     *          <li> {@link ca.odell.glazedlists.gui.AbstractTableComparatorChooser#MULTIPLE_COLUMN_KEYBOARD}
-     *          <li> {@link ca.odell.glazedlists.gui.AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE_WITH_UNDO}
+     * @param table       the table with headers that can be clicked on
+     * @param sortedList  the sorted list to update
+     * @param strategy    an implementations of {@link ca.odell.glazedlists.impl.gui.SortingStrategy}, typically one of
+     *                    <ul>
+     *                        <li> {@link ca.odell.glazedlists.gui.AbstractTableComparatorChooser#SINGLE_COLUMN}
+     *                        <li> {@link ca.odell.glazedlists.gui.AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE}
+     *                        <li> {@link ca.odell.glazedlists.gui.AbstractTableComparatorChooser#MULTIPLE_COLUMN_KEYBOARD}
+     *                        <li> {@link ca.odell.glazedlists.gui.AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE_WITH_UNDO}
      * @param tableFormat the TableFormat providing the columns for the table
      */
     protected TableComparatorChooser(JTable table, SortedList<E> sortedList, Object strategy, TableFormat<? super E> tableFormat) {
@@ -142,7 +153,7 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
         table.getModel().addTableModelListener(tableModelHandler);
 
         // install the sorting strategy to interpret clicks
-        headerClickHandler = new HeaderClickHandler(table, (SortingStrategy)strategy);
+        headerClickHandler = new HeaderClickHandler(table, (SortingStrategy) strategy);
     }
 
     /**
@@ -178,20 +189,20 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
      * SortArrowHeaderRenderer, which takes care of rendering the sort icons.
      * Please see the docu of {@link #createSortArrowHeaderRenderer(TableCellRenderer)} for details how this works.
      *
-     * @param table the table with headers that can be clicked on
+     * @param table      the table with headers that can be clicked on
      * @param sortedList the sorted list to update
-     * @param strategy an implementations of {@link SortingStrategy}, typically one of
-     *      <ul>
-     *          <li> {@link AbstractTableComparatorChooser#SINGLE_COLUMN}
-     *          <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE}
-     *          <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_KEYBOARD}
-     *          <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE_WITH_UNDO}
-     *      </ul>
+     * @param strategy   an implementations of {@link SortingStrategy}, typically one of
+     *                   <ul>
+     *                       <li> {@link AbstractTableComparatorChooser#SINGLE_COLUMN}
+     *                       <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE}
+     *                       <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_KEYBOARD}
+     *                       <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE_WITH_UNDO}
+     *                   </ul>
      * @return TableComparatorChooser object that is responsible for translating
-     *      mouse clicks on the table header into sorting actions on the sortedList.
+     * mouse clicks on the table header into sorting actions on the sortedList.
      */
     public static <E> TableComparatorChooser<E> install(JTable table, SortedList<E> sortedList, Object strategy) {
-        return install(table, sortedList, strategy, ((AdvancedTableModel<E>)table.getModel()).getTableFormat());
+        return install(table, sortedList, strategy, ((AdvancedTableModel<E>) table.getModel()).getTableFormat());
     }
 
     /**
@@ -210,18 +221,18 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
      * SortArrowHeaderRenderer, which takes care of rendering the sort icons.
      * Please see the docu of {@link #createSortArrowHeaderRenderer(TableCellRenderer)} for details how this works.
      *
-     * @param table the table with headers that can be clicked on
+     * @param table       the table with headers that can be clicked on
      * @param tableFormat the TableFormat providing the columns for the table
-     * @param sortedList the sorted list to update
-     * @param strategy an implementations of {@link SortingStrategy}, typically one of
-     *      <ul>
-     *          <li> {@link AbstractTableComparatorChooser#SINGLE_COLUMN}
-     *          <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE}
-     *          <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_KEYBOARD}
-     *          <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE_WITH_UNDO}
-     *      </ul>
+     * @param sortedList  the sorted list to update
+     * @param strategy    an implementations of {@link SortingStrategy}, typically one of
+     *                    <ul>
+     *                        <li> {@link AbstractTableComparatorChooser#SINGLE_COLUMN}
+     *                        <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE}
+     *                        <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_KEYBOARD}
+     *                        <li> {@link AbstractTableComparatorChooser#MULTIPLE_COLUMN_MOUSE_WITH_UNDO}
+     *                    </ul>
      * @return TableComparatorChooser object that is responsible for translating
-     *      mouse clicks on the table header into sorting actions on the sortedList.
+     * mouse clicks on the table header into sorting actions on the sortedList.
      */
     public static <E> TableComparatorChooser<E> install(JTable table, SortedList<E> sortedList, Object strategy, TableFormat<? super E> tableFormat) {
         return new TableComparatorChooser<>(table, sortedList, strategy, tableFormat);
@@ -234,7 +245,7 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
      * implements the {@link SortingStrategy} interface.
      *
      * @throws IllegalArgumentException if <code>strategy</code> is not an
-     *      accepted value
+     *                                  accepted value
      */
     private static void validateSortingStrategy(Object strategy) {
         if (!(strategy instanceof SortingStrategy))
@@ -248,6 +259,7 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
     public void addSortActionListener(ActionListener sortActionListener) {
         sortListener = AWTEventMulticaster.add(sortListener, sortActionListener);
     }
+
     /**
      * Deregisters the specified {@link ActionListener} to no longer receive
      * action events.
@@ -276,14 +288,14 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
      *       {@link javax.swing.table.DefaultTableCellRenderer} is used as the
      *       delegateRenderer.
      * </ul>
-     *
+     * <p>
      * If neither of these scenarios are true of the given delegateRenderer
      * then no sort indicator arrows will be added to the renderer's component.
      *
      * @param delegateRenderer the TableCellRenderer acting as a table header
-     *      renderer and to which a sort icon should be added
+     *                         renderer and to which a sort icon should be added
      * @return a TableCellRenderer that attempts to decorate the given
-     *      <code>delegateRenderer</code> with a sort icon
+     * <code>delegateRenderer</code> with a sort icon
      */
     public TableCellRenderer createSortArrowHeaderRenderer(TableCellRenderer delegateRenderer) {
         return new SortArrowHeaderRenderer(delegateRenderer);
@@ -317,7 +329,8 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
         table.getTableHeader().repaint();
 
         // notify interested listeners that the sorting has changed
-        if(sortListener != null) sortListener.actionPerformed(new ActionEvent(this, 0, "sort"));
+        if (sortListener != null)
+            sortListener.actionPerformed(new ActionEvent(this, 0, "sort"));
     }
 
     /**
@@ -344,10 +357,7 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
      */
     protected boolean isSortingMouseEvent(MouseEvent e) {
         // skip the sort if it's not button 1
-        if(e.getButton() != MouseEvent.BUTTON1) return false;
-
-        // we have no reason to dislike this mouse event!
-        return true;
+        return e.getButton() == MouseEvent.BUTTON1;
     }
 
     /**
@@ -370,8 +380,8 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
      * may eventually be garbage collected.
      *
      * <p>A {@link TableComparatorChooser} will be garbage collected without a call to
-     * {@link #dispose()}, but not before its source {@link EventList} is garbage
-     * collected. By calling {@link #dispose()}, you allow the {@link TableComparatorChooser}
+     * {@code dispose()}, but not before its source {@link EventList} is garbage
+     * collected. By calling {@code dispose()}, you allow the {@link TableComparatorChooser}
      * to be garbage collected before its source {@link EventList}. This is
      * necessary for situations where an {@link TableComparatorChooser} is short-lived but
      * its source {@link EventList} is long-lived.
@@ -431,7 +441,8 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
             final AdvancedTableModel<E> newModel = evt.getNewValue() instanceof AdvancedTableModel ? (AdvancedTableModel<E>) evt.getNewValue() : null;
 
             // stop listening for TableModelEvents in the oldModel and start for the newModel, if possible
-            if (oldModel != null) oldModel.removeTableModelListener(this);
+            if (oldModel != null)
+                oldModel.removeTableModelListener(this);
             if (newModel != null) {
                 newModel.addTableModelListener(this);
 
@@ -447,7 +458,7 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
          */
         @Override
         public void tableChanged(TableModelEvent event) {
-            if(event.getFirstRow() == TableModelEvent.HEADER_ROW && event.getColumn() == TableModelEvent.ALL_COLUMNS) {
+            if (event.getFirstRow() == TableModelEvent.HEADER_ROW && event.getColumn() == TableModelEvent.ALL_COLUMNS) {
                 if (table.getModel() instanceof AdvancedTableModel) {
                     // the table structure may have changed due to a change in the table format
                     // so we conservatively reset the TableFormat on this TableComparatorChooser
@@ -457,7 +468,7 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
 
             // if the comparator has changed
             final Comparator<? super E> currentComparator = sortedList.getComparator();
-            if(currentComparator != sortedListComparator) {
+            if (currentComparator != sortedListComparator) {
                 redetectComparator(currentComparator);
             }
         }
@@ -482,7 +493,9 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
      */
     class SortArrowHeaderRenderer implements TableCellRenderer, UIResource {
 
-        /** the renderer to which we delegate */
+        /**
+         * the renderer to which we delegate
+         */
         private TableCellRenderer delegateRenderer;
 
         /**
@@ -519,8 +532,9 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
                 ((SortableRenderer) delegateRenderer).setSortIcon(sortIcon);
                 rendered = getDelegateTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            // 2. Otherwise check whether the rendered component is a JLabel (this is the case of the default header renderer)
-            } else {
+                // 2. Otherwise check whether the rendered component is a JLabel (this is the case of the default header renderer)
+            }
+            else {
                 rendered = getDelegateTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
                 // we check for a JLabel rather than a DefaultTableCellRenderer to support WinLAF,
@@ -542,14 +556,15 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
          * requests the Component from it. This exists because our decorating
          * approach is the victim of a SUN bug in WindowsTableHeaderUI:
          * http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6429812
-         *
+         * <p>
          * See also more information reported by Eric Burke here:
          * http://stuffthathappens.com/blog/2007/10/02/rich-client-developers-avoid-java-6/
          */
         private Component getDelegateTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             try {
                 return delegateRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-            } catch (RuntimeException e) {
+            }
+            catch (RuntimeException e) {
                 delegateRenderer = new DefaultTableCellRenderer();
                 return delegateRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             }
@@ -562,7 +577,7 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
     private class HeaderClickHandler extends MouseAdapter {
         private final JTable table;
         private final SortingStrategy delegate;
-        private boolean mouseEventIsPerformingPopupTrigger = false;
+        private boolean mouseEventIsPerformingPopupTrigger;
 
         public HeaderClickHandler(JTable table, SortingStrategy delegate) {
             this.table = table;
@@ -573,14 +588,16 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
         @Override
         public void mouseClicked(MouseEvent e) {
             // if the MouseEvent is popping up a context menu, do not sort
-            if (mouseEventIsPerformingPopupTrigger) return;
+            if (mouseEventIsPerformingPopupTrigger)
+                return;
 
             // if the cursor indicates we're resizing columns, do not sort
             if (table.getTableHeader().getCursor() == Cursor.getPredefinedCursor(Cursor.E_RESIZE_CURSOR))
                 return;
 
             // check if there is any other reason to ignore this MouseEvent
-            if (!isSortingMouseEvent(e)) return;
+            if (!isSortingMouseEvent(e))
+                return;
 
             final TableColumnModel columnModel = table.getColumnModel();
             final int viewColumn = columnModel.getColumnIndexAtX(e.getX());

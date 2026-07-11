@@ -20,7 +20,7 @@ public class ScreenGeometry {
     final boolean aqua;
 
     public ScreenGeometry(JComponent component) {
-        this.aqua = UIManager.getLookAndFeel().getName().indexOf("Aqua") != -1;
+        this.aqua = UIManager.getLookAndFeel().getName().contains("Aqua");
         this.graphicsConfiguration = graphicsConfigurationForComponent(component);
     }
 

@@ -19,7 +19,7 @@ import javax.swing.*;
 public class UpperThresholdRangeModel extends DefaultBoundedRangeModel implements BoundedRangeModel {
 
     /** the list to connect a slider widget to */
-    private ThresholdList target = null;
+    private ThresholdList target;
 
     /**
      * Creates a new range that controls specified ThresholdList.

@@ -158,9 +158,9 @@ public final class GlazedLists {
     // Comparators // // // // // // // // // // // // // // // // // // // //
 
     /** Provide Singleton access for all Comparators with no internal state */
-    private static Comparator<Boolean> booleanComparator = null;
-    private static Comparator<Comparable> comparableComparator = null;
-    private static Comparator<Comparable> reversedComparable = null;
+    private static Comparator<Boolean> booleanComparator;
+    private static Comparator<Comparable> comparableComparator;
+    private static Comparator<Comparable> reversedComparable;
 
     /**
      * Creates a {@link Comparator} that uses Reflection to compare two
@@ -332,7 +332,7 @@ public final class GlazedLists {
 
     // TextFilterators // // // // // // // // // // // // // // // // // // //
 
-    private static TextFilterator<Object> stringTextFilterator = null;
+    private static TextFilterator<Object> stringTextFilterator;
 
     /**
      * Creates a {@link TextFilterator} that searches the given JavaBean
@@ -411,7 +411,7 @@ public final class GlazedLists {
      */
     @SafeVarargs
     public static <E> EventList<E> eventListOf(E... contents) {
-        return eventList(contents == null ? Collections.<E>emptyList() : Arrays.asList(contents));
+        return eventList(contents == null ? Collections.emptyList() : Arrays.asList(contents));
     }
 
     /**
@@ -442,7 +442,7 @@ public final class GlazedLists {
     @SafeVarargs
     public static <E> EventList<E> eventListOf(ListEventPublisher publisher, ReadWriteLock lock,
             E... contents) {
-        return eventList(publisher, lock, contents == null ? Collections.<E>emptyList() : Arrays
+        return eventList(publisher, lock, contents == null ? Collections.emptyList() : Arrays
                 .asList(contents));
     }
 
@@ -837,7 +837,7 @@ public final class GlazedLists {
      *         the given <code>source</code>. To stop the type safety checking,
      *         use {@link EventList#removeListEventListener(ListEventListener)}.
      */
-    public static <E> ListEventListener<E> typeSafetyListener(EventList<E> source, Set<Class> types) {
+    public static <E> ListEventListener<E> typeSafetyListener(EventList<E> source, Set<Class<?>> types) {
         return new TypeSafetyListener<>(source, types);
     }
 

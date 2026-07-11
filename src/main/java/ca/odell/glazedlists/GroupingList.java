@@ -47,7 +47,7 @@ import java.util.List;
 public final class GroupingList<E> extends TransformedList<E, List<E>> {
 
     /** The GroupLists defined by the comparator. They are stored in an SimpleTree so their indices can be quickly updated. */
-    private SimpleTree<GroupList> groupLists = new SimpleTree<>();
+    private final SimpleTree<GroupList> groupLists = new SimpleTree<>();
 
     /** The Grouper manages creating and deleting groups. */
     private final Grouper<E> grouper;

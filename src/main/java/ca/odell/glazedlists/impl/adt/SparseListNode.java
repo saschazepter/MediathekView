@@ -23,21 +23,21 @@ public final class SparseListNode {
     private SparseList host;
 
     /** the left and right child nodes */
-    private SparseListNode left = null;
-    private SparseListNode right = null;
+    private SparseListNode left;
+    private SparseListNode right;
 
     /** the size of the left subtree and right subtrees including empty space */
-    private int totalRightSize = 0;
-    private int totalLeftSize = 0;
+    private int totalRightSize;
+    private int totalLeftSize;
 
     /** the amount of empty space that preceeds this node */
-    private int emptySpace = 0;
+    private int emptySpace;
 
     /** the height of this subtree */
     private int height = 1;
 
     /** the value at this node */
-    private Object value = null;
+    private Object value;
 
     /**
      * Creates a new SparseListNode with the specified parent node, host tree and value.
@@ -649,19 +649,19 @@ public final class SparseListNode {
     final static class SparseListIterator implements Iterator {
 
         /** the current SparseListNode being inspected */
-        private SparseListNode currentNode = null;
+        private SparseListNode currentNode;
 
         /** the number of times the current node has been requested */
         private int timesRequested = -1;
 
         /** a reference to the SparseList for removal of trailing nulls */
-        private SparseList sparseList = null;
+        private SparseList sparseList;
 
         /** the size of the actual tree within the SparseList*/
-        private int treeSize = 0;
+        private int treeSize;
 
         /** the size of the list */
-        private int size = 0;
+        private int size;
 
         /** the current index being inspected */
         private int index = -1;

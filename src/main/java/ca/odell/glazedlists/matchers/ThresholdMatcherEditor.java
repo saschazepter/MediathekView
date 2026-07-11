@@ -38,7 +38,7 @@ public class ThresholdMatcherEditor<E, T> extends AbstractMatcherEditor<E> {
     private Comparator<T> comparator;
     private MatchOperation operation;
     private T threshold;
-    private FunctionList.Function<E, T> function;
+    private final FunctionList.Function<E, T> function;
 
     /**
      * Construct an instance that will require elements to be greater than the
@@ -129,7 +129,7 @@ public class ThresholdMatcherEditor<E, T> extends AbstractMatcherEditor<E> {
         rebuildMatcher();
     }
     /**
-     * See {@link #getThreshold()}.
+     * See {@code getThreshold()}.
      */
     public T getThreshold() {
         return threshold;

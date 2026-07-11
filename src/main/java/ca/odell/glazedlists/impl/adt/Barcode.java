@@ -52,13 +52,13 @@ public final class Barcode {
     public static final Object BLACK = Boolean.TRUE;
 
     /** the root of the underlying tree */
-    private BarcodeNode root = null;
+    private BarcodeNode root;
 
     /** the size of the trailing whitespace */
-    private int whiteSpace = 0;
+    private int whiteSpace;
 
     /** the size of tree */
-    private int treeSize = 0;
+    private int treeSize;
 
     /**
      * Prints internal debug information for this barcode

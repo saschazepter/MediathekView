@@ -102,7 +102,7 @@ public class FourColorTree <  T0>   {
 
 
     /** the tree's root, or <code>null</code> for an empty tree */
-    private  FourColorNode <  T0>   root = null;
+    private  FourColorNode <  T0>   root;
 
     /**
      * a list to add all nodes to that must be removed from
@@ -110,7 +110,7 @@ public class FourColorTree <  T0>   {
      * which allows us a chance to do rotations without losing our position
      * in the tree.
      */
-    private final List< FourColorNode <  T0>  > zeroQueue = new ArrayList< FourColorNode <  T0>  >();
+    private final List< FourColorNode <  T0>  > zeroQueue = new ArrayList<>();
 
     /**
      * The comparator to use when performing ordering operations on the tree.
@@ -214,7 +214,7 @@ public class FourColorTree <  T0>   {
         if(this.root == null) {
             if(index != 0) throw new IndexOutOfBoundsException();
 
-            this.root = new  FourColorNode <  T0>  (  color,    size, value, null);
+            this.root = new FourColorNode<>(  color,    size, value, null);
             assert(valid());
             return this.root;
         } else {
@@ -260,7 +260,7 @@ public class FourColorTree <  T0>   {
             if(index <= parentLeftSize) {
                 // as a new left child
                 if(parentLeft == null) {
-                     FourColorNode <  T0>   inserted = new  FourColorNode <  T0>  (  color,    size, value, parent);
+                     FourColorNode <  T0>   inserted = new FourColorNode<>(  color,    size, value, parent);
                     parent.left = inserted;
                     fixCountsThruRoot(parent,   color,    size);
                     fixHeightPostChange(parent, false);
@@ -419,7 +419,7 @@ public class FourColorTree <  T0>   {
      * to the root. The counts of the specified color are adjusted by delta
      * (which may be positive or negative).
      */
-    private final void fixCountsThruRoot( FourColorNode <  T0>   node,   byte color,    int delta) {
+    private void fixCountsThruRoot( FourColorNode <  T0>   node,   byte color,    int delta) {
 
         if(color == 1) {
             for( ; node != null; node = node.parent) node.count1 += delta;
@@ -467,7 +467,7 @@ public class FourColorTree <  T0>   {
      *      the opposite side of the tree, whereas on an insert we only delete
      *      as far as necessary.
      */
-    private final void fixHeightPostChange( FourColorNode <  T0>   node, boolean allTheWayToRoot) {
+    private void fixHeightPostChange( FourColorNode <  T0>   node, boolean allTheWayToRoot) {
 
         // update the height
         for(; node != null; node = node.parent) {
@@ -520,7 +520,7 @@ public class FourColorTree <  T0>   {
      *
      * @return the new root of the subtree
      */
-    private final  FourColorNode <  T0>   rotateLeft( FourColorNode <  T0>   subtreeRoot) {
+    private  FourColorNode <  T0>   rotateLeft( FourColorNode <  T0>   subtreeRoot) {
         assert(subtreeRoot.left != null);
         // subtreeRoot is D
         // newSubtreeRoot is B
@@ -557,7 +557,7 @@ public class FourColorTree <  T0>   {
 
         return newSubtreeRoot;
     }
-    private final  FourColorNode <  T0>   rotateRight( FourColorNode <  T0>   subtreeRoot) {
+    private  FourColorNode <  T0>   rotateRight( FourColorNode <  T0>   subtreeRoot) {
         assert(subtreeRoot.right != null);
         // subtreeRoot is D
         // newSubtreeRoot is B

@@ -42,7 +42,7 @@ public final class WeakReferenceMatcherEditor<E> implements MatcherEditor<E>, Ma
     private final List<Listener<E>> listenerList = new ArrayList<>();
 
     /** The last Matcher that was broadcast from this MatcherEditor. */
-    private MatcherEditor<E> source;
+    private final MatcherEditor<E> source;
 
     /**
      * Construct a MatcherEditor which acts as a weak proxy for the given

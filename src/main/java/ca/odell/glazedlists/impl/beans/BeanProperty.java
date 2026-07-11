@@ -22,24 +22,38 @@ public class BeanProperty<T> {
 
     private static final ReturnTypeResolver TYPE_RESOLVER = new J2SE50ReturnTypeResolver();
 
-    /** the target class */
+    /**
+     * the target class
+     */
     private final Class<T> beanClass;
-    /** the property name */
+    /**
+     * the property name
+     */
     private final String propertyName;
 
-    /** <tt>true</tt> indicates the getter should simply reflect the value it is given */
+    /**
+     * <tt>true</tt> indicates the getter should simply reflect the value it is given
+     */
     private final boolean identityProperty;
 
-    /** the value class */
-    private Class<?> valueClass = null;
+    /**
+     * the value class
+     */
+    private Class<?> valueClass;
 
-    /** the chain of methods for the getter */
-    private List<Method> getterChain = null;
+    /**
+     * the chain of methods for the getter
+     */
+    private List<Method> getterChain;
 
-    /** the chain of methods for the setter */
-    private List<Method> setterChain = null;
+    /**
+     * the chain of methods for the setter
+     */
+    private List<Method> setterChain;
 
-    /** commonly used paramters */
+    /**
+     * commonly used paramters
+     */
     private static final Object[] EMPTY_ARGUMENTS = {};
     private static final Class<?>[] EMPTY_PARAMETER_TYPES = {};
 
@@ -66,17 +80,18 @@ public class BeanProperty<T> {
         final String[] propertyParts = propertyName.split("\\.");
         final List<Method> commonChain = new ArrayList<>(propertyParts.length);
         Class<?> currentClass = beanClass;
-        for(int p = 0; p < propertyParts.length - 1; p++) {
+        for (int p = 0; p < propertyParts.length - 1; p++) {
             Method partGetter = findGetterMethod(currentClass, propertyParts[p]);
             commonChain.add(partGetter);
             currentClass = TYPE_RESOLVER.getReturnType(currentClass, partGetter);
         }
 
         // look up the final getter
-        if(readable) {
+        if (readable) {
             if (identityProperty) {
                 valueClass = beanClass;
-            } else {
+            }
+            else {
                 getterChain = new ArrayList<>();
                 getterChain.addAll(commonChain);
                 Method lastGetter = findGetterMethod(currentClass, propertyParts[propertyParts.length - 1]);
@@ -86,12 +101,13 @@ public class BeanProperty<T> {
         }
 
         // look up the final setter
-        if(writable) {
+        if (writable) {
             setterChain = new ArrayList<>();
             setterChain.addAll(commonChain);
             Method lastSetter = findSetterMethod(currentClass, propertyParts[propertyParts.length - 1]);
             setterChain.add(lastSetter);
-            if(valueClass == null) valueClass = TYPE_RESOLVER.getFirstParameterType(currentClass, lastSetter);
+            if (valueClass == null)
+                valueClass = TYPE_RESOLVER.getFirstParameterType(currentClass, lastSetter);
         }
     }
 
@@ -102,17 +118,17 @@ public class BeanProperty<T> {
         Method result;
 
         Class<?> currentClass = targetClass;
-        while(currentClass != null) {
+        while (currentClass != null) {
             String getProperty = "get" + capitalize(property);
             result = getMethod(currentClass, getProperty, EMPTY_PARAMETER_TYPES);
-            if(result != null) {
+            if (result != null) {
                 validateGetter(result);
                 return result;
             }
 
             String isProperty = "is" + capitalize(property);
             result = getMethod(currentClass, isProperty, EMPTY_PARAMETER_TYPES);
-            if(result != null) {
+            if (result != null) {
                 validateGetter(result);
                 return result;
             }
@@ -130,13 +146,15 @@ public class BeanProperty<T> {
 
         // loop through the class and its superclasses
         Class<?> currentClass = targetClass;
-        while(currentClass != null) {
+        while (currentClass != null) {
 
             // loop through this class' methods
             Method[] classMethods = currentClass.getMethods();
-            for(int m = 0; m < classMethods.length; m++) {
-                if(!classMethods[m].getName().equals(setProperty)) continue;
-                if(classMethods[m].getParameterTypes().length != 1) continue;
+            for (int m = 0; m < classMethods.length; m++) {
+                if (!classMethods[m].getName().equals(setProperty))
+                    continue;
+                if (classMethods[m].getParameterTypes().length != 1)
+                    continue;
                 validateSetter(classMethods[m]);
                 return classMethods[m];
             }
@@ -151,15 +169,15 @@ public class BeanProperty<T> {
      * exception if the method is invalid.
      */
     private void validateGetter(Method method) {
-        if(!Modifier.isPublic(method.getModifiers())) {
+        if (!Modifier.isPublic(method.getModifiers())) {
             throw new IllegalArgumentException("Getter \"" + method + "\" is not public");
         }
 
-        if(Void.TYPE.equals(method.getReturnType())) {
+        if (Void.TYPE.equals(method.getReturnType())) {
             throw new IllegalArgumentException("Getter \"" + method + "\" returns void");
         }
 
-        if(method.getParameterTypes().length != 0) {
+        if (method.getParameterTypes().length != 0) {
             throw new IllegalArgumentException("Getter \"" + method + "\" has too many parameters; expected 0 but found " + method.getParameterTypes().length);
         }
     }
@@ -169,11 +187,11 @@ public class BeanProperty<T> {
      * exception if the method is invalid.
      */
     private void validateSetter(Method method) {
-        if(!Modifier.isPublic(method.getModifiers())) {
+        if (!Modifier.isPublic(method.getModifiers())) {
             throw new IllegalArgumentException("Setter \"" + method + "\" is not public");
         }
 
-        if(method.getParameterTypes().length != 1) {
+        if (method.getParameterTypes().length != 1) {
             throw new IllegalArgumentException("Setter \"" + method + "\" takes the wrong number of parameters; expected 1 but found " + method.getParameterTypes().length);
         }
     }
@@ -195,7 +213,8 @@ public class BeanProperty<T> {
     private Method getMethod(Class<?> targetClass, String methodName, Class<?>[] parameterTypes) {
         try {
             return targetClass.getMethod(methodName, parameterTypes);
-        } catch(NoSuchMethodException e) {
+        }
+        catch (NoSuchMethodException e) {
             return null;
         }
     }
@@ -204,14 +223,14 @@ public class BeanProperty<T> {
      * Gets the base class that this getter accesses.
      */
     public Class<T> getBeanClass() {
-         return beanClass;
+        return beanClass;
     }
 
     /**
      * Gets the name of the property that this getter extracts.
      */
     public String getPropertyName() {
-         return propertyName;
+        return propertyName;
     }
 
     /**
@@ -240,7 +259,8 @@ public class BeanProperty<T> {
      * Gets the value of this property for the specified Object.
      */
     public Object get(T member) {
-        if(!isReadable()) throw new IllegalStateException("Property " + propertyName + " of " + beanClass + " not readable");
+        if (!isReadable())
+            throw new IllegalStateException("Property " + propertyName + " of " + beanClass + " not readable");
 
         // the identity property simply reflects the member back unchanged
         if (identityProperty)
@@ -249,19 +269,22 @@ public class BeanProperty<T> {
         try {
             // do all the getters in sequence
             Object currentMember = member;
-            for(int i = 0, n = getterChain.size(); i < n; i++) {
+            for (int i = 0, n = getterChain.size(); i < n; i++) {
                 Method currentMethod = getterChain.get(i);
                 currentMember = currentMethod.invoke(currentMember, EMPTY_ARGUMENTS);
-                if(currentMember == null) return null;
+                if (currentMember == null)
+                    return null;
             }
 
             // return the result of the last getter
             return currentMember;
-        } catch(IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e) {
             SecurityException se = new SecurityException();
             se.initCause(e);
             throw se;
-        } catch(InvocationTargetException e) {
+        }
+        catch (InvocationTargetException e) {
             throw new UndeclaredThrowableException(e.getCause());
         }
     }
@@ -270,22 +293,25 @@ public class BeanProperty<T> {
      * Gets the value of this property for the specified Object.
      */
     public Object set(T member, Object newValue) {
-        if(!isWritable()) throw new IllegalStateException("Property " + propertyName + " of " + beanClass + " not writable");
+        if (!isWritable())
+            throw new IllegalStateException("Property " + propertyName + " of " + beanClass + " not writable");
 
         Method setterMethod = null;
         try {
             // everything except the last setter chain element is a getter
             Object currentMember = member;
-            for(int i = 0, n = setterChain.size() - 1; i < n; i++) {
+            for (int i = 0, n = setterChain.size() - 1; i < n; i++) {
                 Method currentMethod = setterChain.get(i);
                 currentMember = currentMethod.invoke(currentMember, EMPTY_ARGUMENTS);
-                if(currentMember == null) return null;
+                if (currentMember == null)
+                    return null;
             }
 
             // do the remaining setter
             setterMethod = setterChain.get(setterChain.size() - 1);
             return setterMethod.invoke(currentMember, newValue);
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalArgumentException e) {
             String message = e.getMessage();
 
             // improve the message if possible into something like:
@@ -294,13 +320,16 @@ public class BeanProperty<T> {
                 message = getSimpleName(setterMethod.getDeclaringClass()) + "." + setterMethod.getName() + "(" + getSimpleName(setterMethod.getParameterTypes()[0]) + ") cannot be called with an instance of " + getSimpleName(newValue.getClass());
 
             throw new IllegalArgumentException(message);
-        } catch(IllegalAccessException e) {
+        }
+        catch (IllegalAccessException e) {
             SecurityException se = new SecurityException();
             se.initCause(e);
             throw se;
-        } catch(InvocationTargetException e) {
+        }
+        catch (InvocationTargetException e) {
             throw new UndeclaredThrowableException(e.getCause());
-        } catch(RuntimeException e) {
+        }
+        catch (RuntimeException e) {
             throw new RuntimeException("Failed to set property \"" + propertyName + "\" of " + beanClass + " to " + (newValue == null ? "null" : "instance of " + newValue.getClass()), e);
         }
     }
@@ -324,21 +353,26 @@ public class BeanProperty<T> {
         return '0' <= c && c <= '9';
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
-        if(this == o) return true;
-        if(o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         final BeanProperty<?> that = (BeanProperty<?>) o;
 
-        if(!beanClass.equals(that.beanClass)) return false;
-        if(!propertyName.equals(that.propertyName)) return false;
-
-        return true;
+        if (!beanClass.equals(that.beanClass))
+            return false;
+        return propertyName.equals(that.propertyName);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         int result;

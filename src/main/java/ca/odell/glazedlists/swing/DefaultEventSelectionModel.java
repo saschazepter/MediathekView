@@ -55,13 +55,13 @@ import javax.swing.event.ListSelectionListener;
 public final class DefaultEventSelectionModel<E> implements AdvancedListSelectionModel<E> {
 
     /** the event lists that provide an event list view of the selection */
-    private ListSelection<E> listSelection;
+    private final ListSelection<E> listSelection;
 
     /** the source event list. */
-    private EventList<E> source;
+    private final EventList<E> source;
 
     /** indicator to dispose source list */
-    private boolean disposeSource;
+    private final boolean disposeSource;
 
     /** whether the user can modify the selection */
     private boolean enabled = true;
@@ -73,7 +73,7 @@ public final class DefaultEventSelectionModel<E> implements AdvancedListSelectio
     private final List<ListSelectionListener> listeners = new ArrayList<>();
 
     /** whether there are a series of changes on the way */
-    private boolean valueIsAdjusting = false;
+    private boolean valueIsAdjusting;
     private int fullChangeStart = -1;
     private int fullChangeFinish = -1;
 

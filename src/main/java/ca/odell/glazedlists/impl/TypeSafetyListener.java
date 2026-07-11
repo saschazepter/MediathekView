@@ -24,23 +24,27 @@ import java.util.Set;
  */
 public class TypeSafetyListener<E> implements ListEventListener<E> {
 
-    /** The element types supported by the EventList listened to */
-    private final Class[] types;
+    /**
+     * The element types supported by the EventList listened to
+     */
+    private final Class<?>[] types;
 
     /**
      * Create a {@link TypeSafetyListener} that listens for changes on the
      * specified source {@link EventList} and verifies the added elements are
      * one of the allowed types.
      */
-    public TypeSafetyListener(EventList<E> source, Set<Class> types) {
+    public TypeSafetyListener(EventList<E> source, Set<Class<?>> types) {
         // reserve a private copy of the supported Classes
-        this.types = types.toArray(new Class[types.size()]);
+        this.types = types.toArray(Class<?>[]::new);
 
         // begin listening to the source list
         source.addListEventListener(this);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void listChanged(ListEvent<E> listChanges) {
         final EventList<E> source = listChanges.getSourceList();
@@ -48,18 +52,20 @@ public class TypeSafetyListener<E> implements ListEventListener<E> {
             final int type = listChanges.getType();
 
             // skip deletes as the type was validated on insertion
-            if (type == ListEvent.DELETE) continue;
+            if (type == ListEvent.DELETE)
+                continue;
 
             // fetch the element in question
             final int index = listChanges.getIndex();
             final E e = source.get(index);
 
             if (type == ListEvent.INSERT && !checkType(e)) {
-                final Class badType = e == null ? null : e.getClass();
+                final Class<?> badType = e == null ? null : e.getClass();
                 throw new IllegalArgumentException("Element with illegal type " + badType + " inserted at index " + index + ": " + e);
 
-            } else if (type == ListEvent.UPDATE && !checkType(e)) {
-                final Class badType = e == null ? null : e.getClass();
+            }
+            else if (type == ListEvent.UPDATE && !checkType(e)) {
+                final Class<?> badType = e == null ? null : e.getClass();
                 throw new IllegalArgumentException("Element with illegal type " + badType + " updated at index " + index + ": " + e);
             }
         }
@@ -71,15 +77,11 @@ public class TypeSafetyListener<E> implements ListEventListener<E> {
      *
      * @param e the object to check for type safety
      * @return <tt>true</tt> if <code>e</code> is assignable to one of the
-     *      types accepted by the {@link EventList}; <tt>false</tt> otherwise
+     * types accepted by the {@link EventList}; <tt>false</tt> otherwise
      */
     private boolean checkType(E e) {
-        for (int i = 0; i < types.length; i++) {
-            // avoid a NullPointerException from isAssignableFrom(null)
-            if (e == null && types[i] != null)
-                continue;
-
-            if (types[i] == null ? e == null : types[i].isAssignableFrom(e.getClass()))
+        for (Class<?> type : types) {
+            if (e == null ? type == null : type != null && type.isInstance(e))
                 return true;
         }
 

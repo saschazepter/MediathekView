@@ -28,7 +28,7 @@ public class BoyerMooreCaseInsensitiveTextSearchStrategy extends AbstractTextSea
     private char[] subtextCharsLower;
 
     /** The Boyer-Moore shift table reduced to only 256 elements rather than all 95,221 Unicode 3.2 characters. */
-    private int[] shiftTable = new int[CHARACTER_CACHE_SIZE];
+    private final int[] shiftTable = new int[CHARACTER_CACHE_SIZE];
 
     /**
      * This method builds a shortened version of the Boyer-Moore shift table.

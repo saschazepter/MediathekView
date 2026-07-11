@@ -73,12 +73,12 @@ public final class SortedList<E> extends TransformedList<E,E> {
     public static final int AVOID_MOVING_ELEMENTS = 1;
 
     /** a map from the unsorted index to the sorted index */
-    private SimpleTree<Element> unsorted = null;
+    private SimpleTree<Element> unsorted;
     /** a map from the sorted index to the unsorted index */
-    private SimpleTree<Element> sorted = null;
+    private SimpleTree<Element> sorted;
 
     /** the comparator that this list uses for sorting */
-    private Comparator<? super E> comparator = null;
+    private Comparator<? super E> comparator;
 
     /** one of {@link #STRICT_SORT_ORDER} or {@link #AVOID_MOVING_ELEMENTS}. */
     private int mode = STRICT_SORT_ORDER;
@@ -615,7 +615,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
     private class ElementComparator implements Comparator {
 
         /** the actual comparator used on the values found */
-        private Comparator comparator;
+        private final Comparator comparator;
 
         /**
          * Creates an {@link ElementComparator} that compares the

@@ -106,7 +106,7 @@ public abstract class AbstractTableComparatorChooser<E> {
     private TableFormat<? super E> tableFormat;
 
     /** the potentially foreign comparator associated with the sorted list */
-    protected Comparator<? super E> sortedListComparator = null;
+    protected Comparator<? super E> sortedListComparator;
 
     /** manage which columns are sorted and in which order */
     protected SortingState sortingState;

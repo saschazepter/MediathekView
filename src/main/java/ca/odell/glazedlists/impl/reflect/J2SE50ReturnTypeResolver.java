@@ -19,6 +19,6 @@ public class J2SE50ReturnTypeResolver implements ReturnTypeResolver {
 
     @Override
     public Class<?> getFirstParameterType(Class<?> clazz, Method method) {
-        return new TypeLiteral<>(clazz).getParameterTypes(method).get(0).getRawType();
+        return new TypeLiteral<>(clazz).getParameterTypes(method).getFirst().getRawType();
     }
 }

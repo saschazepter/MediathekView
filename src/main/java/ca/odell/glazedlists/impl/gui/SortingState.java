@@ -256,7 +256,7 @@ public class SortingState {
         /** the sequence of comparators for this column */
         private final List<Comparator> comparators = new ArrayList<>(1);
         /** whether this column is sorted in reverse order */
-        private boolean reverse = false;
+        private boolean reverse;
         /** the comparator in the comparator list to sort by */
         private int comparatorIndex = -1;
 
@@ -327,7 +327,7 @@ public class SortingState {
          */
         public int getSortingStyle() {
             if(comparatorIndex == -1) return COLUMN_UNSORTED;
-            boolean primaryColumn = !recentlyClickedColumns.isEmpty() && recentlyClickedColumns.get(0) == this;
+            boolean primaryColumn = !recentlyClickedColumns.isEmpty() && recentlyClickedColumns.getFirst() == this;
             boolean primaryComparator = getComparatorIndex() == 0;
 
             if(primaryColumn) {

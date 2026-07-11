@@ -108,8 +108,8 @@ public abstract class TransformedList<S, E> extends AbstractEventList<E> impleme
      * may eventually be garbage collected.
      *
      * <p>A {@link TransformedList} will be garbage collected without a call to
-     * {@link #dispose()}, but not before its source {@link EventList} is garbage
-     * collected. By calling {@link #dispose()}, you allow the {@link TransformedList}
+     * {@code dispose()}, but not before its source {@link EventList} is garbage
+     * collected. By calling {@code dispose()}, you allow the {@link TransformedList}
      * to be garbage collected before its source {@link EventList}. This is
      * necessary for situations where a {@link TransformedList} is short-lived but
      * its source {@link EventList} is long-lived.

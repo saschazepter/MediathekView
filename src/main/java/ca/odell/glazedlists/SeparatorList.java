@@ -46,7 +46,7 @@ import java.util.List;
 public class SeparatorList<E> extends TransformedList<E, E> {
 
     /** delegate to an inner class to insert the separators */
-    private SeparatorInjectorList<E> separatorSource;
+    private final SeparatorInjectorList<E> separatorSource;
     private static final Object SEPARATOR = Barcode.BLACK;
     private static final Object SOURCE_ELEMENT = Barcode.WHITE;
 
@@ -436,7 +436,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
         /**
          * Get the maximum number of elements in this group to show.
          */
-        public int getLimit();
+        int getLimit();
 
         /**
          * Set the maximum number of elements in this group to show. This is
@@ -446,7 +446,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
          * <p>This method requires the write lock of the {@link SeparatorList} to be
          * held during invocation.
          */
-        public void setLimit(int limit);
+        void setLimit(int limit);
 
         /**
          * Get the {@link List} of all elements in this group.
@@ -454,19 +454,19 @@ public class SeparatorList<E> extends TransformedList<E, E> {
          * <p>This method requires the read lock of the {@link SeparatorList}
          * to be held during invocation.
          */
-        public List<E> getGroup();
+        List<E> getGroup();
 
         /**
          * A convenience method to get the first element from this group. This
          * is useful to render the separator's name.
          */
-        public E first();
+        E first();
 
         /**
          * A convenience method to get the number of elements in this group. This
          * is useful to render the separator.
          */
-        public int size();
+        int size();
     }
 
     /**
@@ -514,7 +514,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
         private SimpleTree<GroupSeparator> separators;
 
         /** the number of elements to show in each group, such as 0, 5, or {@link Integer#MAX_VALUE} */
-        private int defaultLimit;
+        private final int defaultLimit;
 
         /**
          * Create a new {@link SeparatorInjectorList} that groups together like
@@ -820,7 +820,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
              * The node allows the separator to figure out which
              * group in the overall list its representing.
              */
-            private Element<GroupSeparator> node = null;
+            private Element<GroupSeparator> node;
 
             /** {@inheritDoc} */
             @Override

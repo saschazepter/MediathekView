@@ -97,7 +97,7 @@ public class SimpleTree <  T0>   {
 
 
     /** the tree's root, or <code>null</code> for an empty tree */
-    private  SimpleNode <  T0>   root = null;
+    private  SimpleNode <  T0>   root;
 
     /**
      * a list to add all nodes to that must be removed from
@@ -105,7 +105,7 @@ public class SimpleTree <  T0>   {
      * which allows us a chance to do rotations without losing our position
      * in the tree.
      */
-    private final List< SimpleNode <  T0>  > zeroQueue = new ArrayList< SimpleNode <  T0>  >();
+    private final List< SimpleNode <  T0>  > zeroQueue = new ArrayList<>();
 
     /**
      * The comparator to use when performing ordering operations on the tree.
@@ -115,7 +115,6 @@ public class SimpleTree <  T0>   {
     private final Comparator<? super T0> comparator;
 
     /**
-     * @param coder specifies the node colors
      * @param comparator the comparator to use when ordering values within the
      *      tree. If this tree is unsorted, use the one-argument constructor.
      */
@@ -127,9 +126,7 @@ public class SimpleTree <  T0>   {
         this.comparator = comparator;
     }
 
-    /**
-     * @param coder specifies the node colors
-     */
+    /** Creates an unsorted tree using the natural element order. */
     public SimpleTree/**/(  ) {
         this(   (Comparator)GlazedLists.comparableComparator());
     }
@@ -188,8 +185,6 @@ public class SimpleTree <  T0>   {
      *
      * @param size the size of the node to insert.
      * @param index the location into this tree to insert at
-     * @param indexColors the colors that index is relative to. This should be
-     *      all colors in the tree ORed together for the entire tree.
      * @param value the node value. If non-<code>null</code>, the node may be
      *      combined with other nodes of the same color and value. <code>null</code>
      *      valued nodes will never be combined with each other.
@@ -205,7 +200,7 @@ public class SimpleTree <  T0>   {
         if(this.root == null) {
             if(index != 0) throw new IndexOutOfBoundsException();
 
-            this.root = new  SimpleNode <  T0>  (   size, value, null);
+            this.root = new SimpleNode<>(   size, value, null);
             assert(valid());
             return this.root;
         } else {
@@ -218,10 +213,6 @@ public class SimpleTree <  T0>   {
     /**
      * @param parent the subtree to insert into, must not be null.
      * @param index the color index to insert at
-     * @param indexColors a bitmask of all colors that the index is defined in
-     *      terms of. For example, if this is determined in terms of colors 4, 8
-     *      and 32, then the value here should be 44 (32 + 8 + 4).
-     * @param color a bitmask value such as 1, 2, 4, 8, 16, 32, 64 or 128.
      * @param value the object to hold in the inserted node.
      * @param size the size of the inserted node, with respect to indices.
      * @return the inserted node, or the modified node if this insert simply
@@ -251,7 +242,7 @@ public class SimpleTree <  T0>   {
             if(index <= parentLeftSize) {
                 // as a new left child
                 if(parentLeft == null) {
-                     SimpleNode <  T0>   inserted = new  SimpleNode <  T0>  (   size, value, parent);
+                     SimpleNode <  T0>   inserted = new SimpleNode<>(   size, value, parent);
                     parent.left = inserted;
                     fixCountsThruRoot(parent,    size);
                     fixHeightPostChange(parent, false);
@@ -329,7 +320,6 @@ public class SimpleTree <  T0>   {
 
     /**
      * @param parent the subtree to insert into, must not be null.
-     * @param color a bitmask value such as 1, 2, 4, 8, 16, 32, 64 or 128.
      * @param value the object to hold in the inserted node.
      * @param size the size of the inserted node, with respect to indices.
      * @return the inserted node, or the modified node if this insert simply
@@ -410,7 +400,7 @@ public class SimpleTree <  T0>   {
      * to the root. The counts of the specified color are adjusted by delta
      * (which may be positive or negative).
      */
-    private final void fixCountsThruRoot( SimpleNode <  T0>   node,    int delta) {
+    private void fixCountsThruRoot( SimpleNode <  T0>   node,    int delta) {
 
         for( ; node != null; node = node.parent) node.count1 += delta;
 
@@ -434,7 +424,7 @@ public class SimpleTree <  T0>   {
      *      the opposite side of the tree, whereas on an insert we only delete
      *      as far as necessary.
      */
-    private final void fixHeightPostChange( SimpleNode <  T0>   node, boolean allTheWayToRoot) {
+    private void fixHeightPostChange( SimpleNode <  T0>   node, boolean allTheWayToRoot) {
 
         // update the height
         for(; node != null; node = node.parent) {
@@ -487,7 +477,7 @@ public class SimpleTree <  T0>   {
      *
      * @return the new root of the subtree
      */
-    private final  SimpleNode <  T0>   rotateLeft( SimpleNode <  T0>   subtreeRoot) {
+    private  SimpleNode <  T0>   rotateLeft( SimpleNode <  T0>   subtreeRoot) {
         assert(subtreeRoot.left != null);
         // subtreeRoot is D
         // newSubtreeRoot is B
@@ -524,7 +514,7 @@ public class SimpleTree <  T0>   {
 
         return newSubtreeRoot;
     }
-    private final  SimpleNode <  T0>   rotateRight( SimpleNode <  T0>   subtreeRoot) {
+    private  SimpleNode <  T0>   rotateRight( SimpleNode <  T0>   subtreeRoot) {
         assert(subtreeRoot.right != null);
         // subtreeRoot is D
         // newSubtreeRoot is B

@@ -46,8 +46,8 @@ public interface AdvancedTableModel<E> extends TableModel {
      * may eventually be garbage collected.
      *
      * <p>An {@link AdvancedTableModel} will be garbage collected without a call to
-     * {@link #dispose()}, but not before its source {@link EventList} is garbage
-     * collected. By calling {@link #dispose()}, you allow the {@link AdvancedTableModel}
+     * {@code dispose()}, but not before its source {@link EventList} is garbage
+     * collected. By calling {@code dispose()}, you allow the {@link AdvancedTableModel}
      * to be garbage collected before its source {@link EventList}. This is
      * necessary for situations where an {@link AdvancedTableModel} is short-lived but
      * its source {@link EventList} is long-lived.

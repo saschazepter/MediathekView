@@ -103,7 +103,6 @@ class  SimpleNode <  T0>   implements Element<T0> {
     /**
      * Create a new node.
      *
-     * @param color a bitmask value such as 1, 2, 4, 8 or 16.
      * @param size the size of the node
      * @param value the value of the node
      * @param parent the parent node in the tree, or <code>null</code> for the

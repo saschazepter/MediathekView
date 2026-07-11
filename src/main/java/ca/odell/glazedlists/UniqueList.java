@@ -317,7 +317,7 @@ public final class UniqueList<E> extends TransformedList<E, E> {
      */
     public List<E> getAll(E value) {
         final int index = this.indexOf(value);
-        return index == -1 ? Collections.<E>emptyList() : this.getAll(index);
+        return index == -1 ? Collections.emptyList() : this.getAll(index);
     }
 
     /** {@inheritDoc} */

@@ -71,7 +71,7 @@ public final class KeyedCollection<P, V> {
         } else if (positionsAsSingleOrSet instanceof SortedSet) {
             SortedSet<P> positions = (SortedSet<P>)positionsAsSingleOrSet;
             SortedSet<P> positionsInRange = positions.subSet(min, max);
-            return positionsInRange.isEmpty() ? null : positionsInRange.iterator().next();
+            return positionsInRange.isEmpty() ? null : positionsInRange.getFirst();
 
         } else {
             P position = (P)positionsAsSingleOrSet;

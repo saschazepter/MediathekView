@@ -13,9 +13,9 @@ import ca.odell.glazedlists.ThresholdList;
  */
 public final class BeanThresholdEvaluator<E> implements ThresholdList.Evaluator<E> {
 
-    private String propertyName = null;
+    private String propertyName;
 
-    private BeanProperty<E> beanProperty = null;
+    private BeanProperty<E> beanProperty;
 
     public BeanThresholdEvaluator(String propertyName) {
         this.propertyName = propertyName;

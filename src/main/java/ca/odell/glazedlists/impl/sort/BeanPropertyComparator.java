@@ -4,6 +4,7 @@
 package ca.odell.glazedlists.impl.sort;
 
 // for specifying a sorting algorithm
+
 import ca.odell.glazedlists.impl.beans.BeanProperty;
 
 import java.util.Comparator;
@@ -16,11 +17,15 @@ import java.util.Comparator;
  */
 public final class BeanPropertyComparator<T> implements Comparator<T> {
 
-    /** the comparator to use on the JavaBean property */
-    private Comparator propertyComparator;
+    /**
+     * the comparator to use on the JavaBean property
+     */
+    private final Comparator propertyComparator;
 
-    /** the accessor for the JavaBean property */
-    private BeanProperty beanProperty = null;
+    /**
+     * the accessor for the JavaBean property
+     */
+    private BeanProperty beanProperty;
 
     /**
      * Create a new JavaBean property comparator that compares properties using
@@ -39,31 +44,38 @@ public final class BeanPropertyComparator<T> implements Comparator<T> {
     public int compare(T alpha, T beta) {
         // Inspect alpha
         Object alphaProperty = null;
-        if(alpha != null) alphaProperty = beanProperty.get(alpha);
+        if (alpha != null)
+            alphaProperty = beanProperty.get(alpha);
 
         // Inspect beta
         Object betaProperty = null;
-        if(beta != null) betaProperty = beanProperty.get(beta);
+        if (beta != null)
+            betaProperty = beanProperty.get(beta);
 
         // Compare the property values
         return propertyComparator.compare(alphaProperty, betaProperty);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
-        if(this == o) return true;
-        if(o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         final BeanPropertyComparator that = (BeanPropertyComparator) o;
 
-        if(!beanProperty.equals(that.beanProperty)) return false;
-        if(!propertyComparator.equals(that.propertyComparator)) return false;
-
-        return true;
+        if (!beanProperty.equals(that.beanProperty))
+            return false;
+        return propertyComparator.equals(that.propertyComparator);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         int result;

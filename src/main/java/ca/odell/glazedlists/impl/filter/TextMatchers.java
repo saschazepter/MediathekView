@@ -21,19 +21,29 @@ import java.util.*;
  * @author James Lemieux
  */
 public final class TextMatchers {
-    /** A Comparator that orders SearchTerms according to the length of their text. */
+    /**
+     * A Comparator that orders SearchTerms according to the length of their text.
+     */
     private static final Comparator<SearchTerm> SEARCHTERM_LENGTH_COMPARATOR = new SearchTermLengthComparator();
 
-    /** A Matcher that only accepts non-negated SearchTerms. */
+    /**
+     * A Matcher that only accepts non-negated SearchTerms.
+     */
     private static final Matcher<SearchTerm> NON_NEGATED_MATCHER = Matchers.beanPropertyMatcher(SearchTerm.class, "negated", Boolean.FALSE);
 
-    /** A Matcher that only accepts negated SearchTerms. */
+    /**
+     * A Matcher that only accepts negated SearchTerms.
+     */
     private static final Matcher<SearchTerm> NEGATED_MATCHER = Matchers.beanPropertyMatcher(SearchTerm.class, "negated", Boolean.TRUE);
 
-    /** A Matcher that only accepts SearchTerms with null Fields. */
+    /**
+     * A Matcher that only accepts SearchTerms with null Fields.
+     */
     private static final Matcher<SearchTerm> NO_FIELD_MATCHER = Matchers.beanPropertyMatcher(SearchTerm.class, "negated", null);
 
-    /** A Matcher that only accepts SearchTerms without null Fields. */
+    /**
+     * A Matcher that only accepts SearchTerms without null Fields.
+     */
     private static final Matcher<SearchTerm> FIELD_MATCHER = Matchers.invert(NO_FIELD_MATCHER);
 
     /**
@@ -45,21 +55,21 @@ public final class TextMatchers {
      * to avoid reallocating a new List object each time this method is called.
      * The caller may and should recycle the <code>filterStrings</code> List.
      *
-     * @param filterStrings a recyclable List into which the filter Strings can stored
-     * @param filterator the logic capable of extracting filtering Strings from the <code>element</code>
-     * @param searchTerms SearchTerm objects defining each piece of search text as well as metadata about the text
+     * @param filterStrings    a recyclable List into which the filter Strings can stored
+     * @param filterator       the logic capable of extracting filtering Strings from the <code>element</code>
+     * @param searchTerms      SearchTerm objects defining each piece of search text as well as metadata about the text
      * @param filterStrategies the optimized logic for locating given search text within the <code>filterStrings</code>
-     * @param element the list element on which we are text filtering
+     * @param element          the list element on which we are text filtering
      * @return <tt>true</tt> if all <code>filterStrategies</code> located
-     *      matching text within the <code>filterStrings</code> extracted from
-     *      the given <code>element</code>
+     * matching text within the <code>filterStrings</code> extracted from
+     * the given <code>element</code>
      */
     public static <E> boolean matches(List<String> filterStrings, TextFilterator<? super E> filterator, SearchTerm<E>[] searchTerms, TextSearchStrategy[] filterStrategies, E element) {
         boolean filterStringsPopulated = false;
 
         // ensure each filter matches at least one field
         filters:
-        for(int f = 0; f < filterStrategies.length; f++) {
+        for (int f = 0; f < filterStrategies.length; f++) {
             // get the text search strategy for the current filter
             TextSearchStrategy textSearchStrategy = filterStrategies[f];
             SearchTerm<E> searchTerm = searchTerms[f];
@@ -72,13 +82,15 @@ public final class TextMatchers {
                 // populate the strings for this object using the SearchTerm's TextFilterator
                 strings.clear();
                 searchTermField.getTextFilterator().getFilterStrings(strings, element);
-            } else {
+            }
+            else {
                 if (!filterStringsPopulated) {
                     // populate the strings for this object
                     filterStrings.clear();
-                    if(filterator == null) {
-                        ((TextFilterable)element).getFilterStrings(filterStrings);
-                    } else {
+                    if (filterator == null) {
+                        ((TextFilterable) element).getFilterStrings(filterStrings);
+                    }
+                    else {
                         filterator.getFilterStrings(filterStrings, element);
                     }
                     filterStringsPopulated = true;
@@ -86,31 +98,32 @@ public final class TextMatchers {
                 strings = filterStrings;
             }
 
-            if(searchTerm.isNegated()) {
+            if (searchTerm.isNegated()) {
                 // search through all fields for the current filter
-                for(int i = 0, n = strings.size(); i < n; i++) {
+                for (int i = 0, n = strings.size(); i < n; i++) {
                     Object filterString = strings.get(i);
                     // the call to .toString() appears redundant, but is not, since we
                     // are backwards compatible with old behaviour which allows arbitrary
                     // objects in the filterStrings list
 
                     // if a match was found, then we have violated the negated search term
-                    if(filterString != null && textSearchStrategy.indexOf(filterString.toString()) != -1)
+                    if (filterString != null && textSearchStrategy.indexOf(filterString.toString()) != -1)
                         return false;
                 }
 
                 // the text for the negated search term could not be located, so it is a match!
 
-            } else {
+            }
+            else {
                 // search through all fields for the current filter
-                for(int i = 0, n = strings.size(); i < n; i++) {
+                for (int i = 0, n = strings.size(); i < n; i++) {
                     Object filterString = strings.get(i);
                     // the call to .toString() appears redundant, but is not, since we
                     // are backwards compatible with old behaviour which allows arbitrary
                     // objects in the filterStrings list
 
                     // if a match was found, then proceed to the next filter string
-                    if(filterString != null && textSearchStrategy.indexOf(filterString.toString()) != -1)
+                    if (filterString != null && textSearchStrategy.indexOf(filterString.toString()) != -1)
                         continue filters;
                 }
 
@@ -130,7 +143,7 @@ public final class TextMatchers {
      * precision of the string filtering. It also orders the search filters by
      * length so that the most discriminating filters occur near the start of
      * the array.
-     *
+     * <p>
      * The <code>negated</code> flag indicates whether the
      * <code>searchTerms</code> must be present (negated == false) or absent
      * (negated == true) in the target text for the SearchTerm to be considered
@@ -148,37 +161,40 @@ public final class TextMatchers {
      * filter string, <code>"this"</code>.
      *
      * @param searchTerms an array of Strings to normalize
-     * @param negated <tt>true</tt> if the searchTerms are all negated and must
-     *      be absent in the target text; <tt>false</tt> if they are not negated
-     *      and thus should be present in the target text
+     * @param negated     <tt>true</tt> if the searchTerms are all negated and must
+     *                    be absent in the target text; <tt>false</tt> if they are not negated
+     *                    and thus should be present in the target text
      * @return a copy of the minimal array of <code>searchTerms</code> in
-     *      the order of longest to shortest
+     * the order of longest to shortest
      */
     private static List<SearchTerm> normalizeSearchTerms(List<SearchTerm> searchTerms, boolean negated) {
         List<SearchTerm> result = new ArrayList<>(searchTerms);
 
         // filter out null and 0-length SearchTerms - they have no filtering value
-        for(Iterator<SearchTerm> i = result.iterator(); i.hasNext();) {
+        for (Iterator<SearchTerm> i = result.iterator(); i.hasNext(); ) {
             SearchTerm searchTerm = i.next();
-            if(searchTerm == null || searchTerm.getText().length() == 0)
+            if (searchTerm == null || searchTerm.getText().length() == 0)
                 i.remove();
         }
 
         // remove the filters that are not minimal (i.e. "blackened" removes "black")
-        for(int i = 0; i < result.size(); i++) {
+        for (int i = 0; i < result.size(); i++) {
             SearchTerm termI = result.get(i);
 
             // attempt to find another SearchTerm that contains termI to prove
             // that one of termI or termJ is unnecessary
-            for(int j = 0; j < result.size(); j++) {
+            for (int j = 0; j < result.size(); j++) {
                 SearchTerm termJ = result.get(j);
 
-                if(i != j && termJ.getText().indexOf(termI.getText()) != -1) {
-                    if(negated) {
-                        if(termJ.isRequired()) continue;
+                if (i != j && termJ.getText().indexOf(termI.getText()) != -1) {
+                    if (negated) {
+                        if (termJ.isRequired())
+                            continue;
                         result.remove(j);
-                    } else {
-                        if(termI.isRequired()) continue;
+                    }
+                    else {
+                        if (termI.isRequired())
+                            continue;
                         result.remove(i);
                         break;
                     }
@@ -199,7 +215,7 @@ public final class TextMatchers {
      * It also removes unnecessary SearchTerms which are not marked as
      * required.
      *
-     * @param filters the filter Strings to be normalized
+     * @param filters  the filter Strings to be normalized
      * @param strategy the strategy for mapping a character
      * @return mapped versions of the filter Strings
      */
@@ -252,10 +268,10 @@ public final class TextMatchers {
      *
      * @param text the raw text entered by a user
      * @return SearchTerm an object encapsulating a single raw search term as
-     *      well as metadata related to the use of the SearchTerm
+     * well as metadata related to the use of the SearchTerm
      */
     public static <E> SearchTerm<E>[] parse(String text) {
-        return parse(text, Collections.<SearchEngineTextMatcherEditor.Field<E>>emptySet());
+        return parse(text, Collections.emptySet());
     }
 
     /**
@@ -266,17 +282,17 @@ public final class TextMatchers {
      * should be considered to detect when the user has entered a
      * field-specific SearchTerm.
      *
-     * @param text the raw text entered by a user
+     * @param text   the raw text entered by a user
      * @param fields a Set of objects describing each field that can be independently matched
      * @return SearchTerm an object encapsulating a single raw search term as
-     *      well as metadata related to the use of the SearchTerm
+     * well as metadata related to the use of the SearchTerm
      */
     public static <E> SearchTerm<E>[] parse(String text, Set<SearchEngineTextMatcherEditor.Field<E>> fields) {
         final List<SearchTerm<E>> searchTerms = new ArrayList<>();
 
         // map each field name to the corresponding field
         final Map<String, SearchEngineTextMatcherEditor.Field<E>> fieldMap = new HashMap<>();
-        for (Iterator<SearchEngineTextMatcherEditor.Field<E>> f = fields.iterator(); f.hasNext();) {
+        for (Iterator<SearchEngineTextMatcherEditor.Field<E>> f = fields.iterator(); f.hasNext(); ) {
             SearchEngineTextMatcherEditor.Field<E> field = f.next();
             fieldMap.put(field.getName(), field);
         }
@@ -304,7 +320,8 @@ public final class TextMatchers {
                     field = null;
                     negated = required = insideTerm = insideQuotedTerm = false;
 
-                } else {
+                }
+                else {
                     // if a colon is encountered and a field does not yet exist,
                     // check if the colon signifies the end of a known field name
                     if (c == ':' && field == null && !insideQuotedTerm) {
@@ -321,7 +338,8 @@ public final class TextMatchers {
                     searchTermText.append(c);
                 }
 
-            } else {
+            }
+            else {
                 // clear the state and continue searching for the next term
                 if (Character.isWhitespace(c)) {
                     field = null;
@@ -331,16 +349,26 @@ public final class TextMatchers {
 
                 switch (c) {
                     // quotes mean a term has started and contains no text yet
-                    case '"': insideTerm = true; insideQuotedTerm = true; break;
+                    case '"':
+                        insideTerm = true;
+                        insideQuotedTerm = true;
+                        break;
 
                     // plus means the term that immediately follows is required
-                    case '+': required = true; break;
+                    case '+':
+                        required = true;
+                        break;
 
                     // minus means the term that immediately follows must NOT be found
-                    case '-': negated = true; break;
+                    case '-':
+                        negated = true;
+                        break;
 
                     // any other character is the first character in a new SearchTerm
-                    default: searchTermText.append(c); insideTerm = true; break;
+                    default:
+                        searchTermText.append(c);
+                        insideTerm = true;
+                        break;
                 }
             }
         }
@@ -360,14 +388,16 @@ public final class TextMatchers {
      * @param oldMatcher the old TextMatcher being replaced
      * @param newMatcher the new TextMatcher to be used
      * @return <tt>true</tt> iff the <code>newMatcher</code> is guaranteed to
-     *      match the same or fewer items than <code>oldMatcher</code>
+     * match the same or fewer items than <code>oldMatcher</code>
      */
     public static boolean isMatcherConstrained(TextMatcher oldMatcher, TextMatcher newMatcher) {
         // equal TextMatchers are never considered constrained or relaxed
-        if (oldMatcher.equals(newMatcher)) return false;
+        if (oldMatcher.equals(newMatcher))
+            return false;
 
         // if the strategies don't match we cannot report a constrainment
-        if (oldMatcher.getStrategy() != newMatcher.getStrategy()) return false;
+        if (oldMatcher.getStrategy() != newMatcher.getStrategy())
+            return false;
 
         // if the mode went from STARTS_WITH to CONTAINS the TextMatcher cannot be a constrainment
         if (oldMatcher.getMode() == TextMatcherEditor.STARTS_WITH && newMatcher.getMode() == TextMatcherEditor.CONTAINS)
@@ -389,8 +419,10 @@ public final class TextMatchers {
         oldTermsCoveredByNew:
         for (int i = 0; i < oldTerms.length; i++) {
             for (int j = 0; j < newTerms.length; j++) {
-                if (newTerms[j].equals(oldTerms[i])) continue oldTermsCoveredByNew;
-                if (newTerms[j].isConstrainment(oldTerms[i])) continue oldTermsCoveredByNew;
+                if (newTerms[j].equals(oldTerms[i]))
+                    continue oldTermsCoveredByNew;
+                if (newTerms[j].isConstrainment(oldTerms[i]))
+                    continue oldTermsCoveredByNew;
             }
             return false;
         }
@@ -406,7 +438,7 @@ public final class TextMatchers {
      * @param oldMatcher the old TextMatcher being replaced
      * @param newMatcher the new TextMatcher to be used
      * @return <tt>true</tt> iff the <code>newMatcher</code> is guaranteed to
-     *      match the same or more items than <code>oldMatcher</code>
+     * match the same or more items than <code>oldMatcher</code>
      */
     public static boolean isMatcherRelaxed(TextMatcher oldMatcher, TextMatcher newMatcher) {
         return isMatcherConstrained(newMatcher, oldMatcher);
@@ -416,7 +448,9 @@ public final class TextMatchers {
      * This Comparator orders {@link SearchTerm}s in descending order by their text lengths.
      */
     private static final class SearchTermLengthComparator implements Comparator<SearchTerm> {
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int compare(SearchTerm a, SearchTerm b) {
             return b.getText().length() - a.getText().length();

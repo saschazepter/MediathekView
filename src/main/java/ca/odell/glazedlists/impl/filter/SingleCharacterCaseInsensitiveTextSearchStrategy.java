@@ -18,7 +18,7 @@ public class SingleCharacterCaseInsensitiveTextSearchStrategy extends AbstractTe
     private char subtextCharUpper;
 
     /** <tt>true</tt> if subtext has been set; <tt>false</tt> otherwise. */
-    private boolean subtextInitialized = false;
+    private boolean subtextInitialized;
 
     /**
      * Sets the subtext to locate found when {@link #indexOf(String)} is called.

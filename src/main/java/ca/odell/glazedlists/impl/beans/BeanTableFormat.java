@@ -22,7 +22,7 @@ import java.util.Collections;
 public class BeanTableFormat<E> implements WritableTableFormat<E>, AdvancedTableFormat<E> {
 
     /** methods for extracting field values */
-    protected BeanProperty<E>[] beanProperties = null;
+    protected BeanProperty<E>[] beanProperties;
 
     /** Java Beans property names */
     protected String[] propertyNames;
@@ -31,7 +31,7 @@ public class BeanTableFormat<E> implements WritableTableFormat<E>, AdvancedTable
     protected String[] columnLabels;
 
     /** whether all columns can be edited */
-    private boolean[] editable;
+    private final boolean[] editable;
 
     /** column comparators */
     protected Comparator[] comparators;

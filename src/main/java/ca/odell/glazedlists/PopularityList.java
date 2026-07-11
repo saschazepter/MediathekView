@@ -38,7 +38,7 @@ import java.util.Comparator;
 public final class PopularityList<E> extends TransformedList<E, E> {
 
     /** the list of distinct elements */
-    private UniqueList<E> uniqueList;
+    private final UniqueList<E> uniqueList;
 
     /**
      * Creates a new {@link PopularityList} that provides frequency-ranking
@@ -106,7 +106,7 @@ public final class PopularityList<E> extends TransformedList<E, E> {
      * Compares objects by their popularity.
      */
     private static class PopularityComparator<E> implements Comparator<E> {
-        private UniqueList<E> target;
+        private final UniqueList<E> target;
         public PopularityComparator(UniqueList<E> target) {
             this.target = target;
         }

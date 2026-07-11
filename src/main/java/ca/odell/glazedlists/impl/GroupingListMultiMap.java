@@ -290,7 +290,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
      * @return the shared key which maps to each of the given values
      */
     private K key(List<V> values) {
-        return key(values.get(0));
+        return key(values.getFirst());
     }
 
     /**
@@ -414,7 +414,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         private final K key;
 
         /** The MultiMap value for this Entry object. */
-        private List<V> value;
+        private final List<V> value;
 
         /**
          * Constructs a new MultiMapEntry with the given <code>key</code> and
@@ -636,7 +636,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
         public ValueList(List<V> delegate) {
             this.delegate = delegate;
-            this.key = key(delegate.get(0));
+            this.key = key(delegate.getFirst());
         }
 
         @Override

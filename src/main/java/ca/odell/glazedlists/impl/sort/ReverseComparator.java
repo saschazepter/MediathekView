@@ -4,6 +4,7 @@
 package ca.odell.glazedlists.impl.sort;
 
 // for specifying a sorting algorithm
+
 import java.util.Comparator;
 
 /**
@@ -13,8 +14,10 @@ import java.util.Comparator;
  */
 public final class ReverseComparator<T> implements Comparator<T> {
 
-    /** the normal comparator to flip */
-    private Comparator<T> source;
+    /**
+     * the normal comparator to flip
+     */
+    private final Comparator<T> source;
 
     /**
      * Create a new reverse comparator that reverses the sequence
@@ -39,20 +42,24 @@ public final class ReverseComparator<T> implements Comparator<T> {
         return source;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
-        if(this == o) return true;
-        if(o == null || getClass() != o.getClass()) return false;
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
 
         final ReverseComparator that = (ReverseComparator) o;
 
-        if(!source.equals(that.source)) return false;
-
-        return true;
+        return source.equals(that.source);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return source.hashCode();

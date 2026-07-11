@@ -31,13 +31,13 @@ import java.util.function.UnaryOperator;
 public abstract class AbstractEventList<E> implements EventList<E> {
 
     /** the change event and notification system */
-    protected ListEventAssembler<E> updates = null;
+    protected ListEventAssembler<E> updates;
 
     /** the read/write lock provides mutual exclusion to access */
-    protected ReadWriteLock readWriteLock = null;
+    protected ReadWriteLock readWriteLock;
 
     /** the publisher manages the distribution of changes */
-    protected ListEventPublisher publisher = null;
+    protected ListEventPublisher publisher;
 
     /**
      * Creates an {@link AbstractEventList} that sends events using the specified

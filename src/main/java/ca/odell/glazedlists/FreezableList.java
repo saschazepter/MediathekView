@@ -40,10 +40,10 @@ import java.util.List;
 public final class FreezableList<E> extends TransformedList<E, E> {
 
     /** the state of the freezable list */
-    private boolean frozen = false;
+    private boolean frozen;
 
     /** the frozen objects */
-    private List<E> frozenData = new ArrayList<>();
+    private final List<E> frozenData = new ArrayList<>();
 
     /**
      * Creates a {@link FreezableList} that can freeze the view of the specified

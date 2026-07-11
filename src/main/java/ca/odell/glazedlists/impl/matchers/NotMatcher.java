@@ -12,7 +12,7 @@ import ca.odell.glazedlists.matchers.Matcher;
  * @author <a href="mailto:rob@starlight-systems.com">Rob Eden</a>
  */
 public class NotMatcher<E> implements Matcher<E> {
-    private Matcher<E> parent;
+    private final Matcher<E> parent;
 
     public NotMatcher(Matcher<E> parent) {
         if (parent == null ) throw new IllegalArgumentException("parent cannot be null");

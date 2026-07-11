@@ -313,7 +313,7 @@ public class TextMatcherEditor<E> extends AbstractMatcherEditor<E> {
         }
 
         // adjust the TextMatcher
-        setTextMatcher(new TextMatcher<E>(searchTerms, getFilterator(), getMode(), getStrategy()));
+        setTextMatcher(new TextMatcher<>(searchTerms, getFilterator(), getMode(), getStrategy()));
     }
 
     /**

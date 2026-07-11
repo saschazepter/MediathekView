@@ -21,5 +21,5 @@ public interface Filterator<C,E> {
      *      List and it is an error to call any method other than add().
      * @param element the object to extract the filter values from
      */
-    public void getFilterValues(List<C> baseList, E element);
+    void getFilterValues(List<C> baseList, E element);
 }

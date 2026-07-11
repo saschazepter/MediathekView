@@ -36,15 +36,15 @@ public class Tree4Deltas<E> {
     private static final byte CHANGE_INDICES = BYTE_CODER.colorsToByte(Arrays.asList("U", "X", "+"));
 
     /** the trees values include removed elements */
-    private FourColorTree<E> tree = new FourColorTree<>(BYTE_CODER);
-    private boolean allowContradictingEvents = false;
+    private final FourColorTree<E> tree = new FourColorTree<>(BYTE_CODER);
+    private boolean allowContradictingEvents;
 
     /**
      * When the first change to a list happens, we need to guess what the list's
      * capacity is. After that change, we reliably know the list's capacity, so
      * we don't need to keep testing the capacity one index at a time.
      */
-    private boolean initialCapacityKnown = false;
+    private boolean initialCapacityKnown;
 
     public boolean getAllowContradictingEvents() {
         return allowContradictingEvents;
@@ -143,7 +143,7 @@ public class Tree4Deltas<E> {
     }
 
     public void sourceInsert(int sourceIndex) {
-        tree.add(sourceIndex, SOURCE_INDICES, NO_CHANGE, ListEvent.<E>unknownValue(), 1);
+        tree.add(sourceIndex, SOURCE_INDICES, NO_CHANGE, ListEvent.unknownValue(), 1);
     }
 
     public void sourceDelete(int sourceIndex) {
@@ -151,7 +151,7 @@ public class Tree4Deltas<E> {
     }
 
     public void sourceRevert(int sourceIndex) {
-        tree.set(sourceIndex, SOURCE_INDICES, NO_CHANGE, ListEvent.<E>unknownValue(), 1);
+        tree.set(sourceIndex, SOURCE_INDICES, NO_CHANGE, ListEvent.unknownValue(), 1);
     }
 
     public int targetSize() {
@@ -191,7 +191,7 @@ public class Tree4Deltas<E> {
         int delta = size - currentSize;
         if(delta > 0) {
             int endOfTree = tree.size(ALL_INDICES);
-            tree.add(endOfTree, ALL_INDICES, NO_CHANGE, ListEvent.<E>unknownValue(), delta);
+            tree.add(endOfTree, ALL_INDICES, NO_CHANGE, ListEvent.unknownValue(), delta);
         }
     }
 

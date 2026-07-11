@@ -43,7 +43,7 @@ public class DefaultEventListModel<E> implements ListEventListener<E>, ListModel
     protected EventList<E> source;
 
     /** indicator to dispose source list */
-    private boolean disposeSource;
+    private final boolean disposeSource;
 
     /** whom to notify of data changes */
     private final List<ListDataListener> listeners = new ArrayList<>();
@@ -186,8 +186,8 @@ public class DefaultEventListModel<E> implements ListEventListener<E>, ListModel
      * may eventually be garbage collected.
      *
      * <p>An {@link DefaultEventListModel} will be garbage collected without a call to
-     * {@link #dispose()}, but not before its source {@link EventList} is garbage
-     * collected. By calling {@link #dispose()}, you allow the {@link DefaultEventListModel}
+     * {@code dispose()}, but not before its source {@link EventList} is garbage
+     * collected. By calling {@code dispose()}, you allow the {@link DefaultEventListModel}
      * to be garbage collected before its source {@link EventList}. This is
      * necessary for situations where an {@link DefaultEventListModel} is short-lived but
      * its source {@link EventList} is long-lived.

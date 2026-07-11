@@ -41,13 +41,13 @@ public class Grouper<E> {
     private static final int RIGHT_GROUP = 1;
 
     /** the sorted source of the grouping service */
-    private SortedList<E> sortedList;
+    private final SortedList<E> sortedList;
 
     /** The comparator used to determine the groups. */
     private Comparator<? super E> comparator;
 
     /** the grouping list client to notify of group changes */
-    private Client<E> client;
+    private final Client<E> client;
 
     /**
      * The data structure which tracks which source elements are considered UNIQUE
@@ -213,7 +213,7 @@ public class Grouper<E> {
                 // if no group already exists to join, create a new group
                 tryJoinExistingGroup(changeIndex, toDoList, tryJoinResult);
                 if(tryJoinResult.group == NO_GROUP) {
-                    client.groupChanged(changeIndex, tryJoinResult.groupIndex, ListEvent.INSERT, true, changeType, ListEvent.<E>unknownValue(), tryJoinResult.newFirstInGroup, false, false);
+                    client.groupChanged(changeIndex, tryJoinResult.groupIndex, ListEvent.INSERT, true, changeType, ListEvent.unknownValue(), tryJoinResult.newFirstInGroup, false, false);
                 } else {
                     client.groupChanged(changeIndex, tryJoinResult.groupIndex, ListEvent.UPDATE, true, changeType, tryJoinResult.oldFirstInGroup, tryJoinResult.newFirstInGroup, false, false);
                 }
@@ -273,7 +273,7 @@ public class Grouper<E> {
                     } else if(oldGroup == LEFT_GROUP) {
                         E firstFromPreviousGroup = sortedList.get(barcode.getIndex(groupIndex - 1, UNIQUE));
                         client.groupChanged(changeIndex, groupIndex - 1, ListEvent.UPDATE, false, changeType, firstFromPreviousGroup, firstFromPreviousGroup, false, false);
-                        client.groupChanged(changeIndex, groupIndex, ListEvent.INSERT, true, changeType, ListEvent.<E>unknownValue(), tryJoinResult.newFirstInGroup, false, false);
+                        client.groupChanged(changeIndex, groupIndex, ListEvent.INSERT, true, changeType, ListEvent.unknownValue(), tryJoinResult.newFirstInGroup, false, false);
                     } else if(oldGroup == RIGHT_GROUP) {
                         E firstFromNextGroup = sortedList.get(barcode.getIndex(groupIndex + 1, UNIQUE));
                         client.groupChanged(changeIndex, groupIndex, ListEvent.INSERT, true, changeType, ListEvent.<E>unknownValue(), tryJoinResult.newFirstInGroup, false, false);
@@ -284,7 +284,7 @@ public class Grouper<E> {
                 } else if(tryJoinResult.group == LEFT_GROUP) {
                     if(oldGroup == NO_GROUP) {
                         client.groupChanged(changeIndex, groupIndex, ListEvent.UPDATE, true, changeType, tryJoinResult.oldFirstInGroup, tryJoinResult.newFirstInGroup, false, false);
-                        client.groupChanged(changeIndex, groupIndex + 1, ListEvent.DELETE, false, changeType, oldValue, ListEvent.<E>unknownValue(), false, false);
+                        client.groupChanged(changeIndex, groupIndex + 1, ListEvent.DELETE, false, changeType, oldValue, ListEvent.unknownValue(), false, false);
                     } else if(oldGroup == LEFT_GROUP) {
                         client.groupChanged(changeIndex, groupIndex, ListEvent.UPDATE, true, changeType, tryJoinResult.oldFirstInGroup, tryJoinResult.newFirstInGroup, false, false);
                     } else if(oldGroup == RIGHT_GROUP) {
@@ -299,7 +299,7 @@ public class Grouper<E> {
                 // we are joining an existing group to our right
                 } else if(tryJoinResult.group == RIGHT_GROUP) {
                     if (oldGroup == NO_GROUP) {
-                        client.groupChanged(changeIndex, groupIndex, ListEvent.DELETE, false, changeType, oldValue, ListEvent.<E>unknownValue(), false, true);
+                        client.groupChanged(changeIndex, groupIndex, ListEvent.DELETE, false, changeType, oldValue, ListEvent.unknownValue(), false, true);
                         client.groupChanged(changeIndex, groupIndex, ListEvent.UPDATE, true, changeType, tryJoinResult.oldFirstInGroup, tryJoinResult.newFirstInGroup, false, true);
                     } else if(oldGroup == LEFT_GROUP) {
                         if(groupIndex - 1 >= 0) {
@@ -333,11 +333,11 @@ public class Grouper<E> {
                         // Duplicate deletion is a group update, but it was already triggered by the UNIQUE element update,
                         // so nothing to do here.
                         // For SeparatorList, node still needs to be deleted
-                        client.groupChanged(changeIndex, groupDeletedIndex - 1, ListEvent.UPDATE, true, changeType, oldValue, ListEvent.<E>unknownValue(), false, true);
+                        client.groupChanged(changeIndex, groupDeletedIndex - 1, ListEvent.UPDATE, true, changeType, oldValue, ListEvent.unknownValue(), false, true);
                         lastFakedUniqueChangeIndex = -1;
                     } else {
                         // if we removed a UNIQUE element then it was the last one and we must remove the group
-                        client.groupChanged(changeIndex, groupDeletedIndex, ListEvent.DELETE, true, changeType, oldValue, ListEvent.<E>unknownValue(), false, true);
+                        client.groupChanged(changeIndex, groupDeletedIndex, ListEvent.DELETE, true, changeType, oldValue, ListEvent.unknownValue(), false, true);
                     }
                 } else {
                     E oldValueInGroup;
@@ -348,7 +348,7 @@ public class Grouper<E> {
                         int firstInGroupIndex = barcode.getIndex(groupDeletedIndex, UNIQUE);
                         newValueInGroup = sortedList.get(firstInGroupIndex);
                     } else {
-                        newValueInGroup = ListEvent.<E>unknownValue();
+                        newValueInGroup = ListEvent.unknownValue();
                     }
 
                     if (deleted == UNIQUE_WITH_DUPLICATE) {
@@ -433,7 +433,7 @@ public class Grouper<E> {
                 barcode.set(changeIndex, UNIQUE, 1);
                 int groupIndex = barcode.getColourIndex(changeIndex, UNIQUE);
                 E onlyElementInGroup = sortedList.get(changeIndex);
-                return result.set(NO_GROUP, groupIndex, ListEvent.<E>unknownValue(), onlyElementInGroup);
+                return result.set(NO_GROUP, groupIndex, ListEvent.unknownValue(), onlyElementInGroup);
             }
         }
     }
@@ -487,6 +487,6 @@ public class Grouper<E> {
          *      separator update that fixes Bug500
          * @param joinRight flag to indicate if the right group may need to be shifted
          */
-        public void groupChanged(int index, int groupIndex, int groupChangeType, boolean primary, int elementChangeType, E oldValue, E newValue, boolean updateNextSeparator, boolean joinRight);
+        void groupChanged(int index, int groupIndex, int groupChangeType, boolean primary, int elementChangeType, E oldValue, E newValue, boolean updateNextSeparator, boolean joinRight);
     }
 }

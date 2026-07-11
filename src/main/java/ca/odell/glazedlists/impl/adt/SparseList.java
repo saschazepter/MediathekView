@@ -56,13 +56,13 @@ import java.util.List;
 public final class SparseList extends AbstractList {
 
     /** the root of the tree */
-    private SparseListNode root = null;
+    private SparseListNode root;
 
     /** the total size of this data structure */
-    private int size = 0;
+    private int size;
 
     /** the size of tree */
-    private int treeSize = 0;
+    private int treeSize;
 
     /**
      * Gets the size of this {@link List}.

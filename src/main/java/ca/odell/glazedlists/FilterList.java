@@ -57,7 +57,7 @@ public final class FilterList<E> extends TransformedList<E,E> {
     private Matcher<? super E> currentMatcher = Matchers.trueMatcher();
 
     /** the editor changes the matcher and fires events */
-    private MatcherEditor<? super E> currentEditor = null;
+    private MatcherEditor<? super E> currentEditor;
 
     /** listener handles changes to the matcher */
     private final MatcherEditor.Listener listener = new PrivateMatcherEditorListener();

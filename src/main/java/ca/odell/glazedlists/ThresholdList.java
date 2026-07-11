@@ -4,6 +4,7 @@
 package ca.odell.glazedlists;
 
 // to use standard collections
+
 import java.util.Comparator;
 
 /**
@@ -43,12 +44,12 @@ import java.util.Comparator;
  * <tr><td class="TableSubHeadingColor"><b>Memory:</b></td><td>72 bytes per element</td></tr>
  * <tr><td class="TableSubHeadingColor"><b>Unit Tests:</b></td><td>N/A</td></tr>
  * <tr><td class="TableSubHeadingColor"><b>Issues:</b></td><td>
- *   <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=47">47</a>
- *   <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=137">137</a>
- *   <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=217">217</a>
- *   <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=218">218</a>
- *   <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=246">246</a>
- *   <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=277">277</a>
+ * <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=47">47</a>
+ * <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=137">137</a>
+ * <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=217">217</a>
+ * <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=218">218</a>
+ * <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=246">246</a>
+ * <a href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=277">277</a>
  * </td></tr>
  * </table>
  *
@@ -56,16 +57,24 @@ import java.util.Comparator;
  */
 public final class ThresholdList<E> extends RangeList<E> {
 
-    /** the lower bound to use to define list containment */
+    /**
+     * the lower bound to use to define list containment
+     */
     private int lowerThreshold = Integer.MIN_VALUE;
 
-    /** the upper bound to use to define list containment */
+    /**
+     * the upper bound to use to define list containment
+     */
     private int upperThreshold = Integer.MAX_VALUE;
 
-    /** the evaluator to use to compare Objects against the threshold */
-    private Evaluator<E> evaluator = null;
+    /**
+     * the evaluator to use to compare Objects against the threshold
+     */
+    private Evaluator<E> evaluator;
 
-    /** a sorted view of the source makes threshold operations really fast */
+    /**
+     * a sorted view of the source makes threshold operations really fast
+     */
     private final SortedList<E> sortedSource;
 
     /**
@@ -172,33 +181,42 @@ public final class ThresholdList<E> extends RangeList<E> {
         return evaluator;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean contains(Object object) {
         // Fast fail if the object isn't within the thresholds
         // Note: this technically breaks the contract for contains.
         // evaluator.evaluate(object) may throw a ClassCastException
-        if(!withinRange((E)object)) return false;
+        if (!withinRange((E) object))
+            return false;
         return source.contains(object);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int indexOf(Object object) {
         // Fast fail if the object isn't within the thresholds
         // Note: this technically breaks the contract for indexOf.
         // evaluator.evaluate(object) may throw a ClassCastException
-        if(!withinRange((E)object)) return -1;
+        if (!withinRange((E) object))
+            return -1;
         return source.indexOf(object);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int lastIndexOf(Object object) {
         // Fast fail if the object isn't within the thresholds
         // Note: this technically breaks the contract for lastIndexOf.
         // evaluator.evaluate(object) may throw a ClassCastException
-        if(!withinRange((E)object)) return -1;
+        if (!withinRange((E) object))
+            return -1;
         return source.lastIndexOf(object);
     }
 
@@ -210,7 +228,9 @@ public final class ThresholdList<E> extends RangeList<E> {
         return objectEvaluation >= lowerThreshold && objectEvaluation <= upperThreshold;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setRange(int startIndex, int endIndex) {
         // this implementation is slightly inconsistent with the superclass
@@ -221,7 +241,9 @@ public final class ThresholdList<E> extends RangeList<E> {
         adjustRange();
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void setTailRange(int startIndex, int endIndex) {
         // this implementation is slightly inconsistent with the superclass
@@ -237,22 +259,28 @@ public final class ThresholdList<E> extends RangeList<E> {
      * threshold value for that index.
      */
     private int sourceIndexToThreshold(int sourceIndex) {
-        if(sourceIndex < 0) {
+        if (sourceIndex < 0) {
             return Integer.MIN_VALUE;
-        } else if(sourceIndex < source.size()) {
+        }
+        else if (sourceIndex < source.size()) {
             return evaluator.evaluate(source.get(sourceIndex));
-        } else {
+        }
+        else {
             return Integer.MIN_VALUE;
         }
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getStartIndex() {
         return sortedSource.sortIndex(lowerThreshold);
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int getEndIndex() {
         // search for the upperThreshold value
@@ -265,7 +293,9 @@ public final class ThresholdList<E> extends RangeList<E> {
         return index;
     }
 
-    /** {@inheritDoc} */
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void dispose() {
         sortedSource.dispose();
@@ -298,8 +328,10 @@ public final class ThresholdList<E> extends RangeList<E> {
      */
     static final class ThresholdComparator<E> implements Comparator<E> {
 
-        /** the underlying evaluator */
-        private Evaluator<E> evaluator = null;
+        /**
+         * the underlying evaluator
+         */
+        private Evaluator<E> evaluator;
 
         /**
          * Creates a new ThresholdComparator
@@ -322,32 +354,43 @@ public final class ThresholdList<E> extends RangeList<E> {
         @Override
         public int compare(E alpha, E beta) {
             int alphaValue;
-            if(alpha instanceof Integer integer) alphaValue = integer;
-            else alphaValue = evaluator.evaluate(alpha);
+            if (alpha instanceof Integer integer)
+                alphaValue = integer;
+            else
+                alphaValue = evaluator.evaluate(alpha);
 
             int betaValue;
-            if(beta instanceof Integer integer) betaValue = integer;
-            else betaValue = evaluator.evaluate(beta);
+            if (beta instanceof Integer integer)
+                betaValue = integer;
+            else
+                betaValue = evaluator.evaluate(beta);
 
-            if(alphaValue > betaValue) return 1;
-            else if(alphaValue < betaValue) return -1;
-            else return 0;
+            if (alphaValue > betaValue)
+                return 1;
+            else if (alphaValue < betaValue)
+                return -1;
+            else
+                return 0;
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean equals(Object o) {
-            if(this == o) return true;
-            if(o == null || getClass() != o.getClass()) return false;
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
 
             final ThresholdComparator that = (ThresholdComparator) o;
 
-            if(!evaluator.equals(that.evaluator)) return false;
-
-            return true;
+            return evaluator.equals(that.evaluator);
         }
 
-        /** {@inheritDoc} */
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public int hashCode() {
             return evaluator.hashCode();

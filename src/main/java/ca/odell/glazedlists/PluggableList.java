@@ -47,7 +47,7 @@ public class PluggableList<E> extends TransformedList<E, E> {
      * @param lock the {@link ReadWriteLock} to use within the {@link PluggableList}
      */
     public PluggableList(ListEventPublisher publisher, ReadWriteLock lock) {
-        this(new BasicEventList<E>(publisher, lock));
+        this(new BasicEventList<>(publisher, lock));
     }
 
     /**

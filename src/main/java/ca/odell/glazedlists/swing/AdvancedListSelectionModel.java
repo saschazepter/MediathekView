@@ -96,8 +96,8 @@ public interface AdvancedListSelectionModel<E> extends ListSelectionModel {
      * may eventually be garbage collected.
      *
      * <p>An {@link AdvancedListSelectionModel} will be garbage collected without a call to
-     * {@link #dispose()}, but not before its source {@link EventList} is garbage
-     * collected. By calling {@link #dispose()}, you allow the {@link AdvancedListSelectionModel}
+     * {@code dispose()}, but not before its source {@link EventList} is garbage
+     * collected. By calling {@code dispose()}, you allow the {@link AdvancedListSelectionModel}
      * to be garbage collected before its source {@link EventList}. This is
      * necessary for situations where an {@link AdvancedListSelectionModel} is short-lived but
      * its source {@link EventList} is long-lived.

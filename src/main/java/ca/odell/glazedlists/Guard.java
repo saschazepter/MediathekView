@@ -42,10 +42,10 @@ public final class Guard {
      * Executes the block of code represented by the given consumer while holding the read lock of
      * the supplied {@link EventList}.
      *
-     * @param list EventList
-     * @param consumer the consumer != null
-     * @param <E> the element type of the list
-     * @param <L> the concrete list type
+     * @param eventList EventList
+     * @param consumer  the consumer != null
+     * @param <E>       the element type of the list
+     * @param <L>       the concrete list type
      * @see EventList#acceptWithReadLock(Consumer)
      */
     public static <E, L extends EventList<E>> void acceptWithReadLock(L eventList, Consumer<L> consumer) {
@@ -56,7 +56,8 @@ public final class Guard {
         eventList.getReadWriteLock().readLock().lock();
         try {
             consumer.accept(eventList);
-        } finally {
+        }
+        finally {
             eventList.getReadWriteLock().readLock().unlock();
         }
     }
@@ -65,10 +66,10 @@ public final class Guard {
      * Executes the block of code represented by the given consumer while holding the write lock of
      * the supplied {@link EventList}.
      *
-     * @param list EventList
-     * @param consumer the consumer != null
-     * @param <E> the element type of the list
-     * @param <L> the concrete list type
+     * @param eventList EventList
+     * @param consumer  the consumer != null
+     * @param <E>       the element type of the list
+     * @param <L>       the concrete list type
      * @see EventList#acceptWithWriteLock(Consumer)
      */
     public static <E, L extends EventList<E>> void acceptWithWriteLock(L eventList, Consumer<L> consumer) {
@@ -79,7 +80,8 @@ public final class Guard {
         eventList.getReadWriteLock().writeLock().lock();
         try {
             consumer.accept(eventList);
-        } finally {
+        }
+        finally {
             eventList.getReadWriteLock().writeLock().unlock();
         }
     }
@@ -88,11 +90,11 @@ public final class Guard {
      * Applies the given function to the supplied {@link EventList} while holding the read lock of
      * this EventList.
      *
-     * @param list EventList != null
+     * @param list     EventList != null
      * @param function the function != null
-     * @param <E> the element type of the list
-     * @param <L> the concrete list type
-     * @param <R> the result type of the function
+     * @param <E>      the element type of the list
+     * @param <L>      the concrete list type
+     * @param <R>      the result type of the function
      * @return the result of the function
      * @see EventList#applyWithReadLock(Function)
      */
@@ -100,7 +102,8 @@ public final class Guard {
         list.getReadWriteLock().readLock().lock();
         try {
             return function.apply(list);
-        } finally {
+        }
+        finally {
             list.getReadWriteLock().readLock().unlock();
         }
     }
@@ -109,11 +112,11 @@ public final class Guard {
      * Applies the given function to the supplied {@link EventList} while holding the write lock of
      * this EventList.
      *
-     * @param list EventList != null
+     * @param list     EventList != null
      * @param function the function != null
-     * @param <E> the element type of the list
-     * @param <L> the concrete list type
-     * @param <R> the result type of the function
+     * @param <E>      the element type of the list
+     * @param <L>      the concrete list type
+     * @param <R>      the result type of the function
      * @return the result of the function
      * @see EventList#applyWithWriteLock(Function)
      */
@@ -121,7 +124,8 @@ public final class Guard {
         list.getReadWriteLock().writeLock().lock();
         try {
             return function.apply(list);
-        } finally {
+        }
+        finally {
             list.getReadWriteLock().writeLock().unlock();
         }
     }

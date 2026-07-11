@@ -79,7 +79,7 @@ public class SimpleTreeIterator <  T0>   {
 
 
 
-    private SimpleTree <  T0>   tree;
+    private final SimpleTree <  T0>   tree;
     private SimpleNode <  T0>   node;
     private int index;
 
@@ -129,7 +129,7 @@ public class SimpleTreeIterator <  T0>   {
      * separate cursors into the tree.
      */
     public SimpleTreeIterator <  T0>   copy() {
-        SimpleTreeIterator <  T0>   result = new SimpleTreeIterator <  T0>  (tree);
+        SimpleTreeIterator <  T0>   result = new SimpleTreeIterator<>(tree);
 
 
         result.count1 = this.count1;

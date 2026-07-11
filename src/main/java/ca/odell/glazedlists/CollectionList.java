@@ -57,7 +57,7 @@ import java.util.List;
 public class CollectionList<S, E> extends TransformedList<S, E> implements ListEventListener<S> {
 
     /** This is a hack - we need a temporary value when inserting into IndexedTrees, and this is the one we use. */
-    private final ChildElement<E> EMPTY_CHILD_ELEMENT = new SimpleChildElement(Collections.<E>emptyList(), null);
+    private final ChildElement<E> EMPTY_CHILD_ELEMENT = new SimpleChildElement(Collections.emptyList(), null);
 
     /** used to extract children */
     private final Model<S, E> model;
@@ -336,10 +336,10 @@ public class CollectionList<S, E> extends TransformedList<S, E> implements ListE
      * Models a list held by the CollectionList.
      */
     private interface ChildElement<E> {
-        public E get(int index);
-        public E remove(int index);
-        public E set(int index, E element);
-        public void dispose();
+        E get(int index);
+        E remove(int index);
+        E set(int index, E element);
+        void dispose();
     }
 
     /**

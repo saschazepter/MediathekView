@@ -19,7 +19,7 @@ public final class AgedNode {
     /** The corresponding node in the index tree */
     private final SparseListNode indexNode;
     /** The timestamp corresponding to the last access of this node */
-    private long timestamp = 0;
+    private long timestamp;
     /** The value to this node */
     private final Object value;
 

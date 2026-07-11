@@ -25,7 +25,7 @@ public class MouseOnlySortingStrategyWithUndo implements SortingStrategy {
 
         final List<SortingState.SortingColumn> recentlyClickedColumns = sortingState.getRecentlyClickedColumns();
 
-        final boolean wasPrimarySortColumnClicked = !recentlyClickedColumns.isEmpty() && clickedColumn == recentlyClickedColumns.get(0);
+        final boolean wasPrimarySortColumnClicked = !recentlyClickedColumns.isEmpty() && clickedColumn == recentlyClickedColumns.getFirst();
         final boolean isPrimarySortColumnReversed = clickedColumn.isReverse();
         final boolean isLastComparatorForPrimarySortColumn = clickedColumn.getComparatorIndex() == clickedColumn.getComparators().size() - 1;
 

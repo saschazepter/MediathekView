@@ -33,7 +33,7 @@ public interface Matcher<E> extends Predicate<E> {
      *
      * @param item The item possibly being filtered.
      */
-    public boolean matches(E item);
+    boolean matches(E item);
 
     @Override
     default boolean test(E item) {

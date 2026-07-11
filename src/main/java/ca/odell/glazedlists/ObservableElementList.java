@@ -61,7 +61,7 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
      * listener is responsible for calling {@link #elementChanged(Object)}
      * to notify this list of the changed object.
      */
-    private Connector<? super E> elementConnector = null;
+    private Connector<? super E> elementConnector;
 
     /**
      * <tt>true</tt> indicates a single shared EventListener is used for each
@@ -78,13 +78,13 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
      * {@link EventListener} associated with the observed element at the same
      * index within {@link #observedElements}.
      */
-    private List<EventListener> multiEventListenerRegistry = null;
+    private List<EventListener> multiEventListenerRegistry;
 
     /**
      * The single {@link EventListener} shared by all list elements if a
      * common listener is returned from the {@link Connector} of this list.
      */
-    private EventListener singleEventListener = null;
+    private EventListener singleEventListener;
 
     /**
      * The compact data structure which identifies the observed elements that
@@ -93,7 +93,7 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
      * been registered on the element at the index; {@link Barcode#WHITE}
      * indicates no listener was registered on the element at the index.
      */
-    private Barcode singleEventListenerRegistry = null;
+    private Barcode singleEventListenerRegistry;
 
     /**
      * Constructs an <code>ObservableElementList</code> which wraps the given
@@ -463,7 +463,7 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
          *      and thus {@link #uninstallListener(Object, EventListener)} need
          *      not be called.
          */
-        public EventListener installListener(E element);
+        EventListener installListener(E element);
 
         /**
          * Stop listening for events from the specified <code>element</code>.
@@ -471,7 +471,7 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
          * @param element the element to be observed
          * @param listener the listener as returned by {@link #installListener(Object)}.
          */
-        public void uninstallListener(E element, EventListener listener);
+        void uninstallListener(E element, EventListener listener);
 
         /**
          * Sets the {@link ObservableElementChangeHandler} to notify when changes occur on elements.
@@ -479,6 +479,6 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
          * @param list the ObservableElementList implementing {@link ObservableElementChangeHandler} containing the
          *            elements to observe
          */
-        public void setObservableElementList(ObservableElementChangeHandler<? extends E> list);
+        void setObservableElementList(ObservableElementChangeHandler<? extends E> list);
     }
 }

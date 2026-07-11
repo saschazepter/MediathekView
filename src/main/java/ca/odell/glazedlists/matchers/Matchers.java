@@ -221,7 +221,7 @@ public final class Matchers {
      *         the <code>matcher</code>
      */
     public static <E> Collection<? super E> select(Collection<E> collection, Matcher<? super E> matcher) {
-        return select(collection, matcher, new ArrayList<E>());
+        return select(collection, matcher, new ArrayList<>());
     }
 
     /**

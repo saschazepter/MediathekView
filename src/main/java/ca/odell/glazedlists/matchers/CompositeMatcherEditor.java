@@ -27,13 +27,13 @@ public class CompositeMatcherEditor<E> extends AbstractMatcherEditor<E> {
     public static final int OR = 24;
 
     /** the delegates */
-    private EventList<MatcherEditor<E>> matcherEditors;
+    private final EventList<MatcherEditor<E>> matcherEditors;
 
     /** whether to match with AND or OR */
     private int mode = AND;
 
     /** listeners for each delegate */
-    private List<DelegateMatcherEditorListener> matcherEditorListeners = new ArrayList<>();
+    private final List<DelegateMatcherEditorListener> matcherEditorListeners = new ArrayList<>();
 
     /**
      * Create a {@link CompositeMatcherEditor} that creates Matchers from the union
@@ -60,7 +60,7 @@ public class CompositeMatcherEditor<E> extends AbstractMatcherEditor<E> {
      * Create a {@link CompositeMatcherEditor}.
      */
     public CompositeMatcherEditor() {
-        this(new BasicEventList<MatcherEditor<E>>());
+        this(new BasicEventList<>());
     }
 
     /**

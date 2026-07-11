@@ -20,7 +20,7 @@ public class SimpleIterator<E> implements Iterator<E> {
     private final List<E> source;
 
     /** the index of the next element to view */
-    private int nextIndex = 0;
+    private int nextIndex;
 
     /**
      * Create a new iterator that iterates over the specified source list.

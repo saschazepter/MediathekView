@@ -13,10 +13,10 @@ public interface CheckableTableFormat<E> extends TableFormat<E> {
     /**
      * Sets the specified object as checked.
      */
-    public void setChecked(E baseObject, boolean checked);
+    void setChecked(E baseObject, boolean checked);
 
     /**
      * Gets whether the specified object is checked.
      */
-    public boolean getChecked(E baseObject);
+    boolean getChecked(E baseObject);
 }

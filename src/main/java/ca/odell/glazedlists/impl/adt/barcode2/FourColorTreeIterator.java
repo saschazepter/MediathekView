@@ -84,7 +84,7 @@ public class FourColorTreeIterator <  T0>   {
 
 
 
-    private FourColorTree <  T0>   tree;
+    private final FourColorTree <  T0>   tree;
     private FourColorNode <  T0>   node;
     private int index;
 
@@ -140,7 +140,7 @@ public class FourColorTreeIterator <  T0>   {
      * separate cursors into the tree.
      */
     public FourColorTreeIterator <  T0>   copy() {
-        FourColorTreeIterator <  T0>   result = new FourColorTreeIterator <  T0>  (tree);
+        FourColorTreeIterator <  T0>   result = new FourColorTreeIterator<>(tree);
 
 
         result.count1 = this.count1;

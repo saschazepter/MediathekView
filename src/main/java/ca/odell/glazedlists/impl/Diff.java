@@ -26,7 +26,7 @@ public final class Diff {
      * equality.
      */
     public static <E> void replaceAll(EventList<E> target, List<E> source, boolean updates) {
-        replaceAll(target, source, updates, GlazedListsImpl.<E>equalsComparator());
+        replaceAll(target, source, updates, GlazedListsImpl.equalsComparator());
     }
 
     /**
@@ -168,9 +168,9 @@ public final class Diff {
      * not allowed.
      */
     private static class Point {
-        private int x = 0;
-        private int y = 0;
-        private Point predecessor = null;
+        private int x;
+        private int y;
+        private Point predecessor;
 
         /**
          * Create a new point with the specified coordinates and no predecessor.
@@ -257,27 +257,27 @@ public final class Diff {
      * {@link #alphaAt(int)} and {@link #betaAt(int)} methods.
      */
     interface DiffMatcher {
-        public int getAlphaLength();
+        int getAlphaLength();
 
-        public int getBetaLength();
+        int getBetaLength();
 
-        public boolean matchPair(int alphaIndex, int betaIndex);
+        boolean matchPair(int alphaIndex, int betaIndex);
 
         /**
          * Output a character representing the specified element, for
          * the convenience of testing.
          */
-        public char alphaAt(int index);
-        public char betaAt(int index);
+        char alphaAt(int index);
+        char betaAt(int index);
     }
 
     /**
      * Matcher for Lists.
      */
     static class ListDiffMatcher<E> implements DiffMatcher {
-        private List<E> alpha;
-        private List<E> beta;
-        private Comparator<E> comparator;
+        private final List<E> alpha;
+        private final List<E> beta;
+        private final Comparator<E> comparator;
 
         public ListDiffMatcher(List<E> alpha, List<E> beta, Comparator<E> comparator) {
             this.alpha = alpha;

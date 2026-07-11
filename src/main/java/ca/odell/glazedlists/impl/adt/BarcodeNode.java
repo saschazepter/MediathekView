@@ -19,19 +19,19 @@ final class BarcodeNode {
     private Barcode host;
 
     /** the left and right child nodes */
-    BarcodeNode left = null;
-    BarcodeNode right = null;
+    BarcodeNode left;
+    BarcodeNode right;
 
     /** the size of the black portion of the left and right subtrees */
-    private int blackLeftSize = 0;
-    private int blackRightSize = 0;
+    private int blackLeftSize;
+    private int blackRightSize;
 
     /** the total size of the left and right subtrees */
-    private int treeLeftSize = 0;
-    private int treeRightSize = 0;
+    private int treeLeftSize;
+    private int treeRightSize;
 
     /** the amount of empty space that precedes this node */
-    int whiteSpace = 0;
+    int whiteSpace;
 
     /** the number of values represented by this node */
     int rootSize = 1;

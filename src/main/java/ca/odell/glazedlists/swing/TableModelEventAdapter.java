@@ -80,7 +80,7 @@ public interface TableModelEventAdapter<E> extends ListEventListener<E> {
      * @author Holger Brands
      */
     @FunctionalInterface
-    public interface Factory<E> extends Function<AbstractTableModel, TableModelEventAdapter<E>> {
+    interface Factory<E> extends Function<AbstractTableModel, TableModelEventAdapter<E>> {
 
         /**
          * Creates a new {@link TableModelEventAdapter} for the given table model.

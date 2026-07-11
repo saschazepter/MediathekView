@@ -32,7 +32,7 @@ import ca.odell.glazedlists.event.ListEvent;
 public class RangeList<E> extends TransformedList<E, E> {
 
     /** the user-specified range of the source list to include */
-    private int desiredStart = 0;
+    private int desiredStart;
     private int desiredEnd = -1;
 
     /** the first index in this list, inclusive */

@@ -145,7 +145,7 @@ public final class SequenceList<E> extends TransformedList<E,E> implements Rando
          * @return the previous value in the sequence such that <code>value</code>
          *      would be included within the bounds of the sequence
          */
-        public E previous(E value);
+        E previous(E value);
 
         /**
          * Given a sequencable <code>value</code>, produce the next value
@@ -156,7 +156,7 @@ public final class SequenceList<E> extends TransformedList<E,E> implements Rando
          * @return the next value in the sequence such that <code>value</code>
          *      would be included within the bounds of the sequence
          */
-        public E next(E value);
+        E next(E value);
     }
 
     /**
@@ -222,7 +222,7 @@ public final class SequenceList<E> extends TransformedList<E,E> implements Rando
         } else {
             // seed this SequenceList with the initial two values
             if (this.isEmpty()) {
-                final E value = source.get(0);
+                final E value = source.getFirst();
                 final E previousSequenceValue = getPreviousSequenceValue(value);
                 final E nextSequenceValue = getNextSequenceValue(value);
 
@@ -233,7 +233,7 @@ public final class SequenceList<E> extends TransformedList<E,E> implements Rando
             }
 
             // add the necessary leading sequence values
-            final E firstSourceValue = source.get(0);
+            final E firstSourceValue = source.getFirst();
             while (comparator.compare(firstSourceValue, get(0)) == -1) {
                 E element = sequencer.previous(get(0));
                 sequence.add(0, element);

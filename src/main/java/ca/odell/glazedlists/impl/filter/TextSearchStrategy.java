@@ -23,7 +23,7 @@ public interface TextSearchStrategy {
      * @param charMap the strategy to use when normalizing characters
      *    immediately before comparing them for equality
      */
-    public void setCharacterMap(char[] charMap);
+    void setCharacterMap(char[] charMap);
 
     /**
      * Sets the subtext to locate when {@link #indexOf(String)} is called.
@@ -32,7 +32,7 @@ public interface TextSearchStrategy {
      *
      * @param subtext the String to locate in {@link #indexOf(String)}
      */
-    public void setSubtext(String subtext);
+    void setSubtext(String subtext);
 
     /**
      * Returns the index of the first occurrence of <code>subtext</code> within
@@ -46,14 +46,14 @@ public interface TextSearchStrategy {
      *      <code>text</code>; or <code>-1</code>
      * @throws IllegalStateException if no subtext has been set
      */
-    public int indexOf(String text);
+    int indexOf(String text);
 
     /**
      * The factory for building implementations of {@link TextSearchStrategy}
      * which is used as an identifier for the strategy itself.
      */
     @FunctionalInterface
-    public interface Factory {
+    interface Factory {
 
         /**
          * Build a new TextSearchStrategy for the specified mode and filter text.
@@ -62,6 +62,6 @@ public interface TextSearchStrategy {
          *     {@code TextMatcherEditor.STARTS_WITH}.
          * @param filter the search string to match against
          */
-        public TextSearchStrategy create(int mode, String filter);
+        TextSearchStrategy create(int mode, String filter);
     }
 }

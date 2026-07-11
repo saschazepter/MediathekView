@@ -28,7 +28,7 @@ public interface AdvancedTableFormat<E> extends TableFormat<E> {
      *
      * @param column The index of the column being edited.
      */
-    public Class getColumnClass(int column);
+    Class getColumnClass(int column);
 
     /**
      * Returns the default {@link Comparator} to use for the specified column.
@@ -39,5 +39,5 @@ public interface AdvancedTableFormat<E> extends TableFormat<E> {
      * @return the {@link Comparator} to use or <code>null</code> for an unsortable
      *      column.
      */
-    public Comparator getColumnComparator(int column);
+    Comparator getColumnComparator(int column);
 }

@@ -42,7 +42,7 @@ public class DefaultEventTableModel<E> extends AbstractTableModel implements Adv
     protected EventList<E> source;
 
     /** indicator to dispose source list */
-    private boolean disposeSource;
+    private final boolean disposeSource;
 
     /** specifies how column data is extracted from each row object */
     private TableFormat<? super E> tableFormat;

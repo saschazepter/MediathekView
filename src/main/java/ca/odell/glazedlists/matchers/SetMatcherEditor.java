@@ -47,7 +47,7 @@ public final class SetMatcherEditor<E, O> extends AbstractMatcherEditor<E> {
     }
 
     private final Function<E, O> function;
-    private Mode mode;
+    private final Mode mode;
 
     private SetMatcherEditor(final Mode mode, final Function<E, O> function) {
         this.function = checkNotNull(function);

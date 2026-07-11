@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
 public class EventListIterator<E> implements ListIterator<E>, ListEventListener<E> {
 
     /** the list being iterated */
-    private EventList<E> source;
+    private final EventList<E> source;
 
     /** the index of the next element to view */
     private int nextIndex;

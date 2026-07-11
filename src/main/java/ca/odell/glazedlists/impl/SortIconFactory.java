@@ -30,8 +30,8 @@ public final class SortIconFactory {
     }
 
     /** the icons to use for indicating sort order */
-    private static Icon[] defaultIcons = null;
-    private static String[] iconFileNames = {
+    private static Icon[] defaultIcons;
+    private static final String[] iconFileNames = {
         "unsorted.png", "primary_sorted.png", "primary_sorted_reverse.png",
         "primary_sorted_alternate.png", "primary_sorted_alternate_reverse.png",
         "secondary_sorted.png", "secondary_sorted_reverse.png",
