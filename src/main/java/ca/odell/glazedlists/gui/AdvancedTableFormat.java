@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.gui;
 
+import org.jspecify.annotations.Nullable;
+
 import java.util.Comparator;
 
 /**
@@ -39,5 +41,5 @@ public interface AdvancedTableFormat<E> extends TableFormat<E> {
      * @return the {@link Comparator} to use or <code>null</code> for an unsortable
      *      column.
      */
-    Comparator getColumnComparator(int column);
+    @Nullable Comparator getColumnComparator(int column);
 }

@@ -1,12 +1,29 @@
 package ca.odell.glazedlists
 
+import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.impl.beans.BeanTableFormat
 import ca.odell.glazedlists.impl.sort.ComparatorChain
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
+import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Test
 
 internal class JavaMigrationBehaviorTest {
+    @Test
+    fun tableFormatPreservesNullableCellValuesForKotlinCallers() {
+        val format: TableFormat<String> = object : TableFormat<String> {
+            override fun getColumnCount(): Int = 1
+
+            override fun getColumnName(column: Int): String = "Optional value"
+
+            override fun getColumnValue(baseObject: String, column: Int): Any? = null
+        }
+
+        val value: Any? = format.getColumnValue("row", 0)
+
+        assertNull(value)
+    }
+
     @Test
     fun comparatorChainKeepsOrderingCopyAndEqualityContracts() {
         val byLength = compareBy<String> { it.length }

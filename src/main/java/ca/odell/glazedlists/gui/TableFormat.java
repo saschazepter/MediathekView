@@ -3,6 +3,8 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.gui;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Specifies how a set of records are rendered in a table.
  *
@@ -27,6 +29,8 @@ public interface TableFormat<E> {
      * is the value that will be passed to the editor and renderer for the
      * column. If you have defined a custom renderer, you may choose to return
      * simply the baseObject.
+     *
+     * @return the cell value, which may be {@code null}
      */
-    Object getColumnValue(E baseObject, int column);
+    @Nullable Object getColumnValue(E baseObject, int column);
 }
