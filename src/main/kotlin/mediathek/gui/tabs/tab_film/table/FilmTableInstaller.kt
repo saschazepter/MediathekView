@@ -24,8 +24,14 @@ import mediathek.gui.tabs.tab_film.actions.CopyUrlToClipboardAction
 import mediathek.gui.tabs.tab_film.actions.FilmActionHost
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.context.TableContextMenuHandler
-import mediathek.tool.cellrenderer.CellRendererFilme
+import mediathek.tool.cellrenderer.FilmActionCellRenderer
+import mediathek.tool.cellrenderer.FilmFormattedValueCellRenderer
+import mediathek.tool.cellrenderer.FilmGeoCellRenderer
+import mediathek.tool.cellrenderer.FilmSenderCellRenderer
+import mediathek.tool.cellrenderer.FilmTextCellRenderer
+import mediathek.tool.cellrenderer.FilmTitleCellRenderer
 import mediathek.tool.datum.DatumFilm
+import mediathek.tool.models.FilmColumn
 import java.awt.Component
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
@@ -124,10 +130,31 @@ class FilmTableInstaller(private val host: Host) {
     }
 
     private fun setupCellRenderer() {
-        val cellRenderer = CellRendererFilme(host.downloads(), host.appearance())
-        host.table().setDefaultRenderer(Any::class.java, cellRenderer)
-        host.table().setDefaultRenderer(DatumFilm::class.java, cellRenderer)
-        host.table().setDefaultRenderer(Int::class.javaObjectType, cellRenderer)
+        val table = host.table()
+        val appearance = host.appearance()
+        val textRenderer = FilmTextCellRenderer(appearance)
+        table.setDefaultRenderer(Any::class.java, textRenderer)
+        table.setDefaultRenderer(DatumFilm::class.java, textRenderer)
+        table.setDefaultRenderer(Int::class.javaObjectType, textRenderer)
+
+        val formattedValueRenderer = FilmFormattedValueCellRenderer(appearance)
+        val actionRenderer = FilmActionCellRenderer(host.downloads(), appearance)
+        val specializedRenderers = mapOf(
+            FilmColumn.SENDER to FilmSenderCellRenderer(appearance),
+            FilmColumn.TITLE to FilmTitleCellRenderer(appearance),
+            FilmColumn.PLAY to actionRenderer,
+            FilmColumn.SAVE to actionRenderer,
+            FilmColumn.BOOKMARK to actionRenderer,
+            FilmColumn.TIME to formattedValueRenderer,
+            FilmColumn.DURATION to formattedValueRenderer,
+            FilmColumn.SIZE to formattedValueRenderer,
+            FilmColumn.GEO to FilmGeoCellRenderer(appearance),
+        )
+
+        for (viewColumn in 0 until table.columnModel.columnCount) {
+            val tableColumn = table.columnModel.getColumn(viewColumn)
+            tableColumn.cellRenderer = specializedRenderers[FilmColumn.fromIndex(tableColumn.modelIndex)]
+        }
     }
 
     private companion object {
