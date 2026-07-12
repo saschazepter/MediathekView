@@ -70,7 +70,7 @@ public final class ThresholdList<E> extends RangeList<E> {
     /**
      * the evaluator to use to compare Objects against the threshold
      */
-    private Evaluator<E> evaluator;
+    private final Evaluator<E> evaluator;
 
     /**
      * a sorted view of the source makes threshold operations really fast
@@ -331,7 +331,7 @@ public final class ThresholdList<E> extends RangeList<E> {
         /**
          * the underlying evaluator
          */
-        private Evaluator<E> evaluator;
+        private final Evaluator<E> evaluator;
 
         /**
          * Creates a new ThresholdComparator

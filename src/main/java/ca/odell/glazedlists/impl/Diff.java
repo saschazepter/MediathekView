@@ -169,8 +169,8 @@ public final class Diff {
      * not allowed.
      */
     private static class Point {
-        private int x;
-        private int y;
+        private final int x;
+        private final int y;
         private Point predecessor;
 
         /**

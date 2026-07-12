@@ -700,7 +700,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         @Override
         public boolean remove(Object o) { return delegate.remove(o); }
         @Override
-        public boolean containsAll(@NonNull Collection<?> c) { return delegate.containsAll(c); }
+        public boolean containsAll(@NonNull Collection<?> c) { return new HashSet<>(delegate).containsAll(c); }
         @Override
         public boolean removeAll(@NonNull Collection<?> c) { return delegate.removeAll(c); }
         @Override

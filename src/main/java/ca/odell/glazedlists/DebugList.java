@@ -244,7 +244,7 @@ public class DebugList<E> extends AbstractEventList<E> {
     public boolean containsAll(Collection<?> collection) {
         beforeReadOperation();
         try {
-            return delegate.containsAll(collection);
+            return new HashSet<>(delegate).containsAll(collection);
         } finally {
             afterReadOperation();
         }

@@ -26,7 +26,7 @@ public class TableColumnComparator<E> implements Comparator<E> {
     /**
      * comparison is delegated to a ComparableComparator
      */
-    private Comparator comparator;
+    private final Comparator comparator;
 
     /**
      * Creates a new TableColumnComparator that sorts objects by the specified

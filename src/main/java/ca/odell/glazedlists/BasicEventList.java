@@ -329,7 +329,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
      */
     private void writeObject(ObjectOutputStream out) throws IOException {
         // 1. The elements to write
-        E[] elements = (E[])data.toArray(new Object[data.size()]);
+        E[] elements = (E[]) data.toArray(Object[]::new);
 
         // 2. The Listeners to write
         List<ListEventListener<E>> serializableListeners = new ArrayList<>(1);
@@ -337,7 +337,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
             if (!(listener instanceof Serializable)) continue;
             serializableListeners.add(listener);
         }
-        ListEventListener[] listeners = serializableListeners.toArray(new ListEventListener[serializableListeners.size()]);
+        ListEventListener[] listeners = serializableListeners.toArray(ListEventListener[]::new);
 
         // 3. Write the elements, listeners, publisher and lock
         out.writeObject(elements);

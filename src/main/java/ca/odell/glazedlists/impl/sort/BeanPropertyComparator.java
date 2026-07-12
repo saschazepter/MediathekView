@@ -25,7 +25,7 @@ public final class BeanPropertyComparator<T> implements Comparator<T> {
     /**
      * the accessor for the JavaBean property
      */
-    private BeanProperty beanProperty;
+    private final BeanProperty beanProperty;
 
     /**
      * Create a new JavaBean property comparator that compares properties using

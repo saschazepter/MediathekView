@@ -92,9 +92,6 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
 
         // everything that has all of its listeners already notified in subjectAndListeners
         Map<Object,Boolean> satisfied = new IdentityHashMap<>();
-        // everything that has a listener already notified
-        List<Object> satisfiedToDo = new ArrayList<>();
-
         // prepare the initial collections: maps that show how each element is
         // used as source and target in directed edges, plus a list of nodes
         // that have no incoming edges
@@ -111,7 +108,8 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
         }
 
         // start with the initial set of sources that don't have dependencies
-        satisfiedToDo.addAll(satisfied.keySet());
+        // everything that has a listener already notified
+        List<Object> satisfiedToDo = new ArrayList<>(satisfied.keySet());
 
         // We have a subject which has all of its dependencies satisfied.
         // ie. all edges where this subject is a target are already in
@@ -139,7 +137,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
                 // make sure we can satisfy this if all its sources are in satisfiedSources
                 List<SubjectAndListener> allSourcesForSourceTarget = targetToPairs.get(sourceTarget);
                 // we've since processed this entire target, we shouldn't process it twice
-                if (allSourcesForSourceTarget.size() == 0)
+                if (allSourcesForSourceTarget.isEmpty())
                     continue;
                 for (SubjectAndListener sourceAndTarget : allSourcesForSourceTarget) {
                     if (!satisfied.containsKey(sourceAndTarget.subject)) {

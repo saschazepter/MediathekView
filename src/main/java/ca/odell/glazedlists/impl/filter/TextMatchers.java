@@ -252,7 +252,7 @@ public final class TextMatchers {
         allSearchTerms.addAll(normalizeSearchTerms(nonNegatedUnrequiredSearchTerms, false));
 
         // return the normalized SearchTerms as an array
-        return allSearchTerms.toArray(new SearchTerm[allSearchTerms.size()]);
+        return allSearchTerms.toArray(SearchTerm[]::new);
     }
 
     /**
@@ -303,7 +303,7 @@ public final class TextMatchers {
                 final boolean endOfTerm = c == '"' || (!insideQuotedTerm && Character.isWhitespace(c));
 
                 if (endOfTerm) {
-                    if (searchTermText.length() > 0) {
+                    if (!searchTermText.isEmpty()) {
                         // record the current SearchTerm
                         searchTerms.add(new SearchTerm<>(searchTermText.toString(), negated, required, field));
                     }
@@ -367,10 +367,10 @@ public final class TextMatchers {
         }
 
         // if a SearchTerm is left hanging, use it as well
-        if (searchTermText.length() > 0)
+        if (!searchTermText.isEmpty())
             searchTerms.add(new SearchTerm<>(searchTermText.toString(), negated, required, field));
 
-        return searchTerms.toArray(new SearchTerm[searchTerms.size()]);
+        return searchTerms.toArray(SearchTerm[]::new);
     }
 
     /**

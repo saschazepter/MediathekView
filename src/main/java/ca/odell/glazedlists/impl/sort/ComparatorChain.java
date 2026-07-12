@@ -29,7 +29,7 @@ public final class ComparatorChain<T> implements Comparator<T> {
      * @param comparators a list of objects implementing {@link Comparator}
      */
     public ComparatorChain(List<Comparator<T>> comparators) {
-        this.comparators = comparators.toArray(new Comparator[comparators.size()]);
+        this.comparators = comparators.toArray(Comparator[]::new);
     }
 
     /**

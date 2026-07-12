@@ -12,6 +12,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -106,7 +107,7 @@ public final class ThreadSafeList<E> extends TransformedList<E, E> {
     public boolean containsAll(Collection<?> collection) {
         getReadWriteLock().readLock().lock();
         try {
-            return source.containsAll(collection);
+            return new HashSet<>(source).containsAll(collection);
         } finally {
             getReadWriteLock().readLock().unlock();
         }

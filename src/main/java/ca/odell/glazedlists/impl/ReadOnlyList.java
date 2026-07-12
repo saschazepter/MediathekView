@@ -12,6 +12,7 @@ import ca.odell.glazedlists.event.ListEvent;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -91,7 +92,7 @@ public final class ReadOnlyList<E> extends TransformedList<E, E> {
     /** {@inheritDoc} */
     @Override
     public boolean containsAll(Collection<?> values) {
-        return source.containsAll(values);
+        return new HashSet<>(source).containsAll(values);
     }
 
     /** {@inheritDoc} */
