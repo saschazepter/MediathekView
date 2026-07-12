@@ -172,8 +172,8 @@ public final class Matchers {
      */
     public static <E> int count(Collection<E> collection, Matcher<? super E> matcher) {
         int count = 0;
-        for (Iterator<E> i = collection.iterator(); i.hasNext();)
-            if (matcher.matches(i.next()))
+        for (E e : collection)
+            if (matcher.matches(e))
                 count++;
 
         return count;
@@ -237,8 +237,7 @@ public final class Matchers {
      *         elements which satisfy the <code>matcher</code>
      */
     public static <E> Collection<? super E> select(Collection<E> collection, Matcher<? super E> matcher, Collection<? super E> results) {
-        for (Iterator<E> i = collection.iterator(); i.hasNext();) {
-            E element = i.next();
+        for (E element : collection) {
             if (matcher.matches(element))
                 results.add(element);
         }
@@ -258,8 +257,8 @@ public final class Matchers {
      *      <tt>false</tt> otherise
      */
     public static <E> boolean contains(Collection<E> collection, Matcher<? super E> matcher) {
-        for (Iterator<E> i = collection.iterator(); i.hasNext();)
-            if (matcher.matches(i.next()))
+        for (E e : collection)
+            if (matcher.matches(e))
                 return true;
 
         return false;

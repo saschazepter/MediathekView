@@ -79,10 +79,10 @@ public class SortingState {
             return null;
         } else {
             List<Comparator<Object>> comparators = new ArrayList<>(recentlyClickedColumns.size());
-            for(Iterator<SortingColumn> i = recentlyClickedColumns.iterator(); i.hasNext(); ) {
-                SortingColumn sortingColumn = i.next();
+            for (SortingColumn sortingColumn : recentlyClickedColumns) {
                 Comparator comparator = sortingColumn.getComparator();
-                if(comparator == null) throw new IllegalStateException();
+                if (comparator == null)
+                    throw new IllegalStateException();
                 comparators.add(comparator);
             }
 
@@ -132,23 +132,22 @@ public class SortingState {
         }
 
         // walk through the list of Comparators and assign click counts
-        for(Iterator<Comparator> i = comparatorsList.iterator(); i.hasNext(); ) {
+        for (Comparator comparator : comparatorsList) {
             // get the current comparator
-            Comparator comparator = i.next();
             boolean reverse = false;
-            if(comparator instanceof ReverseComparator) {
+            if (comparator instanceof ReverseComparator) {
                 reverse = true;
-                comparator = ((ReverseComparator)comparator).getSourceComparator();
+                comparator = ((ReverseComparator) comparator).getSourceComparator();
             }
 
             // discover where to add clicks for this comparator
-            for(int c = 0; c < sortingColumns.size(); c++) {
-                if(recentlyClickedColumns.contains(sortingColumns.get(c))) {
+            for (SortingColumn sortingColumn : sortingColumns) {
+                if (recentlyClickedColumns.contains(sortingColumn)) {
                     continue;
                 }
-                int comparatorIndex = sortingColumns.get(c).getComparators().indexOf(comparator);
-                if(comparatorIndex != -1) {
-                    final SortingColumn columnClickTracker = sortingColumns.get(c);
+                int comparatorIndex = sortingColumn.getComparators().indexOf(comparator);
+                if (comparatorIndex != -1) {
+                    final SortingColumn columnClickTracker = sortingColumn;
                     columnClickTracker.setComparatorIndex(comparatorIndex);
                     columnClickTracker.setReverse(reverse);
                     recentlyClickedColumns.add(columnClickTracker);
@@ -159,8 +158,7 @@ public class SortingState {
 
     public void clearComparators() {
         // clear the click counts
-        for(Iterator<SortingColumn> i = recentlyClickedColumns.iterator(); i.hasNext(); ) {
-            SortingColumn sortingColumn = i.next();
+        for (SortingColumn sortingColumn : recentlyClickedColumns) {
             sortingColumn.clear();
         }
         recentlyClickedColumns.clear();
@@ -227,22 +225,25 @@ public class SortingState {
 
         // parse each column part in sequence using regex groups
         String[] parts = stringEncoded.split(",");
-        for(int p = 0; p < parts.length; p++) {
+        for (String part : parts) {
             // skip empty strings
-            if(parts[p].trim().length() == 0) continue;
+            if (part.trim().isEmpty())
+                continue;
 
-            Matcher matcher = FROM_STRING_PATTERN.matcher(parts[p]);
+            Matcher matcher = FROM_STRING_PATTERN.matcher(part);
 
-            if(!matcher.find())
-                throw new IllegalArgumentException("Failed to parse column spec, \"" + parts[p] + "\"");
+            if (!matcher.find())
+                throw new IllegalArgumentException("Failed to parse column spec, \"" + part + "\"");
 
             int columnIndex = Integer.parseInt(matcher.group(1));
             int comparatorIndex = matcher.group(3) == null ? 0 : Integer.parseInt(matcher.group(3));
             boolean reversedComparator = matcher.group(5) != null;
 
             // bail on invalid data
-            if(columnIndex >= sortingColumns.size()) continue;
-            if(comparatorIndex >= sortingColumns.get(columnIndex).getComparators().size()) continue;
+            if (columnIndex >= sortingColumns.size())
+                continue;
+            if (comparatorIndex >= sortingColumns.get(columnIndex).getComparators().size())
+                continue;
 
             // add this comparator in sequence
             appendComparator(columnIndex, comparatorIndex, reversedComparator);

@@ -7,6 +7,7 @@ import ca.odell.glazedlists.matchers.Matcher;
 
 import java.beans.PropertyChangeEvent;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -47,9 +48,7 @@ public final class PropertyEventNameMatcher implements Matcher<PropertyChangeEve
     public PropertyEventNameMatcher(boolean matchPropertyNames, String... properties) {
         if (properties == null) throw new IllegalArgumentException("Array of property names may not be null");
         this.matchPropertyNames = matchPropertyNames;
-        for (int i = 0, n = properties.length; i < n; i++) {
-            propertyNames.add(properties[i]);
-        }
+        Collections.addAll(propertyNames, properties);
     }
 
     /**

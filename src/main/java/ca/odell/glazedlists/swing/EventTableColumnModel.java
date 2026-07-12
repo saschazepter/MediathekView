@@ -70,14 +70,14 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
         source.getReadWriteLock().readLock().lock();
         try {
             // ensure all of the TableColumns are non-null
-            for (int i = 0, n = source.size(); i < n; i++) {
-                if (source.get(i) == null)
+            for (T t : source) {
+                if (t == null)
                     throw new IllegalStateException("null TableColumn objects are not allowed in EventTableColumnModel");
             }
 
             // start listening to each of the TableColumns for property changes that may resize the table header
-            for (int i = 0, n = source.size(); i < n; i++)
-                source.get(i).addPropertyChangeListener(this);
+            for (T t : source)
+                t.addPropertyChangeListener(this);
 
             disposeSwingThreadSource = !GlazedListsSwing.isSwingThreadProxyList(source);
             swingThreadSource = disposeSwingThreadSource ? GlazedListsSwing.swingThreadProxyList(source) : (TransformedList<T, T>) source;
@@ -240,8 +240,8 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
         swingThreadSource.getReadWriteLock().readLock().lock();
         try {
             totalColumnWidth = 0;
-            for (int i = 0, n = swingThreadSource.size(); i < n; i++)
-                totalColumnWidth += swingThreadSource.get(i).getWidth();
+            for (T t : swingThreadSource)
+                totalColumnWidth += t.getWidth();
         } finally {
             swingThreadSource.getReadWriteLock().readLock().unlock();
         }
@@ -424,8 +424,8 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
 
         try {
             // stop listening to each of the TableColumns for property changes
-            for (int i = 0, n = swingThreadSource.size(); i < n; i++)
-                swingThreadSource.get(i).removePropertyChangeListener(this);
+            for (T t : swingThreadSource)
+                t.removePropertyChangeListener(this);
 
             swingThreadSource.removeListEventListener(this);
 

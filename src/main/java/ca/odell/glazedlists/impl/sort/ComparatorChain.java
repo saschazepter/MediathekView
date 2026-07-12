@@ -37,8 +37,8 @@ public final class ComparatorChain<T> implements Comparator<T> {
      */
     @Override
     public int compare(T alpha, T beta) {
-        for (int i = 0; i < comparators.length; i++) {
-            int compareResult = comparators[i].compare(alpha, beta);
+        for (Comparator<T> comparator : comparators) {
+            int compareResult = comparator.compare(alpha, beta);
             if (compareResult != 0)
                 return compareResult;
         }

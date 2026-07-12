@@ -52,11 +52,9 @@ public final class Diff {
 
         // walk through points, applying changes as they arrive
         Point previousPoint = null;
-        for(Iterator<Point> i = editScript.iterator(); i.hasNext();) {
-            Point currentPoint = i.next();
-
+        for (Point currentPoint : editScript) {
             // skip the first point
-            if(previousPoint == null) {
+            if (previousPoint == null) {
                 previousPoint = currentPoint;
                 continue;
             }
@@ -66,27 +64,30 @@ public final class Diff {
             int deltaY = currentPoint.getY() - previousPoint.getY();
 
             // handle an update
-            if(deltaX == deltaY) {
-                if(updates) {
-                    for(int u = 0; u < deltaX; u++) {
+            if (deltaX == deltaY) {
+                if (updates) {
+                    for (int u = 0; u < deltaX; u++) {
                         target.set(targetIndex + u, source.get(sourceIndex + u));
                     }
                 }
                 targetIndex += deltaX;
                 sourceIndex += deltaY;
 
-            // handle a remove
-            } else if(deltaX == 1 && deltaY == 0) {
+                // handle a remove
+            }
+            else if (deltaX == 1 && deltaY == 0) {
                 target.remove(targetIndex);
 
-            // handle an insert
-            } else if(deltaX == 0 && deltaY == 1) {
+                // handle an insert
+            }
+            else if (deltaX == 0 && deltaY == 1) {
                 target.add(targetIndex, source.get(sourceIndex));
                 sourceIndex++;
                 targetIndex++;
 
-            // should never be reached
-            } else {
+                // should never be reached
+            }
+            else {
                 throw new IllegalStateException();
             }
 

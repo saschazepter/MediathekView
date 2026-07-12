@@ -20,8 +20,8 @@ public class TypeMatcher<E> implements Matcher<E> {
         if (item == null) return false;
 
         final Class target = item.getClass();
-        for (int i = 0; i < classes.length; i++)
-            if (classes[i].isAssignableFrom(target))
+        for (Class aClass : classes)
+            if (aClass.isAssignableFrom(target))
                 return true;
 
         return false;

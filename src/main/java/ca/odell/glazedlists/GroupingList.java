@@ -229,8 +229,8 @@ public final class GroupingList<E> extends TransformedList<E, List<E>> {
             // the grouper know so we can rebuild our groups from scratch
 
             // record the impending removal of all groups before adjusting the barcode
-            for (int i = 0, n = size(); i < n; i++)
-                updates.elementDeleted(0, get(i));
+            for (List<E> es : this)
+                updates.elementDeleted(0, es);
 
             // adjust the Comparator used by the Grouper (which will change the barcode)
             grouper.setComparator(sourceComparator);

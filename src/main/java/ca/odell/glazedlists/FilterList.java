@@ -311,8 +311,8 @@ public final class FilterList<E> extends TransformedList<E,E> {
         updates.beginEvent();
 
         // fire all the elements in the list as deleted
-        for(int i = 0; i < size(); i++) {
-            updates.elementDeleted(0, get(i));
+        for (E e : this) {
+            updates.elementDeleted(0, e);
         }
 
         // reset the flaglist to all white (which matches nothing)

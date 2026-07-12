@@ -592,15 +592,17 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
      * Prune all nodes scheduled for deletion.
      */
     private void drainZeroQueue() {
-        for(int i = 0, size = zeroQueue.size(); i < size; i++) {
-            /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ node = zeroQueue.get(i);
-            /*[ WIDE_NODES_START ]*/ assert(node.size == 0); /*[ WIDE_NODES_END ]*/
+        for (/*[ NODENAME_START ]*/ BciiNode<T0, T1> /*[ NODENAME_END ]*/ node : zeroQueue) {
+            /*[ WIDE_NODES_START ]*/
+            assert (node.size == 0); /*[ WIDE_NODES_END ]*/
 
-            if(node.right == null) {
+            if (node.right == null) {
                 replaceChild(node, node.left);
-            } else if(node.left == null) {
+            }
+            else if (node.left == null) {
                 replaceChild(node, node.right);
-            } else {
+            }
+            else {
                 node = replaceEmptyNodeWithChild(node);
             }
         }
@@ -914,7 +916,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
         // print it flattened, like a list of colors
         StringBuilder result = new StringBuilder();
         for(BciiNode n = firstNode(); n != null; n = next(n)) {
-            Object color = coder.getColors().get(colorAsIndex(n.color));
+            Object color = coder.getColors().get(ListToByteCoder.colorAsIndex(n.color));
             for(/*[ WIDE_NODES_START(true) ]*/ int i = 0; i < n.size; i++/*[ WIDE_NODES_END ]*/) {
                 result.append(color);
             }
@@ -1029,21 +1031,5 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
         return true;
     }
 
-    /**
-     * Convert the specified color value (such as 1, 2, 4, 8, 16 etc.) into an
-     * index value (such as 0, 1, 2, 3, 4 etc. ).
-     */
-    static final int colorAsIndex(byte color) {
-        switch(color) {
-            case 1: return 0;
-            case 2: return 1;
-            case 4: return 2;
-            case 8: return 3;
-            case 16: return 4;
-            case 32: return 5;
-            case 64: return 6;
-        }
-        throw new IllegalArgumentException();
-    }
 }
 /*[ END_M4_JAVA ]*/

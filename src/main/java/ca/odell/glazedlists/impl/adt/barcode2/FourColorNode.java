@@ -122,7 +122,7 @@ class  FourColorNode <  T0>   implements Element<T0> {
      */
     public FourColorNode/**/(  byte color,    int size, T0 value,  FourColorNode <  T0>   parent) {
 
-        assert(FourColorTree.colorAsIndex(color) >= 0 && FourColorTree.colorAsIndex(color) < 7);
+        assert(ListToByteCoder.colorAsIndex(color) >= 0 && ListToByteCoder.colorAsIndex(color) < 7);
         this.color = color;
 
 
@@ -278,7 +278,7 @@ class  FourColorNode <  T0>   implements Element<T0> {
         for(int i = 0; i < indentation; i++) {
             out.append("   ");
         }
-          out.append(colors.get(FourColorTree.colorAsIndex(color)));
+          out.append(colors.get(ListToByteCoder.colorAsIndex(color)));
           out.append(" [").append(size).append("]");
         if(t0 != null) {
             out.append(": ");

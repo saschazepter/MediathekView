@@ -121,8 +121,8 @@ public class PluggableList<E> extends TransformedList<E, E> {
 
             updates.beginEvent();
             // add deletions to the ListEvent for all the elements in the old source
-            for (int i = 0, n = size(); i < n; i++)
-                updates.elementDeleted(0, get(i));
+            for (E e : this)
+                updates.elementDeleted(0, e);
 
             this.source.removeListEventListener(this);
             this.source = source;

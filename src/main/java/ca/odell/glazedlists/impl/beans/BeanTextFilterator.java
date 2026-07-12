@@ -46,9 +46,10 @@ public class BeanTextFilterator<D,E> implements TextFilterator<E>, Filterator<D,
         if(beanProperties == null) loadPropertyDescriptors(element.getClass());
 
         // get the filter strings
-        for(int p = 0; p < beanProperties.length; p++) {
-            Object propertyValue = beanProperties[p].get(element);
-            if(propertyValue == null) continue;
+        for (BeanProperty beanProperty : beanProperties) {
+            Object propertyValue = beanProperty.get(element);
+            if (propertyValue == null)
+                continue;
             baseList.add(propertyValue.toString());
         }
     }
@@ -62,10 +63,11 @@ public class BeanTextFilterator<D,E> implements TextFilterator<E>, Filterator<D,
         if(beanProperties == null) loadPropertyDescriptors(element.getClass());
 
         // get the filter strings
-        for(int p = 0; p < beanProperties.length; p++) {
-            Object propertyValue = beanProperties[p].get(element);
-            if(propertyValue == null) continue;
-            baseList.add((D)propertyValue);
+        for (BeanProperty beanProperty : beanProperties) {
+            Object propertyValue = beanProperty.get(element);
+            if (propertyValue == null)
+                continue;
+            baseList.add((D) propertyValue);
         }
     }
 

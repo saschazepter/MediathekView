@@ -45,8 +45,8 @@ public class CompositeMatcherEditor<E> extends AbstractMatcherEditor<E> {
         this.matcherEditors = matcherEditors;
 
         // prepare the initial set
-        for(Iterator<MatcherEditor<E>> i = matcherEditors.iterator(); i.hasNext(); ) {
-            matcherEditorListeners.add(new DelegateMatcherEditorListener(i.next()));
+        for (MatcherEditor<E> matcherEditor : matcherEditors) {
+            matcherEditorListeners.add(new DelegateMatcherEditorListener(matcherEditor));
         }
 
         // handle changes to the list of matchers

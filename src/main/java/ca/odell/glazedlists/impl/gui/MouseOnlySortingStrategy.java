@@ -37,17 +37,15 @@ public final class MouseOnlySortingStrategy implements SortingStrategy {
 
         // on a double click, clear all click counts
         if(clicks == 2) {
-            for(Iterator<SortingState.SortingColumn> i = recentlyClickedColumns.iterator(); i.hasNext(); ) {
-                SortingState.SortingColumn sortingColumn = i.next();
+            for (SortingState.SortingColumn sortingColumn : recentlyClickedColumns) {
                 sortingColumn.clear();
             }
             recentlyClickedColumns.clear();
 
         // if we're only sorting one column at a time, clear other columns
         } else if(!multipleColumnSort) {
-            for(Iterator<SortingState.SortingColumn> i = recentlyClickedColumns.iterator(); i.hasNext(); ) {
-                SortingState.SortingColumn sortingColumn = i.next();
-                if(sortingColumn != clickedColumn) {
+            for (SortingState.SortingColumn sortingColumn : recentlyClickedColumns) {
+                if (sortingColumn != clickedColumn) {
                     sortingColumn.clear();
                 }
             }

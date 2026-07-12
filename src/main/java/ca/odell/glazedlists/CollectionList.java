@@ -260,8 +260,7 @@ public class CollectionList<S, E> extends TransformedList<S, E> implements ListE
 
         // add events
         int childIndex = absoluteIndex - parentIndex;
-        for(int i = 0; i < children.size(); i++) {
-            E element = children.get(i);
+        for (E element : children) {
             updates.elementInserted(childIndex, element);
         }
     }

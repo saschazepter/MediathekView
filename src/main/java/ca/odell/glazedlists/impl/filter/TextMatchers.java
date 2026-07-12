@@ -100,8 +100,7 @@ public final class TextMatchers {
 
             if (searchTerm.isNegated()) {
                 // search through all fields for the current filter
-                for (int i = 0, n = strings.size(); i < n; i++) {
-                    Object filterString = strings.get(i);
+                for (Object filterString : strings) {
                     // the call to .toString() appears redundant, but is not, since we
                     // are backwards compatible with old behaviour which allows arbitrary
                     // objects in the filterStrings list
@@ -116,8 +115,7 @@ public final class TextMatchers {
             }
             else {
                 // search through all fields for the current filter
-                for (int i = 0, n = strings.size(); i < n; i++) {
-                    Object filterString = strings.get(i);
+                for (Object filterString : strings) {
                     // the call to .toString() appears redundant, but is not, since we
                     // are backwards compatible with old behaviour which allows arbitrary
                     // objects in the filterStrings list
@@ -171,11 +169,7 @@ public final class TextMatchers {
         List<SearchTerm> result = new ArrayList<>(searchTerms);
 
         // filter out null and 0-length SearchTerms - they have no filtering value
-        for (Iterator<SearchTerm> i = result.iterator(); i.hasNext(); ) {
-            SearchTerm searchTerm = i.next();
-            if (searchTerm == null || searchTerm.getText().length() == 0)
-                i.remove();
-        }
+        result.removeIf(searchTerm -> searchTerm == null || searchTerm.getText().isEmpty());
 
         // remove the filters that are not minimal (i.e. "blackened" removes "black")
         for (int i = 0; i < result.size(); i++) {
@@ -186,7 +180,7 @@ public final class TextMatchers {
             for (int j = 0; j < result.size(); j++) {
                 SearchTerm termJ = result.get(j);
 
-                if (i != j && termJ.getText().indexOf(termI.getText()) != -1) {
+                if (i != j && termJ.getText().contains(termI.getText())) {
                     if (negated) {
                         if (termJ.isRequired())
                             continue;
@@ -204,7 +198,7 @@ public final class TextMatchers {
 
         // order the elements of the list according to their lengths
         // so the most discriminating filter strings are considered first
-        Collections.sort(result, negated ? GlazedLists.reverseComparator(SEARCHTERM_LENGTH_COMPARATOR) : SEARCHTERM_LENGTH_COMPARATOR);
+        result.sort(negated ? GlazedLists.reverseComparator(SEARCHTERM_LENGTH_COMPARATOR) : SEARCHTERM_LENGTH_COMPARATOR);
 
         return result;
     }
@@ -292,8 +286,7 @@ public final class TextMatchers {
 
         // map each field name to the corresponding field
         final Map<String, SearchEngineTextMatcherEditor.Field<E>> fieldMap = new HashMap<>();
-        for (Iterator<SearchEngineTextMatcherEditor.Field<E>> f = fields.iterator(); f.hasNext(); ) {
-            SearchEngineTextMatcherEditor.Field<E> field = f.next();
+        for (SearchEngineTextMatcherEditor.Field<E> field : fields) {
             fieldMap.put(field.getName(), field);
         }
 
@@ -417,11 +410,11 @@ public final class TextMatchers {
 
         // we search the newTerms to locate an oldTerm whose matching power isn't covered
         oldTermsCoveredByNew:
-        for (int i = 0; i < oldTerms.length; i++) {
-            for (int j = 0; j < newTerms.length; j++) {
-                if (newTerms[j].equals(oldTerms[i]))
+        for (SearchTerm oldTerm : oldTerms) {
+            for (SearchTerm newTerm : newTerms) {
+                if (newTerm.equals(oldTerm))
                     continue oldTermsCoveredByNew;
-                if (newTerms[j].isConstrainment(oldTerms[i]))
+                if (newTerm.isConstrainment(oldTerm))
                     continue oldTermsCoveredByNew;
             }
             return false;

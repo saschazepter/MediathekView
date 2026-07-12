@@ -171,12 +171,17 @@ public class DefaultEventListModel<E> implements ListEventListener<E>, ListModel
      */
     protected void fireListDataEvent(ListDataEvent listDataEvent) {
         // notify all listeners about the event
-        for(int i = 0, n = listeners.size(); i < n; i++) {
-            ListDataListener listDataListener = listeners.get(i);
+        for (ListDataListener listDataListener : new ArrayList<>(listeners)) {
             switch (listDataEvent.getType()) {
-                case ListDataEvent.CONTENTS_CHANGED: listDataListener.contentsChanged(listDataEvent); break;
-                case ListDataEvent.INTERVAL_ADDED: listDataListener.intervalAdded(listDataEvent); break;
-                case ListDataEvent.INTERVAL_REMOVED: listDataListener.intervalRemoved(listDataEvent); break;
+                case ListDataEvent.CONTENTS_CHANGED:
+                    listDataListener.contentsChanged(listDataEvent);
+                    break;
+                case ListDataEvent.INTERVAL_ADDED:
+                    listDataListener.intervalAdded(listDataEvent);
+                    break;
+                case ListDataEvent.INTERVAL_REMOVED:
+                    listDataListener.intervalRemoved(listDataEvent);
+                    break;
             }
         }
     }

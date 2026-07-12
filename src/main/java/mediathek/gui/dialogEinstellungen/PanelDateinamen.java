@@ -46,14 +46,12 @@ public class PanelDateinamen extends JPanel {
             reloadTable();
             updateTextFields();
         });
-        jButtonPlus.addActionListener(_ -> {
-            addReplacementRuleDialog.show(this).ifPresent(entry -> {
-                replacementRules.add(entry.getFrom(), entry.getTo());
-                reloadTable();
-                tabelle.setRowSelectionInterval(tabelle.getRowCount() - 1, tabelle.getRowCount() - 1);
-                updateTextFields();
-            });
-        });
+        jButtonPlus.addActionListener(_ -> addReplacementRuleDialog.show(this).ifPresent(entry -> {
+            replacementRules.add(entry.getFrom(), entry.getTo());
+            reloadTable();
+            tabelle.setRowSelectionInterval(tabelle.getRowCount() - 1, tabelle.getRowCount() - 1);
+            updateTextFields();
+        }));
         jButtonMinus.addActionListener(_ -> {
             final int selectedTableRow = tabelle.getSelectedRow();
             if (selectedTableRow != -1) {

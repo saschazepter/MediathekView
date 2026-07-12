@@ -150,13 +150,13 @@ public class BeanProperty<T> {
 
             // loop through this class' methods
             Method[] classMethods = currentClass.getMethods();
-            for (int m = 0; m < classMethods.length; m++) {
-                if (!classMethods[m].getName().equals(setProperty))
+            for (Method classMethod : classMethods) {
+                if (!classMethod.getName().equals(setProperty))
                     continue;
-                if (classMethods[m].getParameterTypes().length != 1)
+                if (classMethod.getParameterTypes().length != 1)
                     continue;
-                validateSetter(classMethods[m]);
-                return classMethods[m];
+                validateSetter(classMethod);
+                return classMethod;
             }
             currentClass = currentClass.getSuperclass();
         }
@@ -269,8 +269,7 @@ public class BeanProperty<T> {
         try {
             // do all the getters in sequence
             Object currentMember = member;
-            for (int i = 0, n = getterChain.size(); i < n; i++) {
-                Method currentMethod = getterChain.get(i);
+            for (Method currentMethod : getterChain) {
                 currentMember = currentMethod.invoke(currentMember, EMPTY_ARGUMENTS);
                 if (currentMember == null)
                     return null;
@@ -308,7 +307,7 @@ public class BeanProperty<T> {
             }
 
             // do the remaining setter
-            setterMethod = setterChain.get(setterChain.size() - 1);
+            setterMethod = setterChain.getLast();
             return setterMethod.invoke(currentMember, newValue);
         }
         catch (IllegalArgumentException e) {

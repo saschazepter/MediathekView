@@ -128,11 +128,11 @@ public final class FreezableList<E> extends TransformedList<E, E> {
 
         // prep events to listeners of the thaw
         updates.beginEvent();
-        for(int i = 0, size = frozenData.size(); i < size; i++) {
-            updates.elementDeleted(0, frozenData.get(i));
+        for (E frozenDatum : frozenData) {
+            updates.elementDeleted(0, frozenDatum);
         }
-        for(int i = 0, size = source.size(); i < size; i++) {
-            updates.elementInserted(0, source.get(i));
+        for (E e : source) {
+            updates.elementInserted(0, e);
         }
 
         // we don't need our frozen data anymore

@@ -33,10 +33,12 @@ public class ScreenGeometry {
         // try to find the graphics configuration for our point of interest
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gd = ge.getScreenDevices();
-        for(int i = 0; i < gd.length; i++) {
-            if(gd[i].getType() != GraphicsDevice.TYPE_RASTER_SCREEN) continue;
-            GraphicsConfiguration defaultGraphicsConfiguration = gd[i].getDefaultConfiguration();
-            if(!defaultGraphicsConfiguration.getBounds().contains(point)) continue;
+        for (GraphicsDevice graphicsDevice : gd) {
+            if (graphicsDevice.getType() != GraphicsDevice.TYPE_RASTER_SCREEN)
+                continue;
+            GraphicsConfiguration defaultGraphicsConfiguration = graphicsDevice.getDefaultConfiguration();
+            if (!defaultGraphicsConfiguration.getBounds().contains(point))
+                continue;
             return defaultGraphicsConfiguration;
         }
 

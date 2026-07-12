@@ -221,8 +221,8 @@ public final class DefaultEventSelectionModel<E> implements AdvancedListSelectio
 
         // fire the change
         final ListSelectionEvent event = new ListSelectionEvent(this, changeStart, changeFinish, valueIsAdjusting);
-        for (int i = 0, n = listeners.size(); i < n; i++) {
-            listeners.get(i).valueChanged(event);
+        for (ListSelectionListener listener : new ArrayList<>(listeners)) {
+            listener.valueChanged(event);
         }
     }
 

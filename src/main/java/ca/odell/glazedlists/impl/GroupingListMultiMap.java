@@ -90,8 +90,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         this.delegate = new HashMap<>(this.groupingList.size());
 
         // initialize both the keyList and the delegate Map
-        for (Iterator<List<V>> i = this.valueList.iterator(); i.hasNext();) {
-            final List<V> value = i.next();
+        for (final List<V> value : this.valueList) {
             final K key = key(value);
             this.keyList.add(key);
             this.delegate.put(key, value);
@@ -157,8 +156,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
     @Override
     public void putAll(Map<? extends K, ? extends List<V>> m) {
         // verify the contents of the given Map and ensure all key/value pairs agree with the keyFunction
-        for (Iterator<? extends Entry<? extends K, ? extends List<V>>> i = m.entrySet().iterator(); i.hasNext();) {
-            final Entry<? extends K, ? extends List<V>> entry = i.next();
+        for (final Entry<? extends K, ? extends List<V>> entry : m.entrySet()) {
             final K key = entry.getKey();
             final List<V> value = entry.getValue();
 
@@ -166,8 +164,8 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         }
 
         // remove all values currently associated with the keys
-        for (Iterator<? extends K> i = m.keySet().iterator(); i.hasNext();)
-            remove(i.next());
+        for (K k : m.keySet())
+            remove(k);
 
         // add all new values into this Map
         groupingList.addAll(m.values());
@@ -183,8 +181,8 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
      *      run through the key function
      */
     private void checkKeyValueAgreement(K key, Collection<? extends V> value) {
-        for (Iterator<? extends V> i = value.iterator(); i.hasNext();)
-            checkKeyValueAgreement(key, i.next());
+        for (V v : value)
+            checkKeyValueAgreement(key, v);
     }
 
     /**

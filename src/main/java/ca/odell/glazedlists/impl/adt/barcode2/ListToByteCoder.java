@@ -36,10 +36,9 @@ public class ListToByteCoder<C> {
      */
     public byte colorsToByte(List<C> colors) {
         int result = 0;
-        for(int i = 0; i < colors.size(); i++) {
-            C color = colors.get(i);
+        for (C color : colors) {
             int index = allColors.indexOf(color);
-            result = result | (1 << index);
+            result |= (1 << index);
         }
         return (byte)result;
     }
@@ -51,6 +50,22 @@ public class ListToByteCoder<C> {
         int index = allColors.indexOf(color);
         int result = (1 << index);
         return (byte)result;
+    }
+
+    /**
+     * Convert a single encoded color bit into its zero-based index.
+     */
+    static int colorAsIndex(byte color) {
+        return switch (color) {
+            case 1 -> 0;
+            case 2 -> 1;
+            case 4 -> 2;
+            case 8 -> 3;
+            case 16 -> 4;
+            case 32 -> 5;
+            case 64 -> 6;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     /**

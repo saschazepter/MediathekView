@@ -98,15 +98,14 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
         // prepare the initial collections: maps that show how each element is
         // used as source and target in directed edges, plus a list of nodes
         // that have no incoming edges
-        for(int i = 0, size = subjectsAndListeners.size(); i < size; i++) {
-            SubjectAndListener subjectAndListener = subjectsAndListeners.get(i);
+        for (SubjectAndListener subjectAndListener : subjectsAndListeners) {
             Object source = subjectAndListener.subject;
             Object target = getRelatedSubject(subjectAndListener.listener);
             sourceToPairs.addValue(source, subjectAndListener);
             targetToPairs.addValue(target, subjectAndListener);
 
             satisfied.remove(target);
-            if(targetToPairs.count(source) == 0) {
+            if (targetToPairs.count(source) == 0) {
                 satisfied.put(source, Boolean.TRUE);
             }
         }
@@ -125,7 +124,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
         while(!satisfiedToDo.isEmpty()) {
 
             // for everything that's not a target,
-            Object subject = satisfiedToDo.remove(0);
+            Object subject = satisfiedToDo.removeFirst();
 
             // get all listeners to this subject, we try this set because
             // we know at least one of their edges is satisfied, and
@@ -134,16 +133,16 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
 
             // can we satisfy this target?
             tryEachTarget:
-            for(int t = 0, targetsSize = sourceTargets.size(); t < targetsSize; t++) {
-                Object sourceTarget = getRelatedSubject(sourceTargets.get(t).listener);
+            for (SubjectAndListener target : sourceTargets) {
+                Object sourceTarget = getRelatedSubject(target.listener);
 
                 // make sure we can satisfy this if all its sources are in satisfiedSources
                 List<SubjectAndListener> allSourcesForSourceTarget = targetToPairs.get(sourceTarget);
                 // we've since processed this entire target, we shouldn't process it twice
-                if(allSourcesForSourceTarget.size() == 0) continue;
-                for(int s = 0, sourcesSize = allSourcesForSourceTarget.size(); s < sourcesSize; s++) {
-                    SubjectAndListener sourceAndTarget = allSourcesForSourceTarget.get(s);
-                    if(!satisfied.containsKey(sourceAndTarget.subject)) {
+                if (allSourcesForSourceTarget.size() == 0)
+                    continue;
+                for (SubjectAndListener sourceAndTarget : allSourcesForSourceTarget) {
+                    if (!satisfied.containsKey(sourceAndTarget.subject)) {
                         continue tryEachTarget;
                     }
                 }
@@ -209,17 +208,15 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
 
         // walk through, adding all the old listeners to the new listeners list,
         // unless a particular listener is slated for removal for some reaosn
-        for(int i = 0, n = subjectAndListeners.size(); i < n; i++) {
-            final SubjectAndListener originalSubjectAndListener = subjectAndListeners.get(i);
-
+        for (final SubjectAndListener originalSubjectAndListener : subjectAndListeners) {
             // if we're supposed to remove this listener, skip it
-            if(originalSubjectAndListener.listener == listenerToRemove && originalSubjectAndListener.subject == subject) {
+            if (originalSubjectAndListener.listener == listenerToRemove && originalSubjectAndListener.subject == subject) {
                 listenerToRemove = null;
                 continue;
             }
 
             // if this listener is stale, skip it
-            if(originalSubjectAndListener.eventFormat.isStale(originalSubjectAndListener.subject, originalSubjectAndListener.listener)) {
+            if (originalSubjectAndListener.eventFormat.isStale(originalSubjectAndListener.subject, originalSubjectAndListener.listener)) {
                 continue;
             }
 
@@ -283,9 +280,9 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
      */
     public synchronized <Listener> List<Listener> getListeners(Object subject) {
         List<Listener> result = new ArrayList<>();
-        for(int i = 0, size = subjectAndListeners.size(); i < size; i++) {
-            SubjectAndListener<?,Listener,?> subjectAndListener = subjectAndListeners.get(i);
-            if(subjectAndListener.subject != subject) continue;
+        for (SubjectAndListener<?, Listener, ?> subjectAndListener : subjectAndListeners) {
+            if (subjectAndListener.subject != subject)
+                continue;
             result.add(subjectAndListener.listener);
         }
         return result;
@@ -358,12 +355,13 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
             }
 
             // clean up all the subjects now that we're done firing events
-            for(Iterator<Map.Entry<Object,EventFormat>> i = subjectsToCleanUp.entrySet().iterator(); i.hasNext(); ) {
-                Map.Entry<Object,EventFormat> subjectAndEventFormat = i.next();
+            for (Map.Entry<Object, EventFormat> subjectAndEventFormat : subjectsToCleanUp.entrySet()) {
                 try {
                     subjectAndEventFormat.getValue().postEvent(subjectAndEventFormat.getKey());
-                } catch(RuntimeException e) {
-                    if(toRethrow == null) toRethrow = e;
+                }
+                catch (RuntimeException e) {
+                    if (toRethrow == null)
+                        toRethrow = e;
                 }
             }
             subjectsToCleanUp.clear();

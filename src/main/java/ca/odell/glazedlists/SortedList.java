@@ -272,10 +272,10 @@ public final class SortedList<E> extends TransformedList<E,E> {
         // decide which updated elements need to be shifted. We walk through the
         // tree, marking updated elements as sorted or unsorted depending on their
         // value relative to their neighbours
-        for(int i = 0, size = updateNodes.size(); i < size; i++) {
-            Element<Element> sortedNode = updateNodes.get(i);
+        for (Element<Element> sortedNode : updateNodes) {
             // we may have already handled this via a neighbour
-            if(sortedNode.getSorted() != Element.PENDING) continue;
+            if (sortedNode.getSorted() != Element.PENDING)
+                continue;
 
             // find the bounds (by value) on this element. this is the last element
             // preceeding current that's sorted and the first element after current
@@ -284,16 +284,17 @@ public final class SortedList<E> extends TransformedList<E,E> {
             Element lowerBound = null;
             Element upperBound = null;
             Element firstUnsortedNode = sortedNode;
-            for(Element leftNeighbour = sortedNode.previous(); leftNeighbour != null; leftNeighbour = leftNeighbour.previous()) {
-                if(leftNeighbour.getSorted() != Element.SORTED) {
+            for (Element leftNeighbour = sortedNode.previous(); leftNeighbour != null; leftNeighbour = leftNeighbour.previous()) {
+                if (leftNeighbour.getSorted() != Element.SORTED) {
                     firstUnsortedNode = leftNeighbour;
                     continue;
                 }
                 lowerBound = leftNeighbour;
                 break;
             }
-            for(Element rightNeighbour = sortedNode.next(); rightNeighbour != null; rightNeighbour = rightNeighbour.next()) {
-                if(rightNeighbour.getSorted() != Element.SORTED) continue;
+            for (Element rightNeighbour = sortedNode.next(); rightNeighbour != null; rightNeighbour = rightNeighbour.next()) {
+                if (rightNeighbour.getSorted() != Element.SORTED)
+                    continue;
                 upperBound = rightNeighbour;
                 break;
             }
@@ -302,16 +303,16 @@ public final class SortedList<E> extends TransformedList<E,E> {
             // order or not. We simply compare them to our 2 potentially distant neighbours
             // on either side - the lower and upper bounds
             Comparator nodeComparator = sorted.getComparator();
-            for(Element current = firstUnsortedNode; current != upperBound; current = current.next()) {
+            for (Element current = firstUnsortedNode; current != upperBound; current = current.next()) {
 
                 // ensure we're less than the upper bound
-                if(upperBound != null && nodeComparator.compare(current.get(), upperBound.get()) > 0) {
+                if (upperBound != null && nodeComparator.compare(current.get(), upperBound.get()) > 0) {
                     current.setSorted(Element.UNSORTED);
                     continue;
                 }
 
                 // and greater than the lower bound
-                if(lowerBound != null && nodeComparator.compare(current.get(), lowerBound.get()) < 0) {
+                if (lowerBound != null && nodeComparator.compare(current.get(), lowerBound.get()) < 0) {
                     current.setSorted(Element.UNSORTED);
                     continue;
                 }

@@ -641,15 +641,16 @@ public class FourColorTree <  T0>   {
      * Prune all nodes scheduled for deletion.
      */
     private void drainZeroQueue() {
-        for(int i = 0, size = zeroQueue.size(); i < size; i++) {
-             FourColorNode <  T0>   node = zeroQueue.get(i);
-              assert(node.size == 0);
+        for (FourColorNode<T0> node : zeroQueue) {
+            assert (node.size == 0);
 
-            if(node.right == null) {
+            if (node.right == null) {
                 replaceChild(node, node.left);
-            } else if(node.left == null) {
+            }
+            else if (node.left == null) {
                 replaceChild(node, node.right);
-            } else {
+            }
+            else {
                 node = replaceEmptyNodeWithChild(node);
             }
         }
@@ -963,7 +964,7 @@ public class FourColorTree <  T0>   {
         // print it flattened, like a list of colors
         StringBuilder result = new StringBuilder();
         for(FourColorNode n = firstNode(); n != null; n = next(n)) {
-            Object color = coder.getColors().get(colorAsIndex(n.color));
+            Object color = coder.getColors().get(ListToByteCoder.colorAsIndex(n.color));
             for(  int i = 0; i < n.size; i++  ) {
                 result.append(color);
             }
@@ -1076,21 +1077,5 @@ public class FourColorTree <  T0>   {
         return true;
     }
 
-    /**
-     * Convert the specified color value (such as 1, 2, 4, 8, 16 etc.) into an
-     * index value (such as 0, 1, 2, 3, 4 etc. ).
-     */
-    static final int colorAsIndex(byte color) {
-        switch(color) {
-            case 1: return 0;
-            case 2: return 1;
-            case 4: return 2;
-            case 8: return 3;
-            case 16: return 4;
-            case 32: return 5;
-            case 64: return 6;
-        }
-        throw new IllegalArgumentException();
-    }
 }
   /*[ END_M4_JAVA ]*/
