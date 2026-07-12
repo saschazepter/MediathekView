@@ -125,15 +125,13 @@ public class TypeLiteral<T> {
   Type resolveType(Type toResolve) {
     // this implementation is made a little more complicated in an attempt to avoid object-creation
     while (true) {
-      if (toResolve instanceof TypeVariable) {
-        TypeVariable original = (TypeVariable) toResolve;
+      if (toResolve instanceof TypeVariable original) {
         toResolve = MoreTypes.resolveTypeVariable(type, rawType, original);
         if (toResolve == original) {
           return toResolve;
         }
 
-      } else if (toResolve instanceof ParameterizedType) {
-        ParameterizedType original = (ParameterizedType) toResolve;
+      } else if (toResolve instanceof ParameterizedType original) {
         Type ownerType = original.getOwnerType();
         Type newOwnerType = resolveType(ownerType);
         boolean changed = newOwnerType != ownerType;
@@ -169,14 +167,12 @@ public class TypeLiteral<T> {
   public List<TypeLiteral<?>> getParameterTypes(Member methodOrConstructor) {
     Type[] genericParameterTypes;
 
-    if (methodOrConstructor instanceof Method) {
-      Method method = (Method) methodOrConstructor;
+    if (methodOrConstructor instanceof Method method) {
       checkArgument(method.getDeclaringClass().isAssignableFrom(rawType),
           "%s is not defined by a supertype of %s", method, type);
       genericParameterTypes = method.getGenericParameterTypes();
 
-    } else if (methodOrConstructor instanceof Constructor) {
-      Constructor constructor = (Constructor) methodOrConstructor;
+    } else if (methodOrConstructor instanceof Constructor constructor) {
       checkArgument(constructor.getDeclaringClass().isAssignableFrom(rawType),
           "%s does not construct a supertype of %s", constructor, type);
       genericParameterTypes = constructor.getGenericParameterTypes();

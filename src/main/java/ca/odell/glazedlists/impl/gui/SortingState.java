@@ -124,8 +124,7 @@ public class SortingState {
         final List<Comparator> comparatorsList;
         if(foreignComparator == null) {
             comparatorsList = Collections.emptyList();
-        } else if(foreignComparator instanceof ComparatorChain) {
-            ComparatorChain chain = (ComparatorChain)foreignComparator;
+        } else if(foreignComparator instanceof ComparatorChain chain) {
             comparatorsList = Arrays.asList(chain.getComparators());
         } else {
             comparatorsList = Collections.singletonList(foreignComparator);
@@ -266,8 +265,7 @@ public class SortingState {
             this.column = column;
 
             // add the preferred comparator for AdvancedTableFormat
-            if(tableFormat instanceof AdvancedTableFormat) {
-                AdvancedTableFormat advancedTableFormat = (AdvancedTableFormat)tableFormat;
+            if(tableFormat instanceof AdvancedTableFormat advancedTableFormat) {
                 Comparator columnComparator = advancedTableFormat.getColumnComparator(column);
                 if(columnComparator != null) comparators.add(new TableColumnComparator(tableFormat, column, columnComparator));
             // otherwise just add the default comparator

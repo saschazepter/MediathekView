@@ -133,16 +133,11 @@ public final class SetMatcherEditor<E, O> extends AbstractMatcherEditor<E> {
         WHITELIST_EMPTY_MATCH_ALL
     }
 
-    private final static class SetMatcher<E, O> implements Matcher<E> {
+    private record SetMatcher<E, O>(Set<O> matchSet, Mode mode, Function<E, O> fn) implements Matcher<E> {
 
-        private final Set<O> matchSet;
-        private final Function<E, O> fn;
-        private final Mode mode;
-
-        private SetMatcher(final Set<O> matchSet, final Mode mode, final Function<E, O> fn) {
-            this.matchSet = new HashSet<>(matchSet);
-            this.mode = mode;
-            this.fn = checkNotNull(fn);
+        private SetMatcher {
+            matchSet = new HashSet<>(matchSet);
+            fn = checkNotNull(fn);
         }
 
         @Override

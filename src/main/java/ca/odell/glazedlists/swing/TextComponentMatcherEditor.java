@@ -154,8 +154,7 @@ public class TextComponentMatcherEditor<E> extends TextMatcherEditor<E> {
             document.addDocumentListener(filterHandler);
         } else {
             if(textComponent == null) throw new IllegalArgumentException("Non-live filtering supported only for JTextField (document provided)");
-            if(!(textComponent instanceof JTextField)) throw new IllegalArgumentException("Non-live filtering supported only for JTextField (argument class " + textComponent.getClass().getName() + ")");
-            JTextField textField = (JTextField) textComponent;
+            if(!(textComponent instanceof JTextField textField)) throw new IllegalArgumentException("Non-live filtering supported only for JTextField (argument class " + textComponent.getClass().getName() + ")");
             textField.addActionListener(filterHandler);
         }
 

@@ -365,12 +365,7 @@ public final class ThresholdList<E> extends RangeList<E> {
             else
                 betaValue = evaluator.evaluate(beta);
 
-            if (alphaValue > betaValue)
-                return 1;
-            else if (alphaValue < betaValue)
-                return -1;
-            else
-                return 0;
+            return Integer.compare(alphaValue, betaValue);
         }
 
         /**

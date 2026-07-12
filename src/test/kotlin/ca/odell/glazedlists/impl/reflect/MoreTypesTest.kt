@@ -16,8 +16,26 @@ internal class MoreTypesTest {
         assertEquals(0, MoreTypes.hashCode(null))
     }
 
+    @Test
+    fun typeLiteralStillResolvesParameterizedVariablesAndBothMemberKinds() {
+        val listType = Fixture::class.java.getDeclaredField("list").genericType
+        val listLiteral = TypeLiteral.get(listType)
+        val addMethod = List::class.java.getMethod("add", Any::class.java)
+
+        assertEquals("java.lang.String", listLiteral.getParameterTypes(addMethod).single().toString())
+
+        val constructor = ConstructorFixture::class.java.getDeclaredConstructor(List::class.java)
+        val fixtureLiteral = TypeLiteral.get(ConstructorFixture::class.java)
+        assertEquals(
+            "java.util.List<java.lang.String>",
+            fixtureLiteral.getParameterTypes(constructor).single().toString(),
+        )
+    }
+
     private class Fixture {
         lateinit var list: List<String>
         lateinit var array: Array<List<String>>
     }
+
+    private class ConstructorFixture(@Suppress("UNUSED_PARAMETER") values: List<String>)
 }

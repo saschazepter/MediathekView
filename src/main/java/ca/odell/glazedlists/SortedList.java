@@ -638,13 +638,11 @@ public final class SortedList<E> extends TransformedList<E,E> {
             Object betaObject = beta;
             int alphaIndex = -1;
             int betaIndex = -1;
-            if(alpha instanceof Element) {
-                Element alphaTreeNode = (Element)alpha;
+            if(alpha instanceof Element alphaTreeNode) {
                 alphaIndex = unsorted.indexOfNode(alphaTreeNode, ALL_COLORS);
                 alphaObject = source.get(alphaIndex);
             }
-            if(beta instanceof Element) {
-                Element betaTreeNode = (Element)beta;
+            if(beta instanceof Element betaTreeNode) {
                 betaIndex = unsorted.indexOfNode(betaTreeNode, ALL_COLORS);
                 betaObject = source.get(betaIndex);
             }

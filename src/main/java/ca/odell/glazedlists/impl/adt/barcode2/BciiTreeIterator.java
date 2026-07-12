@@ -94,7 +94,7 @@ public class BciiTreeIterator/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/
      * separate cursors into the tree.
      */
     public BciiTreeIterator/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ copy() {
-        BciiTreeIterator/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ result = new BciiTreeIterator/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/(tree);
+        BciiTreeIterator/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ result = new BciiTreeIterator/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(tree);
 
         /*[ GENERATED_CODE_START
         forloop(`i', 0, VAR_LAST_COLOR_INDEX, `result.counti(i) = this.counti(i);

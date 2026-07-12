@@ -15,12 +15,7 @@ import java.util.List;
  *
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
-public final class ComparatorChain<T> implements Comparator<T> {
-
-    /**
-     * the comparators to execute in sequence
-     */
-    private final Comparator<T>[] comparators;
+public record ComparatorChain<T>(Comparator<T>[] comparators) implements Comparator<T> {
 
     /**
      * Creates a comparator chain that evaluates the specified comparators in
@@ -29,7 +24,7 @@ public final class ComparatorChain<T> implements Comparator<T> {
      * @param comparators a list of objects implementing {@link Comparator}
      */
     public ComparatorChain(List<Comparator<T>> comparators) {
-        this.comparators = comparators.toArray(Comparator[]::new);
+        this(comparators.toArray(Comparator[]::new));
     }
 
     /**

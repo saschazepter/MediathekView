@@ -8,9 +8,7 @@ import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import ca.odell.glazedlists.gui.WritableTableFormat;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.Collections;
 
 /**
  * TableFormat implementation that uses reflection to be used for any
@@ -40,19 +38,15 @@ public class BeanTableFormat<E> implements WritableTableFormat<E>, AdvancedTable
     protected Class[] classes;
 
     /** primitive class to object class conversion map */
-    protected static final Map<Class,Class> primitiveToObjectMap;
-    static {
-        Map<Class,Class> primitiveToObjectMapWritable = new HashMap<>();
-        primitiveToObjectMapWritable.put(boolean.class, Boolean.class);
-        primitiveToObjectMapWritable.put(char.class, Character.class);
-        primitiveToObjectMapWritable.put(byte.class, Byte.class);
-        primitiveToObjectMapWritable.put(short.class, Short.class);
-        primitiveToObjectMapWritable.put(int.class, Integer.class);
-        primitiveToObjectMapWritable.put(long.class, Long.class);
-        primitiveToObjectMapWritable.put(float.class, Float.class);
-        primitiveToObjectMapWritable.put(double.class, Double.class);
-        primitiveToObjectMap = Collections.unmodifiableMap(primitiveToObjectMapWritable);
-    }
+    protected static final Map<Class,Class> primitiveToObjectMap = Map.of(
+            boolean.class, Boolean.class,
+            char.class, Character.class,
+            byte.class, Byte.class,
+            short.class, Short.class,
+            int.class, Integer.class,
+            long.class, Long.class,
+            float.class, Float.class,
+            double.class, Double.class);
 
 
     /**
@@ -81,11 +75,7 @@ public class BeanTableFormat<E> implements WritableTableFormat<E>, AdvancedTable
             for(int c = 0; c < classes.length; c++) {
                 // class
                 Class rawClass = beanProperties[c].getValueClass();
-                if(primitiveToObjectMap.containsKey(rawClass)) {
-                    classes[c] = primitiveToObjectMap.get(rawClass);
-                } else {
-                    classes[c] = rawClass;
-                }
+                classes[c] = primitiveToObjectMap.getOrDefault(rawClass, rawClass);
                 // comparator
                 if(Comparable.class.isAssignableFrom(classes[c])) comparators[c] = GlazedLists.comparableComparator();
                 else comparators[c] = null;

@@ -105,19 +105,7 @@ public class SearchEngineTextMatcherEditor<E> extends TextMatcherEditor<E> {
      * field from the Objects being text matched must be present in the Set of
      * Field objects on the {@link SearchEngineTextMatcherEditor}.
      */
-    public static final class Field<E> implements Serializable {
-
-        /**
-         * The text which which uniquely identifies this Field relative to all
-         * other registered Field objects.
-         */
-        private final String name;
-
-        /**
-         * The TextFilterator that extracts only the field values to be
-         * considered when matching a given SearchTerm.
-         */
-        private final TextFilterator<? super E> textFilterator;
+    public record Field<E>(String name, TextFilterator<? super E> textFilterator) implements Serializable {
 
         /**
          * Creates a field with a name and {@link TextFilterator}.
@@ -127,14 +115,11 @@ public class SearchEngineTextMatcherEditor<E> extends TextMatcherEditor<E> {
          * @param textFilterator extracts only the field values to be considered
          *        when matching a given SearchTerm
          */
-        public Field(String name, TextFilterator<? super E> textFilterator) {
+        public Field {
             if (name == null)
                 throw new IllegalArgumentException("name may not be null");
             if (textFilterator == null)
                 throw new IllegalArgumentException("textFilterator may not be null");
-
-            this.name = name;
-            this.textFilterator = textFilterator;
         }
 
         /**

@@ -296,7 +296,7 @@ public class FourColorTree <  T0>   {
 
                 // as a right child
                 if(parentRight == null) {
-                     FourColorNode <  T0>   inserted = new  FourColorNode <  T0>  (  color,    size, value, parent);
+                     FourColorNode <  T0>   inserted = new FourColorNode<>(  color,    size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent,   color,    size);
                     fixHeightPostChange(parent, false);
@@ -326,7 +326,7 @@ public class FourColorTree <  T0>   {
         assert(size >= 0);
 
         if(this.root == null) {
-            this.root = new  FourColorNode <  T0>  (  color,    size, value, null);
+            this.root = new FourColorNode<>(  color,    size, value, null);
             assert(valid());
             return this.root;
         } else {
@@ -382,7 +382,7 @@ public class FourColorTree <  T0>   {
 
                 // as a new left child
                 if(parentLeft == null) {
-                     FourColorNode <  T0>   inserted = new  FourColorNode <  T0>  (  color,    size, value, parent);
+                     FourColorNode <  T0>   inserted = new FourColorNode<>(  color,    size, value, parent);
                     parent.left = inserted;
                     fixCountsThruRoot(parent,   color,    size);
                     fixHeightPostChange(parent, false);
@@ -400,7 +400,7 @@ public class FourColorTree <  T0>   {
 
                 // as a right child
                 if(parentRight == null) {
-                     FourColorNode <  T0>   inserted = new  FourColorNode <  T0>  (  color,    size, value, parent);
+                     FourColorNode <  T0>   inserted = new FourColorNode<>(  color,    size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent,   color,    size);
                     fixHeightPostChange(parent, false);
@@ -965,9 +965,7 @@ public class FourColorTree <  T0>   {
         StringBuilder result = new StringBuilder();
         for(FourColorNode n = firstNode(); n != null; n = next(n)) {
             Object color = coder.getColors().get(ListToByteCoder.colorAsIndex(n.color));
-            for(  int i = 0; i < n.size; i++  ) {
-                result.append(color);
-            }
+            result.repeat(String.valueOf(color),   Math.max(0, n.size)  );
         }
         return result.toString();
     }

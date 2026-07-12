@@ -96,8 +96,7 @@ public final class WeakReferenceMatcherEditor<E> implements MatcherEditor<E>, Ma
             }
             // if the given listener is a WeakMatcherEditorListener, check if
             // the currentObject is actually its referent
-            else if (currentListener instanceof WeakMatcherEditorListener) {
-                final WeakMatcherEditorListener<E> weakMatcherEditorListener = (WeakMatcherEditorListener<E>) currentListener;
+            else if (currentListener instanceof WeakMatcherEditorListener weakMatcherEditorListener) {
                 final Listener<E> referent = weakMatcherEditorListener.getDecoratedListener();
                 if (referent == listener) {
                     it.remove();

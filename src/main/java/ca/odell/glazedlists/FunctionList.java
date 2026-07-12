@@ -456,16 +456,7 @@ public final class FunctionList<S, E> extends TransformedList<S, E> implements R
      * ease the implementation of FunctionList since it can treat all forward
      * functions as though they are AdvancedFunctions which means less casting.
      */
-    private static final class AdvancedFunctionAdapter<A,B> implements AdvancedFunction<A,B> {
-        private final Function<A,B> delegate;
-
-        /**
-         * Adapt the given <code>delegate</code> to the
-         * {@link AdvancedFunction} interface.
-         */
-        AdvancedFunctionAdapter(Function<A, B> delegate) {
-            this.delegate = delegate;
-        }
+    private record AdvancedFunctionAdapter<A, B>(Function<A, B> delegate) implements AdvancedFunction<A, B> {
 
         /**
          * Defers to the delegate.

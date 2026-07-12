@@ -539,8 +539,7 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
 
                 // we check for a JLabel rather than a DefaultTableCellRenderer to support WinLAF,
                 // which installs a decorator over the DefaultTableCellRenderer
-                if (rendered instanceof JLabel) {
-                    final JLabel label = (JLabel) rendered;
+                if (rendered instanceof JLabel label) {
                     label.setIcon(sortIcon);
                     label.setHorizontalTextPosition(SwingConstants.LEADING);
                 }

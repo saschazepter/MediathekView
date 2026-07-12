@@ -475,9 +475,8 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
          */
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof Map.Entry))
+            if (!(o instanceof Map.Entry e))
                 return false;
-            Map.Entry e = (Map.Entry) o;
 
             final boolean keysEqual = Objects.equals(getKey(), e.getKey());
             return keysEqual && Objects.equals(getValue(), e.getValue());

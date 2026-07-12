@@ -4,7 +4,6 @@
 package ca.odell.glazedlists.impl.adt.barcode2;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,7 +19,7 @@ public class ListToByteCoder<C> {
 
     public ListToByteCoder(List<C> allColors) {
         if(allColors.size() > 7) throw new IllegalArgumentException("Max 7 colors!");
-        this.allColors = Collections.unmodifiableList(new ArrayList<>(allColors));
+        this.allColors = allColors.stream().toList();
         this.colorCount = this.allColors.size();
     }
 

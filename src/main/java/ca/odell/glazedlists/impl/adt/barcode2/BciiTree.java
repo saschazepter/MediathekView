@@ -163,7 +163,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
         if(this.root == null) {
             if(index != 0) throw new IndexOutOfBoundsException();
 
-            this.root = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, null);
+            this.root = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, null);
             assert(valid());
             return this.root;
         } else {
@@ -209,7 +209,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
             if(index <= parentLeftSize) {
                 // as a new left child
                 if(parentLeft == null) {
-                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
+                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
                     parent.left = inserted;
                     fixCountsThruRoot(parent, /*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size);
                     fixHeightPostChange(parent, false);
@@ -245,7 +245,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
 
                 // as a right child
                 if(parentRight == null) {
-                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
+                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent, /*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size);
                     fixHeightPostChange(parent, false);
@@ -275,7 +275,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
         assert(size >= 0);
 
         if(this.root == null) {
-            this.root = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, null);
+            this.root = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, null);
             assert(valid());
             return this.root;
         } else {
@@ -331,7 +331,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
 
                 // as a new left child
                 if(parentLeft == null) {
-                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
+                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
                     parent.left = inserted;
                     fixCountsThruRoot(parent, /*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size);
                     fixHeightPostChange(parent, false);
@@ -349,7 +349,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
 
                 // as a right child
                 if(parentRight == null) {
-                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
+                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent, /*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size);
                     fixHeightPostChange(parent, false);
@@ -917,9 +917,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
         StringBuilder result = new StringBuilder();
         for(BciiNode n = firstNode(); n != null; n = next(n)) {
             Object color = coder.getColors().get(ListToByteCoder.colorAsIndex(n.color));
-            for(/*[ WIDE_NODES_START(true) ]*/ int i = 0; i < n.size; i++/*[ WIDE_NODES_END ]*/) {
-                result.append(color);
-            }
+            result.repeat(String.valueOf(color), /*[ WIDE_NODES_START(Math.max(0, n.size)) ]*/ Math.max(0, n.size) /*[ WIDE_NODES_END ]*/);
         }
         return result.toString();
     }

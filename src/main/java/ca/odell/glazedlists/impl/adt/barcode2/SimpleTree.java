@@ -278,7 +278,7 @@ public class SimpleTree <  T0>   {
 
                 // as a right child
                 if(parentRight == null) {
-                     SimpleNode <  T0>   inserted = new  SimpleNode <  T0>  (   size, value, parent);
+                     SimpleNode <  T0>   inserted = new SimpleNode<>(   size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent,    size);
                     fixHeightPostChange(parent, false);
@@ -308,7 +308,7 @@ public class SimpleTree <  T0>   {
         assert(size >= 0);
 
         if(this.root == null) {
-            this.root = new  SimpleNode <  T0>  (   size, value, null);
+            this.root = new SimpleNode<>(   size, value, null);
             assert(valid());
             return this.root;
         } else {
@@ -363,7 +363,7 @@ public class SimpleTree <  T0>   {
 
                 // as a new left child
                 if(parentLeft == null) {
-                     SimpleNode <  T0>   inserted = new  SimpleNode <  T0>  (   size, value, parent);
+                     SimpleNode <  T0>   inserted = new SimpleNode<>(   size, value, parent);
                     parent.left = inserted;
                     fixCountsThruRoot(parent,    size);
                     fixHeightPostChange(parent, false);
@@ -381,7 +381,7 @@ public class SimpleTree <  T0>   {
 
                 // as a right child
                 if(parentRight == null) {
-                     SimpleNode <  T0>   inserted = new  SimpleNode <  T0>  (   size, value, parent);
+                     SimpleNode <  T0>   inserted = new SimpleNode<>(   size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent,    size);
                     fixHeightPostChange(parent, false);

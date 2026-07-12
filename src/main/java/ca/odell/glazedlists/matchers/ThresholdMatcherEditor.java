@@ -198,26 +198,9 @@ public class ThresholdMatcherEditor<E, T> extends AbstractMatcherEditor<E> {
      * A {@link MatchOperation} serves as both a {@link Matcher} in and of itself
      * and as an enumerated type representing its type as an operation.
      */
-    private static class MatchOperation<E, T> implements Matcher<E> {
+    private record MatchOperation<E, T>(Comparator<T> comparator, T threshold, int polarity, boolean inclusive,
+                                        FunctionList.Function<E, T> function) implements Matcher<E> {
 
-        /** the comparator to compare values against */
-        protected final Comparator<T> comparator;
-        /** the pivot value to compare with */
-        protected final T threshold;
-        /** either 1 for greater, 0 for equal, or -1 for less than */
-        private final int polarity;
-        /** either true for equal or false for not equal */
-        private final boolean inclusive;
-        /** a function which produces a comparable value for a given element */
-        private final FunctionList.Function<E,T> function;
-
-        private MatchOperation(Comparator<T> comparator, T threshold, int polarity, boolean inclusive, FunctionList.Function<E,T> function) {
-            this.comparator = comparator;
-            this.threshold = threshold;
-            this.polarity = polarity;
-            this.inclusive = inclusive;
-            this.function = function;
-        }
         private MatchOperation(int polarity, boolean inclusive) {
             this(null, null, polarity, inclusive, (FunctionList.Function<E,T>) GlazedListsImpl.identityFunction());
         }

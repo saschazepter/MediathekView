@@ -237,9 +237,7 @@ class /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ implements Ele
         if(left != null) left.asTree(indentation + 1, out, colors);
 
         // write this node
-        for(int i = 0; i < indentation; i++) {
-            out.append("   ");
-        }
+        out.repeat("   ", Math.max(0, indentation));
         /*[ COLORED_START ]*/ out.append(colors.get(ListToByteCoder.colorAsIndex(color))); /*[ COLORED_END ]*/
         /*[ WIDE_NODES_START ]*/ out.append(" [").append(size).append("]"); /*[ WIDE_NODES_END ]*/
         if(t0 != null) {

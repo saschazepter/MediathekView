@@ -233,9 +233,7 @@ class  SimpleNode <  T0>   implements Element<T0> {
         if(left != null) left.asTree(indentation + 1, out, colors);
 
         // write this node
-        for(int i = 0; i < indentation; i++) {
-            out.append("   ");
-        }
+        out.repeat("   ", Math.max(0, indentation));
 
 
         if(t0 != null) {
