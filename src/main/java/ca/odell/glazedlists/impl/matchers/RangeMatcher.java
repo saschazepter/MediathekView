@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author James Lemieux
  */
-public class RangeMatcher<D extends Comparable,E> implements Matcher<E> {
+public class RangeMatcher<D extends Comparable<? super D>, E> implements Matcher<E> {
 
     /** The start of the range; <code>null</code> if the range has no starting value. */
     private final D start;

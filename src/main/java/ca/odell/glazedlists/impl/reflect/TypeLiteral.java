@@ -125,7 +125,7 @@ public class TypeLiteral<T> {
   Type resolveType(Type toResolve) {
     // this implementation is made a little more complicated in an attempt to avoid object-creation
     while (true) {
-      if (toResolve instanceof TypeVariable original) {
+      if (toResolve instanceof TypeVariable<?> original) {
         toResolve = MoreTypes.resolveTypeVariable(type, rawType, original);
         if (toResolve == original) {
           return toResolve;
@@ -172,7 +172,7 @@ public class TypeLiteral<T> {
           "%s is not defined by a supertype of %s", method, type);
       genericParameterTypes = method.getGenericParameterTypes();
 
-    } else if (methodOrConstructor instanceof Constructor constructor) {
+    } else if (methodOrConstructor instanceof Constructor<?> constructor) {
       checkArgument(constructor.getDeclaringClass().isAssignableFrom(rawType),
           "%s does not construct a supertype of %s", constructor, type);
       genericParameterTypes = constructor.getGenericParameterTypes();

@@ -32,13 +32,13 @@ public class BeanTableFormat<E> implements WritableTableFormat<E>, AdvancedTable
     private final boolean[] editable;
 
     /** column comparators */
-    protected Comparator[] comparators;
+    protected Comparator<?>[] comparators;
 
     /** column classes */
-    protected Class[] classes;
+    protected Class<?>[] classes;
 
     /** primitive class to object class conversion map */
-    protected static final Map<Class,Class> primitiveToObjectMap = Map.of(
+    protected static final Map<Class<?>, Class<?>> primitiveToObjectMap = Map.of(
             boolean.class, Boolean.class,
             char.class, Character.class,
             byte.class, Byte.class,
@@ -59,8 +59,8 @@ public class BeanTableFormat<E> implements WritableTableFormat<E>, AdvancedTable
         this.editable = editable;
 
         // set up the AdvancedTableFormat properties
-        comparators = new Comparator[propertyNames.length];
-        classes = new Class[propertyNames.length];
+        comparators = new Comparator<?>[propertyNames.length];
+        classes = new Class<?>[propertyNames.length];
 
         // use default properties if no class is specified
         if(beanClass == null) {
@@ -74,7 +74,7 @@ public class BeanTableFormat<E> implements WritableTableFormat<E>, AdvancedTable
             loadPropertyDescriptors(beanClass);
             for(int c = 0; c < classes.length; c++) {
                 // class
-                Class rawClass = beanProperties[c].getValueClass();
+                Class<?> rawClass = beanProperties[c].getValueClass();
                 classes[c] = primitiveToObjectMap.getOrDefault(rawClass, rawClass);
                 // comparator
                 if(Comparable.class.isAssignableFrom(classes[c])) comparators[c] = GlazedLists.comparableComparator();
@@ -90,8 +90,9 @@ public class BeanTableFormat<E> implements WritableTableFormat<E>, AdvancedTable
      * Loads the property descriptors which are used to invoke property
      * access methods using the property names.
      */
+    @SuppressWarnings("unchecked")
     protected void loadPropertyDescriptors(Class<E> beanClass) {
-        beanProperties = new BeanProperty[propertyNames.length];
+        beanProperties = (BeanProperty<E>[]) new BeanProperty<?>[propertyNames.length];
         for(int p = 0; p < propertyNames.length; p++) {
             beanProperties[p] = new BeanProperty<>(beanClass, propertyNames[p], true, editable[p]);
         }
@@ -184,7 +185,7 @@ public class BeanTableFormat<E> implements WritableTableFormat<E>, AdvancedTable
      * Get the class of the specified column.
      */
     @Override
-    public Class getColumnClass(int column) {
+    public Class<?> getColumnClass(int column) {
         return classes[column];
     }
 
@@ -192,7 +193,7 @@ public class BeanTableFormat<E> implements WritableTableFormat<E>, AdvancedTable
      * Get the comparator for the specified column.
      */
     @Override
-    public Comparator getColumnComparator(int column) {
+    public Comparator<?> getColumnComparator(int column) {
         return comparators[column];
     }
 }

@@ -30,6 +30,10 @@ public class ListToByteCoder<C> {
         return allColors;
     }
 
+    public byte allColorsToByte() {
+        return colorsToByte(allColors);
+    }
+
     /**
      * Encode the specified list of colors into a byte.
      */

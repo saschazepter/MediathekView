@@ -7,7 +7,6 @@ import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.TextFilterable;
 import ca.odell.glazedlists.TextFilterator;
 import ca.odell.glazedlists.impl.GlazedListsImpl;
-import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.matchers.Matchers;
 import ca.odell.glazedlists.matchers.SearchEngineTextMatcherEditor;
 import ca.odell.glazedlists.matchers.TextMatcherEditor;
@@ -24,27 +23,7 @@ public final class TextMatchers {
     /**
      * A Comparator that orders SearchTerms according to the length of their text.
      */
-    private static final Comparator<SearchTerm> SEARCHTERM_LENGTH_COMPARATOR = new SearchTermLengthComparator();
-
-    /**
-     * A Matcher that only accepts non-negated SearchTerms.
-     */
-    private static final Matcher<SearchTerm> NON_NEGATED_MATCHER = Matchers.beanPropertyMatcher(SearchTerm.class, "negated", Boolean.FALSE);
-
-    /**
-     * A Matcher that only accepts negated SearchTerms.
-     */
-    private static final Matcher<SearchTerm> NEGATED_MATCHER = Matchers.beanPropertyMatcher(SearchTerm.class, "negated", Boolean.TRUE);
-
-    /**
-     * A Matcher that only accepts SearchTerms with null Fields.
-     */
-    private static final Matcher<SearchTerm> NO_FIELD_MATCHER = Matchers.beanPropertyMatcher(SearchTerm.class, "negated", null);
-
-    /**
-     * A Matcher that only accepts SearchTerms without null Fields.
-     */
-    private static final Matcher<SearchTerm> FIELD_MATCHER = Matchers.invert(NO_FIELD_MATCHER);
+    private static final Comparator<SearchTerm<?>> SEARCHTERM_LENGTH_COMPARATOR = new SearchTermLengthComparator();
 
     /**
      * Execute the logic that determines whether the given <code>element</code>
@@ -73,7 +52,7 @@ public final class TextMatchers {
             // get the text search strategy for the current filter
             TextSearchStrategy textSearchStrategy = filterStrategies[f];
             SearchTerm<E> searchTerm = searchTerms[f];
-            final SearchEngineTextMatcherEditor.Field searchTermField = searchTerm.getField();
+            final SearchEngineTextMatcherEditor.Field<E> searchTermField = searchTerm.getField();
 
             // if the SearchTerm has a Field, use its TextFilterator to extract the filterStrings
             final List<String> strings;
@@ -165,8 +144,8 @@ public final class TextMatchers {
      * @return a copy of the minimal array of <code>searchTerms</code> in
      * the order of longest to shortest
      */
-    private static List<SearchTerm> normalizeSearchTerms(List<SearchTerm> searchTerms, boolean negated) {
-        List<SearchTerm> result = new ArrayList<>(searchTerms);
+    private static <E> List<SearchTerm<E>> normalizeSearchTerms(List<SearchTerm<E>> searchTerms, boolean negated) {
+        List<SearchTerm<E>> result = new ArrayList<>(searchTerms);
 
         // filter out null and 0-length SearchTerms - they have no filtering value
         result.removeIf(searchTerm -> searchTerm == null || searchTerm.getText().isEmpty());
@@ -174,12 +153,12 @@ public final class TextMatchers {
         // Remove each non-required term made redundant by another term. Iterate
         // backwards so every removal affects only indices already processed.
         for (int i = result.size() - 1; i >= 0; i--) {
-            final SearchTerm candidate = result.get(i);
+            final SearchTerm<E> candidate = result.get(i);
             if (candidate.isRequired()) continue;
 
             for (int j = 0; j < result.size(); j++) {
                 if (i == j) continue;
-                final SearchTerm other = result.get(j);
+                final SearchTerm<E> other = result.get(j);
                 final boolean redundant = negated
                     ? candidate.getText().contains(other.getText())
                     : other.getText().contains(candidate.getText());
@@ -207,11 +186,12 @@ public final class TextMatchers {
      * @param strategy the strategy for mapping a character
      * @return mapped versions of the filter Strings
      */
-    public static SearchTerm[] normalizeSearchTerms(SearchTerm[] filters, TextSearchStrategy.Factory strategy) {
+    @SuppressWarnings("unchecked")
+    public static <E> SearchTerm<E>[] normalizeSearchTerms(SearchTerm<E>[] filters, TextSearchStrategy.Factory strategy) {
         // if the "normalized latin strategy" is used, strip the diacritics
         if (strategy == TextMatcherEditor.NORMALIZED_STRATEGY) {
             final char[] mapper = GlazedListsImpl.getLatinDiacriticsStripper();
-            final SearchTerm[] mappedFilters = new SearchTerm[filters.length];
+            final SearchTerm<E>[] mappedFilters = (SearchTerm<E>[]) new SearchTerm<?>[filters.length];
 
             // map the filter Strings by running each character through the characterMap
             for (int i = 0; i < filters.length; i++) {
@@ -232,21 +212,21 @@ public final class TextMatchers {
         }
 
         // fetch all negated and non-negated SearchTerm object into two different Lists
-        final SearchTerm[] nonNullFieldSearchTerms = Matchers.select(filters, NO_FIELD_MATCHER);
-        final SearchTerm[] nullFieldSearchTerms = Matchers.select(filters, FIELD_MATCHER);
+        final SearchTerm<E>[] noFieldSearchTerms = Matchers.select(filters, searchTerm -> searchTerm.getField() == null);
+        final SearchTerm<E>[] fieldSearchTerms = Matchers.select(filters, searchTerm -> searchTerm.getField() != null);
 
         // fetch all negated and non-negated SearchTerm object into two different Lists
-        final List<SearchTerm> negatedUnrequiredSearchTerms = Arrays.asList(Matchers.select(nullFieldSearchTerms, NEGATED_MATCHER));
-        final List<SearchTerm> nonNegatedUnrequiredSearchTerms = Arrays.asList(Matchers.select(nullFieldSearchTerms, NON_NEGATED_MATCHER));
+        final List<SearchTerm<E>> negatedUnrequiredSearchTerms = Arrays.asList(Matchers.select(noFieldSearchTerms, SearchTerm::isNegated));
+        final List<SearchTerm<E>> nonNegatedUnrequiredSearchTerms = Arrays.asList(Matchers.select(noFieldSearchTerms, searchTerm -> !searchTerm.isNegated()));
 
         // reassemble a super List of all normalized (necessary) SearchTerms
-        final Collection<SearchTerm> allSearchTerms = new ArrayList<>(filters.length);
-        allSearchTerms.addAll(Arrays.asList(nonNullFieldSearchTerms));
+        final Collection<SearchTerm<E>> allSearchTerms = new ArrayList<>(filters.length);
+        allSearchTerms.addAll(Arrays.asList(fieldSearchTerms));
         allSearchTerms.addAll(normalizeSearchTerms(negatedUnrequiredSearchTerms, true));
         allSearchTerms.addAll(normalizeSearchTerms(nonNegatedUnrequiredSearchTerms, false));
 
         // return the normalized SearchTerms as an array
-        return allSearchTerms.toArray(SearchTerm[]::new);
+        return allSearchTerms.toArray(size -> (SearchTerm<E>[]) new SearchTerm<?>[size]);
     }
 
     /**
@@ -275,6 +255,7 @@ public final class TextMatchers {
      * @return SearchTerm an object encapsulating a single raw search term as
      * well as metadata related to the use of the SearchTerm
      */
+    @SuppressWarnings("unchecked")
     public static <E> SearchTerm<E>[] parse(String text, Set<SearchEngineTextMatcherEditor.Field<E>> fields) {
         final List<SearchTerm<E>> searchTerms = new ArrayList<>();
 
@@ -364,7 +345,7 @@ public final class TextMatchers {
         if (!searchTermText.isEmpty())
             searchTerms.add(new SearchTerm<>(searchTermText.toString(), negated, required, field));
 
-        return searchTerms.toArray(SearchTerm[]::new);
+        return searchTerms.toArray(size -> (SearchTerm<E>[]) new SearchTerm<?>[size]);
     }
 
     /**
@@ -377,7 +358,7 @@ public final class TextMatchers {
      * @return <tt>true</tt> iff the <code>newMatcher</code> is guaranteed to
      * match the same or fewer items than <code>oldMatcher</code>
      */
-    public static boolean isMatcherConstrained(TextMatcher oldMatcher, TextMatcher newMatcher) {
+    public static boolean isMatcherConstrained(TextMatcher<?> oldMatcher, TextMatcher<?> newMatcher) {
         // equal TextMatchers are never considered constrained or relaxed
         if (oldMatcher.equals(newMatcher))
             return false;
@@ -399,13 +380,13 @@ public final class TextMatchers {
             return false;
 
         // extract the SearchTerms for comparison
-        final SearchTerm[] oldTerms = oldMatcher.getSearchTerms();
-        final SearchTerm[] newTerms = newMatcher.getSearchTerms();
+        final SearchTerm<?>[] oldTerms = oldMatcher.getSearchTerms();
+        final SearchTerm<?>[] newTerms = newMatcher.getSearchTerms();
 
         // we search the newTerms to locate an oldTerm whose matching power isn't covered
         oldTermsCoveredByNew:
-        for (SearchTerm oldTerm : oldTerms) {
-            for (SearchTerm newTerm : newTerms) {
+        for (SearchTerm<?> oldTerm : oldTerms) {
+            for (SearchTerm<?> newTerm : newTerms) {
                 if (newTerm.equals(oldTerm))
                     continue oldTermsCoveredByNew;
                 if (newTerm.isConstrainment(oldTerm))
@@ -427,19 +408,19 @@ public final class TextMatchers {
      * @return <tt>true</tt> iff the <code>newMatcher</code> is guaranteed to
      * match the same or more items than <code>oldMatcher</code>
      */
-    public static boolean isMatcherRelaxed(TextMatcher oldMatcher, TextMatcher newMatcher) {
+    public static boolean isMatcherRelaxed(TextMatcher<?> oldMatcher, TextMatcher<?> newMatcher) {
         return isMatcherConstrained(newMatcher, oldMatcher);
     }
 
     /**
      * This Comparator orders {@link SearchTerm}s in descending order by their text lengths.
      */
-    private static final class SearchTermLengthComparator implements Comparator<SearchTerm> {
+    private static final class SearchTermLengthComparator implements Comparator<SearchTerm<?>> {
         /**
          * {@inheritDoc}
          */
         @Override
-        public int compare(SearchTerm a, SearchTerm b) {
+        public int compare(SearchTerm<?> a, SearchTerm<?> b) {
             return b.getText().length() - a.getText().length();
         }
     }

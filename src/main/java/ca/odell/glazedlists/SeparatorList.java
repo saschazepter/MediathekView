@@ -363,7 +363,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
      * that just won't do for performance requirements.
      */
     private void updateGroup(int group, int groupCount, boolean fireEvents) {
-        Separator separator = separatorSource.separators.get(group).get();
+        Separator<E> separator = separatorSource.separators.get(group).get();
         int limit = separator.getLimit();
 
         // fix up this separator

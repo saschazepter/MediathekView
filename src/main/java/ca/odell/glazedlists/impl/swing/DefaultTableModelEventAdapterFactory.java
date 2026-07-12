@@ -17,7 +17,7 @@ import javax.swing.table.AbstractTableModel;
  */
 public class DefaultTableModelEventAdapterFactory<E> implements Factory<E> {
     /** Singleton instance of DefaultTableModelEventAdapterFactory. */
-    private static final Factory INSTANCE = new DefaultTableModelEventAdapterFactory();
+    private static final Factory<Object> INSTANCE = new DefaultTableModelEventAdapterFactory<>();
 
     /**
      * {@inheritDoc}
@@ -34,6 +34,6 @@ public class DefaultTableModelEventAdapterFactory<E> implements Factory<E> {
      */
     @SuppressWarnings("unchecked")
     public static <E> Factory<E> getInstance() {
-        return INSTANCE;
+        return (Factory<E>) (Factory<?>) INSTANCE;
     }
 }

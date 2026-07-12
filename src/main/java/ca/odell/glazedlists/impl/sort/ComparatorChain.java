@@ -58,7 +58,7 @@ public record ComparatorChain<T>(Comparator<T>[] comparators) implements Compara
         if (o == null || getClass() != o.getClass())
             return false;
 
-        final ComparatorChain that = (ComparatorChain) o;
+        final ComparatorChain<?> that = (ComparatorChain<?>) o;
 
         return Arrays.equals(comparators, that.comparators);
     }

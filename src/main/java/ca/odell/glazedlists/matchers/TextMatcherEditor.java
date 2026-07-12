@@ -305,9 +305,10 @@ public class TextMatcherEditor<E> extends AbstractMatcherEditor<E> {
      *
      * @param newFilters the {@link String}s representing all of the filter values
      */
+    @SuppressWarnings("unchecked")
     public void setFilterText(String[] newFilters) {
         // wrap the filter Strings with SearchTerm objects
-        final SearchTerm<E>[] searchTerms = new SearchTerm[newFilters.length];
+        final SearchTerm<E>[] searchTerms = (SearchTerm<E>[]) new SearchTerm<?>[newFilters.length];
         for (int i = 0; i < searchTerms.length; i++) {
             searchTerms[i] = new SearchTerm<>(newFilters[i]);
         }

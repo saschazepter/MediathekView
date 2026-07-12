@@ -646,7 +646,7 @@ public final class SparseListNode {
      * A specialized Iterator that will significantly outperform the default
      * one provided by AbstractList when acting on this ADT.
      */
-    final static class SparseListIterator implements Iterator {
+    final static class SparseListIterator implements Iterator<Object> {
 
         /** the current SparseListNode being inspected */
         private SparseListNode currentNode;

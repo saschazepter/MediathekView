@@ -84,7 +84,7 @@ public class SearchEngineTextMatcherEditor<E> extends TextMatcherEditor<E> {
      * @todo explain the supported syntax for the input text in detail
      */
     public void refilter(String inputText) {
-        final SearchTerm[] filterTerms = TextMatchers.parse(inputText, getFields());
+        final SearchTerm<E>[] filterTerms = TextMatchers.parse(inputText, getFields());
         setTextMatcher(new TextMatcher<>(filterTerms, getFilterator(), getMode(), getStrategy()));
     }
 
@@ -153,7 +153,7 @@ public class SearchEngineTextMatcherEditor<E> extends TextMatcherEditor<E> {
             if (o == null || getClass() != o.getClass())
                 return false;
 
-            Field field = (Field) o;
+            Field<?> field = (Field<?>) o;
 
             return name.equals(field.name);
         }

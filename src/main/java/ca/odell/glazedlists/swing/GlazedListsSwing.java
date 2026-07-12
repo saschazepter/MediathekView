@@ -49,8 +49,8 @@ public final class GlazedListsSwing {
      * Returns true iff <code>list</code> is an {@link EventList} that fires
      * all of its update events from the Swing event dispatch thread.
      */
-    public static boolean isSwingThreadProxyList(EventList list) {
-        return list instanceof SwingThreadProxyEventList;
+    public static boolean isSwingThreadProxyList(EventList<?> list) {
+        return list instanceof SwingThreadProxyEventList<?>;
     }
 
     // ThresholdRangeModels // // // // // // // // // // // // // // // // //
@@ -61,7 +61,7 @@ public final class GlazedListsSwing {
      * a range of Objects between the results of getValue() and getMaximum()
      * on the BoundedRangeModel.
      */
-    public static BoundedRangeModel lowerRangeModel(ThresholdList target) {
+    public static BoundedRangeModel lowerRangeModel(ThresholdList<?> target) {
         return new LowerThresholdRangeModel(target);
     }
 
@@ -71,7 +71,7 @@ public final class GlazedListsSwing {
      * a range of Objects between the results of getMinimum() and getValue()
      * on the BoundedRangeModel.
      */
-    public static BoundedRangeModel upperRangeModel(ThresholdList target) {
+    public static BoundedRangeModel upperRangeModel(ThresholdList<?> target) {
         return new UpperThresholdRangeModel(target);
     }
 

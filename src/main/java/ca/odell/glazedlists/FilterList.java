@@ -60,7 +60,7 @@ public final class FilterList<E> extends TransformedList<E,E> {
     private MatcherEditor<? super E> currentEditor;
 
     /** listener handles changes to the matcher */
-    private final MatcherEditor.Listener listener = new PrivateMatcherEditorListener();
+    private final MatcherEditor.Listener<E> listener = new PrivateMatcherEditorListener();
 
     /** is this list already disposed? */
     private volatile boolean disposed;
@@ -104,7 +104,7 @@ public final class FilterList<E> extends TransformedList<E,E> {
         if (matcherEditor == null) return;
 
         currentEditor = matcherEditor;
-        currentEditor.addMatcherEditorListener(listener);
+        typedCurrentEditor().addMatcherEditorListener(listener);
         currentMatcher = currentEditor.getMatcher();
         changed();
     }
@@ -118,7 +118,7 @@ public final class FilterList<E> extends TransformedList<E,E> {
     public void setMatcher(Matcher<? super E> matcher) {
         // cancel the previous editor
         if(currentEditor != null) {
-            currentEditor.removeMatcherEditorListener(listener);
+            typedCurrentEditor().removeMatcherEditorListener(listener);
             currentEditor = null;
         }
 
@@ -138,13 +138,13 @@ public final class FilterList<E> extends TransformedList<E,E> {
     public void setMatcherEditor(MatcherEditor<? super E> editor) {
         // cancel the previous editor
         if (currentEditor != null)
-            currentEditor.removeMatcherEditorListener(listener);
+            typedCurrentEditor().removeMatcherEditorListener(listener);
 
         // use the new editor
         currentEditor = editor;
 
         if (currentEditor != null) {
-            currentEditor.addMatcherEditorListener(listener);
+            typedCurrentEditor().addMatcherEditorListener(listener);
             changeMatcherWithLocks(currentEditor, currentEditor.getMatcher(), MatcherEditor.Event.CHANGED);
         } else {
             changeMatcherWithLocks(currentEditor, null, MatcherEditor.Event.MATCH_ALL);
@@ -158,7 +158,7 @@ public final class FilterList<E> extends TransformedList<E,E> {
 
         // stop listening to the MatcherEditor if one exists
         if (currentEditor != null) {
-            currentEditor.removeMatcherEditorListener(listener);
+            typedCurrentEditor().removeMatcherEditorListener(listener);
         }
         // mark this list as disposed before clearing fields
         // this flag is checked in #changeMatcher
@@ -453,6 +453,11 @@ public final class FilterList<E> extends TransformedList<E,E> {
 
             changeMatcherWithLocks(matcherEditor, matcher, changeType);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private MatcherEditor<E> typedCurrentEditor() {
+        return (MatcherEditor<E>) currentEditor;
     }
 
     /** {@inheritDoc} */

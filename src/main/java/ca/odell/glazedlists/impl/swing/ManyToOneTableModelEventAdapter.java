@@ -58,7 +58,7 @@ class ManyToOneTableModelEventAdapter<E> extends DefaultTableModelEventAdapter<E
     /**
      * Ensures that only one TableModelEvent is created and fired for the given ListEvent.
      */
-    private void fireOneTableModelEvent(ListEvent listChanges) {
+    private void fireOneTableModelEvent(ListEvent<E> listChanges) {
         // build an "optimized" TableModelEvent describing the precise range of rows in the first block
         listChanges.nextBlock();
         final int startIndex = listChanges.getBlockStartIndex();

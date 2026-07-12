@@ -15,14 +15,14 @@ import java.util.Comparator;
  *
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
-public final class ComparableComparator implements Comparator<Comparable> {
+public final class ComparableComparator<T extends Comparable<? super T>> implements Comparator<T> {
 
     /**
      * Compares object alpha to object beta by casting object one
      * to Comparable, and calling its compareTo method.
      */
     @Override
-    public int compare(Comparable alpha, Comparable beta) {
+    public int compare(T alpha, T beta) {
         // compare using Comparable
         if(alpha != null && beta != null) {
             return alpha.compareTo(beta);
@@ -42,6 +42,6 @@ public final class ComparableComparator implements Comparator<Comparable> {
      */
     @Override
     public boolean equals(Object other) {
-        return (other instanceof ComparableComparator);
+        return (other instanceof ComparableComparator<?>);
     }
 }

@@ -98,7 +98,7 @@ public class FourColorTree <  T0>   {
 
 
     /** the colors in the tree, used for printing purposes only */
-    private final ListToByteCoder coder;
+    private final ListToByteCoder<?> coder;
 
 
     /** the tree's root, or <code>null</code> for an empty tree */
@@ -124,7 +124,7 @@ public class FourColorTree <  T0>   {
      * @param comparator the comparator to use when ordering values within the
      *      tree. If this tree is unsorted, use the one-argument constructor.
      */
-    public FourColorTree/**/(  ListToByteCoder coder,    Comparator<? super T0> comparator) {
+    public FourColorTree/**/(  ListToByteCoder<?> coder,    Comparator<? super T0> comparator) {
            if(coder == null) throw new NullPointerException("Coder cannot be null.");
         if(comparator == null) throw new NullPointerException("Comparator cannot be null.");
 
@@ -135,12 +135,13 @@ public class FourColorTree <  T0>   {
     /**
      * @param coder specifies the node colors
      */
-    public FourColorTree/**/(  ListToByteCoder coder   ) {
-        this(  coder,    (Comparator)GlazedLists.comparableComparator());
+    @SuppressWarnings("unchecked")
+    public FourColorTree/**/(  ListToByteCoder<?> coder   ) {
+        this(  coder,    (Comparator<? super T0>) GlazedLists.comparableComparator());
     }
 
 
-    public ListToByteCoder getCoder() {
+    public ListToByteCoder<?> getCoder() {
         return coder;
     }
 
@@ -443,7 +444,7 @@ public class FourColorTree <  T0>   {
      * Change the color of the specified element.
      */
     public final void setColor(Element<T0> element, byte color) {
-        FourColorNode node = (FourColorNode)element;
+        FourColorNode<T0> node = (FourColorNode<T0>) element;
         byte oldColor  = node.getColor();
         if(oldColor == color) return;
 
@@ -963,7 +964,7 @@ public class FourColorTree <  T0>   {
 
         // print it flattened, like a list of colors
         StringBuilder result = new StringBuilder();
-        for(FourColorNode n = firstNode(); n != null; n = next(n)) {
+        for(FourColorNode<T0> n = firstNode(); n != null; n = next(n)) {
             Object color = coder.getColors().get(ListToByteCoder.colorAsIndex(n.color));
             result.repeat(String.valueOf(color),   Math.max(0, n.size)  );
         }

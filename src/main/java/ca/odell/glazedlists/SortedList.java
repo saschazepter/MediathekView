@@ -57,7 +57,7 @@ import java.util.*;
 public final class SortedList<E> extends TransformedList<E,E> {
 
     private static final byte ALL_COLORS = 1;
-    private static final Element EMPTY_ELEMENT = null;
+    private static final Element<?> EMPTY_ELEMENT = null;
 
     /**
      * Sorting mode where elements are always in sorted order, even if this
@@ -75,9 +75,9 @@ public final class SortedList<E> extends TransformedList<E,E> {
     public static final int AVOID_MOVING_ELEMENTS = 1;
 
     /** a map from the unsorted index to the sorted index */
-    private SimpleTree<Element> unsorted;
+    private SimpleTree<Element<?>> unsorted;
     /** a map from the sorted index to the unsorted index */
-    private SimpleTree<Element> sorted;
+    private SimpleTree<Element<?>> sorted;
 
     /** the comparator that this list uses for sorting */
     private Comparator<? super E> comparator;
@@ -160,9 +160,9 @@ public final class SortedList<E> extends TransformedList<E,E> {
             // remember what the mapping was before
             int[] previousIndexToSortedIndex = new int[sorted.size()];
             int index = 0;
-            for(SimpleTreeIterator<Element> i = new SimpleTreeIterator<>(sorted); i.hasNext(); index++) {
+            for(SimpleTreeIterator<Element<?>> i = new SimpleTreeIterator<>(sorted); i.hasNext(); index++) {
                 i.next();
-                Element<Element> unsortedNode = i.value();
+                Element<Element<?>> unsortedNode = asNode(i.value());
                 int unsortedIndex = unsorted.indexOfNode(unsortedNode, ALL_COLORS);
                 previousIndexToSortedIndex[unsortedIndex] = index;
             }
@@ -173,11 +173,12 @@ public final class SortedList<E> extends TransformedList<E,E> {
             }
 
             // reorder the unsorted nodes to get the new sorted order
-            Element<Element>[] unsortedNodes = new Element[unsorted.size()];
+            @SuppressWarnings("unchecked")
+            Element<Element<?>>[] unsortedNodes = (Element<Element<?>>[]) new Element<?>[unsorted.size()];
             index = 0;
-            for(SimpleTreeIterator<Element> i = new SimpleTreeIterator<>(unsorted); i.hasNext(); index++) {
+            for(SimpleTreeIterator<Element<?>> i = new SimpleTreeIterator<>(unsorted); i.hasNext(); index++) {
                 i.next();
-                Element<Element> unsortedNode = i.node();
+                Element<Element<?>> unsortedNode = i.node();
                 unsortedNodes[index] = unsortedNode;
             }
             Arrays.sort(unsortedNodes, sorted.getComparator());
@@ -186,10 +187,10 @@ public final class SortedList<E> extends TransformedList<E,E> {
             int[] reorderMap = new int[sorted.size()];
             boolean indexChanged = false;
             index = 0;
-            for(SimpleTreeIterator<Element> i = new SimpleTreeIterator<>(sorted); i.hasNext(); index++) {
+            for(SimpleTreeIterator<Element<?>> i = new SimpleTreeIterator<>(sorted); i.hasNext(); index++) {
                 i.next();
-                Element<Element> sortedNode = i.node();
-                Element<Element> unsortedNode = unsortedNodes[index];
+                Element<Element<?>> sortedNode = i.node();
+                Element<Element<?>> unsortedNode = unsortedNodes[index];
                 sortedNode.set(unsortedNode);
                 unsortedNode.set(sortedNode);
                 int unsortedIndex = unsorted.indexOfNode(unsortedNode, ALL_COLORS);
@@ -233,8 +234,8 @@ public final class SortedList<E> extends TransformedList<E,E> {
         updates.beginEvent();
 
         // first update the offset tree for all changes, and keep the changed nodes in a list
-        LinkedList<Element> insertNodes = new LinkedList<>();
-        List<Element<Element>> updateNodes = new ArrayList<>();
+        LinkedList<Element<Element<?>>> insertNodes = new LinkedList<>();
+        List<Element<Element<?>>> updateNodes = new ArrayList<>();
         List<E> previousValues = new ArrayList<>();
 
         // Update the indexed tree so it matches the source.
@@ -247,20 +248,20 @@ public final class SortedList<E> extends TransformedList<E,E> {
 
             // on insert, insert the index node
             if(changeType == ListEvent.INSERT) {
-                Element<Element> unsortedNode = unsorted.add(unsortedIndex, EMPTY_ELEMENT, 1);
+                Element<Element<?>> unsortedNode = unsorted.add(unsortedIndex, EMPTY_ELEMENT, 1);
                 insertNodes.addLast(unsortedNode);
 
             // on update, mark the updated node as unsorted and save it so it can be moved
             } else if(changeType == ListEvent.UPDATE) {
-                Element<Element> unsortedNode = unsorted.get(unsortedIndex);
-                Element sortedNode = unsortedNode.get();
+                Element<Element<?>> unsortedNode = unsorted.get(unsortedIndex);
+                Element<Element<?>> sortedNode = asNode(unsortedNode.get());
                 sortedNode.setSorted(Element.PENDING);
                 updateNodes.add(sortedNode);
                 previousValues.add(listChanges.getOldValue());
 
             // on delete, delete the index and sorted node
             } else if(changeType == ListEvent.DELETE) {
-                Element<Element> unsortedNode = unsorted.get(unsortedIndex);
+                Element<Element<?>> unsortedNode = unsorted.get(unsortedIndex);
                 E deleted = listChanges.getOldValue();
                 unsorted.remove(unsortedNode);
                 int deleteSortedIndex = deleteByUnsortedNode(unsortedNode);
@@ -272,7 +273,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
         // decide which updated elements need to be shifted. We walk through the
         // tree, marking updated elements as sorted or unsorted depending on their
         // value relative to their neighbours
-        for (Element<Element> sortedNode : updateNodes) {
+        for (Element<Element<?>> sortedNode : updateNodes) {
             // we may have already handled this via a neighbour
             if (sortedNode.getSorted() != Element.PENDING)
                 continue;
@@ -281,10 +282,10 @@ public final class SortedList<E> extends TransformedList<E,E> {
             // preceeding current that's sorted and the first element after current
             // that's sorted. If there's no such element (ie. the end of the list),
             // then the bound element is null
-            Element lowerBound = null;
-            Element upperBound = null;
-            Element firstUnsortedNode = sortedNode;
-            for (Element leftNeighbour = sortedNode.previous(); leftNeighbour != null; leftNeighbour = leftNeighbour.previous()) {
+            Element<Element<?>> lowerBound = null;
+            Element<Element<?>> upperBound = null;
+            Element<Element<?>> firstUnsortedNode = sortedNode;
+            for (Element<Element<?>> leftNeighbour = sortedNode.previous(); leftNeighbour != null; leftNeighbour = leftNeighbour.previous()) {
                 if (leftNeighbour.getSorted() != Element.SORTED) {
                     firstUnsortedNode = leftNeighbour;
                     continue;
@@ -292,7 +293,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
                 lowerBound = leftNeighbour;
                 break;
             }
-            for (Element rightNeighbour = sortedNode.next(); rightNeighbour != null; rightNeighbour = rightNeighbour.next()) {
+            for (Element<Element<?>> rightNeighbour = sortedNode.next(); rightNeighbour != null; rightNeighbour = rightNeighbour.next()) {
                 if (rightNeighbour.getSorted() != Element.SORTED)
                     continue;
                 upperBound = rightNeighbour;
@@ -302,8 +303,8 @@ public final class SortedList<E> extends TransformedList<E,E> {
             // walk from the leader to the follower, marking elements as in sorted
             // order or not. We simply compare them to our 2 potentially distant neighbours
             // on either side - the lower and upper bounds
-            Comparator nodeComparator = sorted.getComparator();
-            for (Element current = firstUnsortedNode; current != upperBound; current = current.next()) {
+            Comparator<? super Element<?>> nodeComparator = sorted.getComparator();
+            for (Element<Element<?>> current = firstUnsortedNode; current != upperBound; current = current.next()) {
 
                 // ensure we're less than the upper bound
                 if (upperBound != null && nodeComparator.compare(current.get(), upperBound.get()) > 0) {
@@ -326,7 +327,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
         // fire update events
         for(int i = 0, size = updateNodes.size(); i < size; i++) {
             E previous = previousValues.get(i);
-            Element<Element> sortedNode = updateNodes.get(i);
+            Element<Element<?>> sortedNode = updateNodes.get(i);
             assert(sortedNode.getSorted() != Element.PENDING);
             int originalIndex = sorted.indexOfNode(sortedNode, ALL_COLORS);
 
@@ -343,14 +344,14 @@ public final class SortedList<E> extends TransformedList<E,E> {
             } else {
                 sorted.remove(sortedNode);
                 updates.elementDeleted(originalIndex, previous);
-                int insertedIndex = insertByUnsortedNode(sortedNode.get());
+                int insertedIndex = insertByUnsortedNode(asNode(sortedNode.get()));
                 updates.elementInserted(insertedIndex, ListEvent.unknownValue());
             }
         }
 
         // fire insert events
         while(!insertNodes.isEmpty()) {
-            Element insertNode = insertNodes.removeFirst();
+            Element<Element<?>> insertNode = insertNodes.removeFirst();
             int insertedIndex = insertByUnsortedNode(insertNode);
             updates.elementInserted(insertedIndex, ListEvent.unknownValue());
         }
@@ -365,9 +366,9 @@ public final class SortedList<E> extends TransformedList<E,E> {
      *
      * @return the sortIndex of the inserted object.
      */
-    private int insertByUnsortedNode(Element unsortedNode) {
+    private int insertByUnsortedNode(Element<Element<?>> unsortedNode) {
         // add the object to the sorted set
-        Element<Element> sortedNode = sorted.addInSortedOrder(ALL_COLORS, unsortedNode, 1);
+        Element<Element<?>> sortedNode = sorted.addInSortedOrder(ALL_COLORS, unsortedNode, 1);
         // assign the unsorted node the value of the sorted node
         unsortedNode.set(sortedNode);
         // return the sorted index
@@ -379,9 +380,9 @@ public final class SortedList<E> extends TransformedList<E,E> {
      *
      * @return the sortIndex of the deleted object.
      */
-    private int deleteByUnsortedNode(Element unsortedNode) {
+    private int deleteByUnsortedNode(Element<Element<?>> unsortedNode) {
         // get the sorted node
-        Element sortedNode = (Element)unsortedNode.get();
+        Element<Element<?>> sortedNode = asNode(unsortedNode.get());
         // look up the sorted index before removing the nodes
         int sortedIndex = sorted.indexOfNode(sortedNode, ALL_COLORS);
         // delete the sorted node from its tree
@@ -393,8 +394,8 @@ public final class SortedList<E> extends TransformedList<E,E> {
     /** {@inheritDoc} */
     @Override
     protected int getSourceIndex(int mutationIndex) {
-        Element sortedNode = sorted.get(mutationIndex);
-        Element unsortedNode = (Element)sortedNode.get();
+        Element<Element<?>> sortedNode = sorted.get(mutationIndex);
+        Element<Element<?>> unsortedNode = asNode(sortedNode.get());
         return unsorted.indexOfNode(unsortedNode, ALL_COLORS);
     }
 
@@ -436,19 +437,19 @@ public final class SortedList<E> extends TransformedList<E,E> {
         // save this comparator
         this.comparator = comparator;
         // keep the old trees to construct the reordering
-        SimpleTree previousSorted = sorted;
+        SimpleTree<Element<?>> previousSorted = sorted;
         // create the sorted list with a simple comparator
-        final Comparator treeComparator;
+        final Comparator<Object> treeComparator;
         if(comparator != null) treeComparator = new ElementComparator(comparator);
         else treeComparator = new ElementRawOrderComparator();
-        sorted = new SimpleTree<Element>(treeComparator);
+        sorted = new SimpleTree<>(treeComparator);
 
         // create a list which knows the offsets of the indexes to initialize this list
         if(previousSorted == null && unsorted == null) {
             unsorted = new SimpleTree<>();
             // add all elements in the source list, in order
             for(int i = 0, n = source.size(); i < n; i++) {
-                Element unsortedNode = unsorted.add(i, EMPTY_ELEMENT, 1);
+                Element<Element<?>> unsortedNode = unsorted.add(i, EMPTY_ELEMENT, 1);
                 insertByUnsortedNode(unsortedNode);
             }
             // this is the first sort so we're done
@@ -459,20 +460,20 @@ public final class SortedList<E> extends TransformedList<E,E> {
         if(source.isEmpty()) return;
 
         // rebuild the sorted tree to reflect the new Comparator
-        for(SimpleTreeIterator<Element> i = new SimpleTreeIterator<>(unsorted); i.hasNext(); ) {
+        for(SimpleTreeIterator<Element<?>> i = new SimpleTreeIterator<>(unsorted); i.hasNext(); ) {
             i.next();
-            Element unsortedNode = i.node();
+            Element<Element<?>> unsortedNode = i.node();
             insertByUnsortedNode(unsortedNode);
         }
 
         // construct the reorder map
         int[] reorderMap = new int[size()];
         int oldSortedIndex = 0;
-        for(SimpleTreeIterator<Element> i = new SimpleTreeIterator<Element>(previousSorted); i.hasNext(); oldSortedIndex++) {
+        for(SimpleTreeIterator<Element<?>> i = new SimpleTreeIterator<>(previousSorted); i.hasNext(); oldSortedIndex++) {
             i.next();
-            Element oldSortedNode = i.node();
-            Element unsortedNode = (Element)oldSortedNode.get();
-            Element newSortedNode = (Element)unsortedNode.get();
+            Element<Element<?>> oldSortedNode = i.node();
+            Element<Element<?>> unsortedNode = asNode(oldSortedNode.get());
+            Element<Element<?>> newSortedNode = asNode(unsortedNode.get());
             int newSortedIndex = sorted.indexOfNode(newSortedNode, ALL_COLORS);
             reorderMap[newSortedIndex] = oldSortedIndex;
         }
@@ -490,7 +491,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
 
         // use the fact that we have sorted data to quickly locate a position
         // at which we can begin a linear search for an object that .equals(object)
-        int index = ((SimpleTree)sorted).indexOfValue(object, true, false, ALL_COLORS);
+        int index = indexOfValue(object, true, false);
 
         // if we couldn't use the comparator to find the index, return -1
         if (index == -1) return -1;
@@ -519,7 +520,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
 
         // use the fact that we have sorted data to quickly locate a position
         // at which we can begin a linear search for an object that .equals(object)
-        int index = ((SimpleTree)sorted).indexOfValue(object, false, false, ALL_COLORS);
+        int index = indexOfValue(object, false, false);
 
         // if we couldn't use the comparator to find the index, return -1
         if (index == -1) return -1;
@@ -557,7 +558,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
         if (comparator == null)
             throw new IllegalStateException("No Comparator exists to perform this operation");
 
-        return ((SimpleTree)sorted).indexOfValue(object, true, true, ALL_COLORS);
+        return indexOfValue(object, true, true);
     }
 
     /**
@@ -576,7 +577,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
         if (comparator == null)
             throw new IllegalStateException("No Comparator exists to perform this operation");
 
-        return ((SimpleTree)sorted).indexOfValue(object, false, true, ALL_COLORS);
+        return indexOfValue(object, false, true);
     }
 
     /**
@@ -594,13 +595,23 @@ public final class SortedList<E> extends TransformedList<E,E> {
      */
     @Deprecated
     public int indexOfSimulated(Object object) {
-        return comparator != null ? ((SimpleTree)sorted).indexOfValue(object, true, true, ALL_COLORS) : size();
+        return comparator != null ? indexOfValue(object, true, true) : size();
     }
 
     /** {@inheritDoc} */
     @Override
     public boolean contains(Object object) {
         return indexOf(object) != -1;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Element<Element<?>> asNode(Element<?> element) {
+        return (Element<Element<?>>) element;
+    }
+
+    @SuppressWarnings("unchecked")
+    private int indexOfValue(Object object, boolean first, boolean simulated) {
+        return ((SimpleTree<Object>) (SimpleTree<?>) sorted).indexOfValue(object, first, simulated, ALL_COLORS);
     }
 
 
@@ -615,17 +626,17 @@ public final class SortedList<E> extends TransformedList<E,E> {
      * {@link Comparator} within {@link SimpleTree} to support {@link List#indexOf},
      * {@link List#lastIndexOf}, and {@link List#contains}.
      */
-    private class ElementComparator implements Comparator {
+    private class ElementComparator implements Comparator<Object> {
 
         /** the actual comparator used on the values found */
-        private final Comparator comparator;
+        private final Comparator<? super E> comparator;
 
         /**
          * Creates an {@link ElementComparator} that compares the
          * objects in the source list based on the indexes of the tree
          * nodes being compared.
          */
-        public ElementComparator(Comparator comparator) {
+        public ElementComparator(Comparator<? super E> comparator) {
             this.comparator = comparator;
         }
 
@@ -633,20 +644,21 @@ public final class SortedList<E> extends TransformedList<E,E> {
          * Compares object alpha to object beta by using the source comparator.
          */
         @Override
+        @SuppressWarnings("unchecked")
         public int compare(Object alpha, Object beta) {
             Object alphaObject = alpha;
             Object betaObject = beta;
             int alphaIndex = -1;
             int betaIndex = -1;
-            if(alpha instanceof Element alphaTreeNode) {
-                alphaIndex = unsorted.indexOfNode(alphaTreeNode, ALL_COLORS);
+            if(alpha instanceof Element<?> alphaTreeNode) {
+                alphaIndex = unsorted.indexOfNode(asNode(alphaTreeNode), ALL_COLORS);
                 alphaObject = source.get(alphaIndex);
             }
-            if(beta instanceof Element betaTreeNode) {
-                betaIndex = unsorted.indexOfNode(betaTreeNode, ALL_COLORS);
+            if(beta instanceof Element<?> betaTreeNode) {
+                betaIndex = unsorted.indexOfNode(asNode(betaTreeNode), ALL_COLORS);
                 betaObject = source.get(betaIndex);
             }
-            int result = comparator.compare(alphaObject, betaObject);
+            int result = comparator.compare((E) alphaObject, (E) betaObject);
             if(result != 0) return result;
             if(alphaIndex != -1 && betaIndex != -1) return alphaIndex - betaIndex;
             return 0;
@@ -656,16 +668,16 @@ public final class SortedList<E> extends TransformedList<E,E> {
     /**
      * A comparator that takes an indexed node, and compares the index of that node.
      */
-    private class ElementRawOrderComparator implements Comparator {
+    private class ElementRawOrderComparator implements Comparator<Object> {
         /**
          * Compares the alpha object to the beta object by their indices.
          */
         @Override
         public int compare(Object alpha, Object beta) {
-            Element alphaTreeNode = (Element)alpha;
-            Element betaTreeNode = (Element)beta;
-            int alphaIndex = unsorted.indexOfNode(alphaTreeNode, ALL_COLORS);
-            int betaIndex = unsorted.indexOfNode(betaTreeNode, ALL_COLORS);
+            Element<?> alphaTreeNode = (Element<?>) alpha;
+            Element<?> betaTreeNode = (Element<?>) beta;
+            int alphaIndex = unsorted.indexOfNode(asNode(alphaTreeNode), ALL_COLORS);
+            int betaIndex = unsorted.indexOfNode(asNode(betaTreeNode), ALL_COLORS);
             return alphaIndex - betaIndex;
         }
     }
@@ -682,7 +694,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
     private class SortedListIterator implements Iterator<E> {
 
         /** the SimpleTreeIterator to use to move across the tree */
-        private SimpleTreeIterator<Element> treeIterator = new SimpleTreeIterator<>(sorted);
+        private SimpleTreeIterator<Element<?>> treeIterator = new SimpleTreeIterator<>(sorted);
 
         /**
          * Returns true iff there are more value to iterate on by caling next()
@@ -698,7 +710,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
         @Override
         public E next() {
             treeIterator.next();
-            Element unsortedNode = treeIterator.value();
+            Element<Element<?>> unsortedNode = asNode(treeIterator.value());
             return source.get(unsorted.indexOfNode(unsortedNode, ALL_COLORS));
         }
 
@@ -709,7 +721,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
         public void remove() {
             int indexToRemove = treeIterator.index();
             SortedList.this.source.remove(getSourceIndex(indexToRemove));
-            treeIterator = new SimpleTreeIterator(sorted, indexToRemove, ALL_COLORS);
+            treeIterator = new SimpleTreeIterator<>(sorted, indexToRemove, ALL_COLORS);
         }
     }
 }

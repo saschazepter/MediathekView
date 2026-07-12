@@ -26,7 +26,7 @@ public class TableColumnComparator<E> implements Comparator<E> {
     /**
      * comparison is delegated to a ComparableComparator
      */
-    private final Comparator comparator;
+    private final Comparator<Object> comparator;
 
     /**
      * Creates a new TableColumnComparator that sorts objects by the specified
@@ -40,10 +40,11 @@ public class TableColumnComparator<E> implements Comparator<E> {
      * Creates a new TableColumnComparator that sorts objects by the specified
      * column using the specified table format and the specified comparator.
      */
-    public TableColumnComparator(TableFormat<? super E> tableFormat, int column, Comparator comparator) {
+    @SuppressWarnings("unchecked")
+    public TableColumnComparator(TableFormat<? super E> tableFormat, int column, Comparator<?> comparator) {
         this.column = column;
         this.tableFormat = tableFormat;
-        this.comparator = comparator;
+        this.comparator = (Comparator<Object>) comparator;
     }
 
     /**
@@ -81,7 +82,7 @@ public class TableColumnComparator<E> implements Comparator<E> {
         if (o == null || getClass() != o.getClass())
             return false;
 
-        final TableColumnComparator that = (TableColumnComparator) o;
+        final TableColumnComparator<?> that = (TableColumnComparator<?>) o;
 
         if (column != that.column)
             return false;

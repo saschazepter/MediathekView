@@ -127,8 +127,9 @@ public class SimpleTree <  T0>   {
     }
 
     /** Creates an unsorted tree using the natural element order. */
+    @SuppressWarnings("unchecked")
     public SimpleTree/**/(  ) {
-        this(   (Comparator)GlazedLists.comparableComparator());
+        this(   (Comparator<? super T0>) GlazedLists.comparableComparator());
     }
 
 

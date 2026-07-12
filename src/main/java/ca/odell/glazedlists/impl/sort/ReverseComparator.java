@@ -52,7 +52,7 @@ public final class ReverseComparator<T> implements Comparator<T> {
         if (o == null || getClass() != o.getClass())
             return false;
 
-        final ReverseComparator that = (ReverseComparator) o;
+        final ReverseComparator<?> that = (ReverseComparator<?>) o;
 
         return source.equals(that.source);
     }

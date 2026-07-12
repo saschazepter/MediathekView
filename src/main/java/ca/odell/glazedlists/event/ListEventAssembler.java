@@ -348,8 +348,8 @@ public final class ListEventAssembler<E> {
 
     // these method sare used by the ListEvent
     boolean getUseListBlocksLinear() { return useListBlocksLinear; }
-    Tree4Deltas getListDeltas() { return listDeltas; }
-    BlockSequence getListBlocksLinear() { return blockSequence; }
+    Tree4Deltas<E> getListDeltas() { return listDeltas; }
+    BlockSequence<E> getListBlocksLinear() { return blockSequence; }
     int[] getReorderMap() { return reorderMap; }
 
     /**

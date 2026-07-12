@@ -338,7 +338,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
             if (!(listener instanceof Serializable)) continue;
             serializableListeners.add(listener);
         }
-        ListEventListener[] listeners = serializableListeners.toArray(ListEventListener[]::new);
+        ListEventListener<?>[] listeners = serializableListeners.toArray(ListEventListener<?>[]::new);
 
         // 3. Write the elements, listeners, publisher and lock
         out.writeObject(elements);

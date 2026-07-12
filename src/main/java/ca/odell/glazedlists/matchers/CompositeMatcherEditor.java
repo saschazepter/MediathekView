@@ -77,7 +77,8 @@ public class CompositeMatcherEditor<E> extends AbstractMatcherEditor<E> {
      * Rebuild the CompositeMatcher modelled by this editor.
      */
     private Matcher<E> rebuildMatcher() {
-        final Matcher[] matchers = new Matcher[matcherEditors.size()];
+        @SuppressWarnings("unchecked")
+        final Matcher<E>[] matchers = (Matcher<E>[]) new Matcher<?>[matcherEditors.size()];
         for (int i = 0, n = matcherEditors.size(); i < n; i++) {
             matchers[i] = matcherEditors.get(i).getMatcher();
         }

@@ -18,7 +18,7 @@ import ca.odell.glazedlists.Filterator;
  *
  * @author James Lemieux
  */
-public class RangeMatcherEditor<D extends Comparable, E> extends AbstractMatcherEditor<E> {
+public class RangeMatcherEditor<D extends Comparable<? super D>, E> extends AbstractMatcherEditor<E> {
 
     /** the filterator is used as an alternative to implementing the TextFilterable interface */
     private final Filterator<D,E> filterator;
@@ -135,7 +135,7 @@ public class RangeMatcherEditor<D extends Comparable, E> extends AbstractMatcher
      * Compare the specified two values, treating null as either before
      * all other values or after all other values.
      */
-    private static int compare(Comparable a, Comparable b, boolean nullsBeforeAll) {
+    private static <D extends Comparable<? super D>> int compare(D a, D b, boolean nullsBeforeAll) {
         if(a == null && b == null) {
             return 0;
         } else if(a == null) {

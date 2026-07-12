@@ -224,7 +224,7 @@ class /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ implements Ele
      * Write this node out as a String, using the specified colors to write
      * each of the node values.
      */
-    String toString(List colors) {
+    String toString(List<?> colors) {
         StringBuilder result = new StringBuilder();
         asTree(0, result, colors);
         return result.toString();
@@ -232,7 +232,7 @@ class /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ implements Ele
     /**
      * Dump this node as a String for diagnostic and debugging purposes.
      */
-    void asTree(int indentation, StringBuilder out, List colors) {
+    void asTree(int indentation, StringBuilder out, List<?> colors) {
         // write the left subtree
         if(left != null) left.asTree(indentation + 1, out, colors);
 

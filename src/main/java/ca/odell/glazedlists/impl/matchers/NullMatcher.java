@@ -13,15 +13,16 @@ import ca.odell.glazedlists.matchers.Matcher;
 public final class NullMatcher<E> implements Matcher<E> {
 
     /** Singleton instance of NullMatcher. */
-    private static final Matcher INSTANCE = new NullMatcher();
+    private static final Matcher<Object> INSTANCE = new NullMatcher<>();
 
     private NullMatcher() {}
 
     /**
      * Return a singleton instance.
      */
+    @SuppressWarnings("unchecked")
     public static <E> Matcher<E> getInstance() {
-        return INSTANCE;
+        return (Matcher<E>) INSTANCE;
     }
 
     /** {@inheritDoc} */

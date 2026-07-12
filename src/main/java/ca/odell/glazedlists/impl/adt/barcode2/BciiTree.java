@@ -47,7 +47,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
 
     /*[ COLORED_START ]*/
     /** the colors in the tree, used for printing purposes only */
-    private final ListToByteCoder coder;
+    private final ListToByteCoder<?> coder;
     /*[ COLORED_END ]*/
 
     /** the tree's root, or <code>null</code> for an empty tree */
@@ -73,7 +73,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
      * @param comparator the comparator to use when ordering values within the
      *      tree. If this tree is unsorted, use the one-argument constructor.
      */
-    public BciiTree/**/(/*[ COLORED_START ]*/ ListToByteCoder coder, /*[ COLORED_END ]*/ Comparator<? super T0> comparator) {
+    public BciiTree/**/(/*[ COLORED_START ]*/ ListToByteCoder<?> coder, /*[ COLORED_END ]*/ Comparator<? super T0> comparator) {
         /*[ COLORED_START ]*/  if(coder == null) throw new NullPointerException("Coder cannot be null."); /*[ COLORED_END ]*/
         if(comparator == null) throw new NullPointerException("Comparator cannot be null.");
 
@@ -84,12 +84,13 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
     /**
      * @param coder specifies the node colors
      */
-    public BciiTree/**/(/*[ COLORED_START ]*/ ListToByteCoder coder /*[ COLORED_END ]*/) {
-        this(/*[ COLORED_START ]*/ coder, /*[ COLORED_END ]*/ (Comparator)GlazedLists.comparableComparator());
+    @SuppressWarnings("unchecked")
+    public BciiTree/**/(/*[ COLORED_START ]*/ ListToByteCoder<?> coder /*[ COLORED_END ]*/) {
+        this(/*[ COLORED_START ]*/ coder, /*[ COLORED_END ]*/ (Comparator<? super T0>) GlazedLists.comparableComparator());
     }
 
     /*[ COLORED_START ]*/
-    public ListToByteCoder getCoder() {
+    public ListToByteCoder<?> getCoder() {
         return coder;
     }
     /*[ COLORED_END ]*/
@@ -394,7 +395,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
      * Change the color of the specified element.
      */
     public final void setColor(Element<T0> element, byte color) {
-        BciiNode node = (BciiNode)element;
+        BciiNode<T0, T1> node = (BciiNode<T0, T1>) element;
         byte oldColor  = node.getColor();
         if(oldColor == color) return;
 
@@ -915,7 +916,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
 
         // print it flattened, like a list of colors
         StringBuilder result = new StringBuilder();
-        for(BciiNode n = firstNode(); n != null; n = next(n)) {
+        for(BciiNode<T0, T1> n = firstNode(); n != null; n = next(n)) {
             Object color = coder.getColors().get(ListToByteCoder.colorAsIndex(n.color));
             result.repeat(String.valueOf(color), /*[ WIDE_NODES_START(Math.max(0, n.size)) ]*/ Math.max(0, n.size) /*[ WIDE_NODES_END ]*/);
         }

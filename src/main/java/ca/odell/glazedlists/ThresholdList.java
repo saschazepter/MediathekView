@@ -378,7 +378,7 @@ public final class ThresholdList<E> extends RangeList<E> {
             if (o == null || getClass() != o.getClass())
                 return false;
 
-            final ThresholdComparator that = (ThresholdComparator) o;
+            final ThresholdComparator<?> that = (ThresholdComparator<?>) o;
 
             return evaluator.equals(that.evaluator);
         }

@@ -181,6 +181,13 @@ import ca.odell.glazedlists.impl.filter.TextSearchStrategy;
  */
 public final class AutoCompleteSupport<E> {
 
+    @SuppressWarnings("unchecked")
+    private static <T> SearchTerm<T>[] singleSearchTerm(String text) {
+        SearchTerm<T>[] result = (SearchTerm<T>[]) new SearchTerm<?>[1];
+        result[0] = new SearchTerm<>(text);
+        return result;
+    }
+
     private static final ParsePosition PARSE_POSITION = new ParsePosition(0);
     private static final Class<?>[] VALUE_OF_SIGNATURE = {String.class};
 
@@ -542,7 +549,7 @@ public final class AutoCompleteSupport<E> {
                 filterMatcher = Matchers.trueMatcher();
             }
             else {
-                filterMatcher = new TextMatcher<>(new SearchTerm[]{new SearchTerm(input)}, GlazedLists.toStringTextFilterator(), mode, getTextMatchingStrategy());
+                filterMatcher = new TextMatcher<>(singleSearchTerm(input), GlazedLists.toStringTextFilterator(), mode, getTextMatchingStrategy());
             }
         }
 
@@ -1554,7 +1561,7 @@ public final class AutoCompleteSupport<E> {
         // determine if our value is empty
         final boolean prefixIsEmpty = "".equals(value);
 
-        final Matcher<String> valueMatcher = new TextMatcher<>(new SearchTerm[]{new SearchTerm(value)}, GlazedLists.toStringTextFilterator(), getFilterMode(), getTextMatchingStrategy());
+        final Matcher<String> valueMatcher = new TextMatcher<>(singleSearchTerm(value), GlazedLists.toStringTextFilterator(), getFilterMode(), getTextMatchingStrategy());
 
         Object partialMatchItem = NOT_FOUND;
 
@@ -1827,7 +1834,7 @@ public final class AutoCompleteSupport<E> {
                 String matchStringStartsWith = null;
                 TextMatcher<String> matchStartsWith = null;
                 if (getFilterMode() == TextMatcherEditor.CONTAINS)
-                    matchStartsWith = new TextMatcher<>(new SearchTerm[]{new SearchTerm(input)}, GlazedLists.toStringTextFilterator(), TextMatcherEditor.STARTS_WITH, getTextMatchingStrategy());
+                    matchStartsWith = new TextMatcher<>(singleSearchTerm(input), GlazedLists.toStringTextFilterator(), TextMatcherEditor.STARTS_WITH, getTextMatchingStrategy());
 
                 for (int j = i; j < n; j++) {
                     itemString = convertToString(comboBoxModel.getElementAt(j));
@@ -2033,7 +2040,7 @@ public final class AutoCompleteSupport<E> {
         filterMatcher.findInputInString("");
         if (!isSelectNSContains() && !isStrict() && getFilterMode() == TextMatcherEditor.CONTAINS) {
             // old style select, only startsWith
-            TextMatcher<Object> m = new TextMatcher<>(new SearchTerm[]{new SearchTerm(filterMatcher.input)}, GlazedLists.toStringTextFilterator(), TextMatcherEditor.STARTS_WITH, getTextMatchingStrategy());
+            TextMatcher<Object> m = new TextMatcher<>(singleSearchTerm(filterMatcher.input), GlazedLists.toStringTextFilterator(), TextMatcherEditor.STARTS_WITH, getTextMatchingStrategy());
             if (m.matches(newSelection)) {
                 comboBoxEditorComponent.select(filterMatcher.input.length(), document.getLength());
             }
@@ -2704,15 +2711,16 @@ public final class AutoCompleteSupport<E> {
      * combobox whose contents remain consistent with the data in the
      * table column at the given <code>columnIndex</code>
      */
-    public static <E> AutoCompleteCellEditor<E> createTableCellEditor(Comparator uniqueComparator, TableFormat<E> tableFormat, EventList<E> tableData, int columnIndex) {
+    @SuppressWarnings("unchecked")
+    public static <E> AutoCompleteCellEditor<E> createTableCellEditor(Comparator<?> uniqueComparator, TableFormat<E> tableFormat, EventList<E> tableData, int columnIndex) {
         // use a function to extract all values for the column
         final FunctionList.Function<E, Object> columnValueFunction = new TableColumnValueFunction<>(tableFormat, columnIndex);
-        final FunctionList allColumnValues = new FunctionList<>(tableData, columnValueFunction);
+        final FunctionList<E, Object> allColumnValues = new FunctionList<>(tableData, columnValueFunction);
 
         // narrow the list to just unique values within the column
-        final EventList<E> uniqueColumnValues = new UniqueList<E>(allColumnValues, uniqueComparator);
+        final EventList<Object> uniqueColumnValues = new UniqueList<>(allColumnValues, (Comparator<Object>) uniqueComparator);
 
-        return createTableCellEditor(uniqueColumnValues);
+        return (AutoCompleteCellEditor<E>) (AutoCompleteCellEditor<?>) createTableCellEditor(uniqueColumnValues);
     }
 
     /**

@@ -96,7 +96,7 @@ public final class PopularityList<E> extends TransformedList<E, E> {
     /** {@inheritDoc} */
     @Override
     public void dispose() {
-        SortedList sortedSource = (SortedList)source;
+        SortedList<?> sortedSource = (SortedList<?>) source;
         super.dispose();
         sortedSource.dispose();
         uniqueList.dispose();

@@ -163,7 +163,7 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
      */
     private void wrapDefaultTableHeaderRenderer() {
         final TableCellRenderer defaultRenderer = table.getTableHeader().getDefaultRenderer();
-        final Class defaultRendererType = defaultRenderer == null ? null : defaultRenderer.getClass();
+        final Class<?> defaultRendererType = defaultRenderer == null ? null : defaultRenderer.getClass();
 
         // if the renderer does not appear to be wrapped, do it
         if (defaultRendererType != SortArrowHeaderRenderer.class && defaultRendererType != null) {

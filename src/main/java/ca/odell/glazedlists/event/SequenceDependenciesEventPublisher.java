@@ -39,7 +39,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
     private transient int reentrantFireEventCount;
 
     /** subject to cleanup when this event is completely distributed */
-    private transient final Map<Object,EventFormat> subjectsToCleanUp = new IdentityHashMap<>();
+    private transient final Map<Object,EventFormat<?, ?, ?>> subjectsToCleanUp = new IdentityHashMap<>();
 
     /** for proper dependency management, when a listener and subject aren't the same identity */
     private transient final Map<Object,Object> listenersToRelatedSubjects = new IdentityHashMap<>();
@@ -52,7 +52,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
      * We should be careful not to make changes to this list directly and instead
      * create a copy as necessary
      */
-    private transient List<SubjectAndListener> subjectAndListeners = Collections.emptyList();
+    private transient List<SubjectAndListener<?, ?, ?>> subjectAndListeners = Collections.emptyList();
 
     /**
      * We use copy-on-write on the listeners list. This is a copy of the
@@ -60,7 +60,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
      * started. If there is no change going on (reentrantFireEventCount == 0),
      * then this should be null.
      */
-    private transient List<SubjectAndListener> subjectsAndListenersForCurrentEvent;
+    private transient List<SubjectAndListener<?, ?, ?>> subjectsAndListenersForCurrentEvent;
 
     /** Returns a proper initialized publisher object during deserialization. */
     private Object readResolve() throws ObjectStreamException {
@@ -80,21 +80,21 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
      *  <li>could we keep the datastructures around? it may be wasteful to
      *     reconstruct them every single time a listener is added
      */
-    private List<SubjectAndListener> orderSubjectsAndListeners(List<SubjectAndListener> subjectsAndListeners) {
+    private List<SubjectAndListener<?, ?, ?>> orderSubjectsAndListeners(List<SubjectAndListener<?, ?, ?>> subjectsAndListeners) {
 
         // since we're regenerating the subjectAndListeners list, clear it and re-add the elements
-        List<SubjectAndListener> result = new ArrayList<>();
+        List<SubjectAndListener<?, ?, ?>> result = new ArrayList<>();
 
         // HashMaps of unprocessed elements, keyed by both source and target
-        IdentityMultimap<Object,SubjectAndListener> sourceToPairs = new IdentityMultimap<>();
-        IdentityMultimap<Object,SubjectAndListener> targetToPairs = new IdentityMultimap<>();
+        IdentityMultimap<Object,SubjectAndListener<?, ?, ?>> sourceToPairs = new IdentityMultimap<>();
+        IdentityMultimap<Object,SubjectAndListener<?, ?, ?>> targetToPairs = new IdentityMultimap<>();
 
         // everything that has all of its listeners already notified in subjectAndListeners
         Map<Object,Boolean> satisfied = new IdentityHashMap<>();
         // prepare the initial collections: maps that show how each element is
         // used as source and target in directed edges, plus a list of nodes
         // that have no incoming edges
-        for (SubjectAndListener subjectAndListener : subjectsAndListeners) {
+        for (SubjectAndListener<?, ?, ?> subjectAndListener : subjectsAndListeners) {
             Object source = subjectAndListener.subject;
             Object target = getRelatedSubject(subjectAndListener.listener);
             sourceToPairs.addValue(source, subjectAndListener);
@@ -126,19 +126,19 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
             // get all listeners to this subject, we try this set because
             // we know at least one of their edges is satisfied, and
             // we hope that all of their edges is satisfied.
-            List<SubjectAndListener> sourceTargets = sourceToPairs.get(subject);
+            List<SubjectAndListener<?, ?, ?>> sourceTargets = sourceToPairs.get(subject);
 
             // can we satisfy this target?
             tryEachTarget:
-            for (SubjectAndListener target : sourceTargets) {
+            for (SubjectAndListener<?, ?, ?> target : sourceTargets) {
                 Object sourceTarget = getRelatedSubject(target.listener);
 
                 // make sure we can satisfy this if all its sources are in satisfiedSources
-                List<SubjectAndListener> allSourcesForSourceTarget = targetToPairs.get(sourceTarget);
+                List<SubjectAndListener<?, ?, ?>> allSourcesForSourceTarget = targetToPairs.get(sourceTarget);
                 // we've since processed this entire target, we shouldn't process it twice
                 if (allSourcesForSourceTarget.isEmpty())
                     continue;
-                for (SubjectAndListener sourceAndTarget : allSourcesForSourceTarget) {
+                for (SubjectAndListener<?, ?, ?> sourceAndTarget : allSourcesForSourceTarget) {
                     if (!satisfied.containsKey(sourceAndTarget.subject)) {
                         continue tryEachTarget;
                     }
@@ -174,7 +174,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
      * subject whenever they are fired.
      */
     public synchronized <Subject,Listener,Event> void addListener(Subject subject, Listener listener, EventFormat<Subject,Listener,Event> eventFormat) {
-        List<SubjectAndListener> unordered = updateListEventListeners(subject, listener, null, eventFormat);
+        List<SubjectAndListener<?, ?, ?>> unordered = updateListEventListeners(subject, listener, null, eventFormat);
         subjectAndListeners = orderSubjectsAndListeners(unordered);
     }
 
@@ -193,7 +193,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
      * @param listenerToAdd a listener to be added, or <code>null</code>
      * @param listenerToRemove a listener to be removed, or <code>null</code>
      */
-    private <Subject,Listener,Event> List<SubjectAndListener> updateListEventListeners(Subject subject, Listener listenerToAdd, Listener listenerToRemove, EventFormat<Subject,Listener,Event> eventFormat) {
+    private <Subject,Listener,Event> List<SubjectAndListener<?, ?, ?>> updateListEventListeners(Subject subject, Listener listenerToAdd, Listener listenerToRemove, EventFormat<Subject,Listener,Event> eventFormat) {
         // we'll want to output a copy of all the listeners
         int anticipatedSize = this.subjectAndListeners.size() + (listenerToAdd == null ? - 1 : 1);
         // removing a non-existent listener can lead to negative size
@@ -201,11 +201,11 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
             anticipatedSize = 0;
         }
 
-        List<SubjectAndListener> result = new ArrayList<>(anticipatedSize);
+        List<SubjectAndListener<?, ?, ?>> result = new ArrayList<>(anticipatedSize);
 
         // walk through, adding all the old listeners to the new listeners list,
         // unless a particular listener is slated for removal for some reaosn
-        for (final SubjectAndListener originalSubjectAndListener : subjectAndListeners) {
+        for (final SubjectAndListener<?, ?, ?> originalSubjectAndListener : subjectAndListeners) {
             // if we're supposed to remove this listener, skip it
             if (originalSubjectAndListener.listener == listenerToRemove && originalSubjectAndListener.subject == subject) {
                 listenerToRemove = null;
@@ -213,7 +213,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
             }
 
             // if this listener is stale, skip it
-            if (originalSubjectAndListener.eventFormat.isStale(originalSubjectAndListener.subject, originalSubjectAndListener.listener)) {
+            if (originalSubjectAndListener.isStale()) {
                 continue;
             }
 
@@ -223,7 +223,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
 
         // add the listener we were asked to add, if any
         if(listenerToAdd != null) {
-            result.add(new SubjectAndListener(subject, listenerToAdd, eventFormat));
+            result.add(new SubjectAndListener<>(subject, listenerToAdd, eventFormat));
         }
 
         return result;
@@ -263,12 +263,13 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
     /**
      * Get all listeners of the specified object.
      */
+    @SuppressWarnings("unchecked")
     public synchronized <Listener> List<Listener> getListeners(Object subject) {
         List<Listener> result = new ArrayList<>();
-        for (SubjectAndListener<?, Listener, ?> subjectAndListener : subjectAndListeners) {
+        for (SubjectAndListener<?, ?, ?> subjectAndListener : subjectAndListeners) {
             if (subjectAndListener.subject != subject)
                 continue;
-            result.add(subjectAndListener.listener);
+            result.add((Listener) subjectAndListener.listener);
         }
         return result;
     }
@@ -295,17 +296,17 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
         try {
 
             // record this subject as firing an event, so we can clean up later
-            EventFormat previous = subjectsToCleanUp.put(subject, eventFormat);
+            EventFormat<?, ?, ?> previous = subjectsToCleanUp.put(subject, eventFormat);
             if(previous != null) throw new IllegalStateException("Reentrant fireEvent() by \"" + subject + "\"");
 
             // Mark the listeners who need this event
             int subjectAndListenersSize = subjectsAndListenersForCurrentEvent.size();
             // was i = lastNotified + 1
             for(int i = 0; i < subjectAndListenersSize; i++) {
-                SubjectAndListener subjectAndListener = subjectsAndListenersForCurrentEvent.get(i);
+                SubjectAndListener<?, ?, ?> subjectAndListener = subjectsAndListenersForCurrentEvent.get(i);
                 if(subjectAndListener.subject != subject) continue;
                 if(i < nextToNotify) nextToNotify = i;
-                subjectAndListener.addPendingEvent(event);
+                subjectAndListener.addPendingEventObject(event);
             }
 
             // If this method is reentrant, let someone higher up the stack handle this
@@ -316,11 +317,11 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
 
             // fire events to listeners in order
             while(true) {
-                SubjectAndListener nextToFire = null;
+                SubjectAndListener<?, ?, ?> nextToFire = null;
 
                 // find the next listener still pending
                 for(int i = nextToNotify; i < subjectAndListenersSize; i++) {
-                    SubjectAndListener subjectAndListener = subjectsAndListenersForCurrentEvent.get(i);
+                    SubjectAndListener<?, ?, ?> subjectAndListener = subjectsAndListenersForCurrentEvent.get(i);
                     if(subjectAndListener.hasPendingEvent()) {
                         nextToFire = subjectAndListener;
                         nextToNotify = i + 1;
@@ -340,9 +341,9 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
             }
 
             // clean up all the subjects now that we're done firing events
-            for (Map.Entry<Object, EventFormat> subjectAndEventFormat : subjectsToCleanUp.entrySet()) {
+            for (Map.Entry<Object, EventFormat<?, ?, ?>> subjectAndEventFormat : subjectsToCleanUp.entrySet()) {
                 try {
-                    subjectAndEventFormat.getValue().postEvent(subjectAndEventFormat.getKey());
+                    postEvent(subjectAndEventFormat.getValue(), subjectAndEventFormat.getKey());
                 }
                 catch (RuntimeException e) {
                     if (toRethrow == null)
@@ -393,8 +394,17 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
      *
      * @see {@link ListEventPublisher#setRelatedListener}
      */
-    private static class NoOpEventFormat implements SequenceDependenciesEventPublisher.EventFormat {
-        public static final SequenceDependenciesEventPublisher.EventFormat INSTANCE = new NoOpEventFormat();
+    private static void postEvent(EventFormat<?, ?, ?> eventFormat, Object subject) {
+        postEventTyped(eventFormat, subject);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <Subject> void postEventTyped(EventFormat<Subject, ?, ?> eventFormat, Object subject) {
+        eventFormat.postEvent((Subject) subject);
+    }
+
+    private static class NoOpEventFormat implements SequenceDependenciesEventPublisher.EventFormat<Object, Object, Object> {
+        public static final SequenceDependenciesEventPublisher.EventFormat<Object, Object, Object> INSTANCE = new NoOpEventFormat();
         @Override
         public void fire(Object subject, Object event, Object listener) {
             throw new UnsupportedOperationException();
@@ -429,10 +439,19 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
             return pendingEvent != null;
         }
 
+        public boolean isStale() {
+            return eventFormat.isStale(subject, listener);
+        }
+
         public void addPendingEvent(Event pendingEvent) {
             if(this.pendingEvent != null) throw new IllegalStateException();
             if(pendingEvent == null) throw new IllegalStateException();
             this.pendingEvent = pendingEvent;
+        }
+
+        @SuppressWarnings("unchecked")
+        public void addPendingEventObject(Object pendingEvent) {
+            addPendingEvent((Event) pendingEvent);
         }
 
         public void firePendingEvent() {

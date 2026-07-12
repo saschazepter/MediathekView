@@ -159,8 +159,8 @@ public final class GlazedLists {
 
     /** Provide Singleton access for all Comparators with no internal state */
     private static Comparator<Boolean> booleanComparator;
-    private static Comparator<Comparable> comparableComparator;
-    private static Comparator<Comparable> reversedComparable;
+    private static Comparator<?> comparableComparator;
+    private static Comparator<?> reversedComparable;
 
     /**
      * Creates a {@link Comparator} that uses Reflection to compare two
@@ -210,7 +210,7 @@ public final class GlazedLists {
      * of the specified {@link Class} by the given JavaBean property.  The JavaBean
      * property is compared using the provided {@link Comparator}.
      */
-    public static <T> Comparator<T> beanPropertyComparator(Class<T> className, String property, Comparator propertyComparator) {
+    public static <T> Comparator<T> beanPropertyComparator(Class<T> className, String property, Comparator<?> propertyComparator) {
         return new BeanPropertyComparator<>(className, property, propertyComparator);
     }
 
@@ -256,9 +256,9 @@ public final class GlazedLists {
      * Creates a {@link Comparator} that compares {@link Comparable} objects.
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Comparable> Comparator<T> comparableComparator() {
+    public static <T> Comparator<T> comparableComparator() {
         if(comparableComparator == null) {
-            comparableComparator = new ComparableComparator();
+            comparableComparator = new ComparableComparator<Comparable<Object>>();
         }
         return (Comparator<T>)comparableComparator;
     }
@@ -267,9 +267,10 @@ public final class GlazedLists {
      * Creates a reverse {@link Comparator} that works for {@link Comparable} objects.
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Comparable> Comparator<T> reverseComparator() {
+    public static <T> Comparator<T> reverseComparator() {
         if(reversedComparable == null) {
-            reversedComparable = reverseComparator(comparableComparator());
+            Comparator<T> naturalOrder = comparableComparator();
+            reversedComparable = reverseComparator(naturalOrder);
         }
         return (Comparator<T>)reversedComparable;
     }
@@ -903,7 +904,7 @@ public final class GlazedLists {
      * @return a MultiMap which remains in sync with changes that occur to the
      *      underlying <code>source</code> {@link EventList}
      */
-    public static <K extends Comparable, V> DisposableMap<K, List<V>> syncEventListToMultiMap(EventList<V> source, FunctionList.Function<V, ? extends K> keyMaker) {
+    public static <K extends Comparable<? super K>, V> DisposableMap<K, List<V>> syncEventListToMultiMap(EventList<V> source, FunctionList.Function<V, ? extends K> keyMaker) {
         return syncEventListToMultiMap(source, keyMaker, comparableComparator());
     }
 

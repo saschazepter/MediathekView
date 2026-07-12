@@ -120,7 +120,7 @@ public final class Matchers {
      * containment within the range between the given <code>start</code>
      * and <code>end</code>.
      */
-    public static <D extends Comparable, E> Matcher<E> rangeMatcher(D start, D end) {
+    public static <D extends Comparable<? super D>, E> Matcher<E> rangeMatcher(D start, D end) {
         return new RangeMatcher<>(start, end);
     }
 
@@ -141,7 +141,7 @@ public final class Matchers {
      * @param filterator the logic for extracting filter {@link Comparable}s
      *                   from filtered objects
      */
-    public static <D extends Comparable, E> Matcher<E> rangeMatcher(D start, D end, Filterator<D, E> filterator) {
+    public static <D extends Comparable<? super D>, E> Matcher<E> rangeMatcher(D start, D end, Filterator<D, E> filterator) {
         return new RangeMatcher<>(start, end, filterator);
     }
 
@@ -317,7 +317,7 @@ public final class Matchers {
      *         is not null and reports on of the given <code>classes</code> as its
      *         type
      */
-    public static <E> Matcher<E> types(Class... classes) {
+    public static <E> Matcher<E> types(Class<?>... classes) {
         return new TypeMatcher<>(classes);
     }
 }

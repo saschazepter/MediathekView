@@ -20,7 +20,7 @@ public class BeanTextFilterator<D,E> implements TextFilterator<E>, Filterator<D,
     private final String[] propertyNames;
 
     /** methods for extracting field values */
-    private BeanProperty[] beanProperties;
+    private BeanProperty<E>[] beanProperties;
 
     /**
      * Create a BeanTextFilterator that uses the specified property names.
@@ -46,7 +46,7 @@ public class BeanTextFilterator<D,E> implements TextFilterator<E>, Filterator<D,
         if(beanProperties == null) loadPropertyDescriptors(element.getClass());
 
         // get the filter strings
-        for (BeanProperty beanProperty : beanProperties) {
+        for (BeanProperty<E> beanProperty : beanProperties) {
             Object propertyValue = beanProperty.get(element);
             if (propertyValue == null)
                 continue;
@@ -63,7 +63,7 @@ public class BeanTextFilterator<D,E> implements TextFilterator<E>, Filterator<D,
         if(beanProperties == null) loadPropertyDescriptors(element.getClass());
 
         // get the filter strings
-        for (BeanProperty beanProperty : beanProperties) {
+        for (BeanProperty<E> beanProperty : beanProperties) {
             Object propertyValue = beanProperty.get(element);
             if (propertyValue == null)
                 continue;
@@ -75,10 +75,11 @@ public class BeanTextFilterator<D,E> implements TextFilterator<E>, Filterator<D,
      * Loads the property descriptors which are used to invoke property
      * access methods using the property names.
      */
-    private void loadPropertyDescriptors(Class beanClass) {
-        beanProperties = new BeanProperty[propertyNames.length];
+    @SuppressWarnings("unchecked")
+    private void loadPropertyDescriptors(Class<?> beanClass) {
+        beanProperties = (BeanProperty<E>[]) new BeanProperty<?>[propertyNames.length];
         for(int p = 0; p < propertyNames.length; p++) {
-            beanProperties[p] = new BeanProperty<E>(beanClass, propertyNames[p], true, false);
+            beanProperties[p] = new BeanProperty<>((Class<E>) beanClass, propertyNames[p], true, false);
         }
     }
 }

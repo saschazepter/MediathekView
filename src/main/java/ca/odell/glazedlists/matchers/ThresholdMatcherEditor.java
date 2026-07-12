@@ -26,17 +26,17 @@ import java.util.Comparator;
  */
 public class ThresholdMatcherEditor<E, T> extends AbstractMatcherEditor<E> {
 
-    public static final MatchOperation GREATER_THAN = new MatchOperation(1, false);
-    public static final MatchOperation GREATER_THAN_OR_EQUAL = new MatchOperation(1, true);
-    public static final MatchOperation LESS_THAN = new MatchOperation(-1, false);
-    public static final MatchOperation LESS_THAN_OR_EQUAL = new MatchOperation(-1, true);
-    public static final MatchOperation EQUAL = new MatchOperation(0, true);
-    public static final MatchOperation NOT_EQUAL = new MatchOperation(0, false);
+    public static final MatchOperation<Object, Object> GREATER_THAN = new MatchOperation<>(1, false);
+    public static final MatchOperation<Object, Object> GREATER_THAN_OR_EQUAL = new MatchOperation<>(1, true);
+    public static final MatchOperation<Object, Object> LESS_THAN = new MatchOperation<>(-1, false);
+    public static final MatchOperation<Object, Object> LESS_THAN_OR_EQUAL = new MatchOperation<>(-1, true);
+    public static final MatchOperation<Object, Object> EQUAL = new MatchOperation<>(0, true);
+    public static final MatchOperation<Object, Object> NOT_EQUAL = new MatchOperation<>(0, false);
 
-    private MatchOperation currentMatcher;
+    private MatchOperation<E, T> currentMatcher;
 
     private Comparator<T> comparator;
-    private MatchOperation operation;
+    private MatchOperation<E, T> operation;
     private T threshold;
     private final FunctionList.Function<E, T> function;
 
@@ -70,7 +70,7 @@ public class ThresholdMatcherEditor<E, T> extends AbstractMatcherEditor<E> {
      *      should have to the threshold in order to match (i.e., be visible).
      *      Specifying null will use {@link #GREATER_THAN}.
      */
-    public ThresholdMatcherEditor(T threshold, MatchOperation operation) {
+    public ThresholdMatcherEditor(T threshold, MatchOperation<?, ?> operation) {
         this(threshold, operation, null);
     }
 
@@ -84,7 +84,7 @@ public class ThresholdMatcherEditor<E, T> extends AbstractMatcherEditor<E> {
      * @param comparator determines how objects compare. If null, the threshold
      *      object and list elements must implement {@link Comparable}.
      */
-    public ThresholdMatcherEditor(T threshold, MatchOperation operation, Comparator<T> comparator) {
+    public ThresholdMatcherEditor(T threshold, MatchOperation<?, ?> operation, Comparator<T> comparator) {
         this(threshold, operation, comparator, null);
     }
 
@@ -103,18 +103,18 @@ public class ThresholdMatcherEditor<E, T> extends AbstractMatcherEditor<E> {
      *      it is <tt>null</tt>, the raw values will compared against the
      *      threshold.
      */
-    public ThresholdMatcherEditor(T threshold, MatchOperation operation, Comparator<T> comparator, FunctionList.Function<E, T> function) {
+    public ThresholdMatcherEditor(T threshold, MatchOperation<?, ?> operation, Comparator<T> comparator, FunctionList.Function<E, T> function) {
         if (operation == null) operation = GREATER_THAN;
         if (comparator == null) comparator = (Comparator<T>) GlazedLists.comparableComparator();
         if (function == null) function = (FunctionList.Function<E, T>) GlazedListsImpl.identityFunction();
 
-        this.operation = operation;
+        this.operation = typedOperation(operation);
         this.comparator = comparator;
         this.threshold = threshold;
         this.function = function;
 
         // if this is our first matcher, it's automatically a constrain
-        currentMatcher = operation.instance(comparator, threshold, function);
+        currentMatcher = this.operation.instance(comparator, threshold, function);
         fireChanged(currentMatcher);
     }
 
@@ -146,17 +146,17 @@ public class ThresholdMatcherEditor<E, T> extends AbstractMatcherEditor<E> {
      * @see #EQUAL
      * @see #NOT_EQUAL
      */
-    public void setMatchOperation(MatchOperation operation) {
+    public void setMatchOperation(MatchOperation<?, ?> operation) {
         if (operation == null)
             throw new IllegalArgumentException("Operation cannot be null");
 
-        this.operation = operation;
+        this.operation = typedOperation(operation);
         rebuildMatcher();
     }
     /**
      * See {@link #setMatchOperation}.
      */
-    public MatchOperation getMatchOperation() {
+    public MatchOperation<?, ?> getMatchOperation() {
         return operation;
     }
 
@@ -174,7 +174,7 @@ public class ThresholdMatcherEditor<E, T> extends AbstractMatcherEditor<E> {
 
     /** {@inheritDoc} */
     private void rebuildMatcher() {
-        final MatchOperation newMatcher = operation.instance(comparator, threshold, function);
+        final MatchOperation<E, T> newMatcher = operation.instance(comparator, threshold, function);
 
         // otherwise test how the matchers relate
         final boolean moreStrict = newMatcher.isMoreStrict(currentMatcher);
@@ -192,6 +192,11 @@ public class ThresholdMatcherEditor<E, T> extends AbstractMatcherEditor<E> {
             fireConstrained(currentMatcher);
         else
             fireRelaxed(currentMatcher);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <E, T> MatchOperation<E, T> typedOperation(MatchOperation<?, ?> operation) {
+        return (MatchOperation<E, T>) operation;
     }
 
     /**

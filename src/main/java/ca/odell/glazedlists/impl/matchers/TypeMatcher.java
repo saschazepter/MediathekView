@@ -9,9 +9,9 @@ import ca.odell.glazedlists.matchers.Matcher;
  */
 public class TypeMatcher<E> implements Matcher<E> {
 
-    private final Class[] classes;
+    private final Class<?>[] classes;
 
-    public TypeMatcher(Class... classes) {
+    public TypeMatcher(Class<?>... classes) {
         this.classes = classes;
     }
 
@@ -19,8 +19,8 @@ public class TypeMatcher<E> implements Matcher<E> {
     public boolean matches(E item) {
         if (item == null) return false;
 
-        final Class target = item.getClass();
-        for (Class aClass : classes)
+        final Class<?> target = item.getClass();
+        for (Class<?> aClass : classes)
             if (aClass.isAssignableFrom(target))
                 return true;
 

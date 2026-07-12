@@ -11,12 +11,10 @@ import java.util.Comparator;
  *
  * @author <a href="mailto:kevin@swank.ca">Kevin Maltby</a>
  */
-public final class AgedNodeComparator implements Comparator {
+public final class AgedNodeComparator implements Comparator<AgedNode> {
 
     @Override
-    public final int compare(Object o1, Object o2) {
-        AgedNode node1 = (AgedNode)o1;
-        AgedNode node2 = (AgedNode)o2;
+    public final int compare(AgedNode node1, AgedNode node2) {
         long difference = node1.getTimestamp() - node2.getTimestamp();
         if(difference < 0) {
             return -1;
