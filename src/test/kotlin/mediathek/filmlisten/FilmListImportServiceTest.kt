@@ -36,7 +36,7 @@ class FilmListImportServiceTest {
     }
 
     @Test
-    fun `importFromFile captures old urls before replacing list`() {
+    fun `importFromFile captures old URL keys before replacing list`() {
         val oldFilm = film("Old", "Old title")
         val films = ListeFilme().apply { add(oldFilm) }
         val service = service()
@@ -46,11 +46,11 @@ class FilmListImportServiceTest {
             films,
             0,
         ) {
-            films.mapTo(HashSet()) { film -> film.urlNormalQuality }
+            films.mapTo(HashSet()) { film -> film.storedNormalQualityUrl }
         }
 
         assertEquals(FilmListImportResult.SUCCESS, outcome.result)
-        assertEquals(setOf(oldFilm.urlNormalQuality), outcome.oldFilmUrls)
+        assertEquals(setOf(oldFilm.storedNormalQualityUrl), outcome.oldFilmUrlKeys)
         assertTrue(outcome.importedDiffList.isEmpty())
         assertEquals(1, films.size)
         assertEquals("New title", films[0].title)
@@ -60,17 +60,17 @@ class FilmListImportServiceTest {
     fun `importAdditionalFromFile reads into separate imported list`() {
         val currentFilm = film("Current", "Current title")
         val currentFilms = ListeFilme().apply { add(currentFilm) }
-        val oldFilmUrls = setOf(currentFilm.urlNormalQuality)
+        val oldFilmUrlKeys = setOf(currentFilm.storedNormalQualityUrl)
         val service = service()
 
         val outcome = service.importAdditionalFromFile(
             writeFilmList("additional.json", filmEntry("Additional", "Additional title")).toString(),
             0,
-            oldFilmUrls,
+            oldFilmUrlKeys,
         )
 
         assertEquals(FilmListImportResult.SUCCESS, outcome.result)
-        assertEquals(oldFilmUrls, outcome.oldFilmUrls)
+        assertEquals(oldFilmUrlKeys, outcome.oldFilmUrlKeys)
         assertEquals(1, currentFilms.size)
         assertEquals("Current title", currentFilms[0].title)
         assertEquals(1, outcome.importedDiffList.size)
@@ -90,12 +90,12 @@ class FilmListImportServiceTest {
             0,
         ) {
             prepareCalled = true
-            films.mapTo(HashSet()) { film -> film.urlNormalQuality }
+            films.mapTo(HashSet()) { film -> film.storedNormalQualityUrl }
         }
 
         assertEquals(FilmListImportResult.FAILURE, outcome.result)
         assertTrue(prepareCalled)
-        assertEquals(setOf(oldFilm.urlNormalQuality), outcome.oldFilmUrls)
+        assertEquals(setOf(oldFilm.storedNormalQualityUrl), outcome.oldFilmUrlKeys)
         assertTrue(films.isEmpty())
     }
 
@@ -125,7 +125,7 @@ class FilmListImportServiceTest {
             }
 
             assertEquals(FilmListImportResult.NO_UPDATE, outcome.result)
-            assertTrue(outcome.oldFilmUrls.isEmpty())
+            assertTrue(outcome.oldFilmUrlKeys.isEmpty())
             assertTrue(outcome.importedDiffList.isEmpty())
             assertFalse(prepareCalled)
             assertEquals(1, feedback.noUpdateCount.get())

@@ -27,14 +27,14 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 internal object FilmListImportApplier {
-    fun collectFilmUrls(listeFilme: ListeFilme): Set<String> =
+    fun collectFilmUrlKeys(listeFilme: ListeFilme): Set<String> =
         synchronized(listeFilme) {
             HashSet<String>(listeFilme.size + 1, 1f).apply {
-                listeFilme.forEach { film -> add(film.urlNormalQuality) }
+                listeFilme.forEach { film -> add(film.storedNormalQualityUrl) }
             }
         }
 
-    fun applyImportedFilms(listeFilme: ListeFilme, diffListe: ListeFilme, oldFilmUrls: Set<String>) {
+    fun applyImportedFilms(listeFilme: ListeFilme, diffListe: ListeFilme, oldFilmUrlKeys: Set<String>) {
         val readDate = DateTimeFormatter.ofPattern("dd.MM.yyyy, HH:mm")
             .format(LocalDateTime.ofInstant(Instant.now(), ZoneId.systemDefault()))
 
@@ -54,16 +54,16 @@ internal object FilmListImportApplier {
             logFilmCount(listeFilme.size)
         }
 
-        findAndMarkNewFilms(listeFilme, oldFilmUrls)
+        findAndMarkNewFilms(listeFilme, oldFilmUrlKeys)
     }
 
     /**
      * Search through history and mark new films.
      */
-    private fun findAndMarkNewFilms(listeFilme: ListeFilme, oldFilmUrls: Set<String>) {
+    private fun findAndMarkNewFilms(listeFilme: ListeFilme, oldFilmUrlKeys: Set<String>) {
         synchronized(listeFilme) {
             listeFilme.forEach { film ->
-                film.isNew = film.urlNormalQuality !in oldFilmUrls
+                film.isNew = film.storedNormalQualityUrl !in oldFilmUrlKeys
             }
         }
     }

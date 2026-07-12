@@ -43,11 +43,11 @@ class DatenFilm private constructor(
     val filmNr: Int,
 ) : Comparable<DatenFilm> {
 
-    data class FilmIdentity(
+    internal data class FilmIdentity(
         val sender: String,
         val thema: String,
-        val normalQualityUrl: String,
-        val websiteUrl: String,
+        val storedNormalQualityUrl: String,
+        val storedWebsiteUrl: String?,
     )
 
     private var countrySet: EnumSet<Country>? = null
@@ -170,6 +170,12 @@ class DatenFilm private constructor(
 
     internal val storedHighQualityUrl: String
         get() = highQualityUrlStorage ?: ""
+
+    internal val storedNormalQualityUrl: String
+        get() = normalQualityUrlStorage
+
+    internal val storedWebsiteUrl: String?
+        get() = websiteUrlStorage
 
     fun setDatumLongSeconds(datumLongSeconds: Long) {
         this.datumLongSeconds = datumLongSeconds
@@ -487,11 +493,11 @@ class DatenFilm private constructor(
         return HexFormat.of().formatHex(digest.digest())
     }
 
-    val filmIdentity: FilmIdentity
+    internal val filmIdentity: FilmIdentity
         get() {
             filmIdentityCache?.let { return it }
 
-            val identity = FilmIdentity(sender, thema, urlNormalQuality, websiteUrl)
+            val identity = FilmIdentity(sender, thema, normalQualityUrlStorage, websiteUrlStorage)
             filmIdentityCache = identity
             return identity
         }

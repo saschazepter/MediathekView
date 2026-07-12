@@ -37,7 +37,7 @@ internal enum class FilmListImportResult {
 
 internal data class FilmListImportOutcome(
     val result: FilmListImportResult,
-    val oldFilmUrls: Set<String> = emptySet(),
+    val oldFilmUrlKeys: Set<String> = emptySet(),
     val importedDiffList: ListeFilme = ListeFilme(),
 )
 
@@ -66,7 +66,7 @@ internal interface FilmListImporter {
     fun importAdditionalFromFile(
         pfad: String,
         days: Int,
-        oldFilmUrls: Set<String>,
+        oldFilmUrlKeys: Set<String>,
     ): FilmListImportOutcome
 
     fun reloadSavedFilmList(listeFilme: ListeFilme, days: Int)
@@ -93,16 +93,16 @@ internal class FilmListImportService(
             return FilmListImportOutcome(FilmListImportResult.NO_UPDATE)
         }
 
-        val oldFilmUrls = prepareImport()
+        val oldFilmUrlKeys = prepareImport()
         if (immerNeuLaden) {
-            // Preserve existing behavior: clear only after capturing old URLs for new-film marking.
+            // Preserve existing behavior: clear only after capturing old URL keys for new-film marking.
             listeFilme.clear()
         }
 
         val diffList = ListeFilme()
         return FilmListImportOutcome(
             result = importFromUrlSynchronously(listeFilme, diffList, days).toImportResult(),
-            oldFilmUrls = oldFilmUrls,
+            oldFilmUrlKeys = oldFilmUrlKeys,
             importedDiffList = diffList,
         )
     }
@@ -117,23 +117,23 @@ internal class FilmListImportService(
             return FilmListImportOutcome(FilmListImportResult.NO_UPDATE)
         }
 
-        val oldFilmUrls = prepareImport()
+        val oldFilmUrlKeys = prepareImport()
         listeFilme.clear()
         return FilmListImportOutcome(
             result = urlLaden(pfad, listeFilme, days).toImportResult(),
-            oldFilmUrls = oldFilmUrls,
+            oldFilmUrlKeys = oldFilmUrlKeys,
         )
     }
 
     override fun importAdditionalFromFile(
         pfad: String,
         days: Int,
-        oldFilmUrls: Set<String>,
+        oldFilmUrlKeys: Set<String>,
     ): FilmListImportOutcome {
         val importedList = ListeFilme()
         return FilmListImportOutcome(
             result = urlLaden(pfad, importedList, days).toImportResult(),
-            oldFilmUrls = oldFilmUrls,
+            oldFilmUrlKeys = oldFilmUrlKeys,
             importedDiffList = importedList,
         )
     }

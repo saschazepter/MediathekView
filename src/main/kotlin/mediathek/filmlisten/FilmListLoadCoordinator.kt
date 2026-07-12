@@ -220,14 +220,14 @@ class FilmListLoadCoordinator(
         val sourceUrl = dateiUrl.ifEmpty {
             StandardLocations.getFilmListUrl(FilmListDownloadType.FULL)
         }
-        val oldFilmUrls = prepareLoad()
+        val oldFilmUrlKeys = prepareLoad()
         runImportAsync(
             operationName = "importAdditionalFromFile",
             persistAfterLoad = true,
             operation = operation,
             completeNoUpdate = { finishLoad(FilmListLoadProgress.completed(failed = false), operation) },
         ) {
-            importService.importAdditionalFromFile(sourceUrl, loadNumDays, oldFilmUrls)
+            importService.importAdditionalFromFile(sourceUrl, loadNumDays, oldFilmUrlKeys)
         }
     }
 
@@ -255,9 +255,9 @@ class FilmListLoadCoordinator(
     }
 
     private fun prepareLoad(): Set<String> {
-        val oldFilmUrls = FilmListImportApplier.collectFilmUrls(filmCatalog.allFilms)
+        val oldFilmUrlKeys = FilmListImportApplier.collectFilmUrlKeys(filmCatalog.allFilms)
         filmCatalog.filteredFilms.clear()
-        return oldFilmUrls
+        return oldFilmUrlKeys
     }
 
     private val loadNumDays: Int
@@ -289,7 +289,7 @@ class FilmListLoadCoordinator(
             finishImport(
                 failed = outcome.result != FilmListImportResult.SUCCESS,
                 persistAfterLoad,
-                outcome.oldFilmUrls,
+                outcome.oldFilmUrlKeys,
                 outcome.importedDiffList,
                 operation,
             )
@@ -309,7 +309,7 @@ class FilmListLoadCoordinator(
     private fun finishImport(
         failed: Boolean,
         persistAfterLoad: Boolean,
-        oldFilmUrls: Set<String>,
+        oldFilmUrlKeys: Set<String>,
         diffListe: ListeFilme,
         operation: FilmListLoadOperation,
     ) {
@@ -318,7 +318,7 @@ class FilmListLoadCoordinator(
 
         logger.debug("finishImport()")
         val listeFilme = filmCatalog.allFilms
-        FilmListImportApplier.applyImportedFilms(listeFilme, diffListe, oldFilmUrls)
+        FilmListImportApplier.applyImportedFilms(listeFilme, diffListe, oldFilmUrlKeys)
 
         val persistFilmList = if (failed) restoreSavedFilmListAfterFailure(listeFilme) else persistAfterLoad
 
