@@ -15,21 +15,20 @@ import java.util.List;
  *
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
-public final class ComparatorChain<T> implements Comparator<T> {
+public record ComparatorChain<T>(Comparator<T>[] comparators) implements Comparator<T> {
 
-    /**
-     * the comparators to execute in sequence
-     */
-    private final Comparator<T>[] comparators;
+    public ComparatorChain {
+        comparators = comparators.clone();
+    }
 
     /**
      * Creates a comparator chain that evaluates the specified comparators in
-     * sequence. A defensive copy of the
+     * sequence. The comparator list is copied defensively.
      *
      * @param comparators a list of objects implementing {@link Comparator}
      */
     public ComparatorChain(List<Comparator<T>> comparators) {
-        this.comparators = comparators.toArray(new Comparator[comparators.size()]);
+        this(comparators.toArray(Comparator[]::new));
     }
 
     /**
@@ -37,8 +36,8 @@ public final class ComparatorChain<T> implements Comparator<T> {
      */
     @Override
     public int compare(T alpha, T beta) {
-        for (int i = 0; i < comparators.length; i++) {
-            int compareResult = comparators[i].compare(alpha, beta);
+        for (Comparator<T> comparator : comparators) {
+            int compareResult = comparator.compare(alpha, beta);
             if (compareResult != 0)
                 return compareResult;
         }
@@ -50,7 +49,12 @@ public final class ComparatorChain<T> implements Comparator<T> {
      * <code>ComparatorChain</code>.
      */
     public Comparator<T>[] getComparators() {
-        return comparators;
+        return comparators.clone();
+    }
+
+    @Override
+    public Comparator<T>[] comparators() {
+        return comparators.clone();
     }
 
     /**
@@ -63,7 +67,7 @@ public final class ComparatorChain<T> implements Comparator<T> {
         if (o == null || getClass() != o.getClass())
             return false;
 
-        final ComparatorChain that = (ComparatorChain) o;
+        final ComparatorChain<?> that = (ComparatorChain<?>) o;
 
         return Arrays.equals(comparators, that.comparators);
     }
@@ -73,6 +77,6 @@ public final class ComparatorChain<T> implements Comparator<T> {
      */
     @Override
     public int hashCode() {
-        return 0;
+        return Arrays.hashCode(comparators);
     }
 }

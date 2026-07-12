@@ -9,7 +9,6 @@ import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -45,8 +44,8 @@ public class CompositeMatcherEditor<E> extends AbstractMatcherEditor<E> {
         this.matcherEditors = matcherEditors;
 
         // prepare the initial set
-        for(Iterator<MatcherEditor<E>> i = matcherEditors.iterator(); i.hasNext(); ) {
-            matcherEditorListeners.add(new DelegateMatcherEditorListener(i.next()));
+        for (MatcherEditor<E> matcherEditor : matcherEditors) {
+            matcherEditorListeners.add(new DelegateMatcherEditorListener(matcherEditor));
         }
 
         // handle changes to the list of matchers
@@ -77,7 +76,8 @@ public class CompositeMatcherEditor<E> extends AbstractMatcherEditor<E> {
      * Rebuild the CompositeMatcher modelled by this editor.
      */
     private Matcher<E> rebuildMatcher() {
-        final Matcher[] matchers = new Matcher[matcherEditors.size()];
+        @SuppressWarnings("unchecked")
+        final Matcher<E>[] matchers = (Matcher<E>[]) new Matcher<?>[matcherEditors.size()];
         for (int i = 0, n = matcherEditors.size(); i < n; i++) {
             matchers[i] = matcherEditors.get(i).getMatcher();
         }

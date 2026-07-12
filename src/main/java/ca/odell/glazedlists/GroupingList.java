@@ -153,12 +153,12 @@ public final class GroupingList<E> extends TransformedList<E, List<E>> {
         public void groupChanged(int index, int groupIndex, int groupChangeType, boolean primary, int elementChangeType, E oldValue, E newValue, boolean updateNextSeparator, boolean joinRight) {
             if(groupChangeType == ListEvent.INSERT) {
                 insertGroupList(groupIndex);
-                updates.addInsert(groupIndex);
+                updates.elementInserted(groupIndex, ListEvent.unknownValue());
             } else if(groupChangeType == ListEvent.DELETE) {
                 removeGroupList(groupIndex);
-                updates.addDelete(groupIndex);
+                updates.elementDeleted(groupIndex, ListEvent.unknownValue());
             } else if(groupChangeType == ListEvent.UPDATE) {
-                updates.addUpdate(groupIndex);
+                updates.elementUpdated(groupIndex, ListEvent.unknownValue(), ListEvent.unknownValue());
             } else {
                 throw new IllegalStateException();
             }
@@ -229,8 +229,8 @@ public final class GroupingList<E> extends TransformedList<E, List<E>> {
             // the grouper know so we can rebuild our groups from scratch
 
             // record the impending removal of all groups before adjusting the barcode
-            for (int i = 0, n = size(); i < n; i++)
-                updates.elementDeleted(0, get(i));
+            for (List<E> es : this)
+                updates.elementDeleted(0, es);
 
             // adjust the Comparator used by the Grouper (which will change the barcode)
             grouper.setComparator(sourceComparator);
@@ -239,7 +239,7 @@ public final class GroupingList<E> extends TransformedList<E, List<E>> {
             rebuildGroupListTreeFromBarcode();
 
             // insert all new groups (represented by the newly formed barcode)
-            updates.addInsert(0, size() - 1);
+            updates.elementsInserted(0, size() - 1);
 
         } else {
             grouper.listChanged(listChanges);
@@ -306,7 +306,7 @@ public final class GroupingList<E> extends TransformedList<E, List<E>> {
     /** {@inheritDoc} */
     @Override
     public void dispose() {
-        ((SortedList) source).dispose();
+        source.dispose();
         super.dispose();
     }
 

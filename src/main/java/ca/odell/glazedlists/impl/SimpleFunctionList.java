@@ -1,8 +1,8 @@
 package ca.odell.glazedlists.impl;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.TransformedList;
 import ca.odell.glazedlists.FunctionList.Function;
+import ca.odell.glazedlists.TransformedList;
 import ca.odell.glazedlists.event.ListEvent;
 
 /**

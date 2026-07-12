@@ -35,8 +35,8 @@ import java.awt.Component
 import java.util.*
 import java.util.function.BiConsumer
 import javax.swing.JFrame
-import javax.swing.JTable
 import javax.swing.JScrollPane
+import javax.swing.JTable
 
 class FilmTableReloadHostAdapter(
     private val filmCatalog: FilmCatalog,

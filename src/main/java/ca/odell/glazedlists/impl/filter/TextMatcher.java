@@ -36,7 +36,7 @@ public class TextMatcher<E> implements Matcher<E> {
     /**
      * the search terms being matched
      */
-    private final SearchTerm[] searchTerms;
+    private final SearchTerm<E>[] searchTerms;
 
     /**
      * a parallel array to locate filter substrings in arbitrary text
@@ -59,7 +59,7 @@ public class TextMatcher<E> implements Matcher<E> {
      * @param strategy    one of the built-in text-matching strategies or a custom strategy
      *                    which indicates what kind of algorithm to use when determining a match
      */
-    public TextMatcher(SearchTerm[] searchTerms, TextFilterator<? super E> filterator, int mode, Object strategy) {
+    public TextMatcher(SearchTerm<E>[] searchTerms, TextFilterator<? super E> filterator, int mode, Object strategy) {
         if (mode == TextMatcherEditor.REGULAR_EXPRESSION && strategy == TextMatcherEditor.NORMALIZED_STRATEGY)
             throw new IllegalArgumentException("TextMatcher does not support normalized character matching with Regular Expressions");
 
@@ -98,7 +98,7 @@ public class TextMatcher<E> implements Matcher<E> {
     /**
      * Returns the searchTerms strings matched by this {@link TextMatcher}.
      */
-    public SearchTerm[] getSearchTerms() {
+    public SearchTerm<E>[] getSearchTerms() {
         return searchTerms;
     }
 
@@ -158,7 +158,7 @@ public class TextMatcher<E> implements Matcher<E> {
      * @return a TextSearchStrategy capable of locating the given
      * <code>filter</code> within arbitrary text
      */
-    private static TextSearchStrategy selectTextSearchStrategy(SearchTerm filter, int mode, TextSearchStrategy.Factory strategy) {
+    private static TextSearchStrategy selectTextSearchStrategy(SearchTerm<?> filter, int mode, TextSearchStrategy.Factory strategy) {
         final TextSearchStrategy result = strategy.create(mode, filter.getText());
         result.setSubtext(filter.getText());
         return result;
@@ -175,10 +175,10 @@ public class TextMatcher<E> implements Matcher<E> {
         if (o == null || getClass() != o.getClass())
             return false;
 
-        TextMatcher that = (TextMatcher) o;
+        TextMatcher<?> that = (TextMatcher<?>) o;
 
-        Set<SearchTerm> thisSearchTerms = new HashSet<>(Arrays.asList(searchTerms));
-        Set<SearchTerm> thatSearchTerms = new HashSet<>(Arrays.asList(that.searchTerms));
+        Set<SearchTerm<E>> thisSearchTerms = new HashSet<>(Arrays.asList(searchTerms));
+        Set<SearchTerm<?>> thatSearchTerms = new HashSet<>(Arrays.asList(that.searchTerms));
 
         if (mode != that.mode)
             return false;

@@ -96,7 +96,7 @@ public final class PopularityList<E> extends TransformedList<E, E> {
     /** {@inheritDoc} */
     @Override
     public void dispose() {
-        SortedList sortedSource = (SortedList)source;
+        SortedList<?> sortedSource = (SortedList<?>) source;
         super.dispose();
         sortedSource.dispose();
         uniqueList.dispose();
@@ -105,11 +105,7 @@ public final class PopularityList<E> extends TransformedList<E, E> {
     /**
      * Compares objects by their popularity.
      */
-    private static class PopularityComparator<E> implements Comparator<E> {
-        private final UniqueList<E> target;
-        public PopularityComparator(UniqueList<E> target) {
-            this.target = target;
-        }
+    private record PopularityComparator<E>(UniqueList<E> target) implements Comparator<E> {
         @Override
         public int compare(E a, E b) {
             int aCount = target.getCount(a);

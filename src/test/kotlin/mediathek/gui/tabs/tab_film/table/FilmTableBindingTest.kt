@@ -7,13 +7,13 @@ import mediathek.tool.datum.DatumFilm
 import mediathek.tool.models.FilmColumn
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import javax.swing.JTable
-import javax.swing.SwingUtilities
-import javax.swing.Timer
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import javax.swing.JTable
+import javax.swing.SwingUtilities
+import javax.swing.Timer
 import kotlin.time.Duration.Companion.seconds
 import kotlin.time.measureTime
 

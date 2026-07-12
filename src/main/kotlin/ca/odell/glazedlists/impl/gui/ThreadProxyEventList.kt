@@ -5,7 +5,6 @@ import ca.odell.glazedlists.TransformedList
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.event.ListEventAssembler
 import ca.odell.glazedlists.event.ListEventListener
-import java.util.RandomAccess
 
 /**
  * An EventList that keeps a stable local snapshot and delivers source changes

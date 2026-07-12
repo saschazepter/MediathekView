@@ -3,21 +3,21 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists;
 
-import org.jspecify.annotations.NonNull;
-
-// the Glazed Lists' change objects
 import ca.odell.glazedlists.event.ListEventAssembler;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.event.ListEventPublisher;
 import ca.odell.glazedlists.impl.EventListIterator;
 import ca.odell.glazedlists.impl.SimpleIterator;
 import ca.odell.glazedlists.impl.SubEventList;
-import java.util.concurrent.locks.ReadWriteLock;
+import org.jspecify.annotations.NonNull;
 
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
+
+// the Glazed Lists' change objects
 
 /**
  * A convenience class that implements common functionality for all {@link EventList}s.
@@ -345,7 +345,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
     public boolean addAll(int index, @NonNull Collection<? extends E> values) {
         // don't do an add of an empty set
         if(index < 0 || index > size()) throw new IndexOutOfBoundsException("Cannot add at " + index + " on list of size " + size());
-        if(values.size() == 0) return false;
+        if(values.isEmpty()) return false;
 
         final int initializeSize = this.size();
 
@@ -810,7 +810,7 @@ public abstract class AbstractEventList<E> implements EventList<E> {
         StringBuilder result = new StringBuilder();
         result.append("[");
         for(Iterator<E> i = iterator(); i.hasNext(); ) {
-            result.append(String.valueOf(i.next()));
+            result.append(i.next());
             if(i.hasNext()) result.append(", ");
         }
         result.append("]");

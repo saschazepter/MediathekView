@@ -6,8 +6,8 @@ package ca.odell.glazedlists.gui;
 import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.impl.gui.MouseKeyboardSortingStrategy;
 import ca.odell.glazedlists.impl.gui.MouseOnlySortingStrategy;
-import ca.odell.glazedlists.impl.gui.SortingState;
 import ca.odell.glazedlists.impl.gui.MouseOnlySortingStrategyWithUndo;
+import ca.odell.glazedlists.impl.gui.SortingState;
 import ca.odell.glazedlists.impl.sort.TableColumnComparator;
 
 import java.beans.PropertyChangeEvent;
@@ -145,8 +145,9 @@ public abstract class AbstractTableComparatorChooser<E> {
     /**
      * Updates the comparator in use and applies it to the table.
      */
+    @SuppressWarnings("unchecked")
     protected void rebuildComparator() {
-        final Comparator<E> rebuiltComparator = sortingState.buildComparator();
+        final Comparator<E> rebuiltComparator = (Comparator<E>) (Comparator<?>) sortingState.buildComparator();
 
         // select the new comparator
         sortedList.getReadWriteLock().writeLock().lock();
@@ -175,7 +176,7 @@ public abstract class AbstractTableComparatorChooser<E> {
      * free to add comparators to this list or clear the list if the specified
      * column cannot be sorted.
      */
-    public List<Comparator> getComparatorsForColumn(int column) {
+    public List<Comparator<Object>> getComparatorsForColumn(int column) {
         return sortingState.getColumns().get(column).getComparators();
     }
 
@@ -272,7 +273,7 @@ public abstract class AbstractTableComparatorChooser<E> {
      * the specified column and then delegates the actual comparison to the specified
      * comparator.
      */
-    public Comparator createComparatorForElement(Comparator<E> comparatorForColumn, int column) {
+    public Comparator<E> createComparatorForElement(Comparator<E> comparatorForColumn, int column) {
         return new TableColumnComparator<E>(tableFormat, column, comparatorForColumn);
     }
 

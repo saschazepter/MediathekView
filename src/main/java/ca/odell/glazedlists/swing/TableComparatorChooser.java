@@ -11,20 +11,14 @@ import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.impl.SortIconFactory;
 import ca.odell.glazedlists.impl.gui.SortingStrategy;
 
-import javax.swing.Icon;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
-
-import java.awt.AWTEventMulticaster;
-import java.awt.Component;
-import java.awt.Cursor;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -163,7 +157,7 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
      */
     private void wrapDefaultTableHeaderRenderer() {
         final TableCellRenderer defaultRenderer = table.getTableHeader().getDefaultRenderer();
-        final Class defaultRendererType = defaultRenderer == null ? null : defaultRenderer.getClass();
+        final Class<?> defaultRendererType = defaultRenderer == null ? null : defaultRenderer.getClass();
 
         // if the renderer does not appear to be wrapped, do it
         if (defaultRendererType != SortArrowHeaderRenderer.class && defaultRendererType != null) {
@@ -539,8 +533,7 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
 
                 // we check for a JLabel rather than a DefaultTableCellRenderer to support WinLAF,
                 // which installs a decorator over the DefaultTableCellRenderer
-                if (rendered instanceof JLabel) {
-                    final JLabel label = (JLabel) rendered;
+                if (rendered instanceof JLabel label) {
                     label.setIcon(sortIcon);
                     label.setHorizontalTextPosition(SwingConstants.LEADING);
                 }

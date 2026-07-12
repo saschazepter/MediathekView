@@ -3,7 +3,7 @@ package mediathek.tool.table
 import mediathek.controller.DownloadColumn
 import mediathek.daten.DatenDownload
 import mediathek.tool.models.TModelDownload
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 class MVTableTest {

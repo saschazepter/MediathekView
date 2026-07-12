@@ -21,8 +21,8 @@ package mediathek.gui.tabs.tab_film.selection
 import mediathek.daten.DatenFilm
 import mediathek.daten.DatenPset
 import mediathek.daten.FilmResolution
-import mediathek.tool.NoSelectionErrorDialog
 import mediathek.gui.tabs.tab_film.table.FilmTableModelBinding
+import mediathek.tool.NoSelectionErrorDialog
 import java.awt.Component
 import java.util.*
 

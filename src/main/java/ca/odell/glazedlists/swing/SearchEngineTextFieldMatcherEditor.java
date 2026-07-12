@@ -7,8 +7,7 @@ import ca.odell.glazedlists.TextFilterator;
 import ca.odell.glazedlists.matchers.SearchEngineTextMatcherEditor;
 import ca.odell.glazedlists.matchers.TextMatcherEditor;
 
-import javax.swing.JTextField;
-
+import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 

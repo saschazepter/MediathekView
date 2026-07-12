@@ -32,8 +32,8 @@ public class BciiTreeAsList/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ e
     /**
      * Create a new {@link BciiTreeAsList} adapting the specified tree.
      */
-    public BciiTreeAsList/**/(BciiTree tree) {
-        this(tree, tree.getCoder().colorsToByte(tree.getCoder().getColors()), (byte)1);
+    public BciiTreeAsList/**/(BciiTree<T0, T1> tree) {
+        this(tree, tree.getCoder().allColorsToByte(), (byte)1);
     }
     /*[ COLORED_END ]*/
 

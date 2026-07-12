@@ -1,13 +1,13 @@
 package ca.odell.glazedlists.matchers;
 
-import static ca.odell.glazedlists.impl.Preconditions.checkNotNull;
-import static ca.odell.glazedlists.impl.Preconditions.checkState;
-
 import ca.odell.glazedlists.FunctionList.Function;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Logger;
+
+import static ca.odell.glazedlists.impl.Preconditions.checkNotNull;
+import static ca.odell.glazedlists.impl.Preconditions.checkState;
 
 /**
  * A {@link MatcherEditor} with blacklist or whitelist matching functionality.
@@ -133,16 +133,11 @@ public final class SetMatcherEditor<E, O> extends AbstractMatcherEditor<E> {
         WHITELIST_EMPTY_MATCH_ALL
     }
 
-    private final static class SetMatcher<E, O> implements Matcher<E> {
+    private record SetMatcher<E, O>(Set<O> matchSet, Mode mode, Function<E, O> fn) implements Matcher<E> {
 
-        private final Set<O> matchSet;
-        private final Function<E, O> fn;
-        private final Mode mode;
-
-        private SetMatcher(final Set<O> matchSet, final Mode mode, final Function<E, O> fn) {
-            this.matchSet = new HashSet<>(matchSet);
-            this.mode = mode;
-            this.fn = checkNotNull(fn);
+        private SetMatcher {
+            matchSet = new HashSet<>(matchSet);
+            fn = checkNotNull(fn);
         }
 
         @Override

@@ -5,9 +5,7 @@ package ca.odell.glazedlists.swing;
 
 import ca.odell.glazedlists.EventList;
 
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 
 /**

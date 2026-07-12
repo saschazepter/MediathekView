@@ -3,8 +3,7 @@ package mediathek.tool.tray
 import mediathek.config.Konstanten
 import java.awt.SystemTray
 import java.awt.TrayIcon
-import java.util.Collections
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * Shares MediathekView's single AWT tray icon between independent application features.

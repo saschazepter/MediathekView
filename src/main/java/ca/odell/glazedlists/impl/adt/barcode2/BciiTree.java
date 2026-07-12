@@ -3,11 +3,11 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.adt.barcode2;
 
+import ca.odell.glazedlists.GlazedLists;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
-import ca.odell.glazedlists.GlazedLists;
 
 /*
  m4_include(JavaMacros.m4)
@@ -47,7 +47,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
 
     /*[ COLORED_START ]*/
     /** the colors in the tree, used for printing purposes only */
-    private final ListToByteCoder coder;
+    private final ListToByteCoder<?> coder;
     /*[ COLORED_END ]*/
 
     /** the tree's root, or <code>null</code> for an empty tree */
@@ -73,7 +73,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
      * @param comparator the comparator to use when ordering values within the
      *      tree. If this tree is unsorted, use the one-argument constructor.
      */
-    public BciiTree/**/(/*[ COLORED_START ]*/ ListToByteCoder coder, /*[ COLORED_END ]*/ Comparator<? super T0> comparator) {
+    public BciiTree/**/(/*[ COLORED_START ]*/ ListToByteCoder<?> coder, /*[ COLORED_END ]*/ Comparator<? super T0> comparator) {
         /*[ COLORED_START ]*/  if(coder == null) throw new NullPointerException("Coder cannot be null."); /*[ COLORED_END ]*/
         if(comparator == null) throw new NullPointerException("Comparator cannot be null.");
 
@@ -84,12 +84,13 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
     /**
      * @param coder specifies the node colors
      */
-    public BciiTree/**/(/*[ COLORED_START ]*/ ListToByteCoder coder /*[ COLORED_END ]*/) {
-        this(/*[ COLORED_START ]*/ coder, /*[ COLORED_END ]*/ (Comparator)GlazedLists.comparableComparator());
+    @SuppressWarnings("unchecked")
+    public BciiTree/**/(/*[ COLORED_START ]*/ ListToByteCoder<?> coder /*[ COLORED_END ]*/) {
+        this(/*[ COLORED_START ]*/ coder, /*[ COLORED_END ]*/ (Comparator<? super T0>) GlazedLists.comparableComparator());
     }
 
     /*[ COLORED_START ]*/
-    public ListToByteCoder getCoder() {
+    public ListToByteCoder<?> getCoder() {
         return coder;
     }
     /*[ COLORED_END ]*/
@@ -163,7 +164,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
         if(this.root == null) {
             if(index != 0) throw new IndexOutOfBoundsException();
 
-            this.root = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, null);
+            this.root = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, null);
             assert(valid());
             return this.root;
         } else {
@@ -209,7 +210,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
             if(index <= parentLeftSize) {
                 // as a new left child
                 if(parentLeft == null) {
-                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
+                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
                     parent.left = inserted;
                     fixCountsThruRoot(parent, /*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size);
                     fixHeightPostChange(parent, false);
@@ -245,7 +246,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
 
                 // as a right child
                 if(parentRight == null) {
-                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
+                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent, /*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size);
                     fixHeightPostChange(parent, false);
@@ -275,7 +276,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
         assert(size >= 0);
 
         if(this.root == null) {
-            this.root = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, null);
+            this.root = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, null);
             assert(valid());
             return this.root;
         } else {
@@ -331,7 +332,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
 
                 // as a new left child
                 if(parentLeft == null) {
-                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
+                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
                     parent.left = inserted;
                     fixCountsThruRoot(parent, /*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size);
                     fixHeightPostChange(parent, false);
@@ -349,7 +350,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
 
                 // as a right child
                 if(parentRight == null) {
-                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
+                    /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ inserted = new BciiNode/*[ TYPELIST_DIAMOND_START ]*/ <> /*[ TYPELIST_DIAMOND_END ]*/(/*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent, /*[ COLORED_START ]*/ color, /*[ COLORED_END ]*/ size);
                     fixHeightPostChange(parent, false);
@@ -394,7 +395,7 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
      * Change the color of the specified element.
      */
     public final void setColor(Element<T0> element, byte color) {
-        BciiNode node = (BciiNode)element;
+        BciiNode<T0, T1> node = (BciiNode<T0, T1>) element;
         byte oldColor  = node.getColor();
         if(oldColor == color) return;
 
@@ -592,15 +593,17 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
      * Prune all nodes scheduled for deletion.
      */
     private void drainZeroQueue() {
-        for(int i = 0, size = zeroQueue.size(); i < size; i++) {
-            /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ node = zeroQueue.get(i);
-            /*[ WIDE_NODES_START ]*/ assert(node.size == 0); /*[ WIDE_NODES_END ]*/
+        for (/*[ NODENAME_START ]*/ BciiNode<T0, T1> /*[ NODENAME_END ]*/ node : zeroQueue) {
+            /*[ WIDE_NODES_START ]*/
+            assert (node.size == 0); /*[ WIDE_NODES_END ]*/
 
-            if(node.right == null) {
+            if (node.right == null) {
                 replaceChild(node, node.left);
-            } else if(node.left == null) {
+            }
+            else if (node.left == null) {
                 replaceChild(node, node.right);
-            } else {
+            }
+            else {
                 node = replaceEmptyNodeWithChild(node);
             }
         }
@@ -913,11 +916,9 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
 
         // print it flattened, like a list of colors
         StringBuilder result = new StringBuilder();
-        for(BciiNode n = firstNode(); n != null; n = next(n)) {
-            Object color = coder.getColors().get(colorAsIndex(n.color));
-            for(/*[ WIDE_NODES_START(true) ]*/ int i = 0; i < n.size; i++/*[ WIDE_NODES_END ]*/) {
-                result.append(color);
-            }
+        for(BciiNode<T0, T1> n = firstNode(); n != null; n = next(n)) {
+            Object color = coder.getColors().get(ListToByteCoder.colorAsIndex(n.color));
+            result.repeat(String.valueOf(color), /*[ WIDE_NODES_START(Math.max(0, n.size)) ]*/ Math.max(0, n.size) /*[ WIDE_NODES_END ]*/);
         }
         return result.toString();
     }
@@ -1029,21 +1030,5 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
         return true;
     }
 
-    /**
-     * Convert the specified color value (such as 1, 2, 4, 8, 16 etc.) into an
-     * index value (such as 0, 1, 2, 3, 4 etc. ).
-     */
-    static final int colorAsIndex(byte color) {
-        switch(color) {
-            case 1: return 0;
-            case 2: return 1;
-            case 4: return 2;
-            case 8: return 3;
-            case 16: return 4;
-            case 32: return 5;
-            case 64: return 6;
-        }
-        throw new IllegalArgumentException();
-    }
 }
 /*[ END_M4_JAVA ]*/

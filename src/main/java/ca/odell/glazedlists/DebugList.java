@@ -3,18 +3,12 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists;
 
-import org.jspecify.annotations.NonNull;
-
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.event.ListEventPublisher;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import org.jspecify.annotations.NonNull;
+
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -244,7 +238,7 @@ public class DebugList<E> extends AbstractEventList<E> {
     public boolean containsAll(Collection<?> collection) {
         beforeReadOperation();
         try {
-            return delegate.containsAll(collection);
+            return new HashSet<>(delegate).containsAll(collection);
         } finally {
             afterReadOperation();
         }
@@ -252,6 +246,7 @@ public class DebugList<E> extends AbstractEventList<E> {
 
     /** {@inheritDoc} */
     @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object object) {
         beforeReadOperation();
         try {
@@ -371,7 +366,7 @@ public class DebugList<E> extends AbstractEventList<E> {
     }
 
     @Override
-    public boolean removeIf(Predicate<? super E> filter) {
+    public boolean removeIf(@NonNull Predicate<? super E> filter) {
         beforeWriteOperation();
         try {
             return delegate.removeIf(filter);
@@ -382,7 +377,7 @@ public class DebugList<E> extends AbstractEventList<E> {
 
     /** {@inheritDoc} */
     @Override
-    public boolean addAll(Collection<? extends E> values) {
+    public boolean addAll(@NonNull Collection<? extends E> values) {
         beforeWriteOperation();
         try {
             return delegate.addAll(values);
@@ -393,7 +388,7 @@ public class DebugList<E> extends AbstractEventList<E> {
 
     /** {@inheritDoc} */
     @Override
-    public boolean addAll(int index, Collection<? extends E> values) {
+    public boolean addAll(int index, @NonNull Collection<? extends E> values) {
         beforeWriteOperation();
         try {
             return delegate.addAll(index, values);
@@ -404,7 +399,7 @@ public class DebugList<E> extends AbstractEventList<E> {
 
     /** {@inheritDoc} */
     @Override
-    public boolean removeAll(Collection<?> values) {
+    public boolean removeAll(@NonNull Collection<?> values) {
         beforeWriteOperation();
         try {
             return delegate.removeAll(values);
@@ -415,7 +410,7 @@ public class DebugList<E> extends AbstractEventList<E> {
 
     /** {@inheritDoc} */
     @Override
-    public boolean retainAll(Collection<?> values) {
+    public boolean retainAll(@NonNull Collection<?> values) {
         beforeWriteOperation();
         try {
             return delegate.retainAll(values);
@@ -425,7 +420,7 @@ public class DebugList<E> extends AbstractEventList<E> {
     }
 
     @Override
-    public void replaceAll(UnaryOperator<E> operator) {
+    public void replaceAll(@NonNull UnaryOperator<E> operator) {
         beforeWriteOperation();
         try {
             delegate.replaceAll(operator);

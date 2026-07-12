@@ -6,15 +6,7 @@ package ca.odell.glazedlists.matchers;
 import ca.odell.glazedlists.TextFilterable;
 import ca.odell.glazedlists.TextFilterator;
 import ca.odell.glazedlists.impl.GlazedListsImpl;
-import ca.odell.glazedlists.impl.filter.BoyerMooreCaseInsensitiveTextSearchStrategy;
-import ca.odell.glazedlists.impl.filter.ExactCaseInsensitiveTextSearchStrategy;
-import ca.odell.glazedlists.impl.filter.RegularExpressionTextSearchStrategy;
-import ca.odell.glazedlists.impl.filter.SearchTerm;
-import ca.odell.glazedlists.impl.filter.SingleCharacterCaseInsensitiveTextSearchStrategy;
-import ca.odell.glazedlists.impl.filter.StartsWithCaseInsensitiveTextSearchStrategy;
-import ca.odell.glazedlists.impl.filter.TextMatcher;
-import ca.odell.glazedlists.impl.filter.TextMatchers;
-import ca.odell.glazedlists.impl.filter.TextSearchStrategy;
+import ca.odell.glazedlists.impl.filter.*;
 
 /**
  * A matcher editor that matches Objects that contain a filter text string.
@@ -305,9 +297,10 @@ public class TextMatcherEditor<E> extends AbstractMatcherEditor<E> {
      *
      * @param newFilters the {@link String}s representing all of the filter values
      */
+    @SuppressWarnings("unchecked")
     public void setFilterText(String[] newFilters) {
         // wrap the filter Strings with SearchTerm objects
-        final SearchTerm<E>[] searchTerms = new SearchTerm[newFilters.length];
+        final SearchTerm<E>[] searchTerms = (SearchTerm<E>[]) new SearchTerm<?>[newFilters.length];
         for (int i = 0; i < searchTerms.length; i++) {
             searchTerms[i] = new SearchTerm<>(newFilters[i]);
         }

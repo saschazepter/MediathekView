@@ -83,8 +83,8 @@ public class FourColorTreeAsList <  T0>   extends AbstractList<T0> {
     /**
      * Create a new {@link FourColorTreeAsList} adapting the specified tree.
      */
-    public FourColorTreeAsList/**/(FourColorTree tree) {
-        this(tree, tree.getCoder().colorsToByte(tree.getCoder().getColors()), (byte)1);
+    public FourColorTreeAsList/**/(FourColorTree<T0> tree) {
+        this(tree, tree.getCoder().allColorsToByte(), (byte)1);
     }
 
 

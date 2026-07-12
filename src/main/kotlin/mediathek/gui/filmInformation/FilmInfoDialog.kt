@@ -43,8 +43,8 @@ import java.awt.image.BufferedImage
 import java.net.URI
 import java.util.*
 import javax.swing.*
-import kotlin.math.roundToInt
 import kotlin.coroutines.cancellation.CancellationException
+import kotlin.math.roundToInt
 
 class FilmInfoDialog(owner: Window) : JDialog(owner) {
     private val form = FilmInfoFormPanel()

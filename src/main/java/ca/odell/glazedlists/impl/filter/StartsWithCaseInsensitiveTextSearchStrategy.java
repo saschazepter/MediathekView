@@ -75,7 +75,7 @@ public class StartsWithCaseInsensitiveTextSearchStrategy extends AbstractTextSea
         @Override
         public int indexOf(String text) {
             // if the text is not long enough to match the subtext, bail early
-            if (text.length() < 1)
+            if (text.isEmpty())
                 return -1;
 
             char c = map(text.charAt(0));

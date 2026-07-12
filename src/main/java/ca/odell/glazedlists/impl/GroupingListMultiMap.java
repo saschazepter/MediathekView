@@ -3,11 +3,10 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl;
 
-import org.jspecify.annotations.NonNull;
-
 import ca.odell.glazedlists.*;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 
@@ -90,8 +89,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         this.delegate = new HashMap<>(this.groupingList.size());
 
         // initialize both the keyList and the delegate Map
-        for (Iterator<List<V>> i = this.valueList.iterator(); i.hasNext();) {
-            final List<V> value = i.next();
+        for (final List<V> value : this.valueList) {
             final K key = key(value);
             this.keyList.add(key);
             this.delegate.put(key, value);
@@ -157,8 +155,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
     @Override
     public void putAll(Map<? extends K, ? extends List<V>> m) {
         // verify the contents of the given Map and ensure all key/value pairs agree with the keyFunction
-        for (Iterator<? extends Entry<? extends K, ? extends List<V>>> i = m.entrySet().iterator(); i.hasNext();) {
-            final Entry<? extends K, ? extends List<V>> entry = i.next();
+        for (final Entry<? extends K, ? extends List<V>> entry : m.entrySet()) {
             final K key = entry.getKey();
             final List<V> value = entry.getValue();
 
@@ -166,8 +163,8 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         }
 
         // remove all values currently associated with the keys
-        for (Iterator<? extends K> i = m.keySet().iterator(); i.hasNext();)
-            remove(i.next());
+        for (K k : m.keySet())
+            remove(k);
 
         // add all new values into this Map
         groupingList.addAll(m.values());
@@ -183,8 +180,8 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
      *      run through the key function
      */
     private void checkKeyValueAgreement(K key, Collection<? extends V> value) {
-        for (Iterator<? extends V> i = value.iterator(); i.hasNext();)
-            checkKeyValueAgreement(key, i.next());
+        for (V v : value)
+            checkKeyValueAgreement(key, v);
     }
 
     /**
@@ -211,6 +208,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
     /** {@inheritDoc} */
     @Override
+    @SuppressWarnings("SuspiciousMethodCalls")
     public List<V> remove(Object key) {
         final int index = keyList.indexOf(key);
         return index == -1 ? null : groupingList.remove(index);
@@ -242,6 +240,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
     /** @inheritDoc */
     @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object o) {
         return delegate.equals(o);
     }
@@ -477,9 +476,8 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
          */
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof Map.Entry))
+            if (!(o instanceof Map.Entry<?, ?> e))
                 return false;
-            Map.Entry e = (Map.Entry) o;
 
             final boolean keysEqual = Objects.equals(getKey(), e.getKey());
             return keysEqual && Objects.equals(getValue(), e.getValue());
@@ -702,7 +700,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         @Override
         public boolean remove(Object o) { return delegate.remove(o); }
         @Override
-        public boolean containsAll(@NonNull Collection<?> c) { return delegate.containsAll(c); }
+        public boolean containsAll(@NonNull Collection<?> c) { return new HashSet<>(delegate).containsAll(c); }
         @Override
         public boolean removeAll(@NonNull Collection<?> c) { return delegate.removeAll(c); }
         @Override
@@ -710,6 +708,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         @Override
         public void clear() { delegate.clear(); }
         @Override
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
         public boolean equals(Object o) { return delegate.equals(o); }
         @Override
         public int hashCode() { return delegate.hashCode(); }

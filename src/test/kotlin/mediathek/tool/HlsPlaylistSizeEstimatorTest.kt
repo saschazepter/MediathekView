@@ -2,8 +2,11 @@ package mediathek.tool
 
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import okhttp3.*
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Request
+import okhttp3.Response
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

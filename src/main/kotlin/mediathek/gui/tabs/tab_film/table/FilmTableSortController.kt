@@ -14,11 +14,10 @@ import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.gui.AbstractTableComparatorChooser
 import ca.odell.glazedlists.swing.TableComparatorChooser
+import mediathek.daten.DatenFilm
 import mediathek.swing.table.GlazedSortKeysPersister
 import mediathek.tool.models.FilmColumn
 import mediathek.tool.withReadLock
-import mediathek.daten.DatenFilm
-import java.util.Comparator
 import javax.swing.JTable
 
 internal interface FilmTableSorting {

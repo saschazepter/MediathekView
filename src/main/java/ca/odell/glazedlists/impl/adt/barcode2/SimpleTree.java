@@ -127,8 +127,9 @@ public class SimpleTree <  T0>   {
     }
 
     /** Creates an unsorted tree using the natural element order. */
+    @SuppressWarnings("unchecked")
     public SimpleTree/**/(  ) {
-        this(   (Comparator)GlazedLists.comparableComparator());
+        this(   (Comparator<? super T0>) GlazedLists.comparableComparator());
     }
 
 
@@ -278,7 +279,7 @@ public class SimpleTree <  T0>   {
 
                 // as a right child
                 if(parentRight == null) {
-                     SimpleNode <  T0>   inserted = new  SimpleNode <  T0>  (   size, value, parent);
+                     SimpleNode <  T0>   inserted = new SimpleNode<>(   size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent,    size);
                     fixHeightPostChange(parent, false);
@@ -308,7 +309,7 @@ public class SimpleTree <  T0>   {
         assert(size >= 0);
 
         if(this.root == null) {
-            this.root = new  SimpleNode <  T0>  (   size, value, null);
+            this.root = new SimpleNode<>(   size, value, null);
             assert(valid());
             return this.root;
         } else {
@@ -363,7 +364,7 @@ public class SimpleTree <  T0>   {
 
                 // as a new left child
                 if(parentLeft == null) {
-                     SimpleNode <  T0>   inserted = new  SimpleNode <  T0>  (   size, value, parent);
+                     SimpleNode <  T0>   inserted = new SimpleNode<>(   size, value, parent);
                     parent.left = inserted;
                     fixCountsThruRoot(parent,    size);
                     fixHeightPostChange(parent, false);
@@ -381,7 +382,7 @@ public class SimpleTree <  T0>   {
 
                 // as a right child
                 if(parentRight == null) {
-                     SimpleNode <  T0>   inserted = new  SimpleNode <  T0>  (   size, value, parent);
+                     SimpleNode <  T0>   inserted = new SimpleNode<>(   size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent,    size);
                     fixHeightPostChange(parent, false);
@@ -598,15 +599,14 @@ public class SimpleTree <  T0>   {
      * Prune all nodes scheduled for deletion.
      */
     private void drainZeroQueue() {
-        for(int i = 0, size = zeroQueue.size(); i < size; i++) {
-             SimpleNode <  T0>   node = zeroQueue.get(i);
-
-
-            if(node.right == null) {
+        for (SimpleNode<T0> node : zeroQueue) {
+            if (node.right == null) {
                 replaceChild(node, node.left);
-            } else if(node.left == null) {
+            }
+            else if (node.left == null) {
                 replaceChild(node, node.right);
-            } else {
+            }
+            else {
                 node = replaceEmptyNodeWithChild(node);
             }
         }
@@ -1013,21 +1013,5 @@ public class SimpleTree <  T0>   {
         return true;
     }
 
-    /**
-     * Convert the specified color value (such as 1, 2, 4, 8, 16 etc.) into an
-     * index value (such as 0, 1, 2, 3, 4 etc. ).
-     */
-    static final int colorAsIndex(byte color) {
-        switch(color) {
-            case 1: return 0;
-            case 2: return 1;
-            case 4: return 2;
-            case 8: return 3;
-            case 16: return 4;
-            case 32: return 5;
-            case 64: return 6;
-        }
-        throw new IllegalArgumentException();
-    }
 }
   /*[ END_M4_JAVA ]*/

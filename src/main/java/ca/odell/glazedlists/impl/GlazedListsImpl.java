@@ -4,10 +4,10 @@
 package ca.odell.glazedlists.impl;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.FunctionList;
-import ca.odell.glazedlists.impl.text.LatinDiacriticsStripper;
+import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.impl.adt.KeyedCollection;
+import ca.odell.glazedlists.impl.text.LatinDiacriticsStripper;
 
 import java.util.*;
 
@@ -169,6 +169,7 @@ public final class GlazedListsImpl {
     }
     private static class EqualsComparator<T> implements Comparator<T> {
         @Override
+        @SuppressWarnings("ComparatorMethodParameterNotUsed")
         public int compare(T alpha, T beta) {
             return Objects.equals(alpha, beta) ? 0 : 1;
         }

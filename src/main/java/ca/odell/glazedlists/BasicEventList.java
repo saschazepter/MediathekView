@@ -3,18 +3,13 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists;
 
-import org.jspecify.annotations.NonNull;
-
 import ca.odell.glazedlists.event.ListEventAssembler;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.event.ListEventPublisher;
 import ca.odell.glazedlists.util.concurrent.SerializedReadWriteLock;
+import org.jspecify.annotations.NonNull;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.OptionalDataException;
-import java.io.Serializable;
+import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -183,6 +178,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
 
     /** {@inheritDoc} */
     @Override
+    @SuppressWarnings("SuspiciousMethodCalls")
     public boolean remove(Object element) {
         int index = data.indexOf(element);
         if(index == -1) return false;
@@ -329,7 +325,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
      */
     private void writeObject(ObjectOutputStream out) throws IOException {
         // 1. The elements to write
-        E[] elements = (E[])data.toArray(new Object[data.size()]);
+        E[] elements = (E[]) data.toArray(Object[]::new);
 
         // 2. The Listeners to write
         List<ListEventListener<E>> serializableListeners = new ArrayList<>(1);
@@ -337,7 +333,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
             if (!(listener instanceof Serializable)) continue;
             serializableListeners.add(listener);
         }
-        ListEventListener[] listeners = serializableListeners.toArray(new ListEventListener[serializableListeners.size()]);
+        ListEventListener<?>[] listeners = serializableListeners.toArray(ListEventListener<?>[]::new);
 
         // 3. Write the elements, listeners, publisher and lock
         out.writeObject(elements);

@@ -6,10 +6,10 @@ package ca.odell.glazedlists;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.event.ListEventPublisher;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -67,7 +67,7 @@ import java.util.function.Function;
  *
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
-public interface EventList<E> extends List<E> {
+public interface EventList<E> extends List<E>, AutoCloseable {
 
     /**
      * Registers the specified listener to receive change updates for this list.
@@ -108,6 +108,15 @@ public interface EventList<E> extends List<E> {
      * to call any method on an {@link EventList} after it has been disposed.
      */
     void dispose();
+
+    /**
+     * Disposes this list, allowing it to be managed by try-with-resources or
+     * Kotlin's {@code use} function.
+     */
+    @Override
+    default void close() {
+        dispose();
+    }
 
     /**
      * Executes the block of code represented by the given consumer while holding the read lock of

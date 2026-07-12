@@ -20,21 +20,22 @@ public final class BeanPropertyComparator<T> implements Comparator<T> {
     /**
      * the comparator to use on the JavaBean property
      */
-    private final Comparator propertyComparator;
+    private final Comparator<Object> propertyComparator;
 
     /**
      * the accessor for the JavaBean property
      */
-    private BeanProperty beanProperty;
+    private final BeanProperty<T> beanProperty;
 
     /**
      * Create a new JavaBean property comparator that compares properties using
      * the provided {@link Comparator}.  This should be accessed from the
      * {@link ca.odell.glazedlists.GlazedLists GlazedLists} tool factory.
      */
-    public BeanPropertyComparator(Class<T> className, String property, Comparator propertyComparator) {
+    @SuppressWarnings("unchecked")
+    public BeanPropertyComparator(Class<T> className, String property, Comparator<?> propertyComparator) {
         beanProperty = new BeanProperty<>(className, property, true, false);
-        this.propertyComparator = propertyComparator;
+        this.propertyComparator = (Comparator<Object>) propertyComparator;
     }
 
     /**
@@ -66,7 +67,7 @@ public final class BeanPropertyComparator<T> implements Comparator<T> {
         if (o == null || getClass() != o.getClass())
             return false;
 
-        final BeanPropertyComparator that = (BeanPropertyComparator) o;
+        final BeanPropertyComparator<?> that = (BeanPropertyComparator<?>) o;
 
         if (!beanProperty.equals(that.beanProperty))
             return false;

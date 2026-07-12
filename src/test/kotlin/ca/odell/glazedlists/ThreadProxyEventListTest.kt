@@ -2,9 +2,7 @@ package ca.odell.glazedlists
 
 import ca.odell.glazedlists.impl.gui.ThreadProxyEventList
 import ca.odell.glazedlists.impl.swing.SwingThreadProxyEventList
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.awt.EventQueue
 import java.util.concurrent.CountDownLatch

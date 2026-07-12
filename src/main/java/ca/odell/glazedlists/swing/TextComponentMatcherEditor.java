@@ -14,8 +14,8 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
 /**
  * A MatcherEditor that matches Objects that contain the filter text located
@@ -154,8 +154,7 @@ public class TextComponentMatcherEditor<E> extends TextMatcherEditor<E> {
             document.addDocumentListener(filterHandler);
         } else {
             if(textComponent == null) throw new IllegalArgumentException("Non-live filtering supported only for JTextField (document provided)");
-            if(!(textComponent instanceof JTextField)) throw new IllegalArgumentException("Non-live filtering supported only for JTextField (argument class " + textComponent.getClass().getName() + ")");
-            JTextField textField = (JTextField) textComponent;
+            if(!(textComponent instanceof JTextField textField)) throw new IllegalArgumentException("Non-live filtering supported only for JTextField (argument class " + textComponent.getClass().getName() + ")");
             textField.addActionListener(filterHandler);
         }
 
@@ -229,7 +228,7 @@ public class TextComponentMatcherEditor<E> extends TextMatcherEditor<E> {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if ("document" == evt.getPropertyName()) {
+            if ("document".equals(evt.getPropertyName())) {
                 // stop listening to the old Document
                 deregisterListeners(live);
 

@@ -19,15 +19,15 @@
 package mediathek.tool.cellrenderer
 
 import ca.odell.glazedlists.swing.AdvancedTableModel
-import mediathek.config.application.ApplicationConfiguration
 import mediathek.config.MVColor
+import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.starter.DownloadServices
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
+import mediathek.gui.tabs.tab_film.table.FilmTableAppearance
 import mediathek.swing.IconUtils
 import mediathek.tool.models.FilmColumn
-import mediathek.gui.tabs.tab_film.table.FilmTableAppearance
 import org.apache.logging.log4j.LogManager
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import org.kordamp.ikonli.swing.FontIcon
@@ -36,7 +36,6 @@ import java.awt.Component
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
-import javax.swing.JComponent
 import javax.swing.JTable
 
 class CellRendererFilme(
@@ -94,7 +93,7 @@ class CellRendererFilme(
                         if (!isSelected) {
                             applyUnselectedRowColors(wrappedText, table, row, datenFilm)
                         }
-                        if (filmColumn == FilmColumn.TITLE && wrappedText is JComponent) {
+                        if (filmColumn == FilmColumn.TITLE) {
                             wrappedText.toolTipText = datenFilm.title.takeIf {
                                 wrappedText.preferredSize.width > table.getCellRect(row, column, false).width
                             }

@@ -6,7 +6,7 @@ package ca.odell.glazedlists.swing;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.matchers.Matcher;
 
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 
 /**
  * <code>AdvancedListSelectionModel</code> is an interface defining additional methods
@@ -19,7 +19,7 @@ public interface AdvancedListSelectionModel<E> extends ListSelectionModel {
     /**
      * Gets an {@link EventList} that contains only selected
      * values and modifies the source list on mutation.
-     *
+     * <p>
      * Adding and removing items from this list performs the same operation on
      * the source list.
      */
@@ -28,7 +28,7 @@ public interface AdvancedListSelectionModel<E> extends ListSelectionModel {
     /**
      * Gets an {@link EventList} that contains only selected
      * values and modifies the selection state on mutation.
-     *
+     * <p>
      * Adding an item to this list selects it and removing an item deselects it.
      * If an item not in the source list is added an
      * {@link IllegalArgumentException} is thrown.
@@ -38,7 +38,7 @@ public interface AdvancedListSelectionModel<E> extends ListSelectionModel {
     /**
      * Gets an {@link EventList} that contains only deselected values and
      * modifies the source list on mutation.
-     *
+     * <p>
      * Adding and removing items from this list performs the same operation on
      * the source list.
      */
@@ -47,7 +47,7 @@ public interface AdvancedListSelectionModel<E> extends ListSelectionModel {
     /**
      * Gets an {@link EventList} that contains only deselected values and
      * modifies the selection state on mutation.
-     *
+     * <p>
      * Adding an item to this list deselects it and removing an item selects it.
      * If an item not in the source list is added an
      * {@link IllegalArgumentException} is thrown

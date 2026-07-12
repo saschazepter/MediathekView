@@ -329,7 +329,7 @@ public class ListSelection<E> implements ListEventListener<E> {
     /**
      * Gets an {@link EventList} that contains only selected values and modifies
      * the source list on mutation.
-     *
+     * <p>
      * Adding and removing items from this list performs the same operation on
      * the source list.
      */
@@ -363,9 +363,9 @@ public class ListSelection<E> implements ListEventListener<E> {
     }
 
     /**
-     * Gets an {@link EventList} that contains only deselected values add
+     * Gets an {@link EventList} that contains only deselected values and
      * modifies the source list on mutation.
-     *
+     * <p>
      * Adding and removing items from this list performs the same operation on
      * the source list.
      */
@@ -1093,8 +1093,8 @@ public class ListSelection<E> implements ListEventListener<E> {
 
         // otherwise fetch the row object and validate it against all matchers
         final E rowObject = source.get(index);
-        for (Iterator<Matcher<E>> iterator = validSelectionMatchers.iterator(); iterator.hasNext();)
-            if (!iterator.next().matches(rowObject))
+        for (Matcher<E> validSelectionMatcher : validSelectionMatchers)
+            if (!validSelectionMatcher.matches(rowObject))
                 return false;
 
         return true;
@@ -1125,8 +1125,8 @@ public class ListSelection<E> implements ListEventListener<E> {
      */
     private void fireSelectionChanged(int start, int end) {
         // notify all
-        for(Iterator<Listener> i = selectionListeners.iterator(); i.hasNext(); ) {
-            i.next().selectionChanged(start, end);
+        for (Listener selectionListener : new ArrayList<>(selectionListeners)) {
+            selectionListener.selectionChanged(start, end);
         }
     }
 

@@ -3,14 +3,13 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl;
 
-import org.jspecify.annotations.NonNull;
-
-import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.DisposableMap;
+import ca.odell.glazedlists.EventList;
+import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
+import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -274,6 +273,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
 
     /** @inheritDoc */
     @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object o) {
         return delegate.equals(o);
     }
@@ -524,9 +524,8 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
          */
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof Map.Entry))
+            if (!(o instanceof Map.Entry<?, ?> e))
                 return false;
-            Map.Entry e = (Map.Entry) o;
 
             final boolean keysEqual = Objects.equals(getKey(), e.getKey());
             return keysEqual && Objects.equals(getValue(), e.getValue());

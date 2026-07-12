@@ -38,8 +38,8 @@ import mediathek.swing.SwingDispatch
 import mediathek.tool.FileSize
 import mediathek.tool.FileUtils
 import mediathek.tool.MessageBus
-import mediathek.tool.notification.NotificationPublisher
 import mediathek.tool.http.MVHttpClient
+import mediathek.tool.notification.NotificationPublisher
 import net.engio.mbassy.bus.MBassador
 import net.engio.mbassy.listener.Handler
 import okhttp3.*

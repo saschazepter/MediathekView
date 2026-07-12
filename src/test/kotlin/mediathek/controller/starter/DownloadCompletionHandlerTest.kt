@@ -6,9 +6,7 @@ import mediathek.daten.DownloadType
 import mediathek.tool.notification.DisabledNotificationBackend
 import mediathek.tool.notification.MessageType
 import mediathek.tool.notification.NotificationMessage
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.nio.file.Files

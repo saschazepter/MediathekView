@@ -17,14 +17,9 @@ package ca.odell.glazedlists.impl.reflect;
 
 import org.jspecify.annotations.NonNull;
 
-import java.io.Serializable;
 import java.io.Serial;
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.GenericDeclaration;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
-import java.lang.reflect.WildcardType;
+import java.io.Serializable;
+import java.lang.reflect.*;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -106,9 +101,9 @@ class MoreTypes {
             return (Class<?>) rawType;
 
         }
-        else if (type instanceof GenericArrayType) {
-            // TODO: Is this sufficient?
-            return Object[].class;
+        else if (type instanceof GenericArrayType genericArrayType) {
+            Class<?> componentType = getRawType(genericArrayType.getGenericComponentType());
+            return Array.newInstance(componentType, 0).getClass();
         }
         else if (type instanceof TypeVariable || type instanceof WildcardType) {
             // we could use the variable's bounds, but that'll won't work if there are multiple.

@@ -4,9 +4,9 @@
 package ca.odell.glazedlists;
 
 import ca.odell.glazedlists.event.ListEventPublisher;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import java.util.Iterator;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * An {@link EventList} composed of multiple source {@link EventList}s. This list

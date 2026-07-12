@@ -14,15 +14,16 @@ import ca.odell.glazedlists.matchers.Matcher;
 public final class FalseMatcher<E> implements Matcher<E> {
 
     /** Singleton instance of FalseMatcher. */
-    private static final Matcher INSTANCE = new FalseMatcher();
+    private static final Matcher<Object> INSTANCE = new FalseMatcher<>();
 
     private FalseMatcher() {}
 
     /**
      * Return a singleton instance.
      */
+    @SuppressWarnings("unchecked")
     public static <E> Matcher<E> getInstance() {
-        return INSTANCE;
+        return (Matcher<E>) INSTANCE;
     }
 
     /** {@inheritDoc} */

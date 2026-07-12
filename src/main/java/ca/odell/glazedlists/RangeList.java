@@ -182,7 +182,7 @@ public class RangeList<E> extends TransformedList<E, E> {
 
         // insert before the beginning
         if(desiredStartIndex < currentStartIndex) {
-            updates.addInsert(0, currentStartIndex - desiredStartIndex - 1);
+            updates.elementsInserted(0, currentStartIndex - desiredStartIndex - 1);
 
         // delete thru to the new beginning
         } else if(currentStartIndex < desiredStartIndex && currentStartIndex < currentEndIndex) {
@@ -202,7 +202,7 @@ public class RangeList<E> extends TransformedList<E, E> {
         // insert thru to the new end
         } else if(currentEndIndex < desiredEndIndex && desiredStartIndex < desiredEndIndex) {
             int insertFrom = Math.max(currentEndIndex, currentStartIndex);
-            updates.addInsert(insertFrom - currentStartIndex, desiredEndIndex - currentStartIndex - 1);
+            updates.elementsInserted(insertFrom - currentStartIndex, desiredEndIndex - currentStartIndex - 1);
         }
         currentEndIndex = desiredEndIndex;
 

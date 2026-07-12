@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import java.awt.Component
-import java.util.UUID
+import java.util.*
 import javax.swing.JPanel
 import javax.swing.JTable
 import javax.swing.SwingUtilities

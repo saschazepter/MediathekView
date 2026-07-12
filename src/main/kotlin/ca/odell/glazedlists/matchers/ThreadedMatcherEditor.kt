@@ -1,17 +1,12 @@
 package ca.odell.glazedlists.matchers
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineStart
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
-import kotlin.coroutines.CoroutineContext
+import java.lang.Runnable
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.coroutines.CoroutineContext
 
 /**
  * Buffers matcher changes and delivers coalesced events from a coroutine.

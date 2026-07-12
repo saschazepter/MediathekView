@@ -19,10 +19,11 @@
 package mediathek.gui.tabs.tab_film.filter
 
 import ca.odell.glazedlists.BasicEventList
+import ca.odell.glazedlists.EventList
 import mediathek.config.application.FilterConfiguration
+import mediathek.gui.tabs.tab_film.filter_selection.FilmFilterSelectionController
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
-import mediathek.gui.tabs.tab_film.filter_selection.FilmFilterSelectionController
 import mediathek.tool.FilterDTO
 import org.apache.commons.configuration2.XMLConfiguration
 import java.awt.GraphicsEnvironment
@@ -57,15 +58,14 @@ internal object SwingFilterDialogTestFixture {
         filterConfiguration.setCurrentFilter(firstFilter)
 
         val reloadRequester = RecordingReloadRequester()
+        val senderList = TrackingEventList<String>().apply {
+            add("ARD")
+            add("3Sat")
+        }
         val controller = FilmFilterController(
             filterConfiguration,
             dataProvider = object : FilmFilterController.DataProvider {
-                private val senders = BasicEventList<String>().apply {
-                    add("ARD")
-                    add("3Sat")
-                }
-
-                override fun senderList() = senders
+                override fun senderList() = senderList
                 override fun getThemen(senders: Collection<String>) = getThemen.invoke(senders)
             },
             reloadRequester = reloadRequester
@@ -113,6 +113,7 @@ internal object SwingFilterDialogTestFixture {
             comboBox = comboBoxOf(dialog),
             requestedNewFilterName = requestedNewFilterName,
             requestedRenameName = requestedRenameName,
+            senderListDisposeCalls = { senderList.disposeCalls },
             secondFilter = secondFilter,
             zeitraumFilter = zeitraumFilter
         )
@@ -200,8 +201,9 @@ internal object SwingFilterDialogTestFixture {
         val comboBox: FilterSelectionComboBox,
         val requestedNewFilterName: AtomicReference<String?>,
         val requestedRenameName: AtomicReference<String?>,
+        val senderListDisposeCalls: () -> Int,
         val secondFilter: FilterDTO,
-        val zeitraumFilter: FilterDTO
+        val zeitraumFilter: FilterDTO,
     )
 
     class RecordingReloadRequester : FilmFilterController.ReloadRequester {
@@ -218,4 +220,20 @@ internal object SwingFilterDialogTestFixture {
     }
 
     private class TestFilterConfiguration(configuration: XMLConfiguration) : FilterConfiguration(configuration)
+
+    private class TrackingEventList<E>(
+        private val delegate: EventList<E> = BasicEventList(),
+    ) : EventList<E> by delegate {
+        var disposeCalls = 0
+            private set
+
+        override fun dispose() {
+            disposeCalls++
+            delegate.dispose()
+        }
+
+        override fun close() {
+            dispose()
+        }
+    }
 }

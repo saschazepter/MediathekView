@@ -7,15 +7,12 @@ import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 
-import java.awt.EventQueue;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JList;
-import javax.swing.ListModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
+import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A DefaultEventListModel adapts an EventList to the ListModel interface making it
@@ -171,12 +168,17 @@ public class DefaultEventListModel<E> implements ListEventListener<E>, ListModel
      */
     protected void fireListDataEvent(ListDataEvent listDataEvent) {
         // notify all listeners about the event
-        for(int i = 0, n = listeners.size(); i < n; i++) {
-            ListDataListener listDataListener = listeners.get(i);
+        for (ListDataListener listDataListener : new ArrayList<>(listeners)) {
             switch (listDataEvent.getType()) {
-                case ListDataEvent.CONTENTS_CHANGED: listDataListener.contentsChanged(listDataEvent); break;
-                case ListDataEvent.INTERVAL_ADDED: listDataListener.intervalAdded(listDataEvent); break;
-                case ListDataEvent.INTERVAL_REMOVED: listDataListener.intervalRemoved(listDataEvent); break;
+                case ListDataEvent.CONTENTS_CHANGED:
+                    listDataListener.contentsChanged(listDataEvent);
+                    break;
+                case ListDataEvent.INTERVAL_ADDED:
+                    listDataListener.intervalAdded(listDataEvent);
+                    break;
+                case ListDataEvent.INTERVAL_REMOVED:
+                    listDataListener.intervalRemoved(listDataEvent);
+                    break;
             }
         }
     }

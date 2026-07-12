@@ -12,10 +12,10 @@ import java.util.NoSuchElementException;
  *
  * @author <a href="mailto:kevin@swank.ca">Kevin Maltby</a>
  */
-public class BarcodeIterator implements Iterator {
+public class BarcodeIterator implements Iterator<Object> {
 
     /** keep a reference for removes in the trailing whitespace */
-    private Barcode barcode;
+    private final Barcode barcode;
 
     /** the current node being inspected */
     private BarcodeNode currentNode;

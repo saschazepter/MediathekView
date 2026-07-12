@@ -646,7 +646,7 @@ public final class SparseListNode {
      * A specialized Iterator that will significantly outperform the default
      * one provided by AbstractList when acting on this ADT.
      */
-    final static class SparseListIterator implements Iterator {
+    final static class SparseListIterator implements Iterator<Object> {
 
         /** the current SparseListNode being inspected */
         private SparseListNode currentNode;
@@ -655,13 +655,13 @@ public final class SparseListNode {
         private int timesRequested = -1;
 
         /** a reference to the SparseList for removal of trailing nulls */
-        private SparseList sparseList;
+        private final SparseList sparseList;
 
         /** the size of the actual tree within the SparseList*/
         private int treeSize;
 
         /** the size of the list */
-        private int size;
+        private final int size;
 
         /** the current index being inspected */
         private int index = -1;

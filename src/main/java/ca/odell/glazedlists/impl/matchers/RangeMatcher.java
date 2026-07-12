@@ -20,7 +20,7 @@ import java.util.List;
  *
  * @author James Lemieux
  */
-public class RangeMatcher<D extends Comparable,E> implements Matcher<E> {
+public class RangeMatcher<D extends Comparable<? super D>, E> implements Matcher<E> {
 
     /** The start of the range; <code>null</code> if the range has no starting value. */
     private final D start;
@@ -81,9 +81,7 @@ public class RangeMatcher<D extends Comparable,E> implements Matcher<E> {
             filterator.getFilterValues(filterComparables, item);
 
         // ensure the range contains at least one extracted Comparable
-        for (int c = 0; c < filterComparables.size(); c++) {
-            D filterComparable = filterComparables.get(c);
-
+        for (D filterComparable : filterComparables) {
             // check if the filterComparable is within the defined range
             if (filterComparable != null) {
                 if (start != null && start.compareTo(filterComparable) > 0)

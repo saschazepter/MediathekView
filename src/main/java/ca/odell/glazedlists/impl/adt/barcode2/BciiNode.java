@@ -75,7 +75,7 @@ class /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ implements Ele
      */
     public BciiNode/**/(/*[ COLORED_START ]*/ byte color, /*[ COLORED_END ]*/ int size, T0 value, /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ parent) {
         /*[ COLORED_START ]*/
-        assert(BciiTree.colorAsIndex(color) >= 0 && BciiTree.colorAsIndex(color) < 7);
+        assert(ListToByteCoder.colorAsIndex(color) >= 0 && ListToByteCoder.colorAsIndex(color) < 7);
         this.color = color;
         /*[ COLORED_END ]*/
         /*[ WIDE_NODES_START(assert(size == 1);) ]*/
@@ -224,7 +224,7 @@ class /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ implements Ele
      * Write this node out as a String, using the specified colors to write
      * each of the node values.
      */
-    String toString(List colors) {
+    String toString(List<?> colors) {
         StringBuilder result = new StringBuilder();
         asTree(0, result, colors);
         return result.toString();
@@ -232,15 +232,13 @@ class /*[ NODENAME_START ]*/ BciiNode<T0,T1> /*[ NODENAME_END ]*/ implements Ele
     /**
      * Dump this node as a String for diagnostic and debugging purposes.
      */
-    void asTree(int indentation, StringBuilder out, List colors) {
+    void asTree(int indentation, StringBuilder out, List<?> colors) {
         // write the left subtree
         if(left != null) left.asTree(indentation + 1, out, colors);
 
         // write this node
-        for(int i = 0; i < indentation; i++) {
-            out.append("   ");
-        }
-        /*[ COLORED_START ]*/ out.append(colors.get(BciiTree.colorAsIndex(color))); /*[ COLORED_END ]*/
+        out.repeat("   ", Math.max(0, indentation));
+        /*[ COLORED_START ]*/ out.append(colors.get(ListToByteCoder.colorAsIndex(color))); /*[ COLORED_END ]*/
         /*[ WIDE_NODES_START ]*/ out.append(" [").append(size).append("]"); /*[ WIDE_NODES_END ]*/
         if(t0 != null) {
             out.append(": ");

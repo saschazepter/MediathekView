@@ -15,12 +15,12 @@ import ca.odell.glazedlists.impl.event.Tree4Deltas;
  */
 class Tree4DeltasListEvent<E> extends ListEvent<E> {
 
-    private Tree4Deltas.Iterator deltasIterator;
-    private BlockSequence.Iterator linearIterator;
+    private Tree4Deltas.Iterator<E> deltasIterator;
+    private BlockSequence<E>.Iterator linearIterator;
 
-    private ListEventAssembler deltasAssembler;
+    private ListEventAssembler<E> deltasAssembler;
 
-    public Tree4DeltasListEvent(ListEventAssembler deltasAssembler, EventList<E> sourceList) {
+    public Tree4DeltasListEvent(ListEventAssembler<E> deltasAssembler, EventList<E> sourceList) {
         super(sourceList);
         this.deltasAssembler = deltasAssembler;
     }

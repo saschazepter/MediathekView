@@ -158,8 +158,7 @@ import java.util.EventObject;
  * instead.
  *
  * <p>
- * In the future, ListEvent will provide even more information about the list
- * changes to be more self-contained:
+ * ListEvent can provide old and new values to make list changes more self-contained:
  * <ul>
  * <li>for deletes, it will provide the deleted element with
  * {@link #getOldValue()}
@@ -168,9 +167,6 @@ import java.util.EventObject;
  * <li>for updates, it will provide the old and new element with
  * {@link #getOldValue()} and {@link #getNewValue()}
  * </ul>
- *
- * The methods are currently marked as deprecated and should not be used yet,
- * because the implementation is a work in progress.
  *
  * <p>
  * Note, that providing the old and new elements has an impact on the
@@ -327,32 +323,19 @@ public abstract class ListEvent<E> extends EventObject {
      * Gets the previous value for a deleted or updated element. If that data is
      * not available, this will return {@link ListEvent#UNKNOWN_VALUE}.
      *
-     * @deprecated this is a <strong>developer preview</strong> API that is not
-     * yet fit for human consumption. Hopefully the full implementation is
-     * complete for Glazed Lists 2.0.
      */
-    @Deprecated
     public abstract E getOldValue();
 
     /**
      * Gets the current value for an inserted or updated element. If that data is
      * not available, this will return {@link ListEvent#UNKNOWN_VALUE}.
      *
-     * @deprecated this is a <strong>developer preview</strong> API that is not
-     * yet fit for human consumption. Hopefully the full implementation is
-     * complete for Glazed Lists 2.0.
      */
-    @Deprecated
     public abstract E getNewValue();
 
     /**
      * Gets the number of blocks currently remaining in this atomic change.
-     *
-     * @deprecated this method depends on a particular implementation of
-     *      how list events are stored internally, and this implementation has
-     *      since changed.
      */
-    @Deprecated
     public abstract int getBlocksRemaining();
 
     /**

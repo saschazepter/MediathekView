@@ -55,7 +55,7 @@ import java.util.List;
  * @author <a href="mailto:kevin@swank.ca">Kevin Maltby</a>
  *
  */
-public final class SparseList extends AbstractList {
+public final class SparseList extends AbstractList<Object> {
 
     /** the root of the tree */
     private SparseListNode root;
@@ -225,8 +225,8 @@ public final class SparseList extends AbstractList {
      * Obtains an {@link Iterator} for this {@link List}.
      */
     @Override
-    public @NonNull Iterator iterator() {
-        if(size == 0) return Collections.EMPTY_LIST.iterator();
+    public @NonNull Iterator<Object> iterator() {
+        if(size == 0) return Collections.emptyIterator();
         return new SparseListNode.SparseListIterator(this, root);
     }
 

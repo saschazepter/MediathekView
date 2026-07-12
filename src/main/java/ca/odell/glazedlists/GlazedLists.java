@@ -9,47 +9,18 @@ import ca.odell.glazedlists.event.ListEventPublisher;
 import ca.odell.glazedlists.gui.AdvancedTableFormat;
 import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.gui.WritableTableFormat;
-import ca.odell.glazedlists.impl.Diff;
-import ca.odell.glazedlists.impl.FunctionListMap;
-import ca.odell.glazedlists.impl.GlazedListsImpl;
-import ca.odell.glazedlists.impl.GroupingListMultiMap;
-import ca.odell.glazedlists.impl.ListCollectionListModel;
-import ca.odell.glazedlists.impl.ObservableConnector;
-import ca.odell.glazedlists.impl.ReadOnlyList;
-import ca.odell.glazedlists.impl.SimpleFunctionList;
-import ca.odell.glazedlists.impl.ThreadSafeList;
-import ca.odell.glazedlists.impl.TypeSafetyListener;
-import ca.odell.glazedlists.impl.WeakReferenceProxy;
-import ca.odell.glazedlists.impl.beans.BeanConnector;
-import ca.odell.glazedlists.impl.beans.BeanFunction;
-import ca.odell.glazedlists.impl.beans.BeanTableFormat;
-import ca.odell.glazedlists.impl.beans.BeanTextFilterator;
-import ca.odell.glazedlists.impl.beans.BeanThresholdEvaluator;
-import ca.odell.glazedlists.impl.beans.StringBeanFunction;
+import ca.odell.glazedlists.impl.*;
+import ca.odell.glazedlists.impl.beans.*;
 import ca.odell.glazedlists.impl.filter.StringTextFilterator;
 import ca.odell.glazedlists.impl.functions.ConstantFunction;
-import ca.odell.glazedlists.impl.sort.BeanPropertyComparator;
-import ca.odell.glazedlists.impl.sort.BooleanComparator;
-import ca.odell.glazedlists.impl.sort.ComparableComparator;
-import ca.odell.glazedlists.impl.sort.ComparatorChain;
-import ca.odell.glazedlists.impl.sort.ReverseComparator;
+import ca.odell.glazedlists.impl.sort.*;
 import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.matchers.MatcherEditor;
 import ca.odell.glazedlists.matchers.Matchers;
-import java.util.concurrent.locks.ReadWriteLock;
 
 import java.beans.PropertyChangeEvent;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
+import java.util.*;
+import java.util.concurrent.locks.ReadWriteLock;
 
 /**
  * A factory for creating all sorts of objects to be used with Glazed Lists.
@@ -159,8 +130,8 @@ public final class GlazedLists {
 
     /** Provide Singleton access for all Comparators with no internal state */
     private static Comparator<Boolean> booleanComparator;
-    private static Comparator<Comparable> comparableComparator;
-    private static Comparator<Comparable> reversedComparable;
+    private static Comparator<?> comparableComparator;
+    private static Comparator<?> reversedComparable;
 
     /**
      * Creates a {@link Comparator} that uses Reflection to compare two
@@ -197,8 +168,8 @@ public final class GlazedLists {
         final List<Comparator<T>> comparators = new ArrayList<>(properties.length+1);
         comparators.add(firstComparator);
 
-        for (int i = 0; i < properties.length; i++) {
-            comparators.add(beanPropertyComparator(clazz, properties[i], comparableComparator()));
+        for (String s : properties) {
+            comparators.add(beanPropertyComparator(clazz, s, comparableComparator()));
         }
 
         // chain all Comparators together
@@ -210,7 +181,7 @@ public final class GlazedLists {
      * of the specified {@link Class} by the given JavaBean property.  The JavaBean
      * property is compared using the provided {@link Comparator}.
      */
-    public static <T> Comparator<T> beanPropertyComparator(Class<T> className, String property, Comparator propertyComparator) {
+    public static <T> Comparator<T> beanPropertyComparator(Class<T> className, String property, Comparator<?> propertyComparator) {
         return new BeanPropertyComparator<>(className, property, propertyComparator);
     }
 
@@ -256,9 +227,9 @@ public final class GlazedLists {
      * Creates a {@link Comparator} that compares {@link Comparable} objects.
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Comparable> Comparator<T> comparableComparator() {
+    public static <T extends Comparable<? super T>> Comparator<T> comparableComparator() {
         if(comparableComparator == null) {
-            comparableComparator = new ComparableComparator();
+            comparableComparator = new ComparableComparator<Comparable<Object>>();
         }
         return (Comparator<T>)comparableComparator;
     }
@@ -267,9 +238,10 @@ public final class GlazedLists {
      * Creates a reverse {@link Comparator} that works for {@link Comparable} objects.
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Comparable> Comparator<T> reverseComparator() {
+    public static <T extends Comparable<? super T>> Comparator<T> reverseComparator() {
         if(reversedComparable == null) {
-            reversedComparable = reverseComparator(comparableComparator());
+            Comparator<T> naturalOrder = comparableComparator();
+            reversedComparable = reverseComparator(naturalOrder);
         }
         return (Comparator<T>)reversedComparable;
     }
@@ -903,7 +875,7 @@ public final class GlazedLists {
      * @return a MultiMap which remains in sync with changes that occur to the
      *      underlying <code>source</code> {@link EventList}
      */
-    public static <K extends Comparable, V> DisposableMap<K, List<V>> syncEventListToMultiMap(EventList<V> source, FunctionList.Function<V, ? extends K> keyMaker) {
+    public static <K extends Comparable<? super K>, V> DisposableMap<K, List<V>> syncEventListToMultiMap(EventList<V> source, FunctionList.Function<V, ? extends K> keyMaker) {
         return syncEventListToMultiMap(source, keyMaker, comparableComparator());
     }
 

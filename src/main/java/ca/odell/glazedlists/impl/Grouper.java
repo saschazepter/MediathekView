@@ -59,7 +59,7 @@ public class Grouper<E> {
      * Create a new {@link Grouper} that manages groups for the
      * specified {@link SortedList}.
      */
-    public Grouper(SortedList<E> sortedList, Client client) {
+    public Grouper(SortedList<E> sortedList, Client<E> client) {
         this.sortedList = sortedList;
         this.client = client;
         setComparator(sortedList.getComparator());
@@ -91,7 +91,7 @@ public class Grouper<E> {
     /**
      * Get the client which is notified of group changes.
      */
-    public Client getClient() {
+    public Client<E> getClient() {
         return client;
     }
 
@@ -138,7 +138,7 @@ public class Grouper<E> {
         toDoList.addWhite(0, barcode.size());
 
         // first pass -> update the barcode and accumulate the type of values removed (UNIQUE or DUPLICATE or UNIQUE_WITH_DUPLICATE)
-        final LinkedList removedValues = new LinkedList();
+        final LinkedList<Object> removedValues = new LinkedList<>();
         int lastFakedUniqueChangeIndex = -1;
         while (listChanges.next()) {
             final int changeIndex = listChanges.getIndex();
@@ -398,7 +398,7 @@ public class Grouper<E> {
      *      a neighbour was found on the left, and RIGHT_GROUP if a neighbour was found on the
      *      right. In non-zero cases the duplicates list is updated.
      */
-    private TryJoinResult tryJoinExistingGroup(int changeIndex, Barcode toDoList, TryJoinResult<E> result) {
+    private TryJoinResult<E> tryJoinExistingGroup(int changeIndex, Barcode toDoList, TryJoinResult<E> result) {
         // test if values at changeIndex and its predecessor should be grouped
         int predecessorIndex = changeIndex - 1;
         if (groupTogether(predecessorIndex, changeIndex)) {
@@ -447,7 +447,7 @@ public class Grouper<E> {
         int groupIndex;
         E oldFirstInGroup;
         E newFirstInGroup;
-        public TryJoinResult set(int group, int groupIndex, E oldFirstElementInGroup, E newFirstElementInGroup) {
+        public TryJoinResult<E> set(int group, int groupIndex, E oldFirstElementInGroup, E newFirstElementInGroup) {
             this.group = group;
             this.groupIndex = groupIndex;
             this.oldFirstInGroup = oldFirstElementInGroup;

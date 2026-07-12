@@ -7,14 +7,11 @@ import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.ListSelection;
 import ca.odell.glazedlists.matchers.Matcher;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An {@link DefaultEventSelectionModel} is a class that performs two simulaneous
@@ -79,7 +76,7 @@ public final class DefaultEventSelectionModel<E> implements AdvancedListSelectio
 
     /**
      * Creates a new selection model that also presents a list of the selection.
-     *
+     * <p>
      * The {@link DefaultEventSelectionModel} listens to this {@link EventList} in order
      * to adjust selection when the {@link EventList} is modified. For example,
      * when an element is added to the {@link EventList}, this may offset the
@@ -221,8 +218,8 @@ public final class DefaultEventSelectionModel<E> implements AdvancedListSelectio
 
         // fire the change
         final ListSelectionEvent event = new ListSelectionEvent(this, changeStart, changeFinish, valueIsAdjusting);
-        for (int i = 0, n = listeners.size(); i < n; i++) {
-            listeners.get(i).valueChanged(event);
+        for (ListSelectionListener listener : new ArrayList<>(listeners)) {
+            listener.valueChanged(event);
         }
     }
 
@@ -486,7 +483,7 @@ public final class DefaultEventSelectionModel<E> implements AdvancedListSelectio
     /**
      * Add a listener to the list that's notified each time a change to
      * the selection occurs.
-     *
+     * <p>
      * Note that the change events fired by this class may include rows
      * that have been removed from the table. For this reason it is
      * advised not to <code>for()</code> through the changed range without

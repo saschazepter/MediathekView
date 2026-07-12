@@ -70,7 +70,7 @@ public final class ThresholdList<E> extends RangeList<E> {
     /**
      * the evaluator to use to compare Objects against the threshold
      */
-    private Evaluator<E> evaluator;
+    private final Evaluator<E> evaluator;
 
     /**
      * a sorted view of the source makes threshold operations really fast
@@ -232,9 +232,9 @@ public final class ThresholdList<E> extends RangeList<E> {
      * {@inheritDoc}
      */
     @Override
-    public void setRange(int startIndex, int endIndex) {
+    public void setHeadRange(int startIndex, int endIndex) {
         // this implementation is slightly inconsistent with the superclass
-        // because the super treats endIndex as exclusive wheras we treat
+        // because the super treats endIndex as exclusive whereas we treat
         // endIndex as inclusive
         this.lowerThreshold = sourceIndexToThreshold(startIndex);
         this.upperThreshold = sourceIndexToThreshold(endIndex);
@@ -247,7 +247,7 @@ public final class ThresholdList<E> extends RangeList<E> {
     @Override
     public void setTailRange(int startIndex, int endIndex) {
         // this implementation is slightly inconsistent with the superclass
-        // because the super treats endIndex as exclusive wheras we treat
+        // because the super treats endIndex as exclusive whereas we treat
         // endIndex as inclusive
         this.lowerThreshold = sourceIndexToThreshold(source.size() - startIndex);
         this.upperThreshold = sourceIndexToThreshold(source.size() - endIndex);
@@ -331,7 +331,7 @@ public final class ThresholdList<E> extends RangeList<E> {
         /**
          * the underlying evaluator
          */
-        private Evaluator<E> evaluator;
+        private final Evaluator<E> evaluator;
 
         /**
          * Creates a new ThresholdComparator
@@ -365,12 +365,7 @@ public final class ThresholdList<E> extends RangeList<E> {
             else
                 betaValue = evaluator.evaluate(beta);
 
-            if (alphaValue > betaValue)
-                return 1;
-            else if (alphaValue < betaValue)
-                return -1;
-            else
-                return 0;
+            return Integer.compare(alphaValue, betaValue);
         }
 
         /**
@@ -383,7 +378,7 @@ public final class ThresholdList<E> extends RangeList<E> {
             if (o == null || getClass() != o.getClass())
                 return false;
 
-            final ThresholdComparator that = (ThresholdComparator) o;
+            final ThresholdComparator<?> that = (ThresholdComparator<?>) o;
 
             return evaluator.equals(that.evaluator);
         }

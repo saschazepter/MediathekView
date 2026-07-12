@@ -18,8 +18,6 @@
 
 package mediathek.gui.tabs.tab_film
 
-import kotlinx.coroutines.*
-import kotlinx.coroutines.swing.Swing
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.config.application.FilterConfiguration
 import mediathek.controller.starter.DownloadServices
@@ -35,7 +33,9 @@ import mediathek.gui.bookmark.BookmarkDialog
 import mediathek.gui.bookmark.BookmarkServices
 import mediathek.gui.dialog.DialogFilmBeschreibung
 import mediathek.gui.dialog.add_download.DialogAddDownload
-import mediathek.gui.messages.*
+import mediathek.gui.messages.BookmarkRefreshCompletedEvent
+import mediathek.gui.messages.ButtonStartEvent
+import mediathek.gui.messages.ReloadTableDataEvent
 import mediathek.gui.messages.history.FilmSeenStateChangedEvent
 import mediathek.gui.messages.history.SeenHistoryChangedEvent
 import mediathek.gui.tabs.DescriptionTabController
@@ -59,7 +59,6 @@ import mediathek.gui.tabs.tab_film.selection.FilmSelectionHostAdapter
 import mediathek.gui.tabs.tab_film.table.*
 import mediathek.gui.tabs.tab_film.view.FilmViewController
 import mediathek.mainwindow.FilmBookmarkHost
-import mediathek.tool.MessageBus
 import mediathek.tool.ReplacementRules
 import net.engio.mbassy.listener.Handler
 import org.jdesktop.swingx.VerticalLayout
@@ -67,8 +66,8 @@ import java.awt.BorderLayout
 import java.util.*
 import java.util.function.BiConsumer
 import java.util.function.Consumer
-import java.util.function.LongConsumer
 import java.util.function.IntConsumer
+import java.util.function.LongConsumer
 import javax.swing.*
 import javax.swing.event.TableModelListener
 

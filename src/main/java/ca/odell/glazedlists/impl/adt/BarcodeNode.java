@@ -969,9 +969,6 @@ final class BarcodeNode {
                 unlink(absoluteIndex);
             }
 
-        // The node is as compressed as possible
-        } else {
-            // Do Nothing
         }
     }
 

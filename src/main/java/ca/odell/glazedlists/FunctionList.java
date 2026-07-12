@@ -5,6 +5,7 @@ package ca.odell.glazedlists;
 
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventAssembler;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -347,7 +348,7 @@ public final class FunctionList<S, E> extends TransformedList<S, E> implements R
 
     /** {@inheritDoc} */
     @Override
-    public boolean removeIf(Predicate<? super E> filter) {
+    public boolean removeIf(@NonNull Predicate<? super E> filter) {
         // Ideally this remove would be processed as a single transaction. The only real
         // way that can happen (efficiently) is to get access to the source
         // ListEventAssembler, which is available if the list extends AbstractEventList.
@@ -456,16 +457,7 @@ public final class FunctionList<S, E> extends TransformedList<S, E> implements R
      * ease the implementation of FunctionList since it can treat all forward
      * functions as though they are AdvancedFunctions which means less casting.
      */
-    private static final class AdvancedFunctionAdapter<A,B> implements AdvancedFunction<A,B> {
-        private final Function<A,B> delegate;
-
-        /**
-         * Adapt the given <code>delegate</code> to the
-         * {@link AdvancedFunction} interface.
-         */
-        AdvancedFunctionAdapter(Function<A, B> delegate) {
-            this.delegate = delegate;
-        }
+    private record AdvancedFunctionAdapter<A, B>(Function<A, B> delegate) implements AdvancedFunction<A, B> {
 
         /**
          * Defers to the delegate.

@@ -24,7 +24,9 @@ import mediathek.config.application.FilterConfiguration
 import mediathek.filmlisten.FilmListLoadCoordinator
 import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmListLoadProgress
-import mediathek.gui.messages.*
+import mediathek.gui.messages.BookmarkRefreshCompletedEvent
+import mediathek.gui.messages.ButtonStartEvent
+import mediathek.gui.messages.ReloadTableDataEvent
 import mediathek.gui.messages.history.FilmSeenStateChangedEvent
 import mediathek.gui.messages.history.SeenHistoryChangedEvent
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog

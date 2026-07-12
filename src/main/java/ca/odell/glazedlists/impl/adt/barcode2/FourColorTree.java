@@ -98,7 +98,7 @@ public class FourColorTree <  T0>   {
 
 
     /** the colors in the tree, used for printing purposes only */
-    private final ListToByteCoder coder;
+    private final ListToByteCoder<?> coder;
 
 
     /** the tree's root, or <code>null</code> for an empty tree */
@@ -124,7 +124,7 @@ public class FourColorTree <  T0>   {
      * @param comparator the comparator to use when ordering values within the
      *      tree. If this tree is unsorted, use the one-argument constructor.
      */
-    public FourColorTree/**/(  ListToByteCoder coder,    Comparator<? super T0> comparator) {
+    public FourColorTree/**/(  ListToByteCoder<?> coder,    Comparator<? super T0> comparator) {
            if(coder == null) throw new NullPointerException("Coder cannot be null.");
         if(comparator == null) throw new NullPointerException("Comparator cannot be null.");
 
@@ -135,12 +135,13 @@ public class FourColorTree <  T0>   {
     /**
      * @param coder specifies the node colors
      */
-    public FourColorTree/**/(  ListToByteCoder coder   ) {
-        this(  coder,    (Comparator)GlazedLists.comparableComparator());
+    @SuppressWarnings("unchecked")
+    public FourColorTree/**/(  ListToByteCoder<?> coder   ) {
+        this(  coder,    (Comparator<? super T0>) GlazedLists.comparableComparator());
     }
 
 
-    public ListToByteCoder getCoder() {
+    public ListToByteCoder<?> getCoder() {
         return coder;
     }
 
@@ -296,7 +297,7 @@ public class FourColorTree <  T0>   {
 
                 // as a right child
                 if(parentRight == null) {
-                     FourColorNode <  T0>   inserted = new  FourColorNode <  T0>  (  color,    size, value, parent);
+                     FourColorNode <  T0>   inserted = new FourColorNode<>(  color,    size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent,   color,    size);
                     fixHeightPostChange(parent, false);
@@ -326,7 +327,7 @@ public class FourColorTree <  T0>   {
         assert(size >= 0);
 
         if(this.root == null) {
-            this.root = new  FourColorNode <  T0>  (  color,    size, value, null);
+            this.root = new FourColorNode<>(  color,    size, value, null);
             assert(valid());
             return this.root;
         } else {
@@ -382,7 +383,7 @@ public class FourColorTree <  T0>   {
 
                 // as a new left child
                 if(parentLeft == null) {
-                     FourColorNode <  T0>   inserted = new  FourColorNode <  T0>  (  color,    size, value, parent);
+                     FourColorNode <  T0>   inserted = new FourColorNode<>(  color,    size, value, parent);
                     parent.left = inserted;
                     fixCountsThruRoot(parent,   color,    size);
                     fixHeightPostChange(parent, false);
@@ -400,7 +401,7 @@ public class FourColorTree <  T0>   {
 
                 // as a right child
                 if(parentRight == null) {
-                     FourColorNode <  T0>   inserted = new  FourColorNode <  T0>  (  color,    size, value, parent);
+                     FourColorNode <  T0>   inserted = new FourColorNode<>(  color,    size, value, parent);
                     parent.right = inserted;
                     fixCountsThruRoot(parent,   color,    size);
                     fixHeightPostChange(parent, false);
@@ -443,7 +444,7 @@ public class FourColorTree <  T0>   {
      * Change the color of the specified element.
      */
     public final void setColor(Element<T0> element, byte color) {
-        FourColorNode node = (FourColorNode)element;
+        FourColorNode<T0> node = (FourColorNode<T0>) element;
         byte oldColor  = node.getColor();
         if(oldColor == color) return;
 
@@ -641,15 +642,16 @@ public class FourColorTree <  T0>   {
      * Prune all nodes scheduled for deletion.
      */
     private void drainZeroQueue() {
-        for(int i = 0, size = zeroQueue.size(); i < size; i++) {
-             FourColorNode <  T0>   node = zeroQueue.get(i);
-              assert(node.size == 0);
+        for (FourColorNode<T0> node : zeroQueue) {
+            assert (node.size == 0);
 
-            if(node.right == null) {
+            if (node.right == null) {
                 replaceChild(node, node.left);
-            } else if(node.left == null) {
+            }
+            else if (node.left == null) {
                 replaceChild(node, node.right);
-            } else {
+            }
+            else {
                 node = replaceEmptyNodeWithChild(node);
             }
         }
@@ -962,11 +964,9 @@ public class FourColorTree <  T0>   {
 
         // print it flattened, like a list of colors
         StringBuilder result = new StringBuilder();
-        for(FourColorNode n = firstNode(); n != null; n = next(n)) {
-            Object color = coder.getColors().get(colorAsIndex(n.color));
-            for(  int i = 0; i < n.size; i++  ) {
-                result.append(color);
-            }
+        for(FourColorNode<T0> n = firstNode(); n != null; n = next(n)) {
+            Object color = coder.getColors().get(ListToByteCoder.colorAsIndex(n.color));
+            result.repeat(String.valueOf(color),   Math.max(0, n.size)  );
         }
         return result.toString();
     }
@@ -1076,21 +1076,5 @@ public class FourColorTree <  T0>   {
         return true;
     }
 
-    /**
-     * Convert the specified color value (such as 1, 2, 4, 8, 16 etc.) into an
-     * index value (such as 0, 1, 2, 3, 4 etc. ).
-     */
-    static final int colorAsIndex(byte color) {
-        switch(color) {
-            case 1: return 0;
-            case 2: return 1;
-            case 4: return 2;
-            case 8: return 3;
-            case 16: return 4;
-            case 32: return 5;
-            case 64: return 6;
-        }
-        throw new IllegalArgumentException();
-    }
 }
   /*[ END_M4_JAVA ]*/

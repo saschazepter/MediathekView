@@ -122,7 +122,7 @@ class  FourColorNode <  T0>   implements Element<T0> {
      */
     public FourColorNode/**/(  byte color,    int size, T0 value,  FourColorNode <  T0>   parent) {
 
-        assert(FourColorTree.colorAsIndex(color) >= 0 && FourColorTree.colorAsIndex(color) < 7);
+        assert(ListToByteCoder.colorAsIndex(color) >= 0 && ListToByteCoder.colorAsIndex(color) < 7);
         this.color = color;
 
 
@@ -262,7 +262,7 @@ class  FourColorNode <  T0>   implements Element<T0> {
      * Write this node out as a String, using the specified colors to write
      * each of the node values.
      */
-    String toString(List colors) {
+    String toString(List<?> colors) {
         StringBuilder result = new StringBuilder();
         asTree(0, result, colors);
         return result.toString();
@@ -270,15 +270,13 @@ class  FourColorNode <  T0>   implements Element<T0> {
     /**
      * Dump this node as a String for diagnostic and debugging purposes.
      */
-    void asTree(int indentation, StringBuilder out, List colors) {
+    void asTree(int indentation, StringBuilder out, List<?> colors) {
         // write the left subtree
         if(left != null) left.asTree(indentation + 1, out, colors);
 
         // write this node
-        for(int i = 0; i < indentation; i++) {
-            out.append("   ");
-        }
-          out.append(colors.get(FourColorTree.colorAsIndex(color)));
+        out.repeat("   ", Math.max(0, indentation));
+          out.append(colors.get(ListToByteCoder.colorAsIndex(color)));
           out.append(" [").append(size).append("]");
         if(t0 != null) {
             out.append(": ");

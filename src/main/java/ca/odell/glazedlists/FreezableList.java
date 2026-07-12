@@ -128,11 +128,11 @@ public final class FreezableList<E> extends TransformedList<E, E> {
 
         // prep events to listeners of the thaw
         updates.beginEvent();
-        for(int i = 0, size = frozenData.size(); i < size; i++) {
-            updates.elementDeleted(0, frozenData.get(i));
+        for (E frozenDatum : frozenData) {
+            updates.elementDeleted(0, frozenDatum);
         }
-        for(int i = 0, size = source.size(); i < size; i++) {
-            updates.elementInserted(0, source.get(i));
+        for (E e : source) {
+            updates.elementInserted(0, e);
         }
 
         // we don't need our frozen data anymore
@@ -149,13 +149,8 @@ public final class FreezableList<E> extends TransformedList<E, E> {
     /** {@inheritDoc} */
     @Override
     public void listChanged(ListEvent<E> listChanges) {
-        if(frozen) {
-            // when a list change event arrives and this list is frozen,
-            // it is possible that the event was queued before this list
-            // was frozen. for this reason we do not throw any exceptions
-            // but instead silently ignore the event
-
-        } else {
+        // Silently ignore events that were queued before the list was frozen.
+        if (!frozen) {
             // just pass on the changes
             updates.forwardEvent(listChanges);
         }

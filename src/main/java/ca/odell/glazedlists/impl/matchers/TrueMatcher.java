@@ -15,15 +15,16 @@ import ca.odell.glazedlists.matchers.Matcher;
 public final class TrueMatcher<E> implements Matcher<E> {
 
     /** Singleton instance of TrueMatcher. */
-    private static final Matcher INSTANCE = new TrueMatcher();
+    private static final Matcher<Object> INSTANCE = new TrueMatcher<>();
 
     private TrueMatcher() {}
 
     /**
      * Return a singleton instance.
      */
+    @SuppressWarnings("unchecked")
     public static <E> Matcher<E> getInstance() {
-        return INSTANCE;
+        return (Matcher<E>) INSTANCE;
     }
 
     /** {@inheritDoc} */

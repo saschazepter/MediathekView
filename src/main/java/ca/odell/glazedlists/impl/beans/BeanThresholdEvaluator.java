@@ -13,7 +13,7 @@ import ca.odell.glazedlists.ThresholdList;
  */
 public final class BeanThresholdEvaluator<E> implements ThresholdList.Evaluator<E> {
 
-    private String propertyName;
+    private final String propertyName;
 
     private BeanProperty<E> beanProperty;
 

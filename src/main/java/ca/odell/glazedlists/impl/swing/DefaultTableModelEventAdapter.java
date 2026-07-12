@@ -7,12 +7,11 @@ import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.swing.MutableTableModelEvent;
 import ca.odell.glazedlists.swing.TableModelEventAdapter;
 
-import java.awt.EventQueue;
-
-import javax.swing.JTable;
+import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableModel;
+import java.awt.*;
 
 /**
  * DefaultTableModelEventAdapter encapsulates the default strategy for

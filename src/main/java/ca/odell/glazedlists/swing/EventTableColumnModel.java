@@ -13,9 +13,9 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import java.util.Enumeration;
-import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Enumeration;
 
 /**
  * A {@link TableColumnModel} that holds an {@link EventList}. Each element of
@@ -70,14 +70,14 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
         source.getReadWriteLock().readLock().lock();
         try {
             // ensure all of the TableColumns are non-null
-            for (int i = 0, n = source.size(); i < n; i++) {
-                if (source.get(i) == null)
+            for (T t : source) {
+                if (t == null)
                     throw new IllegalStateException("null TableColumn objects are not allowed in EventTableColumnModel");
             }
 
             // start listening to each of the TableColumns for property changes that may resize the table header
-            for (int i = 0, n = source.size(); i < n; i++)
-                source.get(i).addPropertyChangeListener(this);
+            for (T t : source)
+                t.addPropertyChangeListener(this);
 
             disposeSwingThreadSource = !GlazedListsSwing.isSwingThreadProxyList(source);
             swingThreadSource = disposeSwingThreadSource ? GlazedListsSwing.swingThreadProxyList(source) : (TransformedList<T, T>) source;
@@ -100,6 +100,7 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
 
     /** @inheritDoc */
     @Override
+    @SuppressWarnings("SuspiciousMethodCalls")
     public void removeColumn(TableColumn column) {
         swingThreadSource.getReadWriteLock().writeLock().lock();
         try {
@@ -240,8 +241,8 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
         swingThreadSource.getReadWriteLock().readLock().lock();
         try {
             totalColumnWidth = 0;
-            for (int i = 0, n = swingThreadSource.size(); i < n; i++)
-                totalColumnWidth += swingThreadSource.get(i).getWidth();
+            for (T t : swingThreadSource)
+                totalColumnWidth += t.getWidth();
         } finally {
             swingThreadSource.getReadWriteLock().readLock().unlock();
         }
@@ -351,7 +352,7 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
     public void propertyChange(PropertyChangeEvent evt) {
         String name = evt.getPropertyName();
 
-        if (name == "width" || name == "preferredWidth") {
+        if ("width".equals(name) || "preferredWidth".equals(name)) {
             invalidateWidthCache();
             fireColumnMarginChanged();
         }
@@ -420,22 +421,24 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
      * disposed.
      */
     public void dispose() {
-        swingThreadSource.getReadWriteLock().readLock().lock();
+        final TransformedList<T, T> source = swingThreadSource;
+        source.getReadWriteLock().readLock().lock();
 
         try {
             // stop listening to each of the TableColumns for property changes
-            for (int i = 0, n = swingThreadSource.size(); i < n; i++)
-                swingThreadSource.get(i).removePropertyChangeListener(this);
+            for (T t : source)
+                t.removePropertyChangeListener(this);
 
-            swingThreadSource.removeListEventListener(this);
-
-            // if we created the swingThreadSource then we must also dispose it
-            if (disposeSwingThreadSource)
-                swingThreadSource.dispose();
+            source.removeListEventListener(this);
 
         } finally {
-            swingThreadSource.getReadWriteLock().readLock().unlock();
+            source.getReadWriteLock().readLock().unlock();
         }
+
+        // A ThreadProxyEventList needs its write lock while disposing, so do
+        // not attempt to dispose it while holding its read lock above.
+        if (disposeSwingThreadSource)
+            source.dispose();
 
         // this encourages exceptions to be thrown if this model is incorrectly accessed again
         swingThreadSource = null;

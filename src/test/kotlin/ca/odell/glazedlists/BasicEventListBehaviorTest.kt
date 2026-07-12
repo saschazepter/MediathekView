@@ -3,19 +3,23 @@ package ca.odell.glazedlists
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.event.ListEventAssembler
 import ca.odell.glazedlists.event.ListEventListener
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
-import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
-import java.io.Serializable
+import java.io.*
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 internal class BasicEventListBehaviorTest {
+    @Test
+    fun kotlinUseDisposesEventListEvenWhenTheBlockFails() {
+        val source = TrackingEventList<String>()
+
+        assertThrows(IllegalStateException::class.java) {
+            source.use { error("expected failure") }
+        }
+
+        assertTrue(source.disposed)
+    }
+
     @Test
     fun bulkMutationsProduceSingleCoherentEvents() {
         val source = BasicEventList<String>()
@@ -153,6 +157,19 @@ internal class BasicEventListBehaviorTest {
 
     private object NonSerializableListenerState {
         var lastSource: EventList<String>? = null
+    }
+
+    private class TrackingEventList<E> : AbstractEventList<E>() {
+        var disposed = false
+            private set
+
+        override val size: Int = 0
+
+        override fun get(index: Int): E = throw IndexOutOfBoundsException(index)
+
+        override fun dispose() {
+            disposed = true
+        }
     }
 
     private fun <T> roundTrip(value: T): T {

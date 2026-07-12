@@ -4,7 +4,7 @@ import ca.odell.glazedlists.ObservableElementChangeHandler
 import ca.odell.glazedlists.ObservableElementList
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
-import java.util.EventListener
+import java.util.*
 
 class ObservableConnector<E> : ObservableElementList.Connector<E>, PropertyChangeListener
         where E : ObservableConnector.PropertyChangeObservable {

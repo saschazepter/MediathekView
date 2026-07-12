@@ -32,4 +32,9 @@ import java.util.Comparator;
     public boolean equals(Object other) {
         return (other instanceof BooleanComparator);
     }
+
+    @Override
+    public int hashCode() {
+        return BooleanComparator.class.hashCode();
+    }
 }

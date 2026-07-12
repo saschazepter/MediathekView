@@ -4,7 +4,6 @@
 package ca.odell.glazedlists.impl.adt.barcode2;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -20,7 +19,7 @@ public class ListToByteCoder<C> {
 
     public ListToByteCoder(List<C> allColors) {
         if(allColors.size() > 7) throw new IllegalArgumentException("Max 7 colors!");
-        this.allColors = Collections.unmodifiableList(new ArrayList<>(allColors));
+        this.allColors = allColors.stream().toList();
         this.colorCount = this.allColors.size();
     }
 
@@ -31,15 +30,18 @@ public class ListToByteCoder<C> {
         return allColors;
     }
 
+    public byte allColorsToByte() {
+        return colorsToByte(allColors);
+    }
+
     /**
      * Encode the specified list of colors into a byte.
      */
     public byte colorsToByte(List<C> colors) {
         int result = 0;
-        for(int i = 0; i < colors.size(); i++) {
-            C color = colors.get(i);
-            int index = allColors.indexOf(color);
-            result = result | (1 << index);
+        for (C color : colors) {
+            int index = indexOfColor(color);
+            result |= (1 << index);
         }
         return (byte)result;
     }
@@ -48,9 +50,31 @@ public class ListToByteCoder<C> {
      * Encode the specified color into a byte.
      */
     public byte colorToByte(C color) {
-        int index = allColors.indexOf(color);
+        int index = indexOfColor(color);
         int result = (1 << index);
         return (byte)result;
+    }
+
+    private int indexOfColor(C color) {
+        int index = allColors.indexOf(color);
+        if (index < 0) throw new IllegalArgumentException("Unknown color: " + color);
+        return index;
+    }
+
+    /**
+     * Convert a single encoded color bit into its zero-based index.
+     */
+    static int colorAsIndex(byte color) {
+        return switch (color) {
+            case 1 -> 0;
+            case 2 -> 1;
+            case 4 -> 2;
+            case 8 -> 3;
+            case 16 -> 4;
+            case 32 -> 5;
+            case 64 -> 6;
+            default -> throw new IllegalArgumentException();
+        };
     }
 
     /**

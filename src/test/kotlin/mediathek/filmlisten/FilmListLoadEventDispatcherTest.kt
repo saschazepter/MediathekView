@@ -28,13 +28,13 @@ class FilmListLoadEventDispatcherTest {
         val completionsDelivered = CountDownLatch(3)
         dispatcher.addListener(
             object : FilmListLoadListener {
-                override fun loadFinished(event: FilmListLoadProgress) {
-                    finishedProgress += event
+                override fun loadFinished(progress: FilmListLoadProgress) {
+                    finishedProgress += progress
                     completionsDelivered.countDown()
                 }
 
-                override fun firstLoadFinished(event: FilmListLoadProgress) {
-                    firstFinishedProgress += event
+                override fun firstLoadFinished(progress: FilmListLoadProgress) {
+                    firstFinishedProgress += progress
                     completionsDelivered.countDown()
                 }
             },
@@ -55,7 +55,7 @@ class FilmListLoadEventDispatcherTest {
         val dispatcher = FilmListLoadEventDispatcher(scope)
         val startCount = AtomicInteger(0)
         val listener = object : FilmListLoadListener {
-            override fun loadStarted(event: FilmListLoadProgress) {
+            override fun loadStarted(progress: FilmListLoadProgress) {
                 startCount.incrementAndGet()
             }
         }

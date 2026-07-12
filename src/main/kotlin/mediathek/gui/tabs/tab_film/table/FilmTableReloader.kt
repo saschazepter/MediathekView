@@ -20,11 +20,11 @@ package mediathek.gui.tabs.tab_film.table
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
-import mediathek.filmlisten.FilmCatalog
 import mediathek.daten.DatenFilm
+import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
-import mediathek.gui.tabs.tab_film.helpers.GuiModelHelperFactory
 import mediathek.gui.tabs.tab_film.helpers.FilmQueryEngine
+import mediathek.gui.tabs.tab_film.helpers.GuiModelHelperFactory
 import mediathek.gui.tabs.tab_film.search.SearchFieldData
 import org.apache.logging.log4j.LogManager
 import java.awt.Component

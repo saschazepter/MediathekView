@@ -3,13 +3,13 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.event;
 
-import java.util.Arrays;
-
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.impl.adt.barcode2.Element;
 import ca.odell.glazedlists.impl.adt.barcode2.FourColorTree;
 import ca.odell.glazedlists.impl.adt.barcode2.FourColorTreeIterator;
 import ca.odell.glazedlists.impl.adt.barcode2.ListToByteCoder;
+
+import java.util.Arrays;
 
 /**
  * Manage and describe the differences between two revisions of the

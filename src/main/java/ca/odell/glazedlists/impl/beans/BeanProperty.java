@@ -3,15 +3,15 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.beans;
 
+import ca.odell.glazedlists.impl.reflect.J2SE50ReturnTypeResolver;
+import ca.odell.glazedlists.impl.reflect.ReturnTypeResolver;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.List;
-
-import ca.odell.glazedlists.impl.reflect.J2SE50ReturnTypeResolver;
-import ca.odell.glazedlists.impl.reflect.ReturnTypeResolver;
 
 /**
  * Models a getter and setter for an abstract property.
@@ -66,7 +66,7 @@ public class BeanProperty<T> {
             throw new IllegalArgumentException("beanClass may not be null");
         if (propertyName == null)
             throw new IllegalArgumentException("propertyName may not be null");
-        if (propertyName.length() == 0)
+        if (propertyName.isEmpty())
             throw new IllegalArgumentException("propertyName may not be empty");
 
         this.beanClass = beanClass;
@@ -150,13 +150,13 @@ public class BeanProperty<T> {
 
             // loop through this class' methods
             Method[] classMethods = currentClass.getMethods();
-            for (int m = 0; m < classMethods.length; m++) {
-                if (!classMethods[m].getName().equals(setProperty))
+            for (Method classMethod : classMethods) {
+                if (!classMethod.getName().equals(setProperty))
                     continue;
-                if (classMethods[m].getParameterTypes().length != 1)
+                if (classMethod.getParameterTypes().length != 1)
                     continue;
-                validateSetter(classMethods[m]);
-                return classMethods[m];
+                validateSetter(classMethod);
+                return classMethod;
             }
             currentClass = currentClass.getSuperclass();
         }
@@ -269,8 +269,7 @@ public class BeanProperty<T> {
         try {
             // do all the getters in sequence
             Object currentMember = member;
-            for (int i = 0, n = getterChain.size(); i < n; i++) {
-                Method currentMethod = getterChain.get(i);
+            for (Method currentMethod : getterChain) {
                 currentMember = currentMethod.invoke(currentMember, EMPTY_ARGUMENTS);
                 if (currentMember == null)
                     return null;
@@ -308,7 +307,7 @@ public class BeanProperty<T> {
             }
 
             // do the remaining setter
-            setterMethod = setterChain.get(setterChain.size() - 1);
+            setterMethod = setterChain.getLast();
             return setterMethod.invoke(currentMember, newValue);
         }
         catch (IllegalArgumentException e) {

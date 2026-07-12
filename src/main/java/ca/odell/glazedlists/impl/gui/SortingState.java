@@ -50,16 +50,16 @@ public class SortingState {
     /** a list that contains all ColumnClickTrackers with non-zero click counts in their visitation order */
     protected List<SortingColumn> recentlyClickedColumns = new ArrayList<>(2);
 
-    private final AbstractTableComparatorChooser tableComparatorChooser;
+    private final AbstractTableComparatorChooser<?> tableComparatorChooser;
 
     /** whom to notify when the sorting state is chaged */
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
 
-    public SortingState(AbstractTableComparatorChooser tableComparatorChooser) {
+    public SortingState(AbstractTableComparatorChooser<?> tableComparatorChooser) {
         this.tableComparatorChooser = tableComparatorChooser;
     }
 
-    public AbstractTableComparatorChooser getTableComparatorChooser() {
+    public AbstractTableComparatorChooser<?> getTableComparatorChooser() {
         return tableComparatorChooser;
     }
 
@@ -73,16 +73,16 @@ public class SortingState {
         changeSupport.removePropertyChangeListener(listener);
     }
 
-    public Comparator buildComparator() {
+    public Comparator<Object> buildComparator() {
         // build a new comparator
         if(recentlyClickedColumns.isEmpty()) {
             return null;
         } else {
             List<Comparator<Object>> comparators = new ArrayList<>(recentlyClickedColumns.size());
-            for(Iterator<SortingColumn> i = recentlyClickedColumns.iterator(); i.hasNext(); ) {
-                SortingColumn sortingColumn = i.next();
-                Comparator comparator = sortingColumn.getComparator();
-                if(comparator == null) throw new IllegalStateException();
+            for (SortingColumn sortingColumn : recentlyClickedColumns) {
+                Comparator<Object> comparator = sortingColumn.getComparator();
+                if (comparator == null)
+                    throw new IllegalStateException();
                 comparators.add(comparator);
             }
 
@@ -116,39 +116,37 @@ public class SortingState {
         recentlyClickedColumns.add(sortingColumn);
     }
 
-    public void detectStateFromComparator(Comparator foreignComparator) {
+    public void detectStateFromComparator(Comparator<?> foreignComparator) {
         // Clear the current click counts
         clearComparators();
 
         // Populate a list of Comparators
-        final List<Comparator> comparatorsList;
+        final List<? extends Comparator<?>> comparatorsList;
         if(foreignComparator == null) {
             comparatorsList = Collections.emptyList();
-        } else if(foreignComparator instanceof ComparatorChain) {
-            ComparatorChain chain = (ComparatorChain)foreignComparator;
+        } else if(foreignComparator instanceof ComparatorChain<?> chain) {
             comparatorsList = Arrays.asList(chain.getComparators());
         } else {
             comparatorsList = Collections.singletonList(foreignComparator);
         }
 
         // walk through the list of Comparators and assign click counts
-        for(Iterator<Comparator> i = comparatorsList.iterator(); i.hasNext(); ) {
+        for (Comparator<?> comparator : comparatorsList) {
             // get the current comparator
-            Comparator comparator = i.next();
             boolean reverse = false;
-            if(comparator instanceof ReverseComparator) {
+            if (comparator instanceof ReverseComparator<?> reverseComparator) {
                 reverse = true;
-                comparator = ((ReverseComparator)comparator).getSourceComparator();
+                comparator = reverseComparator.getSourceComparator();
             }
 
             // discover where to add clicks for this comparator
-            for(int c = 0; c < sortingColumns.size(); c++) {
-                if(recentlyClickedColumns.contains(sortingColumns.get(c))) {
+            for (SortingColumn sortingColumn : sortingColumns) {
+                if (recentlyClickedColumns.contains(sortingColumn)) {
                     continue;
                 }
-                int comparatorIndex = sortingColumns.get(c).getComparators().indexOf(comparator);
-                if(comparatorIndex != -1) {
-                    final SortingColumn columnClickTracker = sortingColumns.get(c);
+                int comparatorIndex = sortingColumn.getComparators().indexOf(comparator);
+                if (comparatorIndex != -1) {
+                    final SortingColumn columnClickTracker = sortingColumn;
                     columnClickTracker.setComparatorIndex(comparatorIndex);
                     columnClickTracker.setReverse(reverse);
                     recentlyClickedColumns.add(columnClickTracker);
@@ -159,8 +157,7 @@ public class SortingState {
 
     public void clearComparators() {
         // clear the click counts
-        for(Iterator<SortingColumn> i = recentlyClickedColumns.iterator(); i.hasNext(); ) {
-            SortingColumn sortingColumn = i.next();
+        for (SortingColumn sortingColumn : recentlyClickedColumns) {
             sortingColumn.clear();
         }
         recentlyClickedColumns.clear();
@@ -170,7 +167,7 @@ public class SortingState {
      * When the column model is changed, this resets the column clicks and
      * comparator list for each column.
      */
-    public void rebuildColumns(TableFormat tableFormat) {
+    public void rebuildColumns(TableFormat<?> tableFormat) {
         // build the column click trackers
         final int columnCount = tableFormat.getColumnCount();
 
@@ -182,7 +179,7 @@ public class SortingState {
         recentlyClickedColumns.clear();
     }
 
-    protected SortingColumn createSortingColumn(TableFormat tableFormat, int columnIndex) {
+    protected SortingColumn createSortingColumn(TableFormat<?> tableFormat, int columnIndex) {
         return new SortingColumn(tableFormat, columnIndex);
     }
 
@@ -227,22 +224,25 @@ public class SortingState {
 
         // parse each column part in sequence using regex groups
         String[] parts = stringEncoded.split(",");
-        for(int p = 0; p < parts.length; p++) {
+        for (String part : parts) {
             // skip empty strings
-            if(parts[p].trim().length() == 0) continue;
+            if (part.trim().isEmpty())
+                continue;
 
-            Matcher matcher = FROM_STRING_PATTERN.matcher(parts[p]);
+            Matcher matcher = FROM_STRING_PATTERN.matcher(part);
 
-            if(!matcher.find())
-                throw new IllegalArgumentException("Failed to parse column spec, \"" + parts[p] + "\"");
+            if (!matcher.find())
+                throw new IllegalArgumentException("Failed to parse column spec, \"" + part + "\"");
 
             int columnIndex = Integer.parseInt(matcher.group(1));
             int comparatorIndex = matcher.group(3) == null ? 0 : Integer.parseInt(matcher.group(3));
             boolean reversedComparator = matcher.group(5) != null;
 
             // bail on invalid data
-            if(columnIndex >= sortingColumns.size()) continue;
-            if(comparatorIndex >= sortingColumns.get(columnIndex).getComparators().size()) continue;
+            if (columnIndex >= sortingColumns.size())
+                continue;
+            if (comparatorIndex >= sortingColumns.get(columnIndex).getComparators().size())
+                continue;
 
             // add this comparator in sequence
             appendComparator(columnIndex, comparatorIndex, reversedComparator);
@@ -254,24 +254,24 @@ public class SortingState {
         /** the column whose sorting state is being managed */
         private final int column;
         /** the sequence of comparators for this column */
-        private final List<Comparator> comparators = new ArrayList<>(1);
+        private final List<Comparator<Object>> comparators = new ArrayList<>(1);
         /** whether this column is sorted in reverse order */
         private boolean reverse;
         /** the comparator in the comparator list to sort by */
         private int comparatorIndex = -1;
 
 
-        public SortingColumn(TableFormat tableFormat, int column) {
+        @SuppressWarnings("unchecked")
+        public SortingColumn(TableFormat<?> tableFormat, int column) {
             this.column = column;
 
             // add the preferred comparator for AdvancedTableFormat
-            if(tableFormat instanceof AdvancedTableFormat) {
-                AdvancedTableFormat advancedTableFormat = (AdvancedTableFormat)tableFormat;
-                Comparator columnComparator = advancedTableFormat.getColumnComparator(column);
-                if(columnComparator != null) comparators.add(new TableColumnComparator(tableFormat, column, columnComparator));
+            if(tableFormat instanceof AdvancedTableFormat<?> advancedTableFormat) {
+                Comparator<?> columnComparator = advancedTableFormat.getColumnComparator(column);
+                if(columnComparator != null) comparators.add(new TableColumnComparator<>((TableFormat<Object>) tableFormat, column, columnComparator));
             // otherwise just add the default comparator
             } else {
-                comparators.add(new TableColumnComparator(tableFormat, column));
+                comparators.add(new TableColumnComparator<>((TableFormat<Object>) tableFormat, column));
             }
         }
 
@@ -298,16 +298,16 @@ public class SortingState {
         /**
          * Gets the list of comparators for this column.
          */
-        public List<Comparator> getComparators() {
+        public List<Comparator<Object>> getComparators() {
             return comparators;
         }
 
         /**
          * Gets the current best comparator to sort this column.
          */
-        public Comparator getComparator() {
+        public Comparator<Object> getComparator() {
             if(comparatorIndex == -1) return null;
-            Comparator comparator = comparators.get(getComparatorIndex());
+            Comparator<Object> comparator = comparators.get(getComparatorIndex());
             if(isReverse()) comparator = GlazedLists.reverseComparator(comparator);
             return comparator;
         }

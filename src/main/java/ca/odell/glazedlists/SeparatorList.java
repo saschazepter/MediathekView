@@ -136,7 +136,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
             updates.beginEvent();
 
             // remove all
-            updates.addDelete(0, size() - 1);
+            updates.elementsDeleted(0, size() - 1);
         }
 
         // make the change to the sorted source, the grouper will respond but
@@ -150,7 +150,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
             rebuildCollapsedElements();
 
             // insert all again
-            updates.addInsert(0, size() - 1);
+            updates.elementsInserted(0, size() - 1);
             updates.commitEvent();
         } else {
             separatorSource.grouper.setComparator(comparator);
@@ -249,8 +249,8 @@ public class SeparatorList<E> extends TransformedList<E, E> {
             } else {
                 int size = collapsedElements.colourSize(Barcode.BLACK);
                 if(size > 0) {
-                    updates.addDelete(0, size - 1);
-                    updates.addInsert(0, size - 1);
+                    updates.elementsDeleted(0, size - 1);
+                    updates.elementsInserted(0, size - 1);
                 }
             }
 
@@ -270,14 +270,14 @@ public class SeparatorList<E> extends TransformedList<E, E> {
                 if(changeType == ListEvent.INSERT) {
                     collapsedElements.add(changeIndex, Barcode.BLACK, 1);
                     int viewIndex = collapsedElements.getColourIndex(changeIndex, Barcode.BLACK);
-                    updates.addInsert(viewIndex);
+                    updates.elementInserted(viewIndex, ListEvent.unknownValue());
 
                 // updates are probably already accurate, don't change the state
                 } else if(changeType == ListEvent.UPDATE) {
                     // if its visible, fire an update event
                     if(collapsedElements.get(changeIndex) == Barcode.BLACK) {
                         int viewIndex = collapsedElements.getColourIndex(changeIndex, Barcode.BLACK);
-                        updates.addUpdate(viewIndex);
+                        updates.elementUpdated(viewIndex, ListEvent.unknownValue(), ListEvent.unknownValue());
                     }
 
                 // fire a delete event if this is a visible element being deleted
@@ -285,7 +285,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
                     Object oldColor = collapsedElements.get(changeIndex);
                     if(oldColor == Barcode.BLACK) {
                         int viewIndex = collapsedElements.getColourIndex(changeIndex, Barcode.BLACK);
-                        updates.addDelete(viewIndex);
+                        updates.elementDeleted(viewIndex, ListEvent.unknownValue());
                     }
                     collapsedElements.remove(changeIndex, 1);
                 }
@@ -363,7 +363,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
      * that just won't do for performance requirements.
      */
     private void updateGroup(int group, int groupCount, boolean fireEvents) {
-        Separator separator = separatorSource.separators.get(group).get();
+        Separator<E> separator = separatorSource.separators.get(group).get();
         int limit = separator.getLimit();
 
         // fix up this separator
@@ -406,14 +406,14 @@ public class SeparatorList<E> extends TransformedList<E, E> {
         // hide this element
         } else if(colour == Barcode.WHITE) {
             int viewIndex = collapsedElements.getColourIndex(index, Barcode.BLACK);
-            if(fireEvents) updates.addDelete(viewIndex);
+            if(fireEvents) updates.elementDeleted(viewIndex, ListEvent.unknownValue());
             collapsedElements.set(index, Barcode.WHITE, 1);
 
         // show this element
         } else if(colour == Barcode.BLACK) {
             collapsedElements.set(index, Barcode.BLACK, 1);
             int viewIndex = collapsedElements.getColourIndex(index, Barcode.BLACK);
-            if(fireEvents) updates.addInsert(viewIndex);
+            if(fireEvents) updates.elementInserted(viewIndex, ListEvent.unknownValue());
 
         } else {
             throw new IllegalArgumentException();
@@ -678,7 +678,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
                     if (groupChangeType == ListEvent.INSERT) {
                         int expandedIndex = index + groupIndex;
                         insertedSeparators.add(expandedIndex, SEPARATOR, 1);
-                        updates.addInsert(expandedIndex);
+                        updates.elementInserted(expandedIndex, ListEvent.unknownValue());
                         // add the separator and link the separator to its node
                         Element<GroupSeparator> node = separators.add(groupIndex, new GroupSeparator(), 1);
                         node.get().setNode(node);
@@ -686,11 +686,11 @@ public class SeparatorList<E> extends TransformedList<E, E> {
                     } else if (groupChangeType == ListEvent.UPDATE) {
                         groupIndex = Math.min(groupIndex, insertedSeparators.blackSize() - 1);
                         int expandedIndex = insertedSeparators.getIndex(groupIndex, SEPARATOR);
-                        updates.addUpdate(expandedIndex);
+                        updates.elementUpdated(expandedIndex, ListEvent.unknownValue(), ListEvent.unknownValue());
                     } else if (groupChangeType == ListEvent.DELETE) {
                         int expandedIndex = insertedSeparators.getIndex(groupIndex, SEPARATOR);
                         insertedSeparators.remove(expandedIndex, 1);
-                        updates.addDelete(expandedIndex);
+                        updates.elementDeleted(expandedIndex, ListEvent.unknownValue());
                         // invalidate the node
                         Element<GroupSeparator> node = separators.get(groupIndex);
                         separators.remove(node);
@@ -703,7 +703,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
                 if(elementChangeType == ListEvent.INSERT) {
                     int expandedIndex = index + groupIndex + 1;
                     insertedSeparators.add(expandedIndex, SOURCE_ELEMENT, 1);
-                    updates.addInsert(expandedIndex);
+                    updates.elementInserted(expandedIndex, ListEvent.unknownValue());
                 } else if(elementChangeType == ListEvent.UPDATE) {
                     int expandedIndex = index + groupIndex + 1;
                     // if we inserted a separator directly before an existing separator,
@@ -722,7 +722,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
                             }
                         }
                     }
-                    updates.addUpdate(expandedIndex);
+                    updates.elementUpdated(expandedIndex, ListEvent.unknownValue(), ListEvent.unknownValue());
                 } else if(elementChangeType == ListEvent.DELETE) {
                     int expandedIndex = index + groupIndex + 1;
                     // separator in wrong position due to order of events when sorting
@@ -731,7 +731,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
                         shiftSeparator(groupToShift++);
                     }
                     insertedSeparators.remove(expandedIndex, 1);
-                    updates.addDelete(expandedIndex);
+                    updates.elementDeleted(expandedIndex, ListEvent.unknownValue());
                 }
 
                 if (fixSeparatorForInsertGroupUpdateElement) {
@@ -742,9 +742,9 @@ public class SeparatorList<E> extends TransformedList<E, E> {
                     assert wrongSeparatorIndex == insertedSeparators.getIndex(groupIndex + 1, SEPARATOR);
 
                     insertedSeparators.remove(wrongSeparatorIndex, 1);
-                    updates.addDelete(wrongSeparatorIndex);
+                    updates.elementDeleted(wrongSeparatorIndex, ListEvent.unknownValue());
                     insertedSeparators.add(wrongSeparatorIndex + 1, SEPARATOR, 1);
-                    updates.addInsert(wrongSeparatorIndex + 1);
+                    updates.elementInserted(wrongSeparatorIndex + 1, ListEvent.unknownValue());
                 }
 
                 // Special case out the shift operation. The Grouper automatically
@@ -764,9 +764,9 @@ public class SeparatorList<E> extends TransformedList<E, E> {
                         //String was = insertedSeparators.toString();
                         if (collapsedGroupStartIndex + shiftGroupIndex < separatorsIndex) {
                             insertedSeparators.remove(separatorsIndex, 1);
-                            updates.addDelete(separatorsIndex);
+                            updates.elementDeleted(separatorsIndex, ListEvent.unknownValue());
                             insertedSeparators.add(collapsedGroupStartIndex + shiftGroupIndex, SEPARATOR, 1);
-                            updates.addInsert(collapsedGroupStartIndex + shiftGroupIndex);
+                            updates.elementInserted(collapsedGroupStartIndex + shiftGroupIndex, ListEvent.unknownValue());
                             //String now = insertedSeparators.toString();
                             //System.out.println("Changed from " + was + " to " + now);
                         }
@@ -796,12 +796,12 @@ public class SeparatorList<E> extends TransformedList<E, E> {
                 if (calculatedSeparatorPos != separatorsIndex) {
                     // the separator position does not match the grouper barcode -> adjust it
                     insertedSeparators.remove(separatorsIndex, 1);
-                    updates.addDelete(separatorsIndex);
+                    updates.elementDeleted(separatorsIndex, ListEvent.unknownValue());
                     insertedSeparators.add(calculatedSeparatorPos, SEPARATOR, 1);
                     // for the update event we have to account for the previous delete
                     final int insertPos = (calculatedSeparatorPos < separatorsIndex) ? calculatedSeparatorPos
                             : calculatedSeparatorPos - 1;
-                    updates.addInsert(insertPos);
+                    updates.elementInserted(insertPos, ListEvent.unknownValue());
 //                        String now = insertedSeparators.toString();
 //                        System.out.println("Changed from " + was + " to " + now);
                 }
@@ -853,7 +853,7 @@ public class SeparatorList<E> extends TransformedList<E, E> {
                     updates.beginEvent();
                     int groupIndex = separators.indexOfNode(node, (byte)1);
                     int separatorIndex = insertedSeparators.getIndex(groupIndex, SEPARATOR);
-                    updates.addUpdate(separatorIndex);
+                    updates.elementUpdated(separatorIndex, ListEvent.unknownValue(), ListEvent.unknownValue());
                     updates.commitEvent();
                 }
             }

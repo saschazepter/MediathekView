@@ -27,6 +27,6 @@ public class NonNullAndNonEmptyStringMatcher implements Matcher<String> {
     /** {@inheritDoc} */
     @Override
     public boolean matches(String item) {
-        return item != null && item.length() > 0;
+        return item != null && !item.isEmpty();
     }
 }

@@ -140,7 +140,7 @@ public interface MatcherEditor<E> {
             this.matcher = matcher;
         }
 
-        public Event(FilterList eventSource, int changeType, Matcher<E> matcher) {
+        public Event(FilterList<E> eventSource, int changeType, Matcher<E> matcher) {
             super(eventSource);
             this.type = changeType;
             this.matcher = matcher;

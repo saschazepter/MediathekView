@@ -8,7 +8,7 @@ import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
 import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
-import java.util.EventListener
+import java.util.*
 
 open class BeanConnector<E> : ObservableElementList.Connector<E> {
     private val addListenerMethod: Method

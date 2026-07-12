@@ -1,6 +1,9 @@
 package ca.odell.glazedlists.impl.adt;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * A Collection that stores keys in a map, with positions as the values.

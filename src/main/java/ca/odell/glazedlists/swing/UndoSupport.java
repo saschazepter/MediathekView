@@ -3,13 +3,12 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.swing;
 
-import org.jspecify.annotations.NonNull;
-
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.UndoRedoSupport;
+import org.jspecify.annotations.NonNull;
 
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
@@ -34,7 +33,7 @@ public final class UndoSupport<E> {
     private UndoManager undoManager;
 
     /** glazed List's undo/redo support which is being adapted to Swing's native undo/redo framework */
-    private UndoRedoSupport undoRedoSupport;
+    private UndoRedoSupport<E> undoRedoSupport;
 
     /** a listener that transforms GL-style edits into Swing-style edits using the {@link #editAdapter} and adds them to the {@link #undoManager} */
     private UndoRedoSupport.Listener undoSupportHandler = new UndoSupportHandler();
@@ -81,7 +80,7 @@ public final class UndoSupport<E> {
      * @throws IllegalStateException if this method is called from any Thread
      *      other than the Swing Event Dispatch Thread
      */
-    public static <E> UndoSupport install(UndoManager undoManager, EventList<E> source) {
+    public static <E> UndoSupport<E> install(UndoManager undoManager, EventList<E> source) {
         return install(undoManager, source, new DefaultEditAdapter());
     }
 
@@ -104,7 +103,7 @@ public final class UndoSupport<E> {
      * @throws IllegalStateException if this method is called from any Thread
      *      other than the Swing Event Dispatch Thread
      */
-    public static <E> UndoSupport install(UndoManager undoManager, EventList<E> source, FunctionList.Function<UndoRedoSupport.Edit, UndoableEdit> editAdapter) {
+    public static <E> UndoSupport<E> install(UndoManager undoManager, EventList<E> source, FunctionList.Function<UndoRedoSupport.Edit, UndoableEdit> editAdapter) {
         checkAccessThread();
 
         return new UndoSupport<>(undoManager, source, editAdapter);
