@@ -364,7 +364,7 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
     /**
      * Releases the resources consumed by this {@link TransformedList} so that
      * it may eventually be garbage collected.
-     *
+     * <p>
      * In this case of this {@link TransformedList}, it uses the
      * {@link Connector} to remove all listeners from their associated list
      * elements and finally removes the reference to this list from the

@@ -79,7 +79,7 @@ public final class DefaultEventSelectionModel<E> implements AdvancedListSelectio
 
     /**
      * Creates a new selection model that also presents a list of the selection.
-     *
+     * <p>
      * The {@link DefaultEventSelectionModel} listens to this {@link EventList} in order
      * to adjust selection when the {@link EventList} is modified. For example,
      * when an element is added to the {@link EventList}, this may offset the
@@ -486,7 +486,7 @@ public final class DefaultEventSelectionModel<E> implements AdvancedListSelectio
     /**
      * Add a listener to the list that's notified each time a change to
      * the selection occurs.
-     *
+     * <p>
      * Note that the change events fired by this class may include rows
      * that have been removed from the table. For this reason it is
      * advised not to <code>for()</code> through the changed range without

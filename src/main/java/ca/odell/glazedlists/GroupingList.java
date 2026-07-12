@@ -306,7 +306,7 @@ public final class GroupingList<E> extends TransformedList<E, List<E>> {
     /** {@inheritDoc} */
     @Override
     public void dispose() {
-        ((SortedList) source).dispose();
+        source.dispose();
         super.dispose();
     }
 

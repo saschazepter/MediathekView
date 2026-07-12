@@ -13,7 +13,7 @@ import javax.swing.event.ListDataEvent;
  *
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
-final class MutableListDataEvent extends ListDataEvent {
+public final class MutableListDataEvent extends ListDataEvent {
 
     /** what the change is, currently */
     private int index0;
@@ -66,6 +66,6 @@ final class MutableListDataEvent extends ListDataEvent {
      */
     @Override
     public String toString() {
-        return "" + type + "[" + index0 + "," + index1 + "]";
+        return type + "[" + index0 + "," + index1 + "]";
     }
 }

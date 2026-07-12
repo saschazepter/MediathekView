@@ -5,6 +5,7 @@ package ca.odell.glazedlists;
 
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventAssembler;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -347,7 +348,7 @@ public final class FunctionList<S, E> extends TransformedList<S, E> implements R
 
     /** {@inheritDoc} */
     @Override
-    public boolean removeIf(Predicate<? super E> filter) {
+    public boolean removeIf(@NonNull Predicate<? super E> filter) {
         // Ideally this remove would be processed as a single transaction. The only real
         // way that can happen (efficiently) is to get access to the source
         // ListEventAssembler, which is available if the list extends AbstractEventList.

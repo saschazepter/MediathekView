@@ -457,13 +457,13 @@ public final class FilterList<E> extends TransformedList<E,E> {
 
     /** {@inheritDoc} */
     @Override
-    public final int size() {
+    public int size() {
         return flagList.blackSize();
     }
 
     /** {@inheritDoc} */
     @Override
-    protected final int getSourceIndex(int mutationIndex) {
+    protected int getSourceIndex(int mutationIndex) {
         return flagList.getIndex(mutationIndex, Barcode.BLACK);
     }
 

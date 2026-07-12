@@ -329,7 +329,7 @@ public class ListSelection<E> implements ListEventListener<E> {
     /**
      * Gets an {@link EventList} that contains only selected values and modifies
      * the source list on mutation.
-     *
+     * <p>
      * Adding and removing items from this list performs the same operation on
      * the source list.
      */
@@ -363,9 +363,9 @@ public class ListSelection<E> implements ListEventListener<E> {
     }
 
     /**
-     * Gets an {@link EventList} that contains only deselected values add
+     * Gets an {@link EventList} that contains only deselected values and
      * modifies the source list on mutation.
-     *
+     * <p>
      * Adding and removing items from this list performs the same operation on
      * the source list.
      */
