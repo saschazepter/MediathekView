@@ -60,6 +60,7 @@ class FilmFilterController(
     }
 
     interface DataProvider {
+        /** Returns an EventList owned by the caller, which must close it after use. */
         fun senderList(): EventList<String>
         fun getThemen(senders: Collection<String>): List<String>
         fun hasFilmData(): Boolean = false

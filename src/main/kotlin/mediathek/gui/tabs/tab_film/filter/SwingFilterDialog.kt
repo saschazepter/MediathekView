@@ -84,6 +84,10 @@ class SwingFilterDialog internal constructor(
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val themaDispatcher = Dispatchers.Default.limitedParallelism(1)
     private val sourceThemaList: EventList<String> = BasicEventList()
+    private val themaList = EventListWithEmptyFirstEntry(sourceThemaList)
+    private val themaComboBoxModel = GlazedListsSwing.eventComboBoxModel(themaList)
+    private val senderList = filterController.senderList()
+    private val senderListModel = GlazedListsSwing.eventListModel(senderList)
     private val renameFilterAction = RenameFilterAction()
     private val deleteCurrentFilterAction = DeleteCurrentFilterAction()
     private val addNewFilterAction = AddNewFilterAction()
@@ -92,6 +96,7 @@ class SwingFilterDialog internal constructor(
     private val checkBoxBindings = createCheckBoxBindings()
     private val senderCheckBoxList = SenderCheckBoxList()
     private val filmLengthRangeSlider = filmLengthSlider as FilmLengthSlider
+    private var disposed = false
     private val filterView: FilmFilterView by lazy {
         DialogFilterView(
             checkBoxBindings = checkBoxBindings.map { it.checkBox to it.selectedStateReader },
@@ -208,13 +213,30 @@ class SwingFilterDialog internal constructor(
     }
 
     override fun dispose() {
+        if (disposed) return
+        disposed = true
         checkboxReloadJob?.cancel()
         zeitraumReloadJob?.cancel()
         themaRefreshJob?.cancel()
         themaRefreshGeneration++
         uiScope.cancel()
         filterSelectionComboBoxModel.removeListDataListener(filterSelectionDataListener)
-        super.dispose()
+        senderCheckBoxList.model = DefaultListModel<String>()
+        jcbThema.model = DefaultComboBoxModel<String>()
+        try {
+            disposeResource("sender list model", senderListModel::dispose)
+            disposeResource("theme combo box model", themaComboBoxModel::dispose)
+            disposeResource("sender list", senderList::close)
+            disposeResource("theme list adapter", themaList::close)
+            disposeResource("theme source list", sourceThemaList::close)
+        } finally {
+            super.dispose()
+        }
+    }
+
+    private fun disposeResource(name: String, dispose: () -> Unit) {
+        runCatching(dispose)
+            .onFailure { failure -> logger.warn("Failed to dispose {}", name, failure) }
     }
 
     private fun configureComponents() {
@@ -426,8 +448,7 @@ class SwingFilterDialog internal constructor(
     private fun setupThemaComboBox() {
         jcbThema.componentPopupMenu = createPopupMenu()
 
-        val model = GlazedListsSwing.eventComboBoxModel(EventListWithEmptyFirstEntry(sourceThemaList))
-        jcbThema.model = model
+        jcbThema.model = themaComboBoxModel
 
         val thema = filterController.state().thema
         sourceThemaList.withWriteLock {
@@ -620,7 +641,7 @@ class SwingFilterDialog internal constructor(
         }
 
         private fun setupSenderList() {
-            model = GlazedListsSwing.eventListModel(filterController.senderList())
+            model = senderListModel
             checkBoxListSelectionModel.addListSelectionListener { event ->
                 if (isSuppressed(SuppressedEventType.SENDER_SELECTION)) {
                     return@addListSelectionListener
