@@ -252,6 +252,7 @@ public class DebugList<E> extends AbstractEventList<E> {
 
     /** {@inheritDoc} */
     @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object object) {
         beforeReadOperation();
         try {

@@ -228,7 +228,7 @@ public class TextComponentMatcherEditor<E> extends TextMatcherEditor<E> {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if ("document" == evt.getPropertyName()) {
+            if ("document".equals(evt.getPropertyName())) {
                 // stop listening to the old Document
                 deregisterListeners(live);
 

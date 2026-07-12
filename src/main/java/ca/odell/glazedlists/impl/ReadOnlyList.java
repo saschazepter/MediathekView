@@ -109,6 +109,7 @@ public final class ReadOnlyList<E> extends TransformedList<E, E> {
 
     /** {@inheritDoc} */
     @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object object) {
         return source.equals(object);
     }

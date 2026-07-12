@@ -149,13 +149,8 @@ public final class FreezableList<E> extends TransformedList<E, E> {
     /** {@inheritDoc} */
     @Override
     public void listChanged(ListEvent<E> listChanges) {
-        if(frozen) {
-            // when a list change event arrives and this list is frozen,
-            // it is possible that the event was queued before this list
-            // was frozen. for this reason we do not throw any exceptions
-            // but instead silently ignore the event
-
-        } else {
+        // Silently ignore events that were queued before the list was frozen.
+        if (!frozen) {
             // just pass on the changes
             updates.forwardEvent(listChanges);
         }

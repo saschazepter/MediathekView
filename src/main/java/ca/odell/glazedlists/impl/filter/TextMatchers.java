@@ -171,28 +171,22 @@ public final class TextMatchers {
         // filter out null and 0-length SearchTerms - they have no filtering value
         result.removeIf(searchTerm -> searchTerm == null || searchTerm.getText().isEmpty());
 
-        // remove the filters that are not minimal (i.e. "blackened" removes "black")
-        for (int i = 0; i < result.size(); i++) {
-            SearchTerm termI = result.get(i);
+        // Remove each non-required term made redundant by another term. Iterate
+        // backwards so every removal affects only indices already processed.
+        for (int i = result.size() - 1; i >= 0; i--) {
+            final SearchTerm candidate = result.get(i);
+            if (candidate.isRequired()) continue;
 
-            // attempt to find another SearchTerm that contains termI to prove
-            // that one of termI or termJ is unnecessary
             for (int j = 0; j < result.size(); j++) {
-                SearchTerm termJ = result.get(j);
+                if (i == j) continue;
+                final SearchTerm other = result.get(j);
+                final boolean redundant = negated
+                    ? candidate.getText().contains(other.getText())
+                    : other.getText().contains(candidate.getText());
+                if (!redundant) continue;
 
-                if (i != j && termJ.getText().contains(termI.getText())) {
-                    if (negated) {
-                        if (termJ.isRequired())
-                            continue;
-                        result.remove(j);
-                    }
-                    else {
-                        if (termI.isRequired())
-                            continue;
-                        result.remove(i);
-                        break;
-                    }
-                }
+                result.remove(i);
+                break;
             }
         }
 

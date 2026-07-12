@@ -183,6 +183,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
 
     /** {@inheritDoc} */
     @Override
+    @SuppressWarnings("SuspiciousMethodCalls")
     public boolean remove(Object element) {
         int index = data.indexOf(element);
         if(index == -1) return false;

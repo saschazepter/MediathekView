@@ -130,9 +130,6 @@ public final class SubEventList<E> extends TransformedList<E, E> {
                         endIndex--;
                         updates.elementDeleted(changeIndex - startIndex, listChanges.getOldValue());
                     }
-                // if it is a change after
-                } else {
-                    // do nothing
                 }
             }
         }

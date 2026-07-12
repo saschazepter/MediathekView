@@ -100,6 +100,7 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
 
     /** @inheritDoc */
     @Override
+    @SuppressWarnings("SuspiciousMethodCalls")
     public void removeColumn(TableColumn column) {
         swingThreadSource.getReadWriteLock().writeLock().lock();
         try {
@@ -351,7 +352,7 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
     public void propertyChange(PropertyChangeEvent evt) {
         String name = evt.getPropertyName();
 
-        if (name == "width" || name == "preferredWidth") {
+        if ("width".equals(name) || "preferredWidth".equals(name)) {
             invalidateWidthCache();
             fireColumnMarginChanged();
         }
@@ -420,22 +421,24 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
      * disposed.
      */
     public void dispose() {
-        swingThreadSource.getReadWriteLock().readLock().lock();
+        final TransformedList<T, T> source = swingThreadSource;
+        source.getReadWriteLock().readLock().lock();
 
         try {
             // stop listening to each of the TableColumns for property changes
-            for (T t : swingThreadSource)
+            for (T t : source)
                 t.removePropertyChangeListener(this);
 
-            swingThreadSource.removeListEventListener(this);
-
-            // if we created the swingThreadSource then we must also dispose it
-            if (disposeSwingThreadSource)
-                swingThreadSource.dispose();
+            source.removeListEventListener(this);
 
         } finally {
-            swingThreadSource.getReadWriteLock().readLock().unlock();
+            source.getReadWriteLock().readLock().unlock();
         }
+
+        // A ThreadProxyEventList needs its write lock while disposing, so do
+        // not attempt to dispose it while holding its read lock above.
+        if (disposeSwingThreadSource)
+            source.dispose();
 
         // this encourages exceptions to be thrown if this model is incorrectly accessed again
         swingThreadSource = null;

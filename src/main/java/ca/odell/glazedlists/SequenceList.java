@@ -234,21 +234,21 @@ public final class SequenceList<E> extends TransformedList<E,E> implements Rando
 
             // add the necessary leading sequence values
             final E firstSourceValue = source.getFirst();
-            while (comparator.compare(firstSourceValue, get(0)) == -1) {
+            while (comparator.compare(firstSourceValue, get(0)) < 0) {
                 E element = sequencer.previous(get(0));
                 sequence.addFirst(element);
                 updates.elementInserted(0, element);
             }
 
             // remove the unnecessary leading sequence values
-            while (comparator.compare(get(1), firstSourceValue) == -1) {
+            while (comparator.compare(get(1), firstSourceValue) < 0) {
                 E oldValue = sequence.removeFirst();
                 updates.elementDeleted(0, oldValue);
             }
 
             // add the necessary trailing sequence values
             final E lastSourceValue = source.getLast();
-            while (comparator.compare(lastSourceValue, get(size()-1)) == 1) {
+            while (comparator.compare(lastSourceValue, get(size()-1)) > 0) {
                 E element = sequencer.next(get(size() - 1));
                 int index = size();
                 sequence.add(index, element);
@@ -256,7 +256,7 @@ public final class SequenceList<E> extends TransformedList<E,E> implements Rando
             }
 
             // remove the unnecessary trailing sequence values
-            while (comparator.compare(get(size()-2), lastSourceValue) == 1) {
+            while (comparator.compare(get(size()-2), lastSourceValue) > 0) {
                 final int lastIndex = size()-1;
                 updates.elementDeleted(lastIndex, sequence.remove(lastIndex));
             }

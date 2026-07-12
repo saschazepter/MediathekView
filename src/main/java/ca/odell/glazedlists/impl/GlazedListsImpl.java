@@ -169,6 +169,7 @@ public final class GlazedListsImpl {
     }
     private static class EqualsComparator<T> implements Comparator<T> {
         @Override
+        @SuppressWarnings("ComparatorMethodParameterNotUsed")
         public int compare(T alpha, T beta) {
             return Objects.equals(alpha, beta) ? 0 : 1;
         }

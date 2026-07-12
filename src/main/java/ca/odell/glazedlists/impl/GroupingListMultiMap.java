@@ -209,6 +209,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
     /** {@inheritDoc} */
     @Override
+    @SuppressWarnings("SuspiciousMethodCalls")
     public List<V> remove(Object key) {
         final int index = keyList.indexOf(key);
         return index == -1 ? null : groupingList.remove(index);
@@ -240,6 +241,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
     /** @inheritDoc */
     @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object o) {
         return delegate.equals(o);
     }
@@ -707,6 +709,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         @Override
         public void clear() { delegate.clear(); }
         @Override
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
         public boolean equals(Object o) { return delegate.equals(o); }
         @Override
         public int hashCode() { return delegate.hashCode(); }

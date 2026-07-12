@@ -115,6 +115,7 @@ public final class ThreadSafeList<E> extends TransformedList<E, E> {
 
     /** {@inheritDoc} */
     @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object object) {
         getReadWriteLock().readLock().lock();
         try {

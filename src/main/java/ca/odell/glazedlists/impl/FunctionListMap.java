@@ -274,6 +274,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
 
     /** @inheritDoc */
     @Override
+    @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
     public boolean equals(Object o) {
         return delegate.equals(o);
     }
