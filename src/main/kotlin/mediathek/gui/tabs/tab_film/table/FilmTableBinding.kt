@@ -262,12 +262,12 @@ class FilmTableBinding(
             .asSequence()
             .filterNot { it in matchedReferences }
             .map(DatenFilm::filmIdentity)
-            .groupBy(DatenFilm.FilmIdentity::normalQualityUrl)
+            .groupBy(DatenFilm.FilmIdentity::storedNormalQualityUrl)
         films.forEachIndexed { index, film ->
             if (film in matchedReferences) {
                 return@forEachIndexed
             }
-            val candidates = missingIdentitiesByUrl[film.urlNormalQuality] ?: return@forEachIndexed
+            val candidates = missingIdentitiesByUrl[film.storedNormalQualityUrl] ?: return@forEachIndexed
             if (candidates.any { identity -> film.matches(identity) }) {
                 selectedRows.add(index)
             }
@@ -279,8 +279,8 @@ class FilmTableBinding(
     private fun DatenFilm.matches(identity: DatenFilm.FilmIdentity): Boolean =
         sender == identity.sender &&
                 thema == identity.thema &&
-                urlNormalQuality == identity.normalQualityUrl &&
-                websiteUrl == identity.websiteUrl
+                storedNormalQualityUrl == identity.storedNormalQualityUrl &&
+                storedWebsiteUrl == identity.storedWebsiteUrl
 
     private fun runOnEdtAndWait(action: () -> Unit) {
         if (SwingUtilities.isEventDispatchThread()) {
