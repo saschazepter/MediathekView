@@ -25,7 +25,6 @@ import mediathek.filmlisten.FilmListLoadListener
 import mediathek.filmlisten.FilmListLoadProgress
 import mediathek.filmlisten.NoOpFilmListLoadPresenter
 import mediathek.gui.bookmark.BookmarkServices
-import mediathek.gui.messages.TableModelChangeEvent
 import mediathek.tool.MessageBus
 import java.beans.PropertyChangeListener
 import javax.swing.SwingUtilities
@@ -116,8 +115,6 @@ class MainWindowLifecycle(
         }
 
         val messageBus = MessageBus.messageBus
-        // Preserve startup behavior: publish current table-model state before subscribing the main window.
-        messageBus.publishAsync(TableModelChangeEvent(active = true, fromSearchField = false))
         messageBus.subscribe(messageBusSubscriber)
         messageBusSubscribed = true
     }

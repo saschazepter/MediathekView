@@ -1,7 +1,7 @@
 package mediathek.tool
 
 import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.util.concurrent.Lock
+import java.util.concurrent.locks.Lock
 
 inline fun <R> Lock.withLock(action: () -> R): R {
     lock()

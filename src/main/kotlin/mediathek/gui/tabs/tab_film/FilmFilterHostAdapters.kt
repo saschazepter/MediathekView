@@ -32,4 +32,6 @@ class FilmFilterDataProviderAdapter(
 
     override fun getThemen(senders: Collection<String>): List<String> =
         filmCatalog.filteredFilms.getThemen(senders)
+
+    override fun hasFilmData(): Boolean = filmCatalog.filteredFilms.isNotEmpty()
 }

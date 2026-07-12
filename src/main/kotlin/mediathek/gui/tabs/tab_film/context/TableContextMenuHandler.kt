@@ -37,13 +37,13 @@ import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.table.FilmTableButtonClickHandler
 import mediathek.tool.GuiFunktionenProgramme
 import mediathek.tool.ReplacementRules
-import mediathek.tool.table.MVFilmTable
 import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.util.*
 import java.util.function.BiConsumer
 import javax.swing.JFrame
+import javax.swing.JTable
 
 /**
  * Implements the context menu for tab film.
@@ -52,7 +52,7 @@ class TableContextMenuHandler(
     private val host: Host,
 ) : MouseAdapter() {
     interface Host {
-        fun table(): MVFilmTable
+        fun table(): JTable
         fun downloads(): DownloadServices
         fun programSets(): ProgramSetRepository
         fun filmCatalog(): FilmCatalog

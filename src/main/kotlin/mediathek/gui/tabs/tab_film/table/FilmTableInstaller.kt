@@ -18,7 +18,6 @@
 
 package mediathek.gui.tabs.tab_film.table
 
-import mediathek.config.application.ApplicationConfiguration
 import mediathek.controller.starter.DownloadServices
 import mediathek.daten.FilmResolution
 import mediathek.gui.tabs.tab_film.actions.CopyUrlToClipboardAction
@@ -27,21 +26,18 @@ import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.context.TableContextMenuHandler
 import mediathek.tool.cellrenderer.CellRendererFilme
 import mediathek.tool.datum.DatumFilm
-import mediathek.tool.listener.BeobTableHeader
-import mediathek.tool.models.FilmColumn
-import mediathek.tool.models.TModelFilm
-import mediathek.tool.table.MVFilmTable
 import java.awt.Component
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import java.awt.event.KeyEvent
 import javax.swing.JScrollPane
+import javax.swing.JTable
 import javax.swing.KeyStroke
 import javax.swing.ListSelectionModel
 
 class FilmTableInstaller(private val host: Host) {
     interface Host {
-        fun table(): MVFilmTable
+        fun table(): JTable
         fun downloads(): DownloadServices
         fun filmListScrollPane(): JScrollPane
         fun ownerComponent(): Component
@@ -52,10 +48,12 @@ class FilmTableInstaller(private val host: Host) {
         fun onComponentShown()
         fun updateFilmData()
         fun selectionUpdatesSuspended(): Boolean
+        fun saveTableConfiguration()
+        fun appearance(): FilmTableAppearance
     }
 
     fun writeTableConfigurationData() {
-        host.table().writeTableConfigurationData()
+        host.saveTableConfiguration()
     }
 
     fun setupFilmListTable() {
@@ -82,7 +80,6 @@ class FilmTableInstaller(private val host: Host) {
     fun setupTable() {
         setupKeyMapping()
 
-        host.table().model = TModelFilm()
         host.table().addMouseListener(TableContextMenuHandler(host.tableContextMenuHost()))
         host.table().selectionModel.addListSelectionListener { event ->
             val model = event.source as ListSelectionModel
@@ -93,11 +90,6 @@ class FilmTableInstaller(private val host: Host) {
 
         setupCellRenderer()
 
-        host.table().setLineBreak(ApplicationConfiguration.getInstance().filmTableLineBreak)
-
-        setupHeaderPopupMenu()
-
-        host.table().readColumnConfigurationData()
         if (host.table().rowCount > 0) {
             host.table().setRowSelectionInterval(0, 0)
         }
@@ -132,22 +124,10 @@ class FilmTableInstaller(private val host: Host) {
     }
 
     private fun setupCellRenderer() {
-        val cellRenderer = CellRendererFilme(host.downloads())
+        val cellRenderer = CellRendererFilme(host.downloads(), host.appearance())
         host.table().setDefaultRenderer(Any::class.java, cellRenderer)
         host.table().setDefaultRenderer(DatumFilm::class.java, cellRenderer)
         host.table().setDefaultRenderer(Int::class.javaObjectType, cellRenderer)
-    }
-
-    private fun setupHeaderPopupMenu() {
-        val headerListener = BeobTableHeader(
-            host.table(),
-            FilmColumnVisibility.store(),
-            HIDDEN_COLUMNS,
-            BUTTON_COLUMNS,
-            true,
-        ) { ApplicationConfiguration.getInstance().filmTableLineBreak = it }
-
-        host.table().tableHeader.addMouseListener(headerListener)
     }
 
     private companion object {
@@ -159,16 +139,5 @@ class FilmTableInstaller(private val host: Host) {
         private const val ACTION_MAP_KEY_COPY_KLEIN_URL = "copy_url_klein"
         private const val ACTION_MAP_KEY_MARK_SEEN = "seen"
         private const val ACTION_MAP_KEY_MARK_UNSEEN = "unseen"
-
-        private val HIDDEN_COLUMNS = intArrayOf(
-            FilmColumn.PLAY.index,
-            FilmColumn.SAVE.index,
-            FilmColumn.BOOKMARK.index,
-        )
-        private val BUTTON_COLUMNS = intArrayOf(
-            FilmColumn.PLAY.index,
-            FilmColumn.SAVE.index,
-            FilmColumn.BOOKMARK.index,
-        )
     }
 }

@@ -18,14 +18,16 @@
 
 package mediathek.tool.cellrenderer
 
+import ca.odell.glazedlists.swing.AdvancedTableModel
 import mediathek.config.application.ApplicationConfiguration
+import mediathek.config.MVColor
 import mediathek.controller.starter.DownloadServices
 import mediathek.controller.starter.StartStatus
 import mediathek.daten.DatenDownload
 import mediathek.daten.DatenFilm
 import mediathek.swing.IconUtils
 import mediathek.tool.models.FilmColumn
-import mediathek.tool.table.MVTable
+import mediathek.gui.tabs.tab_film.table.FilmTableAppearance
 import org.apache.logging.log4j.LogManager
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import org.kordamp.ikonli.swing.FontIcon
@@ -34,10 +36,12 @@ import java.awt.Component
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
+import javax.swing.JComponent
 import javax.swing.JTable
 
 class CellRendererFilme(
     private val downloads: DownloadServices,
+    private val appearance: FilmTableAppearance,
 ) : CellRendererBaseWithStart() {
     private val stopIcons = rendererIconPair(
         normal = IconUtils.of(FontAwesomeSolid.STOP),
@@ -55,7 +59,8 @@ class CellRendererFilme(
         normal = IconUtils.of(FontAwesomeSolid.BOOKMARK),
         selected = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.WHITE),
     )
-    private val selectedBookmarkIconHighlighted = FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.ORANGE)
+    private val selectedBookmarkIconHighlighted =
+        FontIcon.of(FontAwesomeSolid.BOOKMARK, IconUtils.DEFAULT_SIZE, Color.ORANGE)
 
     override fun getTableCellRendererComponent(
         table: JTable,
@@ -71,10 +76,12 @@ class CellRendererFilme(
 
             val rowModelIndex = table.convertRowIndexToModel(row)
             val filmColumn = FilmColumn.fromIndex(table.convertColumnIndexToModel(column))
-            val datenFilm = table.model.getValueAt(rowModelIndex, FilmColumn.REF.index) as DatenFilm
-            val mvTable = table as MVTable
 
-            if (mvTable.isLineBreak()) {
+            @Suppress("UNCHECKED_CAST")
+            val filmModel = table.model as AdvancedTableModel<DatenFilm>
+            val datenFilm = filmModel.getElementAt(rowModelIndex)
+
+            if (appearance.lineBreak) {
                 horizontalAlignment = LEFT
                 verticalAlignment = TOP
 
@@ -82,7 +89,18 @@ class CellRendererFilme(
                     FilmColumn.TOPIC,
                     FilmColumn.TITLE,
                     FilmColumn.URL,
-                        -> return createWrappedTextArea(valueText(value), useLabelFont = true)
+                        -> {
+                        val wrappedText = createWrappedTextArea(valueText(value), useLabelFont = true)
+                        if (!isSelected) {
+                            applyUnselectedRowColors(wrappedText, table, row, datenFilm)
+                        }
+                        if (filmColumn == FilmColumn.TITLE && wrappedText is JComponent) {
+                            wrappedText.toolTipText = datenFilm.title.takeIf {
+                                wrappedText.preferredSize.width > table.getCellRect(row, column, false).width
+                            }
+                        }
+                        return wrappedText
+                    }
 
                     else -> Unit
                 }
@@ -105,7 +123,7 @@ class CellRendererFilme(
                 )
 
                 FilmColumn.SENDER -> {
-                    if (mvTable.showSenderIcons()) {
+                    if (appearance.showSenderIcons) {
                         val targetDim = getSenderCellDimension(table, row, column)
                         setSenderIcon(valueText(value), targetDim, isSelected)
                     }
@@ -121,12 +139,38 @@ class CellRendererFilme(
                 FilmColumn.TIME -> drawTime(datenFilm)
                 else -> Unit
             }
+
+            if (!isSelected) {
+                applyUnselectedRowColors(this, table, row, datenFilm)
+            }
+            if (filmColumn == FilmColumn.TITLE) {
+                toolTipText =
+                    datenFilm.title.takeIf { preferredSize.width > table.getCellRect(row, column, false).width }
+            }
         } catch (ex: Exception) {
             logger.error("Fehler", ex)
         }
 
         return this
     }
+
+    private fun applyUnselectedRowColors(component: Component, table: JTable, viewRow: Int, film: DatenFilm) {
+        component.foreground = if (film.isNew) MVColor.NEW_COLOR.color else table.foreground
+        val backgrounds = ArrayList<Color>(4)
+        val alternate = if (viewRow % 2 != 0) javax.swing.UIManager.getColor("Table.alternateRowColor") else null
+        backgrounds.add(alternate ?: table.background)
+        if (film.isSeenInHistory) backgrounds.add(MVColor.FILM_HISTORY.color)
+        if (film.isBookmarked) backgrounds.add(MVColor.FILM_BOOKMARKED.color)
+        if (film.isDuplicate) backgrounds.add(MVColor.FILM_DUPLICATE.color)
+        component.background = if (backgrounds.size == 1) backgrounds[0] else blend(backgrounds)
+    }
+
+    private fun blend(colors: Collection<Color>): Color = Color(
+        colors.sumOf(Color::getRed) / colors.size,
+        colors.sumOf(Color::getGreen) / colors.size,
+        colors.sumOf(Color::getBlue) / colors.size,
+        colors.sumOf(Color::getAlpha) / colors.size,
+    )
 
     private fun drawTime(film: DatenFilm) {
         var zeit = film.sendeZeit

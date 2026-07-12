@@ -25,6 +25,7 @@ class OnlineSearchResultTableTest {
         }
 
         assertSame(result, table.selectedResult())
+        table.dispose()
     }
 
     @Test
@@ -47,6 +48,7 @@ class OnlineSearchResultTableTest {
 
         assertNull(table.selectedResult())
         assertEquals(emptyList<OnlineSearchResult>(), table.selectedResults())
+        table.dispose()
     }
 
     @Test
@@ -67,6 +69,27 @@ class OnlineSearchResultTableTest {
         assertEquals(OnlineSearchResultTableFormat.TITLE, restoredTable.columnModel.getColumn(1).modelIndex)
         assertEquals(OnlineSearchResultTableFormat.SENDER, restoredTable.columnModel.getColumn(2).modelIndex)
         assertEquals(123, restoredTable.columnModel.getColumn(2).preferredWidth)
+        firstTable.dispose()
+        restoredTable.dispose()
+    }
+
+    @Test
+    fun `dispose detaches the table pipeline from its source`() {
+        val source = BasicEventList<OnlineSearchResult>()
+        val table = OnlineSearchResultTable(source)
+
+        table.dispose()
+        source.add(
+            OnlineSearchResult(
+                provider = OnlineSearchProvider.ARD,
+                sender = "ARD",
+                topic = "Topic",
+                title = "After disposal",
+                normalQualityUrl = "https://example.invalid/disposed.mp4",
+            ),
+        )
+
+        assertEquals(0, table.rowCount)
     }
 }
 

@@ -45,7 +45,7 @@ import mediathek.gui.tabs.tab_film.actions.*
 import mediathek.gui.tabs.tab_film.bookmark.FilmBookmarkController
 import mediathek.gui.tabs.tab_film.filter.FilmFilterController
 import mediathek.gui.tabs.tab_film.filter.SwingFilterDialog
-import mediathek.gui.tabs.tab_film.filter_selection.FilmFilterSelectionSynchronizer
+import mediathek.gui.tabs.tab_film.filter_selection.FilmFilterSelectionController
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.gui.tabs.tab_film.lifecycle.BookmarkStartupReloadCoordinator
 import mediathek.gui.tabs.tab_film.lifecycle.FilmLifecycleController
@@ -61,7 +61,6 @@ import mediathek.gui.tabs.tab_film.view.FilmViewController
 import mediathek.mainwindow.FilmBookmarkHost
 import mediathek.tool.MessageBus
 import mediathek.tool.ReplacementRules
-import mediathek.tool.table.MVFilmTable
 import net.engio.mbassy.listener.Handler
 import org.jdesktop.swingx.VerticalLayout
 import java.awt.BorderLayout
@@ -69,8 +68,9 @@ import java.util.*
 import java.util.function.BiConsumer
 import java.util.function.Consumer
 import java.util.function.LongConsumer
+import java.util.function.IntConsumer
 import javax.swing.*
-import kotlin.time.Duration.Companion.milliseconds
+import javax.swing.event.TableModelListener
 
 class GuiFilme(
     private val programSets: ProgramSetRepository,
@@ -88,6 +88,7 @@ class GuiFilme(
     private val showFilmInformationAction: Action,
     private val showLuceneTutorialAction: Action,
     private val selectedListItemsCount: LongConsumer,
+    private val filmTableRowCount: IntConsumer,
     private val currentFilm: Consumer<DatenFilm?>,
 ) : JPanel() {
     private val copyHqUrlToClipboardActionValue: CopyUrlToClipboardAction
@@ -95,18 +96,25 @@ class GuiFilme(
     private var swingFilterDialog: SwingFilterDialog? = null
     private var swingFilterDialogFactory: () -> SwingFilterDialog
     private val toggleFilterDialogVisibilityActionValue: ToggleFilterDialogVisibilityAction
-    private val reloadTableScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
     private val filterController: FilmFilterController
     private val bookmarkController: FilmBookmarkController
     private var stopBeob = false
-    private val tabelle = MVFilmTable()
+    private val tabelle = JTable()
+    private val tableBinding = FilmTableBinding(tabelle)
+    private val tableRowCountListener = TableModelListener { filmTableRowCount.accept(tableBinding.rowCount) }
+    private val tableAppearance = ApplicationConfiguration.getInstance().let { configuration ->
+        FilmTableAppearance(
+            lineBreak = configuration.filmTableLineBreak,
+            showSenderIcons = configuration.filmTableShowSenderIcons,
+            useSmallSenderIcons = configuration.filmTableUseSmallSenderIcons,
+        )
+    }
+    private val tableSettingsController = FilmTableSettingsController(tabelle, tableBinding.sorting, tableAppearance)
     private val lifecycleController: FilmLifecycleController
     private val viewController: FilmViewController
     private val selectionController: FilmSelectionController
     private val tableReloader: FilmTableReloader
     private val tableInstaller: FilmTableInstaller
-    private val filterSelectionSynchronizer: FilmFilterSelectionSynchronizer
-    private var reloadTableDataJob: Job? = null
 
     private data class SelectionComponents(
         val selectionController: FilmSelectionController,
@@ -145,6 +153,7 @@ class GuiFilme(
     )
 
     init {
+        tableBinding.table.model.addTableModelListener(tableRowCountListener)
         val psetButtonsTab = JTabbedPane()
         val descriptionTabController = DescriptionTabController({ ownerFrame }, ::editFilmDescription)
         val filterConfiguration = ApplicationConfiguration.getInstance().createFilterConfiguration()
@@ -190,16 +199,10 @@ class GuiFilme(
 
         tableInstaller.setupTable()
         tableReloader = createTableReloader(installedUi.searchField, filterComponents.filterController)
-        filterSelectionSynchronizer = createFilterSelectionSynchronizer(
-            filterComponents.filterSelectionComboBoxModel,
-            filterComponents.filterController,
-        )
         restoreStartupFilterDialogVisibility()
         lifecycleController = createLifecycleController(
             filterConfiguration,
             bookmarkStartupReloadCoordinator,
-            installedUi,
-            filmActions,
             filterComponents,
         )
         lifecycleController.start()
@@ -207,7 +210,7 @@ class GuiFilme(
 
     private fun createSelectionComponents(filterConfiguration: FilterConfiguration): SelectionComponents {
         val selectionHost = FilmSelectionHostAdapter(
-            { tabelle },
+            { tableBinding },
             this,
             this::startFilmDownloads,
             { pset, film, resolution -> downloads.startWithProgram(pset, film, resolution) },
@@ -399,11 +402,19 @@ class GuiFilme(
                 }
             },
         )
+        val selectionController = FilmFilterSelectionController(
+            filterController,
+            object : FilmFilterController.ReloadRequester {
+                override fun requestTableReload() = this@GuiFilme.requestTableReload()
+                override fun requestZeitraumReload() = this@GuiFilme.requestZeitraumReload()
+            },
+        )
         val filterSelectionComboBoxModel = FilterSelectionComboBoxModel(
             filterController::currentFilter,
             filterController::availableFilters,
             filterController::isFilterLocked,
             filterController.selectionObserverRegistry(),
+            selectionController::select,
         )
 
         return FilterComponents(filterController, filterSelectionComboBoxModel)
@@ -468,6 +479,8 @@ class GuiFilme(
             ::onComponentShown,
             selectionController::updateFilmData,
             { stopBeob },
+            tableSettingsController::saveState,
+            tableAppearance,
         )
 
         return ViewComponents(
@@ -547,19 +560,6 @@ class GuiFilme(
         }
     }
 
-    private fun createFilterSelectionSynchronizer(
-        filterSelectionComboBoxModel: FilterSelectionComboBoxModel,
-        filterController: FilmFilterController,
-    ): FilmFilterSelectionSynchronizer =
-        FilmFilterSelectionSynchronizer(
-            filterSelectionComboBoxModel,
-            filterController,
-            object : FilmFilterController.ReloadRequester {
-                override fun requestTableReload() = this@GuiFilme.requestTableReload()
-                override fun requestZeitraumReload() = this@GuiFilme.requestZeitraumReload()
-            },
-        )
-
     private fun createTableReloader(
         searchField: SearchField,
         filterController: FilmFilterController,
@@ -567,14 +567,19 @@ class GuiFilme(
         val tableReloadHost = FilmTableReloadHostAdapter(
             filmCatalog,
             ownerFrame,
-            { tabelle },
+            { tableBinding },
             {
                 SearchFieldData(searchField.text, searchField.getSearchMode())
             },
             filterController,
+            blacklist::applyToFilmList,
             { suspended -> stopBeob = suspended },
-            ::updateStartInfoProperty,
             selectionController::updateFilmData,
+            { fromSearchField ->
+                if (fromSearchField) {
+                    searchField.requestFocusInWindow()
+                }
+            },
         )
 
         return FilmTableReloader(tableReloadHost)
@@ -583,22 +588,17 @@ class GuiFilme(
     private fun createLifecycleController(
         filterConfiguration: FilterConfiguration,
         bookmarkStartupReloadCoordinator: BookmarkStartupReloadCoordinator,
-        installedUi: InstalledUi,
-        filmActions: FilmActions,
         filterComponents: FilterComponents,
     ): FilmLifecycleController {
         val lifecycleHost = FilmLifecycleHostAdapter(
             this,
             filmListLoader,
-            { tabelle },
+            { tableBinding },
             filterConfiguration,
             bookmarkStartupReloadCoordinator,
             ::existingSwingFilterDialog,
-            { installedUi.filmToolBar },
-            { installedUi.searchField },
-            { filmActions.filmUiActions },
             ::requestTableReload,
-            ::updateStartInfoProperty,
+            tableReloader::invalidate,
             ::tabelleSpeichern,
             filterComponents.filterSelectionComboBoxModel::close,
         )
@@ -612,16 +612,11 @@ class GuiFilme(
     }
 
     private fun requestTableReload() {
-        reloadTableDataJob?.cancel()
-        reloadTableDataJob = reloadTableScope.launch {
-            delay(RELOAD_TABLE_DATA_DELAY)
-            tableReloader.loadTable()
-        }
+        tableReloader.requestTableReload()
     }
 
     private fun requestZeitraumReload() {
-        blacklist.applyToFilmList()
-        requestTableReload()
+        tableReloader.requestZeitraumReload()
     }
 
     fun copyHqUrlToClipboardAction(): Action = copyHqUrlToClipboardActionValue
@@ -635,19 +630,15 @@ class GuiFilme(
     }
 
     fun disposePanel() {
-        reloadTableScope.cancel()
-        filterSelectionSynchronizer.close()
         tableReloader.dispose()
         lifecycleController.disposePanel()
+        tableSettingsController.dispose()
+        tableBinding.table.model.removeTableModelListener(tableRowCountListener)
+        tableBinding.dispose()
     }
 
     val currentZeitraumFilterValue: String
         get() = filterController.state().zeitraum
-
-    @Handler
-    fun handleTableModelChange(event: TableModelChangeEvent) {
-        lifecycleController.handleTableModelChange(event)
-    }
 
     fun tabelleSpeichern() {
         tableInstaller.writeTableConfigurationData()
@@ -663,15 +654,10 @@ class GuiFilme(
 
     private fun onComponentShown() {
         selectionController.updateFilmData()
-        updateStartInfoProperty()
     }
 
     private fun updateSelectedListItemsCount(table: JTable) {
         selectedListItemsCount.accept(table.selectedRowCount.toLong())
-    }
-
-    private fun updateStartInfoProperty() {
-        MessageBus.messageBus.publishAsync(UpdateStatusBarLeftDisplayEvent())
     }
 
     val tableRowCount: Int
@@ -690,11 +676,6 @@ class GuiFilme(
     @Handler
     private fun handleButtonStart(event: ButtonStartEvent) {
         lifecycleController.handleButtonStart(event)
-    }
-
-    @Handler
-    private fun handleStartEvent(message: StartEvent) {
-        lifecycleController.handleStartEvent(message)
     }
 
     fun showManageBookmarkWindow() {
@@ -723,6 +704,5 @@ class GuiFilme(
 
     companion object {
         const val NAME = "Filme"
-        private val RELOAD_TABLE_DATA_DELAY = 250.milliseconds
     }
 }

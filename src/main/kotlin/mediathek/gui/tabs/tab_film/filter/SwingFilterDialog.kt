@@ -26,7 +26,6 @@ import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.gui.messages.TableModelChangeEvent
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBoxModel
 import mediathek.swing.IconUtils
 import mediathek.tool.EventListWithEmptyFirstEntry
@@ -83,6 +82,7 @@ class SwingFilterDialog internal constructor(
     }
 
     private val uiScope = CoroutineScope(SupervisorJob() + Dispatchers.Swing)
+    private val themaDispatcher = Dispatchers.Default.limitedParallelism(1)
     private val sourceThemaList: EventList<String> = BasicEventList()
     private val renameFilterAction = RenameFilterAction()
     private val deleteCurrentFilterAction = DeleteCurrentFilterAction()
@@ -107,13 +107,14 @@ class SwingFilterDialog internal constructor(
         )
     }
     private val filterSelectionDataListener = FilterSelectionDataListener()
-    private val filterSelectionActionListener = ActionListener { syncCurrentFilterAndRestore() }
     private val filterSwitchReloadRequester = object : FilmFilterController.ReloadRequester {
         override fun requestTableReload() = filterController.requestTableReload()
         override fun requestZeitraumReload() = filterController.requestZeitraumReload()
     }
     private var checkboxReloadJob: Job? = null
     private var zeitraumReloadJob: Job? = null
+    private var themaRefreshJob: Job? = null
+    private var themaRefreshGeneration = 0L
     private val suppressedEventTypes = mutableSetOf<SuppressedEventType>()
     private val managedActions by lazy {
         listOf<Action>(
@@ -198,7 +199,7 @@ class SwingFilterDialog internal constructor(
 
     init {
         scpSenderList.setViewportView(senderCheckBoxList)
-        filterController.initializeFilmData()
+        filterController.initializeFilmData(filterController.hasFilmData())
 
         configureComponents()
         setupInteraction()
@@ -209,9 +210,10 @@ class SwingFilterDialog internal constructor(
     override fun dispose() {
         checkboxReloadJob?.cancel()
         zeitraumReloadJob?.cancel()
+        themaRefreshJob?.cancel()
+        themaRefreshGeneration++
         uiScope.cancel()
         filterSelectionComboBoxModel.removeListDataListener(filterSelectionDataListener)
-        cboxFilterSelection.removeActionListener(filterSelectionActionListener)
         super.dispose()
     }
 
@@ -263,7 +265,6 @@ class SwingFilterDialog internal constructor(
 
     private fun registerLocalListeners() {
         filterSelectionComboBoxModel.addListDataListener(filterSelectionDataListener)
-        cboxFilterSelection.addActionListener(filterSelectionActionListener)
         addComponentListener(FilterDialogComponentListener())
     }
 
@@ -309,17 +310,57 @@ class SwingFilterDialog internal constructor(
     private fun createCheckBoxBindings(): List<CheckBoxBinding> {
         return listOf(
             CheckBoxBinding(cbShowNewOnly, FilmFilterState::showNewOnly, filterController::onShowNewOnlyChanged),
-            CheckBoxBinding(cbShowBookMarkedOnly, FilmFilterState::showBookMarkedOnly, filterController::onShowBookMarkedOnlyChanged),
-            CheckBoxBinding(cbShowOnlyHq, FilmFilterState::showHighQualityOnly, filterController::onShowHighQualityOnlyChanged),
-            CheckBoxBinding(cbShowSubtitlesOnly, FilmFilterState::showSubtitlesOnly, filterController::onShowSubtitlesOnlyChanged),
-            CheckBoxBinding(cbShowOnlyLivestreams, FilmFilterState::showLivestreamsOnly, filterController::onShowLivestreamsOnlyChanged),
-            CheckBoxBinding(cbShowUnseenOnly, FilmFilterState::showUnseenOnly, filterController::onShowUnseenOnlyChanged),
+            CheckBoxBinding(
+                cbShowBookMarkedOnly,
+                FilmFilterState::showBookMarkedOnly,
+                filterController::onShowBookMarkedOnlyChanged
+            ),
+            CheckBoxBinding(
+                cbShowOnlyHq,
+                FilmFilterState::showHighQualityOnly,
+                filterController::onShowHighQualityOnlyChanged
+            ),
+            CheckBoxBinding(
+                cbShowSubtitlesOnly,
+                FilmFilterState::showSubtitlesOnly,
+                filterController::onShowSubtitlesOnlyChanged
+            ),
+            CheckBoxBinding(
+                cbShowOnlyLivestreams,
+                FilmFilterState::showLivestreamsOnly,
+                filterController::onShowLivestreamsOnlyChanged
+            ),
+            CheckBoxBinding(
+                cbShowUnseenOnly,
+                FilmFilterState::showUnseenOnly,
+                filterController::onShowUnseenOnlyChanged
+            ),
             CheckBoxBinding(cbDontShowAbos, FilmFilterState::dontShowAbos, filterController::onDontShowAbosChanged),
-            CheckBoxBinding(cbDontShowSignLanguage, FilmFilterState::dontShowSignLanguage, filterController::onDontShowSignLanguageChanged),
-            CheckBoxBinding(cbDontShowGeoblocked, FilmFilterState::dontShowGeoblocked, filterController::onDontShowGeoblockedChanged),
-            CheckBoxBinding(cbDontShowTrailers, FilmFilterState::dontShowTrailers, filterController::onDontShowTrailersChanged),
-            CheckBoxBinding(cbDontShowAudioVersions, FilmFilterState::dontShowAudioVersions, filterController::onDontShowAudioVersionsChanged),
-            CheckBoxBinding(cbDontShowDuplicates, FilmFilterState::dontShowDuplicates, filterController::onDontShowDuplicatesChanged)
+            CheckBoxBinding(
+                cbDontShowSignLanguage,
+                FilmFilterState::dontShowSignLanguage,
+                filterController::onDontShowSignLanguageChanged
+            ),
+            CheckBoxBinding(
+                cbDontShowGeoblocked,
+                FilmFilterState::dontShowGeoblocked,
+                filterController::onDontShowGeoblockedChanged
+            ),
+            CheckBoxBinding(
+                cbDontShowTrailers,
+                FilmFilterState::dontShowTrailers,
+                filterController::onDontShowTrailersChanged
+            ),
+            CheckBoxBinding(
+                cbDontShowAudioVersions,
+                FilmFilterState::dontShowAudioVersions,
+                filterController::onDontShowAudioVersionsChanged
+            ),
+            CheckBoxBinding(
+                cbDontShowDuplicates,
+                FilmFilterState::dontShowDuplicates,
+                filterController::onDontShowDuplicatesChanged
+            )
         )
     }
 
@@ -340,9 +381,39 @@ class SwingFilterDialog internal constructor(
     }
 
     private fun renderFilterState() {
-        val renderModel = filterController.renderModel()
+        val state = filterController.state()
         withSuppressedEvents(SuppressedEventType.ZEITRAUM) {
-            filterView.render(renderModel.state, renderModel.availableThemen, renderModel.canDeleteCurrentFilter)
+            filterView.renderState(state, filterController.canDeleteCurrentFilter())
+        }
+        requestThemaRefresh(state)
+    }
+
+    private fun requestThemaRefresh(requestedState: FilmFilterState) {
+        val generation = ++themaRefreshGeneration
+        themaRefreshJob?.cancel()
+        themaRefreshJob = uiScope.launch {
+            val availableThemen = withContext(themaDispatcher) {
+                filterController.loadAvailableThemen(requestedState.checkedChannels)
+            }
+            if (generation != themaRefreshGeneration) {
+                return@launch
+            }
+
+            val currentState = filterController.state()
+            if (currentState.currentFilter != requestedState.currentFilter ||
+                currentState.checkedChannels != requestedState.checkedChannels
+            ) {
+                return@launch
+            }
+
+            val previousThema = currentState.thema
+            val renderModel = filterController.renderModel(availableThemen)
+            withSuppressedEvents(SuppressedEventType.THEMA) {
+                filterView.renderAvailableThemen(renderModel.state, renderModel.availableThemen)
+            }
+            if (renderModel.state.thema != previousThema) {
+                filterController.requestTableReload()
+            }
         }
     }
 
@@ -458,20 +529,10 @@ class SwingFilterDialog internal constructor(
         applyEnabledState(enabled)
     }
 
-    fun onTableModelChangeEvent(event: TableModelChangeEvent) {
-        uiScope.launch {
-            val enabled = !event.active
-            isEnabled = enabled
-
-            if (event.active) {
-                deleteCurrentFilterAction.isEnabled = false
-            } else {
-                updateDeleteCurrentFilterButtonState()
-            }
-        }
-    }
-
     fun onFilmDataLoadingStarted() {
+        filterController.initializeFilmData(false)
+        themaRefreshJob?.cancel()
+        themaRefreshGeneration++
         isEnabled = false
     }
 
@@ -647,6 +708,7 @@ class SwingFilterDialog internal constructor(
                             JOptionPane.ERROR_MESSAGE
                         )
                     }
+
                     is FilmFilterController.AddFilterResult.Added -> {
                         restoreConfigSettings()
                         updateDeleteCurrentFilterButtonState()
@@ -751,6 +813,7 @@ class SwingFilterDialog internal constructor(
                         JOptionPane.ERROR_MESSAGE
                     )
                 }
+
                 FilmFilterController.RenameFilterResult.Renamed -> {
                     logger.trace("Renamed filter \"{}\" to \"{}\"", currentFilterName, trimmedName)
                 }
@@ -793,28 +856,15 @@ class SwingFilterDialog internal constructor(
     }
 
     private inner class FilterSelectionDataListener : ListDataListener {
-        override fun intervalAdded(event: ListDataEvent) = restoreConfigSettings()
-        override fun intervalRemoved(event: ListDataEvent) = restoreConfigSettings()
-        override fun contentsChanged(event: ListDataEvent) {
-            if (event.index0 == -1 && event.index1 == -1) {
-                return
-            }
-            restoreConfigSettings()
-        }
-    }
+        override fun intervalAdded(event: ListDataEvent) = restoreAfterSelectionModelChange()
+        override fun intervalRemoved(event: ListDataEvent) = restoreAfterSelectionModelChange()
+        override fun contentsChanged(event: ListDataEvent) = restoreAfterSelectionModelChange()
 
-    private fun syncCurrentFilterAndRestore() {
-        if (isSuppressed(SuppressedEventType.FILTER_SELECTION)) {
-            return
+        private fun restoreAfterSelectionModelChange() {
+            if (!isSuppressed(SuppressedEventType.FILTER_SELECTION)) {
+                restoreConfigSettings()
+            }
         }
-        val selectedFilter = cboxFilterSelection.selectedItem as? FilterDTO ?: return
-        val previousState = filterController.state()
-        val changed = filterController.restoreCurrentFilterSelection(selectedFilter)
-        restoreConfigSettings()
-        if (!changed) {
-            return
-        }
-        FilterSwitchReload.apply(previousState, filterController.state(), true, filterSwitchReloadRequester)
     }
 
     private data class CheckBoxBinding(

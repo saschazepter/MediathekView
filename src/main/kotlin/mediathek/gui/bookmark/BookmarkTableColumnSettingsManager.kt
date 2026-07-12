@@ -70,6 +70,7 @@ open class BookmarkTableColumnSettingsManager<E>(
         }
 
     fun load() {
+        var recoveredAllHiddenColumns = false
         try {
             val fileSettings = parseColumnSettingsJson(
                 applicationConfiguration.getTableColumnSettings(configPrefix),
@@ -93,6 +94,11 @@ open class BookmarkTableColumnSettingsManager<E>(
 
             val validIds = allColumns.map { it.identifier.toString() }
             lastSettings.removeIf { it.id !in validIds }
+            if (lastSettings.isNotEmpty() && lastSettings.none(ColumnSetting::visible)) {
+                log.warn("Ignoring bookmark table settings that hide every column")
+                lastSettings.forEach { it.visible = true }
+                recoveredAllHiddenColumns = true
+            }
         } catch (ex: Exception) {
             log.error("Failed to load column settings.", ex)
         }
@@ -110,6 +116,7 @@ open class BookmarkTableColumnSettingsManager<E>(
                     column.preferredWidth = setting.width
                 }
             }
+        if (recoveredAllHiddenColumns) save()
     }
 
     fun save() {

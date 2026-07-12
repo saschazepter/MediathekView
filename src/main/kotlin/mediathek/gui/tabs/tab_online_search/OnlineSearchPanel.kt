@@ -21,7 +21,7 @@ class OnlineSearchPanel(
     private val zdfService: OnlineSearchService = ZdfOnlineSearchService(),
     private val arteService: OnlineSearchService = ArteOnlineSearchService(),
     private val historyStore: OnlineSearchHistoryStore = ApplicationOnlineSearchHistoryStore,
-) : JPanel(BorderLayout()) {
+) : JPanel(BorderLayout()), AutoCloseable {
     constructor(host: OnlineSearchHost) : this(
         host,
         ArdOnlineSearchService(),
@@ -57,6 +57,7 @@ class OnlineSearchPanel(
     private var panelScope = CoroutineScope(panelJob + Dispatchers.Swing)
     private var searchJob: Job? = null
     private var searchGeneration = 0L
+    private var closed = false
 
     init {
         add(createSearchArea(), BorderLayout.NORTH)
@@ -96,6 +97,18 @@ class OnlineSearchPanel(
         searchGeneration += 1
         panelJob.cancel()
         super.removeNotify()
+    }
+
+    override fun close() {
+        if (closed) return
+        closed = true
+        searchJob?.cancel()
+        searchJob = null
+        panelJob.cancel()
+        runCatching(table::dispose)
+            .onFailure { failure -> logger.warn("Failed to dispose online search table", failure) }
+        runCatching(resultList::dispose)
+            .onFailure { failure -> logger.warn("Failed to dispose online search result list", failure) }
     }
 
     private fun installActions() {
@@ -332,13 +345,10 @@ class OnlineSearchPanel(
     }
 }
 
-private fun TransactionList<OnlineSearchResult>.updateResults(update: EventList<OnlineSearchResult>.() -> Unit) {
+internal fun TransactionList<OnlineSearchResult>.updateResults(update: EventList<OnlineSearchResult>.() -> Unit) {
     withWriteLock {
-        beginEvent(true)
-        try {
+        withTransaction {
             update()
-        } finally {
-            commitEvent()
         }
     }
 }
