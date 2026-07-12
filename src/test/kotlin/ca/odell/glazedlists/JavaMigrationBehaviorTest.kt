@@ -2,10 +2,13 @@ package ca.odell.glazedlists
 
 import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.impl.beans.BeanTableFormat
+import ca.odell.glazedlists.impl.sort.BooleanComparator
+import ca.odell.glazedlists.impl.sort.ComparableComparator
 import ca.odell.glazedlists.impl.sort.ComparatorChain
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class JavaMigrationBehaviorTest {
@@ -38,7 +41,34 @@ internal class JavaMigrationBehaviorTest {
         assertEquals(2, chain.comparators.size)
         assertEquals(chain, ComparatorChain(listOf(byLength, alphabetically)))
         assertNotEquals(chain, ComparatorChain(listOf(alphabetically)))
-        assertEquals(0, chain.hashCode())
+        assertEquals(chain.hashCode(), ComparatorChain(listOf(byLength, alphabetically)).hashCode())
+
+        chain.comparators()[0] = alphabetically
+        chain.getComparators()[0] = alphabetically
+
+        assertEquals(-1, chain.compare("b", "aa"))
+
+        val sourceArray = arrayOf<Comparator<String>>(byLength, alphabetically)
+        val arrayChain = ComparatorChain(sourceArray)
+        sourceArray[0] = alphabetically
+
+        assertEquals(-1, arrayChain.compare("b", "aa"))
+    }
+
+    @Test
+    fun statelessComparatorsKeepEqualsAndHashCodeConsistent() {
+        val booleanComparator = BooleanComparator()
+        val equalBooleanComparator = BooleanComparator()
+        val comparableComparator = ComparableComparator<String>()
+        val equalComparableComparator = ComparableComparator<String>()
+
+        assertEquals(booleanComparator, equalBooleanComparator)
+        assertEquals(booleanComparator.hashCode(), equalBooleanComparator.hashCode())
+        assertTrue(hashSetOf(booleanComparator).contains(equalBooleanComparator))
+
+        assertEquals(comparableComparator, equalComparableComparator)
+        assertEquals(comparableComparator.hashCode(), equalComparableComparator.hashCode())
+        assertTrue(hashSetOf(comparableComparator).contains(equalComparableComparator))
     }
 
     @Test

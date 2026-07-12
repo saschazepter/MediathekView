@@ -60,7 +60,7 @@ public class TableColumnComparator<E> implements Comparator<E> {
         }
         catch (ClassCastException e) {
             final IllegalStateException illegalStateException;
-            if (comparator == GlazedLists.comparableComparator()) {
+            if (comparator == (Comparator<?>) GlazedLists.<Comparable<Object>>comparableComparator()) {
                 illegalStateException = new IllegalStateException("TableComparatorChooser can not sort objects \"" + alphaField + "\", \"" + betaField + "\" that do not implement Comparable.");
             }
             else {

@@ -350,16 +350,20 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
                         toRethrow = e;
                 }
             }
-            subjectsToCleanUp.clear();
-
-            // this event is completely finished
-            subjectsAndListenersForCurrentEvent = null;
-
             // rethrow any exceptions
             if(toRethrow != null) throw toRethrow;
 
         } finally {
             reentrantFireEventCount--;
+            if (reentrantFireEventCount == 0) {
+                if (subjectsAndListenersForCurrentEvent != null) {
+                    for (SubjectAndListener<?, ?, ?> subjectAndListener : subjectsAndListenersForCurrentEvent) {
+                        subjectAndListener.discardPendingEvent();
+                    }
+                }
+                subjectsToCleanUp.clear();
+                subjectsAndListenersForCurrentEvent = null;
+            }
         }
     }
 
@@ -447,6 +451,10 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
             if(this.pendingEvent != null) throw new IllegalStateException();
             if(pendingEvent == null) throw new IllegalStateException();
             this.pendingEvent = pendingEvent;
+        }
+
+        private void discardPendingEvent() {
+            pendingEvent = null;
         }
 
         @SuppressWarnings("unchecked")

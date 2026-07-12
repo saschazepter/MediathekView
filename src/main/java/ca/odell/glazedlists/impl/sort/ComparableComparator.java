@@ -44,4 +44,9 @@ public final class ComparableComparator<T extends Comparable<? super T>> impleme
     public boolean equals(Object other) {
         return (other instanceof ComparableComparator<?>);
     }
+
+    @Override
+    public int hashCode() {
+        return ComparableComparator.class.hashCode();
+    }
 }

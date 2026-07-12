@@ -40,7 +40,7 @@ public class ListToByteCoder<C> {
     public byte colorsToByte(List<C> colors) {
         int result = 0;
         for (C color : colors) {
-            int index = allColors.indexOf(color);
+            int index = indexOfColor(color);
             result |= (1 << index);
         }
         return (byte)result;
@@ -50,9 +50,15 @@ public class ListToByteCoder<C> {
      * Encode the specified color into a byte.
      */
     public byte colorToByte(C color) {
-        int index = allColors.indexOf(color);
+        int index = indexOfColor(color);
         int result = (1 << index);
         return (byte)result;
+    }
+
+    private int indexOfColor(C color) {
+        int index = allColors.indexOf(color);
+        if (index < 0) throw new IllegalArgumentException("Unknown color: " + color);
+        return index;
     }
 
     /**

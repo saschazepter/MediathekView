@@ -256,7 +256,7 @@ public final class GlazedLists {
      * Creates a {@link Comparator} that compares {@link Comparable} objects.
      */
     @SuppressWarnings("unchecked")
-    public static <T> Comparator<T> comparableComparator() {
+    public static <T extends Comparable<? super T>> Comparator<T> comparableComparator() {
         if(comparableComparator == null) {
             comparableComparator = new ComparableComparator<Comparable<Object>>();
         }
@@ -267,7 +267,7 @@ public final class GlazedLists {
      * Creates a reverse {@link Comparator} that works for {@link Comparable} objects.
      */
     @SuppressWarnings("unchecked")
-    public static <T> Comparator<T> reverseComparator() {
+    public static <T extends Comparable<? super T>> Comparator<T> reverseComparator() {
         if(reversedComparable == null) {
             Comparator<T> naturalOrder = comparableComparator();
             reversedComparable = reverseComparator(naturalOrder);

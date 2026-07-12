@@ -105,7 +105,12 @@ public final class SortedList<E> extends TransformedList<E,E> {
      * @param source the {@link EventList} to be sorted
      */
     public SortedList(EventList<E> source) {
-        this(source, (Comparator<E>)GlazedLists.comparableComparator());
+        this(source, naturalOrderComparator());
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <E> Comparator<E> naturalOrderComparator() {
+        return (Comparator<E>) (Comparator<?>) GlazedLists.<Comparable<Object>>comparableComparator();
     }
 
     /**

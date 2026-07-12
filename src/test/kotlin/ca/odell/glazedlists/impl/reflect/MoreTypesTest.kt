@@ -12,6 +12,10 @@ internal class MoreTypesTest {
         assertEquals(parameterizedType.hashCode(), MoreTypes.hashCode(parameterizedType))
         assertEquals("java.util.List<java.lang.String>", MoreTypes.toString(parameterizedType))
         assertEquals("java.util.List<java.lang.String>[]", MoreTypes.toString(genericArrayType))
+        assertEquals(
+            java.lang.reflect.Array.newInstance(List::class.java, 0).javaClass,
+            MoreTypes.getRawType(genericArrayType),
+        )
         assertEquals(String::class.java.hashCode(), MoreTypes.hashCode(String::class.java))
         assertEquals(0, MoreTypes.hashCode(null))
     }

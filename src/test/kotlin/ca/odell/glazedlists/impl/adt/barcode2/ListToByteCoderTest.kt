@@ -35,4 +35,16 @@ internal class ListToByteCoderTest {
             (coder.colors as MutableList<String?>).add("blue")
         }
     }
+
+    @Test
+    fun unknownColorsAreRejectedInsteadOfSilentlyEncodingAsZero() {
+        val coder = ListToByteCoder(listOf("red", "blue"))
+
+        assertThrows(IllegalArgumentException::class.java) {
+            coder.colorToByte("green")
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            coder.colorsToByte(listOf("red", "green"))
+        }
+    }
 }

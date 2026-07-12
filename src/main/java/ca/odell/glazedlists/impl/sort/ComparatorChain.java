@@ -17,9 +17,13 @@ import java.util.List;
  */
 public record ComparatorChain<T>(Comparator<T>[] comparators) implements Comparator<T> {
 
+    public ComparatorChain {
+        comparators = comparators.clone();
+    }
+
     /**
      * Creates a comparator chain that evaluates the specified comparators in
-     * sequence. A defensive copy of the
+     * sequence. The comparator list is copied defensively.
      *
      * @param comparators a list of objects implementing {@link Comparator}
      */
@@ -45,7 +49,12 @@ public record ComparatorChain<T>(Comparator<T>[] comparators) implements Compara
      * <code>ComparatorChain</code>.
      */
     public Comparator<T>[] getComparators() {
-        return comparators;
+        return comparators.clone();
+    }
+
+    @Override
+    public Comparator<T>[] comparators() {
+        return comparators.clone();
     }
 
     /**
@@ -68,6 +77,6 @@ public record ComparatorChain<T>(Comparator<T>[] comparators) implements Compara
      */
     @Override
     public int hashCode() {
-        return 0;
+        return Arrays.hashCode(comparators);
     }
 }
