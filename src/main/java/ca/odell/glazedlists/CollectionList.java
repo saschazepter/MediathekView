@@ -412,7 +412,7 @@ public class CollectionList<S, E> extends TransformedList<S, E> implements ListE
             int absoluteIndex = getAbsoluteIndex(parentIndex);
             int childOffset = absoluteIndex - parentIndex;
             updates.beginEvent();
-            updates.elementUpdated(index + childOffset, replaced);
+            updates.elementUpdated(index + childOffset, replaced, ListEvent.unknownValue());
             updates.commitEvent();
 
             // all done

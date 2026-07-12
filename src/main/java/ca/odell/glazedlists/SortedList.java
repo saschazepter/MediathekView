@@ -332,19 +332,19 @@ public final class SortedList<E> extends TransformedList<E,E> {
 
             // the element is still in sorted order, forward the update event
             if(sortedNode.getSorted() == Element.SORTED) {
-                updates.elementUpdated(originalIndex, previous);
+                updates.elementUpdated(originalIndex, previous, ListEvent.unknownValue());
 
             // sort order is not enforced so we lose perfect sorting order
             // but we don't need to move elements around
             } else if(mode == AVOID_MOVING_ELEMENTS) {
-                updates.elementUpdated(originalIndex, previous);
+                updates.elementUpdated(originalIndex, previous, ListEvent.unknownValue());
 
             // sort order is enforced so move the element to its new location
             } else {
                 sorted.remove(sortedNode);
                 updates.elementDeleted(originalIndex, previous);
                 int insertedIndex = insertByUnsortedNode(sortedNode.get());
-                updates.addInsert(insertedIndex);
+                updates.elementInserted(insertedIndex, ListEvent.unknownValue());
             }
         }
 
@@ -352,7 +352,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
         while(!insertNodes.isEmpty()) {
             Element insertNode = insertNodes.removeFirst();
             int insertedIndex = insertByUnsortedNode(insertNode);
-            updates.addInsert(insertedIndex);
+            updates.elementInserted(insertedIndex, ListEvent.unknownValue());
         }
 
         // commit the changes and notify listeners

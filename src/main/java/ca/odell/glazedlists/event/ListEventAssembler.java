@@ -144,90 +144,24 @@ public final class ListEventAssembler<E> {
     }
 
     /**
-     * @deprecated replaced with {@link #elementUpdated(int, Object, Object)}.
+     * Add a contiguous range of inserts whose values are unavailable.
      */
-    @Deprecated
-    public void elementUpdated(int index, E oldValue) {
-        elementUpdated(index, oldValue, ListEvent.unknownValue());
+    public void elementsInserted(int startIndex, int endIndex) {
+        addChange(ListEvent.INSERT, startIndex, endIndex, ListEvent.unknownValue(), ListEvent.unknownValue());
     }
 
     /**
-     * Adds a block of changes to the set of list changes. The change block
-     * allows a range of changes to be grouped together for efficiency.
-     *
-     * <p>One or more calls to this method must be prefixed by a call to
-     * beginEvent() and followed by a call to commitEvent().
-     *
-     * @deprecated replaced with {@link #elementInserted}, {@link #elementUpdated}
-     *     and {@link #elementDeleted}.
+     * Add a contiguous range of updates whose old and new values are unavailable.
      */
-    @Deprecated
-    public void addChange(int type, int startIndex, int endIndex) {
-        addChange(type, startIndex, endIndex, ListEvent.unknownValue(), ListEvent.unknownValue());
+    public void elementsUpdated(int startIndex, int endIndex) {
+        addChange(ListEvent.UPDATE, startIndex, endIndex, ListEvent.unknownValue(), ListEvent.unknownValue());
     }
+
     /**
-     * Convenience method for appending a single change of the specified type.
-     *
-     * @deprecated replaced with {@link #elementInserted}, {@link #elementUpdated}
-     *     and {@link #elementDeleted}.
+     * Add a contiguous range of deletes whose values are unavailable.
      */
-    @Deprecated
-    public void addChange(int type, int index) {
-        addChange(type, index, index);
-    }
-    /**
-     * Convenience method for appending a single insert.
-     *
-     * @deprecated replaced with {@link #elementInserted}.
-     */
-    @Deprecated
-    public void addInsert(int index) {
-        addChange(ListEvent.INSERT, index);
-    }
-    /**
-     * Convenience method for appending a single delete.
-     *
-     * @deprecated replaced with {@link #elementDeleted}.
-     */
-    @Deprecated
-    public void addDelete(int index) {
-        addChange(ListEvent.DELETE, index);
-    }
-    /**
-     * Convenience method for appending a single update.
-     *
-     * @deprecated replaced with {@link #elementUpdated}.
-     */
-    @Deprecated
-    public void addUpdate(int index) {
-        addChange(ListEvent.UPDATE, index);
-    }
-    /**
-     * Convenience method for appending a range of inserts.
-     *
-     * @deprecated replaced with {@link #elementInserted}.
-     */
-    @Deprecated
-    public void addInsert(int startIndex, int endIndex) {
-        addChange(ListEvent.INSERT, startIndex, endIndex);
-    }
-    /**
-     * Convenience method for appending a range of deletes.
-     *
-     * @deprecated replaced with {@link #elementDeleted}.
-     */
-    @Deprecated
-    public void addDelete(int startIndex, int endIndex) {
-        addChange(ListEvent.DELETE, startIndex, endIndex);
-    }
-    /**
-     * Convenience method for appending a range of updates.
-     *
-     * @deprecated replaced with {@link #elementUpdated}.
-     */
-    @Deprecated
-    public void addUpdate(int startIndex, int endIndex) {
-        addChange(ListEvent.UPDATE, startIndex, endIndex);
+    public void elementsDeleted(int startIndex, int endIndex) {
+        addChange(ListEvent.DELETE, startIndex, endIndex, ListEvent.unknownValue(), ListEvent.unknownValue());
     }
     /**
      * Adds a block of changes to the set of list changes. The change block

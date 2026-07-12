@@ -427,7 +427,7 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
             for (int i = 0, n = size(); i < n; i++) {
                 final E currentElement = get(i);
                 if (listElement == currentElement) {
-                    this.updates.elementUpdated(i, currentElement);
+                    this.updates.elementUpdated(i, currentElement, ListEvent.unknownValue());
                 }
             }
 

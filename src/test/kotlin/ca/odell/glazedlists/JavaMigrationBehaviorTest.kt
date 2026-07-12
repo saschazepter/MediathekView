@@ -68,6 +68,10 @@ internal class JavaMigrationBehaviorTest {
         threshold.upperThreshold = Int.MAX_VALUE
 
         assertEquals(listOf(-1, 0, Int.MAX_VALUE), threshold.toList())
+
+        threshold.setHeadRange(1, 2)
+
+        assertEquals(listOf(-1, 0), threshold.toList())
     }
 
     class SampleBean(val count: Int, val label: String)

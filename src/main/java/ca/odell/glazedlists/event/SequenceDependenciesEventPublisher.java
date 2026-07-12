@@ -3,7 +3,6 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.event;
 
-import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.impl.adt.IdentityMultimap;
 
 import java.io.ObjectStreamException;
@@ -243,18 +242,6 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher, Se
     @Override
     public void clearRelatedListener(Object subject, Object relatedListener) {
         removeListener(relatedListener, subject);
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void addDependency(EventList dependency, ListEventListener listener) {
-        // do nothing
-    }
-
-    /** {@inheritDoc} */
-    @Override
-    public void removeDependency(EventList dependency, ListEventListener listener) {
-        // do nothing
     }
 
     /** {@inheritDoc} */

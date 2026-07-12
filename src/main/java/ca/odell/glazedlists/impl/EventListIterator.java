@@ -76,12 +76,12 @@ public class EventListIterator<E> implements ListIterator<E>, ListEventListener<
             ListEventListener<E> gcProxy = new WeakReferenceProxy<>(source, this);
             source.addListEventListener(gcProxy);
             // do not manage dependencies for iterators, they never have multiple sources
-            source.getPublisher().removeDependency(source, gcProxy);
+            source.getPublisher().clearRelatedSubject(gcProxy);
 
         } else {
             source.addListEventListener(this);
             // do not manage dependencies for iterators, they never have multiple sources
-            source.getPublisher().removeDependency(source, this);
+            source.getPublisher().clearRelatedSubject(this);
         }
     }
 
