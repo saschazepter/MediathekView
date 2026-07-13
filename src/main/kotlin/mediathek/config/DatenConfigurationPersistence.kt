@@ -90,7 +90,7 @@ class DatenConfigurationPersistence(
     private fun clearConfiguration() {
         programSets.clear()
         replacementRules.clear()
-        abos.list.clear()
+        abos.list.clearWithoutNotification()
         downloads.clearQueuedDownloads()
         blacklist.rules.clear()
         bookmarks.list.clear()

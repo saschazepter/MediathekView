@@ -32,7 +32,7 @@ internal class OldConfigFileImporterTest {
         val abos = daten.abos.list
         val originalAbos = ArrayList(abos)
         try {
-            abos.clear()
+            abos.clearWithoutNotification()
             val configFile = tempDir.resolve("old-mediathek.xml")
             Files.writeString(
                 configFile,
@@ -80,8 +80,8 @@ internal class OldConfigFileImporterTest {
             assertEquals("Save", imported.psetName)
             assertTrue(imported.isDoNotStartAutomatically)
         } finally {
-            abos.clear()
-            abos.addAll(originalAbos)
+            abos.clearWithoutNotification()
+            originalAbos.forEach(abos::addAboWithoutNotification)
         }
     }
 }
