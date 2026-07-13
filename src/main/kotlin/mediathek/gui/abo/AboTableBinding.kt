@@ -18,6 +18,7 @@
 
 package mediathek.gui.abo
 
+import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.FilterList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.matchers.AbstractMatcherEditor
@@ -44,9 +45,10 @@ class AboTableBinding(
     private val senderMatcherEditor = SenderAboMatcherEditor()
     private val filteredAbos = FilterList(sourceList, senderMatcherEditor)
     private val sortedAbos = SortedList(filteredAbos)
+    private val swingAbos: EventList<DatenAbo> = GlazedListsSwing.swingThreadProxyList(sortedAbos)
     private val tableModel: AdvancedTableModel<DatenAbo> =
-        GlazedListsSwing.eventTableModelWithThreadProxyList(sortedAbos, tableFormat)
-    private val selectionModel = DefaultEventSelectionModel(sortedAbos)
+        GlazedListsSwing.eventTableModel(swingAbos, tableFormat)
+    private val selectionModel = DefaultEventSelectionModel(swingAbos)
     private val comparatorChooser: TableComparatorChooser<DatenAbo>
     private val sortPersister: GlazedSortKeysPersister<DatenAbo>
     private var disposed = false
@@ -129,6 +131,8 @@ class AboTableBinding(
             .onFailure { logger.debug("Ignoring already disposed abo table selection model", it) }
         runCatching { tableModel.dispose() }
             .onFailure { logger.debug("Ignoring already disposed abo table model", it) }
+        runCatching { swingAbos.dispose() }
+            .onFailure { logger.debug("Ignoring already disposed abo Swing proxy list", it) }
         runCatching { sortedAbos.dispose() }
             .onFailure { logger.debug("Ignoring already disposed abo sorted list", it) }
         runCatching { filteredAbos.dispose() }

@@ -23,6 +23,9 @@ import mediathek.daten.ListeAbo
 import mediathek.daten.abo.DatenAbo
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.SwingUtilities
 
 class AboTableFormatTest {
@@ -117,6 +120,45 @@ class AboTableFormatTest {
             } finally {
                 binding.dispose()
             }
+        }
+    }
+
+    @Test
+    fun backgroundUpdatesAdjustSelectionOnTheEdt() {
+        val abos = ListeAbo().apply {
+            addAboWithoutNotification(createAbo("ARD", "Bravo"))
+            addAboWithoutNotification(createAbo("ZDF", "Charlie"))
+        }
+        lateinit var binding: AboTableBinding
+        lateinit var table: AboTable
+        val selectionChanged = CountDownLatch(1)
+        val selectionChangedOnEdt = AtomicBoolean()
+
+        SwingUtilities.invokeAndWait {
+            table = AboTable()
+            binding = AboTableBinding(table, abos)
+            table.selectionModel.setSelectionInterval(1, 1)
+            table.selectionModel.addListSelectionListener { event ->
+                if (!event.valueIsAdjusting) {
+                    selectionChangedOnEdt.set(SwingUtilities.isEventDispatchThread())
+                    selectionChanged.countDown()
+                }
+            }
+        }
+
+        try {
+            Thread.ofVirtual().start {
+                abos.addAbo(createAbo("ARTE", "Alpha"))
+            }.join()
+
+            assertTrue(selectionChanged.await(5, TimeUnit.SECONDS))
+            assertTrue(selectionChangedOnEdt.get())
+            SwingUtilities.invokeAndWait {
+                assertEquals(1, binding.selectedAboCount)
+                assertSame(binding.selectedAbos.single(), binding.aboAtViewRow(table.selectedRow))
+            }
+        } finally {
+            SwingUtilities.invokeAndWait(binding::dispose)
         }
     }
 

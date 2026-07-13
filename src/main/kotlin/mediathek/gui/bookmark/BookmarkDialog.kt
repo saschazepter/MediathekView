@@ -18,6 +18,7 @@
 
 package mediathek.gui.bookmark
 
+import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.ObservableElementList
 import ca.odell.glazedlists.SortedList
@@ -86,6 +87,7 @@ class BookmarkDialog(
     private lateinit var selectionModel: DefaultEventSelectionModel<BookmarkData>
     private lateinit var observedBookmarks: ObservableElementList<BookmarkData>
     private lateinit var sortedBookmarks: SortedList<BookmarkData>
+    private lateinit var swingBookmarks: EventList<BookmarkData>
     private lateinit var tableModel: AdvancedTableModel<BookmarkData>
     private lateinit var comparatorChooser: TableComparatorChooser<BookmarkData>
     private lateinit var tableColumnSettingsManager: BookmarkTableColumnSettingsManager<BookmarkData>
@@ -131,6 +133,7 @@ class BookmarkDialog(
             disposeResource("table comparator chooser", comparatorChooser::dispose)
             disposeResource("selection model", selectionModel::dispose)
             disposeResource("table model", tableModel::dispose)
+            disposeResource("Swing bookmark proxy list", swingBookmarks::dispose)
             disposeResource("sorted bookmark list", sortedBookmarks::dispose)
             disposeResource("observable bookmark list", observedBookmarks::dispose)
         } finally {
@@ -284,8 +287,9 @@ class BookmarkDialog(
             sortedBookmarks = SortedList(observedBookmarks, BookmarkAddedAtComparator())
         }
 
-        tableModel = GlazedListsSwing.eventTableModelWithThreadProxyList(sortedBookmarks, getTableFormat())
-        selectionModel = DefaultEventSelectionModel(sortedBookmarks)
+        swingBookmarks = GlazedListsSwing.swingThreadProxyList(sortedBookmarks)
+        tableModel = GlazedListsSwing.eventTableModel(swingBookmarks, getTableFormat())
+        selectionModel = DefaultEventSelectionModel(swingBookmarks)
         selectionModel.addListSelectionListener { event ->
             if (!event.valueIsAdjusting) {
                 updateActionStates()
