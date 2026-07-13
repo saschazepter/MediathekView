@@ -33,7 +33,7 @@ open class ThreadedMatcherEditor<E> @JvmOverloads constructor(
     private val scope = CoroutineScope(SupervisorJob() + dispatcher)
     private val matcherEvents = Channel<MatcherEditor.Event<E>>(Channel.UNLIMITED)
     private val closed = AtomicBoolean()
-    private val queuingMatcherEditorListener = MatcherEditor.Listener<E> { event ->
+    private val queuingMatcherEditorListener = MatcherEditor.Listener { event: MatcherEditor.Event<E> ->
         if (!closed.get()) matcherEvents.trySend(event)
     }
     private val processingJob: Job
@@ -60,7 +60,8 @@ open class ThreadedMatcherEditor<E> @JvmOverloads constructor(
         }
     }
 
-    override fun getMatcher(): Matcher<E> = source.matcher
+    override val matcher: Matcher<E>
+        get() = source.matcher
 
     protected open fun coalesceMatcherEvents(
         matcherEvents: List<MatcherEditor.Event<E>>,

@@ -88,8 +88,9 @@ class SwingFilterDialog internal constructor(
     private val sourceThemaList: EventList<String> = BasicEventList()
     private val themaList = EventListWithEmptyFirstEntry(sourceThemaList)
     private val themaComboBoxModel = GlazedListsSwing.eventComboBoxModel(themaList)
-    private val senderEventList = filterController.senderList()
-    private val senderListModel = GlazedListsSwing.eventListModel(senderEventList)
+    private val senderListModel = DefaultListModel<String>().apply {
+        addAll(filterController.senderList())
+    }
     private val renameFilterAction = RenameFilterAction()
     private val deleteCurrentFilterAction = DeleteCurrentFilterAction()
     private val addNewFilterAction = AddNewFilterAction()
@@ -226,9 +227,7 @@ class SwingFilterDialog internal constructor(
         senderCheckBoxList.model = DefaultListModel<String>()
         jcbThema.model = DefaultComboBoxModel<String>()
         try {
-            disposeResource("sender list model", senderListModel::dispose)
             disposeResource("theme combo box model", themaComboBoxModel::dispose)
-            disposeResource("sender list", senderEventList::close)
             disposeResource("theme list adapter", themaList::close)
             disposeResource("theme source list", sourceThemaList::close)
         } finally {

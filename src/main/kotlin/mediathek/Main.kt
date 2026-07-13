@@ -654,7 +654,7 @@ object Main {
         val applicationConfiguration = ApplicationConfiguration.getInstance()
         if (!applicationConfiguration.isNewSenderActivationQuestionCompleted) {
             val hasNewSendersToActivate =
-                !SenderFilmlistLoadApprover.senderSet.containsAll(SenderListBoxModel.providedSenderList)
+                !SenderFilmlistLoadApprover.senderSet.containsAll(SenderListBoxModel.providedSenders)
             if (!hasNewSendersToActivate) {
                 applicationConfiguration.isNewSenderActivationQuestionCompleted = true
                 return@withContext

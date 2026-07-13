@@ -18,8 +18,6 @@
 
 package mediathek.gui.tabs.tab_film.filter
 
-import ca.odell.glazedlists.BasicEventList
-import ca.odell.glazedlists.EventList
 import mediathek.config.application.FilterConfiguration
 import mediathek.tool.FilterDTO
 import org.apache.logging.log4j.LogManager
@@ -60,8 +58,7 @@ class FilmFilterController(
     }
 
     interface DataProvider {
-        /** Returns an EventList owned by the caller, which must close it after use. */
-        fun senderList(): EventList<String>
+        fun senderList(): List<String>
         fun getThemen(senders: Collection<String>): List<String>
         fun hasFilmData(): Boolean = false
     }
@@ -89,7 +86,7 @@ class FilmFilterController(
     }
 
     private object NoOpDataProvider : DataProvider {
-        override fun senderList(): EventList<String> = BasicEventList()
+        override fun senderList(): List<String> = emptyList()
         override fun getThemen(senders: Collection<String>): List<String> = emptyList()
     }
 
@@ -129,7 +126,7 @@ class FilmFilterController(
 
     fun availableFilters(): List<FilterDTO> = filterConfig.availableFilters
 
-    fun senderList(): EventList<String> = dataProvider.senderList()
+    fun senderList(): List<String> = dataProvider.senderList()
 
     fun canDeleteCurrentFilter(): Boolean = filterConfig.availableFilterCount > 1
 

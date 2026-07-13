@@ -54,5 +54,17 @@ an intentional difference is documented below.
 | `impl/sort/BooleanComparator.java` | `impl/sort/BooleanComparator.kt` | Preserves null-first ordering and class-based equality. |
 | `impl/sort/ComparableComparator.java` | `impl/sort/ComparableComparator.kt` | Preserves null-first natural ordering and class-based equality. |
 | `impl/sort/ReverseComparator.java` | `impl/sort/ReverseComparator.kt` | Rejects a null source comparator at construction. |
+| `impl/matchers/TrueMatcher.java` | `impl/matchers/TrueMatcher.kt` | Preserves the generic singleton factory. |
+| `impl/matchers/FalseMatcher.java` | `impl/matchers/FalseMatcher.kt` | Preserves the generic singleton factory. |
+| `impl/matchers/NullMatcher.java` | `impl/matchers/NullMatcher.kt` | Preserves the generic singleton factory and string representation. |
+| `impl/matchers/NotNullMatcher.java` | `impl/matchers/NotNullMatcher.kt` | Preserves the generic singleton factory and string representation. |
+| `impl/matchers/NonNullAndNonEmptyStringMatcher.java` | `impl/matchers/NonNullAndNonEmptyStringMatcher.kt` | Makes the accepted nullable input explicit. |
+| `impl/matchers/NotMatcher.java` | `impl/matchers/NotMatcher.kt` | Preserves null-parent validation and string representation. |
+| `impl/matchers/TypeMatcher.java` | `impl/matchers/TypeMatcher.kt` | No intentional behavior change. |
+| `impl/matchers/AndMatcher.java` | `impl/matchers/AndMatcher.kt` | Preserves contravariant matcher varargs. |
+| `impl/matchers/OrMatcher.java` | `impl/matchers/OrMatcher.kt` | Preserves contravariant matcher varargs. |
+| `impl/matchers/BeanPropertyMatcher.java` | `impl/matchers/BeanPropertyMatcher.kt` | Makes nullable bean input and expected property values explicit. |
+| `impl/matchers/RangeMatcher.java` | `impl/matchers/RangeMatcher.kt` | Preserves inclusive and unbounded ranges, including null comparable behavior. |
+| `impl/sort/BeanPropertyComparator.java` | `impl/sort/BeanPropertyComparator.kt` | Makes nullable bean comparison explicit. |
 
 See `LICENSE` in this directory for the upstream licensing terms.

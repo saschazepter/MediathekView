@@ -18,8 +18,6 @@
 
 package mediathek.gui.tabs.tab_film.filter
 
-import ca.odell.glazedlists.BasicEventList
-import ca.odell.glazedlists.EventList
 import mediathek.config.application.FilterConfiguration
 import mediathek.gui.tabs.tab_film.filter_selection.FilmFilterSelectionController
 import mediathek.gui.tabs.tab_film.filter_selection.FilterSelectionComboBox
@@ -58,10 +56,7 @@ internal object SwingFilterDialogTestFixture {
         filterConfiguration.setCurrentFilter(firstFilter)
 
         val reloadRequester = RecordingReloadRequester()
-        val senderList = TrackingEventList<String>().apply {
-            add("ARD")
-            add("3Sat")
-        }
+        val senderList = listOf("ARD", "3Sat")
         val controller = FilmFilterController(
             filterConfiguration,
             dataProvider = object : FilmFilterController.DataProvider {
@@ -113,7 +108,6 @@ internal object SwingFilterDialogTestFixture {
             comboBox = comboBoxOf(dialog),
             requestedNewFilterName = requestedNewFilterName,
             requestedRenameName = requestedRenameName,
-            senderListDisposeCalls = { senderList.disposeCalls },
             secondFilter = secondFilter,
             zeitraumFilter = zeitraumFilter
         )
@@ -201,7 +195,6 @@ internal object SwingFilterDialogTestFixture {
         val comboBox: FilterSelectionComboBox,
         val requestedNewFilterName: AtomicReference<String?>,
         val requestedRenameName: AtomicReference<String?>,
-        val senderListDisposeCalls: () -> Int,
         val secondFilter: FilterDTO,
         val zeitraumFilter: FilterDTO,
     )
@@ -221,19 +214,4 @@ internal object SwingFilterDialogTestFixture {
 
     private class TestFilterConfiguration(configuration: XMLConfiguration) : FilterConfiguration(configuration)
 
-    private class TrackingEventList<E>(
-        private val delegate: EventList<E> = BasicEventList(),
-    ) : EventList<E> by delegate {
-        var disposeCalls = 0
-            private set
-
-        override fun dispose() {
-            disposeCalls++
-            delegate.dispose()
-        }
-
-        override fun close() {
-            dispose()
-        }
-    }
 }

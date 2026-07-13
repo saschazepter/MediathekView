@@ -19,7 +19,6 @@
 package mediathek.gui.abo
 
 import ca.odell.glazedlists.swing.AdvancedTableModel
-import ca.odell.glazedlists.swing.GlazedListsSwing
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.audiothek.ui.table.CenteredTextCellRenderer
@@ -299,8 +298,7 @@ class ManageAboPanel(
 
         swingToolBar.add(JLabel("Abos für Sender:"))
         senderCombo.maximumSize = Dimension(150, Int.MAX_VALUE)
-        val model = GlazedListsSwing.eventComboBoxModel(EventListWithEmptyFirstEntry(filmCatalog.allSendersList))
-        senderCombo.model = model
+        senderCombo.model = SenderListComboBoxModel(filmCatalog.allSenders)
         senderCombo.selectedIndex = 0
         senderCombo.addActionListener { applySenderFilter() }
         swingToolBar.add(senderCombo)

@@ -21,7 +21,7 @@ package mediathek.gui.abo
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.FilterList
 import ca.odell.glazedlists.SortedList
-import ca.odell.glazedlists.matchers.AbstractMatcherEditor
+import ca.odell.glazedlists.matchers.SetMatcherEditor
 import ca.odell.glazedlists.swing.AdvancedTableModel
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel
 import ca.odell.glazedlists.swing.GlazedListsSwing
@@ -42,7 +42,9 @@ class AboTableBinding(
     filmCountProvider: (DatenAbo) -> Int? = { 0 },
 ) {
     private val tableFormat = AboTableFormat(filmCountProvider)
-    private val senderMatcherEditor = SenderAboMatcherEditor()
+    private val senderMatcherEditor = SetMatcherEditor.create<DatenAbo, String>(
+        SetMatcherEditor.Mode.WHITELIST_EMPTY_MATCH_ALL,
+    ) { abo -> abo.sender }
     private val filteredAbos = FilterList(sourceList, senderMatcherEditor)
     private val sortedAbos = SortedList(filteredAbos)
     private val swingAbos: EventList<DatenAbo> = GlazedListsSwing.swingThreadProxyList(sortedAbos)
@@ -81,7 +83,10 @@ class AboTableBinding(
     }
 
     fun setSenderFilter(sender: String?) {
-        senderMatcherEditor.sender = sender.orEmpty()
+        val selectedSender = sender.orEmpty()
+        senderMatcherEditor.setMatchSet(
+            if (selectedSender.isEmpty()) emptySet() else setOf(selectedSender),
+        )
     }
 
     fun aboAtViewRow(viewRow: Int): DatenAbo? {
@@ -137,22 +142,6 @@ class AboTableBinding(
             .onFailure { logger.debug("Ignoring already disposed abo sorted list", it) }
         runCatching { filteredAbos.dispose() }
             .onFailure { logger.debug("Ignoring already disposed abo filtered list", it) }
-    }
-
-    private class SenderAboMatcherEditor : AbstractMatcherEditor<DatenAbo>() {
-        var sender: String = ""
-            set(value) {
-                if (field == value) {
-                    return
-                }
-
-                field = value
-                if (value.isEmpty()) {
-                    fireMatchAll()
-                } else {
-                    fireChanged { abo -> abo.sender == value }
-                }
-            }
     }
 
     private companion object {

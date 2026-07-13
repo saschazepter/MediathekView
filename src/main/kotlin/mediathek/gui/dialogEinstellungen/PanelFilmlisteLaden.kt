@@ -18,7 +18,6 @@
 
 package mediathek.gui.dialogEinstellungen
 
-import ca.odell.glazedlists.swing.GlazedListsSwing
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -35,6 +34,7 @@ import mediathek.tool.*
 import net.engio.mbassy.listener.Handler
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
 import java.awt.Frame
+import javax.swing.DefaultListModel
 import javax.swing.JCheckBox
 import javax.swing.JOptionPane
 import javax.swing.JTextField
@@ -93,7 +93,9 @@ class PanelFilmlisteLaden(
     }
 
     private fun setupSenderList() {
-        val model = GlazedListsSwing.eventComboBoxModelWithThreadProxyList(SenderListBoxModel.providedSenderList)
+        val model = DefaultListModel<String>().apply {
+            addAll(SenderListBoxModel.providedSenders)
+        }
         senderCheckBoxList.model = model
 
         val selectionModel = senderCheckBoxList.checkBoxListSelectionModel

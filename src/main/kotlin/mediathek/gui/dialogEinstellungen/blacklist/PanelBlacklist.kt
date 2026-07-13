@@ -354,7 +354,7 @@ class PanelBlacklist(
             }
         }
 
-        jComboBoxSender.model = SenderListComboBoxModel(filmCatalog.allSendersList)
+        jComboBoxSender.model = SenderListComboBoxModel(filmCatalog.allSenders)
         comboThemaLaden()
 
         var handler = TextCopyPasteHandler(jTextFieldThemaTitel)

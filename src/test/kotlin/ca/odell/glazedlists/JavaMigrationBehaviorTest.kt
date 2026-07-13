@@ -5,6 +5,7 @@ import ca.odell.glazedlists.impl.beans.BeanTableFormat
 import ca.odell.glazedlists.impl.filter.StringLengthComparator
 import ca.odell.glazedlists.impl.functions.ConstantFunction
 import ca.odell.glazedlists.impl.sort.BooleanComparator
+import ca.odell.glazedlists.impl.sort.BeanPropertyComparator
 import ca.odell.glazedlists.impl.sort.ComparableComparator
 import ca.odell.glazedlists.impl.sort.ComparatorChain
 import ca.odell.glazedlists.impl.sort.ReverseComparator
@@ -95,6 +96,36 @@ internal class JavaMigrationBehaviorTest {
         assertTrue(byDescendingLength.compare("long", "x") < 0)
         assertTrue(byDescendingLength.compare("x", "long") > 0)
         assertEquals(0, byDescendingLength.compare("aa", "bb"))
+    }
+
+    @Test
+    fun beanPropertyComparatorKeepsNullOrderingEqualityAndFacadeBehavior() {
+        val nullsFirstByInteger = Comparator<Any?> { left, right ->
+            when {
+                left === right -> 0
+                left == null -> -1
+                right == null -> 1
+                else -> (left as Int).compareTo(right as Int)
+            }
+        }
+        val comparator = BeanPropertyComparator(SampleBean::class.java, "count", nullsFirstByInteger)
+        val equalComparator = BeanPropertyComparator(SampleBean::class.java, "count", nullsFirstByInteger)
+
+        assertTrue(comparator.compare(SampleBean(1, "one"), SampleBean(2, "two")) < 0)
+        assertTrue(comparator.compare(null, SampleBean(1, "one")) < 0)
+        assertEquals(comparator, equalComparator)
+        assertEquals(comparator.hashCode(), equalComparator.hashCode())
+        assertNotEquals(
+            comparator,
+            BeanPropertyComparator(SampleBean::class.java, "count", Comparator<Any?> { _, _ -> 0 }),
+        )
+
+        val facadeComparator = GlazedLists.beanPropertyComparator(
+            SampleBean::class.java,
+            "count",
+            nullsFirstByInteger,
+        )
+        assertTrue(facadeComparator.compare(SampleBean(2, "two"), SampleBean(1, "one")) > 0)
     }
 
     @Test

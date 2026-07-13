@@ -67,7 +67,7 @@ class AboTableFormatTest {
     }
 
     @Test
-    fun bindingFiltersRowsBySelectedSender() {
+    fun bindingFiltersRowsByExactSenderAndMatchesAllWhenCleared() {
         val abos = ListeAbo().apply {
             addAboWithoutNotification(createAbo("ZDF", "Zebra"))
             addAboWithoutNotification(createAbo("ARD", "Alpha"))
@@ -77,16 +77,33 @@ class AboTableFormatTest {
             val table = AboTable()
             val binding = AboTableBinding(table, abos)
             try {
-                binding.setSenderFilter("ARD")
+                assertEquals(2, table.rowCount)
 
+                binding.setSenderFilter("ARD")
                 assertEquals(1, table.rowCount)
                 assertEquals("Alpha", table.getValueAt(0, DatenAbo.ABO_NAME))
                 assertEquals("ARD", binding.aboAtViewRow(0)?.sender)
+
+                binding.setSenderFilter("ard")
+                assertEquals(0, table.rowCount)
+
+                binding.setSenderFilter("ZDF")
+                assertEquals(1, table.rowCount)
+                assertEquals("ZDF", binding.aboAtViewRow(0)?.sender)
+
+                binding.setSenderFilter(null)
+                assertEquals(setOf("ARD", "ZDF"), table.senders(binding))
+
+                binding.setSenderFilter("")
+                assertEquals(setOf("ARD", "ZDF"), table.senders(binding))
             } finally {
                 binding.dispose()
             }
         }
     }
+
+    private fun AboTable.senders(binding: AboTableBinding): Set<String> =
+        (0 until rowCount).mapNotNull(binding::aboAtViewRow).mapTo(mutableSetOf(), DatenAbo::sender)
 
     @Test
     fun aboTableKeepsSortingOutOfSwingRowSorter() {

@@ -85,10 +85,10 @@ internal class ThreadedMatcherEditorModernizationTest {
     }
 
     private class TestMatcherEditor : AbstractMatcherEditor<String>() {
-        private val matcher = Matcher<String> { true }
+        private val testMatcher = Matcher<String> { true }
 
-        fun constrain() = fireConstrained(matcher)
-        fun relax() = fireRelaxed(matcher)
+        fun constrain() = fireConstrained(testMatcher)
+        fun relax() = fireRelaxed(testMatcher)
     }
 
     private class CapturingExecutor : Executor {
