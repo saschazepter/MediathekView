@@ -33,7 +33,31 @@ class EventListWithEmptyFirstEntry(sourceList: EventList<String>) : TransformedL
     override fun isWritable(): Boolean = false
 
     override fun listChanged(listChanges: ListEvent<String>) {
-        updates.forwardEvent(listChanges)
+        updates.beginEvent()
+        if (listChanges.isReordering) {
+            val sourceReorderMap = listChanges.reorderMap
+            val shiftedReorderMap = IntArray(sourceReorderMap.size + 1)
+            shiftedReorderMap[0] = 0
+            sourceReorderMap.forEachIndexed { index, previousIndex ->
+                shiftedReorderMap[index + 1] = previousIndex + 1
+            }
+            updates.reorder(shiftedReorderMap)
+        } else {
+            while (listChanges.next()) {
+                val shiftedIndex = listChanges.index + 1
+                when (listChanges.type) {
+                    ListEvent.INSERT -> updates.elementInserted(shiftedIndex, listChanges.newValue)
+                    ListEvent.UPDATE -> updates.elementUpdated(
+                        shiftedIndex,
+                        listChanges.oldValue,
+                        listChanges.newValue,
+                    )
+
+                    ListEvent.DELETE -> updates.elementDeleted(shiftedIndex, listChanges.oldValue)
+                }
+            }
+        }
+        updates.commitEvent()
     }
 
     override fun get(index: Int): String =
