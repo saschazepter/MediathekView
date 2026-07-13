@@ -29,7 +29,6 @@ import org.kordamp.ikonli.swing.FontIcon
 import java.awt.Color
 import java.awt.Component
 import javax.swing.JTable
-import javax.swing.SwingConstants.CENTER
 
 internal class FilmActionCellRenderer(
     private val downloads: DownloadServices,

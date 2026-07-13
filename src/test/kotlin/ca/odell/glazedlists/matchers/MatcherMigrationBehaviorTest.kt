@@ -1,14 +1,9 @@
 package ca.odell.glazedlists.matchers
 
-import ca.odell.glazedlists.FunctionList
 import ca.odell.glazedlists.Filterator
+import ca.odell.glazedlists.FunctionList
 import ca.odell.glazedlists.TextFilterator
-import ca.odell.glazedlists.impl.matchers.AndMatcher
-import ca.odell.glazedlists.impl.matchers.BeanPropertyMatcher
-import ca.odell.glazedlists.impl.matchers.NotMatcher
-import ca.odell.glazedlists.impl.matchers.OrMatcher
-import ca.odell.glazedlists.impl.matchers.RangeMatcher
-import ca.odell.glazedlists.impl.matchers.TypeMatcher
+import ca.odell.glazedlists.impl.matchers.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

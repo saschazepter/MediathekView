@@ -2,11 +2,7 @@ package ca.odell.glazedlists.matchers
 
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.FilterList
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.lang.reflect.Modifier
 import java.util.function.Consumer

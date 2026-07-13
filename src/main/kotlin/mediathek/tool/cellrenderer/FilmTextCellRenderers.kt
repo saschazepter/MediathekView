@@ -30,10 +30,6 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 import javax.swing.JTable
-import javax.swing.SwingConstants.CENTER
-import javax.swing.SwingConstants.LEFT
-import javax.swing.SwingConstants.RIGHT
-import javax.swing.SwingConstants.TOP
 
 internal class FilmTextCellRenderer(
     appearance: FilmTableAppearance,

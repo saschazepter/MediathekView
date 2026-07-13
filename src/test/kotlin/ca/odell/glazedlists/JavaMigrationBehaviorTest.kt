@@ -4,11 +4,7 @@ import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.impl.beans.BeanTableFormat
 import ca.odell.glazedlists.impl.filter.StringLengthComparator
 import ca.odell.glazedlists.impl.functions.ConstantFunction
-import ca.odell.glazedlists.impl.sort.BooleanComparator
-import ca.odell.glazedlists.impl.sort.BeanPropertyComparator
-import ca.odell.glazedlists.impl.sort.ComparableComparator
-import ca.odell.glazedlists.impl.sort.ComparatorChain
-import ca.odell.glazedlists.impl.sort.ReverseComparator
+import ca.odell.glazedlists.impl.sort.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

@@ -24,12 +24,7 @@ import mediathek.gui.tabs.tab_film.actions.CopyUrlToClipboardAction
 import mediathek.gui.tabs.tab_film.actions.FilmActionHost
 import mediathek.gui.tabs.tab_film.actions.FilmUiActions
 import mediathek.gui.tabs.tab_film.context.TableContextMenuHandler
-import mediathek.tool.cellrenderer.FilmActionCellRenderer
-import mediathek.tool.cellrenderer.FilmFormattedValueCellRenderer
-import mediathek.tool.cellrenderer.FilmGeoCellRenderer
-import mediathek.tool.cellrenderer.FilmSenderCellRenderer
-import mediathek.tool.cellrenderer.FilmTextCellRenderer
-import mediathek.tool.cellrenderer.FilmTitleCellRenderer
+import mediathek.tool.cellrenderer.*
 import mediathek.tool.datum.DatumFilm
 import mediathek.tool.models.FilmColumn
 import java.awt.Component

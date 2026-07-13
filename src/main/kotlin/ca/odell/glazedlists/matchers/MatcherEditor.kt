@@ -4,8 +4,7 @@
 package ca.odell.glazedlists.matchers
 
 import ca.odell.glazedlists.FilterList
-import java.util.EventListener
-import java.util.EventObject
+import java.util.*
 import java.util.function.Consumer
 
 /** Produces immutable matchers and publishes events when the active matcher changes. */

@@ -7,6 +7,8 @@ import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.event.ListEventListener
+import ca.odell.glazedlists.matchers.CompositeMatcherEditor.Companion.AND
+import ca.odell.glazedlists.matchers.CompositeMatcherEditor.Companion.OR
 
 /** Combines zero or more delegate matcher editors using AND or OR semantics. */
 open class CompositeMatcherEditor<E> @JvmOverloads constructor(

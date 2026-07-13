@@ -27,10 +27,6 @@ import org.apache.logging.log4j.LogManager
 import java.awt.Color
 import java.awt.Component
 import javax.swing.JTable
-import javax.swing.SwingConstants.CENTER
-import javax.swing.SwingConstants.LEFT
-import javax.swing.SwingConstants.LEADING
-import javax.swing.SwingConstants.TOP
 import javax.swing.UIManager
 
 internal abstract class FilmCellRenderer(

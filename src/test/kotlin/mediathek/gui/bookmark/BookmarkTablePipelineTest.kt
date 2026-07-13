@@ -8,9 +8,7 @@ import ca.odell.glazedlists.impl.beans.BeanTableFormat
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel
 import ca.odell.glazedlists.swing.GlazedListsSwing
 import mediathek.tool.withWriteLock
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.concurrent.CountDownLatch

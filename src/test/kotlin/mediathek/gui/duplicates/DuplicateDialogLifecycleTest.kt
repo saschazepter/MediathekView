@@ -8,9 +8,7 @@ import mediathek.daten.DatenFilm
 import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.duplicates.details.DuplicateFilmDetailsDialog
 import mediathek.gui.duplicates.overview.FilmDuplicateOverviewDialog
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Assumptions.assumeFalse
 import org.junit.jupiter.api.Test
 import java.awt.GraphicsEnvironment
