@@ -1,6 +1,7 @@
 package mediathek.gui.duplicates
 
 import ca.odell.glazedlists.BasicEventList
+import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.swing.AdvancedTableModel
 import mediathek.daten.DatenFilm
@@ -9,6 +10,7 @@ import mediathek.gui.duplicates.details.DuplicateFilmDetailsDialog
 import mediathek.gui.duplicates.overview.FilmDuplicateOverviewDialog
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assumptions.assumeFalse
 import org.junit.jupiter.api.Test
 import java.awt.GraphicsEnvironment
@@ -28,6 +30,7 @@ internal class DuplicateDialogLifecycleTest {
             var sortedEvents = 0
             sorted.addListEventListener { sortedEvents++ }
 
+            assertSame(sorted, modelSource(model))
             dialog.dispose()
             dialog.dispose()
             val eventsAfterDisposal = sortedEvents
@@ -45,8 +48,10 @@ internal class DuplicateDialogLifecycleTest {
         onEdt {
             val owner = JFrame()
             val dialog = FilmDuplicateOverviewDialog(owner, FilmCatalog())
+            val source = privateField<EventList<DatenFilm>>(dialog, "filmList")
             val model = privateField<AdvancedTableModel<DatenFilm>>(dialog, "tableModel")
 
+            assertSame(source, modelSource(model))
             dialog.dispose()
             dialog.dispose()
 
@@ -71,8 +76,12 @@ internal class DuplicateDialogLifecycleTest {
     }
 
     private fun assertModelDisposed(model: AdvancedTableModel<DatenFilm>) {
+        assertNull(modelSource(model))
+    }
+
+    private fun modelSource(model: AdvancedTableModel<DatenFilm>): Any? {
         val sourceField = model.javaClass.getDeclaredField("source")
         sourceField.isAccessible = true
-        assertNull(sourceField.get(model))
+        return sourceField.get(model)
     }
 }

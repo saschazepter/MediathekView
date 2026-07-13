@@ -62,7 +62,7 @@ class DuplicateFilmDetailsDialog(
     }
 
     private fun setupTable() {
-        tableModel = GlazedListsSwing.eventTableModelWithThreadProxyList(
+        tableModel = GlazedListsSwing.eventTableModel(
             sortedList,
             DuplicateFilmDetailsTableFormat(),
         )

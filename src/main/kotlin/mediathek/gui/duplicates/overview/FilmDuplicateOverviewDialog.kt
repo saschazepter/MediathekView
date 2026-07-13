@@ -55,7 +55,7 @@ class FilmDuplicateOverviewDialog(
     }
 
     private fun setupTable() {
-        tableModel = GlazedListsSwing.eventTableModelWithThreadProxyList(
+        tableModel = GlazedListsSwing.eventTableModel(
             filmList,
             DuplicateFilmDetailsTableFormat(),
         )

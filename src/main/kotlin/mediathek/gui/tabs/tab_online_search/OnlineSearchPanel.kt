@@ -293,16 +293,6 @@ class OnlineSearchPanel(
     private fun clearDisplayedResults() {
         resultList.updateResults { clear() }
         table.clearSelection()
-        refreshResultTable()
-    }
-
-    private fun refreshResultTable() {
-        table.revalidate()
-        table.repaint()
-        SwingUtilities.invokeLater {
-            table.revalidate()
-            table.repaint()
-        }
     }
 
     private fun launchSearch(

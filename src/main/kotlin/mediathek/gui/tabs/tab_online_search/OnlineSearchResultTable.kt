@@ -20,7 +20,7 @@ class OnlineSearchResultTable(
 ) : JTable() {
     private val sortedResults = SortedList(source, null)
     private val eventTableModel: AdvancedTableModel<OnlineSearchResult> =
-        GlazedListsSwing.eventTableModelWithThreadProxyList(
+        GlazedListsSwing.eventTableModel(
             sortedResults,
             OnlineSearchResultTableFormat(),
         )
