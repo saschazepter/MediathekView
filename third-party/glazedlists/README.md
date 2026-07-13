@@ -1,8 +1,9 @@
 # Glazed Lists
 
-The Glazed Lists core source in `src/main/java/ca/odell/glazedlists` and its
-resources in `src/main/resources/resources` are vendored from the upstream
-Glazed Lists repository:
+The Glazed Lists core source in `src/main/java/ca/odell/glazedlists`, Kotlin
+conversions in `src/main/kotlin/ca/odell/glazedlists`, and resources in
+`src/main/resources/resources` are vendored from the upstream Glazed Lists
+repository:
 
 - Repository: https://github.com/glazedlists/glazedlists
 - Revision: `9ace85251cc0f8e70eebc9dfdb2cb2a920cb0275`
@@ -32,5 +33,26 @@ Upstream's `impl.testing` package is omitted from production sources. Its useful
 event-consistency and serialization behaviors are covered by JUnit tests under
 `src/test`; obsolete timing helpers and trivial test-data factories are not
 included.
+
+## Kotlin conversions
+
+Converted sources retain their upstream package and Java-facing contract unless
+an intentional difference is documented below.
+
+| Upstream Java source | Local Kotlin source | Intentional differences |
+| --- | --- | --- |
+| `TransactionList.java` | `TransactionList.kt` | Adds `withTransaction`; rollback-disabled construction is internal. |
+| `UndoRedoSupport.java` | `UndoRedoSupport.kt` | Uses Kotlin collection and functional-interface idioms. |
+| `impl/ObservableConnector.java` | `impl/ObservableConnector.kt` | Replaces deprecated `Observable`/`Observer` with a property-change contract. |
+| `impl/beans/BeanConnector.java` | `impl/beans/BeanConnector.kt` | Uses Kotlin reflection-call and null-safety idioms. |
+| `impl/filter/SearchTerm.java` | `impl/filter/SearchTerm.kt` | Uses a data class while excluding reusable scratch state from value equality. |
+| `impl/gui/ThreadProxyEventList.java` | `impl/gui/ThreadProxyEventList.kt` | Adds idempotent disposal and protects queued event state. |
+| `impl/swing/SwingThreadProxyEventList.java` | `impl/swing/SwingThreadProxyEventList.kt` | No intentional behavior change. |
+| `matchers/ThreadedMatcherEditor.java` | `matchers/ThreadedMatcherEditor.kt` | Uses coroutines and virtual threads and is explicitly closeable. |
+| `impl/functions/ConstantFunction.java` | `impl/functions/ConstantFunction.kt` | No intentional behavior change. |
+| `impl/filter/StringLengthComparator.java` | `impl/filter/StringLengthComparator.kt` | No intentional behavior change. |
+| `impl/sort/BooleanComparator.java` | `impl/sort/BooleanComparator.kt` | Preserves null-first ordering and class-based equality. |
+| `impl/sort/ComparableComparator.java` | `impl/sort/ComparableComparator.kt` | Preserves null-first natural ordering and class-based equality. |
+| `impl/sort/ReverseComparator.java` | `impl/sort/ReverseComparator.kt` | Rejects a null source comparator at construction. |
 
 See `LICENSE` in this directory for the upstream licensing terms.

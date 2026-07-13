@@ -2,9 +2,12 @@ package ca.odell.glazedlists
 
 import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.impl.beans.BeanTableFormat
+import ca.odell.glazedlists.impl.filter.StringLengthComparator
+import ca.odell.glazedlists.impl.functions.ConstantFunction
 import ca.odell.glazedlists.impl.sort.BooleanComparator
 import ca.odell.glazedlists.impl.sort.ComparableComparator
 import ca.odell.glazedlists.impl.sort.ComparatorChain
+import ca.odell.glazedlists.impl.sort.ReverseComparator
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
@@ -66,6 +69,32 @@ internal class JavaMigrationBehaviorTest {
         assertEquals(comparableComparator, equalComparableComparator)
         assertEquals(comparableComparator.hashCode(), equalComparableComparator.hashCode())
         assertTrue(hashSetOf(comparableComparator).contains(equalComparableComparator))
+
+        assertTrue(booleanComparator.compare(null, false) < 0)
+        assertTrue(booleanComparator.compare(false, true) < 0)
+        assertEquals(0, booleanComparator.compare(null, null))
+        assertTrue(comparableComparator.compare(null, "a") < 0)
+        assertTrue(comparableComparator.compare("a", "b") < 0)
+        assertEquals(0, comparableComparator.compare(null, null))
+    }
+
+    @Test
+    fun convertedLeafFunctionsAndComparatorsKeepTheirContracts() {
+        val constant = ConstantFunction<String, Int?>(null)
+        assertNull(constant.evaluate("ignored"))
+
+        val naturalOrder = Comparator.naturalOrder<String>()
+        val reverse = ReverseComparator(naturalOrder)
+        val equalReverse = ReverseComparator(naturalOrder)
+        assertSame(naturalOrder, reverse.sourceComparator)
+        assertTrue(reverse.compare("a", "b") > 0)
+        assertEquals(reverse, equalReverse)
+        assertEquals(reverse.hashCode(), equalReverse.hashCode())
+
+        val byDescendingLength = StringLengthComparator()
+        assertTrue(byDescendingLength.compare("long", "x") < 0)
+        assertTrue(byDescendingLength.compare("x", "long") > 0)
+        assertEquals(0, byDescendingLength.compare("aa", "bb"))
     }
 
     @Test

@@ -2,9 +2,9 @@ package ca.odell.glazedlists
 
 import ca.odell.glazedlists.event.ListEvent
 
-open class TransactionList<E> @JvmOverloads constructor(
+open class TransactionList<E> private constructor(
     source: EventList<E>,
-    rollbackEnabled: Boolean = true,
+    rollbackEnabled: Boolean,
 ) : TransformedList<E, E>(source) {
     private var rollbackSupport: UndoRedoSupport<E>? =
         if (rollbackEnabled) UndoRedoSupport.install(source) else null
@@ -16,6 +16,8 @@ open class TransactionList<E> @JvmOverloads constructor(
         }
         source.addListEventListener(this)
     }
+
+    constructor(source: EventList<E>) : this(source, true)
 
     fun beginEvent() {
         beginEvent(true)
@@ -38,6 +40,7 @@ open class TransactionList<E> @JvmOverloads constructor(
     }
 
     fun <R> withTransaction(buffered: Boolean = true, block: TransactionList<E>.() -> R): R {
+        check(rollbackSupport != null) { "withTransaction requires rollback support" }
         beginEvent(buffered)
         return try {
             block().also { commitEvent() }
@@ -72,7 +75,11 @@ open class TransactionList<E> @JvmOverloads constructor(
         }
 
         fun commit() {
+            val committedEdit = rollbackEdit
             rollbackEdit = null
+            if (committedEdit != null && !committedEdit.isEmpty) {
+                txContextStack.lastOrNull()?.add(committedEdit)
+            }
             if (eventStarted) updates.commitEvent()
         }
 
@@ -89,5 +96,10 @@ open class TransactionList<E> @JvmOverloads constructor(
 
             if (eventStarted) updates.discardEvent()
         }
+    }
+
+    companion object {
+        internal fun <E> withoutRollback(source: EventList<E>): TransactionList<E> =
+            TransactionList(source, false)
     }
 }

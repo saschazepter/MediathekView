@@ -58,6 +58,86 @@ internal class TransactionAndUndoSupportTest {
     }
 
     @Test
+    fun consecutiveFailedTransactionsRollbackToTheLatestCommittedState() {
+        val source = basicEventListOf("A")
+        val transaction = TransactionList(source)
+
+        listOf("B", "C").forEach { replacement ->
+            assertThrows(IllegalArgumentException::class.java) {
+                transaction.withTransaction {
+                    this[0] = replacement
+                    throw IllegalArgumentException("abort")
+                }
+            }
+            assertEquals(listOf("A"), source)
+        }
+    }
+
+    @Test
+    fun committedNestedTransactionRemainsPartOfOuterRollback() {
+        val source = basicEventListOf("A")
+        val transaction = TransactionList(source)
+        var eventCount = 0
+        transaction.addListEventListener { eventCount++ }
+
+        transaction.beginEvent()
+        transaction += "B"
+        transaction.beginEvent()
+        transaction += "C"
+        transaction.commitEvent()
+        transaction.rollbackEvent()
+
+        assertEquals(listOf("A"), source)
+        assertEquals(0, eventCount)
+    }
+
+    @Test
+    fun rolledBackNestedTransactionDoesNotPolluteOuterCommit() {
+        val source = basicEventListOf("A")
+        val transaction = TransactionList(source)
+        var eventCount = 0
+        transaction.addListEventListener { eventCount++ }
+
+        transaction.beginEvent()
+        transaction += "B"
+        transaction.beginEvent()
+        transaction += "C"
+        transaction.rollbackEvent()
+        transaction += "D"
+        transaction.commitEvent()
+
+        assertEquals(listOf("A", "B", "D"), source)
+        assertEquals(1, eventCount)
+    }
+
+    @Test
+    fun rollbackDisabledConstructionIsNotPublic() {
+        assertEquals(
+            listOf(listOf(EventList::class.java)),
+            TransactionList::class.java.constructors
+                .filterNot { it.isSynthetic }
+                .map { it.parameterTypes.toList() },
+        )
+    }
+
+    @Test
+    fun rollbackDisabledTransactionRejectsTransactionBlockBeforeMutation() {
+        val source = basicEventListOf("A")
+        val transaction = TransactionList.withoutRollback(source)
+        var blockExecuted = false
+
+        assertThrows(IllegalStateException::class.java) {
+            transaction.withTransaction {
+                blockExecuted = true
+                add("B")
+            }
+        }
+
+        assertFalse(blockExecuted)
+        assertEquals(listOf("A"), source)
+    }
+
+    @Test
     fun undoAndRedoPreserveCompoundChangeBehavior() {
         val source = basicEventListOf("A", "B")
         val support = UndoRedoSupport.install(source)

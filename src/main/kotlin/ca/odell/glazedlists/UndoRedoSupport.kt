@@ -7,7 +7,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.function.Consumer
 
 class UndoRedoSupport<E> private constructor(source: EventList<E>) {
-    private var txSource: TransactionList<E>? = TransactionList(source, false)
+    private var txSource: TransactionList<E>? = TransactionList.withoutRollback(source)
     private val txSourceListener = TXSourceListener()
     private val listenerList = CopyOnWriteArrayList<Listener>()
     private var ignoreListEvent = 0
@@ -84,10 +84,14 @@ class UndoRedoSupport<E> private constructor(source: EventList<E>) {
 
     private inner class TXSourceListener : ListEventListener<E> {
         override fun listChanged(listChanges: ListEvent<E>) {
-            if (ignoreListEvent > 0) return
-
             val source = requireTxSource()
             val previousElements = requireNotNull(priorElements) { "Undo support has been uninstalled" }
+
+            if (ignoreListEvent > 0) {
+                synchronizeSnapshot(listChanges, source, previousElements)
+                return
+            }
+
             val edit = CompositeEdit()
 
             while (listChanges.next()) {
@@ -116,6 +120,21 @@ class UndoRedoSupport<E> private constructor(source: EventList<E>) {
             }
 
             if (!edit.isEmpty) fireUndoableEditHappened(edit.simplestEdit)
+        }
+
+        private fun synchronizeSnapshot(
+            listChanges: ListEvent<E>,
+            source: EventList<E>,
+            previousElements: MutableList<E>,
+        ) {
+            while (listChanges.next()) {
+                val changeIndex = listChanges.index
+                when (listChanges.type) {
+                    ListEvent.INSERT -> previousElements.add(changeIndex, source[changeIndex])
+                    ListEvent.DELETE -> previousElements.removeAt(changeIndex)
+                    ListEvent.UPDATE -> previousElements[changeIndex] = source[changeIndex]
+                }
+            }
         }
     }
 
