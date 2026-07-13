@@ -23,6 +23,9 @@ import mediathek.daten.DatenFilm
 import mediathek.gui.tabs.tab_film.table.FilmTableAppearance
 import mediathek.tool.models.FilmColumn
 import java.awt.Component
+import java.awt.Graphics
+import java.awt.Graphics2D
+import java.awt.Rectangle
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
@@ -95,6 +98,8 @@ internal class FilmTitleCellRenderer(
 internal class FilmSenderCellRenderer(
     appearance: FilmTableAppearance,
 ) : FilmCellRenderer(appearance) {
+    private var arteLocaleCode: String? = null
+
     override fun renderFilmCell(
         table: JTable,
         value: Any?,
@@ -104,10 +109,42 @@ internal class FilmSenderCellRenderer(
         filmColumn: FilmColumn,
         film: DatenFilm,
     ): Component {
+        arteLocaleCode = null
         if (appearance.showSenderIcons) {
-            setSenderIcon(valueText(value), getSenderCellDimension(table, row, column), isSelected)
+            setSenderIcon(film.sender, getSenderCellDimension(table, row, column), isSelected)
+            arteLocaleCode = ArteLocaleBadge.localeCode(film.sender)
         }
         return this
+    }
+
+    override fun paintComponent(graphics: Graphics) {
+        super.paintComponent(graphics)
+        val localeCode = arteLocaleCode ?: return
+        val senderIcon = icon ?: return
+        val iconBounds = Rectangle(
+            insets.left + (width - insets.left - insets.right - senderIcon.iconWidth) / 2,
+            insets.top + (height - insets.top - insets.bottom - senderIcon.iconHeight) / 2,
+            senderIcon.iconWidth,
+            senderIcon.iconHeight,
+        )
+        val visibleIconBounds = ArteLocaleBadge.visibleIconBounds(
+            iconBounds,
+            Rectangle(
+                insets.left,
+                insets.top,
+                width - insets.left - insets.right,
+                height - insets.top - insets.bottom,
+            ),
+        )
+        if (visibleIconBounds.isEmpty) {
+            return
+        }
+        val badgeGraphics = graphics.create() as Graphics2D
+        try {
+            ArteLocaleBadge.paint(badgeGraphics, localeCode, visibleIconBounds)
+        } finally {
+            badgeGraphics.dispose()
+        }
     }
 }
 
