@@ -1,275 +1,14 @@
 package mediathek.gui.dialogEinstellungen;
 
-import mediathek.config.application.ApplicationConfiguration;
-import mediathek.tool.*;
-import mediathek.tool.models.NonEditableTableModel;
-
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.EtchedBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.Optional;
 
-public class PanelDateinamen extends JPanel {
-    @FunctionalInterface
-    interface AddReplacementRuleDialog {
-        Optional<ReplaceEntry> show(Component parent);
-    }
-
-    private final ReplacementRules replacementRules;
-    private final AddReplacementRuleDialog addReplacementRuleDialog;
-    private boolean stopBeob;
-
-    public PanelDateinamen(ReplacementRules replacementRules) {
-        this(replacementRules, PanelDateinamen::showAddReplacementRuleDialog);
-    }
-
-    PanelDateinamen(ReplacementRules replacementRules, AddReplacementRuleDialog addReplacementRuleDialog) {
-        this.replacementRules = replacementRules;
-        this.addReplacementRuleDialog = addReplacementRuleDialog;
+public class PanelDateinamenBase extends JPanel {
+    public PanelDateinamenBase() {
         initComponents();
-
-        jLabelAlert.setVisible(false);
-        jLabelAlert.setText("");
-        jLabelAlert.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/triangle-exclamation.svg", 32f));
-        jButtonPlus.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/plus.svg"));
-        jButtonMinus.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/minus.svg"));
-        jButtonUp.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/arrow-up.svg"));
-        jButtonDown.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/arrow-down.svg"));
-        jButtonReset.addActionListener(_ -> {
-            replacementRules.initDefaults();
-            reloadTable();
-            updateTextFields();
-        });
-        jButtonPlus.addActionListener(_ -> addReplacementRuleDialog.show(this).ifPresent(entry -> {
-            replacementRules.add(entry.getFrom(), entry.getTo());
-            reloadTable();
-            tabelle.setRowSelectionInterval(tabelle.getRowCount() - 1, tabelle.getRowCount() - 1);
-            updateTextFields();
-        }));
-        jButtonMinus.addActionListener(_ -> {
-            final int selectedTableRow = tabelle.getSelectedRow();
-            if (selectedTableRow != -1) {
-                replacementRules.removeAt(tabelle.convertRowIndexToModel(selectedTableRow));
-                reloadTable();
-                updateTextFields();
-            }
-        });
-        jButtonUp.addActionListener(_ -> moveSelectedRule(true));
-        jButtonDown.addActionListener(_ -> moveSelectedRule(false));
-        reloadTable();
-        updateTextFields();
-        tabelle.getSelectionModel().addListSelectionListener(new BeobachterTableSelect());
-        jTextFieldVon.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateFromText();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateFromText();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateFromText();
-            }
-        });
-        jTextFieldNach.getDocument().addDocumentListener(new DocumentListener() {
-
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateToText();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateToText();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateToText();
-            }
-        });
-
-        var handler = new TextCopyPasteHandler<>(jTextFieldNach);
-        jTextFieldNach.setComponentPopupMenu(handler.getPopupMenu());
-
-        handler = new TextCopyPasteHandler<>(jTextFieldVon);
-        jTextFieldVon.setComponentPopupMenu(handler.getPopupMenu());
-
-        var applicationConfiguration = ApplicationConfiguration.getInstance();
-        jCheckBoxTable.addActionListener(_ -> applicationConfiguration.setUseFilenameReplaceTable(jCheckBoxTable.isSelected()));
-        jCheckBoxTable.setSelected(applicationConfiguration.getUseFilenameReplaceTable());
-
-        jCheckBoxAscii.addActionListener(_ -> applicationConfiguration.setOnlyAsciiFilenames(jCheckBoxAscii.isSelected()));
-        jCheckBoxAscii.setSelected(applicationConfiguration.getOnlyAsciiFilenames());
-    }
-
-    private void updateFromText() {
-        if (!stopBeob) {
-            final int selectedTableRow = tabelle.getSelectedRow();
-            if (selectedTableRow != -1) {
-                replacementRules.setFrom(tabelle.convertRowIndexToModel(selectedTableRow), jTextFieldVon.getText());
-                reloadTable();
-            }
-        }
-    }
-
-    private void updateToText() {
-        if (!stopBeob) {
-            final int selectedTableRow = tabelle.getSelectedRow();
-            if (selectedTableRow != -1) {
-                replacementRules.setTo(tabelle.convertRowIndexToModel(selectedTableRow), jTextFieldNach.getText());
-                reloadTable();
-            }
-        }
-    }
-
-    private void moveSelectedRule(boolean up) {
-        final int rows = tabelle.getSelectedRow();
-        if (rows != -1) {
-            final int row = tabelle.convertRowIndexToModel(rows);
-            final int newIndex = replacementRules.up(row, up);
-            reloadTable();
-            tabelle.setRowSelectionInterval(newIndex, newIndex);
-            tabelle.scrollRectToVisible(tabelle.getCellRect(newIndex, 0, true));
-        } else {
-            NoSelectionErrorDialog.show(this);
-        }
-
-    }
-
-    private static Optional<ReplaceEntry> showAddReplacementRuleDialog(Component parent) {
-        var dialog = new JDialog(SwingUtilities.getWindowAncestor(parent), "Neue Ersetzungsregel", Dialog.ModalityType.APPLICATION_MODAL);
-        var fromField = new JTextField(24);
-        var toField = new JTextField(24);
-        var okButton = new JButton("OK");
-        var cancelButton = new JButton("Abbrechen");
-        var result = new ReplaceEntry[1];
-
-        okButton.setEnabled(false);
-        fromField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                updateOkButton();
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                updateOkButton();
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-                updateOkButton();
-            }
-
-            private void updateOkButton() {
-                okButton.setEnabled(!fromField.getText().isEmpty());
-            }
-        });
-
-        okButton.addActionListener(_ -> {
-            result[0] = new ReplaceEntry(fromField.getText(), toField.getText());
-            dialog.dispose();
-        });
-        cancelButton.addActionListener(_ -> dialog.dispose());
-
-        var inputPanel = new JPanel(new GridBagLayout());
-        var constraints = new GridBagConstraints();
-        constraints.insets = new Insets(4, 4, 4, 4);
-        constraints.anchor = GridBagConstraints.WEST;
-        inputPanel.add(new JLabel("Von:"), constraints);
-        constraints.gridx = 1;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.weightx = 1.0;
-        inputPanel.add(fromField, constraints);
-        constraints.gridx = 0;
-        constraints.gridy = 1;
-        constraints.fill = GridBagConstraints.NONE;
-        constraints.weightx = 0.0;
-        inputPanel.add(new JLabel("Nach:"), constraints);
-        constraints.gridx = 1;
-        constraints.fill = GridBagConstraints.HORIZONTAL;
-        constraints.weightx = 1.0;
-        inputPanel.add(toField, constraints);
-
-        var buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.add(okButton);
-        buttonPanel.add(cancelButton);
-
-        dialog.getContentPane().setLayout(new BorderLayout(8, 8));
-        dialog.getContentPane().add(inputPanel, BorderLayout.CENTER);
-        dialog.getContentPane().add(buttonPanel, BorderLayout.SOUTH);
-        dialog.getRootPane().setDefaultButton(okButton);
-        dialog.pack();
-        dialog.setLocationRelativeTo(parent);
-        fromField.requestFocusInWindow();
-        dialog.setVisible(true);
-
-        return Optional.ofNullable(result[0]);
-    }
-
-    private void reloadTable() {
-        stopBeob = true;
-        int selectedTableRow = tabelle.getSelectedRow();
-        if (selectedTableRow != -1)
-            selectedTableRow = tabelle.convertRowIndexToModel(selectedTableRow);
-
-        var model = new NonEditableTableModel(new Object[][]{}, replacementRules.columnNames());
-        model.setRowCount(0);
-        for (ReplaceEntry entry : replacementRules.entries()) {
-            model.addRow(entry.toArray());
-        }
-
-        tabelle.setModel(model);
-        if (selectedTableRow != -1) {
-            if (tabelle.getRowCount() > 0 && selectedTableRow < tabelle.getRowCount()) {
-                tabelle.setRowSelectionInterval(selectedTableRow, selectedTableRow);
-            } else if (tabelle.getRowCount() > 0 && selectedTableRow > 0) {
-                tabelle.setRowSelectionInterval(tabelle.getRowCount() - 1, tabelle.getRowCount() - 1);
-            } else if (tabelle.getRowCount() > 0) {
-                tabelle.setRowSelectionInterval(0, 0);
-            }
-        } else if (tabelle.getRowCount() > 0) {
-            tabelle.setRowSelectionInterval(0, 0);
-        }
-        jLabelAlert.setVisible(replacementRules.check());
-        stopBeob = false;
-    }
-
-    private void updateTextFields() {
-        stopBeob = true;
-        final int selectedTableRow = tabelle.getSelectedRow();
-        try {
-            if (selectedTableRow != -1) {
-                var model = tabelle.getModel();
-                var modelRow = tabelle.convertRowIndexToModel(selectedTableRow);
-                jTextFieldVon.setText(model.getValueAt(modelRow, ReplacementRules.VON_NR).toString());
-                jTextFieldNach.setText(model.getValueAt(modelRow, ReplacementRules.NACH_NR).toString());
-            } else {
-                jTextFieldVon.setText("");
-                jTextFieldNach.setText("");
-            }
-        } finally {
-            stopBeob = false;
-        }
-
-        jTextFieldNach.setEnabled(selectedTableRow >= 0);
-        jTextFieldVon.setEnabled(selectedTableRow >= 0);
-        jButtonUp.setEnabled(selectedTableRow >= 0);
-        jButtonDown.setEnabled(selectedTableRow >= 0);
-        jLabelNach.setEnabled(selectedTableRow >= 0);
-        jLabelVon.setEnabled(selectedTableRow >= 0);
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -518,33 +257,18 @@ public class PanelDateinamen extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JCheckBox jCheckBoxTable;
-    private JButton jButtonReset;
-    private JTable tabelle;
-    private JLabel jLabelAlert;
-    private JLabel jLabelVon;
-    private JTextField jTextFieldVon;
-    private JLabel jLabelNach;
-    private JTextField jTextFieldNach;
-    private JButton jButtonMinus;
-    private JButton jButtonPlus;
-    private JButton jButtonDown;
-    private JButton jButtonUp;
-    private JCheckBox jCheckBoxAscii;
+    protected JCheckBox jCheckBoxTable;
+    protected JButton jButtonReset;
+    protected JTable tabelle;
+    protected JLabel jLabelAlert;
+    protected JLabel jLabelVon;
+    protected JTextField jTextFieldVon;
+    protected JLabel jLabelNach;
+    protected JTextField jTextFieldNach;
+    protected JButton jButtonMinus;
+    protected JButton jButtonPlus;
+    protected JButton jButtonDown;
+    protected JButton jButtonUp;
+    protected JCheckBox jCheckBoxAscii;
     // End of variables declaration//GEN-END:variables
-
-    private class BeobachterTableSelect implements ListSelectionListener {
-
-        @Override
-        public void valueChanged(ListSelectionEvent event) {
-            if (!stopBeob) {
-                if (!event.getValueIsAdjusting()) {
-                    stopBeob = true;
-                    updateTextFields();
-                    stopBeob = false;
-                }
-            }
-        }
-    }
-
 }

@@ -95,12 +95,7 @@ class OldConfigFileImporter(
 
     private fun importReplaceList(parser: XMLStreamReader): Boolean {
         val sa = Array(ReplacementRules.MAX_ELEM) { "" }
-        val success = get(parser, sa)
-        return if (success) {
-            replacementRules.add(sa)
-            true
-        } else
-            false
+        return get(parser, sa) && replacementRules.add(sa)
     }
 
     private fun get(parser: XMLStreamReader, strRet: Array<String>): Boolean {

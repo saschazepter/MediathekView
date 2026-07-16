@@ -16,8 +16,8 @@ internal class ReplacementRulesTest {
     @Test
     fun addIgnoresEmptySearchEntriesImmediately() {
         val rules = ReplacementRules()
-        rules.add("", "_")
-        rules.add("a", "b")
+        assertFalse(rules.add("", "_"))
+        assertTrue(rules.add("a", "b"))
 
         assertEquals("b", rules.replace("a", false))
         assertEquals(listOf(ReplaceEntry("a", "b")), rules.entries())
@@ -27,7 +27,7 @@ internal class ReplacementRulesTest {
     fun addValuesIgnoresEmptySearchEntriesImmediately() {
         val rules = ReplacementRules()
 
-        rules.add(arrayOf("", "_"))
+        assertFalse(rules.add(arrayOf("", "_")))
 
         assertTrue(rules.entries().isEmpty())
     }
@@ -80,5 +80,27 @@ internal class ReplacementRulesTest {
         rules.add("x", "y")
 
         assertFalse(rules.check())
+    }
+
+    @Test
+    fun moveUpMovesEntryTowardStartAndStopsAtBoundary() {
+        val rules = ReplacementRules()
+        rules.add("first", "1")
+        rules.add("second", "2")
+
+        assertEquals(0, rules.moveUp(1))
+        assertEquals(0, rules.moveUp(0))
+        assertEquals(listOf("second", "first"), rules.entries().map(ReplaceEntry::from))
+    }
+
+    @Test
+    fun moveDownMovesEntryTowardEndAndStopsAtBoundary() {
+        val rules = ReplacementRules()
+        rules.add("first", "1")
+        rules.add("second", "2")
+
+        assertEquals(1, rules.moveDown(0))
+        assertEquals(1, rules.moveDown(1))
+        assertEquals(listOf("second", "first"), rules.entries().map(ReplaceEntry::from))
     }
 }

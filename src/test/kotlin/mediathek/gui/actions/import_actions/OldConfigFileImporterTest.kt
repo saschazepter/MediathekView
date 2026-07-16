@@ -84,4 +84,32 @@ internal class OldConfigFileImporterTest {
             originalAbos.forEach(abos::addAboWithoutNotification)
         }
     }
+
+    @Test
+    fun rejectedEmptyReplacementRuleIsNotCountedAsImported() {
+        daten.replacementRules.clear()
+        val configFile = tempDir.resolve("old-replacement-rules.xml")
+        Files.writeString(
+            configFile,
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Mediathek>
+                <Ersetzungstabelle>
+                    <von></von>
+                    <nach>_</nach>
+                </Ersetzungstabelle>
+            </Mediathek>
+            """.trimIndent(),
+        )
+
+        val result = OldConfigFileImporter(daten.abos, daten.blacklist, daten.replacementRules).importAboBlacklist(
+            configFile.toString(),
+            importAbo = false,
+            importBlacklist = false,
+            importReplaceList = true,
+        )
+
+        assertEquals(0, result.foundReplaceListEntries)
+        assertTrue(daten.replacementRules.entries().isEmpty())
+    }
 }

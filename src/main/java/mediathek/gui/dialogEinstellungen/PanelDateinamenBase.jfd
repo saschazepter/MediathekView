@@ -51,6 +51,9 @@ new FormModel {
 					}
 					add( new FormComponent( "javax.swing.JCheckBox" ) {
 						name: "jCheckBoxTable"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 						"text": "Ersetzungstabelle anwenden"
 					} )
 					add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class org.jdesktop.layout.GroupLayout ) {
@@ -64,6 +67,9 @@ new FormModel {
 						}
 						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "jButtonReset"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 							"text": "Tabelle zurücksetzen"
 						} )
 						add( new FormContainer( "javax.swing.JScrollPane", new FormLayoutManager( class javax.swing.JScrollPane ) ) {
@@ -92,6 +98,9 @@ new FormModel {
 							}
 							add( new FormComponent( "javax.swing.JTable" ) {
 								name: "tabelle"
+								auxiliary() {
+									"JavaCodeGenerator.variableModifiers": 4
+								}
 								"model": new com.jformdesigner.model.SwingTableModel( new java.util.Vector {
 									add( new java.util.Vector {
 										add( null )
@@ -142,41 +151,71 @@ new FormModel {
 						} )
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "jLabelAlert"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 							"text": "Achtung"
 						} )
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "jLabelVon"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 							"text": "von:"
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "jTextFieldVon"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 						} )
 						add( new FormComponent( "javax.swing.JLabel" ) {
 							name: "jLabelNach"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 							"text": "nach:"
 						} )
 						add( new FormComponent( "javax.swing.JTextField" ) {
 							name: "jTextFieldNach"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "jButtonMinus"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 							"icon": new com.jformdesigner.model.SwingIcon( 0, "/mediathek/res/muster/button-remove.png" )
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "jButtonPlus"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 							"icon": new com.jformdesigner.model.SwingIcon( 0, "/mediathek/res/muster/button-add.png" )
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "jButtonDown"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 							"icon": new com.jformdesigner.model.SwingIcon( 0, "/mediathek/res/muster/button-move-down.png" )
 						} )
 						add( new FormComponent( "javax.swing.JButton" ) {
 							name: "jButtonUp"
+							auxiliary() {
+								"JavaCodeGenerator.variableModifiers": 4
+							}
 							"icon": new com.jformdesigner.model.SwingIcon( 0, "/mediathek/res/muster/button-move-up.png" )
 						} )
 					} )
 					add( new FormComponent( "javax.swing.JCheckBox" ) {
 						name: "jCheckBoxAscii"
+						auxiliary() {
+							"JavaCodeGenerator.variableModifiers": 4
+						}
 						"text": "Nur ASCII-Zeichen erlauben"
 						"toolTipText": "<html>Es werden alle Zeichen \"über 127\" ersetzt.  Auch Umlaute wie \"ö -> oe\" werden ersetzt.<br>Wenn die Ersetzungstabelle aktiv ist, wird sie vorher abgearbeitet.</html>"
 					} )

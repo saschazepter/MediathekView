@@ -37,21 +37,21 @@ class ReplacementRules {
         }
     }
 
-    fun add(from: String, to: String) {
+    fun add(from: String, to: String): Boolean {
         if (from.isEmpty()) {
-            return
+            return false
         }
         synchronized(lock) {
             entries.add(ReplaceEntry(from, to))
         }
+        return true
     }
 
-    fun add(values: Array<String>) {
+    fun add(values: Array<String>): Boolean =
         add(
             from = values.getOrElse(VON_NR) { "" },
             to = values.getOrElse(NACH_NR) { "" },
         )
-    }
 
     fun removeAt(index: Int) {
         synchronized(lock) {
@@ -105,17 +105,14 @@ class ReplacementRules {
         return false
     }
 
-    fun up(idx: Int, up: Boolean): Int =
+    fun moveUp(idx: Int): Int = move(idx, -1)
+
+    fun moveDown(idx: Int): Int = move(idx, 1)
+
+    private fun move(idx: Int, offset: Int): Int =
         synchronized(lock) {
             val replace = entries.removeAt(idx)
-            var newIndex = idx
-            if (up) {
-                if (newIndex > 0) {
-                    --newIndex
-                }
-            } else if (newIndex < entries.size) {
-                ++newIndex
-            }
+            val newIndex = (idx + offset).coerceIn(0, entries.size)
             entries.add(newIndex, replace)
             newIndex
         }
