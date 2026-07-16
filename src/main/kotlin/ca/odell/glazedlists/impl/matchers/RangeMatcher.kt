@@ -11,7 +11,7 @@ open class RangeMatcher<D, E>(
     private val start: D?,
     private val end: D?,
     private val filterator: Filterator<D, E>?,
-) : Matcher<E> where D : Comparable<in D> {
+) : Matcher<E> where D : Comparable<D> {
     private val filterComparables = ArrayList<D?>()
 
     constructor(start: D?, end: D?) : this(start, end, null)
@@ -28,8 +28,8 @@ open class RangeMatcher<D, E>(
 
         return filterComparables.any { filterComparable ->
             filterComparable == null ||
-                (start == null || start.compareTo(filterComparable) <= 0) &&
-                (end == null || end.compareTo(filterComparable) >= 0)
+                (start == null || start <= filterComparable) &&
+                (end == null || end >= filterComparable)
         }
     }
 
