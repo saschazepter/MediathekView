@@ -1,7 +1,5 @@
 package mediathek.gui.dialogEinstellungen;
 
-import mediathek.config.Konstanten;
-import mediathek.config.application.ApplicationConfiguration;
 import net.miginfocom.layout.AC;
 import net.miginfocom.layout.CC;
 import net.miginfocom.layout.LC;
@@ -10,32 +8,9 @@ import net.miginfocom.swing.MigLayout;
 import javax.swing.*;
 import java.awt.*;
 
-public class PanelDownload extends JPanel {
-
-    public PanelDownload() {
+public class PanelDownloadBase extends JPanel {
+    public PanelDownloadBase() {
         initComponents();
-
-        var applicationConfiguration = ApplicationConfiguration.getInstance();
-        cbkDownloadError.setSelected(applicationConfiguration.getShowDownloadErrorMessage());
-        cbkDownloadError.addActionListener(_ -> applicationConfiguration.setShowDownloadErrorMessage(cbkDownloadError.isSelected()));
-
-        jCheckBoxBeep.setSelected(applicationConfiguration.getPlaySoundAfterDownload());
-        jCheckBoxBeep.addActionListener(_ -> applicationConfiguration.setPlaySoundAfterDownload(jCheckBoxBeep.isSelected()));
-
-        cbFetchMissingFileSize.setSelected(applicationConfiguration.getFetchMissingDownloadFileSize());
-        cbFetchMissingFileSize.addActionListener(_ -> applicationConfiguration.setFetchMissingDownloadFileSize(cbFetchMissingFileSize.isSelected()));
-
-        jButtonBeep.addActionListener(_ -> Toolkit.getDefaultToolkit().beep());
-
-        var countdown = applicationConfiguration.getDownloadContinuationTime();
-        if (countdown < 1 || countdown > Konstanten.DOWNLOAD_CONTINUATION_DEFAULT_TIME) {
-            countdown = Konstanten.DOWNLOAD_CONTINUATION_DEFAULT_TIME;
-        }
-        spDefaultDownloadContinuation.setValue(countdown);
-        spDefaultDownloadContinuation.addChangeListener(_ -> {
-            int val = (int)spDefaultDownloadContinuation.getValue();
-            applicationConfiguration.setDownloadContinuationTime(val);
-        });
     }
 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
@@ -104,10 +79,10 @@ public class PanelDownload extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JCheckBox cbkDownloadError;
-    private JCheckBox jCheckBoxBeep;
-    private JButton jButtonBeep;
-    private JCheckBox cbFetchMissingFileSize;
-    private JSpinner spDefaultDownloadContinuation;
+    protected JCheckBox cbkDownloadError;
+    protected JCheckBox jCheckBoxBeep;
+    protected JButton jButtonBeep;
+    protected JCheckBox cbFetchMissingFileSize;
+    protected JSpinner spDefaultDownloadContinuation;
     // End of variables declaration//GEN-END:variables
 }
