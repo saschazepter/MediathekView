@@ -1,175 +1,12 @@
 package mediathek.gui.dialogEinstellungen;
 
-import mediathek.config.Konstanten;
-import mediathek.config.application.ApplicationConfiguration;
-import mediathek.gui.dialog.HelpTextDialog;
-import mediathek.tool.GetFile;
-import mediathek.tool.GuiFunktionenProgramme;
-import mediathek.tool.SVGIconUtilities;
-import org.apache.commons.lang3.SystemUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
 import javax.swing.*;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
 
-public class PanelProgrammPfade extends JPanel {
-    private static final Logger logger = LogManager.getLogger();
-    private static final Color COLOR_PINK = new Color(255, 200, 200);
-    private final boolean vlc, ffmpeg;
-    private final JFrame parentComponent;
-
-    public PanelProgrammPfade(JFrame parentFrame, boolean vvlc, boolean fffmpeg) {
+public class PanelProgrammPfadeBase extends JPanel {
+    public PanelProgrammPfadeBase() {
         initComponents();
-        vlc = vvlc;
-        ffmpeg = fffmpeg;
-        parentComponent = parentFrame;
-        init();
-        initBeob();
-    }
-
-    private void init() {
-        jButtonVlcPfad.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/folder-open.svg"));
-        jButtonFFmpegPfad.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/folder-open.svg"));
-        jButtonHilfe.setIcon(SVGIconUtilities.createSVGIcon("icons/fontawesome/circle-question.svg"));
-        jPanelVlc.setVisible(vlc);
-
-        jPanelFFmpeg.setVisible(ffmpeg);
-        var applicationConfiguration = ApplicationConfiguration.getInstance();
-        if (applicationConfiguration.getStandardVlcPath().isEmpty()) {
-            applicationConfiguration.setStandardVlcPath(GuiFunktionenProgramme.getMusterPfadVlc());
-        }
-        if (applicationConfiguration.getStandardFFmpegPath().isEmpty()) {
-            applicationConfiguration.setStandardFFmpegPath(GuiFunktionenProgramme.getMusterPfadFFmpeg());
-        }
-        jTextFieldVlc.setText(applicationConfiguration.getStandardVlcPath());
-        jTextFieldFFmpeg.setText(applicationConfiguration.getStandardFFmpegPath());
-    }
-
-    private void initBeob() {
-        jTextFieldVlc.getDocument().addDocumentListener(new BeobDoc());
-        jTextFieldFFmpeg.getDocument().addDocumentListener(new BeobDoc());
-
-        jButtonVlcPfad.addActionListener(new BeobPfad(jTextFieldVlc));
-        jButtonFFmpegPfad.addActionListener(new BeobPfad(jTextFieldFFmpeg));
-        jButtonVlcSuchen.addActionListener(_ -> {
-            ApplicationConfiguration.getInstance().setStandardVlcPath("");
-            jTextFieldVlc.setText(GuiFunktionenProgramme.getMusterPfadVlc());
-        });
-
-        jButtonFFmpegSuchen.addActionListener(_ -> {
-            ApplicationConfiguration.getInstance().setStandardFFmpegPath("");
-            jTextFieldFFmpeg.setText(GuiFunktionenProgramme.getMusterPfadFFmpeg());
-        });
-        jButtonHilfe.addActionListener(_ -> HelpTextDialog.show(parentComponent, GetFile.getHilfeSuchen(Konstanten.PFAD_HILFETEXT_STANDARD_PSET)));
-    }
-
-    private void check() {
-        var applicationConfiguration = ApplicationConfiguration.getInstance();
-        applicationConfiguration.setStandardVlcPath(jTextFieldVlc.getText());
-        applicationConfiguration.setStandardFFmpegPath(jTextFieldFFmpeg.getText());
-
-        try {
-            if (jTextFieldVlc.getText().isEmpty()) {
-                jTextFieldVlc.setBackground(COLOR_PINK);
-            }
-            else if (!new File(applicationConfiguration.getStandardVlcPath()).exists()) {
-                jTextFieldVlc.setBackground(COLOR_PINK);
-            }
-            else {
-                jTextFieldVlc.setBackground(javax.swing.UIManager.getDefaults().getColor("TextField.background"));
-            }
-        }
-        catch (Exception ex) {
-            jTextFieldVlc.setBackground(COLOR_PINK);
-        }
-
-        try {
-            if (jTextFieldFFmpeg.getText().isEmpty()) {
-                jTextFieldFFmpeg.setBackground(COLOR_PINK);
-            }
-            else if (!new File(applicationConfiguration.getStandardFFmpegPath()).exists()) {
-                jTextFieldFFmpeg.setBackground(COLOR_PINK);
-            }
-            else {
-                jTextFieldFFmpeg.setBackground(javax.swing.UIManager.getDefaults().getColor("TextField.background"));
-            }
-        }
-        catch (Exception ex) {
-            jTextFieldFFmpeg.setBackground(COLOR_PINK);
-        }
-    }
-
-    private class BeobDoc implements DocumentListener {
-
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            check();
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            check();
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            check();
-        }
-    }
-
-    private class BeobPfad implements ActionListener {
-
-        private final JTextField textField;
-
-        public BeobPfad(JTextField ttextField) {
-            textField = ttextField;
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            //we can use native chooser on Mac...
-            if (SystemUtils.IS_OS_MAC_OSX) {
-                FileDialog chooser = new FileDialog(parentComponent, "Programmdatei auswählen");
-                chooser.setMode(FileDialog.LOAD);
-                chooser.setVisible(true);
-                if (chooser.getFile() != null) {
-                    try {
-                        textField.setText(new File(chooser.getDirectory() + chooser.getFile()).getAbsolutePath());
-                    }
-                    catch (Exception ex) {
-                        logger.error(ex);
-                    }
-                }
-            }
-            else {
-                int returnVal;
-                JFileChooser chooser = new JFileChooser();
-                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                chooser.setFileHidingEnabled(false);
-                if (textField.getText().isEmpty()) {
-                    chooser.setCurrentDirectory(new File(SystemUtils.USER_HOME));
-                }
-                else {
-                    chooser.setCurrentDirectory(new File(textField.getText()));
-                }
-                returnVal = chooser.showOpenDialog(null);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    try {
-                        textField.setText(chooser.getSelectedFile().getAbsolutePath());
-                    }
-                    catch (Exception ex) {
-                        logger.error(ex);
-                    }
-                }
-            }
-        }
     }
 
     /** This method is called from within the constructor to
@@ -329,14 +166,14 @@ public class PanelProgrammPfade extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     // Generated using JFormDesigner non-commercial license
-    private JPanel jPanelVlc;
-    private JTextField jTextFieldVlc;
-    private JButton jButtonVlcPfad;
-    private JButton jButtonVlcSuchen;
-    private JButton jButtonHilfe;
-    private JPanel jPanelFFmpeg;
-    private JTextField jTextFieldFFmpeg;
-    private JButton jButtonFFmpegSuchen;
-    private JButton jButtonFFmpegPfad;
+    protected JPanel jPanelVlc;
+    protected JTextField jTextFieldVlc;
+    protected JButton jButtonVlcPfad;
+    protected JButton jButtonVlcSuchen;
+    protected JButton jButtonHilfe;
+    protected JPanel jPanelFFmpeg;
+    protected JTextField jTextFieldFFmpeg;
+    protected JButton jButtonFFmpegSuchen;
+    protected JButton jButtonFFmpegPfad;
     // End of variables declaration//GEN-END:variables
 }
