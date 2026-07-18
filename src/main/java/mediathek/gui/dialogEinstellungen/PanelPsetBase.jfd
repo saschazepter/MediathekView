@@ -11,12 +11,18 @@ new FormModel {
 			name: "this"
 			add( new FormContainer( "javax.swing.JPanel", new FormLayoutManager( class java.awt.BorderLayout ) ) {
 				name: "jPanelPset"
+				auxiliary() {
+					"JavaCodeGenerator.variableModifiers": 4
+				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 1"
 			} )
 			add( new FormComponent( "javax.swing.JCheckBox" ) {
 				name: "jCheckBoxAlleEinstellungen"
 				"text": "alle Einstellungen anzeigen"
+				auxiliary() {
+					"JavaCodeGenerator.variableModifiers": 4
+				}
 			}, new FormLayoutConstraints( class net.miginfocom.layout.CC ) {
 				"value": "cell 0 0"
 			} )
