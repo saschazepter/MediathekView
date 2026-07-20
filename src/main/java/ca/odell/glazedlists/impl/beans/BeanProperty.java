@@ -3,12 +3,12 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.beans;
 
-import ca.odell.glazedlists.impl.reflect.J2SE50ReturnTypeResolver;
-import ca.odell.glazedlists.impl.reflect.ReturnTypeResolver;
+import org.apache.commons.lang3.reflect.TypeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.lang.reflect.UndeclaredThrowableException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,8 +19,6 @@ import java.util.List;
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
 public class BeanProperty<T> {
-
-    private static final ReturnTypeResolver TYPE_RESOLVER = new J2SE50ReturnTypeResolver();
 
     /**
      * the target class
@@ -52,10 +50,9 @@ public class BeanProperty<T> {
     private List<Method> setterChain;
 
     /**
-     * commonly used paramters
+     * commonly used arguments
      */
     private static final Object[] EMPTY_ARGUMENTS = {};
-    private static final Class<?>[] EMPTY_PARAMETER_TYPES = {};
 
     /**
      * Creates a new {@link BeanProperty} that gets the specified property from the
@@ -83,7 +80,7 @@ public class BeanProperty<T> {
         for (int p = 0; p < propertyParts.length - 1; p++) {
             Method partGetter = findGetterMethod(currentClass, propertyParts[p]);
             commonChain.add(partGetter);
-            currentClass = TYPE_RESOLVER.getReturnType(currentClass, partGetter);
+            currentClass = resolveType(currentClass, partGetter.getGenericReturnType(), partGetter.getReturnType());
         }
 
         // look up the final getter
@@ -96,7 +93,7 @@ public class BeanProperty<T> {
                 getterChain.addAll(commonChain);
                 Method lastGetter = findGetterMethod(currentClass, propertyParts[propertyParts.length - 1]);
                 getterChain.add(lastGetter);
-                valueClass = TYPE_RESOLVER.getReturnType(currentClass, lastGetter);
+                valueClass = resolveType(currentClass, lastGetter.getGenericReturnType(), lastGetter.getReturnType());
             }
         }
 
@@ -107,7 +104,7 @@ public class BeanProperty<T> {
             Method lastSetter = findSetterMethod(currentClass, propertyParts[propertyParts.length - 1]);
             setterChain.add(lastSetter);
             if (valueClass == null)
-                valueClass = TYPE_RESOLVER.getFirstParameterType(currentClass, lastSetter);
+                valueClass = resolveType(currentClass, lastSetter.getGenericParameterTypes()[0], lastSetter.getParameterTypes()[0]);
         }
     }
 
@@ -120,14 +117,14 @@ public class BeanProperty<T> {
         Class<?> currentClass = targetClass;
         while (currentClass != null) {
             String getProperty = "get" + capitalize(property);
-            result = getMethod(currentClass, getProperty, EMPTY_PARAMETER_TYPES);
+            result = getMethod(currentClass, getProperty);
             if (result != null) {
                 validateGetter(result);
                 return result;
             }
 
             String isProperty = "is" + capitalize(property);
-            result = getMethod(currentClass, isProperty, EMPTY_PARAMETER_TYPES);
+            result = getMethod(currentClass, isProperty);
             if (result != null) {
                 validateGetter(result);
                 return result;
@@ -201,18 +198,15 @@ public class BeanProperty<T> {
      * Returns the specified property with a capitalized first character.
      */
     private String capitalize(String property) {
-        StringBuilder result = new StringBuilder();
-        result.append(Character.toUpperCase(property.charAt(0)));
-        result.append(property.substring(1));
-        return result.toString();
+        return Character.toUpperCase(property.charAt(0)) + property.substring(1);
     }
 
     /**
      * Gets the method with the specified name and arguments.
      */
-    private Method getMethod(Class<?> targetClass, String methodName, Class<?>[] parameterTypes) {
+    private Method getMethod(Class<?> targetClass, String methodName) {
         try {
-            return targetClass.getMethod(methodName, parameterTypes);
+            return targetClass.getMethod(methodName);
         }
         catch (NoSuchMethodException e) {
             return null;
@@ -239,6 +233,11 @@ public class BeanProperty<T> {
      */
     public Class<?> getValueClass() {
         return valueClass;
+    }
+
+    private static Class<?> resolveType(Class<?> context, Type genericType, Class<?> erasedType) {
+        final Class<?> resolvedType = TypeUtils.getRawType(genericType, context);
+        return resolvedType != null ? resolvedType : erasedType;
     }
 
     /**
@@ -279,9 +278,7 @@ public class BeanProperty<T> {
             return currentMember;
         }
         catch (IllegalAccessException e) {
-            SecurityException se = new SecurityException();
-            se.initCause(e);
-            throw se;
+            throw new SecurityException(null, e);
         }
         catch (InvocationTargetException e) {
             throw new UndeclaredThrowableException(e.getCause());
@@ -311,19 +308,10 @@ public class BeanProperty<T> {
             return setterMethod.invoke(currentMember, newValue);
         }
         catch (IllegalArgumentException e) {
-            String message = e.getMessage();
-
-            // improve the message if possible into something like:
-            // "MyClass.someMethod(SomeClassType) cannot be called with an instance of WrongClassType"
-            if ("argument type mismatch".equals(message) && setterMethod != null)
-                message = getSimpleName(setterMethod.getDeclaringClass()) + "." + setterMethod.getName() + "(" + getSimpleName(setterMethod.getParameterTypes()[0]) + ") cannot be called with an instance of " + getSimpleName(newValue.getClass());
-
-            throw new IllegalArgumentException(message);
+            throw new IllegalArgumentException(getSetterErrorMessage(e, setterMethod, newValue));
         }
         catch (IllegalAccessException e) {
-            SecurityException se = new SecurityException();
-            se.initCause(e);
-            throw se;
+            throw new SecurityException(null, e);
         }
         catch (InvocationTargetException e) {
             throw new UndeclaredThrowableException(e.getCause());
@@ -331,6 +319,18 @@ public class BeanProperty<T> {
         catch (RuntimeException e) {
             throw new RuntimeException("Failed to set property \"" + propertyName + "\" of " + beanClass + " to " + (newValue == null ? "null" : "instance of " + newValue.getClass()), e);
         }
+    }
+
+    private static String getSetterErrorMessage(IllegalArgumentException exception, Method setterMethod, Object newValue) {
+        final String message = exception.getMessage();
+        if (!"argument type mismatch".equals(message) || setterMethod == null)
+            return message;
+
+        // improve the message into something like:
+        // "MyClass.someMethod(SomeClassType) cannot be called with an instance of WrongClassType"
+        return getSimpleName(setterMethod.getDeclaringClass()) + "." + setterMethod.getName()
+                + "(" + getSimpleName(setterMethod.getParameterTypes()[0])
+                + ") cannot be called with an instance of " + getSimpleName(newValue.getClass());
     }
 
     /**
@@ -342,14 +342,6 @@ public class BeanProperty<T> {
      */
     private static String getSimpleName(Class<?> clazz) {
         return clazz.getSimpleName();
-    }
-
-    /**
-     * Character.isDigit answers <tt>true</tt> to some non-ascii
-     * digits. This one does not.
-     */
-    private static boolean isAsciiDigit(char c) {
-        return '0' <= c && c <= '9';
     }
 
     /**
