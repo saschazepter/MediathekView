@@ -9,7 +9,6 @@ import ca.odell.glazedlists.gui.TableFormat;
 import ca.odell.glazedlists.impl.filter.SearchTerm;
 import ca.odell.glazedlists.impl.filter.TextMatcher;
 import ca.odell.glazedlists.impl.filter.TextSearchStrategy;
-import ca.odell.glazedlists.impl.swing.ComboBoxPopupLocationFix;
 import ca.odell.glazedlists.matchers.Matcher;
 import ca.odell.glazedlists.matchers.Matchers;
 import ca.odell.glazedlists.matchers.TextMatcherEditor;
@@ -361,11 +360,6 @@ public final class AutoCompleteSupport<E> {
      * size the popup to accomodate the width of the prototype display value.
      */
     private final PopupMenuListener popupSizerHandler = new PopupSizer();
-
-    /**
-     * An unfortunately necessary fixer for a misplaced popup.
-     */
-    private ComboBoxPopupLocationFix popupLocationFix;
 
     /**
      * We ensure that selecting an item from the popup via the mouse never
@@ -812,9 +806,6 @@ public final class AutoCompleteSupport<E> {
         // calculate the popup's width according to the prototype value, if one exists
         this.popupMenu.addPopupMenuListener(popupSizerHandler);
 
-        // fix the popup's location
-        this.popupLocationFix = ComboBoxPopupLocationFix.install(this.comboBox);
-
         // start suppressing autocompletion when selecting values from the popup with the mouse
         this.popup.getList().addMouseListener(popupMouseHandler);
 
@@ -885,9 +876,6 @@ public final class AutoCompleteSupport<E> {
 
         // stop adjusting the popup's width according to the prototype value
         this.popupMenu.removePopupMenuListener(popupSizerHandler);
-
-        // stop fixing the combobox's popup location
-        this.popupLocationFix.uninstall();
 
         // stop suppressing autocompletion when selecting values from the popup with the mouse
         this.popup.getList().removeMouseListener(popupMouseHandler);

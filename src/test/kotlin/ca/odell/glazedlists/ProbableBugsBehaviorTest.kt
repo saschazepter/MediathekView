@@ -4,13 +4,19 @@ import ca.odell.glazedlists.impl.filter.SearchTerm
 import ca.odell.glazedlists.impl.filter.TextMatchers
 import ca.odell.glazedlists.impl.filter.TextSearchStrategy
 import ca.odell.glazedlists.matchers.TextMatcherEditor
+import ca.odell.glazedlists.swing.AutoCompleteSupport
 import ca.odell.glazedlists.swing.EventTableColumnModel
 import ca.odell.glazedlists.swing.TextComponentMatcherEditor
+import com.formdev.flatlaf.FlatLaf
+import com.formdev.flatlaf.themes.FlatMacLightLaf
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.beans.PropertyChangeEvent
+import javax.swing.JComboBox
 import javax.swing.JTextField
 import javax.swing.SwingUtilities
+import javax.swing.UIManager
 import javax.swing.event.ChangeEvent
 import javax.swing.event.ListSelectionEvent
 import javax.swing.event.TableColumnModelEvent
@@ -94,6 +100,27 @@ internal class ProbableBugsBehaviorTest {
                 assertEquals(1, matcherChanges)
             } finally {
                 editor.dispose()
+            }
+        }
+    }
+
+    @Test
+    fun autoCompleteSupportInstallsWithFlatLaf() {
+        SwingUtilities.invokeAndWait {
+            val previousLookAndFeel = UIManager.getLookAndFeel()
+            val comboBox = JComboBox<String>()
+            val source = BasicEventList<String>().apply { addAll(listOf("alpha", "beta")) }
+
+            try {
+                FlatLaf.setup(FlatMacLightLaf())
+                SwingUtilities.updateComponentTreeUI(comboBox)
+
+                val support = AutoCompleteSupport.install(comboBox, source)
+                assertTrue(support.isInstalled)
+                assertTrue(comboBox.isEditable)
+                assertEquals(listOf("alpha", "beta"), (0 until comboBox.itemCount).map(comboBox::getItemAt))
+            } finally {
+                UIManager.setLookAndFeel(previousLookAndFeel)
             }
         }
     }
