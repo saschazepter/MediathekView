@@ -89,6 +89,7 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
 
     /** @inheritDoc */
     @Override
+    @SuppressWarnings("unchecked")
     public void addColumn(TableColumn column) {
         swingThreadSource.getReadWriteLock().writeLock().lock();
         try {

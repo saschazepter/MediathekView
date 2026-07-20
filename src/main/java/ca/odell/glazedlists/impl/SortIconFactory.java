@@ -5,6 +5,7 @@ package ca.odell.glazedlists.impl;
 
 // to match icons to the current look and feel
 import javax.swing.*;
+import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +55,7 @@ public final class SortIconFactory {
 
         // detect the current look & feel
         String lookAndFeelName = UIManager.getLookAndFeel().getName();
-        if(lookAndFeelName.equals("Metal")) lookAndFeelName = PLAFDetector.getMetalTheme();
+        if(lookAndFeelName.equals("Metal")) lookAndFeelName = "Metal/" + MetalLookAndFeel.getCurrentTheme().getName();
         String resourcePath = lookAndFeelResourcePathMap.get(lookAndFeelName);
         if(resourcePath == null) resourcePath = defaultResourcePath;
 
