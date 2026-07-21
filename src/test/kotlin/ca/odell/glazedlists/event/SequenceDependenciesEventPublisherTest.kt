@@ -64,4 +64,66 @@ internal class SequenceDependenciesEventPublisherTest {
 
         assertEquals(listOf("second"), delivered)
     }
+
+    @Test
+    fun equalSubjectsRemainDistinct() {
+        val publisher = SequenceDependenciesEventPublisher()
+        val firstSubject = EqualSubject("same")
+        val secondSubject = EqualSubject("same")
+        val firstEvents = mutableListOf<String>()
+        val secondEvents = mutableListOf<String>()
+        val format = consumerFormat<EqualSubject>()
+        publisher.addListener(firstSubject, Consumer(firstEvents::add), format)
+        publisher.addListener(secondSubject, Consumer(secondEvents::add), format)
+
+        publisher.fireEvent(firstSubject, "first", format)
+        publisher.fireEvent(secondSubject, "second", format)
+
+        assertEquals(listOf("first"), firstEvents)
+        assertEquals(listOf("second"), secondEvents)
+    }
+
+    @Test
+    fun dependencyOrderIsPreservedDuringReentrantPublication() {
+        val publisher = SequenceDependenciesEventPublisher()
+        val upstreamSubject = Any()
+        val downstreamSubject = Any()
+        val delivered = mutableListOf<String>()
+        val format = consumerFormat<Any>()
+        val downstreamListener = Consumer<String> { delivered += it }
+        val upstreamListener = Consumer<String> {
+            delivered += it
+            publisher.fireEvent(downstreamSubject, "downstream", format)
+        }
+        publisher.addListener(downstreamSubject, downstreamListener, format)
+        publisher.addListener(upstreamSubject, upstreamListener, format)
+        publisher.setRelatedListener(downstreamSubject, upstreamListener)
+
+        publisher.fireEvent(upstreamSubject, "upstream", format)
+
+        assertEquals(listOf("upstream", "downstream"), delivered)
+    }
+
+    @Test
+    fun listenerCyclesAreRejected() {
+        val publisher = SequenceDependenciesEventPublisher()
+        val first = Any()
+        val second = Any()
+        publisher.setRelatedListener(first, second)
+
+        assertThrows(IllegalStateException::class.java) {
+            publisher.setRelatedListener(second, first)
+        }
+    }
+
+    private fun <S> consumerFormat() =
+        object : SequenceDependenciesEventPublisher.EventFormat<S, Consumer<String>, String> {
+            override fun fire(subject: S, event: String, listener: Consumer<String>) = listener.accept(event)
+
+            override fun postEvent(subject: S) = Unit
+
+            override fun isStale(subject: S, listener: Consumer<String>): Boolean = false
+        }
+
+    private data class EqualSubject(val value: String)
 }

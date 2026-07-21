@@ -237,8 +237,8 @@ public final class SortedList<E> extends TransformedList<E,E> {
         // all of these changes to this list happen "atomically"
         updates.beginEvent();
 
-        // first update the offset tree for all changes, and keep the changed nodes in a list
-        LinkedList<Element<Element<?>>> insertNodes = new LinkedList<>();
+        // first update the offset tree for all changes, and keep inserted nodes in a queue
+        Deque<Element<Element<?>>> insertNodes = new ArrayDeque<>();
         List<Element<Element<?>>> updateNodes = new ArrayList<>();
         List<E> previousValues = new ArrayList<>();
 

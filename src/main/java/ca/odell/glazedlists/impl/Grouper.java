@@ -7,8 +7,9 @@ import ca.odell.glazedlists.SortedList;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.impl.adt.Barcode;
 
+import java.util.ArrayDeque;
 import java.util.Comparator;
-import java.util.LinkedList;
+import java.util.Deque;
 
 /**
  * This helper class manages the groups created by dividing up a
@@ -26,7 +27,7 @@ public class Grouper<E> {
     public static final Object DUPLICATE = Barcode.WHITE;
 
     /** Used only in temporary data structures to flag deleting of the FIRST group element when more elements exist. */
-    private static final Object UNIQUE_WITH_DUPLICATE = null;
+    private static final Object UNIQUE_WITH_DUPLICATE = new Object();
 
     /**
      * A temporary barcode data structure is created when processing ListEvents in this GroupingList.
@@ -115,7 +116,7 @@ public class Grouper<E> {
         //
         // In pass 1, the barcode is changed and GroupingList is updated to
         // reflect the changes but no events are fired. Deleted and updated
-        // original barcode values are stored in a temporary LinkedList. Updated
+        // original barcode values are stored in a temporary queue. Updated
         // values' barcode entries are set to UNIQUE.
         //
         // In pass 2, the change events are reviewed again. During this second pass
@@ -138,7 +139,7 @@ public class Grouper<E> {
         toDoList.addWhite(0, barcode.size());
 
         // first pass -> update the barcode and accumulate the type of values removed (UNIQUE or DUPLICATE or UNIQUE_WITH_DUPLICATE)
-        final LinkedList<Object> removedValues = new LinkedList<>();
+        final Deque<Object> removedValues = new ArrayDeque<>();
         int lastFakedUniqueChangeIndex = -1;
         while (listChanges.next()) {
             final int changeIndex = listChanges.getIndex();

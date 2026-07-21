@@ -153,12 +153,12 @@ public final class GroupingList<E> extends TransformedList<E, List<E>> {
         public void groupChanged(int index, int groupIndex, int groupChangeType, boolean primary, int elementChangeType, E oldValue, E newValue, boolean updateNextSeparator, boolean joinRight) {
             if(groupChangeType == ListEvent.INSERT) {
                 insertGroupList(groupIndex);
-                updates.elementInserted(groupIndex, ListEvent.unknownValue());
+                updates.elementsInserted(groupIndex, groupIndex);
             } else if(groupChangeType == ListEvent.DELETE) {
                 removeGroupList(groupIndex);
-                updates.elementDeleted(groupIndex, ListEvent.unknownValue());
+                updates.elementsDeleted(groupIndex, groupIndex);
             } else if(groupChangeType == ListEvent.UPDATE) {
-                updates.elementUpdated(groupIndex, ListEvent.unknownValue(), ListEvent.unknownValue());
+                updates.elementsUpdated(groupIndex, groupIndex);
             } else {
                 throw new IllegalStateException();
             }

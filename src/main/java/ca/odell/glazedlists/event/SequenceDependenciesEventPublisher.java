@@ -3,8 +3,6 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.event;
 
-import ca.odell.glazedlists.impl.adt.IdentityMultimap;
-
 import java.util.*;
 
 /**
@@ -72,29 +70,29 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher {
         List<SubjectAndListener<?, ?, ?>> result = new ArrayList<>();
 
         // HashMaps of unprocessed elements, keyed by both source and target
-        IdentityMultimap<Object,SubjectAndListener<?, ?, ?>> sourceToPairs = new IdentityMultimap<>();
-        IdentityMultimap<Object,SubjectAndListener<?, ?, ?>> targetToPairs = new IdentityMultimap<>();
+        Map<Object, List<SubjectAndListener<?, ?, ?>>> sourceToPairs = new IdentityHashMap<>();
+        Map<Object, List<SubjectAndListener<?, ?, ?>>> targetToPairs = new IdentityHashMap<>();
 
         // everything that has all of its listeners already notified in subjectAndListeners
-        Map<Object,Boolean> satisfied = new IdentityHashMap<>();
+        Set<Object> satisfied = Collections.newSetFromMap(new IdentityHashMap<>());
         // prepare the initial collections: maps that show how each element is
         // used as source and target in directed edges, plus a list of nodes
         // that have no incoming edges
         for (SubjectAndListener<?, ?, ?> subjectAndListener : subjectsAndListeners) {
             Object source = subjectAndListener.subject;
             Object target = getRelatedSubject(subjectAndListener.listener);
-            sourceToPairs.addValue(source, subjectAndListener);
-            targetToPairs.addValue(target, subjectAndListener);
+            sourceToPairs.computeIfAbsent(source, ignored -> new ArrayList<>(2)).add(subjectAndListener);
+            targetToPairs.computeIfAbsent(target, ignored -> new ArrayList<>(2)).add(subjectAndListener);
 
             satisfied.remove(target);
-            if (targetToPairs.count(source) == 0) {
-                satisfied.put(source, Boolean.TRUE);
+            if (!targetToPairs.containsKey(source)) {
+                satisfied.add(source);
             }
         }
 
         // start with the initial set of sources that don't have dependencies
         // everything that has a listener already notified
-        List<Object> satisfiedToDo = new ArrayList<>(satisfied.keySet());
+        Deque<Object> satisfiedToDo = new ArrayDeque<>(satisfied);
 
         // We have a subject which has all of its dependencies satisfied.
         // ie. all edges where this subject is a target are already in
@@ -112,7 +110,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher {
             // get all listeners to this subject, we try this set because
             // we know at least one of their edges is satisfied, and
             // we hope that all of their edges is satisfied.
-            List<SubjectAndListener<?, ?, ?>> sourceTargets = sourceToPairs.get(subject);
+            List<SubjectAndListener<?, ?, ?>> sourceTargets = sourceToPairs.getOrDefault(subject, Collections.emptyList());
 
             // can we satisfy this target?
             tryEachTarget:
@@ -120,12 +118,12 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher {
                 Object sourceTarget = getRelatedSubject(target.listener);
 
                 // make sure we can satisfy this if all its sources are in satisfiedSources
-                List<SubjectAndListener<?, ?, ?>> allSourcesForSourceTarget = targetToPairs.get(sourceTarget);
+                List<SubjectAndListener<?, ?, ?>> allSourcesForSourceTarget = targetToPairs.getOrDefault(sourceTarget, Collections.emptyList());
                 // we've since processed this entire target, we shouldn't process it twice
                 if (allSourcesForSourceTarget.isEmpty())
                     continue;
                 for (SubjectAndListener<?, ?, ?> sourceAndTarget : allSourcesForSourceTarget) {
-                    if (!satisfied.containsKey(sourceAndTarget.subject)) {
+                    if (!satisfied.contains(sourceAndTarget.subject)) {
                         continue tryEachTarget;
                     }
                 }
@@ -136,8 +134,8 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher {
 
                 // this target is no longer considered a target, since all
                 // its dependencies are satisfied
-                satisfiedToDo.add(sourceTarget);
-                satisfied.put(sourceTarget, Boolean.TRUE);
+                satisfiedToDo.addLast(sourceTarget);
+                satisfied.add(sourceTarget);
             }
         }
 
