@@ -50,6 +50,9 @@ an intentional difference is documented below.
 | `matchers/ThreadedMatcherEditor.java` | `matchers/ThreadedMatcherEditor.kt` | Uses coroutines and virtual threads and is explicitly closeable. |
 | `impl/functions/ConstantFunction.java` | `impl/functions/ConstantFunction.kt` | No intentional behavior change. |
 | `impl/filter/StringLengthComparator.java` | `impl/filter/StringLengthComparator.kt` | No intentional behavior change. |
+| `impl/filter/StringTextFilterator.java` | `impl/filter/StringTextFilterator.kt` | Makes nullable element handling explicit; no intentional behavior change. |
+| `impl/filter/StartsWithCaseInsensitiveTextSearchStrategy.java` | `impl/filter/StartsWithCaseInsensitiveTextSearchStrategy.kt` | Preserves specialized single- and multi-character prefix matching and default-locale case conversion. |
+| `impl/filter/ExactCaseInsensitiveTextSearchStrategy.java` | `impl/filter/ExactCaseInsensitiveTextSearchStrategy.kt` | Preserves the open inheritance and exact-length matching contracts. |
 | `impl/sort/BooleanComparator.java` | `impl/sort/BooleanComparator.kt` | Preserves null-first ordering and class-based equality. |
 | `impl/sort/ComparableComparator.java` | `impl/sort/ComparableComparator.kt` | Preserves null-first natural ordering and class-based equality. |
 | `impl/sort/ReverseComparator.java` | `impl/sort/ReverseComparator.kt` | Rejects a null source comparator at construction. |

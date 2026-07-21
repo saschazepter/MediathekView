@@ -4,6 +4,7 @@ import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.impl.SimpleFunctionList
 import ca.odell.glazedlists.impl.beans.BeanTableFormat
 import ca.odell.glazedlists.impl.filter.StringLengthComparator
+import ca.odell.glazedlists.impl.filter.StringTextFilterator
 import ca.odell.glazedlists.impl.functions.ConstantFunction
 import ca.odell.glazedlists.impl.sort.*
 import org.junit.jupiter.api.Assertions.*
@@ -111,6 +112,17 @@ internal class JavaMigrationBehaviorTest {
         assertSame(GlazedLists.comparableComparator<String>(), GlazedLists.comparableComparator<String>())
         assertSame(GlazedLists.reverseComparator<String>(), GlazedLists.reverseComparator<String>())
         assertSame(GlazedLists.toStringTextFilterator<String>(), GlazedLists.toStringTextFilterator<String>())
+    }
+
+    @Test
+    fun stringTextFilteratorAppendsNonNullStringValuesOnly() {
+        val filterStrings = mutableListOf("existing")
+        val filterator = StringTextFilterator<Any?>()
+
+        filterator.getFilterStrings(filterStrings, null)
+        filterator.getFilterStrings(filterStrings, 42)
+
+        assertEquals(listOf("existing", "42"), filterStrings)
     }
 
     @Test
