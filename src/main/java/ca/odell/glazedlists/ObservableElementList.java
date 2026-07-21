@@ -10,6 +10,7 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.EventListener;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -96,6 +97,30 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
      */
     private Barcode singleEventListenerRegistry;
 
+    /** whether this list has released its source and element listeners */
+    private volatile boolean disposed;
+
+    /** serializes connector cleanup without holding the shared source lock */
+    private final Object disposalMonitor = new Object();
+
+    /** listener removals that still need to complete */
+    private List<ElementCleanup<E>> pendingElementCleanups;
+
+    /** whether the connector no longer refers to this list */
+    private boolean connectorDetached;
+
+    /** whether this list no longer listens to its source */
+    private boolean sourceDetached;
+
+    /** whether every external cleanup operation has completed */
+    private boolean cleanupComplete;
+
+    /** prevents concurrent or reentrant connector cleanup */
+    private boolean cleanupInProgress;
+
+    /** thread currently invoking connector cleanup callbacks */
+    private Thread cleanupThread;
+
     /**
      * Constructs an <code>ObservableElementList</code> which wraps the given
      * <code>source</code> and uses the given <code>elementConnector</code> to
@@ -112,37 +137,82 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
     public ObservableElementList(EventList<E> source, Connector<? super E> elementConnector) {
         super(source);
 
-        this.elementConnector = elementConnector;
+        final List<ElementCleanup<E>> installedListeners = new ArrayList<>();
+        boolean connectorAttachmentAttempted = false;
+        boolean sourceListenerRegistrationAttempted = false;
+        Throwable initializationFailure = null;
+        source.getReadWriteLock().writeLock().lock();
+        try {
+            this.elementConnector = elementConnector;
 
-        // attach this list to the element connector so the listeners know
-        // which List to notify of their modifications
-        this.elementConnector.setObservableElementList(this);
+            // for speed, we add all source elements together, rather than individually
+            this.observedElements = new ArrayList<>(source);
 
-        // for speed, we add all source elements together, rather than individually
-        this.observedElements = new ArrayList<>(source);
+            // we initialize the single EventListener registry, as we optimistically
+            // assume we'll be using a single listener for all observed elements
+            this.singleEventListenerRegistry = new Barcode();
+            this.singleEventListenerRegistry.addWhite(0, source.size());
 
-        // we initialize the single EventListener registry, as we optimistically
-        // assume we'll be using a single listener for all observed elements
-        this.singleEventListenerRegistry = new Barcode();
-        this.singleEventListenerRegistry.addWhite(0, source.size());
+            // attach only after callback-visible state has been initialized
+            connectorAttachmentAttempted = true;
+            this.elementConnector.setObservableElementList(this);
 
-        // add listeners to all source list elements
-        for (int i = 0, n = size(); i < n; i++) {
-            // connect a listener to the element
-            final EventListener listener = this.connectElement(get(i));
+            // add listeners to all source list elements
+            for (int i = 0, n = size(); i < n; i++) {
+                // connect a listener to the element
+                final E element = get(i);
+                final EventListener listener = this.connectElement(element);
+                if (element != null && listener != null)
+                    installedListeners.add(new ElementCleanup<>(element, listener));
 
-            // record the listener in the registry
-            this.registerListener(i, listener, false);
+                // record the listener in the registry
+                this.registerListener(i, listener, false);
+            }
+
+            // begin listening to the source list only after initialization is complete
+            sourceListenerRegistrationAttempted = true;
+            source.addListEventListener(this);
+        } catch (RuntimeException | Error failure) {
+            disposed = true;
+            initializationFailure = failure;
+        } finally {
+            source.getReadWriteLock().writeLock().unlock();
         }
 
-        // begin listening to the source list
-        source.addListEventListener(this);
+        if (initializationFailure != null) {
+            pendingElementCleanups = new ArrayList<>(installedListeners);
+            sourceDetached = !sourceListenerRegistrationAttempted;
+            connectorDetached = !connectorAttachmentAttempted;
+            this.observedElements = null;
+            this.multiEventListenerRegistry = null;
+            this.singleEventListener = null;
+            this.singleEventListenerRegistry = null;
+
+            if (!sourceDetached) {
+                try {
+                    detachFromSource();
+                } catch (RuntimeException | Error cleanupFailure) {
+                    initializationFailure.addSuppressed(cleanupFailure);
+                }
+            }
+
+            synchronized (disposalMonitor) {
+                cleanupInProgress = true;
+                cleanupThread = Thread.currentThread();
+            }
+            initializationFailure = cleanupConnector(initializationFailure);
+            finishCleanupAttempt();
+
+            if (initializationFailure instanceof RuntimeException runtimeFailure) throw runtimeFailure;
+            throw (Error) initializationFailure;
+        }
     }
 
     @Override
     public void listChanged(ListEvent<E> listChanges) {
-        if (this.observedElements == null)
-            throw new IllegalStateException("This list has been disposed and can no longer be used.");
+        if (disposed) return;
+        if (observedElements == null)
+            throw new IllegalStateException("Cannot modify disposed ObservableElementList");
 
         // add listeners to inserted list elements and remove listeners from deleted elements
         while(listChanges.next()) {
@@ -377,25 +447,119 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
      */
     @Override
     public void dispose() {
-        // first, remove listener from source list to stop list events coming in
-        super.dispose();
-
-        // then remove all listeners from all list elements
-        for (int i = 0, n = this.observedElements.size(); i < n; i++) {
-            final E element = this.observedElements.get(i);
-            final EventListener listener = this.getListener(i);
-            this.disconnectElement(element, listener);
+        boolean restoreInterrupt = false;
+        Throwable failure = null;
+        synchronized (disposalMonitor) {
+            while (cleanupInProgress) {
+                if (cleanupThread == Thread.currentThread()) return;
+                try {
+                    disposalMonitor.wait();
+                } catch (InterruptedException interrupted) {
+                    restoreInterrupt = true;
+                }
+            }
+            if (cleanupComplete) {
+                if (restoreInterrupt) Thread.currentThread().interrupt();
+                return;
+            }
+            try {
+                if (!disposed) prepareDisposal();
+                else if (!sourceDetached) detachFromSource();
+            } catch (RuntimeException | Error disposalFailure) {
+                if (!disposed) {
+                    if (restoreInterrupt) Thread.currentThread().interrupt();
+                    throw disposalFailure;
+                }
+                failure = disposalFailure;
+            }
+            cleanupInProgress = true;
+            cleanupThread = Thread.currentThread();
         }
 
-        // clear out the reference to this list from the associated connector
-        this.elementConnector.setObservableElementList(null);
+        failure = cleanupConnector(failure);
+        finishCleanupAttempt();
 
-        // null out all references to internal data structures
-        this.observedElements = null;
-        this.multiEventListenerRegistry = null;
-        this.singleEventListener = null;
-        this.singleEventListenerRegistry = null;
-        this.elementConnector = null;
+        if (restoreInterrupt) Thread.currentThread().interrupt();
+        if (failure instanceof RuntimeException runtimeFailure) throw runtimeFailure;
+        if (failure instanceof Error errorFailure) throw errorFailure;
+    }
+
+    /** Invokes retryable connector cleanup without holding source or disposal locks. */
+    private Throwable cleanupConnector(Throwable failure) {
+        for (Iterator<ElementCleanup<E>> iterator = pendingElementCleanups.iterator(); iterator.hasNext();) {
+            final ElementCleanup<E> cleanup = iterator.next();
+            try {
+                this.elementConnector.uninstallListener(cleanup.element, cleanup.listener);
+                iterator.remove();
+            } catch (RuntimeException | Error cleanupFailure) {
+                if (failure == null) failure = cleanupFailure;
+                else if (failure != cleanupFailure) failure.addSuppressed(cleanupFailure);
+            }
+        }
+
+        if (pendingElementCleanups.isEmpty() && sourceDetached && !connectorDetached) {
+            try {
+                this.elementConnector.setObservableElementList(null);
+                connectorDetached = true;
+            } catch (RuntimeException | Error cleanupFailure) {
+                if (failure == null) failure = cleanupFailure;
+                else if (failure != cleanupFailure) failure.addSuppressed(cleanupFailure);
+            }
+        }
+        return failure;
+    }
+
+    /** Publishes completion state and wakes concurrent disposal callers. */
+    private void finishCleanupAttempt() {
+        synchronized (disposalMonitor) {
+            if (pendingElementCleanups.isEmpty() && sourceDetached && connectorDetached) {
+                pendingElementCleanups = null;
+                elementConnector = null;
+                cleanupComplete = true;
+            }
+            cleanupInProgress = false;
+            cleanupThread = null;
+            disposalMonitor.notifyAll();
+        }
+    }
+
+    /** Detaches from the source and captures external connector cleanup work atomically. */
+    private void prepareDisposal() {
+        getReadWriteLock().writeLock().lock();
+        try {
+            if (disposed) return;
+
+            final List<ElementCleanup<E>> cleanupEntries = new ArrayList<>();
+            for (int i = 0, n = this.observedElements.size(); i < n; i++) {
+                final E element = this.observedElements.get(i);
+                final EventListener listener = this.getListener(i);
+                if (element != null && listener != null)
+                    cleanupEntries.add(new ElementCleanup<>(element, listener));
+            }
+
+            // first, remove listener from source list to stop list events coming in
+            pendingElementCleanups = cleanupEntries;
+            this.observedElements = null;
+            this.multiEventListenerRegistry = null;
+            this.singleEventListener = null;
+            this.singleEventListenerRegistry = null;
+            disposed = true;
+            super.dispose();
+            sourceDetached = true;
+        } finally {
+            getReadWriteLock().writeLock().unlock();
+        }
+    }
+
+    /** Retries source-listener removal for a logically disposed list. */
+    private void detachFromSource() {
+        getReadWriteLock().writeLock().lock();
+        try {
+            super.dispose();
+            sourceDetached = true;
+        } finally {
+            getReadWriteLock().writeLock().unlock();
+        }
     }
 
     /**
@@ -416,11 +580,9 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
      */
     @Override
     public void elementChanged(Object listElement) {
-        if (this.observedElements == null)
-            throw new IllegalStateException("This list has been disposed and can no longer be used.");
-
         getReadWriteLock().writeLock().lock();
         try {
+            if (disposed) return;
             this.updates.beginEvent();
 
             // locate all indexes containing the given listElement
@@ -481,5 +643,15 @@ public class ObservableElementList<E> extends TransformedList<E, E> implements O
          *            elements to observe
          */
         void setObservableElementList(@Nullable ObservableElementChangeHandler<? extends E> list);
+    }
+
+    private static final class ElementCleanup<E> {
+        private final E element;
+        private final EventListener listener;
+
+        private ElementCleanup(E element, EventListener listener) {
+            this.element = element;
+            this.listener = listener;
+        }
     }
 }

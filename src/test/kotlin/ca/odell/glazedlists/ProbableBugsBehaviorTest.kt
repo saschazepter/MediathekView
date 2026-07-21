@@ -200,6 +200,18 @@ internal class ProbableBugsBehaviorTest {
     }
 
     @Test
+    fun autoCompleteInstallationUsesTheSourceWriteLock() {
+        SwingUtilities.invokeAndWait {
+            val comboBox = JComboBox<String>()
+            val source = BasicEventList<String>(WriteLockedConstructionReadWriteLock()).apply { add("alpha") }
+
+            val support = AutoCompleteSupport.install(comboBox, source)
+
+            support.uninstall()
+        }
+    }
+
+    @Test
     fun autoCompleteFormatParsesEachEditedValueFromTheBeginning() {
         SwingUtilities.invokeAndWait {
             val comboBox = JComboBox<Number>(arrayOf(0))
@@ -256,5 +268,21 @@ internal class ProbableBugsBehaviorTest {
         override fun readLock(): Lock = delegate.readLock()
 
         override fun writeLock(): Lock = guardedWriteLock
+    }
+
+    private class WriteLockedConstructionReadWriteLock : ReadWriteLock {
+        private val delegate = ReentrantReadWriteLock()
+        private val guardedReadLock = object : Lock by delegate.readLock() {
+            override fun lock() {
+                check(delegate.isWriteLockedByCurrentThread) {
+                    "construction must hold the write lock before reading"
+                }
+                delegate.readLock().lock()
+            }
+        }
+
+        override fun readLock(): Lock = guardedReadLock
+
+        override fun writeLock(): Lock = delegate.writeLock()
     }
 }

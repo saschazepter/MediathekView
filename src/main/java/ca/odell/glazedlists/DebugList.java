@@ -591,7 +591,9 @@ public class DebugList<E> extends AbstractEventList<E> {
             }
 
             private void checkForReadToWriteUpgrade() {
-                if (readLock != null && readLock.getThreadsHoldingLock().contains(Thread.currentThread())) {
+                if (readLock != null
+                        && readLock.getThreadsHoldingLock().contains(Thread.currentThread())
+                        && !threadsHoldingLock.contains(Thread.currentThread())) {
                     throw new IllegalStateException("DebugList detected an attempt to acquire a writeLock from a thread already owning a readLock (deadlock)");
                 }
             }

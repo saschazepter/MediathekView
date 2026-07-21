@@ -70,13 +70,7 @@ public final class FilterList<E> extends TransformedList<E,E> {
      * source {@link EventList}.
      */
     public FilterList(EventList<E> source) {
-        super(source);
-
-        // build a list of what is filtered and what's not
-        flagList.addBlack(0, source.size());
-
-        // listen for changes to the source list
-        source.addListEventListener(this);
+        this(source, null, null);
     }
 
     /**
@@ -84,13 +78,7 @@ public final class FilterList<E> extends TransformedList<E,E> {
      * {@link Matcher}.
      */
     public FilterList(EventList<E> source, Matcher<? super E> matcher) {
-        this(source);
-
-        // if no matcher was given, we have no further initialization work
-        if (matcher == null) return;
-
-        currentMatcher = matcher;
-        changed();
+        this(source, matcher, null);
     }
 
     /**
@@ -98,15 +86,61 @@ public final class FilterList<E> extends TransformedList<E,E> {
      * {@link MatcherEditor}.
      */
     public FilterList(EventList<E> source, MatcherEditor<? super E> matcherEditor) {
-        this(source);
+        this(source, null, matcherEditor);
+    }
 
-        // if no matcherEditor was given, we have no further initialization work
-        if (matcherEditor == null) return;
+    private FilterList(EventList<E> source, Matcher<? super E> matcher, MatcherEditor<? super E> matcherEditor) {
+        super(source);
 
-        currentEditor = matcherEditor;
-        typedCurrentEditor().addMatcherEditorListener(listener);
-        currentMatcher = currentEditor.getMatcher();
-        changed();
+        boolean matcherListenerInstalled = false;
+        boolean sourceListenerRegistrationAttempted = false;
+        Throwable initializationFailure = null;
+        source.getReadWriteLock().writeLock().lock();
+        try {
+            // build a list of what is filtered and what's not
+            flagList.addBlack(0, source.size());
+
+            if (matcher != null) {
+                currentMatcher = matcher;
+                changed();
+            } else if (matcherEditor != null) {
+                currentEditor = matcherEditor;
+                matcherListenerInstalled = true;
+                typedCurrentEditor().addMatcherEditorListener(listener);
+                currentMatcher = currentEditor.getMatcher();
+                changed();
+            }
+
+            // listen only after the initial filtered state is complete
+            sourceListenerRegistrationAttempted = true;
+            source.addListEventListener(this);
+        } catch (RuntimeException | Error failure) {
+            disposed = true;
+            initializationFailure = failure;
+        } finally {
+            source.getReadWriteLock().writeLock().unlock();
+        }
+
+        if (initializationFailure != null) {
+            if (sourceListenerRegistrationAttempted) {
+                try {
+                    source.removeListEventListener(this);
+                } catch (RuntimeException | Error cleanupFailure) {
+                    initializationFailure.addSuppressed(cleanupFailure);
+                }
+            }
+            if (matcherListenerInstalled) {
+                try {
+                    typedCurrentEditor().removeMatcherEditorListener(listener);
+                } catch (RuntimeException | Error cleanupFailure) {
+                    initializationFailure.addSuppressed(cleanupFailure);
+                }
+            }
+            currentEditor = null;
+            currentMatcher = null;
+            if (initializationFailure instanceof RuntimeException runtimeFailure) throw runtimeFailure;
+            throw (Error) initializationFailure;
+        }
     }
 
     /**

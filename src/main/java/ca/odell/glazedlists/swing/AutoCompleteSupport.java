@@ -693,9 +693,8 @@ public final class AutoCompleteSupport<E> {
         this.isTableCellEditor = Boolean.TRUE.equals(comboBox.getClientProperty("JComboBox.isTableCellEditor"));
         this.doNotTogglePopup = !isTableCellEditor;
 
-        // lock the items list for reading since we want to prevent writes
-        // from occurring until we fully initialize this AutoCompleteSupport
-        items.getReadWriteLock().readLock().lock();
+        // initialization creates and mutates sibling lists that share the items lock
+        items.getReadWriteLock().writeLock().lock();
         try {
             // build the ComboBoxModel capable of filtering its values
             this.filterMatcherEditor = new TextMatcherEditor<>(filterator == null ? new DefaultTextFilterator() : filterator);
@@ -716,7 +715,7 @@ public final class AutoCompleteSupport<E> {
             this.allItemsUnfiltered.addMemberList(this.items);
         }
         finally {
-            items.getReadWriteLock().readLock().unlock();
+            items.getReadWriteLock().writeLock().unlock();
         }
 
         // customize the comboBox

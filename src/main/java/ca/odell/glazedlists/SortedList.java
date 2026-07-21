@@ -121,9 +121,13 @@ public final class SortedList<E> extends TransformedList<E,E> {
     public SortedList(EventList<E> source, Comparator<? super E> comparator) {
         super(source);
 
-        setComparator(comparator);
-
-        source.addListEventListener(this);
+        source.getReadWriteLock().readLock().lock();
+        try {
+            setComparator(comparator);
+            source.addListEventListener(this);
+        } finally {
+            source.getReadWriteLock().readLock().unlock();
+        }
     }
 
     /**

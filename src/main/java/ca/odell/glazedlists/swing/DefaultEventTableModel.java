@@ -187,12 +187,14 @@ public class DefaultEventTableModel<E> extends AbstractTableModel implements Adv
      */
     @Override
     public Object getValueAt(int row, int column) {
+        final E rowObject;
         source.getReadWriteLock().readLock().lock();
         try {
-            return tableFormat.getColumnValue(source.get(row), column);
+            rowObject = source.get(row);
         } finally {
             source.getReadWriteLock().readLock().unlock();
         }
+        return tableFormat.getColumnValue(rowObject, column);
     }
 
     /**
@@ -206,13 +208,14 @@ public class DefaultEventTableModel<E> extends AbstractTableModel implements Adv
             return false;
         }
 
+        final E rowObject;
         source.getReadWriteLock().readLock().lock();
         try {
-            final E toEdit = source.get(row);
-            return ((WritableTableFormat<E>) tableFormat).isEditable(toEdit, column);
+            rowObject = source.get(row);
         } finally {
             source.getReadWriteLock().readLock().unlock();
         }
+        return ((WritableTableFormat<E>) tableFormat).isEditable(rowObject, column);
     }
 
     /**

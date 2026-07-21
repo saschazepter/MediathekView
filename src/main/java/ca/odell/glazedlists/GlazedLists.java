@@ -446,38 +446,6 @@ public final class GlazedLists {
         return new ReadOnlyList<>((EventList<E>) source);
     }
 
-    /**
-     * Wraps the source in an {@link EventList} that obtains a
-     * {@link ReadWriteLock} for all
-     * operations.
-     *
-     * <p>This provides some support for sharing {@link EventList}s between multiple
-     * threads.
-     *
-     * <p>Using a {@link ThreadSafeList} for concurrent access to lists can be expensive
-     * because a {@link ReadWriteLock}
-     * is aquired and released for every operation.
-     *
-     * <p><strong><font color="#FF0000">Warning:</font></strong> Although this class
-     * provides thread safe access, it does not provide any guarantees that changes
-     * will not happen between method calls. For example, the following code is unsafe
-     * because the source {@link EventList} may change between calls to
-     * {@link TransformedList#size() size()} and {@link TransformedList#get(int) get()}:
-     * <pre> EventList source = ...
-     * ThreadSafeList myList = new ThreadSafeList(source);
-     * if(myList.size() > 3) {
-     *   System.out.println(myList.get(3));
-     * }</pre>
-     *
-     * <p><strong><font color="#FF0000">Warning:</font></strong> The objects returned
-     * by {@link TransformedList#iterator() iterator()},
-     * {@link TransformedList#subList(int,int) subList()}, etc. are not thread safe.
-     *
-     * @see java.util.concurrent.locks
-     */
-    public static <E> TransformedList<E, E> threadSafeList(EventList<? extends E> source) {
-        return new ThreadSafeList<>((EventList<E>) source);
-    }
 
     /**
      * Returns a {@link TransformedList} that maps each element of the source list to a target
@@ -728,30 +696,6 @@ public final class GlazedLists {
         return new SyncListener<>(source, target);
     }
 
-    /**
-     * Offers the same functionality as {@link GlazedLists#syncEventListToList(EventList, List)}, only that the target
-     * list is also an {@link EventList}. This is useful in case you have to synchronize two event lists in different
-     * list pipelines using different publisher and locks. Mutating the target {@link EventList} is guarded by holding
-     * its WriteLock.
-     *
-     * @param source the {@link EventList} which provides the master view. Each change to this {@link EventList} will be
-     *            applied to the target {@link EventList}.
-     * @param target the {@link EventList} to host a copy of the {@link EventList}. This {@link EventList} should not be
-     *            changed after the lists have been synchronized. Otherwise a {@link RuntimeException} will be thrown
-     *            when the drift is detected.
-     * @return the {@link ListEventListener} providing the link from the source {@link EventList} to the target
-     *         {@link EventList}. To stop the synchronization, use
-     *         {@link EventList#removeListEventListener(ListEventListener)} or just call
-     *         {@link LockbasedSyncListener#dispose()}.
-     */
-    public static <E> LockbasedSyncListener<E> syncEventListToEventList(EventList<E> source, EventList<E> target) {
-        target.getReadWriteLock().writeLock().lock();
-        try {
-            return new LockbasedSyncListener<>(source, target);
-        } finally {
-            target.getReadWriteLock().writeLock().unlock();
-        }
-    }
 
     /**
      * Check list elements for type safety after they are added to an EventList

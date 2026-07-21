@@ -4,11 +4,11 @@
 package ca.odell.glazedlists;
 
 import ca.odell.glazedlists.event.ListEventPublisher;
+import ca.odell.glazedlists.impl.UpgradeDetectingReadWriteLock;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
@@ -39,7 +39,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ran
      * Creates a {@link BasicEventList}.
      */
     public BasicEventList() {
-        this(new ReentrantReadWriteLock());
+        this(new UpgradeDetectingReadWriteLock());
     }
 
     /**
@@ -55,7 +55,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ran
      * <code>initialCapacity</code>.
      */
     public BasicEventList(int initalCapacity) {
-        this(initalCapacity, null, new ReentrantReadWriteLock());
+        this(initalCapacity, null, new UpgradeDetectingReadWriteLock());
     }
 
     /**
@@ -77,7 +77,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ran
     public BasicEventList(int initialCapacity, ListEventPublisher publisher, ReadWriteLock readWriteLock) {
         super(publisher);
         this.data = new ArrayList<>(initialCapacity);
-        this.readWriteLock = (readWriteLock == null) ? new ReentrantReadWriteLock() : readWriteLock;
+        this.readWriteLock = (readWriteLock == null) ? new UpgradeDetectingReadWriteLock() : readWriteLock;
     }
 
     /** {@inheritDoc} */

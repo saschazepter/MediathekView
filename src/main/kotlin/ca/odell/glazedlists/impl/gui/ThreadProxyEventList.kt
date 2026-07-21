@@ -12,7 +12,7 @@ import ca.odell.glazedlists.event.ListEventListener
  */
 abstract class ThreadProxyEventList<E>(source: EventList<E>) :
     TransformedList<E, E>(source), RandomAccess {
-    private var localCache: List<E> = source.toList()
+    private var localCache: List<E>
     private val updateRunner = UpdateRunner()
     private val cacheUpdates =
         ListEventAssembler<E>(this, ListEventAssembler.createListEventPublisher())
@@ -24,8 +24,15 @@ abstract class ThreadProxyEventList<E>(source: EventList<E>) :
     private var disposed = false
 
     init {
-        cacheUpdates.addListEventListener(updateRunner)
-        source.addListEventListener(this)
+        val readLock = source.readWriteLock.readLock()
+        readLock.lock()
+        try {
+            localCache = source.toList()
+            cacheUpdates.addListEventListener(updateRunner)
+            source.addListEventListener(this)
+        } finally {
+            readLock.unlock()
+        }
     }
 
     final override fun listChanged(listChanges: ListEvent<E>) {

@@ -10,8 +10,6 @@ import ca.odell.glazedlists.event.ListEventPublisher;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 /**
  * An observable {@link List}. {@link ListEventListener}s can register to be
@@ -62,7 +60,6 @@ import java.util.function.Function;
  * @see GlazedLists#eventListOf(Object[])
  * @see GlazedLists#eventList(Collection)
  * @see GlazedLists#readOnlyList(EventList)
- * @see GlazedLists#threadSafeList(EventList)
  * @see GlazedLists#weakReferenceProxy(EventList, ListEventListener)
  *
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
@@ -118,65 +115,4 @@ public interface EventList<E> extends List<E>, AutoCloseable {
         dispose();
     }
 
-    /**
-     * Executes the block of code represented by the given consumer while holding the read lock of
-     * this EventList.
-     * <p>
-     * The consumer has access to the methods of the EventList interface. If you need access to
-     * methods of the implementation class, consider the helper methods in the {@link Guard} class
-     * instead.
-     *
-     * @param consumer the consumer != null
-     * @see Guard#acceptWithReadLock(EventList, Consumer)
-     */
-    default void acceptWithReadLock(Consumer<EventList<E>> consumer) {
-        Guard.acceptWithReadLock(this, consumer);
-    }
-
-    /**
-     * Executes the block of code represented by the given consumer while holding the write lock of
-     * this EventList.
-     * <p>
-     * The consumer has access to the methods of the EventList interface. If you need access to
-     * methods of the implementation class, consider the helper methods in the {@link Guard} class
-     * instead.
-     *
-     * @param consumer the consumer != null
-     * @see Guard#acceptWithWriteLock(EventList, Consumer)
-     */
-    default void acceptWithWriteLock(Consumer<EventList<E>> consumer) {
-        Guard.acceptWithWriteLock(this, consumer);
-    }
-
-    /**
-     * Applies the given function while holding the read lock of this EventList.
-     * <p>
-     * The function has access to the methods of the EventList interface. If you need access to
-     * methods of the implementation class, consider the helper methods in the {@link Guard} class
-     * instead.
-     *
-     * @param function the function != null
-     * @param <R> the result type of the function
-     * @return the result of the function
-     * @see Guard#applyWithReadLock(EventList, Function)
-     */
-    default <R> R applyWithReadLock(Function<EventList<E>, R> function) {
-        return Guard.applyWithReadLock(this, function);
-    }
-
-    /**
-     * Applies the given function while holding the write lock of this EventList.
-     * <p>
-     * The function has access to the methods of the EventList interface. If you need access to
-     * methods of the implementation class, consider the helper methods in the {@link Guard} class
-     * instead.
-     *
-     * @param function the function != null
-     * @param <R> the result type of the function
-     * @return the result of the function
-     * @see Guard#applyWithWriteLock(EventList, Function)
-     */
-    default <R> R applyWithWriteLock(Function<EventList<E>, R> function) {
-        return Guard.applyWithWriteLock(this, function);
-    }
 }
