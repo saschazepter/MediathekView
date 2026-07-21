@@ -71,7 +71,7 @@ internal class JavaMigrationBehaviorTest {
         assertEquals(chain.hashCode(), ComparatorChain(listOf(byLength, alphabetically)).hashCode())
 
         chain.comparators()[0] = alphabetically
-        chain.getComparators()[0] = alphabetically
+        chain.comparators[0] = alphabetically
 
         assertEquals(-1, chain.compare("b", "aa"))
 
