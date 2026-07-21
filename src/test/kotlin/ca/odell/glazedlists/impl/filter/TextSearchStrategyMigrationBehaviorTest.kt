@@ -32,7 +32,7 @@ internal class TextSearchStrategyMigrationBehaviorTest {
     }
 
     private class MappingStrategy : AbstractTextSearchStrategy() {
-        override fun setSubtext(subtext: String?) = Unit
+        override fun setSubtext(subtext: String) = Unit
 
         override fun indexOf(text: String): Int = -1
 

@@ -275,7 +275,7 @@ public final class GlazedListsSwing {
 
     /**
      * Creates a new selection model that also presents a list of the selection.
-     *
+     * <p>
      * The {@link AdvancedListSelectionModel} listens to this {@link EventList} in order
      * to adjust selection when the {@link EventList} is modified. For example,
      * when an element is added to the {@link EventList}, this may offset the

@@ -60,7 +60,6 @@ internal class SimpleTextSearchStrategiesMigrationBehaviorTest {
         val strategy = SingleCharacterCaseInsensitiveTextSearchStrategy()
 
         assertThrows(IllegalStateException::class.java) { strategy.indexOf("text") }
-        assertThrows(IllegalArgumentException::class.java) { strategy.setSubtext(null) }
         assertThrows(IllegalArgumentException::class.java) { strategy.setSubtext("") }
         assertThrows(IllegalArgumentException::class.java) { strategy.setSubtext("ab") }
 
@@ -80,7 +79,6 @@ internal class SimpleTextSearchStrategiesMigrationBehaviorTest {
         val strategy = RegularExpressionTextSearchStrategy()
 
         assertThrows(NullPointerException::class.java) { strategy.indexOf("news") }
-        assertThrows(NullPointerException::class.java) { strategy.setSubtext(null) }
         assertThrows(PatternSyntaxException::class.java) { strategy.setSubtext("[") }
 
         strategy.setSubtext("n.*s")

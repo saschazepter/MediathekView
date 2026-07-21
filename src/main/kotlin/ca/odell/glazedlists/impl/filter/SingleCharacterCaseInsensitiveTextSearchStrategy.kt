@@ -9,13 +9,12 @@ open class SingleCharacterCaseInsensitiveTextSearchStrategy : AbstractTextSearch
     private var subtextCharUpper = '\u0000'
     private var subtextInitialized = false
 
-    override fun setSubtext(subtext: String?) {
-        val validatedSubtext = requireNotNull(subtext) { "subtext may not be null" }
-        require(validatedSubtext.length == 1) {
-            "subtext ($validatedSubtext) must contain a single character"
+    override fun setSubtext(subtext: String) {
+        require(subtext.length == 1) {
+            "subtext ($subtext) must contain a single character"
         }
 
-        val character = validatedSubtext[0]
+        val character = subtext[0]
         subtextCharLower = character.lowercaseChar()
         subtextCharUpper = character.uppercaseChar()
         subtextInitialized = true

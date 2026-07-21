@@ -51,6 +51,7 @@ an intentional difference is documented below.
 | `impl/functions/ConstantFunction.java` | `impl/functions/ConstantFunction.kt` | No intentional behavior change. |
 | `impl/filter/StringLengthComparator.java` | `impl/filter/StringLengthComparator.kt` | No intentional behavior change. |
 | `impl/filter/StringTextFilterator.java` | `impl/filter/StringTextFilterator.kt` | Makes nullable element handling explicit; no intentional behavior change. |
+| `impl/filter/BoyerMooreCaseInsensitiveTextSearchStrategy.java` | `impl/filter/BoyerMooreCaseInsensitiveTextSearchStrategy.kt` | Preserves locale-independent Unicode case folding, UTF-16 result indices, and shortened shift-table behavior. |
 | `impl/filter/StartsWithCaseInsensitiveTextSearchStrategy.java` | `impl/filter/StartsWithCaseInsensitiveTextSearchStrategy.kt` | Preserves specialized single- and multi-character prefix matching and default-locale case conversion. |
 | `impl/filter/ExactCaseInsensitiveTextSearchStrategy.java` | `impl/filter/ExactCaseInsensitiveTextSearchStrategy.kt` | Preserves the open inheritance and exact-length matching contracts. |
 | `impl/sort/BooleanComparator.java` | `impl/sort/BooleanComparator.kt` | Preserves null-first ordering and class-based equality. |

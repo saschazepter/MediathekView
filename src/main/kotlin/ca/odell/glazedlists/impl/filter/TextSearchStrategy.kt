@@ -9,7 +9,7 @@ interface TextSearchStrategy {
     fun setCharacterMap(charMap: CharArray?)
 
     /** Sets the subtext subsequently located by [indexOf]. */
-    fun setSubtext(subtext: String?)
+    fun setSubtext(subtext: String)
 
     /** Returns the first index of the configured subtext in [text], or `-1`. */
     fun indexOf(text: String): Int

@@ -11,9 +11,9 @@ package ca.odell.glazedlists.impl.filter
 open class ExactCaseInsensitiveTextSearchStrategy : StartsWithCaseInsensitiveTextSearchStrategy() {
     private var subtextLength = 0
 
-    override fun setSubtext(subtext: String?) {
+    override fun setSubtext(subtext: String) {
         super.setSubtext(subtext)
-        subtextLength = subtext!!.length
+        subtextLength = subtext.length
     }
 
     override fun indexOf(text: String): Int {

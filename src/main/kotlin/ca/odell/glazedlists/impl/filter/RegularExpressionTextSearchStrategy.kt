@@ -10,8 +10,8 @@ import java.util.regex.Pattern
 open class RegularExpressionTextSearchStrategy : AbstractTextSearchStrategy() {
     private var matcher: Matcher? = null
 
-    override fun setSubtext(subtext: String?) {
-        matcher = Pattern.compile(subtext!!).matcher("")
+    override fun setSubtext(subtext: String) {
+        matcher = Pattern.compile(subtext).matcher("")
     }
 
     override fun indexOf(text: String): Int {

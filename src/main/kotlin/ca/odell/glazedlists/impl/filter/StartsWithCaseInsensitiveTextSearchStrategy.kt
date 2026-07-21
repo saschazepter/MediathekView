@@ -13,12 +13,11 @@ import java.util.Locale
 open class StartsWithCaseInsensitiveTextSearchStrategy : AbstractTextSearchStrategy() {
     private var indexOfStrategy: IndexOfStrategy? = null
 
-    override fun setSubtext(subtext: String?) {
-        val prefix = subtext!!
-        indexOfStrategy = if (prefix.length == 1) {
-            SingleCharacterIndexOfStrategy(prefix[0])
+    override fun setSubtext(subtext: String) {
+        indexOfStrategy = if (subtext.length == 1) {
+            SingleCharacterIndexOfStrategy(subtext[0])
         } else {
-            MultiCharacterIndexOfStrategy(prefix)
+            MultiCharacterIndexOfStrategy(subtext)
         }
     }
 
