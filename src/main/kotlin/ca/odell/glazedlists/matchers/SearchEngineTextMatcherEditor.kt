@@ -6,7 +6,6 @@ package ca.odell.glazedlists.matchers
 import ca.odell.glazedlists.TextFilterator
 import ca.odell.glazedlists.impl.filter.TextMatcher
 import ca.odell.glazedlists.impl.filter.TextMatchers
-import java.io.Serializable
 
 /**
  * Matches elements against search-engine-style input containing phrases, required or excluded
@@ -36,7 +35,7 @@ open class SearchEngineTextMatcherEditor<E> @JvmOverloads constructor(
     data class Field<E>(
         val name: String?,
         val textFilterator: TextFilterator<in E>?,
-    ) : Serializable {
+    ) {
         init {
             requireNotNull(name) { "name may not be null" }
             requireNotNull(textFilterator) { "textFilterator may not be null" }

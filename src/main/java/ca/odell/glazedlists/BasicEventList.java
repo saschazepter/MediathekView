@@ -3,13 +3,9 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists;
 
-import ca.odell.glazedlists.event.ListEventAssembler;
-import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.event.ListEventPublisher;
-import ca.odell.glazedlists.util.concurrent.SerializedReadWriteLock;
 import org.jspecify.annotations.NonNull;
 
-import java.io.*;
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -21,12 +17,6 @@ import java.util.stream.Stream;
 /**
  * An {@link EventList} that wraps any simple {@link List}, such as {@link ArrayList}
  * or {@link LinkedList}.
- *
- * <p>Unlike most {@link EventList}s, this class is {@link Serializable}. When
- * {@link BasicEventList} is serialized, all of its elements are serialized
- * <i>and</i> all of its listeners that implement {@link Serializable}. Upon
- * deserialization, the new copy uses a different {@link #getReadWriteLock() lock}
- * than its source {@link BasicEventList}.
  *
  * <p><table border="1" width="100%" cellpadding="3" cellspacing="0">
  * <tr class="TableHeadingColor"><td colspan=2><font size="+2"><b>EventList Overview</b></font></td></tr>
@@ -40,13 +30,10 @@ import java.util.stream.Stream;
  *
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
-public final class BasicEventList<E> extends AbstractEventList<E> implements Serializable, RandomAccess {
-
-    /** For versioning as a {@link Serializable} */
-    private static final long serialVersionUID = 4883958173323072345L;
+public final class BasicEventList<E> extends AbstractEventList<E> implements RandomAccess {
 
     /** the underlying data list */
-    private List<E> data;
+    private final List<E> data;
 
     /**
      * Creates a {@link BasicEventList}.
@@ -298,79 +285,4 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ser
      */
     @Override
     public void dispose() { }
-
-    /**
-     * Although {@link EventList}s are not in general, {@link BasicEventList} is
-     * {@link Serializable}. All of the {@link ListEventListener}s that are themselves
-     * {@link Serializable} will be serialized, but others will not. Note that there
-     * is <strong>no</strong> easy way to access the {@link ListEventListener}s of
-     * an {@link EventList}, particularly after it has been serialized.
-     *
-     * <p>As of October 3, 2005, this is the wire format of serialized
-     * {@link BasicEventList}s:
-     * <li>An <code>Object[]</code> containing each of the list's elements
-     * <li>A <code>ListEventListener[]</code> containing <strong>only</strong> the
-     *     listeners that themselves implement {@link Serializable}. Those that
-     *     do not will not be serialized. Note that {@link TransformedList}s
-     *     such as {@link FilterList} are not {@link Serializable} and will not
-     *     be serialized.
-     *
-     * <p>As of March 4, 2007, the wire format was extended to include:
-     * <li>the ListEventPublisher
-     * <li>the ReadWriteLock represented as a {@link SerializedReadWriteLock}
-     * <p>The motivation for this is documented <a
-     * href="https://glazedlists.dev.java.net/issues/show_bug.cgi?id=398">here</a>.
-     * Serialization streams with the old format are still readable. Serialization streams with
-     * the new format are not downwards-compatible.
-     */
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        // 1. The elements to write
-        E[] elements = (E[]) data.toArray(Object[]::new);
-
-        // 2. The Listeners to write
-        List<ListEventListener<E>> serializableListeners = new ArrayList<>(1);
-        for (ListEventListener<E> listener : updates.getListEventListeners()) {
-            if (!(listener instanceof Serializable)) continue;
-            serializableListeners.add(listener);
-        }
-        ListEventListener<?>[] listeners = serializableListeners.toArray(ListEventListener<?>[]::new);
-
-        // 3. Write the elements, listeners, publisher and lock
-        out.writeObject(elements);
-        out.writeObject(listeners);
-        out.writeObject(getPublisher());
-        out.writeObject(getReadWriteLock());
-    }
-
-    /**
-     * Peer method to {@link #writeObject(ObjectOutputStream)}. Note that this
-     * is functionally equivalent to a constructor and should validate that
-     * everything is in place including locks, etc.
-     */
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        // 1. Read in the elements
-        final E[] elements = (E[]) in.readObject();
-        // 2. Read in the listeners
-        final ListEventListener<E>[] listeners = (ListEventListener<E>[]) in.readObject();
-
-        // 3. Try to read the ListEventPublisher and ReadWriteLock according to the new wire format
-        try {
-            this.publisher = (ListEventPublisher) in.readObject();
-            this.updates = new ListEventAssembler<>(this, publisher);
-            this.readWriteLock = (ReadWriteLock) in.readObject();
-        } catch (OptionalDataException e) {
-            if (e.eof)
-                // reading old serialization stream without publisher and lock
-                this.readWriteLock = new ReentrantReadWriteLock();
-            else throw e;
-        }
-        // 4. Populate the EventList data
-        this.data = new ArrayList<>(elements.length);
-        this.data.addAll(Arrays.asList(elements));
-
-        // 5. Populate the listeners
-        for (ListEventListener<E> listener : listeners) {
-            this.updates.addListEventListener(listener);
-        }
-    }
 }

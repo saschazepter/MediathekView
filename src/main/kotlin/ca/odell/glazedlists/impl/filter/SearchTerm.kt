@@ -1,7 +1,6 @@
 package ca.odell.glazedlists.impl.filter
 
 import ca.odell.glazedlists.matchers.SearchEngineTextMatcherEditor
-import java.io.Serializable
 
 /** Immutable metadata for one piece of text in a search-engine query. */
 data class SearchTerm<E>(
@@ -9,7 +8,7 @@ data class SearchTerm<E>(
     val isNegated: Boolean,
     val isRequired: Boolean,
     val field: SearchEngineTextMatcherEditor.Field<E>?,
-) : Serializable {
+) {
     constructor(text: String) : this(text, false, false, null)
 
     /** Reused while matching to avoid allocating an extraction list per element. */
