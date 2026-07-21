@@ -1455,7 +1455,9 @@ public final class AutoCompleteSupport<E> {
         if (this.comboBox == null)
             throw new IllegalStateException("This AutoCompleteSupport has already been uninstalled");
 
-        items.getReadWriteLock().readLock().lock();
+        // Disposing the Swing proxy acquires this lock for writing. Take the write lock now
+        // rather than attempting an unsupported read-to-write upgrade during disposal.
+        items.getReadWriteLock().writeLock().lock();
         try {
             // 1. stop listening for changes
             this.comboBox.removePropertyChangeListener("UI", this.uiWatcher);
@@ -1484,7 +1486,7 @@ public final class AutoCompleteSupport<E> {
             this.comboBox = null;
         }
         finally {
-            items.getReadWriteLock().readLock().unlock();
+            items.getReadWriteLock().writeLock().unlock();
         }
     }
 

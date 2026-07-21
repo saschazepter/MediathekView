@@ -10,6 +10,8 @@ import ca.odell.glazedlists.swing.TextComponentMatcherEditor
 import com.formdev.flatlaf.FlatLaf
 import com.formdev.flatlaf.themes.FlatMacLightLaf
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.beans.PropertyChangeEvent
@@ -21,6 +23,9 @@ import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.util.Date
 import java.util.TimeZone
+import java.util.concurrent.locks.Lock
+import java.util.concurrent.locks.ReadWriteLock
+import java.util.concurrent.locks.ReentrantReadWriteLock
 import javax.swing.JComboBox
 import javax.swing.JTextField
 import javax.swing.SwingUtilities
@@ -179,6 +184,22 @@ internal class ProbableBugsBehaviorTest {
     }
 
     @Test
+    fun autoCompleteSupportUninstallsWithoutUpgradingAReadLock() {
+        SwingUtilities.invokeAndWait {
+            val comboBox = JComboBox(arrayOf("original"))
+            val originalModel = comboBox.model
+            val source = BasicEventList<String>(UpgradeDetectingReadWriteLock()).apply { add("alpha") }
+            val support = AutoCompleteSupport.install(comboBox, source)
+
+            support.uninstall()
+
+            assertFalse(support.isInstalled)
+            assertSame(originalModel, comboBox.model)
+            assertFalse(comboBox.isEditable)
+        }
+    }
+
+    @Test
     fun autoCompleteFormatParsesEachEditedValueFromTheBeginning() {
         SwingUtilities.invokeAndWait {
             val comboBox = JComboBox<Number>(arrayOf(0))
@@ -219,5 +240,21 @@ internal class ProbableBugsBehaviorTest {
         override fun firePropertyChange(propertyName: String?, oldValue: Any?, newValue: Any?) {
             super.firePropertyChange(propertyName?.toCharArray()?.concatToString(), oldValue, newValue)
         }
+    }
+
+    private class UpgradeDetectingReadWriteLock : ReadWriteLock {
+        private val delegate = ReentrantReadWriteLock()
+        private val guardedWriteLock = object : Lock by delegate.writeLock() {
+            override fun lock() {
+                check(delegate.readHoldCount == 0 || delegate.isWriteLockedByCurrentThread) {
+                    "read-to-write lock upgrade attempted"
+                }
+                delegate.writeLock().lock()
+            }
+        }
+
+        override fun readLock(): Lock = delegate.readLock()
+
+        override fun writeLock(): Lock = guardedWriteLock
     }
 }
