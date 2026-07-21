@@ -3,7 +3,6 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists;
 
-import ca.odell.glazedlists.FunctionList.Function;
 import ca.odell.glazedlists.event.ListEventListener;
 import ca.odell.glazedlists.event.ListEventPublisher;
 import ca.odell.glazedlists.gui.AdvancedTableFormat;
@@ -21,6 +20,7 @@ import ca.odell.glazedlists.matchers.Matchers;
 import java.beans.PropertyChangeEvent;
 import java.util.*;
 import java.util.concurrent.locks.ReadWriteLock;
+import java.util.function.Function;
 
 /**
  * A factory for creating all sorts of objects to be used with Glazed Lists.
@@ -663,26 +663,6 @@ public final class GlazedLists {
     // Matchers // // // // // // // // // // // // // // // // // // // // //
 
     /**
-     * Create a new Matcher which uses reflection to read properties with the
-     * given <code>propertyName</code> from instances of the given
-     * <code>beanClass</code> and compare them with the given <code>value</code>.
-     *
-     * @param beanClass the type of class containing the named bean property
-     * @param propertyName the name of the bean property
-     * @param value the value to compare with the bean property
-     * @return <tt>true</tt> if the named bean property equals the given <code>value</code>
-     *
-     * @deprecated as of 3/3/2006 - this method has been replaced by
-     *      {@link Matchers#beanPropertyMatcher}. {@link Matchers} is now
-     *      the permanent factory class which creates all basic Matcher
-     *      implementations.
-     */
-    @Deprecated
-    public static <E> Matcher<E> beanPropertyMatcher(Class<E> beanClass, String propertyName, Object value) {
-        return Matchers.beanPropertyMatcher(beanClass, propertyName, value);
-    }
-
-    /**
      * Get a {@link MatcherEditor} that is fixed on the specified {@link Matcher}.
      *
      * @see MatcherEditor#fromMatcher(Matcher)
@@ -694,28 +674,28 @@ public final class GlazedLists {
     // Functions // // // // // // // // // // // // // // // // // // // // //
 
     /**
-     * Get a {@link FunctionList.Function} that always returns the given
+     * Get a {@link Function} that always returns the given
      * <code>value</code>, regardless of its input.
      */
-    public static <E,V> FunctionList.Function<E,V> constantFunction(V value) {
+    public static <E,V> Function<E,V> constantFunction(V value) {
         return new ConstantFunction<>(value);
     }
 
     /**
-     * Get a {@link FunctionList.Function} that extracts the property with the
+     * Get a {@link Function} that extracts the property with the
      * given <code>propertyName</code> from objects of the given
      * <code>beanClass</code> and then formats the return value as a String.
      */
-    public static <E> FunctionList.Function<E,String> toStringFunction(Class<E> beanClass, String propertyName) {
+    public static <E> Function<E,String> toStringFunction(Class<E> beanClass, String propertyName) {
         return new StringBeanFunction<>(beanClass, propertyName);
     }
 
     /**
-     * Get a {@link FunctionList.Function} that extracts the property with the
+     * Get a {@link Function} that extracts the property with the
      * given <code>propertyName</code> from objects of the given
      * <code>beanClass</code>.
      */
-    public static <E,V> FunctionList.Function<E,V> beanFunction(Class<E> beanClass, String propertyName) {
+    public static <E,V> Function<E,V> beanFunction(Class<E> beanClass, String propertyName) {
         return new BeanFunction<>(beanClass, propertyName);
     }
 
@@ -828,7 +808,7 @@ public final class GlazedLists {
      * <code>keyMaker</code> are {@link Comparable} and that the natural
      * ordering of those keys also defines the grouping of values. If either
      * of those assumptions are false, consider using
-     * {@link #syncEventListToMultiMap(EventList, FunctionList.Function, Comparator)}.
+     * {@link #syncEventListToMultiMap(EventList, Function, Comparator)}.
      *
      * <p>If two distinct values, say <code>v1</code> and <code>v2</code> each
      * produce a common key, <code>k</code>, when they are evaluated by the
@@ -869,13 +849,13 @@ public final class GlazedLists {
      * @param source the {@link EventList} which provides the master view.
      *      Each change to this {@link EventList} will be applied to the
      *      MultiMap
-     * @param keyMaker the {@link FunctionList.Function} which produces a key
+     * @param keyMaker the {@link Function} which produces a key
      *      for each value in the <code>source</code>. It is imperative that the
      *      keyMaker produce <strong>immutable</strong> objects.
      * @return a MultiMap which remains in sync with changes that occur to the
      *      underlying <code>source</code> {@link EventList}
      */
-    public static <K extends Comparable<? super K>, V> DisposableMap<K, List<V>> syncEventListToMultiMap(EventList<V> source, FunctionList.Function<V, ? extends K> keyMaker) {
+    public static <K extends Comparable<? super K>, V> DisposableMap<K, List<V>> syncEventListToMultiMap(EventList<V> source, Function<V, ? extends K> keyMaker) {
         return syncEventListToMultiMap(source, keyMaker, comparableComparator());
     }
 
@@ -933,7 +913,7 @@ public final class GlazedLists {
      * @param source the {@link EventList} which provides the master view.
      *      Each change to this {@link EventList} will be applied to the
      *      MultiMap
-     * @param keyMaker the {@link FunctionList.Function} which produces a key
+     * @param keyMaker the {@link Function} which produces a key
      *      for each value in the <code>source</code>. It is imperative that the
      *      keyMaker produce <strong>immutable</strong> objects.
      * @param keyGrouper the {@link Comparator} which groups together values
@@ -941,7 +921,7 @@ public final class GlazedLists {
      * @return a MultiMap which remains in sync with changes that occur to the
      *      underlying <code>source</code> {@link EventList}
      */
-    public static <K, V> DisposableMap<K, List<V>> syncEventListToMultiMap(EventList<V> source, FunctionList.Function<V, ? extends K> keyMaker, Comparator<? super K> keyGrouper) {
+    public static <K, V> DisposableMap<K, List<V>> syncEventListToMultiMap(EventList<V> source, Function<V, ? extends K> keyMaker, Comparator<? super K> keyGrouper) {
         return new GroupingListMultiMap<>(source, keyMaker, keyGrouper);
     }
 
@@ -993,13 +973,13 @@ public final class GlazedLists {
      *
      * @param source the {@link EventList} which provides the values of the map.
      *      Each change to this {@link EventList} will be applied to the Map.
-     * @param keyMaker the {@link FunctionList.Function} which produces a key
+     * @param keyMaker the {@link Function} which produces a key
      *      for each value in the <code>source</code>. It is imperative that the
      *      keyMaker produce <strong>immutable</strong> objects.
      * @return a Map which remains in sync with changes that occur to the
      *      underlying <code>source</code> {@link EventList}
      */
-    public static <K, V> DisposableMap<K, V> syncEventListToMap(EventList<V> source, FunctionList.Function<V, K> keyMaker) {
+    public static <K, V> DisposableMap<K, V> syncEventListToMap(EventList<V> source, Function<V, K> keyMaker) {
         return new FunctionListMap<>(source, keyMaker);
     }
 }

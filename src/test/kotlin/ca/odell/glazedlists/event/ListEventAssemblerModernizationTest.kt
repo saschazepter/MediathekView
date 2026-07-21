@@ -3,9 +3,26 @@ package ca.odell.glazedlists.event
 import ca.odell.glazedlists.BasicEventList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 internal class ListEventAssemblerModernizationTest {
+    @Test
+    fun nullListenersAreRejectedWithTheExistingMessage() {
+        val source = BasicEventList<String>()
+        val assembler = ListEventAssembler(source, source.publisher)
+
+        val addFailure = assertThrows(NullPointerException::class.java) {
+            assembler.addListEventListener(null)
+        }
+        val removeFailure = assertThrows(NullPointerException::class.java) {
+            assembler.removeListEventListener(null)
+        }
+
+        assertEquals("ListEventListener is undefined", addFailure.message)
+        assertEquals("ListEventListener is undefined", removeFailure.message)
+    }
+
     @Test
     fun bulkChangesRetainTheirTypesIndicesAndUnknownValues() {
         assertRange(ListEvent.INSERT, 2..4) { assembler -> assembler.elementsInserted(2, 4) }

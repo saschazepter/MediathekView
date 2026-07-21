@@ -4,12 +4,12 @@
 package ca.odell.glazedlists.impl;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.GlazedLists;
 import ca.odell.glazedlists.impl.adt.KeyedCollection;
 import ca.odell.glazedlists.impl.text.LatinDiacriticsStripper;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * A utility class containing all sorts of random things that are useful for
@@ -176,17 +176,11 @@ public final class GlazedListsImpl {
     }
 
     /**
-     * Returns a {@link FunctionList.Function} that simply reflects the
+     * Returns a {@link Function} that simply reflects the
      * function's argument as its result.
      */
-    public static <E> FunctionList.Function<E,E> identityFunction() {
-        return new IdentityFunction<>();
-    }
-    private static class IdentityFunction<E> implements FunctionList.Function<E,E> {
-        @Override
-        public E evaluate(E sourceValue) {
-            return sourceValue;
-        }
+    public static <E> Function<E,E> identityFunction() {
+        return Function.identity();
     }
 
     /**

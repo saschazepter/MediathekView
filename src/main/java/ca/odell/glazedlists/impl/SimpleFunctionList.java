@@ -1,9 +1,11 @@
 package ca.odell.glazedlists.impl;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FunctionList.Function;
 import ca.odell.glazedlists.TransformedList;
 import ca.odell.glazedlists.event.ListEvent;
+
+import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * A {@link TransformedList} that maps each element of a source list to a target element by use
@@ -29,7 +31,7 @@ public final class SimpleFunctionList<S, E> extends TransformedList<S, E> {
      */
     public SimpleFunctionList(EventList<S> source, Function<S, E> function) {
         super(source);
-        Preconditions.checkNotNull(function, "mapping function is undefined");
+        Objects.requireNonNull(function, "mapping function is undefined");
         this.function = function;
         source.addListEventListener(this);
     }
@@ -40,7 +42,7 @@ public final class SimpleFunctionList<S, E> extends TransformedList<S, E> {
     @Override
     public E get(int index) {
         final S elem = source.get(index);
-        return function.evaluate(elem);
+        return function.apply(elem);
     }
 
     /** {@inheritDoc} */

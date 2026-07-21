@@ -4,13 +4,13 @@
 package ca.odell.glazedlists.event;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.impl.Preconditions;
 import ca.odell.glazedlists.impl.WeakReferenceProxy;
 import ca.odell.glazedlists.impl.event.BlockSequence;
 import ca.odell.glazedlists.impl.event.Tree4Deltas;
 
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Models a continuous stream of changes on a list. Changes of the same type
@@ -318,7 +318,7 @@ public final class ListEventAssembler<E> {
      * @throws NullPointerException if the specified listener is null
      */
     public synchronized void addListEventListener(ListEventListener<? super E> listChangeListener) {
-        Preconditions.checkNotNull(listChangeListener, "ListEventListener is undefined");
+        Objects.requireNonNull(listChangeListener, "ListEventListener is undefined");
         publisher.addListener(sourceList, listChangeListener, eventFormat);
     }
 
@@ -335,7 +335,7 @@ public final class ListEventAssembler<E> {
      * @throws IllegalArgumentException if the specified listener wasn't added before
      */
     public synchronized void removeListEventListener(ListEventListener<? super E> listChangeListener) {
-        Preconditions.checkNotNull(listChangeListener, "ListEventListener is undefined");
+        Objects.requireNonNull(listChangeListener, "ListEventListener is undefined");
         publisher.removeListener(sourceList, listChangeListener);
     }
 

@@ -59,15 +59,10 @@ public class TableColumnComparator<E> implements Comparator<E> {
             // throw a 'nicer' exception if the class does not implement Comparable
         }
         catch (ClassCastException e) {
-            final IllegalStateException illegalStateException;
             if (comparator == (Comparator<?>) GlazedLists.<Comparable<Object>>comparableComparator()) {
-                illegalStateException = new IllegalStateException("TableComparatorChooser can not sort objects \"" + alphaField + "\", \"" + betaField + "\" that do not implement Comparable.");
+                throw new IllegalStateException("TableComparatorChooser can not sort objects \"" + alphaField + "\", \"" + betaField + "\" that do not implement Comparable.", e);
             }
-            else {
-                illegalStateException = new IllegalStateException("TableComparatorChooser can not sort objects \"" + alphaField + "\", \"" + betaField + "\" using the provided Comparator.");
-            }
-            illegalStateException.initCause(e);
-            throw illegalStateException;
+            throw new IllegalStateException("TableComparatorChooser can not sort objects \"" + alphaField + "\", \"" + betaField + "\" using the provided Comparator.", e);
         }
     }
 

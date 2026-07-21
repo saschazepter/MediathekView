@@ -10,6 +10,7 @@ import org.jspecify.annotations.NonNull;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.RandomAccess;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 /**
@@ -40,7 +41,7 @@ import java.util.function.Predicate;
  * <p>If specified, the reverse {@link Function} should do its best to
  * maintain the invariant:
  *
- * <p> <strong>o.equals(reverseFunction.evaluate(forwardFunction.evaluate(o)))</strong>
+ * <p> <strong>o.equals(reverseFunction.apply(forwardFunction.apply(o)))</strong>
  * for any o that is non-null.
  *
  * <p><strong>Note:</strong> if two source elements share the same identity
@@ -138,7 +139,7 @@ public final class FunctionList<S, E> extends TransformedList<S, E> implements R
      * @return the result of transforming the source element
      */
     private E forward(S s) {
-        return forward.evaluate(s);
+        return forward.apply(s);
     }
 
     /**
@@ -164,7 +165,7 @@ public final class FunctionList<S, E> extends TransformedList<S, E> implements R
         if (reverse == null)
             throw new IllegalStateException("A reverse mapping function must be specified to support this List operation");
 
-        return reverse.evaluate(e);
+        return reverse.apply(e);
     }
 
     /**
@@ -230,7 +231,7 @@ public final class FunctionList<S, E> extends TransformedList<S, E> implements R
     public Function<S,E> getForwardFunction() {
         // unwrap the forward function from an AdvancedFunctionAdapter if necessary
         if (forward instanceof AdvancedFunctionAdapter)
-            return ((AdvancedFunctionAdapter<S,E>) forward).getDelegate();
+            return ((AdvancedFunctionAdapter<S,E>) forward).delegate();
         else
             return forward;
     }
@@ -377,32 +378,6 @@ public final class FunctionList<S, E> extends TransformedList<S, E> implements R
     }
 
     /**
-     * A Function encapsulates the logic for transforming a list element into
-     * any kind of Object. Implementations should typically create and return
-     * new objects, though it is permissible to return the original value
-     * unchanged (i.e. the Identity Function).
-     *
-     * <p>As of Glazed Lists 1.12 this interface extends {@link java.util.function.Function}.
-     * This way an existing FunctionList.Function can be used everywhere a standard function is expected.
-     */
-    @FunctionalInterface
-    public interface Function<A, B> extends java.util.function.Function<A, B>{
-
-        /**
-         * Transform the given <code>sourceValue</code> into any kind of Object.
-         *
-         * @param sourceValue the Object to transform
-         * @return the transformed version of the object
-         */
-        B evaluate(A sourceValue);
-
-        @Override
-        default B apply(A sourceValue) {
-            return evaluate(sourceValue);
-        }
-    }
-
-    /**
      * An AdvancedFunction is an extension of the simple Function interface
      * which provides more hooks in the lifecycle of the transformation of a
      * source element. Specifically, it includes:
@@ -419,9 +394,8 @@ public final class FunctionList<S, E> extends TransformedList<S, E> implements R
      *        example)
      * </ul>
      *
-     * If neither of these extensions to FunctionList are useful, users are
-     * encouraged to implement only the Function interface for their forward
-     * function.
+     * If neither of these lifecycle hooks is useful, users are encouraged to
+     * supply a standard {@link Function} as their forward function.
      */
     public interface AdvancedFunction<A,B> extends Function<A,B> {
 
@@ -463,25 +437,21 @@ public final class FunctionList<S, E> extends TransformedList<S, E> implements R
          * Defers to the delegate.
          */
         @Override
-        public B evaluate(A sourceValue) {
-            return delegate.evaluate(sourceValue);
+        public B apply(A sourceValue) {
+            return delegate.apply(sourceValue);
         }
 
         /**
-         * Defers to the delegate's {@link Function#evaluate} method.
+         * Defers to the delegate's {@link Function#apply} method.
          */
         @Override
         public B reevaluate(A sourceValue, B transformedValue) {
-            return evaluate(sourceValue);
+            return apply(sourceValue);
         }
 
         @Override
         public void dispose(A sourceValue, B transformedValue) {
             // do nothing
-        }
-
-        public Function<A,B> getDelegate() {
-            return delegate;
         }
     }
 }

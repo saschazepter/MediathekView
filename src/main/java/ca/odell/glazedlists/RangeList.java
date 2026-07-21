@@ -109,21 +109,6 @@ public class RangeList<E> extends TransformedList<E, E> {
      *
      * @param startIndex the first index of the source {@link EventList} to show, inclusive
      * @param endIndex the last index of the source {@link EventList} to show, exclusive
-     *
-     * @deprecated 2/15/2006 use {@link #setHeadRange(int, int)} instead. The
-     * introduction of {@link #setMiddleRange(int, int)} caused us to want a
-     * consistent naming scheme for all set*Range methods.
-     */
-    @Deprecated
-    public void setRange(int startIndex, int endIndex) {
-        this.setHeadRange(startIndex, endIndex);
-    }
-
-    /**
-     * Set the range of values displayed by this {@link RangeList}.
-     *
-     * @param startIndex the first index of the source {@link EventList} to show, inclusive
-     * @param endIndex the last index of the source {@link EventList} to show, exclusive
      */
     public void setHeadRange(int startIndex, int endIndex) {
         this.desiredStart = startIndex;

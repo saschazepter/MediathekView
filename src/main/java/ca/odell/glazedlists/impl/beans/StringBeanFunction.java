@@ -3,15 +3,15 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.beans;
 
-import ca.odell.glazedlists.FunctionList;
+import java.util.function.Function;
 
 /**
- * A {@link FunctionList.Function} that uses a {@link BeanProperty} to extract
+ * A {@link Function} that uses a {@link BeanProperty} to extract
  * a raw result and then formats that result as a String.
  *
  * @author James Lemieux
  */
-public class StringBeanFunction<E> implements FunctionList.Function<E,String> {
+public class StringBeanFunction<E> implements Function<E,String> {
 
     /** The {@link BeanProperty} that is capable of extracting the function's raw value from source objects. */
     private final BeanProperty<E> property;
@@ -27,7 +27,7 @@ public class StringBeanFunction<E> implements FunctionList.Function<E,String> {
 
     /** @inheritDoc */
     @Override
-    public String evaluate(E sourceValue) {
+    public String apply(E sourceValue) {
         final Object rawValue = property.get(sourceValue);
         return rawValue == null ? null : String.valueOf(rawValue);
     }

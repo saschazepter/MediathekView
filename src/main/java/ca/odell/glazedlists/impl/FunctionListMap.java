@@ -6,7 +6,6 @@ package ca.odell.glazedlists.impl;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.DisposableMap;
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
 import org.jspecify.annotations.NonNull;
@@ -14,11 +13,12 @@ import org.jspecify.annotations.NonNull;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 /**
  * This map implementation sits atop an {@link EventList} and makes it
  * accessible via the convenient {@link Map} interface. It is constructed with
- * a {@link FunctionList.Function} which is used to create the keys of the map.
+ * a {@link Function} which is used to create the keys of the map.
  * The values of the map are the lists of values from the {@link EventList}.
  *
  * <p>For example, an {@link EventList} containing
@@ -60,7 +60,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
     private Set<Map.Entry<K, V>> entrySet;
 
     /** The function which produces keyList for this multimap. */
-    private final FunctionList.Function<V, K> keyFunction;
+    private final Function<V, K> keyFunction;
 
     /** The delegate Map which is kept in synch with changes. */
     private final Map<K, V> delegate;
@@ -77,7 +77,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
      * @param keyFunction the function capable of producing the key of this
      *      {@link Map} for each value
      */
-    public FunctionListMap(EventList<V> source, FunctionList.Function<V, K> keyFunction) {
+    public FunctionListMap(EventList<V> source, Function<V, K> keyFunction) {
         if (keyFunction == null)
             throw new IllegalArgumentException("keyFunction may not be null");
 
@@ -368,7 +368,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
      * @return the key which maps to the given value
      */
     private K key(V value) {
-        return keyFunction.evaluate(value);
+        return keyFunction.apply(value);
     }
 
     /**
@@ -393,23 +393,14 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
         /** {@inheritDoc} */
         @Override
         public boolean contains(Object o) {
-            if (!(o instanceof Map.Entry))
-                return false;
-
-            final Entry<K, V> e = (Entry<K, V>) o;
-            final K key = e.getKey();
-            final V value = e.getValue();
-
-            final V mapValue = FunctionListMap.this.get(key);
-
-            return Objects.equals(value, mapValue);
+            return delegate.entrySet().contains(o);
         }
 
         /** {@inheritDoc} */
         @Override
         public boolean remove(Object o) {
-            if (!contains(o)) return false;
-            FunctionListMap.this.remove(((Map.Entry) o).getKey());
+            if (!(o instanceof Map.Entry<?, ?> entry) || !contains(entry)) return false;
+            FunctionListMap.this.remove(entry.getKey());
             return true;
         }
 

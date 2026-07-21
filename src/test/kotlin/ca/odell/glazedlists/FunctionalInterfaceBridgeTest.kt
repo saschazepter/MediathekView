@@ -18,6 +18,50 @@ import javax.swing.table.AbstractTableModel
 
 internal class FunctionalInterfaceBridgeTest {
     @Test
+    fun functionListAcceptsJdkFunctionsDirectly() {
+        val source = BasicEventList<String>().apply { add("aa") }
+        val forward = Function<String, Int>(String::length)
+        val reverse = Function<Int, String> { "x".repeat(it) }
+
+        val mapped = FunctionList(source, forward, reverse)
+
+        assertSame(forward, mapped.forwardFunction)
+        assertSame(reverse, mapped.reverseFunction)
+        assertEquals(listOf(2), mapped.toList())
+
+        mapped.add(3)
+
+        assertEquals(listOf("aa", "xxx"), source)
+    }
+
+    @Test
+    fun advancedFunctionRetainsItsLifecycleHooks() {
+        val source = BasicEventList<String>().apply { add("aa") }
+        val reevaluations = mutableListOf<Pair<String, Int>>()
+        val disposals = mutableListOf<Pair<String, Int>>()
+        val function = object : FunctionList.AdvancedFunction<String, Int> {
+            override fun apply(sourceValue: String): Int = sourceValue.length
+
+            override fun reevaluate(sourceValue: String, transformedValue: Int): Int {
+                reevaluations += sourceValue to transformedValue
+                return sourceValue.length
+            }
+
+            override fun dispose(sourceValue: String, transformedValue: Int) {
+                disposals += sourceValue to transformedValue
+            }
+        }
+        val mapped = FunctionList(source, function)
+
+        source[0] = "bbbb"
+        source.clear()
+
+        assertSame(function, mapped.forwardFunction)
+        assertEquals(listOf("bbbb" to 2), reevaluations)
+        assertEquals(listOf("bbbb" to 4), disposals)
+    }
+
+    @Test
     fun extractionInterfacesDelegateThroughJdkConsumers() {
         val values = mutableListOf<String>()
         val textFilterator = TextFilterator<String> { target, element -> target += "text:$element" }

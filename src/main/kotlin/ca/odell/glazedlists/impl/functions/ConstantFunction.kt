@@ -3,10 +3,10 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.functions
 
-import ca.odell.glazedlists.FunctionList
+import java.util.function.Function
 
 /** A function that always returns the same value regardless of the input. */
-open class ConstantFunction<E, V>(private val value: V) : FunctionList.Function<E, V> {
+open class ConstantFunction<E, V>(private val value: V) : Function<E, V> {
     @Suppress("UNUSED_PARAMETER")
-    override fun evaluate(sourceValue: E): V = value
+    override fun apply(sourceValue: E): V = value
 }

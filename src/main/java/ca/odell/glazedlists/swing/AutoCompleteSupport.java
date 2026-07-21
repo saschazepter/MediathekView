@@ -33,6 +33,7 @@ import java.text.ParsePosition;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 /**
  * This class {@link #install}s support for filtering and autocompletion into
@@ -2697,7 +2698,7 @@ public final class AutoCompleteSupport<E> {
     @SuppressWarnings("unchecked")
     public static <E> AutoCompleteCellEditor<E> createTableCellEditor(Comparator<?> uniqueComparator, TableFormat<E> tableFormat, EventList<E> tableData, int columnIndex) {
         // use a function to extract all values for the column
-        final FunctionList.Function<E, Object> columnValueFunction = new TableColumnValueFunction<>(tableFormat, columnIndex);
+        final Function<E, Object> columnValueFunction = new TableColumnValueFunction<>(tableFormat, columnIndex);
         final FunctionList<E, Object> allColumnValues = new FunctionList<>(tableData, columnValueFunction);
 
         // narrow the list to just unique values within the column
@@ -2941,9 +2942,9 @@ public final class AutoCompleteSupport<E> {
      * used as autocompletion terms when editing a cell within that column.
      */
     private record TableColumnValueFunction<E>(TableFormat<E> tableFormat, int columnIndex)
-            implements FunctionList.Function<E, Object> {
+            implements Function<E, Object> {
         @Override
-        public Object evaluate(E sourceValue) {
+        public Object apply(E sourceValue) {
             return tableFormat.getColumnValue(sourceValue, columnIndex);
         }
     }

@@ -4,7 +4,6 @@
 package ca.odell.glazedlists.swing;
 
 import ca.odell.glazedlists.EventList;
-import ca.odell.glazedlists.FunctionList;
 import ca.odell.glazedlists.UndoRedoSupport;
 import org.jspecify.annotations.NonNull;
 
@@ -12,6 +11,7 @@ import javax.swing.*;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.UndoManager;
 import javax.swing.undo.UndoableEdit;
+import java.util.function.Function;
 
 /**
  * This class adapts the generic {@link UndoRedoSupport} provided by Glazed
@@ -22,7 +22,7 @@ import javax.swing.undo.UndoableEdit;
  *
  * <p>Fine grain control of the {@link UndoableEdit} that is ultimately added
  * to the {@link UndoableEdit} can be achieved by using
- * {@link #install(UndoManager, EventList, FunctionList.Function) this} install
+ * {@link #install(UndoManager, EventList, Function) this} install
  * method and specifying a custom Function.
  *
  * @author James Lemieux
@@ -39,7 +39,7 @@ public final class UndoSupport<E> {
     private UndoRedoSupport.Listener undoSupportHandler = new UndoSupportHandler();
 
     /** the function which transforms GL-style edits into Swing-style edits */
-    private FunctionList.Function<UndoRedoSupport.Edit, UndoableEdit> editAdapter;
+    private Function<UndoRedoSupport.Edit, UndoableEdit> editAdapter;
 
     /**
      * The private constructor creates an UndoSupport that provides undo/redo
@@ -53,7 +53,7 @@ public final class UndoSupport<E> {
      * @param source the EventList to watch for undoable edits
      * @param editAdapter the function that converts GL-style edits into Swing-style edits
      */
-    private UndoSupport(UndoManager undoManager, EventList<E> source, FunctionList.Function<UndoRedoSupport.Edit, UndoableEdit> editAdapter) {
+    private UndoSupport(UndoManager undoManager, EventList<E> source, Function<UndoRedoSupport.Edit, UndoableEdit> editAdapter) {
         this.undoManager = undoManager;
         this.undoRedoSupport = UndoRedoSupport.install(source);
         this.editAdapter = editAdapter;
@@ -103,7 +103,7 @@ public final class UndoSupport<E> {
      * @throws IllegalStateException if this method is called from any Thread
      *      other than the Swing Event Dispatch Thread
      */
-    public static <E> UndoSupport<E> install(UndoManager undoManager, EventList<E> source, FunctionList.Function<UndoRedoSupport.Edit, UndoableEdit> editAdapter) {
+    public static <E> UndoSupport<E> install(UndoManager undoManager, EventList<E> source, Function<UndoRedoSupport.Edit, UndoableEdit> editAdapter) {
         checkAccessThread();
 
         return new UndoSupport<>(undoManager, source, editAdapter);
@@ -148,16 +148,16 @@ public final class UndoSupport<E> {
     private class UndoSupportHandler implements UndoRedoSupport.Listener {
         @Override
         public void undoableEditHappened(UndoRedoSupport.@NonNull Edit edit) {
-            undoManager.addEdit(editAdapter.evaluate(edit));
+            undoManager.addEdit(editAdapter.apply(edit));
         }
     }
 
     /**
      * The default strategy for transforming GL edits into Swing edits.
      */
-    private static class DefaultEditAdapter implements FunctionList.Function<UndoRedoSupport.Edit, UndoableEdit> {
+    private static class DefaultEditAdapter implements Function<UndoRedoSupport.Edit, UndoableEdit> {
         @Override
-        public UndoableEdit evaluate(UndoRedoSupport.Edit edit) {
+        public UndoableEdit apply(UndoRedoSupport.Edit edit) {
             return new EditAdapter(edit);
         }
 

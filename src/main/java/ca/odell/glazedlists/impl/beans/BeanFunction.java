@@ -3,15 +3,15 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.beans;
 
-import ca.odell.glazedlists.FunctionList;
+import java.util.function.Function;
 
 /**
- * A {@link FunctionList.Function} that uses a {@link BeanProperty} to produce
+ * A {@link Function} that uses a {@link BeanProperty} to produce
  * the result of the function.
  *
  * @author James Lemieux
  */
-public class BeanFunction<E,V> implements FunctionList.Function<E,V> {
+public class BeanFunction<E,V> implements Function<E,V> {
 
     /** The {@link BeanProperty} that is capable of extracting the function's value from source objects. */
     private final BeanProperty<E> property;
@@ -27,7 +27,7 @@ public class BeanFunction<E,V> implements FunctionList.Function<E,V> {
 
     /** @inheritDoc */
     @Override
-    public V evaluate(E sourceValue) {
+    public V apply(E sourceValue) {
         return (V) property.get(sourceValue);
     }
 }

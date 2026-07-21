@@ -1,6 +1,6 @@
 package ca.odell.glazedlists.matchers
 
-import ca.odell.glazedlists.FunctionList.Function
+import java.util.function.Function
 import java.util.logging.Logger
 
 /**
@@ -93,7 +93,7 @@ class SetMatcherEditor<E, O> private constructor(
         val matchSet: Set<O> = matchSet.toHashSet()
 
         override fun matches(item: E): Boolean {
-            val contained = matchSet.contains(function.evaluate(item))
+            val contained = matchSet.contains(function.apply(item))
             return if (mode == Mode.BLACKLIST) !contained else contained
         }
     }

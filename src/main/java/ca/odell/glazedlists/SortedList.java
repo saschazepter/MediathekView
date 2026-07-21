@@ -584,24 +584,6 @@ public final class SortedList<E> extends TransformedList<E,E> {
         return indexOfValue(object, false, true);
     }
 
-    /**
-     * Returns the index in this list of the first occurrence of the specified
-     * element, or the index where that element would be in the list if it were
-     * inserted.
-     *
-     * @return the index in this list of the first occurrence of the specified
-     *      element, or the index where that element would be in the list if it
-     *      were inserted. This will return a value in <tt>[0, size()]</tt>,
-     *      inclusive.
-     *
-     * @deprecated Deprecated as of 12/11/2005. Replaced with {@link #sortIndex(Object)}
-     *      which has cleaner semantics.
-     */
-    @Deprecated
-    public int indexOfSimulated(Object object) {
-        return comparator != null ? indexOfValue(object, true, true) : size();
-    }
-
     /** {@inheritDoc} */
     @Override
     public boolean contains(Object object) {

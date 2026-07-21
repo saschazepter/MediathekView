@@ -97,30 +97,6 @@ public class TableComparatorChooser<E> extends AbstractTableComparatorChooser<E>
     /**
      * Creates and installs a TableComparatorChooser.
      *
-     * @deprecated replaced with {@link #install}, which is functionally
-     * identical but uses a more fitting name to convey the action that is
-     * performed and fixes an API flaw by explicitly requiring the TableFormat.
-     */
-    @Deprecated
-    public TableComparatorChooser(JTable table, SortedList<E> sortedList, boolean multipleColumnSort) {
-        this(table, sortedList, multipleColumnSort ? MULTIPLE_COLUMN_MOUSE : SINGLE_COLUMN);
-    }
-
-    /**
-     * Creates and installs a TableComparatorChooser.
-     *
-     * @deprecated 9/25/06 replaced with {@link #install}, which is functionally
-     * identical but uses a more fitting name to convey the action that is
-     * performed and fixes an API flaw by explicitly requiring the TableFormat.
-     */
-    @Deprecated
-    public TableComparatorChooser(JTable table, SortedList<E> sortedList, Object strategy) {
-        this(table, sortedList, strategy, ((AdvancedTableModel<E>) table.getModel()).getTableFormat());
-    }
-
-    /**
-     * Creates and installs a TableComparatorChooser.
-     *
      * @param table       the table with headers that can be clicked on
      * @param sortedList  the sorted list to update
      * @param strategy    an implementations of {@link ca.odell.glazedlists.impl.gui.SortingStrategy}, typically one of

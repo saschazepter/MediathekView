@@ -9,11 +9,12 @@ import ca.odell.glazedlists.event.ListEventListener;
 import org.jspecify.annotations.NonNull;
 
 import java.util.*;
+import java.util.function.Function;
 
 /**
  * This multimap implementation sits atop an {@link EventList} and makes it
  * accessible via the convenient {@link Map} interface. It is constructed with
- * a {@link FunctionList.Function} which is used to create the keys of the map.
+ * a {@link Function} which is used to create the keys of the map.
  * The values of the map are the lists of values from the {@link EventList}
  * which all map to a common key.
  *
@@ -49,7 +50,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
     private Set<K> keySet;
 
     /** The function which produces keys for this multimap. */
-    private final FunctionList.Function<V, ? extends K> keyFunction;
+    private final Function<V, ? extends K> keyFunction;
 
     /** The delegate Map which is kept in synch with {@link #groupingList} changes. */
     private final Map<K, List<V>> delegate;
@@ -68,7 +69,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
      * @param keyGrouper the comparator that groups together values which
      *      have the same key according to the given <code>keyFunction</code>
      */
-    public GroupingListMultiMap(EventList<V> source, FunctionList.Function<V, ? extends K> keyFunction, Comparator<? super K> keyGrouper) {
+    public GroupingListMultiMap(EventList<V> source, Function<V, ? extends K> keyFunction, Comparator<? super K> keyGrouper) {
         if (keyFunction == null)
             throw new IllegalArgumentException("keyFunction may not be null");
         if (keyGrouper == null)
@@ -301,7 +302,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
      * @return the key which maps to the given value
      */
     private K key(V value) {
-        return keyFunction.evaluate(value);
+        return keyFunction.apply(value);
     }
 
     /**
@@ -326,23 +327,14 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         /** {@inheritDoc} */
         @Override
         public boolean contains(Object o) {
-            if (!(o instanceof Map.Entry))
-                return false;
-
-            final Entry<K, List<V>> e = (Entry<K, List<V>>) o;
-            final K key = e.getKey();
-            final List<V> value = e.getValue();
-
-            final List<V> mapValue = GroupingListMultiMap.this.get(key);
-
-            return Objects.equals(value, mapValue);
+            return delegate.entrySet().contains(o);
         }
 
         /** {@inheritDoc} */
         @Override
         public boolean remove(Object o) {
-            if (!contains(o)) return false;
-            GroupingListMultiMap.this.remove(((Map.Entry) o).getKey());
+            if (!(o instanceof Map.Entry<?, ?> entry) || !contains(entry)) return false;
+            GroupingListMultiMap.this.remove(entry.getKey());
             return true;
         }
 
@@ -578,7 +570,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
     /**
      * This Comparator first runs each value through a
-     * {@link FunctionList.Function} to produce key objects which are then
+     * {@link Function} to produce key objects which are then
      * compared to determine a relative ordering using the given delegate
      * {@link Comparator}.
      */
@@ -588,14 +580,14 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         private final Comparator<? super K> delegate;
 
         /** A function that extracts {@link Comparable} values from given objects. */
-        private final FunctionList.Function<V, ? extends K> function;
+        private final Function<V, ? extends K> function;
 
         /**
          * Construct a new FunctionComparator that uses the given
          * <code>function</code> to extract {@link Comparable} values from
          * given objects.
          */
-        FunctionComparator(FunctionList.Function<V, ? extends K> function, Comparator<? super K> delegate) {
+        FunctionComparator(Function<V, ? extends K> function, Comparator<? super K> delegate) {
             this.function = function;
             this.delegate = delegate;
         }
@@ -603,8 +595,8 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
         /** {@inheritDoc} */
         @Override
         public int compare(V o1, V o2) {
-            final K k1 = function.evaluate(o1);
-            final K k2 = function.evaluate(o2);
+            final K k1 = function.apply(o1);
+            final K k2 = function.apply(o2);
             return delegate.compare(k1, k2);
         }
     }
@@ -614,9 +606,9 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
      * that ensures that mutations to it don't violate the keyFunction
      * constraints required by this MultiMap.
      */
-    private final class ValueListFunction implements FunctionList.Function<List<V>, List<V>> {
+    private final class ValueListFunction implements Function<List<V>, List<V>> {
         @Override
-        public List<V> evaluate(List<V> sourceValue) {
+        public List<V> apply(List<V> sourceValue) {
             return new ValueList(sourceValue);
         }
     }

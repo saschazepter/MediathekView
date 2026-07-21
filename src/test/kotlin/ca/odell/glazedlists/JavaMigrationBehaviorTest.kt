@@ -1,6 +1,7 @@
 package ca.odell.glazedlists
 
 import ca.odell.glazedlists.gui.TableFormat
+import ca.odell.glazedlists.impl.SimpleFunctionList
 import ca.odell.glazedlists.impl.beans.BeanTableFormat
 import ca.odell.glazedlists.impl.filter.StringLengthComparator
 import ca.odell.glazedlists.impl.functions.ConstantFunction
@@ -9,6 +10,35 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class JavaMigrationBehaviorTest {
+    @Test
+    fun simpleFunctionListRejectsNullFunctionWithTheExistingMessage() {
+        val failure = assertThrows(NullPointerException::class.java) {
+            SimpleFunctionList<String, Int>(BasicEventList(), null)
+        }
+
+        assertEquals("mapping function is undefined", failure.message)
+    }
+
+    @Test
+    fun tableColumnComparatorPreservesTheHelpfulMessageAndCause() {
+        val format = object : TableFormat<NonComparable> {
+            override fun getColumnCount(): Int = 1
+            override fun getColumnName(column: Int): String = "Value"
+            override fun getColumnValue(baseObject: NonComparable, column: Int): Any = baseObject
+        }
+        val comparator = TableColumnComparator(format, 0)
+
+        val failure = assertThrows(IllegalStateException::class.java) {
+            comparator.compare(NonComparable("left"), NonComparable("right"))
+        }
+
+        assertEquals(
+            "TableComparatorChooser can not sort objects \"left\", \"right\" that do not implement Comparable.",
+            failure.message,
+        )
+        assertInstanceOf(ClassCastException::class.java, failure.cause)
+    }
+
     @Test
     fun tableFormatPreservesNullableCellValuesForKotlinCallers() {
         val format: TableFormat<String> = object : TableFormat<String> {
@@ -78,7 +108,7 @@ internal class JavaMigrationBehaviorTest {
     @Test
     fun convertedLeafFunctionsAndComparatorsKeepTheirContracts() {
         val constant = ConstantFunction<String, Int?>(null)
-        assertNull(constant.evaluate("ignored"))
+        assertNull(constant.apply("ignored"))
 
         val naturalOrder = Comparator.naturalOrder<String>()
         val reverse = ReverseComparator(naturalOrder)
@@ -175,4 +205,8 @@ internal class JavaMigrationBehaviorTest {
     }
 
     class SampleBean(val count: Int, val label: String)
+
+    private data class NonComparable(val label: String) {
+        override fun toString(): String = label
+    }
 }

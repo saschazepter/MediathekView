@@ -80,27 +80,6 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ran
         this.readWriteLock = (readWriteLock == null) ? new ReentrantReadWriteLock() : readWriteLock;
     }
 
-    /**
-     * Creates a {@link BasicEventList} that uses the specified {@link List} as
-     * the underlying implementation.
-     *
-     * <p><strong><font color="#FF0000">Warning:</font></strong> all editing to
-     * the specified {@link List} <strong>must</strong> be done through via this
-     * {@link BasicEventList} interface. Otherwise this {@link BasicEventList} will
-     * become out of sync and operations will fail.
-     *
-     * @deprecated As of 2005/03/06, this constructor has been declared unsafe
-     *     because the source list is exposed. This allows it to be modified without
-     *     the required events being fired. This constructor has been replaced by
-     *     the factory method {@link GlazedLists#eventList(Collection)}.
-     */
-    @Deprecated
-    public BasicEventList(List<E> list) {
-        super(null);
-        this.data = list;
-        this.readWriteLock = new ReentrantReadWriteLock();
-    }
-
     /** {@inheritDoc} */
     @Override
     public void add(int index, E element) {
