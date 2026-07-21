@@ -210,11 +210,11 @@ public abstract class ListEvent<E> extends EventObject {
     public static final int INSERT = 2;
 
     /** indicates a removed element whose value is unknown */
-    public static final Object UNKNOWN_VALUE = new String("UNKNOWN VALUE");
+    public static final Object UNKNOWN_VALUE = "UNKNOWN VALUE";
 
     /** Returns a value indicating a removed element whose value is unknown. */
     @SuppressWarnings("unchecked")
-    public static final <E> E unknownValue() {
+    public static <E> E unknownValue() {
         return (E) UNKNOWN_VALUE;
     }
 

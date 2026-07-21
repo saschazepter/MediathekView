@@ -22,15 +22,39 @@ internal class ListToByteCoderTest {
 
     @Test
     fun colorsAreCopiedAndRemainUnmodifiable() {
-        val source = mutableListOf<String?>("red", null)
+        val source = mutableListOf("red", null)
         val coder = ListToByteCoder(source)
 
         source[0] = "changed"
 
-        assertEquals("red", coder.byteToColor(1))
-        assertNull(coder.byteToColor(2))
+        assertEquals(listOf("red", null), coder.colors)
+        assertEquals(2, coder.colorToByte(null).toInt())
         assertThrows(UnsupportedOperationException::class.java) {
             (coder.colors as MutableList<String?>).add("blue")
+        }
+    }
+
+    @Test
+    fun duplicateColorsAreRejected() {
+        assertThrows(IllegalArgumentException::class.java) {
+            ListToByteCoder(listOf("red", "red"))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            ListToByteCoder(listOf(null, null))
+        }
+    }
+
+    @Test
+    fun sevenColorsAreSupported() {
+        val coder = ListToByteCoder((0..6).toList())
+
+        assertEquals(0b01111111, coder.allColorsToByte().toInt())
+    }
+
+    @Test
+    fun eighthColorIsRejected() {
+        assertThrows(IllegalArgumentException::class.java) {
+            ListToByteCoder((0..7).toList())
         }
     }
 

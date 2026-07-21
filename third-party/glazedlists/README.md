@@ -42,6 +42,7 @@ an intentional difference is documented below.
 | --- | --- | --- |
 | `TransactionList.java` | `TransactionList.kt` | Adds `withTransaction`; rollback-disabled construction is internal. |
 | `UndoRedoSupport.java` | `UndoRedoSupport.kt` | Uses Kotlin collection and functional-interface idioms. |
+| `impl/adt/barcode2/ListToByteCoder.java` | `impl/adt/barcode2/ListToByteCoder.kt` | Rejects duplicate colors, documents the seven-bit capacity, omits unused decoding methods, and keeps `colorAsIndex` Kotlin-internal with a public JVM static bridge for Java callers. |
 | `impl/ObservableConnector.java` | `impl/ObservableConnector.kt` | Replaces deprecated `Observable`/`Observer` with a property-change contract. |
 | `impl/beans/BeanConnector.java` | `impl/beans/BeanConnector.kt` | Uses Kotlin reflection-call and null-safety idioms. |
 | `impl/filter/SearchTerm.java` | `impl/filter/SearchTerm.kt` | Uses a data class while excluding reusable scratch state from value equality. |
