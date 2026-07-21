@@ -58,6 +58,7 @@ an intentional difference is documented below.
 | `impl/sort/ComparableComparator.java` | `impl/sort/ComparableComparator.kt` | Preserves null-first natural ordering and class-based equality. |
 | `impl/sort/ReverseComparator.java` | `impl/sort/ReverseComparator.kt` | Rejects a null source comparator at construction. |
 | `impl/sort/ComparatorChain.java` | `impl/sort/ComparatorChain.kt` | Preserves both constructors, defensive array copies, and content-based equality; no longer a Java record. |
+| `impl/sort/TableColumnComparator.java` | `impl/sort/TableColumnComparator.kt` | Preserves both constructors, exact-class equality, and helpful comparison failures. |
 | `impl/matchers/TrueMatcher.java` | `impl/matchers/TrueMatcher.kt` | Preserves the generic singleton factory. |
 | `impl/matchers/FalseMatcher.java` | `impl/matchers/FalseMatcher.kt` | Preserves the generic singleton factory. |
 | `impl/matchers/NullMatcher.java` | `impl/matchers/NullMatcher.kt` | Preserves the generic singleton factory and string representation. |
@@ -70,5 +71,26 @@ an intentional difference is documented below.
 | `impl/matchers/BeanPropertyMatcher.java` | `impl/matchers/BeanPropertyMatcher.kt` | Makes nullable bean input and expected property values explicit. |
 | `impl/matchers/RangeMatcher.java` | `impl/matchers/RangeMatcher.kt` | Preserves inclusive and unbounded ranges, including null comparable behavior. |
 | `impl/sort/BeanPropertyComparator.java` | `impl/sort/BeanPropertyComparator.kt` | Makes nullable bean comparison explicit. |
+| `impl/filter/AbstractTextSearchStrategy.java` | `impl/filter/AbstractTextSearchStrategy.kt` | Preserves optional character mapping and subclass extension points. |
+| `impl/filter/RegularExpressionTextSearchStrategy.java` | `impl/filter/RegularExpressionTextSearchStrategy.kt` | Preserves full-input regular-expression matching and initialization behavior. |
+| `impl/filter/SingleCharacterCaseInsensitiveTextSearchStrategy.java` | `impl/filter/SingleCharacterCaseInsensitiveTextSearchStrategy.kt` | Preserves single-character validation, character mapping, and case-insensitive search. |
+| `impl/filter/TextMatcher.java` | `impl/filter/TextMatcher.kt` | Preserves normalized search terms, strategy selection, and matcher equality. |
+| `impl/filter/TextMatchers.java` | `impl/filter/TextMatchers.kt` | Preserves parsing, normalization, matching, and constraint/relaxation classification. |
+| `impl/filter/TextSearchStrategy.java` | `impl/filter/TextSearchStrategy.kt` | Preserves the search-strategy and factory functional-interface contracts. |
+| `impl/matchers/PropertyEventNameMatcher.java` | `impl/matchers/PropertyEventNameMatcher.kt` | Preserves vararg and collection construction and include/exclude semantics. |
+| `impl/matchers/WeakReferenceMatcherEditor.java` | `impl/matchers/WeakReferenceMatcherEditor.kt` | Preserves weak listener registration, cleanup, and event rebroadcasting. |
+| `impl/text/LatinDiacriticsStripper.java` | `impl/text/LatinDiacriticsStripper.kt` | Generates the Latin mapping table once with canonical Unicode decomposition and returns defensive snapshots. |
+| `matchers/AbstractMatcherEditor.java` | `matchers/AbstractMatcherEditor.kt` | Preserves matcher state transitions and match-all/match-none identity checks. |
+| `matchers/AbstractMatcherEditorListenerSupport.java` | `matchers/AbstractMatcherEditorListenerSupport.kt` | Preserves consistently sourced events and LIFO delivery to a stable listener snapshot. |
+| `matchers/CompositeMatcherEditor.java` | `matchers/CompositeMatcherEditor.kt` | Preserves AND/OR composition and matcher-event relationship classification. |
+| `matchers/FixedMatcherEditor.java` | `matchers/FixedMatcherEditor.kt` | Preserves the package-internal immutable matcher-editor implementation. |
+| `matchers/Matcher.java` | `matchers/Matcher.kt` | Uses a Kotlin functional interface while preserving the `Predicate` bridge. |
+| `matchers/MatcherEditor.java` | `matchers/MatcherEditor.kt` | Preserves listener, event, and fixed-editor factory contracts. |
+| `matchers/Matchers.java` | `matchers/Matchers.kt` | Preserves the Java-static matcher factory and collection utility facade. |
+| `matchers/RangeMatcherEditor.java` | `matchers/RangeMatcherEditor.kt` | Preserves inclusive, unbounded, and normalized ranges and event classification. |
+| `matchers/SearchEngineTextMatcherEditor.java` | `matchers/SearchEngineTextMatcherEditor.kt` | Preserves search parsing, named fields, defensive field copies, and the Java-record field contract. |
+| `matchers/SetMatcherEditor.java` | `matchers/SetMatcherEditor.kt` | Preserves blacklist/whitelist modes, defensive match-set copies, and event classification. |
+| `matchers/TextMatcherEditor.java` | `matchers/TextMatcherEditor.kt` | Preserves matching modes, strategy singletons, and matcher-event classification. |
+| `matchers/ThresholdMatcherEditor.java` | `matchers/ThresholdMatcherEditor.kt` | Preserves comparison operations, nullable thresholds, comparator fallback, and event classification. |
 
 See `LICENSE` in this directory for the upstream licensing terms.
