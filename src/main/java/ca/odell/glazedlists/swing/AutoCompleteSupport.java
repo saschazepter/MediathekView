@@ -183,7 +183,6 @@ public final class AutoCompleteSupport<E> {
         return result;
     }
 
-    private static final ParsePosition PARSE_POSITION = new ParsePosition(0);
     private static final Class<?>[] VALUE_OF_SIGNATURE = {String.class};
 
     /**
@@ -2549,7 +2548,7 @@ public final class AutoCompleteSupport<E> {
 
             // if the user specified a Format, use it
             if (format != null)
-                return format.parseObject(currentString, PARSE_POSITION);
+                return format.parseObject(currentString, new ParsePosition(0));
 
             // otherwise, use the default algorithm from BasicComboBoxEditor to produce a value
             if (oldValue != null && !(oldValue instanceof String)) {

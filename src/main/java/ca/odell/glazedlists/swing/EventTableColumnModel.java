@@ -7,7 +7,6 @@ import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.TransformedList;
 import ca.odell.glazedlists.event.ListEvent;
 import ca.odell.glazedlists.event.ListEventListener;
-import ca.odell.glazedlists.impl.IteratorAsEnumeration;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -15,7 +14,9 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  * A {@link TableColumnModel} that holds an {@link EventList}. Each element of
@@ -172,8 +173,11 @@ public class EventTableColumnModel<T extends TableColumn> implements TableColumn
 
     /** @inheritDoc */
     @Override
+    @SuppressWarnings("unchecked")
     public Enumeration<TableColumn> getColumns() {
-        return new IteratorAsEnumeration<>(swingThreadSource.iterator());
+        // Enumeration only reads values, and every T is a TableColumn.
+        final List<TableColumn> columns = (List<TableColumn>) (List<?>) swingThreadSource;
+        return Collections.enumeration(columns);
     }
 
     /** @inheritDoc */

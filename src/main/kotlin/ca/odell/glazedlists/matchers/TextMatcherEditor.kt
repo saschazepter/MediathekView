@@ -4,8 +4,8 @@
 package ca.odell.glazedlists.matchers
 
 import ca.odell.glazedlists.TextFilterator
-import ca.odell.glazedlists.impl.GlazedListsImpl
 import ca.odell.glazedlists.impl.filter.*
+import ca.odell.glazedlists.impl.text.LatinDiacriticsStripper
 
 /**
  * Creates matchers that search text extracted from elements without coupling the filtering logic
@@ -110,7 +110,7 @@ open class TextMatcherEditor<E> @JvmOverloads constructor(
     private class NormalizedStrategyFactory : IdenticalStrategyFactory() {
         override fun create(mode: Int, filter: String): TextSearchStrategy =
             super.create(mode, filter).apply {
-                setCharacterMap(GlazedListsImpl.getLatinDiacriticsStripper())
+                setCharacterMap(LatinDiacriticsStripper.sharedMapper())
             }
     }
 

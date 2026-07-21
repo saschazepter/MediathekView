@@ -6,7 +6,7 @@ package ca.odell.glazedlists.impl.filter
 import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.TextFilterable
 import ca.odell.glazedlists.TextFilterator
-import ca.odell.glazedlists.impl.GlazedListsImpl
+import ca.odell.glazedlists.impl.text.LatinDiacriticsStripper
 import ca.odell.glazedlists.matchers.SearchEngineTextMatcherEditor
 import ca.odell.glazedlists.matchers.TextMatcherEditor
 
@@ -116,7 +116,7 @@ class TextMatchers {
             strategy: TextSearchStrategy.Factory,
         ): Array<SearchTerm<E>> {
             val normalizedFilters = if (strategy === TextMatcherEditor.NORMALIZED_STRATEGY) {
-                val characterMap = GlazedListsImpl.getLatinDiacriticsStripper()
+                val characterMap = LatinDiacriticsStripper.sharedMapper()
                 Array(filters.size) { index ->
                     val term = filters[index]
                     val mappedText = CharArray(term.text.length) { characterIndex ->

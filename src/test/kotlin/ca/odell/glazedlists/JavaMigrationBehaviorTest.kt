@@ -106,6 +106,14 @@ internal class JavaMigrationBehaviorTest {
     }
 
     @Test
+    fun statelessFactoriesKeepStableSingletonIdentity() {
+        assertSame(GlazedLists.booleanComparator(), GlazedLists.booleanComparator())
+        assertSame(GlazedLists.comparableComparator<String>(), GlazedLists.comparableComparator<String>())
+        assertSame(GlazedLists.reverseComparator<String>(), GlazedLists.reverseComparator<String>())
+        assertSame(GlazedLists.toStringTextFilterator<String>(), GlazedLists.toStringTextFilterator<String>())
+    }
+
+    @Test
     fun convertedLeafFunctionsAndComparatorsKeepTheirContracts() {
         val constant = ConstantFunction<String, Int?>(null)
         assertNull(constant.apply("ignored"))

@@ -10,8 +10,8 @@ import ca.odell.glazedlists.matchers.Matcher;
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * An {@link DefaultEventSelectionModel} is a class that performs two simulaneous
@@ -67,7 +67,7 @@ public final class DefaultEventSelectionModel<E> implements AdvancedListSelectio
     private final ListSelection.Listener selectionListener = new SwingSelectionListener();
 
     /** listeners to notify when the selection changes */
-    private final List<ListSelectionListener> listeners = new ArrayList<>();
+    private final List<ListSelectionListener> listeners = new CopyOnWriteArrayList<>();
 
     /** whether there are a series of changes on the way */
     private boolean valueIsAdjusting;
@@ -218,7 +218,7 @@ public final class DefaultEventSelectionModel<E> implements AdvancedListSelectio
 
         // fire the change
         final ListSelectionEvent event = new ListSelectionEvent(this, changeStart, changeFinish, valueIsAdjusting);
-        for (ListSelectionListener listener : new ArrayList<>(listeners)) {
+        for (ListSelectionListener listener : listeners) {
             listener.valueChanged(event);
         }
     }

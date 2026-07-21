@@ -1125,7 +1125,7 @@ public class ListSelection<E> implements ListEventListener<E> {
      */
     private void fireSelectionChanged(int start, int end) {
         // notify all
-        for (Listener selectionListener : new ArrayList<>(selectionListeners)) {
+        for (Listener selectionListener : selectionListeners) {
             selectionListener.selectionChanged(start, end);
         }
     }

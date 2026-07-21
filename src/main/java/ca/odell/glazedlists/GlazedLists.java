@@ -129,9 +129,9 @@ public final class GlazedLists {
     // Comparators // // // // // // // // // // // // // // // // // // // //
 
     /** Provide Singleton access for all Comparators with no internal state */
-    private static Comparator<Boolean> booleanComparator;
-    private static Comparator<?> comparableComparator;
-    private static Comparator<?> reversedComparable;
+    private static final Comparator<Boolean> BOOLEAN_COMPARATOR = new BooleanComparator();
+    private static final Comparator<?> COMPARABLE_COMPARATOR = new ComparableComparator<Comparable<Object>>();
+    private static final Comparator<?> REVERSED_COMPARABLE = new ReverseComparator<>(COMPARABLE_COMPARATOR);
 
     /**
      * Creates a {@link Comparator} that uses Reflection to compare two
@@ -189,10 +189,7 @@ public final class GlazedLists {
      * Creates a {@link Comparator} for use with {@link Boolean} objects.
      */
     public static Comparator<Boolean> booleanComparator() {
-        if(booleanComparator == null) {
-            booleanComparator = new BooleanComparator();
-        }
-        return booleanComparator;
+        return BOOLEAN_COMPARATOR;
     }
 
     /**
@@ -228,10 +225,7 @@ public final class GlazedLists {
      */
     @SuppressWarnings("unchecked")
     public static <T extends Comparable<? super T>> Comparator<T> comparableComparator() {
-        if(comparableComparator == null) {
-            comparableComparator = new ComparableComparator<Comparable<Object>>();
-        }
-        return (Comparator<T>)comparableComparator;
+        return (Comparator<T>) COMPARABLE_COMPARATOR;
     }
 
     /**
@@ -239,11 +233,7 @@ public final class GlazedLists {
      */
     @SuppressWarnings("unchecked")
     public static <T extends Comparable<? super T>> Comparator<T> reverseComparator() {
-        if(reversedComparable == null) {
-            Comparator<T> naturalOrder = comparableComparator();
-            reversedComparable = reverseComparator(naturalOrder);
-        }
-        return (Comparator<T>)reversedComparable;
+        return (Comparator<T>) REVERSED_COMPARABLE;
     }
 
     /**
@@ -304,7 +294,7 @@ public final class GlazedLists {
 
     // TextFilterators // // // // // // // // // // // // // // // // // // //
 
-    private static TextFilterator<Object> stringTextFilterator;
+    private static final TextFilterator<Object> STRING_TEXT_FILTERATOR = new StringTextFilterator<>();
 
     /**
      * Creates a {@link TextFilterator} that searches the given JavaBean
@@ -344,10 +334,7 @@ public final class GlazedLists {
      */
     @SuppressWarnings("unchecked")
     public static <E> TextFilterator<E> toStringTextFilterator() {
-        if(stringTextFilterator == null) {
-            stringTextFilterator = new StringTextFilterator<>();
-        }
-        return (TextFilterator<E>) stringTextFilterator;
+        return (TextFilterator<E>) STRING_TEXT_FILTERATOR;
     }
 
 

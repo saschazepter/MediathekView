@@ -66,6 +66,48 @@ internal class SequenceDependenciesEventPublisherTest {
     }
 
     @Test
+    fun secondaryListenerAndCleanupFailuresAreSuppressedInDeliveryOrder() {
+        val publisher = SequenceDependenciesEventPublisher()
+        val subject = Any()
+        val firstFailure = IllegalStateException("first listener")
+        val secondFailure = IllegalArgumentException("second listener")
+        val cleanupFailure = UnsupportedOperationException("cleanup")
+        val format = object : SequenceDependenciesEventPublisher.EventFormat<Any, Consumer<String>, String> {
+            override fun fire(subject: Any, event: String, listener: Consumer<String>) = listener.accept(event)
+
+            override fun postEvent(subject: Any) = throw cleanupFailure
+
+            override fun isStale(subject: Any, listener: Consumer<String>): Boolean = false
+        }
+        publisher.addListener(subject, Consumer { throw firstFailure }, format)
+        publisher.addListener(subject, Consumer { throw secondFailure }, format)
+
+        val thrown = assertThrows(IllegalStateException::class.java) {
+            publisher.fireEvent(subject, "event", format)
+        }
+
+        assertSame(firstFailure, thrown)
+        assertArrayEquals(arrayOf(secondFailure, cleanupFailure), thrown.suppressed)
+    }
+
+    @Test
+    fun repeatedFailureInstanceIsNotSuppressedOnItself() {
+        val publisher = SequenceDependenciesEventPublisher()
+        val subject = Any()
+        val failure = IllegalStateException("shared")
+        val format = consumerFormat<Any>()
+        publisher.addListener(subject, Consumer { throw failure }, format)
+        publisher.addListener(subject, Consumer { throw failure }, format)
+
+        val thrown = assertThrows(IllegalStateException::class.java) {
+            publisher.fireEvent(subject, "event", format)
+        }
+
+        assertSame(failure, thrown)
+        assertArrayEquals(emptyArray<Throwable>(), thrown.suppressed)
+    }
+
+    @Test
     fun equalSubjectsRemainDistinct() {
         val publisher = SequenceDependenciesEventPublisher()
         val firstSubject = EqualSubject("same")

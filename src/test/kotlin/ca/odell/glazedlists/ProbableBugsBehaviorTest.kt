@@ -13,6 +13,14 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.beans.PropertyChangeEvent
+import java.text.FieldPosition
+import java.text.Format
+import java.text.ParsePosition
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.util.Date
+import java.util.TimeZone
 import javax.swing.JComboBox
 import javax.swing.JTextField
 import javax.swing.SwingUtilities
@@ -37,6 +45,45 @@ internal class ProbableBugsBehaviorTest {
 
         SequenceList(source, sequencer, comparator).use { sequence ->
             assertEquals(listOf(0, 10, 20, 30), sequence.toList())
+
+            source[1] = 45
+            assertEquals(listOf(0, 10, 20, 30, 40, 50), sequence.toList())
+
+            source[1] = 15
+            assertEquals(listOf(0, 10, 20), sequence.toList())
+        }
+    }
+
+    @Test
+    fun monthSequencerKeepsMonthBoundariesInItsConstructionTimeZone() {
+        val originalTimeZone = TimeZone.getDefault()
+        try {
+            val berlin = ZoneId.of("Europe/Berlin")
+            TimeZone.setDefault(TimeZone.getTimeZone(berlin))
+            val sequencer = Sequencers.monthSequencer()
+            val februaryStart = ZonedDateTime.of(2006, 2, 1, 0, 0, 0, 0, berlin)
+            val februaryMiddle = ZonedDateTime.of(2006, 2, 15, 3, 21, 22, 234_000_000, berlin)
+
+            TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"))
+
+            assertEquals(Date.from(februaryStart.toInstant()), sequencer.previous(Date.from(februaryMiddle.toInstant())))
+            assertEquals(
+                Date.from(februaryStart.minusMonths(1).toInstant()),
+                sequencer.previous(Date.from(februaryStart.toInstant())),
+            )
+            assertEquals(
+                Date.from(februaryStart.plusMonths(1).toInstant()),
+                sequencer.next(Date.from(februaryMiddle.toInstant())),
+            )
+
+            TimeZone.setDefault(TimeZone.getTimeZone("America/Managua"))
+            val overlapSequencer = Sequencers.monthSequencer()
+            assertEquals(
+                Date.from(Instant.parse("2006-10-01T06:00:00Z")),
+                overlapSequencer.next(Date.from(Instant.parse("2006-09-01T05:17:23.456Z"))),
+            )
+        } finally {
+            TimeZone.setDefault(originalTimeZone)
         }
     }
 
@@ -58,7 +105,7 @@ internal class ProbableBugsBehaviorTest {
     @Test
     fun columnModelRecognizesEquivalentNonInternedPropertyNames() {
         SwingUtilities.invokeAndWait {
-            val source = BasicEventList<TableColumn>().apply { add(TableColumn()) }
+            val source = BasicEventList<TableColumn>().apply { addAll(listOf(TableColumn(0), TableColumn(1))) }
             val model = EventTableColumnModel(source)
             try {
                 var marginChanges = 0
@@ -78,6 +125,12 @@ internal class ProbableBugsBehaviorTest {
                 )
 
                 assertEquals(1, marginChanges)
+
+                val enumeratedColumns = buildList {
+                    val columns = model.columns
+                    while (columns.hasMoreElements()) add(columns.nextElement())
+                }
+                assertEquals(source.toList(), enumeratedColumns)
             } finally {
                 model.dispose()
             }
@@ -122,6 +175,43 @@ internal class ProbableBugsBehaviorTest {
             } finally {
                 UIManager.setLookAndFeel(previousLookAndFeel)
             }
+        }
+    }
+
+    @Test
+    fun autoCompleteFormatParsesEachEditedValueFromTheBeginning() {
+        SwingUtilities.invokeAndWait {
+            val comboBox = JComboBox<Number>(arrayOf(0))
+            val source = BasicEventList<Number>().apply { add(0) }
+            val integerFormat = object : Format() {
+                override fun format(obj: Any?, toAppendTo: StringBuffer, pos: FieldPosition): StringBuffer =
+                    toAppendTo.append(obj?.toString().orEmpty())
+
+                override fun parseObject(source: String, pos: ParsePosition): Any? {
+                    if (pos.index != 0) {
+                        pos.errorIndex = pos.index
+                        return null
+                    }
+                    pos.index = source.length
+                    return source.toLong()
+                }
+            }
+            AutoCompleteSupport.install(
+                comboBox,
+                source,
+                GlazedLists.toStringTextFilterator(),
+                integerFormat,
+            )
+
+            val editor = comboBox.editor
+            val editorComponent = editor.editorComponent as JTextField
+            editor.item = 0
+
+            editorComponent.text = "12"
+            assertEquals(12L, editor.item)
+
+            editorComponent.text = "34"
+            assertEquals(34L, editor.item)
         }
     }
 

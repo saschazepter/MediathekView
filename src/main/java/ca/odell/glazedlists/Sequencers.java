@@ -3,10 +3,13 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists;
 
-import ca.odell.glazedlists.impl.GlazedListsImpl;
-
-import java.util.Calendar;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.Date;
+import java.util.List;
 
 /**
  * A factory for creating Sequencers.
@@ -33,8 +36,7 @@ public final class Sequencers {
      * to the first millisecond of each month.
      */
     private static final class MonthSequencer implements SequenceList.Sequencer<Date> {
-        /** A shared Calendar; it is assumed this Sequencer is only access from a single Thread. */
-        private final Calendar cal = Calendar.getInstance();
+        private final ZoneId zoneId = ZoneId.systemDefault();
 
         /**
          * The previous month in the sequence. For example:
@@ -47,17 +49,16 @@ public final class Sequencers {
          */
         @Override
         public Date previous(Date date) {
-            if (date == null)
+            if (date == null) {
                 throw new IllegalArgumentException("date may not be null");
+            }
 
-            cal.setTime(date);
+            ZonedDateTime dateTime = date.toInstant().atZone(zoneId);
+            if (dateTime.getDayOfMonth() == 1 && dateTime.toLocalTime().equals(LocalTime.MIDNIGHT)) {
+                dateTime = dateTime.minusMonths(1);
+            }
 
-            // if cal is on the month boundary, rollback to the previous month
-            if (GlazedListsImpl.isMonthStart(cal))
-                cal.add(Calendar.MONTH, -1);
-
-            // normalize the Date to the first millisecond of the month
-            return GlazedListsImpl.getMonthStart(cal);
+            return monthStart(dateTime);
         }
 
         /**
@@ -71,14 +72,18 @@ public final class Sequencers {
          */
         @Override
         public Date next(Date date) {
-            if (date == null)
+            if (date == null) {
                 throw new IllegalArgumentException("date may not be null");
+            }
 
-            cal.setTime(date);
-            cal.add(Calendar.MONTH, 1);
+            return monthStart(date.toInstant().atZone(zoneId).plusMonths(1));
+        }
 
-            // normalize the Date to the first millisecond of the month
-            return GlazedListsImpl.getMonthStart(cal);
+        private Date monthStart(ZonedDateTime dateTime) {
+            final LocalDateTime monthStart = dateTime.toLocalDate().withDayOfMonth(1).atStartOfDay();
+            final List<ZoneOffset> validOffsets = zoneId.getRules().getValidOffsets(monthStart);
+            final ZoneOffset preferredOffset = validOffsets.isEmpty() ? null : validOffsets.getLast();
+            return Date.from(ZonedDateTime.ofLocal(monthStart, zoneId, preferredOffset).toInstant());
         }
     }
 }

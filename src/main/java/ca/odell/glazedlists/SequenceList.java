@@ -226,16 +226,16 @@ public final class SequenceList<E> extends TransformedList<E,E> implements Rando
                 final E previousSequenceValue = getPreviousSequenceValue(value);
                 final E nextSequenceValue = getNextSequenceValue(value);
 
-                sequence.add(0, previousSequenceValue);
+                sequence.addFirst(previousSequenceValue);
                 updates.elementInserted(0, previousSequenceValue);
-                sequence.add(1, nextSequenceValue);
+                sequence.addLast(nextSequenceValue);
                 updates.elementInserted(1, nextSequenceValue);
             }
 
             // add the necessary leading sequence values
             final E firstSourceValue = source.getFirst();
-            while (comparator.compare(firstSourceValue, get(0)) < 0) {
-                E element = sequencer.previous(get(0));
+            while (comparator.compare(firstSourceValue, getFirst()) < 0) {
+                E element = sequencer.previous(getFirst());
                 sequence.addFirst(element);
                 updates.elementInserted(0, element);
             }
@@ -248,17 +248,17 @@ public final class SequenceList<E> extends TransformedList<E,E> implements Rando
 
             // add the necessary trailing sequence values
             final E lastSourceValue = source.getLast();
-            while (comparator.compare(lastSourceValue, get(size()-1)) > 0) {
-                E element = sequencer.next(get(size() - 1));
+            while (comparator.compare(lastSourceValue, getLast()) > 0) {
+                E element = sequencer.next(getLast());
                 int index = size();
-                sequence.add(index, element);
+                sequence.addLast(element);
                 updates.elementInserted(index, element);
             }
 
             // remove the unnecessary trailing sequence values
             while (comparator.compare(get(size()-2), lastSourceValue) > 0) {
                 final int lastIndex = size()-1;
-                updates.elementDeleted(lastIndex, sequence.remove(lastIndex));
+                updates.elementDeleted(lastIndex, sequence.removeLast());
             }
         }
 

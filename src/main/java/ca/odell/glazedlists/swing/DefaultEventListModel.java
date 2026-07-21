@@ -11,8 +11,8 @@ import javax.swing.*;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * A DefaultEventListModel adapts an EventList to the ListModel interface making it
@@ -43,7 +43,7 @@ public class DefaultEventListModel<E> implements ListEventListener<E>, ListModel
     private final boolean disposeSource;
 
     /** whom to notify of data changes */
-    private final List<ListDataListener> listeners = new ArrayList<>();
+    private final List<ListDataListener> listeners = new CopyOnWriteArrayList<>();
 
     /** recycle the list data event to prevent unnecessary object creation */
     protected final MutableListDataEvent listDataEvent = new MutableListDataEvent(this);
@@ -168,7 +168,7 @@ public class DefaultEventListModel<E> implements ListEventListener<E>, ListModel
      */
     protected void fireListDataEvent(ListDataEvent listDataEvent) {
         // notify all listeners about the event
-        for (ListDataListener listDataListener : new ArrayList<>(listeners)) {
+        for (ListDataListener listDataListener : listeners) {
             switch (listDataEvent.getType()) {
                 case ListDataEvent.CONTENTS_CHANGED:
                     listDataListener.contentsChanged(listDataEvent);

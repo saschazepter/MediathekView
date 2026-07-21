@@ -320,7 +320,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher {
                 try {
                     nextToFire.firePendingEvent();
                 } catch(RuntimeException e) {
-                    if(toRethrow == null) toRethrow = e;
+                    toRethrow = recordException(toRethrow, e);
                 }
             }
 
@@ -330,8 +330,7 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher {
                     postEvent(subjectAndEventFormat.getValue(), subjectAndEventFormat.getKey());
                 }
                 catch (RuntimeException e) {
-                    if (toRethrow == null)
-                        toRethrow = e;
+                    toRethrow = recordException(toRethrow, e);
                 }
             }
             // rethrow any exceptions
@@ -349,6 +348,16 @@ final class SequenceDependenciesEventPublisher implements ListEventPublisher {
                 subjectsAndListenersForCurrentEvent = null;
             }
         }
+    }
+
+    private static RuntimeException recordException(RuntimeException primary, RuntimeException additional) {
+        if (primary == null) {
+            return additional;
+        }
+        if (primary != additional) {
+            primary.addSuppressed(additional);
+        }
+        return primary;
     }
 
     /**
