@@ -1,0 +1,29 @@
+package ca.odell.glazedlists.impl.adt.barcode2
+
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Test
+
+internal class ElementBehaviorTest {
+    @Test
+    fun javaTreeNodesExposeKotlinPropertiesAndLinks() {
+        val tree = SimpleTree<String>()
+        val first = tree.add(0, "first", 1)
+        val second = tree.add(1, "second", 1)
+
+        assertEquals(1.toByte(), first.color)
+        assertEquals(Element.SORTED, first.sorted)
+        first.sorted = Element.PENDING
+        assertEquals(Element.PENDING, first.sorted)
+
+        assertEquals("first", first.get())
+        first.set(null)
+        assertNull(first.get())
+
+        assertSame(second, first.next())
+        assertSame(first, second.previous())
+        assertNull(first.previous())
+        assertNull(second.next())
+    }
+}

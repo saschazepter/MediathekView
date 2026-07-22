@@ -49,6 +49,7 @@ an intentional difference is documented below.
 | `SyncListener.java` | `SyncListener.kt` | Preserves target drift detection, incremental event translation, idempotent disposal, and Java subclassing. |
 | `event/ListEventListener.java` | `event/ListEventListener.kt` | Preserves Java SAM construction, `EventListener`, and the `Consumer` default bridge. |
 | `event/ListEventPublisher.java` | `event/ListEventPublisher.kt` | Preserves Java implementation and nullable object-identity dependency parameters. |
+| `impl/adt/barcode2/Element.java` | `impl/adt/barcode2/Element.kt` | Preserves Java constants and node methods while exposing color and sorted state as Kotlin properties. |
 | `impl/adt/barcode2/ListToByteCoder.java` | `impl/adt/barcode2/ListToByteCoder.kt` | Rejects duplicate colors, documents the seven-bit capacity, omits unused decoding methods, and keeps `colorAsIndex` Kotlin-internal with a public JVM static bridge for Java callers. |
 | `impl/adt/CircularArrayList.java` | — | Removed because the unused compatibility collection had no remaining callers. |
 | `impl/adt/IntArrayList.java` | — | Removed; primitive event-block storage is owned directly by `BlockSequence.kt`. |
