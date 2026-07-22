@@ -67,6 +67,7 @@ an intentional difference is documented below.
 | `impl/adt/CircularArrayList.java` | — | Removed because the unused compatibility collection had no remaining callers. |
 | `impl/adt/IntArrayList.java` | — | Removed; primitive event-block storage is owned directly by `BlockSequence.kt`. |
 | `impl/adt/KeyedCollection.java` | — | Removed with its unused `GlazedListsImpl` factory overloads because there were no production or test callers. |
+| `impl/GlazedListsImpl.java` | `impl/GlazedListsImpl.kt` | Preserves Java-static utility methods, sorted replacement behavior, equality and identity factories, and the non-instantiable utility-class contract. |
 | `impl/IteratorAsEnumeration.java` | — | Removed because the unused JDK collection adapter had no remaining callers. |
 | `impl/adt/AgedNode.java` | — | Removed because the abandoned age-sorted cache node had no production callers. |
 | `impl/adt/AgedNodeComparator.java` | — | Removed with the unused `AgedNode` cache implementation. |
