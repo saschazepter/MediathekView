@@ -41,13 +41,13 @@ open class CompositeList<E> : CollectionList<EventList<E>, E> {
         require(readWriteLock == actualMember.readWriteLock) {
             "Member list must share lock with CompositeList"
         }
-        source.add(actualMember)
+        source!!.add(actualMember)
     }
 
     open fun <T> createMemberList(): EventList<T> = BasicEventList(publisher, readWriteLock)
 
     open fun removeMemberList(list: EventList<E>?) {
-        val iterator = source.iterator()
+        val iterator = source!!.iterator()
         while (iterator.hasNext()) {
             if (iterator.next() === list) {
                 iterator.remove()

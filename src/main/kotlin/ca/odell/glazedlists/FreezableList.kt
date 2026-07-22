@@ -30,11 +30,11 @@ class FreezableList<E>(source: EventList<E>) : TransformedList<E, E>(source) {
         source.addListEventListener(this)
     }
 
-    override fun get(index: Int): E = if (frozen) frozenData[index] else source[index]
+    override fun get(index: Int): E = if (frozen) frozenData[index] else source!![index]
 
     @get:JvmName("size")
     override val size: Int
-        get() = if (frozen) frozenData.size else source.size
+        get() = if (frozen) frozenData.size else source!!.size
 
     override fun isWritable(): Boolean = !frozen
 
@@ -43,8 +43,9 @@ class FreezableList<E>(source: EventList<E>) : TransformedList<E, E>(source) {
     fun freeze() {
         check(!frozen) { "Cannot freeze a list that is already frozen" }
 
-        source.removeListEventListener(this)
-        frozenData.addAll(source)
+        val currentSource = source!!
+        currentSource.removeListEventListener(this)
+        frozenData.addAll(currentSource)
         frozen = true
     }
 
@@ -53,11 +54,12 @@ class FreezableList<E>(source: EventList<E>) : TransformedList<E, E>(source) {
 
         updates.beginEvent()
         frozenData.forEach { updates.elementDeleted(0, it) }
-        source.forEach { updates.elementInserted(0, it) }
+        val currentSource = source!!
+        currentSource.forEach { updates.elementInserted(0, it) }
 
         frozenData.clear()
         frozen = false
-        source.addListEventListener(this)
+        currentSource.addListEventListener(this)
         updates.commitEvent()
     }
 

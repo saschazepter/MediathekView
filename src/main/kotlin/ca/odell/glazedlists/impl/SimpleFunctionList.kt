@@ -33,7 +33,7 @@ class SimpleFunctionList<S, E>(
         source.addListEventListener(this)
     }
 
-    override fun get(index: Int): E = function.apply(source[index])
+    override fun get(index: Int): E = function.apply(source!![index])
 
     override fun listChanged(listChanges: ListEvent<S>) {
         updates.forwardEvent(listChanges)

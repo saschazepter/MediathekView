@@ -140,7 +140,7 @@ abstract class ThreadProxyEventList<E>(source: EventList<E>) :
         }
 
         override fun listChanged(listChanges: ListEvent<E>) {
-            localCache = applyChangeToCache(source, listChanges, localCache)
+            localCache = applyChangeToCache(source!!, listChanges, localCache)
         }
     }
 }

@@ -29,6 +29,9 @@ import java.util.function.UnaryOperator
 
 /** An up-to-date, read-only view of an event list. */
 class ReadOnlyList<E>(source: EventList<E>) : TransformedList<E, E>(source) {
+    private val currentSource: EventList<E>
+        get() = source!!
+
     init {
         source.addListEventListener(this)
     }
@@ -39,13 +42,13 @@ class ReadOnlyList<E>(source: EventList<E>) : TransformedList<E, E>(source) {
         updates.forwardEvent(listChanges)
     }
 
-    override fun contains(element: E): Boolean = source.contains(element)
+    override fun contains(element: E): Boolean = currentSource.contains(element)
 
-    override fun toArray(): @NonNull Array<Any?> = Array(source.size) { source[it] }
+    override fun toArray(): @NonNull Array<Any?> = Array(currentSource.size) { currentSource[it] }
 
     @Suppress("UNCHECKED_CAST")
     override fun <T> toArray(array: @NonNull Array<T>): @NonNull Array<T> {
-        val sourceSize = source.size
+        val sourceSize = currentSource.size
         val result =
             if (array.size >= sourceSize) {
                 array
@@ -54,7 +57,7 @@ class ReadOnlyList<E>(source: EventList<E>) : TransformedList<E, E>(source) {
             }
 
         for (index in 0..<sourceSize) {
-            result[index] = source[index] as T
+            result[index] = currentSource[index] as T
         }
         if (result.size > sourceSize) {
             result[sourceSize] = null as T
@@ -62,15 +65,15 @@ class ReadOnlyList<E>(source: EventList<E>) : TransformedList<E, E>(source) {
         return result
     }
 
-    override fun containsAll(elements: Collection<E>): Boolean = HashSet(source).containsAll(elements)
+    override fun containsAll(elements: Collection<E>): Boolean = HashSet(currentSource).containsAll(elements)
 
-    override fun indexOf(element: E): Int = source.indexOf(element)
+    override fun indexOf(element: E): Int = currentSource.indexOf(element)
 
-    override fun lastIndexOf(element: E): Int = source.lastIndexOf(element)
+    override fun lastIndexOf(element: E): Int = currentSource.lastIndexOf(element)
 
-    override fun equals(other: Any?): Boolean = source == other
+    override fun equals(other: Any?): Boolean = currentSource == other
 
-    override fun hashCode(): Int = source.hashCode()
+    override fun hashCode(): Int = currentSource.hashCode()
 
     override fun add(element: E): Boolean = cannotModify()
 

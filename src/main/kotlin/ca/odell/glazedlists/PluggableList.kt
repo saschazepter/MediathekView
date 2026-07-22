@@ -36,7 +36,7 @@ open class PluggableList<E>(source: EventList<E>) : TransformedList<E, E>(source
 
     @get:JvmName("size")
     override val size: Int
-        get() = source.size
+        get() = source!!.size
 
     @JvmName("remove")
     override fun removeAt(index: Int): E = super.removeAt(index)
@@ -44,7 +44,9 @@ open class PluggableList<E>(source: EventList<E>) : TransformedList<E, E>(source
     open fun setSource(source: EventList<E>?) {
         readWriteLock.writeLock().lock()
         try {
-            check(this.source != null) { "setSource may not be called on a disposed PluggableList" }
+            val currentSource = checkNotNull(this.source) {
+                "setSource may not be called on a disposed PluggableList"
+            }
             requireNotNull(source) { "source may not be null" }
             require(readWriteLock == source.readWriteLock) {
                 "source list must share lock with PluggableList"
@@ -52,14 +54,14 @@ open class PluggableList<E>(source: EventList<E>) : TransformedList<E, E>(source
             require(publisher == source.publisher) {
                 "source list must share publisher with PluggableList"
             }
-            if (this.source === source) return
+            if (currentSource === source) return
 
             updates.beginEvent()
             for (element in this) updates.elementDeleted(0, element)
 
-            this.source.removeListEventListener(this)
+            currentSource.removeListEventListener(this)
             this.source = source
-            this.source.addListEventListener(this)
+            source.addListEventListener(this)
 
             repeat(size) { index -> updates.elementInserted(index, this[index]) }
             updates.commitEvent()

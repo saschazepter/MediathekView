@@ -27,7 +27,7 @@ import ca.odell.glazedlists.event.ListEvent
  */
 class EventListWithEmptyFirstEntry(sourceList: EventList<String>) : TransformedList<String, String>(sourceList) {
     init {
-        source.addListEventListener(this)
+        source!!.addListEventListener(this)
     }
 
     override fun isWritable(): Boolean = false
@@ -61,8 +61,8 @@ class EventListWithEmptyFirstEntry(sourceList: EventList<String>) : TransformedL
     }
 
     override fun get(index: Int): String =
-        if (index == 0) "" else source[index - 1]
+        if (index == 0) "" else source!![index - 1]
 
     override val size: Int
-        get() = source.size + 1
+        get() = source!!.size + 1
 }
