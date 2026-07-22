@@ -2,8 +2,12 @@ package ca.odell.glazedlists
 
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.event.ListEventListener
+import ca.odell.glazedlists.impl.UpgradeDetectingReadWriteLock
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.util.Spliterator
+import java.util.concurrent.locks.ReentrantReadWriteLock
+
 
 internal class BasicEventListBehaviorTest {
     @Test
@@ -31,6 +35,97 @@ internal class BasicEventListBehaviorTest {
     }
 
     @Test
+    fun constructorsPreserveOrCreateTheirInfrastructure() {
+        val defaultList = BasicEventList<String>()
+        assertInstanceOf(UpgradeDetectingReadWriteLock::class.java, defaultList.readWriteLock)
+
+        val lock = ReentrantReadWriteLock()
+        assertSame(lock, BasicEventList<String>(lock).readWriteLock)
+
+        val publisher = defaultList.publisher
+        val configured = BasicEventList<String>(4, publisher, lock)
+        assertSame(publisher, configured.publisher)
+        assertSame(lock, configured.readWriteLock)
+
+        val fallbackLock = BasicEventList<String>(4, publisher, null)
+        assertSame(publisher, fallbackLock.publisher)
+        assertInstanceOf(UpgradeDetectingReadWriteLock::class.java, fallbackLock.readWriteLock)
+
+        assertThrows(IllegalArgumentException::class.java) {
+            BasicEventList<String>(-1)
+        }
+    }
+
+    @Test
+    fun emptyBulkOperationsAreNoOps() {
+        val source = BasicEventList<String>()
+        var events = 0
+        source.addListEventListener { events++ }
+
+        assertFalse(source.addAll(emptyList()))
+        source.clear()
+        assertFalse(source.removeIf { true })
+
+        assertEquals(0, events)
+    }
+
+    @Test
+    fun removeIfPublishesDeletedInstancesAndPreservesSurvivors() {
+        val first = Box(1)
+        val second = Box(2)
+        val third = Box(3)
+        val source = BasicEventList<Box>().apply { addAll(listOf(first, second, third)) }
+        val removed = mutableListOf<Box>()
+        source.addListEventListener { event ->
+            while (event.next()) {
+                if (event.type == ListEvent.DELETE) removed += event.oldValue
+            }
+        }
+
+        assertTrue(source.removeIf { it.value != 2 })
+
+        assertEquals(listOf(second), source)
+        assertEquals(listOf(first, third), removed)
+        assertSame(first, removed[0])
+        assertSame(third, removed[1])
+    }
+
+    @Test
+    fun replaceAllUsesIdentityToDecideWhetherToPublishUpdates() {
+        val first = Box(1)
+        val second = Box(2)
+        val source = BasicEventList<Box>().apply { addAll(listOf(first, second)) }
+        val updates = mutableListOf<Pair<Box, Box>>()
+        source.addListEventListener { event ->
+            while (event.next()) {
+                if (event.type == ListEvent.UPDATE) updates += event.oldValue to event.newValue
+            }
+        }
+
+        source.replaceAll { it }
+        assertTrue(updates.isEmpty())
+
+        source.replaceAll { Box(it.value) }
+        assertEquals(2, updates.size)
+        assertSame(first, updates[0].first)
+        assertNotSame(first, updates[0].second)
+        assertEquals(listOf(Box(1), Box(2)), source)
+    }
+
+    @Test
+    fun traversalMethodsDelegateToTheBackingArrayList() {
+        val source = BasicEventList<Int>().apply { addAll(listOf(1, 2, 3)) }
+        val visited = mutableListOf<Int>()
+
+        source.forEach(visited::add)
+
+        assertEquals(listOf(1, 2, 3), visited)
+        assertEquals(listOf(1, 2, 3), source.stream().toList())
+        assertEquals(listOf(1, 2, 3), source.parallelStream().toList())
+        assertTrue(source.spliterator().hasCharacteristics(Spliterator.ORDERED or Spliterator.SIZED))
+    }
+
+    @Test
     fun sortingProducesCoherentReorderEvent() {
         val source = BasicEventList<String>().apply { addAll(listOf("B", "A", "C")) }
         val sorted = SortedList(source, naturalOrder())
@@ -52,23 +147,23 @@ internal class BasicEventListBehaviorTest {
             source.addListEventListener(this)
         }
 
-        override fun listChanged(changes: ListEvent<E>) {
-            if (changes.isReordering) {
-                expected = changes.reorderMap.mapTo(ArrayList(expected.size), expected::get)
-                changeCounts += changes.reorderMap.size
+        override fun listChanged(listChanges: ListEvent<E>) {
+            if (listChanges.isReordering) {
+                expected = listChanges.reorderMap.mapTo(ArrayList(expected.size), expected::get)
+                changeCounts += listChanges.reorderMap.size
                 reorderings += true
             } else {
                 var changeCount = 0
                 var previousIndex = -1
                 var previousType = ListEvent.DELETE
-                while (changes.next()) {
-                    val index = changes.index
-                    val type = changes.type
+                while (listChanges.next()) {
+                    val index = listChanges.index
+                    val type = listChanges.type
                     assertTrue(index > previousIndex || index == previousIndex && previousType == ListEvent.DELETE)
                     when (type) {
                         ListEvent.INSERT -> expected.add(index, source[index])
-                        ListEvent.DELETE -> assertSame(expected.removeAt(index), changes.oldValue)
-                        ListEvent.UPDATE -> assertSame(expected.set(index, source[index]), changes.oldValue)
+                        ListEvent.DELETE -> assertSame(expected.removeAt(index), listChanges.oldValue)
+                        ListEvent.UPDATE -> assertSame(expected.set(index, source[index]), listChanges.oldValue)
                     }
                     previousIndex = index
                     previousType = type
@@ -93,4 +188,6 @@ internal class BasicEventListBehaviorTest {
             disposed = true
         }
     }
+
+    private data class Box(val value: Int)
 }
