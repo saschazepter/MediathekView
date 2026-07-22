@@ -30,7 +30,7 @@ import org.apache.logging.log4j.LogManager
 /**
  * Persist and restore the sort-keys from a GlazedLists TableComparatorChooser.
  */
-class GlazedSortKeysPersister<E>(
+class GlazedSortKeysPersister<E : Any>(
     private val configPrefix: String,
     private val chooser: TableComparatorChooser<E>
 ) {

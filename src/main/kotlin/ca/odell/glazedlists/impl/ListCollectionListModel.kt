@@ -9,19 +9,17 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package ca.odell.glazedlists.gui
+package ca.odell.glazedlists.impl
 
-/** Adds editable-cell behavior to [TableFormat]. */
-interface WritableTableFormat<E> : TableFormat<E> {
-    /** Returns whether [baseObject] can be edited in [column]. */
-    fun isEditable(baseObject: E, column: Int): Boolean
+import ca.odell.glazedlists.CollectionList
 
-    /** Applies [editedValue] and returns the revised object. */
-    fun setColumnValue(baseObject: E, editedValue: Any?, column: Int): E
+/** Uses each parent list directly as its own collection of children. */
+open class ListCollectionListModel<E> : CollectionList.Model<List<@JvmSuppressWildcards E>, E> {
+    override fun getChildren(parent: List<@JvmSuppressWildcards E>?): List<E> = parent ?: emptyList()
 }

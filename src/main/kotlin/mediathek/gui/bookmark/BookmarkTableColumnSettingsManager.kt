@@ -35,7 +35,7 @@ import javax.swing.JTable
 import javax.swing.table.TableColumn
 import javax.swing.table.TableColumnModel
 
-open class BookmarkTableColumnSettingsManager<E>(
+open class BookmarkTableColumnSettingsManager<E : Any>(
     protected val table: JTable,
     private val configPrefix: String,
     protected val comparatorChooser: TableComparatorChooser<E>?,

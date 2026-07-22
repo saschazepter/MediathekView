@@ -176,7 +176,7 @@ internal class DefaultEventTableModelMigrationTest {
 
         override fun isEditable(baseObject: Row, column: Int): Boolean = true
 
-        override fun setColumnValue(baseObject: Row, editedValue: Any, column: Int): Row =
+        override fun setColumnValue(baseObject: Row, editedValue: Any?, column: Int): Row =
             Row(editedValue as String)
 
         override fun getColumnClass(column: Int): Class<*> = String::class.java

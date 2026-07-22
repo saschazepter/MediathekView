@@ -20,7 +20,7 @@ package ca.odell.glazedlists.gui
 import org.jspecify.annotations.Nullable
 
 /** Defines how values are presented as table columns. */
-interface TableFormat<E : Any> {
+interface TableFormat<E> {
     /** The number of columns to display. */
     fun getColumnCount(): Int
 

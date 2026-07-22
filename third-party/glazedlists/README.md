@@ -57,10 +57,12 @@ an intentional difference is documented below.
 | `swing/MutableTableModelEvent.java` | `swing/MutableTableModelEvent.kt` | Preserves reusable row/type state and Glazed Lists-to-Swing event mapping. |
 | `swing/DefaultEventListModel.java` | `swing/DefaultEventListModel.kt` | Preserves reusable event dispatch, protected subclass hooks, source locking, and optional source disposal. |
 | `swing/DefaultEventComboBoxModel.java` | `swing/DefaultEventComboBoxModel.kt` | Preserves reference-identity selection changes and Java subclassing. |
+| `swing/DefaultEventSelectionModel.java` | `swing/DefaultEventSelectionModel.kt` | Preserves source locking, adjustment-event aggregation, listener snapshots and event identity, stable mutation views, disabled-state asymmetries, defensive insertion handling, both constructors, and Java selection-model interfaces. |
 | `swing/SortableRenderer.java` | `swing/SortableRenderer.kt` | Uses a Kotlin functional interface while preserving the `Consumer` bridge and nullable sort icons. |
 | `swing/TableModelEventAdapter.java` | `swing/TableModelEventAdapter.kt` | Preserves the event-adapter and Java-functional factory contracts. |
 | `swing/AdvancedTableModel.java` | `swing/AdvancedTableModel.kt` | Exposes the table format as a Kotlin property while preserving Java getter and setter signatures. |
 | `swing/DefaultEventTableModel.java` | `swing/DefaultEventTableModel.kt` | Preserves source locking, editable formats, protected subclass hooks, adapter replacement, and optional source disposal. |
+| `swing/TableComparatorChooser.java` | `swing/TableComparatorChooser.kt` | Preserves Java-static installation methods, renderer and listener lifecycle, model replacement, sort notifications, and comparator redetection. |
 | `impl/swing/LowerThresholdRangeModel.java` | `impl/swing/LowerThresholdRangeModel.kt` | Preserves threshold normalization, source locking, Swing change events, and Java subclassing. |
 | `impl/swing/UpperThresholdRangeModel.java` | `impl/swing/UpperThresholdRangeModel.kt` | Preserves threshold normalization, source locking, Swing change events, and Java subclassing. |
 | `impl/swing/DefaultTableModelEventAdapter.java` | `impl/swing/TableModelEventAdapters.kt` | Preserves its package-private class boundary, precise block events, and EDT enforcement. |
@@ -72,6 +74,8 @@ an intentional difference is documented below.
 | `impl/beans/StringBeanFunction.java` | `impl/beans/StringBeanFunction.kt` | Makes its nullable string result explicit; no intentional behavior change. |
 | `impl/beans/BeanThresholdEvaluator.java` | `impl/beans/BeanThresholdEvaluator.kt` | Preserves lazy property discovery and integer evaluation. |
 | `impl/beans/BeanTextFilterator.java` | `impl/beans/BeanTextFilterator.kt` | Preserves lazy and eager property discovery and explicit null-element handling. |
+| `impl/beans/BeanProperty.java` | `impl/beans/BeanProperty.kt` | Preserves nested reflective access, Java trailing-separator splitting, generic type resolution, diagnostic exceptions, exact-class equality, and Java subclassing. |
+| `impl/beans/BeanTableFormat.java` | `impl/beans/BeanTableFormat.kt` | Preserves lazy and eager descriptors, Java null inputs and nullable edited values, primitive wrapper classes and immutable primitive map, protected Java subclass state and hooks, and both constructors. |
 | `gui/AbstractTableComparatorChooser.java` | `gui/AbstractTableComparatorChooser.kt` | Preserves subclass extension points, Java-record sort keys, immutable sort-key snapshots, and null-validation messages. |
 | `gui/AdvancedTableFormat.java` | `gui/AdvancedTableFormat.kt` | Makes the nullable column comparator explicit; no intentional behavior change. |
 | `gui/CheckableTableFormat.java` | `gui/CheckableTableFormat.kt` | No intentional behavior change. |
@@ -80,6 +84,8 @@ an intentional difference is documented below.
 | `impl/gui/MouseOnlySortingStrategy.java` | `impl/gui/MouseOnlySortingStrategy.kt` | Preserves single- and multiple-column click behavior. |
 | `impl/gui/SortingState.java` | `impl/gui/SortingState.kt` | Preserves comparator detection, column precedence, sorting-style codes, mutable Java-facing column state, and the non-static inner-column contract. |
 | `impl/SortIconFactory.java` | `impl/SortIconFactory.kt` | Preserves cached default icons, fresh explicit-path arrays, and Java-static loading methods. |
+| `impl/SimpleFunctionList.java` | `impl/SimpleFunctionList.kt` | Preserves read-only mapping, forwarded list events, disposal behavior, and the null-function diagnostic. |
+| `impl/ListCollectionListModel.java` | `impl/ListCollectionListModel.kt` | Preserves nullable-parent handling, parent identity, Java subclassing, and the exact Java generic model contract. |
 | `impl/filter/SearchTerm.java` | `impl/filter/SearchTerm.kt` | Uses a data class while excluding reusable scratch state from value equality. |
 | `impl/gui/ThreadProxyEventList.java` | `impl/gui/ThreadProxyEventList.kt` | Adds idempotent disposal and protects queued event state. |
 | `impl/swing/SwingThreadProxyEventList.java` | `impl/swing/SwingThreadProxyEventList.kt` | No intentional behavior change. |
