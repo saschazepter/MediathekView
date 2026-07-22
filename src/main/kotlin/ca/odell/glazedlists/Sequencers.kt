@@ -44,10 +44,10 @@ class Sequencers private constructor() {
     private class MonthSequencer : SequenceList.Sequencer<Date> {
         private val zoneId = ZoneId.systemDefault()
 
-        override fun previous(date: Date?): Date {
-            require(date != null) { "date may not be null" }
+        override fun previous(value: Date?): Date {
+            require(value != null) { "date may not be null" }
 
-            var dateTime = date.toInstant().atZone(zoneId)
+            var dateTime = value.toInstant().atZone(zoneId)
             if (dateTime.dayOfMonth == 1 && dateTime.toLocalTime() == LocalTime.MIDNIGHT) {
                 dateTime = dateTime.minusMonths(1)
             }
@@ -55,10 +55,10 @@ class Sequencers private constructor() {
             return monthStart(dateTime)
         }
 
-        override fun next(date: Date?): Date {
-            require(date != null) { "date may not be null" }
+        override fun next(value: Date?): Date {
+            require(value != null) { "date may not be null" }
 
-            return monthStart(date.toInstant().atZone(zoneId).plusMonths(1))
+            return monthStart(value.toInstant().atZone(zoneId).plusMonths(1))
         }
 
         private fun monthStart(dateTime: ZonedDateTime): Date {

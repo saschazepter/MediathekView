@@ -40,11 +40,12 @@ import javax.swing.text.PlainDocument
 internal class ProbableBugsBehaviorTest {
     @Test
     fun sequenceListAcceptsAnyComparatorMagnitude() {
-        val source = BasicEventList<Int>().apply { addAll(listOf(5, 25)) }
+        val source = BasicEventList<Int>()
+        source.addAll(listOf(5, 25))
         val sequencer = object : SequenceList.Sequencer<Int> {
-            override fun previous(value: Int): Int = Math.floorDiv(value - 1, 10) * 10
+            override fun previous(value: Int?): Int = Math.floorDiv(requireNotNull(value) - 1, 10) * 10
 
-            override fun next(value: Int): Int = (Math.floorDiv(value, 10) + 1) * 10
+            override fun next(value: Int?): Int = (Math.floorDiv(requireNotNull(value), 10) + 1) * 10
         }
         val comparator = Comparator<Int> { left, right -> left.compareTo(right) * 7 }
 
@@ -71,7 +72,10 @@ internal class ProbableBugsBehaviorTest {
 
             TimeZone.setDefault(TimeZone.getTimeZone("America/New_York"))
 
-            assertEquals(Date.from(februaryStart.toInstant()), sequencer.previous(Date.from(februaryMiddle.toInstant())))
+            assertEquals(
+                Date.from(februaryStart.toInstant()),
+                sequencer.previous(Date.from(februaryMiddle.toInstant()))
+            )
             assertEquals(
                 Date.from(februaryStart.minusMonths(1).toInstant()),
                 sequencer.previous(Date.from(februaryStart.toInstant())),
@@ -146,7 +150,7 @@ internal class ProbableBugsBehaviorTest {
     fun textComponentEditorRecognizesEquivalentNonInternedDocumentPropertyName() {
         SwingUtilities.invokeAndWait {
             val field = NonInterningTextField()
-            val editor = TextComponentMatcherEditor<String>(field, { strings, value -> strings += value })
+            val editor = TextComponentMatcherEditor<String>(field) { strings, value -> strings += value }
             try {
                 val replacement = PlainDocument()
                 var matcherChanges = 0
