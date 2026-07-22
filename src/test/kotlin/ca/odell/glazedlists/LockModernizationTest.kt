@@ -58,7 +58,7 @@ internal class LockModernizationTest {
 
     @Test
     fun debugLockDetectsReadToWriteUpgradeThroughJdkLockMethods() {
-        val lock = DebugList<String>().getReadWriteLock()
+        val lock = DebugList<String>().readWriteLock
         lock.readLock().lockInterruptibly()
         try {
             assertThrows(IllegalStateException::class.java) {
@@ -71,7 +71,7 @@ internal class LockModernizationTest {
 
     @Test
     fun debugLockAllowsWriteReadWriteReentry() {
-        val lock = DebugList<String>().getReadWriteLock()
+        val lock = DebugList<String>().readWriteLock
 
         lock.writeLock().lock()
         try {
@@ -100,11 +100,11 @@ internal class LockModernizationTest {
 
         val sorted = SortedList(source)
 
-        source.getReadWriteLock().readLock().lock()
+        source.readWriteLock.readLock().lock()
         try {
             assertEquals(listOf("alpha", "bravo"), sorted)
         } finally {
-            source.getReadWriteLock().readLock().unlock()
+            source.readWriteLock.readLock().unlock()
         }
         sorted.dispose()
     }
@@ -115,11 +115,11 @@ internal class LockModernizationTest {
 
         val filtered = FilterList(source, Matcher<String> { it == "keep" })
 
-        source.getReadWriteLock().readLock().lock()
+        source.readWriteLock.readLock().lock()
         try {
             assertEquals(listOf("keep"), filtered)
         } finally {
-            source.getReadWriteLock().readLock().unlock()
+            source.readWriteLock.readLock().unlock()
         }
         filtered.dispose()
     }
@@ -250,7 +250,8 @@ internal class LockModernizationTest {
 
         assertEquals(1, failure.suppressed.size)
         @Suppress("UNCHECKED_CAST")
-        val retainedList = assertInstanceOf(ObservableElementList::class.java, retainedHandler) as ObservableElementList<String>
+        val retainedList =
+            assertInstanceOf(ObservableElementList::class.java, retainedHandler) as ObservableElementList<String>
         var updateEvents = 0
         retainedList.addListEventListener { updateEvents++ }
 
@@ -480,11 +481,11 @@ internal class LockModernizationTest {
 
     private fun <E> lockCheckingList(vararg elements: E): DebugList<E> {
         val source = DebugList<E>()
-        source.getReadWriteLock().writeLock().lock()
+        source.readWriteLock.writeLock().lock()
         try {
             source.addAll(elements.asList())
         } finally {
-            source.getReadWriteLock().writeLock().unlock()
+            source.readWriteLock.writeLock().unlock()
         }
         source.isLockCheckingEnabled = true
         return source
