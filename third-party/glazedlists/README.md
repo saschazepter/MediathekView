@@ -90,6 +90,8 @@ an intentional difference is documented below.
 | `impl/SimpleFunctionList.java` | `impl/SimpleFunctionList.kt` | Preserves read-only mapping, forwarded list events, disposal behavior, and the null-function diagnostic. |
 | `impl/ListCollectionListModel.java` | `impl/ListCollectionListModel.kt` | Preserves nullable-parent handling, parent identity, Java subclassing, and the exact Java generic model contract. |
 | `impl/SimpleIterator.java` | `impl/SimpleIterator.kt` | Preserves Java subclassing, source mutation, cursor behavior, and exact failure diagnostics. |
+| `impl/EventListIterator.java` | `impl/EventListIterator.kt` | Preserves all constructors, Java subclassing, bidirectional mutation, cursor adjustment across source changes, and exact failure diagnostics. |
+| `impl/SubEventList.java` | `impl/SubEventList.kt` | Preserves writable range views, source-relative index shifts, event translation, single-element reorder tracking, and listener-proxy registration. |
 | `impl/TypeSafetyListener.java` | `impl/TypeSafetyListener.kt` | Preserves Java subclassing, defensive type snapshots, nullable allowed types, and insert/update diagnostics. |
 | `impl/WeakReferenceProxy.java` | `impl/WeakReferenceProxy.kt` | Preserves weak forwarding, Java null validation, self-removal, and post-disposal event suppression. |
 | `impl/filter/SearchTerm.java` | `impl/filter/SearchTerm.kt` | Uses a data class while excluding reusable scratch state from value equality. |
