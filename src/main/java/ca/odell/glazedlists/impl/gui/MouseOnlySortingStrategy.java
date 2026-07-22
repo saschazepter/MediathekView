@@ -3,7 +3,6 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.gui;
 
-import java.util.List;
 
 /**
  * @see ca.odell.glazedlists.gui.AbstractTableComparatorChooser#SINGLE_COLUMN
@@ -24,26 +23,31 @@ public final class MouseOnlySortingStrategy implements SortingStrategy {
         this.multipleColumnSort = multipleColumnSort;
     }
 
+    @Override
+    public boolean supportsMultipleColumnSorting() {
+        return multipleColumnSort;
+    }
+
     /**
      * Adjust the sorting state based on receiving the specified clicks.
      */
     @Override
-    public void columnClicked(SortingState sortingState, int column, int clicks, boolean shift, boolean control) {
-        SortingState.SortingColumn clickedColumn = sortingState.getColumns().get(column);
+    public <E> void columnClicked(SortingState<E> sortingState, int column, int clicks, boolean shift, boolean control) {
+        var clickedColumn = sortingState.getColumns().get(column);
         if(clickedColumn.getComparators().isEmpty()) return;
 
-        List<SortingState.SortingColumn> recentlyClickedColumns = sortingState.getRecentlyClickedColumns();
+        var recentlyClickedColumns = sortingState.getRecentlyClickedColumns();
 
         // on a double click, clear all click counts
         if(clicks == 2) {
-            for (SortingState.SortingColumn sortingColumn : recentlyClickedColumns) {
+            for (var sortingColumn : recentlyClickedColumns) {
                 sortingColumn.clear();
             }
             recentlyClickedColumns.clear();
 
         // if we're only sorting one column at a time, clear other columns
         } else if(!multipleColumnSort) {
-            for (SortingState.SortingColumn sortingColumn : recentlyClickedColumns) {
+            for (var sortingColumn : recentlyClickedColumns) {
                 if (sortingColumn != clickedColumn) {
                     sortingColumn.clear();
                 }

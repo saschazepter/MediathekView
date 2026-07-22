@@ -107,13 +107,13 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ran
 
     /** {@inheritDoc} */
     @Override
-    public boolean addAll(Collection<? extends E> collection) {
+    public boolean addAll(@NonNull Collection<? extends E> collection) {
         return addAll(size(), collection);
     }
 
     /** {@inheritDoc} */
     @Override
-    public boolean addAll(int index, Collection<? extends E> collection) {
+    public boolean addAll(int index, @NonNull Collection<? extends E> collection) {
         // don't do an add of an empty set
         if (collection.isEmpty()) return false;
 
@@ -193,7 +193,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ran
 
     /** {@inheritDoc} */
     @Override
-    public boolean removeIf(Predicate<? super E> filter) {
+    public boolean removeIf(@NonNull Predicate<? super E> filter) {
         if (isEmpty()) return false;
 
         boolean changed = false;
@@ -214,7 +214,7 @@ public final class BasicEventList<E> extends AbstractEventList<E> implements Ran
      * {@inheritDoc}
      */
     @Override
-    public void replaceAll(UnaryOperator<E> operator) {
+    public void replaceAll(@NonNull UnaryOperator<E> operator) {
         updates.beginEvent();
         for (int i = size() - 1; i >= 0; i--) {
             E oldValue = data.get(i);

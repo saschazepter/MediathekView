@@ -8,6 +8,7 @@ import ca.odell.glazedlists.impl.adt.barcode2.Element;
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTree;
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTreeIterator;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import java.util.*;
 
@@ -79,7 +80,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
     private SimpleTree<Element<?>> sorted;
 
     /** the comparator that this list uses for sorting */
-    private Comparator<? super E> comparator;
+    private @Nullable Comparator<? super E> comparator;
 
     /** one of {@link #STRICT_SORT_ORDER} or {@link #AVOID_MOVING_ELEMENTS}. */
     private int mode = STRICT_SORT_ORDER;
@@ -118,7 +119,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
      * specified {@link Comparator} is <code>null</code>, then this {@link List}
      * will be unsorted.
      */
-    public SortedList(EventList<E> source, Comparator<? super E> comparator) {
+    public SortedList(EventList<E> source, @Nullable Comparator<? super E> comparator) {
         super(source);
 
         source.getReadWriteLock().readLock().lock();
@@ -421,7 +422,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
      *      elements in natural order, then a ComparableComparator} will
      *      be returned.
      */
-    public Comparator<? super E> getComparator() {
+    public @Nullable Comparator<? super E> getComparator() {
         return comparator;
     }
 
@@ -441,7 +442,7 @@ public final class SortedList<E> extends TransformedList<E,E> {
      *      in their natural order. You may also specify <code>null</code> to put
      *      this {@link SortedList} in unsorted order.
      */
-    public void setComparator(Comparator<? super E> comparator) {
+    public void setComparator(@Nullable Comparator<? super E> comparator) {
         // save this comparator
         this.comparator = comparator;
         // keep the old trees to construct the reordering

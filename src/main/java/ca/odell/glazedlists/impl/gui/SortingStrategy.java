@@ -21,6 +21,13 @@ package ca.odell.glazedlists.impl.gui;
 public interface SortingStrategy {
 
     /**
+     * Whether programmatic comparator appends may retain existing sort columns.
+     */
+    default boolean supportsMultipleColumnSorting() {
+        return true;
+    }
+
+    /**
      * This method is called each time a user attempts to adjust the sort order
      * enforced by a <code>TableComparatorChooser</code> by clicking in a table
      * header. The implementation is expected to adjust the
@@ -35,5 +42,5 @@ public interface SortingStrategy {
      * @param shift <tt>true</tt> if the shift key was down at the time of the click
      * @param control <tt>true</tt> if the control key was down at the time of the click
      */
-    void columnClicked(SortingState sortingState, int column, int clicks, boolean shift, boolean control);
+    <E> void columnClicked(SortingState<E> sortingState, int column, int clicks, boolean shift, boolean control);
 }

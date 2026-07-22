@@ -870,7 +870,7 @@ public final class GlazedLists {
      * The Map implementation assumes that each value has a unique key, and
      * verifies this invariant at runtime, throwing a RuntimeException if it
      * is ever violated.
-     *
+     * <p>
      * For example, if two distinct values, say <code>v1</code> and
      * <code>v2</code> each produce the key <code>k</code> when they are
      * evaluated by the <code>keyMaker</code> function, an

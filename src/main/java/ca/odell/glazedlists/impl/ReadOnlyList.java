@@ -139,13 +139,13 @@ public final class ReadOnlyList<E> extends TransformedList<E, E> {
 
     /** @throws UnsupportedOperationException since ReadOnlyList cannot be modified */
     @Override
-    public boolean addAll(Collection<? extends E> values) {
+    public boolean addAll(@NonNull Collection<? extends E> values) {
         throw new UnsupportedOperationException("ReadOnlyList cannot be modified");
     }
 
     /** @throws UnsupportedOperationException since ReadOnlyList cannot be modified */
     @Override
-    public boolean addAll(int index, Collection<? extends E> values) {
+    public boolean addAll(int index, @NonNull Collection<? extends E> values) {
         throw new UnsupportedOperationException("ReadOnlyList cannot be modified");
     }
 
@@ -169,13 +169,13 @@ public final class ReadOnlyList<E> extends TransformedList<E, E> {
 
     /** @throws UnsupportedOperationException since ReadOnlyList cannot be modified */
     @Override
-    public boolean removeAll(Collection<?> collection) {
+    public boolean removeAll(@NonNull Collection<?> collection) {
         throw new UnsupportedOperationException("ReadOnlyList cannot be modified");
     }
 
     /** @throws UnsupportedOperationException since ReadOnlyList cannot be modified */
     @Override
-    public boolean retainAll(Collection<?> values) {
+    public boolean retainAll(@NonNull Collection<?> values) {
         throw new UnsupportedOperationException("ReadOnlyList cannot be modified");
     }
 
@@ -187,13 +187,13 @@ public final class ReadOnlyList<E> extends TransformedList<E, E> {
 
     /** @throws UnsupportedOperationException since ReadOnlyList cannot be modified */
     @Override
-    public void replaceAll(UnaryOperator<E> operator) {
+    public void replaceAll(@NonNull UnaryOperator<E> operator) {
         throw new UnsupportedOperationException("ReadOnlyList cannot be modified");
     }
 
     /** @throws UnsupportedOperationException since ReadOnlyList cannot be modified */
     @Override
-    public boolean removeIf(Predicate<? super E> filter) {
+    public boolean removeIf(@NonNull Predicate<? super E> filter) {
         throw new UnsupportedOperationException("ReadOnlyList cannot be modified");
     }
 

@@ -13,6 +13,7 @@ package mediathek.gui.tabs.tab_film.table
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.gui.AbstractTableComparatorChooser
+import ca.odell.glazedlists.gui.AbstractTableComparatorChooser.SortKey
 import ca.odell.glazedlists.swing.TableComparatorChooser
 import mediathek.daten.DatenFilm
 import mediathek.swing.table.GlazedSortKeysPersister
@@ -47,7 +48,7 @@ internal class FilmTableSortController(
 
     init {
         NON_SORTABLE_COLUMNS.forEach { column ->
-            comparatorChooser.getComparatorsForColumn(column.index).clear()
+            comparatorChooser.disableSortingForColumn(column.index)
         }
         sortPersister.restoreSortState()
         comparatorChooser.addSortActionListener {
@@ -62,9 +63,9 @@ internal class FilmTableSortController(
         if (column !in FilmColumn.entries.indices || FilmColumn.fromIndex(column) in NON_SORTABLE_COLUMNS) {
             return
         }
-        comparatorChooser.clearComparator()
-        comparatorChooser.appendComparator(column, 0, descending)
-        save()
+        if (!comparatorChooser.setSortKeys(listOf(SortKey(column, 0, descending)))) {
+            save()
+        }
     }
 
     override fun clear() {

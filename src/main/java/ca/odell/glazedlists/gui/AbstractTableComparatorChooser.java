@@ -4,16 +4,19 @@
 package ca.odell.glazedlists.gui;
 
 import ca.odell.glazedlists.SortedList;
-import ca.odell.glazedlists.impl.gui.MouseKeyboardSortingStrategy;
 import ca.odell.glazedlists.impl.gui.MouseOnlySortingStrategy;
-import ca.odell.glazedlists.impl.gui.MouseOnlySortingStrategyWithUndo;
 import ca.odell.glazedlists.impl.gui.SortingState;
-import ca.odell.glazedlists.impl.sort.TableColumnComparator;
+import ca.odell.glazedlists.impl.gui.SortingStrategy;
+import org.jspecify.annotations.Nullable;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 /**
  * A TableComparatorChooser is a tool that allows the user to sort a table
@@ -24,6 +27,9 @@ import java.util.List;
  */
 public abstract class AbstractTableComparatorChooser<E> {
 
+    public record SortKey(int column, int comparatorIndex, boolean reverse) {
+    }
+
     /**
      * Emulate the sorting behaviour of Windows Explorer and Mac OS X Finder.
      *
@@ -32,7 +38,7 @@ public abstract class AbstractTableComparatorChooser<E> {
      *
      * <p>At most one column can be sorted at a time.
      */
-    public static final Object SINGLE_COLUMN = new MouseOnlySortingStrategy(false);
+    public static final SortingStrategy SINGLE_COLUMN = new MouseOnlySortingStrategy(false);
 
     /**
      * Sort multiple columns without use of the keyboard.  Single clicks cycle
@@ -53,83 +59,40 @@ public abstract class AbstractTableComparatorChooser<E> {
      *
      * <li>Double click: like a single click, but clear all sorting columns first.
      */
-    public static final Object MULTIPLE_COLUMN_MOUSE = new MouseOnlySortingStrategy(true);
+    public static final SortingStrategy MULTIPLE_COLUMN_MOUSE = new MouseOnlySortingStrategy(true);
 
-    /**
-     * Sort multiple columns without use of the keyboard.  Single clicks cycle
-     * through comparators. Single click on the last comparator of the primary
-     * sort column will clear the entire sort (for all columns).
-     *
-     * <p>This is an improvement over the original sorting strategy provided by
-     * Glazed Lists, since it gives a reasonable mechanism for clearing a sort
-     * order that is already in place. It's designed to be used with multiple
-     * columns and multiple comparators per column.
-     *
-     * <p>The overall behaviour is as follows:
-     *
-     * <li>Click: sort this column. If it's already sorted, reverse the sort order.
-     * If its already reversed, sort using the column's next comparator in forward
-     * order. If there are no more comparators, clear ALL column comparators.
-     * If there are multiple sort columns, sort this column after those columns.
-     */
-    public static final Object MULTIPLE_COLUMN_MOUSE_WITH_UNDO = new MouseOnlySortingStrategyWithUndo();
 
-    /**
-     * Emulate the sorting behaviour of SUN's TableSorter, by Philip Milne et. al.
-     *
-     * <p>This is not a direct adaptation since we choose to support potentially
-     * many Comparators per column, whereas TableSorter is limited to one.
-     *
-     * <p>For reference, this is TableSorter's behaviour, copied shamelessly
-     * from that project's source file:
-     *
-     * <li>Mouse-click: Clears the sorting gui of all other columns and advances
-     * the sorting gui of that column through three values:
-     * {NOT_SORTED, ASCENDING, DESCENDING} (then back to NOT_SORTED again).
-     *
-     * <li>SHIFT-mouse-click: Clears the sorting gui of all other columns and
-     * cycles the sorting gui of the column through the same three values,
-     * in the opposite order: {NOT_SORTED, DESCENDING, ASCENDING}.
-     *
-     * <li>CONTROL-mouse-click and CONTROL-SHIFT-mouse-click: as above except that the
-     * changes to the column do not cancel the statuses of columns that are
-     * already sorting - giving a way to initiate a compound sort.
-     *
-     * @see <a href="http://java.sun.com/docs/books/tutorial/uiswing/components/table.html">Table tutorial</a>
-     */
-    public static final Object MULTIPLE_COLUMN_KEYBOARD = new MouseKeyboardSortingStrategy();
+    private final boolean multipleColumnSort;
 
     /** the sorted list to choose the comparators for */
-    protected SortedList<E> sortedList;
+    private final SortedList<E> sortedList;
 
-    /** the columns to sort over */
-    private TableFormat<? super E> tableFormat;
+    private boolean disposed;
 
     /** the potentially foreign comparator associated with the sorted list */
-    protected Comparator<? super E> sortedListComparator;
+    protected @Nullable Comparator<? super E> sortedListComparator;
+
+    /** whether every component of the cached comparator is represented by the sorting state */
+    private boolean sortedListComparatorFullyRepresented;
 
     /** manage which columns are sorted and in which order */
-    protected SortingState sortingState;
+    protected final SortingState<E> sortingState;
 
     /**
      * Create a {@link AbstractTableComparatorChooser} that sorts the specified
      * {@link SortedList} over the specified columns.
      */
-    protected AbstractTableComparatorChooser(SortedList<E> sortedList, TableFormat<? super E> tableFormat) {
+    protected AbstractTableComparatorChooser(SortedList<E> sortedList, TableFormat<? super E> tableFormat, SortingStrategy sortingStrategy) {
         this.sortedList = sortedList;
-        this.sortingState = createSortingState();
-        this.setTableFormat(tableFormat);
+        this.multipleColumnSort = sortingStrategy.supportsMultipleColumnSorting();
+        this.sortingState = new SortingState<>();
+        this.sortingState.rebuildColumns(tableFormat);
+        this.sortedListComparator = readSortedListComparator();
+        this.sortedListComparatorFullyRepresented = sortingState.detectStateFromComparator(sortedListComparator);
 
         this.sortingState.addPropertyChangeListener(new SortingStateListener());
     }
 
-    /**
-     * Returns the object which models the current sorting state of all columns
-     * in the table.
-     */
-    protected SortingState createSortingState() {
-        return new SortingState(this);
-    }
 
     /**
      * Handle changes to the sorting state by applying the new comparator
@@ -145,17 +108,38 @@ public abstract class AbstractTableComparatorChooser<E> {
     /**
      * Updates the comparator in use and applies it to the table.
      */
-    @SuppressWarnings("unchecked")
     protected void rebuildComparator() {
-        final Comparator<E> rebuiltComparator = (Comparator<E>) (Comparator<?>) sortingState.buildComparator();
+        final Comparator<E> rebuiltComparator = sortingState.buildComparator();
+        final SortedList<E> currentSortedList = getSortedList();
 
         // select the new comparator
-        sortedList.getReadWriteLock().writeLock().lock();
+        currentSortedList.getReadWriteLock().writeLock().lock();
         try {
+            currentSortedList.setComparator(rebuiltComparator);
             sortedListComparator = rebuiltComparator;
-            sortedList.setComparator(rebuiltComparator);
+            sortedListComparatorFullyRepresented = true;
         } finally {
-            sortedList.getReadWriteLock().writeLock().unlock();
+            currentSortedList.getReadWriteLock().writeLock().unlock();
+        }
+    }
+
+    /**
+     * Returns the sorted list, rejecting access after this chooser is disposed.
+     */
+    protected final SortedList<E> getSortedList() {
+        if (disposed) {
+            throw new IllegalStateException("TableComparatorChooser has been disposed");
+        }
+        return sortedList;
+    }
+
+    private @Nullable Comparator<? super E> readSortedListComparator() {
+        final SortedList<E> currentSortedList = getSortedList();
+        currentSortedList.getReadWriteLock().readLock().lock();
+        try {
+            return currentSortedList.getComparator();
+        } finally {
+            currentSortedList.getReadWriteLock().readLock().unlock();
         }
     }
 
@@ -163,50 +147,30 @@ public abstract class AbstractTableComparatorChooser<E> {
      * Adjusts the TableFormat this comparator chooser uses when selecting
      * comparators. Calling this method will clear any active sorting.
      */
-    protected void setTableFormat(TableFormat<? super E> tableFormat) {
-        this.tableFormat = tableFormat;
-
+    protected final void setTableFormat(TableFormat<? super E> tableFormat) {
         // handle a change in the layout of our columns
         sortingState.rebuildColumns(tableFormat);
+        sortingState.fireSortingChanged();
     }
 
 
     /**
-     * Gets the list of comparators for the specified column. The user is
-     * free to add comparators to this list or clear the list if the specified
-     * column cannot be sorted.
+     * Disables sorting for the specified column and clears an active sort on it.
      */
-    public List<Comparator<Object>> getComparatorsForColumn(int column) {
-        return sortingState.getColumns().get(column).getComparators();
+    public void disableSortingForColumn(int column) {
+        if (sortingState.disableSortingForColumn(column)) {
+            sortingState.fireSortingChanged();
+        }
     }
 
-    /**
-     * Get the columns that the TableComparatorChooser is sorting by.
-     *
-     * @return a List of Integers. The first Integer is the primary sorting column,
-     *      the second is the secondary, etc. This list may be empty but never null.
-     */
-    public List<Integer> getSortingColumns() {
-        return sortingState.getSortingColumnIndexes();
+    public List<SortKey> getSortKeys() {
+        final List<SortKey> sortKeys = new ArrayList<>(sortingState.getRecentlyClickedColumns().size());
+        for (SortingState<E>.SortingColumn sortingColumn : sortingState.getRecentlyClickedColumns()) {
+            sortKeys.add(new SortKey(sortingColumn.getColumn(), sortingColumn.getComparatorIndex(), sortingColumn.isReverse()));
+        }
+        return List.copyOf(sortKeys);
     }
 
-    /**
-     * Gets the index comparator in use for the specified column. This comparator
-     * may be retrieved using {@link #getComparatorsForColumn(int)}.
-     *
-     * @return the comparator index for the specified column, or -1 if that column
-     *      is not being used to sort.
-     */
-    public int getColumnComparatorIndex(int column) {
-        return sortingState.getColumns().get(column).getComparatorIndex();
-    }
-
-    /**
-     * Gets whether the comparator in use for the specified column is reverse.
-     */
-    public boolean isColumnReverse(int column) {
-        return sortingState.getColumns().get(column).isReverse();
-    }
 
     /**
      * Append the comparator specified by the column, comparator index and reverse
@@ -234,15 +198,58 @@ public abstract class AbstractTableComparatorChooser<E> {
      * @param reverse whether to reverse the specified comparator.
      */
     public void appendComparator(int column, int comparatorIndex, boolean reverse) {
-        sortingState.appendComparator(column, comparatorIndex, reverse);
+        if (sortingState.appendComparator(column, comparatorIndex, reverse, multipleColumnSort)) {
+            sortingState.fireSortingChanged();
+        }
+    }
+
+    /**
+     * Atomically replaces the complete sorting state. All keys are validated
+     * before the current comparator is changed.
+     */
+    public boolean setSortKeys(List<SortKey> sortKeys) {
+        Objects.requireNonNull(sortKeys, "sortKeys");
+        for (SortKey sortKey : sortKeys) {
+            Objects.requireNonNull(sortKey, "sortKeys contains null");
+            sortingState.validateComparator(sortKey.column(), sortKey.comparatorIndex());
+        }
+
+        final List<SortKey> normalizedSortKeys = normalizeSortKeys(sortKeys);
+        if (getSortKeys().equals(normalizedSortKeys)
+                && sortedListComparatorFullyRepresented
+                && readSortedListComparator() == sortedListComparator) {
+            return false;
+        }
+
+        sortingState.clearComparators();
+        for (SortKey sortKey : normalizedSortKeys) {
+            sortingState.appendComparator(sortKey.column(), sortKey.comparatorIndex(), sortKey.reverse(), true);
+        }
         sortingState.fireSortingChanged();
+        return true;
+    }
+
+    private List<SortKey> normalizeSortKeys(List<SortKey> sortKeys) {
+        final List<SortKey> normalizedSortKeys = new ArrayList<>(sortKeys.size());
+        final Set<Integer> usedColumns = new HashSet<>();
+        for (SortKey sortKey : sortKeys) {
+            if (multipleColumnSort) {
+                if (usedColumns.add(sortKey.column())) normalizedSortKeys.add(sortKey);
+            } else if (normalizedSortKeys.isEmpty() || normalizedSortKeys.getFirst().column() != sortKey.column()) {
+                normalizedSortKeys.clear();
+                normalizedSortKeys.add(sortKey);
+            }
+        }
+        return normalizedSortKeys;
     }
 
     /**
      * Clear all sorting state and set the {@link SortedList} to use its
-     * natural order.
+     * source order.
      */
     public void clearComparator() {
+        if (sortingState.getRecentlyClickedColumns().isEmpty() && readSortedListComparator() == null) return;
+
         sortingState.clearComparators();
         sortingState.fireSortingChanged();
     }
@@ -254,9 +261,9 @@ public abstract class AbstractTableComparatorChooser<E> {
      * <p>To do this, clicks are injected into each of the
      * corresponding <code>ColumnClickTracker</code>s.
      */
-    protected void redetectComparator(Comparator<? super E> currentComparator) {
+    protected void redetectComparator(@Nullable Comparator<? super E> currentComparator) {
         sortedListComparator = currentComparator;
-        sortingState.detectStateFromComparator(currentComparator);
+        sortedListComparatorFullyRepresented = sortingState.detectStateFromComparator(currentComparator);
     }
 
     /**
@@ -266,59 +273,15 @@ public abstract class AbstractTableComparatorChooser<E> {
         return sortingState.getColumns().get(column).getSortingStyle();
     }
 
-    /**
-     * Creates a {@link Comparator} that can compare list elements
-     * given a {@link Comparator} that can compare column values for the specified
-     * column. This returns a {@link Comparator} that extracts the table values for
-     * the specified column and then delegates the actual comparison to the specified
-     * comparator.
-     */
-    public Comparator<E> createComparatorForElement(Comparator<E> comparatorForColumn, int column) {
-        return new TableColumnComparator<E>(tableFormat, column, comparatorForColumn);
+    public final void dispose() {
+        if (disposed) return;
+
+        disposed = true;
+        disposeInternal();
+        sortedListComparator = null;
+        sortedListComparatorFullyRepresented = false;
     }
 
-    /**
-     * Encode the current sorting state as a {@link String}. This specially formatted
-     * {@link String} is ideal for persistence using any preferences API. The
-     * state of this {@link AbstractTableComparatorChooser} can be restored
-     * by passing the return value of this method to {@link #fromString(String)}.
-     */
-    @Override
-    public String toString() {
-        return sortingState.toString();
-    }
-
-    /**
-     * <p>This class is capable of representing its own state with a String, to
-     * persist sorting state externally. The format uses zero or more column specifications,
-     * separated by commas. Here are some valid examples:
-     *
-     * <table border><tr><th>String Representation</th><th>Description</th></tr>
-     * <tr><td><code>"column 3"</code></td><td>Sort using the column at index 3, using that column's first comparator, in forward order</td></tr>
-     * <tr><td><code>"column 3 reversed"</code></td><td>Sort using the column at index 3, using that column's first comparator, in reverse order</td></tr>
-     * <tr><td><code>"column 3, column 1"</code></td><td>Sort using the column at index 3, using that column's first comparator, in forward order<br>
-     *                                     <i>then by</i><br> the column at index 1, using that column's first comparator, in forward order.</td></tr>
-     * <tr><td><code>"column 3 comparator 2"</code></td><td>Sort using the column at index 3, using that column's comparator at index 2, in forward order</td></tr>
-     * <tr><td><code>"column 3 comparator 2 reversed"</code></td><td>Sort using the column at index 3, using that column's comparator at index 2, in reverse order</td></tr>
-     * <tr><td><code>"column 3 reversed, column 1 comparator 2, column 5 comparator 1 reversed, column 0"</code></td><td>Sort using the column at index 3, using that column's first comparator, in reverse order<br>
-     *                                     <i>then by</i><br> the column at index 1, using that column's comparator at index 2, in forward order<br>
-     *                                     <i>then by</i><br> the column at index 5, using that column's comparator at index 1, in reverse order<br>
-     *                                     <i>then by</i><br> the column at index 0, using that column's first comparator, in forward order.</td></tr>
-     * </table>
-     *
-     * <p>More formally, the grammar for this String representation is as follows:
-     * <br><code>&lt;COLUMN&gt; = column &lt;COLUMN INDEX&gt; (comparator &lt;COMPARATOR INDEX&gt;)? (reversed)?</code>
-     * <br><code>&lt;COMPARATOR SPEC&gt; = ( &lt;COLUMN&gt; (, &lt;COLUMN&gt;)* )?</code>
-     */
-    public void fromString(String stringEncoded) {
-        sortingState.fromString(stringEncoded);
-        sortingState.fireSortingChanged();
-    }
-
-    public void dispose() {
-        // null out references to potentially long lived objects
-        this.sortedList = null;
-        this.tableFormat = null;
-        this.sortedListComparator = null;
+    protected void disposeInternal() {
     }
 }
