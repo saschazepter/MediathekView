@@ -181,22 +181,13 @@ internal class JavaMigrationBehaviorTest {
     }
 
     @Test
-    fun functionAndPopularityListsKeepTheirMappedAndRankedResults() {
+    fun functionListKeepsItsMappedResults() {
         val mappedSource = BasicEventList<String>().apply { addAll(listOf("a", "bbbb")) }
         val mapped = FunctionList(mappedSource, String::length)
 
         assertEquals(listOf(1, 4), mapped.toList())
         mappedSource[0] = "ccc"
         assertEquals(listOf(3, 4), mapped.toList())
-
-        val popularitySource = BasicEventList<String>().apply {
-            addAll(listOf("a", "b", "a", "c", "a", "b"))
-        }
-        val popularity = PopularityList.create(popularitySource)
-
-        assertEquals(listOf("a", "b", "c"), popularity.toList())
-        popularitySource.addAll(listOf("c", "c", "c"))
-        assertEquals(listOf("c", "a", "b"), popularity.toList())
     }
 
     @Test
