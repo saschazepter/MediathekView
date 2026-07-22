@@ -27,7 +27,7 @@ class MouseOnlySortingStrategy(
     override fun supportsMultipleColumnSorting(): Boolean = multipleColumnSort
 
     /** Adjusts the sorting state based on receiving the specified clicks. */
-    override fun <E> columnClicked(
+    override fun <E : Any> columnClicked(
         sortingState: SortingState<E>,
         column: Int,
         clicks: Int,

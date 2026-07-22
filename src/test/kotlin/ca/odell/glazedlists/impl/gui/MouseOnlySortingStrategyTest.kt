@@ -115,7 +115,7 @@ class MouseOnlySortingStrategyTest {
         assertFalse(state.columns[1].isReverse)
     }
 
-    private fun <E> MouseOnlySortingStrategy.click(
+    private fun <E : Any> MouseOnlySortingStrategy.click(
         sortingState: SortingState<E>,
         column: Int,
         clicks: Int = 1,

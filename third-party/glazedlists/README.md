@@ -43,11 +43,22 @@ an intentional difference is documented below.
 | `TransactionList.java` | `TransactionList.kt` | Adds `withTransaction`; rollback-disabled construction is internal. |
 | `UndoRedoSupport.java` | `UndoRedoSupport.kt` | Uses Kotlin collection and functional-interface idioms. |
 | `impl/adt/barcode2/ListToByteCoder.java` | `impl/adt/barcode2/ListToByteCoder.kt` | Rejects duplicate colors, documents the seven-bit capacity, omits unused decoding methods, and keeps `colorAsIndex` Kotlin-internal with a public JVM static bridge for Java callers. |
+| `impl/adt/CircularArrayList.java` | — | Removed because the unused compatibility collection had no remaining callers. |
 | `impl/adt/IntArrayList.java` | — | Removed; primitive event-block storage is owned directly by `BlockSequence.kt`. |
+| `impl/IteratorAsEnumeration.java` | — | Removed because the unused JDK collection adapter had no remaining callers. |
+| `impl/adt/AgedNode.java` | — | Removed because the abandoned age-sorted cache node had no production callers. |
+| `impl/adt/AgedNodeComparator.java` | — | Removed with the unused `AgedNode` cache implementation. |
 | `impl/ObservableConnector.java` | `impl/ObservableConnector.kt` | Replaces deprecated `Observable`/`Observer` with a property-change contract. |
 | `impl/event/BlockSequence.java` | `impl/event/BlockSequence.kt` | Uses reusable `IntArray` storage while preserving block ordering, concatenation, iteration, and Java-facing contracts. |
 | `impl/event/Tree4Deltas.java` | `impl/event/Tree4Deltas.kt` | Stores old and new values explicitly, fixes range-value isolation and contradictory insert updates, and removes the unused source-side API. |
 | `event/Tree4DeltasListEvent.java` | `event/Tree4DeltasListEvent.java` | Retains the package-private Java boundary while publishing retained new values and implementing remaining-block counts for both event representations. |
+| `swing/GlazedListsSwing.java` | `swing/GlazedListsSwing.kt` | Preserves the Java-static Swing factory facade and source-disposal behavior. |
+| `swing/MutableListDataEvent.java` | `swing/MutableListDataEvent.kt` | Preserves reusable event state, Java construction, and debugging output. |
+| `swing/MutableTableModelEvent.java` | `swing/MutableTableModelEvent.kt` | Preserves reusable row/type state and Glazed Lists-to-Swing event mapping. |
+| `swing/DefaultEventListModel.java` | `swing/DefaultEventListModel.kt` | Preserves reusable event dispatch, protected subclass hooks, source locking, and optional source disposal. |
+| `swing/DefaultEventComboBoxModel.java` | `swing/DefaultEventComboBoxModel.kt` | Preserves reference-identity selection changes and Java subclassing. |
+| `impl/swing/LowerThresholdRangeModel.java` | `impl/swing/LowerThresholdRangeModel.kt` | Preserves threshold normalization, source locking, Swing change events, and Java subclassing. |
+| `impl/swing/UpperThresholdRangeModel.java` | `impl/swing/UpperThresholdRangeModel.kt` | Preserves threshold normalization, source locking, Swing change events, and Java subclassing. |
 | `impl/beans/BeanConnector.java` | `impl/beans/BeanConnector.kt` | Uses Kotlin reflection-call and null-safety idioms. |
 | `gui/AbstractTableComparatorChooser.java` | `gui/AbstractTableComparatorChooser.kt` | Preserves subclass extension points, Java-record sort keys, immutable sort-key snapshots, and null-validation messages. |
 | `gui/AdvancedTableFormat.java` | `gui/AdvancedTableFormat.kt` | Makes the nullable column comparator explicit; no intentional behavior change. |
@@ -55,6 +66,7 @@ an intentional difference is documented below.
 | `gui/TableFormat.java` | `gui/TableFormat.kt` | Makes nullable cell values explicit; no intentional behavior change. |
 | `gui/WritableTableFormat.java` | `gui/WritableTableFormat.kt` | No intentional behavior change. |
 | `impl/gui/MouseOnlySortingStrategy.java` | `impl/gui/MouseOnlySortingStrategy.kt` | Preserves single- and multiple-column click behavior. |
+| `impl/gui/SortingState.java` | `impl/gui/SortingState.kt` | Preserves comparator detection, column precedence, sorting-style codes, mutable Java-facing column state, and the non-static inner-column contract. |
 | `impl/filter/SearchTerm.java` | `impl/filter/SearchTerm.kt` | Uses a data class while excluding reusable scratch state from value equality. |
 | `impl/gui/ThreadProxyEventList.java` | `impl/gui/ThreadProxyEventList.kt` | Adds idempotent disposal and protects queued event state. |
 | `impl/swing/SwingThreadProxyEventList.java` | `impl/swing/SwingThreadProxyEventList.kt` | No intentional behavior change. |

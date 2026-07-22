@@ -108,7 +108,7 @@
         <mockito.version>5.23.0</mockito.version>
         <okhttp.version>5.4.0</okhttp.version>
         <picocli.version>4.7.7</picocli.version>
-        <sqlite-jdbc.version>3.53.2.0</sqlite-jdbc.version>
+        <sqlite-jdbc.version>3.53.2.1</sqlite-jdbc.version>
         <sqlite.native.exclude.01>__unused__</sqlite.native.exclude.01>
         <sqlite.native.exclude.02>__unused__</sqlite.native.exclude.02>
         <sqlite.native.exclude.03>__unused__</sqlite.native.exclude.03>
