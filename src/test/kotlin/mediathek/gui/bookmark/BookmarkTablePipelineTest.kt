@@ -22,8 +22,9 @@ class BookmarkTablePipelineTest {
         val source = BasicEventList<BookmarkData>().apply {
             repeat(6) { add(BookmarkData()) }
         }
-        val observed = ObservableElementList(source, GlazedLists.observableConnector())
-        val sorted = SortedList(observed, BookmarkAddedAtComparator())
+        val pipeline = BookmarkTablePipeline(source)
+        val observed = pipeline.observedBookmarks
+        val sorted = pipeline.sortedBookmarks
         val format = BeanTableFormat(
             BookmarkData::class.java,
             arrayOf("seen"),

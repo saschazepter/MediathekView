@@ -46,7 +46,6 @@ import mediathek.swing.table.GlazedSortKeysPersister
 import mediathek.swing.table.IconHeaderCellRenderer
 import mediathek.swing.table.TableUtils
 import mediathek.tool.EscapeKeyHandler
-import mediathek.tool.withReadLock
 import org.apache.logging.log4j.LogManager
 import org.kordamp.ikonli.fontawesome6.FontAwesomeRegular
 import org.kordamp.ikonli.fontawesome6.FontAwesomeSolid
@@ -59,6 +58,11 @@ import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
 import javax.swing.*
 import javax.swing.table.DefaultTableModel
+
+internal class BookmarkTablePipeline(sourceEventList: EventList<BookmarkData>) {
+    val observedBookmarks = ObservableElementList(sourceEventList, GlazedLists.observableConnector())
+    val sortedBookmarks = SortedList(observedBookmarks, BookmarkAddedAtComparator())
+}
 
 class BookmarkDialog(
     owner: JFrame,
@@ -272,20 +276,18 @@ class BookmarkDialog(
     }
 
     private fun disableSortableColumns(comparatorChooser: TableComparatorChooser<BookmarkData>) {
-        comparatorChooser.getComparatorsForColumn(COLUMN_NORMAL_QUALITY_URL).clear()
-        comparatorChooser.getComparatorsForColumn(COLUMN_HASHCODE).clear()
-        comparatorChooser.getComparatorsForColumn(COLUMN_NOTIZ).clear()
-        comparatorChooser.getComparatorsForColumn(COLUMN_SEEN).clear()
+        comparatorChooser.disableSortingForColumn(COLUMN_NORMAL_QUALITY_URL)
+        comparatorChooser.disableSortingForColumn(COLUMN_HASHCODE)
+        comparatorChooser.disableSortingForColumn(COLUMN_NOTIZ)
+        comparatorChooser.disableSortingForColumn(COLUMN_SEEN)
     }
 
     private fun setupTable() {
-        val bookmarkConnector = GlazedLists.observableConnector<BookmarkData>()
         val sourceEventList = bookmarks.list.getEventList()
 
-        sourceEventList.withReadLock {
-            observedBookmarks = ObservableElementList(sourceEventList, bookmarkConnector)
-            sortedBookmarks = SortedList(observedBookmarks, BookmarkAddedAtComparator())
-        }
+        val pipeline = BookmarkTablePipeline(sourceEventList)
+        observedBookmarks = pipeline.observedBookmarks
+        sortedBookmarks = pipeline.sortedBookmarks
 
         swingBookmarks = GlazedListsSwing.swingThreadProxyList(sortedBookmarks)
         tableModel = GlazedListsSwing.eventTableModel(swingBookmarks, getTableFormat())
