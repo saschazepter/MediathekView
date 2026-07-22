@@ -156,7 +156,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
     @Override
     public void putAll(Map<? extends K, ? extends List<V>> m) {
         // verify the contents of the given Map and ensure all key/value pairs agree with the keyFunction
-        for (final Entry<? extends K, ? extends List<V>> entry : m.entrySet()) {
+        for (final Map.Entry<? extends K, ? extends List<V>> entry : m.entrySet()) {
             final K key = entry.getKey();
             final List<V> value = entry.getValue();
 
@@ -232,7 +232,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
     /** {@inheritDoc} */
     @Override
-    public @NonNull Set<Entry<K, List<V>>> entrySet() {
+    public @NonNull Set<Map.Entry<K, List<V>>> entrySet() {
         if (entrySet == null)
             entrySet = new EntrySet();
 
@@ -311,7 +311,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
      * "write through" to the backing {@link EventList} which ensures that both
      * the {@link EventList} and this MultiMap always remain in sync.
      */
-    private class EntrySet extends AbstractSet<Entry<K, List<V>>> {
+    private class EntrySet extends AbstractSet<Map.Entry<K, List<V>>> {
         /** {@inheritDoc} */
         @Override
         public int size() {
@@ -320,7 +320,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
 
         /** {@inheritDoc} */
         @Override
-        public @NonNull Iterator<Entry<K, List<V>>> iterator() {
+        public @NonNull Iterator<Map.Entry<K, List<V>>> iterator() {
             return new EntrySetIterator(keyList.listIterator());
         }
 
@@ -356,7 +356,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
      * {@link Map.Entry} object each time {@link #next} is called. Identity is
      * not preserved.
      */
-    private class EntrySetIterator implements Iterator<Entry<K, List<V>>> {
+    private class EntrySetIterator implements Iterator<Map.Entry<K, List<V>>> {
 
         /** The delegate Iterator walks a List of keys for the MultiMap. */
         private final ListIterator<K> keyIter;
@@ -381,7 +381,7 @@ public class GroupingListMultiMap<K, V> implements DisposableMap<K, List<V>>, Li
          * Returns a new {@link Map.Entry} each time this method is called.
          */
         @Override
-        public Entry<K, List<V>> next() {
+        public Map.Entry<K, List<V>> next() {
             final K key = keyIter.next();
             return new MultiMapEntry(key, get(key));
         }

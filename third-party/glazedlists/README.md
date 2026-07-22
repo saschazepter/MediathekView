@@ -42,6 +42,7 @@ an intentional difference is documented below.
 | --- | --- | --- |
 | `TransactionList.java` | `TransactionList.kt` | Adds `withTransaction`; rollback-disabled construction is internal. |
 | `UndoRedoSupport.java` | `UndoRedoSupport.kt` | Uses Kotlin collection and functional-interface idioms. |
+| `DisposableMap.java` | `DisposableMap.kt` | Preserves the Java `Map` and disposal API while adding Kotlin's mutable-map marker; Java implementations qualify `Map.Entry` to avoid marker ambiguity. |
 | `Filterator.java` | `Filterator.kt` | Preserves Java SAM construction and the generic extraction method. |
 | `TextFilterator.java` | `TextFilterator.kt` | Preserves Java SAM construction and the `BiConsumer` default bridge. |
 | `TextFilterable.java` | `TextFilterable.kt` | Preserves Java SAM construction and the `Consumer` default bridge. |

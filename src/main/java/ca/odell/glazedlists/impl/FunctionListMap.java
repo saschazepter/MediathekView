@@ -259,7 +259,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
 
     /** @inheritDoc */
     @Override
-    public @NonNull Set<Entry<K, V>> entrySet() {
+    public @NonNull Set<Map.Entry<K, V>> entrySet() {
         if (this.entrySet == null)
             this.entrySet = new EntrySet();
 
@@ -377,7 +377,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
      * "write through" to the backing {@link EventList} which ensures that both
      * the {@link EventList} and this Map always remain in sync.
      */
-    private class EntrySet extends AbstractSet<Entry<K, V>> {
+    private class EntrySet extends AbstractSet<Map.Entry<K, V>> {
         /** {@inheritDoc} */
         @Override
         public int size() {
@@ -386,7 +386,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
 
         /** {@inheritDoc} */
         @Override
-        public @NonNull Iterator<Entry<K, V>> iterator() {
+        public @NonNull Iterator<Map.Entry<K, V>> iterator() {
             return new EntrySetIterator(keyList.listIterator());
         }
 
@@ -422,7 +422,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
      * {@link Map.Entry} object each time {@link #next} is called. Identity is
      * not preserved.
      */
-    private class EntrySetIterator implements Iterator<Entry<K, V>> {
+    private class EntrySetIterator implements Iterator<Map.Entry<K, V>> {
 
         /** The delegate Iterator walks a List of keys for the Map. */
         private final ListIterator<K> keyIter;
@@ -447,7 +447,7 @@ public class FunctionListMap<K, V> implements DisposableMap<K, V> {
          * Returns a new {@link Map.Entry} each time this method is called.
          */
         @Override
-        public Entry<K, V> next() {
+        public Map.Entry<K, V> next() {
             final K key = keyIter.next();
             return new MapEntry(key, get(key));
         }
