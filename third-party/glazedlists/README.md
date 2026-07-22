@@ -29,6 +29,9 @@ default remains a non-fair `ReentrantReadWriteLock`.
 Java object serialization support is intentionally omitted from the vendored
 Glazed Lists types because MediathekView does not serialize those objects.
 
+Unused internal `GlazedListsImpl` helpers for list concatenation, Latin
+diacritics access, and legacy `Date`/`Calendar` month handling are omitted.
+
 Upstream's `impl.testing` package is omitted from production sources. Its useful
 event-consistency behaviors are covered by JUnit tests under `src/test`;
 obsolete timing helpers and trivial test-data factories are not included.

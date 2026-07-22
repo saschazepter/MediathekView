@@ -5,7 +5,6 @@ package ca.odell.glazedlists.impl;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.impl.text.LatinDiacriticsStripper;
 
 import java.util.*;
 import java.util.function.Function;
@@ -26,16 +25,6 @@ public final class GlazedListsImpl {
     }
 
     // Utility Methods // // // // // // // // // // // // // // // // // // //
-
-    /**
-     * Concatenate two lists to create a third list.
-     */
-    public static <E> List<E> concatenate(List<E> a, List<E> b) {
-        List<E> aAndB = new ArrayList<>(a.size() + b.size());
-        aAndB.addAll(a);
-        aAndB.addAll(b);
-        return aAndB;
-    }
 
     /**
      * Replace all elements in the target {@link EventList} with the elements in
@@ -103,60 +92,6 @@ public final class GlazedListsImpl {
                 sourceObject = NEW_VALUE_NEEDED;
             }
         }
-    }
-
-    /**
-     * Get a character mapper array which strips the diacritics from Latin
-     * characters in order to normalize word spellings between Latin-based
-     * languages. This allows users from any Latin-based language to search
-     * the text of any other Latin-based language intuitively.
-     *
-     * <p>For example, with the returned character mapper array, a French
-     * user searching for the text "résumé" would match the English text
-     * "resume". Similarly, an English user searching for the text "resume"
-     * would match the French text "résumé." In this way, neither user needs to
-     * know the specifics of the foreign language they are searching, and thus
-     * the quality of their search increases.
-     */
-    public static char[] getLatinDiacriticsStripper() {
-        return LatinDiacriticsStripper.getMapper();
-    }
-
-    // Date Utility Methods // // // // // // // // // // // // // // // // //
-
-    /**
-     * Returns a new Date representing the first millisecond of the month for
-     * the given <code>date</code>.
-     */
-    public static Date getMonthBegin(Date date) {
-        final Calendar cal = Calendar.getInstance();
-        cal.setTime(date);
-        return getMonthStart(cal);
-    }
-
-    /**
-     * Adjusts the given <code>calendar</code> to the start of the month and
-     * returns the resulting {@link Date}.
-     */
-    public static Date getMonthStart(Calendar calendar) {
-        calendar.set(Calendar.DATE, 1);
-        calendar.set(Calendar.HOUR_OF_DAY, 0);
-        calendar.set(Calendar.MINUTE, 0);
-        calendar.set(Calendar.SECOND, 0);
-        calendar.set(Calendar.MILLISECOND, 0);
-        return calendar.getTime();
-    }
-
-    /**
-     * Returns <tt>true</tt> if the given <code>calendar</code> represents the
-     * first millisecond of a month; <tt>false</tt> otherwise.
-     */
-    public static boolean isMonthStart(Calendar calendar) {
-        return calendar.get(Calendar.MILLISECOND) == 0 &&
-               calendar.get(Calendar.SECOND) == 0 &&
-               calendar.get(Calendar.MINUTE) == 0 &&
-               calendar.get(Calendar.HOUR_OF_DAY) == 0 &&
-               calendar.get(Calendar.DATE) == 1;
     }
 
     /**
