@@ -76,9 +76,23 @@ internal class FunctionalInterfaceBridgeTest {
     }
 
     @Test
+    fun extractionAndElementChangeInterfacesRetainSamConstruction() {
+        val extracted = mutableListOf<Int>()
+        val filterator = Filterator<Int, String> { target, element -> target += element.length }
+        var changedElement: Any? = null
+        val changeHandler = ObservableElementChangeHandler<String> { changedElement = it }
+
+        filterator.getFilterValues(extracted, "value")
+        changeHandler.elementChanged(42)
+
+        assertEquals(listOf(5), extracted)
+        assertEquals(42, changedElement)
+    }
+
+    @Test
     fun mappingInterfacesDelegateThroughJdkFunctions() {
         val model = CollectionList.Model<String, Int> { parent -> parent.indices.toList() }
-        val evaluator = ThresholdList.Evaluator<String>(String::length)
+        val evaluator = ThresholdList.Evaluator(String::length)
 
         assertEquals(listOf(0, 1, 2), model.getChildren("abc"))
         assertEquals(listOf(0, 1, 2), (model as Function<String, List<Int>>).apply("abc"))
@@ -94,7 +108,7 @@ internal class FunctionalInterfaceBridgeTest {
         source.add("value")
 
         var receivedListEvent: ListEvent<String>? = null
-        val listListener = ListEventListener<String> { receivedListEvent = it }
+        val listListener = ListEventListener { receivedListEvent = it }
         (listListener as Consumer<ListEvent<String>>).accept(listEvent)
         assertSame(listEvent, receivedListEvent)
 
@@ -102,7 +116,7 @@ internal class FunctionalInterfaceBridgeTest {
         val matcherEditor = MatcherEditor.fromMatcher(matcher)
         val matcherEvent = MatcherEditor.Event(matcherEditor, MatcherEditor.Event.CHANGED, matcher)
         var receivedMatcherEvent: MatcherEditor.Event<String>? = null
-        val matcherListener = MatcherEditor.Listener<String> { receivedMatcherEvent = it }
+        val matcherListener = MatcherEditor.Listener { receivedMatcherEvent = it }
         (matcherListener as Consumer<MatcherEditor.Event<String>>).accept(matcherEvent)
         assertSame(matcherEvent, receivedMatcherEvent)
 
@@ -122,7 +136,7 @@ internal class FunctionalInterfaceBridgeTest {
     fun tableAdapterFactoryDelegatesThroughJdkFunction() {
         val tableModel = TestTableModel()
         val adapter = TestTableModelEventAdapter()
-        val factory = TableModelEventAdapter.Factory<String> { adapter }
+        val factory = TableModelEventAdapter.Factory { adapter }
 
         assertSame(adapter, factory.create(tableModel))
         assertSame(adapter, (factory as Function<AbstractTableModel, TableModelEventAdapter<String>>).apply(tableModel))

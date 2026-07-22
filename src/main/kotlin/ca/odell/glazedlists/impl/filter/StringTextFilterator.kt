@@ -12,7 +12,7 @@ import ca.odell.glazedlists.TextFilterator
  * @author [Jesse Wilson](mailto:jesse@swank.ca)
  */
 open class StringTextFilterator<E> : TextFilterator<E> {
-    override fun getFilterStrings(baseList: MutableList<String>, element: E?) {
+    override fun getFilterStrings(baseList: MutableList<String>, element: E) {
         if (element != null) baseList.add(element.toString())
     }
 }
