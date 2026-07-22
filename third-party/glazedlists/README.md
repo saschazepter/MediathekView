@@ -53,6 +53,9 @@ an intentional difference is documented below.
 | `event/ListEventPublisher.java` | `event/ListEventPublisher.kt` | Preserves Java implementation and nullable object-identity dependency parameters. |
 | `impl/adt/barcode2/Element.java` | `impl/adt/barcode2/Element.kt` | Preserves Java constants and node methods while exposing color and sorted state as Kotlin properties. |
 | `impl/adt/barcode2/ListToByteCoder.java` | `impl/adt/barcode2/ListToByteCoder.kt` | Rejects duplicate colors, documents the seven-bit capacity, omits unused decoding methods, and keeps `colorAsIndex` Kotlin-internal with a public JVM static bridge for Java callers. |
+| `impl/adt/barcode2/BciiNode.java` | — | Removed because the obsolete M4 template node had no callers outside the retired template family. |
+| `impl/adt/barcode2/BciiTree.java` | — | Removed because the obsolete M4 template tree had no callers outside the retired template family. |
+| `impl/adt/barcode2/BciiTreeIterator.java` | — | Removed because the obsolete M4 template iterator had no callers outside the retired template family. |
 | `impl/adt/barcode2/BciiTreeAsList.java` | — | Removed with its unused generated variants; the obsolete M4 macro files and include directives were also removed because the build has no source-generation hook. |
 | `impl/adt/barcode2/SimpleTreeAsList.java` | — | Removed because the generated mutable-list adapter had no production or test callers. |
 | `impl/adt/barcode2/FourColorTreeAsList.java` | — | Removed because the generated mutable-list adapter had no production or test callers. |
