@@ -15,6 +15,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.JPanel
+import javax.swing.SwingUtilities
 import javax.swing.JTable
 
 internal class FilmTableReloaderTest {
@@ -67,8 +68,20 @@ internal class FilmTableReloaderTest {
         }
 
         try {
-            reloader.requestZeitraumReload()
-            reloader.requestTableReload()
+            val swingThreadBlocked = CountDownLatch(1)
+            val releaseSwingThread = CountDownLatch(1)
+            SwingUtilities.invokeLater {
+                swingThreadBlocked.countDown()
+                releaseSwingThread.await(5, TimeUnit.SECONDS)
+            }
+
+            assertTrue(swingThreadBlocked.await(5, TimeUnit.SECONDS))
+            try {
+                reloader.requestZeitraumReload()
+                reloader.requestTableReload()
+            } finally {
+                releaseSwingThread.countDown()
+            }
 
             assertTrue(completed.await(5, TimeUnit.SECONDS))
             assertEquals(1, blacklistApplications.get())
