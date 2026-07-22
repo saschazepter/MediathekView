@@ -1,6 +1,7 @@
 package ca.odell.glazedlists
 
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
@@ -23,5 +24,19 @@ internal class TypeSafetyListenerTest {
         GlazedLists.typeSafetyListener(source, setOf<Class<*>>(String::class.java))
 
         assertThrows(IllegalArgumentException::class.java) { source += null }
+    }
+
+    @Test
+    fun validatesUpdatesAndIncludesTheOffendingIndexAndValue() {
+        val source = BasicEventList<Any>()
+        source += "allowed"
+        GlazedLists.typeSafetyListener(source, setOf<Class<*>>(String::class.java))
+
+        val exception = assertThrows(IllegalArgumentException::class.java) { source[0] = 42 }
+
+        assertEquals(
+            "Element with illegal type class java.lang.Integer updated at index 0: 42",
+            exception.message,
+        )
     }
 }

@@ -30,7 +30,7 @@ class DefaultEventSelectionModel<E>(
     private val disposeSource: Boolean,
 ) : AdvancedListSelectionModel<E> {
     private val listSelection: ListSelection<E>
-    private var enabled = true
+    override var enabled = true
     private val selectionListener: ListSelection.Listener = SwingSelectionListener()
     private val listeners: MutableList<ListSelectionListener> = CopyOnWriteArrayList()
     private var valueIsAdjusting = false
@@ -49,47 +49,45 @@ class DefaultEventSelectionModel<E>(
 
     constructor(source: EventList<E>) : this(source, false)
 
-    override fun getSelected(): EventList<E> {
-        source.readWriteLock.readLock().lock()
-        return try {
-            listSelection.selected
-        } finally {
-            source.readWriteLock.readLock().unlock()
+    override val selected: EventList<E>
+        get() {
+            source.readWriteLock.readLock().lock()
+            return try {
+                listSelection.selected
+            } finally {
+                source.readWriteLock.readLock().unlock()
+            }
         }
-    }
 
-    override fun getTogglingSelected(): EventList<E> {
-        source.readWriteLock.readLock().lock()
-        return try {
-            listSelection.togglingSelected
-        } finally {
-            source.readWriteLock.readLock().unlock()
+    override val togglingSelected: EventList<E>
+        get() {
+            source.readWriteLock.readLock().lock()
+            return try {
+                listSelection.togglingSelected
+            } finally {
+                source.readWriteLock.readLock().unlock()
+            }
         }
-    }
 
-    override fun getDeselected(): EventList<E> {
-        source.readWriteLock.readLock().lock()
-        return try {
-            listSelection.deselected
-        } finally {
-            source.readWriteLock.readLock().unlock()
+    override val deselected: EventList<E>
+        get() {
+            source.readWriteLock.readLock().lock()
+            return try {
+                listSelection.deselected
+            } finally {
+                source.readWriteLock.readLock().unlock()
+            }
         }
-    }
 
-    override fun getTogglingDeselected(): EventList<E> {
-        source.readWriteLock.readLock().lock()
-        return try {
-            listSelection.togglingDeselected
-        } finally {
-            source.readWriteLock.readLock().unlock()
+    override val togglingDeselected: EventList<E>
+        get() {
+            source.readWriteLock.readLock().lock()
+            return try {
+                listSelection.togglingDeselected
+            } finally {
+                source.readWriteLock.readLock().unlock()
+            }
         }
-    }
-
-    override fun setEnabled(enabled: Boolean) {
-        this.enabled = enabled
-    }
-
-    override fun getEnabled(): Boolean = enabled
 
     private inner class SwingSelectionListener : ListSelection.Listener {
         override fun selectionChanged(changeStart: Int, changeEnd: Int) {
