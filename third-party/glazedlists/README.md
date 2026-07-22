@@ -52,6 +52,7 @@ an intentional difference is documented below.
 | `ObservableElementChangeHandler.java` | `ObservableElementChangeHandler.kt` | Preserves Java SAM construction and the intentionally object-typed change callback. |
 | `CompositeList.java` | `CompositeList.kt` | Preserves Java construction, CompositeList-specific extensibility, shared publisher/lock validation, identity-based member removal, and the method-generic member-list factory; Kotlin adds its standard mapped-collection bridges. |
 | `FreezableList.java` | `FreezableList.kt` | Preserves snapshot isolation while frozen, thaw event reconstruction, source reconnection, write protection, lifecycle diagnostics, Java construction, and the `size()` descriptor; Kotlin adds its standard mapped-collection removal bridges. |
+| `PluggableList.java` | `PluggableList.kt` | Preserves both Java constructors, replaceable-source event rebuilding, infrastructure validation, write-through behavior, disposal diagnostics, and Java subclassing, including open `size()` and indexed-removal descriptors. |
 | `PopularityList.java` | — | Removed because the frequency-ranked list had no production consumers or subclasses. |
 | `Sequencers.java` | `Sequencers.kt` | Preserves the Java-static month factory, construction-time time zone capture, month-boundary and overlap handling, null diagnostics, and non-instantiable utility-class contract. |
 | `SyncListener.java` | `SyncListener.kt` | Preserves target drift detection, incremental event translation, idempotent disposal, and Java subclassing. |
