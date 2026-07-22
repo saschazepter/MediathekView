@@ -21,6 +21,7 @@ package mediathek.gui.abo
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.FilterList
 import ca.odell.glazedlists.SortedList
+import ca.odell.glazedlists.gui.AbstractTableComparatorChooser
 import ca.odell.glazedlists.matchers.SetMatcherEditor
 import ca.odell.glazedlists.swing.AdvancedTableModel
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel
@@ -62,7 +63,12 @@ class AboTableBinding(
         selectionModel.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
         table.selectionModel = selectionModel
 
-        comparatorChooser = TableComparatorChooser.install(table, sortedAbos, TableComparatorChooser.SINGLE_COLUMN, tableFormat)
+        comparatorChooser = TableComparatorChooser.install(
+            table,
+            sortedAbos,
+            AbstractTableComparatorChooser.SINGLE_COLUMN,
+            tableFormat,
+        )
         sortPersister = GlazedSortKeysPersister(SORT_CONFIG_PREFIX, comparatorChooser)
         sortPersister.restoreSortState()
         comparatorChooser.addSortActionListener { sortPersister.saveSortState() }

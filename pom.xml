@@ -555,6 +555,9 @@
                                 <source>target/generated-sources/annotations</source>
                             </sourceDirs>
                             <jvmTarget>${kotlin.language.target}</jvmTarget>
+                            <args>
+                                <arg>-Xemit-jvm-type-annotations</arg>
+                            </args>
                         </configuration>
                     </execution>
                     <execution>

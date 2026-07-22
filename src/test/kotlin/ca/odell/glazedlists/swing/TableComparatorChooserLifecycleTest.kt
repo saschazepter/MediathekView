@@ -162,7 +162,7 @@ internal class TableComparatorChooserLifecycleTest {
     ) : AbstractTableModel(), AdvancedTableModel<Row> {
         override fun getRowCount() = 0
 
-        override fun getColumnCount() = currentTableFormat.columnCount
+        override fun getColumnCount() = currentTableFormat.getColumnCount()
 
         override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = null
 

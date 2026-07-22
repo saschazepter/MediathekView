@@ -317,7 +317,7 @@ class FilmTableBinding(
 
         override fun getRowCount(): Int = elements.size
 
-        override fun getColumnCount(): Int = format.columnCount
+        override fun getColumnCount(): Int = format.getColumnCount()
 
         override fun getColumnName(column: Int): String = format.getColumnName(column)
 

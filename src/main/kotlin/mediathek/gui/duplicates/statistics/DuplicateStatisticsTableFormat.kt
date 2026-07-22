@@ -12,9 +12,9 @@ class DuplicateStatisticsTableFormat : AdvancedTableFormat<FilmStatistics> {
         else -> throw IndexOutOfBoundsException(column)
     }
 
-    override fun getColumnValue(stats: FilmStatistics, column: Int): Any? = when (column) {
-        0 -> stats.sender
-        1 -> stats.count
+    override fun getColumnValue(baseObject: FilmStatistics, column: Int): Any? = when (column) {
+        0 -> baseObject.sender
+        1 -> baseObject.count
         else -> null
     }
 

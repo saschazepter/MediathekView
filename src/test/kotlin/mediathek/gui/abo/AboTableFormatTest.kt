@@ -37,7 +37,7 @@ class AboTableFormatTest {
         }
         val format = AboTableFormat { 42 }
 
-        assertEquals(DatenAbo.MAX_ELEM, format.columnCount)
+        assertEquals(DatenAbo.MAX_ELEM, format.getColumnCount())
         assertEquals("Name", format.getColumnName(DatenAbo.ABO_NAME))
         assertEquals(Int::class.javaObjectType, format.getColumnClass(DatenAbo.ABO_MINDESTDAUER))
         assertEquals(Int::class.javaObjectType, format.getColumnClass(DatenAbo.ABO_FILM_COUNT))

@@ -209,7 +209,7 @@ internal class FilmTableBindingTest {
         }
         val format = FilmTableFormat()
 
-        assertEquals(15, format.columnCount)
+        assertEquals(15, format.getColumnCount())
         assertEquals("Sender", format.getColumnName(FilmColumn.SENDER.index))
         assertEquals(DatumFilm::class.java, format.getColumnClass(FilmColumn.DATE.index))
         assertEquals("ARD", format.getColumnValue(film, FilmColumn.SENDER.index))

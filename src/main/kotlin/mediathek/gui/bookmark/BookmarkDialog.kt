@@ -22,6 +22,7 @@ import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.ObservableElementList
 import ca.odell.glazedlists.SortedList
+import ca.odell.glazedlists.gui.AbstractTableComparatorChooser
 import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.impl.beans.BeanTableFormat
 import ca.odell.glazedlists.swing.AdvancedTableModel
@@ -306,7 +307,7 @@ class BookmarkDialog(
         comparatorChooser = TableComparatorChooser.install(
             table,
             sortedBookmarks,
-            TableComparatorChooser.MULTIPLE_COLUMN_MOUSE,
+            AbstractTableComparatorChooser.MULTIPLE_COLUMN_MOUSE,
         )
         disableSortableColumns(comparatorChooser)
 

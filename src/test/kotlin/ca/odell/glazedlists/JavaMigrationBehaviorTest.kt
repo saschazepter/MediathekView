@@ -7,10 +7,16 @@ import ca.odell.glazedlists.impl.filter.StringLengthComparator
 import ca.odell.glazedlists.impl.filter.StringTextFilterator
 import ca.odell.glazedlists.impl.functions.ConstantFunction
 import ca.odell.glazedlists.impl.sort.*
+import ca.odell.glazedlists.swing.GlazedListsSwing
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class JavaMigrationBehaviorTest {
+    @Test
+    fun glazedListsSwingProxyCheckPreservesNullBehavior() {
+        assertFalse(GlazedListsSwing.isSwingThreadProxyList(null))
+    }
+
     @Test
     fun simpleFunctionListRejectsNullFunctionWithTheExistingMessage() {
         val failure = assertThrows(NullPointerException::class.java) {

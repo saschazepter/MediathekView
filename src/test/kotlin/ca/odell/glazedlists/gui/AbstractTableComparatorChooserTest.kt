@@ -22,13 +22,16 @@ import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.impl.gui.SortingStrategy
 import ca.odell.glazedlists.swing.TableComparatorChooser
+import org.jspecify.annotations.Nullable
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNotSame
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.lang.reflect.InvocationTargetException
 import javax.swing.JTable
 import javax.swing.SwingUtilities
 
@@ -257,6 +260,67 @@ internal class AbstractTableComparatorChooserTest {
 
         assertEquals(listOf(1), chooser.sortKeys.map { it.column })
         assertEquals(true, chooser.sortKeys.single().reverse)
+    }
+
+    @Test
+    fun sortKeysAreReturnedAsAnImmutableSnapshot() {
+        val chooser = TestChooser(SortedList(BasicEventList(), null), twoColumnRowFormat())
+        chooser.appendComparator(0, 0, false)
+        val snapshot = chooser.sortKeys
+
+        chooser.clearComparator()
+
+        assertEquals(listOf(AbstractTableComparatorChooser.SortKey(0, 0, false)), snapshot)
+        assertThrows(UnsupportedOperationException::class.java) {
+            (snapshot as MutableList).clear()
+        }
+    }
+
+    @Test
+    fun sortKeyKeepsJavaRecordStringRepresentation() {
+        val sortKey = AbstractTableComparatorChooser.SortKey(1, 2, true)
+
+        assertEquals("SortKey[column=1, comparatorIndex=2, reverse=true]", sortKey.toString())
+    }
+
+    @Test
+    fun nullableJavaApiContractsKeepJSpecifyTypeAnnotations() {
+        val columnValueReturn = TableFormat::class.java
+            .getMethod("getColumnValue", Any::class.java, Int::class.javaPrimitiveType!!)
+            .annotatedReturnType
+        val columnComparatorReturn = AdvancedTableFormat::class.java
+            .getMethod("getColumnComparator", Int::class.javaPrimitiveType!!)
+            .annotatedReturnType
+        val comparatorField = AbstractTableComparatorChooser::class.java
+            .getDeclaredField("sortedListComparator")
+            .annotatedType
+        val comparatorParameter = AbstractTableComparatorChooser::class.java
+            .getDeclaredMethod("redetectComparator", Comparator::class.java)
+            .annotatedParameterTypes
+            .single()
+
+        assertTrue(columnValueReturn.isAnnotationPresent(Nullable::class.java))
+        assertTrue(columnComparatorReturn.isAnnotationPresent(Nullable::class.java))
+        assertTrue(comparatorField.isAnnotationPresent(Nullable::class.java))
+        assertTrue(comparatorParameter.isAnnotationPresent(Nullable::class.java))
+    }
+
+    @Test
+    fun replacingSortKeysKeepsJavaNullValidationMessages() {
+        val chooser = TestChooser(SortedList(BasicEventList(), null), twoColumnRowFormat())
+        val method = AbstractTableComparatorChooser::class.java.getMethod("setSortKeys", List::class.java)
+
+        val nullListFailure = assertThrows(InvocationTargetException::class.java) {
+            method.invoke(chooser, null)
+        }
+        assertInstanceOf(NullPointerException::class.java, nullListFailure.cause)
+        assertEquals("sortKeys", nullListFailure.cause?.message)
+
+        val nullKeyFailure = assertThrows(InvocationTargetException::class.java) {
+            method.invoke(chooser, listOf(null))
+        }
+        assertInstanceOf(NullPointerException::class.java, nullKeyFailure.cause)
+        assertEquals("sortKeys contains null", nullKeyFailure.cause?.message)
     }
 
     private class TestChooser(
