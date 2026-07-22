@@ -152,5 +152,6 @@ an intentional difference is documented below.
 | `matchers/SetMatcherEditor.java` | `matchers/SetMatcherEditor.kt` | Preserves blacklist/whitelist modes, defensive match-set copies, and event classification. |
 | `matchers/TextMatcherEditor.java` | `matchers/TextMatcherEditor.kt` | Preserves matching modes, strategy singletons, and matcher-event classification. |
 | `matchers/ThresholdMatcherEditor.java` | `matchers/ThresholdMatcherEditor.kt` | Preserves comparison operations, nullable thresholds, comparator fallback, and event classification. |
+| `swing/SearchEngineTextFieldMatcherEditor.java` | `swing/SearchEngineTextFieldMatcherEditor.kt` | Preserves initial and action-triggered filtering, listener disposal, nullable filterators, and Java subclassing. |
 
 See `LICENSE` in this directory for the upstream licensing terms.
