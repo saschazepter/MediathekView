@@ -5,7 +5,6 @@ package ca.odell.glazedlists.impl;
 
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.GlazedLists;
-import ca.odell.glazedlists.impl.adt.KeyedCollection;
 import ca.odell.glazedlists.impl.text.LatinDiacriticsStripper;
 
 import java.util.*;
@@ -181,31 +180,5 @@ public final class GlazedListsImpl {
      */
     public static <E> Function<E,E> identityFunction() {
         return Function.identity();
-    }
-
-    /**
-     * Returns a {@link KeyedCollection} optimized for the values which can be
-     * compared.
-     *
-     * @param positionComparator a Comparator to order position objects
-     * @param valueComparator a Comparator to order value objects
-     * @return a {@link KeyedCollection} optimized for values which can be
-     *      compared
-     */
-    public static <P, V> KeyedCollection<P, V> keyedCollection(Comparator<P> positionComparator, Comparator<V> valueComparator) {
-        return new KeyedCollection<>( positionComparator,
-            new TreeMap<>( valueComparator ) );
-    }
-
-    /**
-     * Returns a {@link KeyedCollection} optimized for the values which cannot
-     * be compared.
-     *
-     * @param positionComparator a Comparator to order position objects
-     * @return a {@link KeyedCollection} optimized for values which cannot be
-     *      compared
-     */
-    public static <P, V> KeyedCollection<P, V> keyedCollection(Comparator<P> positionComparator) {
-        return new KeyedCollection<>(positionComparator, new HashMap<>());
     }
 }
