@@ -140,12 +140,6 @@ public class FourColorTree <  T0>   {
         this(  coder,    (Comparator<? super T0>) GlazedLists.comparableComparator());
     }
 
-
-    public ListToByteCoder<?> getCoder() {
-        return coder;
-    }
-
-
     public Comparator<? super T0> getComparator() {
         return comparator;
     }

@@ -9,10 +9,6 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-/*
- m4_include(JavaMacros.m4)
- m4_include(TreeMacros.m4)
-*/
 /*[ BEGIN_M4_JAVA ]*/
 
 /**
@@ -88,12 +84,6 @@ public class BciiTree/*[ TYPELIST_START ]*/ <T0,T1> /*[ TYPELIST_END ]*/ {
     public BciiTree/**/(/*[ COLORED_START ]*/ ListToByteCoder<?> coder /*[ COLORED_END ]*/) {
         this(/*[ COLORED_START ]*/ coder, /*[ COLORED_END ]*/ (Comparator<? super T0>) GlazedLists.comparableComparator());
     }
-
-    /*[ COLORED_START ]*/
-    public ListToByteCoder<?> getCoder() {
-        return coder;
-    }
-    /*[ COLORED_END ]*/
 
     public Comparator<? super T0> getComparator() {
         return comparator;

@@ -6,10 +6,6 @@ package ca.odell.glazedlists.impl.adt.barcode2;
 import java.util.Arrays;
 import java.util.List;
 
-/*
- m4_include(JavaMacros.m4)
- m4_include(TreeMacros.m4)
-*/
 /*[ BEGIN_M4_JAVA ]*/
 
 /**
