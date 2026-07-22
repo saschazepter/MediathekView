@@ -19,6 +19,8 @@ package ca.odell.glazedlists.impl
 
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
+import org.junit.jupiter.api.Assertions.assertNotSame
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Test
 import javax.swing.ImageIcon
 import javax.swing.UIManager
@@ -27,10 +29,28 @@ import javax.swing.plaf.metal.MetalLookAndFeel
 
 internal class SortIconFactoryTest {
     @Test
-    fun loadIconsUsesCurrentMetalTheme() {
-        val defaultIconsField = SortIconFactory::class.java.getDeclaredField("defaultIcons").apply {
-            isAccessible = true
+    fun defaultIconsAreCachedWhileExplicitPathLoadsRemainIndependent() {
+        val defaultIconsField = defaultIconsField()
+        val previousIcons = defaultIconsField[null]
+
+        try {
+            defaultIconsField[null] = null
+
+            val firstDefaultLoad = SortIconFactory.loadIcons()
+            val secondDefaultLoad = SortIconFactory.loadIcons()
+            val firstExplicitLoad = SortIconFactory.loadIcons("resources/aqua")
+            val secondExplicitLoad = SortIconFactory.loadIcons("resources/aqua")
+
+            assertSame(firstDefaultLoad, secondDefaultLoad)
+            assertNotSame(firstExplicitLoad, secondExplicitLoad)
+        } finally {
+            defaultIconsField[null] = previousIcons
         }
+    }
+
+    @Test
+    fun loadIconsUsesCurrentMetalTheme() {
+        val defaultIconsField = defaultIconsField()
         val previousIcons = defaultIconsField[null]
         val previousLookAndFeel = UIManager.getLookAndFeel()
         val previousTheme = MetalLookAndFeel.getCurrentTheme()
@@ -53,4 +73,10 @@ internal class SortIconFactoryTest {
             defaultIconsField[null] = previousIcons
         }
     }
+
+    private fun defaultIconsField() =
+        SortIconFactory::class.java.declaredClasses
+            .single { it.simpleName == "Loader" }
+            .getDeclaredField("defaultIcons")
+            .apply { isAccessible = true }
 }

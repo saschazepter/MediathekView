@@ -166,12 +166,12 @@ internal class TableComparatorChooserLifecycleTest {
 
         override fun getValueAt(rowIndex: Int, columnIndex: Int): Any? = null
 
-        override fun getTableFormat(): TableFormat<in Row> = currentTableFormat
-
-        override fun setTableFormat(tableFormat: TableFormat<in Row>) {
-            currentTableFormat = tableFormat
-            fireTableStructureChanged()
-        }
+        override var tableFormat: TableFormat<in Row>
+            get() = currentTableFormat
+            set(value) {
+                currentTableFormat = value
+                fireTableStructureChanged()
+            }
 
         override fun getElementAt(index: Int): Row = error("model contains no rows")
 

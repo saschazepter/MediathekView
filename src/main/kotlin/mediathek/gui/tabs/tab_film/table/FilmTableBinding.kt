@@ -304,14 +304,14 @@ class FilmTableBinding(
     ) : AbstractTableModel(), AdvancedTableModel<DatenFilm> {
         private var elements: List<DatenFilm> = emptyList()
 
-        override fun getTableFormat(): TableFormat<in DatenFilm> = format
-
-        override fun setTableFormat(tableFormat: TableFormat<in DatenFilm>) {
-            require(tableFormat is AdvancedTableFormat<*>)
-            @Suppress("UNCHECKED_CAST")
-            format = tableFormat as AdvancedTableFormat<DatenFilm>
-            fireTableStructureChanged()
-        }
+        override var tableFormat: TableFormat<in DatenFilm>
+            get() = format
+            set(value) {
+                require(value is AdvancedTableFormat<*>)
+                @Suppress("UNCHECKED_CAST")
+                format = value as AdvancedTableFormat<DatenFilm>
+                fireTableStructureChanged()
+            }
 
         override fun getElementAt(index: Int): DatenFilm = elements[index]
 
