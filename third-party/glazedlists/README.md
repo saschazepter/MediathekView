@@ -47,6 +47,7 @@ an intentional difference is documented below.
 | `TextFilterator.java` | `TextFilterator.kt` | Preserves Java SAM construction and the `BiConsumer` default bridge. |
 | `TextFilterable.java` | `TextFilterable.kt` | Preserves Java SAM construction and the `Consumer` default bridge. |
 | `ObservableElementChangeHandler.java` | `ObservableElementChangeHandler.kt` | Preserves Java SAM construction and the intentionally object-typed change callback. |
+| `Sequencers.java` | `Sequencers.kt` | Preserves the Java-static month factory, construction-time time zone capture, month-boundary and overlap handling, null diagnostics, and non-instantiable utility-class contract. |
 | `SyncListener.java` | `SyncListener.kt` | Preserves target drift detection, incremental event translation, idempotent disposal, and Java subclassing. |
 | `event/ListEventListener.java` | `event/ListEventListener.kt` | Preserves Java SAM construction, `EventListener`, and the `Consumer` default bridge. |
 | `event/ListEventPublisher.java` | `event/ListEventPublisher.kt` | Preserves Java implementation and nullable object-identity dependency parameters. |
