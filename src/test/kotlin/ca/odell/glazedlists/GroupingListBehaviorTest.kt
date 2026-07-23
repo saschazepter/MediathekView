@@ -19,6 +19,8 @@ package ca.odell.glazedlists
 
 import ca.odell.glazedlists.event.ListEvent
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
@@ -41,10 +43,12 @@ internal class GroupingListBehaviorTest {
         val source = BasicEventList<String>().apply { add("a") }
 
         GroupingList(source).use { grouping ->
+            val removedGroupView = grouping[0]
             val changeTypes = grouping.recordChangeTypes()
             source.removeAt(0)
 
             assertTrue(grouping.isEmpty())
+            assertTrue(removedGroupView.isEmpty())
             assertEquals(listOf(ListEvent.DELETE), changeTypes)
         }
     }
@@ -54,10 +58,12 @@ internal class GroupingListBehaviorTest {
         val source = BasicEventList<String>().apply { add("a") }
 
         GroupingList(source, String.CASE_INSENSITIVE_ORDER).use { grouping ->
+            val originalGroup = grouping[0]
             val changeTypes = grouping.recordChangeTypes()
             source[0] = "A"
 
             assertEquals(listOf(listOf("A")), grouping.map { it.toList() })
+            assertSame(originalGroup, grouping[0])
             assertEquals(listOf(ListEvent.UPDATE), changeTypes)
         }
     }
@@ -76,6 +82,59 @@ internal class GroupingListBehaviorTest {
                 assertEquals(listOf(listOf("b"), listOf("c")), grouping.map { it.toList() })
             }
         }
+    }
+
+    @Test
+    fun naturalFactoryAndGroupLookupUseComparatorDefinedGroups() {
+        val source = BasicEventList<String>().apply { addAll(listOf("b", "a", "b", "c")) }
+        val grouping = GroupingList.create(source)
+
+        assertEquals(listOf(listOf("a"), listOf("b", "b"), listOf("c")), grouping.map { it.toList() })
+        assertEquals(1, grouping.indexOfGroup("b"))
+        assertEquals(-1, grouping.indexOfGroup("missing"))
+    }
+
+    @Test
+    fun groupListsWriteThroughAndRemovedGroupsAreReturnedAsCopies() {
+        val source = BasicEventList<String>().apply { addAll(listOf("b", "a", "a", "c")) }
+        val grouping = GroupingList(source)
+        val aGroup = grouping[0]
+
+        assertEquals("a", aGroup.removeAt(0))
+        aGroup.add("a")
+        assertEquals(listOf("a", "a"), grouping[0])
+
+        val removed = grouping.removeAt(1)
+        assertEquals(listOf("b"), removed)
+        assertEquals(listOf(listOf("a", "a"), listOf("c")), grouping.map { it.toList() })
+        assertFalse(source.contains("b"))
+
+        removed.clear()
+        assertEquals(listOf(listOf("a", "a"), listOf("c")), grouping.map { it.toList() })
+    }
+
+    @Test
+    fun addingAListDistributesItsValuesRegardlessOfRequestedGroupIndex() {
+        val source = BasicEventList<String>().apply { addAll(listOf("b", "a")) }
+        val grouping = GroupingList(source)
+
+        grouping.add(0, listOf("c", "a"))
+
+        assertEquals(listOf(listOf("a", "a"), listOf("b"), listOf("c")), grouping.map { it.toList() })
+    }
+
+    @Test
+    fun comparatorReplacementRebuildsGroupsAndNullRestoresNaturalGrouping() {
+        val source = BasicEventList<String>().apply { addAll(listOf("A", "a", "B")) }
+        val grouping = GroupingList(source, String.CASE_INSENSITIVE_ORDER)
+
+        assertEquals(listOf(listOf("A", "a"), listOf("B")), grouping.map { it.toList() })
+
+        grouping.setComparator(naturalOrder())
+        assertEquals(listOf(listOf("A"), listOf("B"), listOf("a")), grouping.map { it.toList() })
+
+        grouping.setComparator(null)
+        assertEquals(listOf(listOf("A"), listOf("B"), listOf("a")), grouping.map { it.toList() })
     }
 
     private fun <E> EventList<E>.recordChangeTypes() = mutableListOf<Int>().also { changeTypes ->
