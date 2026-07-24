@@ -3,6 +3,7 @@
 - **FEATURE:** verringerter Speicherverbrauch der intern genutzten Caches.
 - **FEATURE:** Lokalisierte ARTE-Senderlogos im Tab *Filme* zeigen nun zusätzlich die jeweilige Sprachkennung an.
 - **BUGFIX:** `HQ`-, `UT`- und `Geo`-Spalten-Icons wurden nicht vollständig aus der `Titel`-Spalte ausgeblendet, wenn diese sichtbar waren.
+- **BUGFIX:** Sender-Checkboxliste reagiert nun weniger sensibel auf die Position der Mausklicks.
 
 # **15.0.0**
 - **Diese Version ist NICHT abwärtskompatibel mit älteren MediathekView-Versionen.**
