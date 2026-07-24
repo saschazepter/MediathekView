@@ -19,12 +19,9 @@
 package mediathek.gui.bookmark
 
 import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.ObservableElementList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.gui.AbstractTableComparatorChooser
-import ca.odell.glazedlists.gui.TableFormat
-import ca.odell.glazedlists.impl.beans.BeanTableFormat
 import ca.odell.glazedlists.swing.AdvancedTableModel
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel
 import ca.odell.glazedlists.swing.*
@@ -61,7 +58,7 @@ import javax.swing.*
 import javax.swing.table.DefaultTableModel
 
 internal class BookmarkTablePipeline(sourceEventList: EventList<BookmarkData>) {
-    val observedBookmarks = ObservableElementList(sourceEventList, GlazedLists.observableConnector())
+    val observedBookmarks = ObservableElementList(sourceEventList, BookmarkObservableConnector())
     val sortedBookmarks = SortedList(observedBookmarks, BookmarkAddedAtComparator())
 }
 
@@ -246,36 +243,6 @@ class BookmarkDialog(
             )
         }
 
-    private fun getTableFormat(): TableFormat<BookmarkData> {
-        val propertyNames = arrayOf(
-            "seen",
-            "sender",
-            "thema",
-            "title",
-            "dauer",
-            "sendedatum",
-            "AvailableUntil",
-            "NormalQualityUrl",
-            "note",
-            "filmHashCode",
-            "BookmarkAdded",
-        )
-        val columnLabels = arrayOf(
-            "Gesehen",
-            "Sender",
-            "Thema",
-            "Titel",
-            "Dauer",
-            "Sendedatum",
-            "Verfügbar bis",
-            "URL",
-            "Notiz",
-            "Hash Code",
-            "hinzugefügt am",
-        )
-        return BeanTableFormat(BookmarkData::class.java, propertyNames, columnLabels)
-    }
-
     private fun disableSortableColumns(comparatorChooser: TableComparatorChooser<BookmarkData>) {
         comparatorChooser.disableSortingForColumn(COLUMN_NORMAL_QUALITY_URL)
         comparatorChooser.disableSortingForColumn(COLUMN_HASHCODE)
@@ -291,7 +258,7 @@ class BookmarkDialog(
         sortedBookmarks = pipeline.sortedBookmarks
 
         swingBookmarks = sortedBookmarks.swingThreadProxyList()
-        tableModel = swingBookmarks.eventTableModel(getTableFormat())
+        tableModel = swingBookmarks.eventTableModel(BookmarkTableFormat)
         selectionModel = DefaultEventSelectionModel(swingBookmarks)
         selectionModel.addListSelectionListener { event ->
             if (!event.valueIsAdjusting) {

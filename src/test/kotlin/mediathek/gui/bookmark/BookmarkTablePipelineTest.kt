@@ -1,10 +1,9 @@
 package mediathek.gui.bookmark
 
 import ca.odell.glazedlists.BasicEventList
-import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.ObservableElementList
 import ca.odell.glazedlists.SortedList
-import ca.odell.glazedlists.impl.beans.BeanTableFormat
+import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel
 import ca.odell.glazedlists.swing.*
 import mediathek.tool.withWriteLock
@@ -18,6 +17,63 @@ import javax.swing.SwingUtilities
 
 class BookmarkTablePipelineTest {
     @Test
+    fun `typed table format exposes bookmark values without bean lookup`() {
+        val added = LocalDate.of(2026, 2, 3)
+        val availableUntil = LocalDate.of(2026, 3, 4)
+        val bookmark = BookmarkData().apply {
+            seen = true
+            originalSender = "Sender"
+            originalThema = "Thema"
+            originalTitle = "Titel"
+            this.availableUntil = availableUntil
+            note = "Notiz"
+            filmHashCode = "hash"
+            bookmarkAdded = added
+        }
+
+        assertEquals(11, BookmarkTableFormat.getColumnCount())
+        assertEquals(
+            listOf(
+                "Gesehen",
+                "Sender",
+                "Thema",
+                "Titel",
+                "Dauer",
+                "Sendedatum",
+                "Verfügbar bis",
+                "URL",
+                "Notiz",
+                "Hash Code",
+                "hinzugefügt am",
+            ),
+            (0 until BookmarkTableFormat.getColumnCount()).map(BookmarkTableFormat::getColumnName),
+        )
+        assertEquals(
+            listOf(true, "Sender", "Thema", "Titel", -1, null, availableUntil, null, "Notiz", "hash", added),
+            (0 until BookmarkTableFormat.getColumnCount()).map { BookmarkTableFormat.getColumnValue(bookmark, it) },
+        )
+    }
+
+    @Test
+    fun `typed bookmark connector publishes in-place changes`() {
+        val bookmark = BookmarkData()
+        val source = BasicEventList<BookmarkData>().apply { add(bookmark) }
+        val observed = ObservableElementList(source, BookmarkObservableConnector())
+        var updateCount = 0
+        observed.addListEventListener { event ->
+            while (event.next()) {
+                if (event.type == ListEvent.UPDATE) updateCount++
+            }
+        }
+
+        bookmark.note = "Notiz"
+
+        assertEquals(1, updateCount)
+        observed.dispose()
+        source.dispose()
+    }
+
+    @Test
     fun `existing bookmarks are present when table pipeline is created`() {
         val source = BasicEventList<BookmarkData>().apply {
             repeat(6) { add(BookmarkData()) }
@@ -25,13 +81,8 @@ class BookmarkTablePipelineTest {
         val pipeline = BookmarkTablePipeline(source)
         val observed = pipeline.observedBookmarks
         val sorted = pipeline.sortedBookmarks
-        val format = BeanTableFormat(
-            BookmarkData::class.java,
-            arrayOf("seen"),
-            arrayOf("Gesehen"),
-        )
         val swingBookmarks = sorted.swingThreadProxyList()
-        val model = swingBookmarks.eventTableModel(format)
+        val model = swingBookmarks.eventTableModel(BookmarkTableFormat)
 
         assertEquals(6, source.size)
         assertEquals(6, observed.size)
@@ -50,15 +101,10 @@ class BookmarkTablePipelineTest {
         val first = BookmarkData().apply { bookmarkAdded = LocalDate.of(2026, 1, 2) }
         val selectedBookmark = BookmarkData().apply { bookmarkAdded = LocalDate.of(2026, 1, 3) }
         val source = BasicEventList<BookmarkData>().apply { addAll(listOf(first, selectedBookmark)) }
-        val observed = ObservableElementList(source, GlazedLists.observableConnector())
+        val observed = ObservableElementList(source, BookmarkObservableConnector())
         val sorted = SortedList(observed, BookmarkAddedAtComparator())
-        val format = BeanTableFormat(
-            BookmarkData::class.java,
-            arrayOf("seen"),
-            arrayOf("Gesehen"),
-        )
         val swingBookmarks = sorted.swingThreadProxyList()
-        val model = swingBookmarks.eventTableModel(format)
+        val model = swingBookmarks.eventTableModel(BookmarkTableFormat)
         val selectionModel = DefaultEventSelectionModel(swingBookmarks)
         val selectionChanged = CountDownLatch(1)
         val selectionChangedOnEdt = AtomicBoolean()

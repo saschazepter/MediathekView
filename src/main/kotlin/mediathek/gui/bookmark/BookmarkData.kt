@@ -18,7 +18,6 @@
 
 package mediathek.gui.bookmark
 
-import ca.odell.glazedlists.impl.ObservableConnector
 import mediathek.daten.DatenFilm
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
@@ -28,7 +27,7 @@ import java.util.*
 /**
  * Bookmark data definition used to store movies
  */
-class BookmarkData() : ObservableConnector.PropertyChangeObservable {
+class BookmarkData() {
     private val support = PropertyChangeSupport(this)
 
     constructor(film: DatenFilm) : this() {
@@ -118,11 +117,11 @@ class BookmarkData() : ObservableConnector.PropertyChangeObservable {
     val datenFilmOptional: Optional<DatenFilm>
         get() = Optional.ofNullable(datenFilm)
 
-    override fun addPropertyChangeListener(listener: PropertyChangeListener) {
+    internal fun addPropertyChangeListener(listener: PropertyChangeListener) {
         support.addPropertyChangeListener(listener)
     }
 
-    override fun removePropertyChangeListener(listener: PropertyChangeListener) {
+    internal fun removePropertyChangeListener(listener: PropertyChangeListener) {
         support.removePropertyChangeListener(listener)
     }
 

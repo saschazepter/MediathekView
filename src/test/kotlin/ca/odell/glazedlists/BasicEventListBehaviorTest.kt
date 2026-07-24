@@ -35,6 +35,26 @@ internal class BasicEventListBehaviorTest {
     }
 
     @Test
+    fun indexedAddAllPublishesInsertedInstancesInOrder() {
+        val first = Box(1)
+        val second = Box(2)
+        val source = BasicEventList<Box>().apply { add(Box(0)) }
+        val inserted = mutableListOf<Pair<Int, Box>>()
+        source.addListEventListener { event ->
+            while (event.next()) {
+                if (event.type == ListEvent.INSERT) inserted += event.index to event.newValue
+            }
+        }
+
+        assertTrue(source.addAll(0, listOf(first, second)))
+
+        assertEquals(listOf(first, second, Box(0)), source)
+        assertEquals(listOf(0, 1), inserted.map { it.first })
+        assertSame(first, inserted[0].second)
+        assertSame(second, inserted[1].second)
+    }
+
+    @Test
     fun constructorsPreserveOrCreateTheirInfrastructure() {
         val defaultList = BasicEventList<String>()
         assertInstanceOf(UpgradeDetectingReadWriteLock::class.java, defaultList.readWriteLock)
@@ -91,6 +111,16 @@ internal class BasicEventListBehaviorTest {
     }
 
     @Test
+    fun removeIfKeepsBulkDeletionsOnTheLinearEventPath() {
+        val source = BasicEventList<Int>().apply { addAll(0 until 32) }
+        source.addListEventListener { event -> assertTrue(event.usesLinearRepresentation()) }
+
+        assertTrue(source.removeIf { it % 2 == 0 })
+
+        assertEquals((1 until 32 step 2).toList(), source)
+    }
+
+    @Test
     fun replaceAllUsesIdentityToDecideWhetherToPublishUpdates() {
         val first = Box(1)
         val second = Box(2)
@@ -110,6 +140,16 @@ internal class BasicEventListBehaviorTest {
         assertSame(first, updates[0].first)
         assertNotSame(first, updates[0].second)
         assertEquals(listOf(Box(1), Box(2)), source)
+    }
+
+    @Test
+    fun replaceAllKeepsBulkUpdatesOnTheLinearEventPath() {
+        val source = BasicEventList<Int>().apply { addAll(0 until 32) }
+        source.addListEventListener { event -> assertTrue(event.usesLinearRepresentation()) }
+
+        source.replaceAll { it + 1 }
+
+        assertEquals((1..32).toList(), source)
     }
 
     @Test
@@ -187,6 +227,12 @@ internal class BasicEventListBehaviorTest {
         override fun dispose() {
             disposed = true
         }
+    }
+
+    private fun ListEvent<*>.usesLinearRepresentation(): Boolean {
+        val linearIterator = javaClass.getDeclaredField("linearIterator")
+        linearIterator.isAccessible = true
+        return linearIterator.get(this) != null
     }
 
     private data class Box(val value: Int)

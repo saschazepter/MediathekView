@@ -155,6 +155,18 @@ class SortedListBehaviorTest {
     }
 
     @Test
+    fun comparatorRebuildReadsEachSourceElementOnlyOnce() {
+        val source = CountingEventList((0 until 128).reversed().toList())
+        val sorted = SortedList(source, naturalOrder())
+        source.resetGetCalls()
+
+        sorted.comparator = reverseOrder()
+
+        assertEquals(source.size, source.getCalls)
+        assertEquals((127 downTo 0).toList(), sorted)
+    }
+
+    @Test
     fun sortLocationsAndEqualitySearchRetainDistinctContracts() {
         val first = Row(1, "first")
         val second = Row(2, "second")
@@ -297,6 +309,29 @@ class SortedListBehaviorTest {
             updates.beginEvent()
             updates.reorder(reorderMap)
             updates.commitEvent()
+        }
+    }
+
+    private class CountingEventList<E>(private val data: List<E>) : AbstractEventList<E>() {
+        var getCalls: Int = 0
+            private set
+
+        init {
+            readWriteLock = UpgradeDetectingReadWriteLock()
+        }
+
+        override val size: Int
+            get() = data.size
+
+        override fun get(index: Int): E {
+            getCalls++
+            return data[index]
+        }
+
+        override fun dispose() = Unit
+
+        fun resetGetCalls() {
+            getCalls = 0
         }
     }
 }

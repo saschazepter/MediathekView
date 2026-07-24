@@ -72,15 +72,13 @@ class BasicEventList<E> : AbstractEventList<E>, RandomAccess {
     override fun addAll(index: Int, elements: Collection<E>): Boolean {
         if (elements.isEmpty()) return false
 
-        var insertionIndex = index
         updates.beginEvent()
-        for (element in elements) {
-            updates.elementInserted(insertionIndex, element)
-            data.add(insertionIndex, element)
-            insertionIndex++
+        elements.forEachIndexed { offset, element ->
+            updates.elementInserted(index + offset, element)
         }
+        data.addAll(index, elements)
         updates.commitEvent()
-        return elements.isNotEmpty()
+        return true
     }
 
     @JvmName("remove")
@@ -125,22 +123,40 @@ class BasicEventList<E> : AbstractEventList<E>, RandomAccess {
     override fun removeIf(filter: Predicate<in E>): Boolean {
         if (isEmpty()) return false
 
-        var changed = false
-        updates.beginEvent()
-        for (index in data.lastIndex downTo 0) {
+        val removedIndexes = BooleanArray(data.size)
+        val removedValues = ArrayList<E>()
+        for (index in data.indices) {
             if (filter.test(data[index])) {
-                val removed = data.removeAt(index)
-                updates.elementDeleted(index, removed)
-                changed = true
+                removedIndexes[index] = true
+                removedValues += data[index]
+            }
+        }
+        if (removedValues.isEmpty()) return false
+
+        var writeIndex = 0
+        for (readIndex in data.indices) {
+            if (!removedIndexes[readIndex]) {
+                if (writeIndex != readIndex) data[writeIndex] = data[readIndex]
+                writeIndex++
+            }
+        }
+        data.subList(writeIndex, data.size).clear()
+
+        updates.beginEvent()
+        var removedBefore = 0
+        for (originalIndex in removedIndexes.indices) {
+            if (removedIndexes[originalIndex]) {
+                updates.elementDeleted(originalIndex - removedBefore, removedValues[removedBefore])
+                removedBefore++
             }
         }
         updates.commitEvent()
-        return changed
+        return true
     }
 
     override fun replaceAll(operator: UnaryOperator<E>) {
         updates.beginEvent()
-        for (index in data.lastIndex downTo 0) {
+        for (index in data.indices) {
             val oldValue = data[index]
             val newValue = operator.apply(oldValue)
             if (oldValue !== newValue) {

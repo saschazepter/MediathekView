@@ -24,6 +24,7 @@ import ca.odell.glazedlists.impl.adt.barcode2.SimpleTreeIterator
 import java.util.ArrayDeque
 import java.util.ArrayList
 import java.util.Comparator
+import java.util.IdentityHashMap
 import org.jspecify.annotations.NonNull
 import org.jspecify.annotations.Nullable
 
@@ -66,26 +67,22 @@ class SortedList<E>(
                 if (value != null) ElementComparator(value) else ElementRawOrderComparator()
             sorted = SimpleTree(treeComparator)
 
-            if (previousSorted == null && unsorted == null) {
+            if (unsorted == null) {
                 unsorted = SimpleTree()
                 val sourceList = source!!
                 for (index in sourceList.indices) {
-                    val unsortedNode = unsorted!!.add(index, null, 1)
-                    insertByUnsortedNode(unsortedNode)
+                    unsorted!!.add(index, null, 1)
                 }
+                rebuildSortedTreePreservingFailureState(value, treeComparator, null)
                 return
             }
 
             val sourceList = source!!
             if (sourceList.isEmpty()) return
 
-            val unsortedIterator = SimpleTreeIterator(unsorted!!)
-            while (unsortedIterator.hasNext()) {
-                unsortedIterator.next()
-                insertByUnsortedNode(unsortedIterator.node())
-            }
+            val newIndexByUnsortedNode = IdentityHashMap<Element<Element<*>?>, Int>(sourceList.size)
+            rebuildSortedTreePreservingFailureState(value, treeComparator, newIndexByUnsortedNode)
 
-            val sortedTree = sorted!!
             val reorderMap = IntArray(size)
             var oldSortedIndex = 0
             val previousIterator = SimpleTreeIterator(previousSorted!!)
@@ -93,8 +90,7 @@ class SortedList<E>(
                 previousIterator.next()
                 val oldSortedNode = previousIterator.node()
                 val unsortedNode = asNode(oldSortedNode.get()!!)
-                val newSortedNode = asNode(unsortedNode.get()!!)
-                val newSortedIndex = sortedTree.indexOfNode(newSortedNode, ALL_COLORS)
+                val newSortedIndex = newIndexByUnsortedNode.getValue(unsortedNode)
                 reorderMap[newSortedIndex] = oldSortedIndex++
             }
 
@@ -102,6 +98,74 @@ class SortedList<E>(
             updates.reorder(reorderMap)
             updates.commitEvent()
         }
+
+    private fun rebuildSortedTreePreservingFailureState(
+        comparator: Comparator<in E>?,
+        treeComparator: Comparator<Any?>,
+        newIndexByUnsortedNode: IdentityHashMap<Element<Element<*>?>, Int>?,
+    ) {
+        try {
+            rebuildSortedTree(comparator, newIndexByUnsortedNode)
+        } catch (failure: RuntimeException) {
+            restoreLegacyFailureState(treeComparator)
+            throw failure
+        } catch (failure: Error) {
+            restoreLegacyFailureState(treeComparator)
+            throw failure
+        }
+    }
+
+    private fun restoreLegacyFailureState(treeComparator: Comparator<Any?>) {
+        sorted = SimpleTree(treeComparator)
+        val unsortedIterator = SimpleTreeIterator(unsorted!!)
+        while (unsortedIterator.hasNext()) {
+            unsortedIterator.next()
+            insertByUnsortedNode(unsortedIterator.node())
+        }
+    }
+
+    private fun rebuildSortedTree(
+        comparator: Comparator<in E>?,
+        newIndexByUnsortedNode: IdentityHashMap<Element<Element<*>?>, Int>?,
+    ) {
+        val unsortedTree = unsorted!!
+        val unsortedIterator = SimpleTreeIterator(unsortedTree)
+
+        if (comparator == null) {
+            var sortedIndex = 0
+            while (unsortedIterator.hasNext()) {
+                unsortedIterator.next()
+                linkSortedNode(sortedIndex++, unsortedIterator.node(), newIndexByUnsortedNode)
+            }
+            return
+        }
+
+        val sourceList = source!!
+        val indexedNodes = ArrayList<IndexedNode<E>>(sourceList.size)
+        var sourceIndex = 0
+        while (unsortedIterator.hasNext()) {
+            unsortedIterator.next()
+            indexedNodes += IndexedNode(sourceIndex, sourceList[sourceIndex], unsortedIterator.node())
+            sourceIndex++
+        }
+        indexedNodes.sortWith { alpha, beta ->
+            val result = comparator.compare(alpha.value, beta.value)
+            if (result != 0) result else alpha.sourceIndex.compareTo(beta.sourceIndex)
+        }
+        indexedNodes.forEachIndexed { sortedIndex, indexedNode ->
+            linkSortedNode(sortedIndex, indexedNode.unsortedNode, newIndexByUnsortedNode)
+        }
+    }
+
+    private fun linkSortedNode(
+        sortedIndex: Int,
+        unsortedNode: Element<Element<*>?>,
+        newIndexByUnsortedNode: IdentityHashMap<Element<Element<*>?>, Int>?,
+    ) {
+        val sortedNode = sorted!!.add(sortedIndex, unsortedNode, 1)
+        unsortedNode.set(sortedNode)
+        newIndexByUnsortedNode?.put(unsortedNode, sortedIndex)
+    }
 
     constructor(source: EventList<E>) : this(source, naturalOrderComparator())
 
@@ -406,6 +470,12 @@ class SortedList<E>(
         source!!.removeAt(getSourceIndex(indexToRemove))
         return SimpleTreeIterator(sorted!!, indexToRemove, ALL_COLORS)
     }
+
+    private class IndexedNode<E>(
+        val sourceIndex: Int,
+        val value: E,
+        val unsortedNode: Element<Element<*>?>,
+    )
 
     private open inner class ElementComparator(
         private val comparator: Comparator<in E>,
