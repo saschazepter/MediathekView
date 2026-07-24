@@ -132,13 +132,11 @@ abstract class AbstractTableComparatorChooser<E : Any> protected constructor(
     }
 
     /** Atomically replaces the complete sorting state after validating every key. */
-    open fun setSortKeys(sortKeys: List<SortKey?>?): Boolean {
-        val providedSortKeys = sortKeys ?: throw NullPointerException("sortKeys")
-        val validatedSortKeys = ArrayList<SortKey>(providedSortKeys.size)
-        for (sortKey in providedSortKeys) {
-            val validatedSortKey = sortKey ?: throw NullPointerException("sortKeys contains null")
-            sortingState.validateComparator(validatedSortKey.column, validatedSortKey.comparatorIndex)
-            validatedSortKeys.add(validatedSortKey)
+    open fun setSortKeys(sortKeys: List<SortKey>): Boolean {
+        val validatedSortKeys = ArrayList<SortKey>(sortKeys.size)
+        for (sortKey in sortKeys) {
+            sortingState.validateComparator(sortKey.column, sortKey.comparatorIndex)
+            validatedSortKeys.add(sortKey)
         }
 
         val normalizedSortKeys = normalizeSortKeys(validatedSortKeys)

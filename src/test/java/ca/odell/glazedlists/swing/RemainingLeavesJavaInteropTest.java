@@ -25,23 +25,6 @@ class RemainingLeavesJavaInteropTest {
         }
     }
 
-    @Test
-    void weakReferenceProxyRetainsItsJavaNullValidation() {
-        try (final BasicEventList<String> source = new BasicEventList<>()) {
-            final var target = (ca.odell.glazedlists.event.ListEventListener<String>) Assertions::assertNotNull;
-
-            final IllegalArgumentException sourceFailure = assertThrows(
-                    IllegalArgumentException.class,
-                    () -> new WeakReferenceProxy<>(null, target));
-            assertTrue(sourceFailure.getMessage().contains("source may not be null"));
-
-            final IllegalArgumentException targetFailure = assertThrows(
-                    IllegalArgumentException.class,
-                    () -> new WeakReferenceProxy<>(source, null));
-            assertTrue(targetFailure.getMessage().contains("proxyTarget may not be null"));
-        }
-    }
-
     private static final class SimpleIteratorSubclass<E> extends SimpleIterator<E> {
         private SimpleIteratorSubclass(List<E> source) {
             super(source);

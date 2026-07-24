@@ -12,12 +12,12 @@ import java.util.concurrent.CopyOnWriteArrayList
 abstract class AbstractMatcherEditorListenerSupport<E> : MatcherEditor<E> {
     private val listenerList = CopyOnWriteArrayList<MatcherEditor.Listener<E>>()
 
-    final override fun addMatcherEditorListener(listener: MatcherEditor.Listener<E>?) {
-        if (listener != null) listenerList += listener
+    final override fun addMatcherEditorListener(listener: MatcherEditor.Listener<E>) {
+        listenerList += listener
     }
 
-    final override fun removeMatcherEditorListener(listener: MatcherEditor.Listener<E>?) {
-        if (listener != null) listenerList -= listener
+    final override fun removeMatcherEditorListener(listener: MatcherEditor.Listener<E>) {
+        listenerList -= listener
     }
 
     /** Delivers an event to a stable listener snapshot in LIFO order. */

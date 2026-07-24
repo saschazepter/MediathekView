@@ -33,23 +33,18 @@ open class SearchEngineTextMatcherEditor<E> constructor(
     /** Identifies a named search field and extracts the values searched within that field. */
     @JvmRecord
     data class Field<E>(
-        val name: String?,
-        val textFilterator: TextFilterator<in E>?,
+        val name: String,
+        val textFilterator: TextFilterator<in E>,
     ) {
-        init {
-            requireNotNull(name) { "name may not be null" }
-            requireNotNull(textFilterator) { "textFilterator may not be null" }
-        }
+        /** JavaBean-compatible accessor retained alongside the record component accessor. */
+        fun getName(): String = name
 
         /** JavaBean-compatible accessor retained alongside the record component accessor. */
-        fun getName(): String = requireNotNull(name)
-
-        /** JavaBean-compatible accessor retained alongside the record component accessor. */
-        fun getTextFilterator(): TextFilterator<in E> = requireNotNull(textFilterator)
+        fun getTextFilterator(): TextFilterator<in E> = textFilterator
 
         override fun equals(other: Any?): Boolean =
             this === other || other is Field<*> && name == other.name
 
-        override fun hashCode(): Int = requireNotNull(name).hashCode()
+        override fun hashCode(): Int = name.hashCode()
     }
 }

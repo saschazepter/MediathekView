@@ -116,9 +116,9 @@ internal class SequenceListBehaviorTest {
     }
 
     private fun tensSequencer(): SequenceList.Sequencer<Int> = object : SequenceList.Sequencer<Int> {
-        override fun previous(value: Int?): Int = Math.floorDiv(requireNotNull(value) - 1, 10) * 10
+        override fun previous(value: Int): Int = Math.floorDiv(value - 1, 10) * 10
 
-        override fun next(value: Int?): Int = (Math.floorDiv(requireNotNull(value), 10) + 1) * 10
+        override fun next(value: Int): Int = (Math.floorDiv(value, 10) + 1) * 10
     }
 
     private fun assertTrueSequenceIsEmpty(sequence: SequenceList<Int>) {

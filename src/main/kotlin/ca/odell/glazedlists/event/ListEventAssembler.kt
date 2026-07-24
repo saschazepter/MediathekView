@@ -22,7 +22,6 @@ import ca.odell.glazedlists.impl.WeakReferenceProxy
 import ca.odell.glazedlists.impl.event.BlockSequence
 import ca.odell.glazedlists.impl.event.Tree4Deltas
 import java.util.ConcurrentModificationException
-import java.util.Objects
 
 /**
  * Models a continuous stream of changes on a list. Changes of the same type
@@ -38,12 +37,12 @@ import java.util.Objects
  */
 @Suppress("ProtectedInFinal")
 class ListEventAssembler<E>(
-    sourceListArg: EventList<E>?,
-    publisherArg: ListEventPublisher?,
+    sourceListArg: EventList<E>,
+    publisherArg: ListEventPublisher,
 ) {
     /** the list that this tracks changes for */
     @JvmField
-    protected var sourceList: EventList<E> = sourceListArg ?: throw IllegalArgumentException("null source")
+    protected var sourceList: EventList<E> = sourceListArg
 
     /** non-null if an event is currently pending */
     private var eventThread: Thread? = null
@@ -68,7 +67,7 @@ class ListEventAssembler<E>(
     /** fall back to list tree4deltas, which are capable of all list changes */
     private val listDeltas = Tree4Deltas<E>()
 
-    private val publisher = publisherArg as SequenceDependenciesEventPublisher?
+    private val publisher = publisherArg as SequenceDependenciesEventPublisher
 
     private val listEvent: ListEvent<E>
 
@@ -212,11 +211,8 @@ class ListEventAssembler<E>(
      * Sets the current event as a reordering. Reordering events cannot be
      * combined with other events.
      */
-    fun reorder(reorderMap: IntArray?) {
+    fun reorder(reorderMap: IntArray) {
         check(isEventEmpty()) { "Cannot combine reorder with other change events" }
-        if (reorderMap == null) {
-            throw NullPointerException("Cannot read the array length because \"reorderMap\" is null")
-        }
         if (reorderMap.isEmpty()) {
             return
         }
@@ -239,16 +235,11 @@ class ListEventAssembler<E>(
      * any other ListEvent.
      */
     @Suppress("UNCHECKED_CAST")
-    fun forwardEvent(listChanges: ListEvent<*>?) {
+    fun forwardEvent(listChanges: ListEvent<*>) {
         beginEvent(false)
         reorderMap = null
         val changesToCopy: ListEvent<*>?
         if (isEventEmpty()) {
-            if (listChanges == null) {
-                throw NullPointerException(
-                    "Cannot invoke \"ca.odell.glazedlists.event.ListEvent.isReordering()\" because \"listChanges\" is null",
-                )
-            }
             if (listChanges.isReordering()) {
                 reorder(listChanges.getReorderMap())
                 changesToCopy = null
@@ -256,11 +247,6 @@ class ListEventAssembler<E>(
                 changesToCopy = listChanges
             }
         } else {
-            if (listChanges == null) {
-                throw NullPointerException(
-                    "Cannot invoke \"ca.odell.glazedlists.event.ListEvent.next()\" because \"listChanges\" is null",
-                )
-            }
             changesToCopy = listChanges
         }
         if (changesToCopy != null) {
@@ -305,7 +291,7 @@ class ListEventAssembler<E>(
         }
 
         eventIsBeingPublished = true
-        publisher!!.fireEvent(sourceList, listEvent, eventFormat)
+        publisher.fireEvent(sourceList, listEvent, eventFormat)
     }
 
     /**
@@ -352,10 +338,8 @@ class ListEventAssembler<E>(
      * @throws NullPointerException if the specified listener is null
      */
     @Synchronized
-    @Suppress("UNCHECKED_CAST")
-    fun addListEventListener(listChangeListener: ListEventListener<in E>?) {
-        val listener = Objects.requireNonNull(listChangeListener, "ListEventListener is undefined") as ListEventListener<in E>
-        publisher!!.addListener(sourceList, listener, eventFormat)
+    fun addListEventListener(listChangeListener: ListEventListener<in E>) {
+        publisher.addListener(sourceList, listChangeListener, eventFormat)
     }
 
     /**
@@ -371,16 +355,14 @@ class ListEventAssembler<E>(
      * @throws IllegalArgumentException if the specified listener wasn't added before
      */
     @Synchronized
-    @Suppress("UNCHECKED_CAST")
-    fun removeListEventListener(listChangeListener: ListEventListener<in E>?) {
-        val listener = Objects.requireNonNull(listChangeListener, "ListEventListener is undefined") as ListEventListener<in E>
-        publisher!!.removeListener(sourceList, listener)
+    fun removeListEventListener(listChangeListener: ListEventListener<in E>) {
+        publisher.removeListener(sourceList, listChangeListener)
     }
 
     /**
      * Get all ListEventListeners observing the EventList.
      */
-    fun getListEventListeners(): List<ListEventListener<E>> = publisher!!.getListeners(sourceList)
+    fun getListEventListeners(): List<ListEventListener<E>> = publisher.getListeners(sourceList)
 
     @JvmSynthetic
     fun getUseListBlocksLinear(): Boolean = useListBlocksLinear

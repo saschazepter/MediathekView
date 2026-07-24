@@ -212,8 +212,6 @@ internal class MatcherMigrationBehaviorTest {
         assertFalse(inverted.matches("apple"))
         assertTrue(inverted.matches("pear"))
         assertEquals("[NotMatcher parent:$startsWithA]", inverted.toString())
-        assertThrows(IllegalArgumentException::class.java) { NotMatcher<String>(null) }
-
         val typeMatcher = TypeMatcher<Any?>(Number::class.java, CharSequence::class.java)
         assertTrue(typeMatcher.matches(42))
         assertTrue(typeMatcher.matches("text"))

@@ -9,9 +9,9 @@ import java.util.function.Consumer
 
 /** Produces immutable matchers and publishes events when the active matcher changes. */
 interface MatcherEditor<E> {
-    fun addMatcherEditorListener(listener: Listener<E>?)
+    fun addMatcherEditorListener(listener: Listener<E>)
 
-    fun removeMatcherEditorListener(listener: Listener<E>?)
+    fun removeMatcherEditorListener(listener: Listener<E>)
 
     val matcher: Matcher<E>
 

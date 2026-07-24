@@ -17,6 +17,7 @@
  */
 package ca.odell.glazedlists
 
+import ca.odell.glazedlists.event.ListEventAssembler
 import ca.odell.glazedlists.event.ListEventPublisher
 import ca.odell.glazedlists.impl.UpgradeDetectingReadWriteLock
 import java.util.ArrayList
@@ -46,7 +47,7 @@ class BasicEventList<E> : AbstractEventList<E>, RandomAccess {
         initialCapacity: Int,
         publisher: ListEventPublisher?,
         readWriteLock: ReadWriteLock?,
-    ) : super(publisher) {
+    ) : super(publisher ?: ListEventAssembler.createListEventPublisher()) {
         data = ArrayList(initialCapacity)
         this.readWriteLock = readWriteLock ?: UpgradeDetectingReadWriteLock()
     }

@@ -1,7 +1,6 @@
 package ca.odell.glazedlists
 
 import ca.odell.glazedlists.gui.TableFormat
-import ca.odell.glazedlists.impl.SimpleFunctionList
 import ca.odell.glazedlists.impl.beans.BeanTableFormat
 import ca.odell.glazedlists.impl.filter.StringLengthComparator
 import ca.odell.glazedlists.impl.filter.StringTextFilterator
@@ -15,15 +14,6 @@ internal class JavaMigrationBehaviorTest {
     @Test
     fun glazedListsSwingProxyCheckPreservesNullBehavior() {
         assertFalse(null.isSwingThreadProxyList())
-    }
-
-    @Test
-    fun simpleFunctionListRejectsNullFunctionWithTheExistingMessage() {
-        val failure = assertThrows(NullPointerException::class.java) {
-            SimpleFunctionList<String, Int>(BasicEventList(), null)
-        }
-
-        assertEquals("mapping function is undefined", failure.message)
     }
 
     @Test

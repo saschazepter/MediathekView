@@ -28,34 +28,6 @@ import java.util.LinkedHashMap
 
 internal class GroupingListMultiMapBehaviorTest {
     @Test
-    fun constructorValidationOrderAndExactDiagnostics() {
-        val source = BasicEventList<String>()
-        val comparator = Comparator.naturalOrder<String>()
-
-        assertEquals(
-            "keyFunction may not be null",
-            assertThrows(IllegalArgumentException::class.java) {
-                GroupingListMultiMap(source, null, comparator)
-            }.message,
-        )
-        assertEquals(
-            "keyFunction may not be null",
-            assertThrows(IllegalArgumentException::class.java) {
-                GroupingListMultiMap<String, String>(null, null, null)
-            }.message,
-        )
-        assertEquals(
-            "keyGrouper may not be null",
-            assertThrows(IllegalArgumentException::class.java) {
-                GroupingListMultiMap(source, String::first, null)
-            }.message,
-        )
-        assertThrows(NullPointerException::class.java) {
-            GroupingListMultiMap<String, String>(null, { it }, comparator)
-        }
-    }
-
-    @Test
     fun constructorKeyFailureLeavesTheJavaPartialListenerGraphAttached() {
         val source = BasicEventList<String>().apply { add("boom") }
         val calls = mutableListOf<String>()

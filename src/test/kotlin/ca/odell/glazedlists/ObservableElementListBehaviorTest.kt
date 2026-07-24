@@ -500,12 +500,12 @@ internal class ObservableElementListBehaviorTest {
 
         override fun get(index: Int): E = data[index]
 
-        override fun addListEventListener(listChangeListener: ListEventListener<in E>?) {
+        override fun addListEventListener(listChangeListener: ListEventListener<in E>) {
             trace += "source-attach"
             super.addListEventListener(listChangeListener)
         }
 
-        override fun removeListEventListener(listChangeListener: ListEventListener<in E>?) {
+        override fun removeListEventListener(listChangeListener: ListEventListener<in E>) {
             trace += "source-detach"
             super.removeListEventListener(listChangeListener)
         }

@@ -13,9 +13,9 @@ class PropertyEventNameMatcher(
 ) : Matcher<PropertyChangeEvent> {
     private val propertyNames = properties.toHashSet()
 
-    constructor(isMatchPropertyNames: Boolean, properties: Collection<String>?) : this(
+    constructor(isMatchPropertyNames: Boolean, properties: Collection<String>) : this(
         isMatchPropertyNames,
-        *requireNotNull(properties) { "Collection of property names may not be null" }.toTypedArray(),
+        *properties.toTypedArray(),
     )
 
     override fun matches(item: PropertyChangeEvent): Boolean {

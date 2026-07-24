@@ -16,12 +16,12 @@ class UndoRedoSupport<E> private constructor(source: EventList<E>) {
         txSource?.addListEventListener(txSourceListener)
     }
 
-    fun addUndoSupportListener(listener: Listener?) {
-        if (listener != null) listenerList += listener
+    fun addUndoSupportListener(listener: Listener) {
+        listenerList += listener
     }
 
-    fun removeUndoSupportListener(listener: Listener?) {
-        if (listener != null) listenerList -= listener
+    fun removeUndoSupportListener(listener: Listener) {
+        listenerList -= listener
     }
 
     fun uninstall() {

@@ -60,7 +60,7 @@ open class ListSelection<E>(
     private var internalAnchorSelectionIndex = -1
     private var internalSelectionMode = MULTIPLE_INTERVAL_SELECTION_DEFENSIVE
 
-    private val validSelectionMatchers: MutableCollection<Matcher<E>?> = ArrayList()
+    private val validSelectionMatchers: MutableCollection<Matcher<E>> = ArrayList()
 
     /**
      * The registered selection listeners. This is also the mutex used while
@@ -79,7 +79,7 @@ open class ListSelection<E>(
      */
     constructor(
         source: EventList<E>,
-        initialSelection: IntArray?,
+        initialSelection: IntArray,
     ) : this(source) {
         select(initialSelection)
     }
@@ -213,7 +213,7 @@ open class ListSelection<E>(
     /**
      * Add a matcher which decides when source elements are valid for selection.
      */
-    open fun addValidSelectionMatcher(validSelectionMatcher: Matcher<E>?) {
+    open fun addValidSelectionMatcher(validSelectionMatcher: Matcher<E>) {
         validSelectionMatchers.add(validSelectionMatcher)
 
         var i = minSelectionIndex
@@ -229,7 +229,7 @@ open class ListSelection<E>(
     /**
      * Remove a matcher which decides when source elements are valid for selection.
      */
-    open fun removeValidSelectionMatcher(validSelectionMatcher: Matcher<E>?) {
+    open fun removeValidSelectionMatcher(validSelectionMatcher: Matcher<E>) {
         validSelectionMatchers.remove(validSelectionMatcher)
     }
 
@@ -264,8 +264,9 @@ open class ListSelection<E>(
         get() {
             synchronized(selectionListeners) {
                 if (selectedList == null) {
-                    selectedList = SelectedList(internalSource)
-                    internalSource.publisher.setRelatedListener(selectedList, this)
+                    selectedList = SelectedList(internalSource).also {
+                        internalSource.publisher.setRelatedListener(it, this)
+                    }
                 }
             }
             return selectedList!!
@@ -279,8 +280,9 @@ open class ListSelection<E>(
         get() {
             synchronized(selectionListeners) {
                 if (selectedToggleList == null) {
-                    selectedToggleList = SelectionToggleList(internalSource)
-                    internalSource.publisher.setRelatedListener(selectedToggleList, this)
+                    selectedToggleList = SelectionToggleList(internalSource).also {
+                        internalSource.publisher.setRelatedListener(it, this)
+                    }
                 }
             }
             return selectedToggleList!!
@@ -294,8 +296,9 @@ open class ListSelection<E>(
         get() {
             synchronized(selectionListeners) {
                 if (deselectedList == null) {
-                    deselectedList = DeselectedList(internalSource)
-                    internalSource.publisher.setRelatedListener(deselectedList, this)
+                    deselectedList = DeselectedList(internalSource).also {
+                        internalSource.publisher.setRelatedListener(it, this)
+                    }
                 }
             }
             return deselectedList!!
@@ -309,8 +312,9 @@ open class ListSelection<E>(
         get() {
             synchronized(selectionListeners) {
                 if (deselectedToggleList == null) {
-                    deselectedToggleList = DeselectionToggleList(internalSource)
-                    internalSource.publisher.setRelatedListener(deselectedToggleList, this)
+                    deselectedToggleList = DeselectionToggleList(internalSource).also {
+                        internalSource.publisher.setRelatedListener(it, this)
+                    }
                 }
             }
             return deselectedToggleList!!
@@ -400,14 +404,14 @@ open class ListSelection<E>(
     /**
      * Deselects all of the elements in the given array of indices.
      */
-    open fun deselect(indices: IntArray?) {
+    open fun deselect(indices: IntArray) {
         var firstAffectedIndex = -1
         var lastAffectedIndex = -1
 
         beginAll()
         var currentIndex = 0
         val i = barcode.iterator()
-        while (i.hasNext() && currentIndex != indices!!.size) {
+        while (i.hasNext() && currentIndex != indices.size) {
             val value = i.next()
             if (i.getIndex() == indices[currentIndex]) {
                 if (value === SELECTED) {
@@ -508,14 +512,14 @@ open class ListSelection<E>(
     /**
      * Selects all of the elements in the given array of indices.
      */
-    open fun select(indices: IntArray?) {
+    open fun select(indices: IntArray) {
         var firstAffectedIndex = -1
         var lastAffectedIndex = -1
 
         beginAll()
         var currentIndex = 0
         val i = barcode.iterator()
-        while (i.hasNext() && currentIndex != indices!!.size) {
+        while (i.hasNext() && currentIndex != indices.size) {
             val value = i.next()
             if (i.getIndex() == indices[currentIndex]) {
                 if (value !== SELECTED) {
@@ -617,8 +621,8 @@ open class ListSelection<E>(
     /**
      * Sets the selection to be only the elements in the given array of indices.
      */
-    open fun setSelection(indices: IntArray?) {
-        if (indices!!.isEmpty()) {
+    open fun setSelection(indices: IntArray) {
+        if (indices.isEmpty()) {
             deselectAll()
             return
         }
@@ -988,7 +992,7 @@ open class ListSelection<E>(
 
         val rowObject = internalSource[index]
         for (validSelectionMatcher in validSelectionMatchers) {
-            if (!validSelectionMatcher!!.matches(rowObject)) {
+            if (!validSelectionMatcher.matches(rowObject)) {
                 return false
             }
         }
@@ -999,19 +1003,15 @@ open class ListSelection<E>(
     /**
      * Register a [Listener] that will be notified when selection is changed.
      */
-    open fun addSelectionListener(selectionListener: Listener?) {
-        if (selectionListener != null) {
-            selectionListeners.add(selectionListener)
-        }
+    open fun addSelectionListener(selectionListener: Listener) {
+        selectionListeners.add(selectionListener)
     }
 
     /**
      * Remove a [Listener] so that it will no longer be notified when selection changes.
      */
-    open fun removeSelectionListener(selectionListener: Listener?) {
-        if (selectionListener != null) {
-            selectionListeners.remove(selectionListener)
-        }
+    open fun removeSelectionListener(selectionListener: Listener) {
+        selectionListeners.remove(selectionListener)
     }
 
     private fun fireSelectionChanged(
@@ -1030,18 +1030,10 @@ open class ListSelection<E>(
         internalSource.removeListEventListener(this)
         selectionListeners.clear()
 
-        if (selectedList != null) {
-            internalSource.publisher.clearRelatedListener(selectedList, this)
-        }
-        if (deselectedList != null) {
-            internalSource.publisher.clearRelatedListener(deselectedList, this)
-        }
-        if (selectedToggleList != null) {
-            internalSource.publisher.clearRelatedListener(selectedToggleList, this)
-        }
-        if (deselectedToggleList != null) {
-            internalSource.publisher.clearRelatedListener(deselectedToggleList, this)
-        }
+        selectedList?.let { internalSource.publisher.clearRelatedListener(it, this) }
+        deselectedList?.let { internalSource.publisher.clearRelatedListener(it, this) }
+        selectedToggleList?.let { internalSource.publisher.clearRelatedListener(it, this) }
+        deselectedToggleList?.let { internalSource.publisher.clearRelatedListener(it, this) }
     }
 
     private fun selectedSize(): Int = barcode.colourSize(SELECTED)

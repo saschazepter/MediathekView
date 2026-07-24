@@ -305,24 +305,6 @@ internal class AbstractTableComparatorChooserTest {
         assertTrue(comparatorParameter.isAnnotationPresent(Nullable::class.java))
     }
 
-    @Test
-    fun replacingSortKeysKeepsJavaNullValidationMessages() {
-        val chooser = TestChooser(SortedList(BasicEventList(), null), twoColumnRowFormat())
-        val method = AbstractTableComparatorChooser::class.java.getMethod("setSortKeys", List::class.java)
-
-        val nullListFailure = assertThrows(InvocationTargetException::class.java) {
-            method.invoke(chooser, null)
-        }
-        assertInstanceOf(NullPointerException::class.java, nullListFailure.cause)
-        assertEquals("sortKeys", nullListFailure.cause?.message)
-
-        val nullKeyFailure = assertThrows(InvocationTargetException::class.java) {
-            method.invoke(chooser, listOf(null))
-        }
-        assertInstanceOf(NullPointerException::class.java, nullKeyFailure.cause)
-        assertEquals("sortKeys contains null", nullKeyFailure.cause?.message)
-    }
-
     private class TestChooser(
         sortedList: SortedList<Row>,
         tableFormat: TableFormat<Row>,

@@ -40,25 +40,20 @@ import kotlin.jvm.JvmDefaultWithoutCompatibility
 )
 open class CollectionList<S, E>(
     source: EventList<S>,
-    model: Model<S, E>?,
+    private val model: Model<S, E>,
 ) : TransformedList<S, E>(source), ListEventListener<S> {
     private val emptyChildElement: ChildElement<E> = SimpleChildElement(emptyList(), null)
-    private val model: Model<S, E>
     private val barcode = Barcode()
     private val childElements = SimpleTree<ChildElement<E>>()
 
     init {
-        if (model == null) throw IllegalArgumentException("model cannot be null")
-        this.model = model
-
         for (parentIndex in 0 until source.size) {
-            val children = platformNullable(model.getChildren(source[parentIndex]))
+            val children = model.getChildren(source[parentIndex])
             val node = childElements.add(parentIndex, emptyChildElement, 1)
             node.set(createChildElementForList(children, node))
 
             barcode.addBlack(barcode.size(), 1)
-            val actualChildren = children!!
-            if (actualChildren.isNotEmpty()) barcode.addWhite(barcode.size(), actualChildren.size)
+            if (children.isNotEmpty()) barcode.addWhite(barcode.size(), children.size)
         }
 
         source.addListEventListener(this)
@@ -153,17 +148,16 @@ open class CollectionList<S, E>(
     private fun handleInsert(parentIndex: Int) {
         val absoluteIndex = getAbsoluteIndex(parentIndex)
         val parent = source!![parentIndex]
-        val children = platformNullable(model.getChildren(parent))
+        val children = model.getChildren(parent)
 
         val node = childElements.add(parentIndex, emptyChildElement, 1)
         node.set(createChildElementForList(children, node))
 
         barcode.addBlack(absoluteIndex, 1)
-        val actualChildren = children!!
-        if (actualChildren.isNotEmpty()) barcode.addWhite(absoluteIndex + 1, actualChildren.size)
+        if (children.isNotEmpty()) barcode.addWhite(absoluteIndex + 1, children.size)
 
         val childIndex = absoluteIndex - parentIndex
-        for (element in actualChildren) {
+        for (element in children) {
             updates.elementInserted(childIndex, element)
         }
     }
@@ -196,7 +190,7 @@ open class CollectionList<S, E>(
     }
 
     private fun createChildElementForList(
-        children: List<E>?,
+        children: List<E>,
         node: Element<ChildElement<E>>,
     ): ChildElement<E> =
         if (children is EventList<*>) {
@@ -274,9 +268,6 @@ open class CollectionList<S, E>(
     internal fun childNodeIndex(node: Element<*>): Int =
         childElements.indexOfNode(node as Element<ChildElement<E>>, 0)
 
-    @JvmSynthetic
-    private fun <T> platformNullable(value: T): T? = value
-
     private interface ChildElement<E> {
         fun get(index: Int): E
 
@@ -291,25 +282,25 @@ open class CollectionList<S, E>(
     @FunctionalInterface
     @JvmDefaultWithoutCompatibility
     fun interface Model<P, C> : Function<P, List<C>> {
-        fun getChildren(parent: P?): List<C>
+        fun getChildren(parent: P): List<C>
 
         override fun apply(parent: P): List<C> = getChildren(parent)
     }
 
     private inner class SimpleChildElement(
-        private val children: List<E>?,
+        private val children: List<E>,
         private val node: Element<ChildElement<E>>?,
     ) : ChildElement<E> {
-        override fun get(index: Int): E = children!![index]
+        override fun get(index: Int): E = children[index]
 
         override fun remove(index: Int): E {
-            val removed = (children!! as MutableList<E>).removeAt(index)
+            val removed = (children as MutableList<E>).removeAt(index)
             simpleChildRemoved(node!!, index, removed)
             return removed
         }
 
         override fun set(index: Int, element: E): E {
-            val replaced = (children!! as MutableList<E>).set(index, element)
+            val replaced = (children as MutableList<E>).set(index, element)
             simpleChildUpdated(node!!, index, replaced)
             return replaced
         }

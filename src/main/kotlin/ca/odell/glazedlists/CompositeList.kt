@@ -28,20 +28,19 @@ open class CompositeList<E> : CollectionList<EventList<E>, E> {
         GlazedLists.listCollectionListModel<E>() as Model<EventList<E>, E>,
     )
 
-    constructor(publisher: ListEventPublisher?, lock: ReadWriteLock?) : super(
+    constructor(publisher: ListEventPublisher, lock: ReadWriteLock) : super(
         BasicEventList(publisher, lock),
         GlazedLists.listCollectionListModel<E>() as Model<EventList<E>, E>,
     )
 
-    open fun addMemberList(member: EventList<E>?) {
-        val actualMember = member ?: throw NullPointerException()
-        require(publisher == actualMember.publisher) {
+    open fun addMemberList(member: EventList<E>) {
+        require(publisher == member.publisher) {
             "Member list must share publisher with CompositeList"
         }
-        require(readWriteLock == actualMember.readWriteLock) {
+        require(readWriteLock == member.readWriteLock) {
             "Member list must share lock with CompositeList"
         }
-        source!!.add(actualMember)
+        source!!.add(member)
     }
 
     open fun <T> createMemberList(): EventList<T> = BasicEventList(publisher, readWriteLock)
@@ -50,7 +49,7 @@ open class CompositeList<E> : CollectionList<EventList<E>, E> {
     @JvmName("removeAt")
     open fun removeAtCompatibility(index: Int): E = super.removeAt(index)
 
-    open fun removeMemberList(list: EventList<E>?) {
+    open fun removeMemberList(list: EventList<E>) {
         val iterator = source!!.iterator()
         while (iterator.hasNext()) {
             if (iterator.next() === list) {

@@ -36,14 +36,13 @@ private const val RIGHT_GROUP = 1
  */
 open class Grouper<E>(
     private val sortedList: SortedList<E>,
-    client: Client<E>?,
+    private val clientState: Client<E>,
 ) {
-    private val clientState = client
     private var comparatorState: Comparator<in E>? = null
     private var barcodeState: Barcode? = null
 
     open val client: Client<E>
-        get() = platformValue(clientState)
+        get() = clientState
 
     open var comparator: Comparator<in E>?
         get() = comparatorState
@@ -62,7 +61,7 @@ open class Grouper<E>(
         get() = platformValue(barcodeState)
 
     private val internalClient: Client<E>
-        get() = clientState!!
+        get() = clientState
 
     private val internalComparator: Comparator<in E>
         get() = comparatorState!!

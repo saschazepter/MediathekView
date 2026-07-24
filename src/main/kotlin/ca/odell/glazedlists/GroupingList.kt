@@ -165,7 +165,6 @@ class GroupingList<E> private constructor(
         return result
     }
 
-    /** Java null arguments fail before the existing group is mutated. */
     override fun set(index: Int, element: List<E>): MutableList<E> {
         if (index !in indices) {
             throw IndexOutOfBoundsException("Cannot set at $index on list of size $size")
@@ -177,7 +176,6 @@ class GroupingList<E> private constructor(
         return result
     }
 
-    /** Java null arguments fail before the source is mutated. */
     override fun add(index: Int, element: List<E>) {
         source!!.addAll(element)
     }

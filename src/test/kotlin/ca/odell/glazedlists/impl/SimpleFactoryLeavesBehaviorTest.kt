@@ -24,12 +24,11 @@ import org.junit.jupiter.api.Test
 
 internal class SimpleFactoryLeavesBehaviorTest {
     @Test
-    fun listCollectionModelReturnsTheParentOrAnEmptyListForNull() {
+    fun listCollectionModelReturnsTheParent() {
         val model = ListCollectionListModel<String>()
         val parent = mutableListOf("first", "second")
 
         assertSame(parent, model.getChildren(parent))
-        assertEquals(emptyList<String>(), model.getChildren(null))
         assertSame(parent, GlazedLists.listCollectionListModel<String>().getChildren(parent))
     }
 

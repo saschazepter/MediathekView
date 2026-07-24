@@ -131,12 +131,12 @@ internal class LockModernizationTest {
         var removedListener: MatcherEditor.Listener<String>? = null
         var cleanupHeldWriteLock = false
         val editor = object : MatcherEditor<String> {
-            override fun addMatcherEditorListener(listener: MatcherEditor.Listener<String>?) {
+            override fun addMatcherEditorListener(listener: MatcherEditor.Listener<String>) {
                 installedListener = listener
                 throw IllegalStateException("listener registration failed")
             }
 
-            override fun removeMatcherEditorListener(listener: MatcherEditor.Listener<String>?) {
+            override fun removeMatcherEditorListener(listener: MatcherEditor.Listener<String>) {
                 cleanupHeldWriteLock = lock.isWriteLockedByCurrentThread
                 removedListener = listener
             }

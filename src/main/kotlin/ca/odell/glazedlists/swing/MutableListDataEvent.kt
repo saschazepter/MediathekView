@@ -10,7 +10,7 @@ import javax.swing.event.ListDataEvent
  *
  * @author <a href="mailto:jesse@swank.ca">Jesse Wilson</a>
  */
-class MutableListDataEvent(source: Any?) : ListDataEvent(source, CONTENTS_CHANGED, 0, 0) {
+class MutableListDataEvent(source: Any) : ListDataEvent(source, CONTENTS_CHANGED, 0, 0) {
     private var currentIndex0 = 0
     private var currentIndex1 = 0
     private var currentType = CONTENTS_CHANGED

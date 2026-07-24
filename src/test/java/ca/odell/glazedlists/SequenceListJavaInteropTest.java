@@ -52,22 +52,6 @@ class SequenceListJavaInteropTest {
     }
 
     @Test
-    void retainsNullConfigurationDiagnostics() {
-        final BasicEventList<Integer> source = new BasicEventList<>();
-        try (source) {
-            final IllegalArgumentException sequencerFailure = assertThrows(
-                    IllegalArgumentException.class,
-                    () -> new SequenceList<>(source, null, Comparator.naturalOrder()));
-            assertEquals("sequencer may not be null", sequencerFailure.getMessage());
-
-            final IllegalArgumentException comparatorFailure = assertThrows(
-                    IllegalArgumentException.class,
-                    () -> new SequenceList<>(source, tensSequencer(), null));
-            assertEquals("comparator may not be null", comparatorFailure.getMessage());
-        }
-    }
-
-    @Test
     void keepsMappedCollectionJvmNames() throws Exception {
         assertEquals(int.class, SequenceList.class.getDeclaredMethod("size").getReturnType());
         assertEquals(Object.class, SequenceList.class.getDeclaredMethod("get", int.class).getReturnType());

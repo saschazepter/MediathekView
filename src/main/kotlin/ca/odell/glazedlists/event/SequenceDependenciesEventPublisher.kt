@@ -40,10 +40,10 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
     private var reentrantFireEventCount = 0
 
     /** subject to cleanup when this event is completely distributed */
-    private val subjectsToCleanUp = IdentityHashMap<Any?, EventFormat<*, *, *>?>()
+    private val subjectsToCleanUp = IdentityHashMap<Any, EventFormat<*, *, *>>()
 
     /** for proper dependency management, when a listener and subject aren't the same identity */
-    private val listenersToRelatedSubjects = IdentityHashMap<Any?, Any?>()
+    private val listenersToRelatedSubjects = IdentityHashMap<Any, Any>()
 
     /** the last listener notified, the next one will be beyond it in the list */
     private var nextToNotify = 0
@@ -73,9 +73,9 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
         subjectsAndListeners: List<SubjectAndListener<*, *, *>>,
     ): List<SubjectAndListener<*, *, *>> {
         val result = ArrayList<SubjectAndListener<*, *, *>>()
-        val sourceToPairs = IdentityHashMap<Any?, MutableList<SubjectAndListener<*, *, *>>>()
-        val targetToPairs = IdentityHashMap<Any?, MutableList<SubjectAndListener<*, *, *>>>()
-        val satisfied = Collections.newSetFromMap(IdentityHashMap<Any?, Boolean>())
+        val sourceToPairs = IdentityHashMap<Any, MutableList<SubjectAndListener<*, *, *>>>()
+        val targetToPairs = IdentityHashMap<Any, MutableList<SubjectAndListener<*, *, *>>>()
+        val satisfied = Collections.newSetFromMap(IdentityHashMap<Any, Boolean>())
 
         for (subjectAndListener in subjectsAndListeners) {
             val source = subjectAndListener.subject
@@ -108,7 +108,7 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
 
                 result.addAll(allSourcesForSourceTarget)
                 targetToPairs.remove(sourceTarget)
-                satisfiedToDo.addLast(sourceTarget!!)
+                satisfiedToDo.addLast(sourceTarget)
                 satisfied.add(sourceTarget)
             }
         }
@@ -120,17 +120,17 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
         return result
     }
 
-    private fun getRelatedSubject(listener: Any?): Any? = listenersToRelatedSubjects[listener] ?: listener
+    private fun getRelatedSubject(listener: Any): Any = listenersToRelatedSubjects[listener] ?: listener
 
     /**
      * Register the specified listener to receive events from the specified
      * subject whenever they are fired.
      */
     @Synchronized
-    fun <Subject, Listener, Event> addListener(
+    fun <Subject : Any, Listener : Any, Event : Any> addListener(
         subject: Subject,
         listener: Listener,
-        eventFormat: EventFormat<Subject, Listener, Event>?,
+        eventFormat: EventFormat<Subject, Listener, Event>,
     ) {
         val unordered = updateListEventListeners(subject, listener, null, eventFormat)
         subjectAndListeners = orderSubjectsAndListeners(unordered)
@@ -141,8 +141,8 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
      * subject.
      */
     @Synchronized
-    fun removeListener(subject: Any?, listener: Any?) {
-        subjectAndListeners = updateListEventListeners<Any?, Any?, Any?>(subject, null, listener, null)
+    fun removeListener(subject: Any, listener: Any) {
+        subjectAndListeners = updateListEventListeners<Any, Any, Any>(subject, null, listener, null)
     }
 
     /**
@@ -153,7 +153,7 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
      * @param listenerToRemove a listener to be removed, or `null`
      */
     @Suppress("UNCHECKED_CAST")
-    private fun <Subject, Listener, Event> updateListEventListeners(
+    private fun <Subject : Any, Listener : Any, Event : Any> updateListEventListeners(
         subject: Subject,
         listenerToAdd: Listener?,
         listenerToRemove: Listener?,
@@ -185,7 +185,7 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
                 SubjectAndListener(
                     subject,
                     listenerToAdd,
-                    eventFormat,
+                    requireNotNull(eventFormat),
                 ),
             )
         }
@@ -193,23 +193,19 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
         return result
     }
 
-    override fun setRelatedListener(subject: Any?, relatedListener: Any?) {
+    override fun setRelatedListener(subject: Any, relatedListener: Any) {
         addListener(relatedListener, subject, NoOpEventFormat)
     }
 
-    override fun clearRelatedListener(subject: Any?, relatedListener: Any?) {
+    override fun clearRelatedListener(subject: Any, relatedListener: Any) {
         removeListener(relatedListener, subject)
     }
 
-    override fun setRelatedSubject(listener: Any?, relatedSubject: Any?) {
-        if (relatedSubject != null) {
-            listenersToRelatedSubjects[listener] = relatedSubject
-        } else {
-            listenersToRelatedSubjects.remove(listener)
-        }
+    override fun setRelatedSubject(listener: Any, relatedSubject: Any) {
+        listenersToRelatedSubjects[listener] = relatedSubject
     }
 
-    override fun clearRelatedSubject(listener: Any?) {
+    override fun clearRelatedSubject(listener: Any) {
         listenersToRelatedSubjects.remove(listener)
     }
 
@@ -218,7 +214,7 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
      */
     @Synchronized
     @Suppress("UNCHECKED_CAST")
-    fun <Listener> getListeners(subject: Any?): MutableList<Listener> {
+    fun <Listener : Any> getListeners(subject: Any): MutableList<Listener> {
         val result = ArrayList<Listener>()
         for (subjectAndListener in subjectAndListeners) {
             if (subjectAndListener.subject !== subject) {
@@ -237,10 +233,10 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
      * @param eventFormat the mechanism to notify listeners of the event, also
      *   used for a callback when this event is complete
      */
-    fun <Subject, Listener, Event> fireEvent(
+    fun <Subject : Any, Listener : Any, Event : Any> fireEvent(
         subject: Subject,
         event: Event,
-        eventFormat: EventFormat<Subject, Listener, Event>?,
+        eventFormat: EventFormat<Subject, Listener, Event>,
     ) {
         if (reentrantFireEventCount == 0) {
             subjectsAndListenersForCurrentEvent = subjectAndListeners
@@ -303,7 +299,7 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
     }
 
     /** Adapt any observer-style interface to a common format. */
-    interface EventFormat<Subject, Listener, Event> {
+    interface EventFormat<Subject : Any, Listener : Any, Event : Any> {
         /** Fire the specified event to the specified listener. */
         fun fire(subject: Subject, event: Event, listener: Listener)
 
@@ -322,36 +318,35 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
         fun isStale(subject: Subject, listener: Listener): Boolean
     }
 
-    private object NoOpEventFormat : EventFormat<Any?, Any?, Any?> {
-        override fun fire(subject: Any?, event: Any?, listener: Any?) {
+    private object NoOpEventFormat : EventFormat<Any, Any, Any> {
+        override fun fire(subject: Any, event: Any, listener: Any) {
             throw UnsupportedOperationException()
         }
 
-        override fun postEvent(subject: Any?) {
+        override fun postEvent(subject: Any) {
             throw UnsupportedOperationException()
         }
 
-        override fun isStale(subject: Any?, listener: Any?): Boolean = false
+        override fun isStale(subject: Any, listener: Any): Boolean = false
     }
 
     /**
      * Manage a subject/listener pair, plus a possible event that is queued to
      * be fired to the listener from the subject.
      */
-    private class SubjectAndListener<Subject, Listener, Event>(
+    private class SubjectAndListener<Subject : Any, Listener : Any, Event : Any>(
         val subject: Subject,
         val listener: Listener,
-        private val eventFormat: EventFormat<Subject, Listener, Event>?,
+        private val eventFormat: EventFormat<Subject, Listener, Event>,
     ) {
         private var pendingEvent: Any? = null
 
         fun hasPendingEvent(): Boolean = pendingEvent != null
 
-        fun isStale(): Boolean = eventFormat!!.isStale(subject, listener)
+        fun isStale(): Boolean = eventFormat.isStale(subject, listener)
 
         fun addPendingEvent(pendingEvent: Event) {
             if (this.pendingEvent != null) throw IllegalStateException()
-            if (pendingEvent == null) throw IllegalStateException()
             this.pendingEvent = pendingEvent
         }
 
@@ -360,7 +355,7 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
         }
 
         @Suppress("UNCHECKED_CAST")
-        fun addPendingEventObject(pendingEvent: Any?) {
+        fun addPendingEventObject(pendingEvent: Any) {
             addPendingEvent(pendingEvent as Event)
         }
 
@@ -368,7 +363,7 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
         fun firePendingEvent() {
             assert(pendingEvent != null)
             try {
-                eventFormat!!.fire(subject, pendingEvent as Event, listener)
+                eventFormat.fire(subject, pendingEvent as Event, listener)
             } finally {
                 pendingEvent = null
             }
@@ -396,16 +391,16 @@ private fun recordException(
 }
 
 private fun postEvent(
-    eventFormat: SequenceDependenciesEventPublisher.EventFormat<*, *, *>?,
-    subject: Any?,
+    eventFormat: SequenceDependenciesEventPublisher.EventFormat<*, *, *>,
+    subject: Any,
 ) {
     postEventTyped(eventFormat, subject)
 }
 
 @Suppress("UNCHECKED_CAST")
-private fun <Subject> postEventTyped(
-    eventFormat: SequenceDependenciesEventPublisher.EventFormat<Subject, *, *>?,
-    subject: Any?,
+private fun <Subject : Any> postEventTyped(
+    eventFormat: SequenceDependenciesEventPublisher.EventFormat<Subject, *, *>,
+    subject: Any,
 ) {
-    eventFormat!!.postEvent(subject as Subject)
+    eventFormat.postEvent(subject as Subject)
 }

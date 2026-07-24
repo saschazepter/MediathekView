@@ -20,9 +20,9 @@ package ca.odell.glazedlists.event
 import ca.odell.glazedlists.EventList
 import java.util.EventObject
 
-abstract class ListEvent<E> protected constructor(sourceList: EventList<E>?) : EventObject(sourceList) {
+abstract class ListEvent<E> protected constructor(sourceList: EventList<E>) : EventObject(sourceList) {
     @JvmField
-    protected var sourceList: EventList<E> = sourceList as EventList<E>
+    protected var sourceList: EventList<E> = sourceList
 
     @get:JvmName("getIndexProperty")
     @get:JvmSynthetic

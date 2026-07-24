@@ -23,7 +23,7 @@ import ca.odell.glazedlists.impl.event.Tree4Deltas
 
 private open class Tree4DeltasListEvent<E>(
     private val deltasAssembler: ListEventAssembler<E>,
-    sourceList: EventList<E>?,
+    sourceList: EventList<E>,
 ) : ListEvent<E>(sourceList) {
     private var deltasIterator: Tree4Deltas.Iterator<E>? = null
     private var linearIterator: BlockSequence<E>.Iterator? = null

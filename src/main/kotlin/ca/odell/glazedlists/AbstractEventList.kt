@@ -32,38 +32,34 @@ import java.util.function.Predicate
 import java.util.function.UnaryOperator
 
 @Suppress("INAPPLICABLE_JVM_NAME", "UNCHECKED_CAST")
-abstract class AbstractEventList<E> : EventList<E> {
+abstract class AbstractEventList<E> protected constructor(
+    initialPublisher: ListEventPublisher,
+) : EventList<E> {
     /** the read/write lock provides mutual exclusion to access */
-    private var readWriteLockBacking: ReadWriteLock? = null
+    private lateinit var readWriteLockBacking: ReadWriteLock
 
     override var readWriteLock: ReadWriteLock
-        get() = legacyNullable(readWriteLockBacking)
+        get() = readWriteLockBacking
         @JvmSynthetic
         protected set(value) {
             readWriteLockBacking = value
         }
 
     /** the publisher manages the distribution of changes */
-    override var publisher: ListEventPublisher = legacyNullable<ListEventPublisher>(null)
+    override var publisher: ListEventPublisher = initialPublisher
         @JvmSynthetic protected set
 
     /** the change event and notification system */
     @JvmField
-    protected var updates: ListEventAssembler<E>
+    protected var updates: ListEventAssembler<E> = ListEventAssembler(this, initialPublisher)
 
-    protected constructor(publisher: ListEventPublisher?) {
-        val resolvedPublisher = publisher ?: ListEventAssembler.createListEventPublisher()
-        this.publisher = resolvedPublisher
-        updates = ListEventAssembler(this, resolvedPublisher)
-    }
+    protected constructor() : this(ListEventAssembler.createListEventPublisher())
 
-    protected constructor() : this(null)
-
-    override fun addListEventListener(listChangeListener: ListEventListener<in E>?) {
+    override fun addListEventListener(listChangeListener: ListEventListener<in E>) {
         updates.addListEventListener(listChangeListener)
     }
 
-    override fun removeListEventListener(listChangeListener: ListEventListener<in E>?) {
+    override fun removeListEventListener(listChangeListener: ListEventListener<in E>) {
         updates.removeListEventListener(listChangeListener)
     }
 
@@ -177,7 +173,6 @@ abstract class AbstractEventList<E> : EventList<E> {
     override fun removeIf(filter: @NonNull Predicate<in E>): Boolean {
         if (isEmpty()) return false
 
-        Objects.requireNonNull(filter)
         updates.beginEvent(true)
         var removed = false
         val each = iterator()
@@ -285,7 +280,4 @@ abstract class AbstractEventList<E> : EventList<E> {
         return result.toString()
     }
 
-    @JvmSynthetic
-    @Suppress("UNCHECKED_CAST")
-    private fun <T> legacyNullable(value: T?): T = value as T
 }

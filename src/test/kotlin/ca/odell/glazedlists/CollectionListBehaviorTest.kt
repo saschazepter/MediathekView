@@ -272,20 +272,8 @@ internal class CollectionListBehaviorTest {
     }
 
     @Test
-    fun nullModelFailsWithExactMessageBeforeSourceListenerRegistration() {
-        val source = BasicEventList<String>()
-        val publisher = source.publisher as SequenceDependenciesEventPublisher
-
-        assertFailure<IllegalArgumentException>("model cannot be null") {
-            CollectionList<String, String>(source, null)
-        }
-
-        assertTrue(publisher.getListeners<ListEventListener<String>>(source).isEmpty())
-    }
-
-    @Test
     fun modelRemainsASamAndFunctionApplyDelegatesToGetChildren() {
-        val model = CollectionList.Model<String, Int> { parent -> parent!!.indices.toList() }
+        val model = CollectionList.Model<String, Int> { parent -> parent.indices.toList() }
 
         assertEquals(listOf(0, 1, 2), model.getChildren("abc"))
         assertEquals(listOf(0, 1, 2), (model as Function<String, List<Int>>).apply("abc"))

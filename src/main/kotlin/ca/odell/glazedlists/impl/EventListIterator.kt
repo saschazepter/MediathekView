@@ -24,24 +24,24 @@ import java.util.NoSuchElementException
 /** A list iterator that remains consistent while its source list changes. */
 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 open class EventListIterator<E> : java.util.ListIterator<E>, ListEventListener<E> {
-    private val source: EventList<E>?
+    private val source: EventList<E>
     private var nextIndex: Int
     private var lastIndex = -1
 
-    constructor(source: EventList<E>?) : this(source, 0, true)
+    constructor(source: EventList<E>) : this(source, 0, true)
 
-    constructor(source: EventList<E>?, nextIndex: Int) : this(source, nextIndex, true)
+    constructor(source: EventList<E>, nextIndex: Int) : this(source, nextIndex, true)
 
-    constructor(source: EventList<E>?, nextIndex: Int, automaticallyRemove: Boolean) {
+    constructor(source: EventList<E>, nextIndex: Int, automaticallyRemove: Boolean) {
         this.source = source
         this.nextIndex = nextIndex
 
         if (automaticallyRemove) {
             val gcProxy: ListEventListener<E> = WeakReferenceProxy(source, this)
-            source!!.addListEventListener(gcProxy)
+            source.addListEventListener(gcProxy)
             source.publisher.clearRelatedSubject(gcProxy)
         } else {
-            source!!.addListEventListener(this)
+            source.addListEventListener(this)
             source.publisher.clearRelatedSubject(this)
         }
     }

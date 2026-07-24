@@ -19,11 +19,11 @@ package ca.odell.glazedlists.event
 
 /** Defines a strategy for managing dependencies in the observer pattern. */
 interface ListEventPublisher {
-    fun setRelatedSubject(listener: Any?, relatedSubject: Any?)
+    fun setRelatedSubject(listener: Any, relatedSubject: Any)
 
-    fun clearRelatedSubject(listener: Any?)
+    fun clearRelatedSubject(listener: Any)
 
-    fun setRelatedListener(subject: Any?, relatedListener: Any?)
+    fun setRelatedListener(subject: Any, relatedListener: Any)
 
-    fun clearRelatedListener(subject: Any?, relatedListener: Any?)
+    fun clearRelatedListener(subject: Any, relatedListener: Any)
 }

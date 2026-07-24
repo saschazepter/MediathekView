@@ -20,15 +20,9 @@ package ca.odell.glazedlists.impl.adt.barcode2
 import java.util.ArrayList
 import kotlin.math.abs
 
-class FourColorTree<T>(coder: ListToByteCoder<*>?) {
-    private val coder: ListToByteCoder<*>
+class FourColorTree<T>(private val coder: ListToByteCoder<*>) {
     private var root: FourColorNode<T>? = null
     private val zeroQueue = ArrayList<FourColorNode<T>>()
-
-    init {
-        if (coder == null) throw NullPointerException("Coder cannot be null.")
-        this.coder = coder
-    }
 
     operator fun get(index: Int, indexColors: Byte): Element<T> {
         if (root == null) throw IndexOutOfBoundsException()

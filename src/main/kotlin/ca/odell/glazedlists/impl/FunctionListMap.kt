@@ -39,12 +39,8 @@ class FunctionListMap<K, V> : DisposableMap<K, V> {
     private val delegate: MutableMap<K, V>
     private val eventListener: ListEventListener<V>
 
-    constructor(source: EventList<V>?, keyFunction: ((V) -> K)?) {
-        if (keyFunction == null) {
-            throw IllegalArgumentException("keyFunction may not be null")
-        }
-
-        valueList = source!!
+    constructor(source: EventList<V>, keyFunction: (V) -> K) {
+        valueList = source
         eventListener = ListEventListener(::processListChanges)
         valueList.addListEventListener(eventListener)
         this.keyFunction = keyFunction

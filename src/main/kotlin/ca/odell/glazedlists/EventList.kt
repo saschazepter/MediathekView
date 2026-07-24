@@ -23,9 +23,9 @@ import java.util.concurrent.locks.ReadWriteLock
 
 /** An observable mutable list that publishes changes to registered listeners. */
 interface EventList<E> : MutableList<E>, AutoCloseable {
-    fun addListEventListener(listChangeListener: ListEventListener<in E>?)
+    fun addListEventListener(listChangeListener: ListEventListener<in E>)
 
-    fun removeListEventListener(listChangeListener: ListEventListener<in E>?)
+    fun removeListEventListener(listChangeListener: ListEventListener<in E>)
 
     val readWriteLock: ReadWriteLock
 

@@ -21,5 +21,5 @@ import ca.odell.glazedlists.CollectionList
 
 /** Uses each parent list directly as its own collection of children. */
 class ListCollectionListModel<E> : CollectionList.Model<List<E>, E> {
-    override fun getChildren(parent: List<E>?): List<E> = parent ?: emptyList()
+    override fun getChildren(parent: List<E>): List<E> = parent
 }

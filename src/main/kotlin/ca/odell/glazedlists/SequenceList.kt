@@ -31,14 +31,12 @@ import java.util.RandomAccess
 )
 class SequenceList<E> private constructor(
     source: SortedList<E>,
-    sequencer: Sequencer<E>?,
-    comparator: Comparator<in E>?,
+    private val sequencer: Sequencer<E>,
+    private val comparator: Comparator<in E>,
 ) : TransformedList<E, E>(source), RandomAccess {
     private val sequence: MutableList<E> = ArrayList()
-    private val comparator: Comparator<in E>
-    private val sequencer: Sequencer<E>
 
-    constructor(source: EventList<E>, sequencer: Sequencer<E>?) :
+    constructor(source: EventList<E>, sequencer: Sequencer<E>) :
             this(
                 source,
                 sequencer,
@@ -47,16 +45,11 @@ class SequenceList<E> private constructor(
 
     constructor(
         source: EventList<E>,
-        sequencer: Sequencer<E>?,
-        comparator: Comparator<in E>?,
+        sequencer: Sequencer<E>,
+        comparator: Comparator<in E>,
     ) : this(SortedList(source, comparator), sequencer, comparator)
 
     init {
-        if (sequencer == null) throw IllegalArgumentException("sequencer may not be null")
-        if (comparator == null) throw IllegalArgumentException("comparator may not be null")
-
-        this.sequencer = sequencer
-        this.comparator = comparator
         updateSequence()
         source.addListEventListener(this)
     }
@@ -139,8 +132,8 @@ class SequenceList<E> private constructor(
 
     /** Produces adjacent sequence values around an arbitrary value. */
     interface Sequencer<E> {
-        fun previous(value: E?): E
+        fun previous(value: E): E
 
-        fun next(value: E?): E
+        fun next(value: E): E
     }
 }

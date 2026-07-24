@@ -36,7 +36,7 @@ open class BeanConnector<E> : ObservableElementList.Connector<E> {
     }
 
     constructor(beanClass: Class<E>, eventMatcher: Matcher<PropertyChangeEvent>) : this(beanClass) {
-        matcher = requireEventMatcher(eventMatcher)
+        matcher = eventMatcher
     }
 
     constructor(beanClass: Class<E>, addListenerMethodName: String, removeListenerMethodName: String) {
@@ -54,7 +54,7 @@ open class BeanConnector<E> : ObservableElementList.Connector<E> {
         removeListenerMethodName: String,
         eventMatcher: Matcher<PropertyChangeEvent>,
     ) : this(beanClass, addListenerMethodName, removeListenerMethodName) {
-        matcher = requireEventMatcher(eventMatcher)
+        matcher = eventMatcher
     }
 
     override fun installListener(element: E): EventListener {
@@ -93,7 +93,4 @@ open class BeanConnector<E> : ObservableElementList.Connector<E> {
             throw RuntimeException(exception.cause)
         }
     }
-
-    private fun requireEventMatcher(eventMatcher: Matcher<PropertyChangeEvent>?): Matcher<PropertyChangeEvent> =
-        requireNotNull(eventMatcher) { "Event matcher may not be null." }
 }

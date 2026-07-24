@@ -5,7 +5,6 @@ import ca.odell.glazedlists.impl.WeakReferenceProxy
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.lang.ref.WeakReference
-import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.util.function.Consumer
 
@@ -508,35 +507,6 @@ internal class SequenceDependenciesEventPublisherTest {
     }
 
     @Test
-    fun nullPendingEventFailsBeforeDispatchOrCleanupAndPublisherRemainsReusable() {
-        val publisher = SequenceDependenciesEventPublisher()
-        val subject = NamedSubject("subject")
-        val trace = mutableListOf<String>()
-        val format = nullableConsumerFormat<NamedSubject>(onPost = { trace += "post:$it" })
-
-        publisher.addListener(subject, Consumer { value: String? -> trace += "first:$value" }, format)
-        publisher.addListener(subject, Consumer { value: String? -> trace += "second:$value" }, format)
-
-        val thrown = assertThrows(IllegalStateException::class.java) {
-            publisher.fireEvent(subject, null, format)
-        }
-
-        assertNull(thrown.message)
-        assertEquals(emptyList<String>(), trace)
-
-        publisher.fireEvent(subject, "after", format)
-
-        assertEquals(
-            listOf(
-                "first:after",
-                "second:after",
-                "post:$subject",
-            ),
-            trace,
-        )
-    }
-
-    @Test
     fun clearRelatedSubjectRequiresTheNextStructuralReorderBeforeOrderChanges() {
         val publisher = SequenceDependenciesEventPublisher()
         val rootSubject = NamedSubject("root")
@@ -748,70 +718,7 @@ internal class SequenceDependenciesEventPublisherTest {
         assertFalse(Modifier.isSynchronized(fireEvent.modifiers))
     }
 
-    @Test
-    fun javaNullParity_addListenerWithNullListenerAndNullFormatReturnsNormally() {
-        val publisher = SequenceDependenciesEventPublisher()
-        val subject = NamedSubject("subject")
-
-        invokePublisherMethod(addListenerMethod(), publisher, subject, null, null)
-
-        assertEquals(emptyList<Any?>(), publisher.getListeners<Any?>(subject))
-    }
-
-    @Test
-    fun javaNullParity_storedNullFormatFailsOnlyWhenFirstDereferenced() {
-        val publisher = SequenceDependenciesEventPublisher()
-        val subject = NamedSubject("subject")
-        val trace = mutableListOf<String>()
-        val format = consumerFormat<NamedSubject>(onPost = { trace += "post:$it" })
-        val liveListener = Consumer<String> { trace += "live:$it" }
-
-        publisher.addListener(subject, liveListener, format)
-        invokePublisherMethod(addListenerMethod(), publisher, subject, Consumer<String> { trace += "null:$it" }, null)
-
-        val thrown = assertThrows(NullPointerException::class.java) {
-            publisher.fireEvent(subject, "event", format)
-        }
-
-        assertNotNull(thrown)
-        assertEquals(
-            listOf(
-                "live:event",
-                "post:$subject",
-            ),
-            trace,
-        )
-    }
-
-    @Test
-    fun javaNullParity_fireEventWithNullFormatFailsDuringCleanupAfterDeliveryAndPublisherIsReusable() {
-        val publisher = SequenceDependenciesEventPublisher()
-        val subject = NamedSubject("subject")
-        val trace = mutableListOf<String>()
-        val format = consumerFormat<NamedSubject>(onPost = { trace += "post:$it" })
-
-        publisher.addListener(subject, Consumer<String> { trace += "listener:$it" }, format)
-
-        val thrown = assertThrows(NullPointerException::class.java) {
-            invokePublisherMethod(fireEventMethod(), publisher, subject, "first", null)
-        }
-
-        assertNotNull(thrown)
-        assertEquals(listOf("listener:first"), trace)
-
-        publisher.fireEvent(subject, "second", format)
-
-        assertEquals(
-            listOf(
-                "listener:first",
-                "listener:second",
-                "post:$subject",
-            ),
-            trace,
-        )
-    }
-
-    private fun <S> consumerFormat(
+    private fun <S : Any> consumerFormat(
         onFire: (subject: S, event: String, listener: Consumer<String>) -> Unit = { _, event, listener ->
             listener.accept(event)
         },
@@ -824,46 +731,6 @@ internal class SequenceDependenciesEventPublisherTest {
         override fun postEvent(subject: S) = onPost(subject)
 
         override fun isStale(subject: S, listener: Consumer<String>): Boolean = isStale(subject, listener)
-    }
-
-    private fun <S> nullableConsumerFormat(
-        onFire: (subject: S, event: String?, listener: Consumer<String?>) -> Unit = { _, event, listener ->
-            listener.accept(event)
-        },
-        onPost: (S) -> Unit = {},
-        isStale: (subject: S, listener: Consumer<String?>) -> Boolean = { _, _ -> false },
-    ) = object : SequenceDependenciesEventPublisher.EventFormat<S, Consumer<String?>, String?> {
-        override fun fire(subject: S, event: String?, listener: Consumer<String?>) =
-            onFire(subject, event, listener)
-
-        override fun postEvent(subject: S) = onPost(subject)
-
-        override fun isStale(subject: S, listener: Consumer<String?>): Boolean = isStale(subject, listener)
-    }
-
-    private fun addListenerMethod(): Method =
-        SequenceDependenciesEventPublisher::class.java.getDeclaredMethod(
-            "addListener",
-            Any::class.java,
-            Any::class.java,
-            SequenceDependenciesEventPublisher.EventFormat::class.java,
-        )
-
-    private fun fireEventMethod(): Method =
-        SequenceDependenciesEventPublisher::class.java.getDeclaredMethod(
-            "fireEvent",
-            Any::class.java,
-            Any::class.java,
-            SequenceDependenciesEventPublisher.EventFormat::class.java,
-        )
-
-    private fun invokePublisherMethod(method: Method, publisher: Any, vararg args: Any?) {
-        method.isAccessible = true
-        try {
-            method.invoke(publisher, *args)
-        } catch (exception: java.lang.reflect.InvocationTargetException) {
-            throw exception.targetException
-        }
     }
 
     private fun clearWeakReferenceProxyTarget(proxy: WeakReferenceProxy<*>) {

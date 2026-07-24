@@ -21,7 +21,7 @@ fun <E> EventList<E>.replaceAll(
 fun <E> EventList<E>.replaceAll(
     source: List<E>,
     updates: Boolean,
-    comparator: Comparator<E>?,
+    comparator: Comparator<E>,
 ) {
     Diff.replaceAll(this, source, updates, comparator)
 }

@@ -41,13 +41,12 @@ open class PluggableList<E>(source: EventList<E>) : TransformedList<E, E>(source
     @JvmName("remove")
     override fun removeAt(index: Int): E = super.removeAt(index)
 
-    open fun setSource(source: EventList<E>?) {
+    open fun setSource(source: EventList<E>) {
         readWriteLock.writeLock().lock()
         try {
             val currentSource = checkNotNull(this.source) {
                 "setSource may not be called on a disposed PluggableList"
             }
-            requireNotNull(source) { "source may not be null" }
             require(readWriteLock == source.readWriteLock) {
                 "source list must share lock with PluggableList"
             }

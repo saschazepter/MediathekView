@@ -38,30 +38,23 @@ import org.jspecify.annotations.NonNull
     "PLATFORM_CLASS_MAPPED_TO_KOTLIN",
     "UNCHECKED_CAST",
 )
-class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
+class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
     ListEventListener<List<V>> {
     private val groupingList: GroupingList<V>
     private val valueList: FunctionList<List<V>, List<V>>
     private val keyList: MutableList<K>
     private var cachedKeySet: KeySet<K, V>? = null
     private val keyFunction: (V) -> K
-    private val delegate: MutableMap<K, List<V>?>
-    private var cachedEntrySet: MutableSet<MutableMap.MutableEntry<K, List<V>?>>? = null
+    private val delegate: MutableMap<K, List<V>>
+    private var cachedEntrySet: MutableSet<MutableMap.MutableEntry<K, List<V>>>? = null
 
     constructor(
-        source: EventList<V>?,
-        keyFunction: ((V) -> K)?,
-        keyGrouper: Comparator<in K>?,
+        source: EventList<V>,
+        keyFunction: (V) -> K,
+        keyGrouper: Comparator<in K>,
     ) : super() {
-        if (keyFunction == null) {
-            throw IllegalArgumentException("keyFunction may not be null")
-        }
-        if (keyGrouper == null) {
-            throw IllegalArgumentException("keyGrouper may not be null")
-        }
-
         this.keyFunction = keyFunction
-        groupingList = GroupingList(source!!, FunctionComparator(keyFunction, keyGrouper))
+        groupingList = GroupingList(source, FunctionComparator(keyFunction, keyGrouper))
         valueList = FunctionList(groupingList, java.util.function.Function(ValueListFunction(this)))
         valueList.addListEventListener(this)
 
@@ -93,32 +86,29 @@ class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
 
     override fun containsKey(key: K): Boolean = delegate.containsKey(key)
 
-    override fun containsValue(value: List<V>?): Boolean = delegate.containsValue(value)
+    override fun containsValue(value: List<V>): Boolean = delegate.containsValue(value)
 
     override fun get(key: K): MutableList<V>? = delegate[key] as MutableList<V>?
 
-    override fun put(key: K, value: List<V>?): MutableList<V>? {
+    override fun put(key: K, value: List<V>): MutableList<V>? {
         checkKeyValueAgreement(key, value)
 
         val removed = remove(key)
-        groupingList.add(value!!)
+        groupingList.add(value)
         return removed
     }
 
-    override fun putAll(from: Map<out K, List<V>?>) {
+    override fun putAll(from: Map<out K, List<V>>) {
         for ((key, value) in from) {
             checkKeyValueAgreement(key, value)
         }
         for (key in from.keys) {
             remove(key)
         }
-        groupingList.addAll(from.values as Collection<List<V>>)
+        groupingList.addAll(from.values)
     }
 
-    private fun checkKeyValueAgreement(key: K, values: Collection<V>?) {
-        if (values == null) {
-            throw NullPointerException("Cannot invoke \"java.util.Collection.iterator()\" because \"value\" is null")
-        }
+    private fun checkKeyValueAgreement(key: K, values: Collection<V>) {
         for (value in values) {
             checkKeyValueAgreement(key, value)
         }
@@ -142,7 +132,7 @@ class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
         return if (index == -1) null else groupingList.removeAt(index)
     }
 
-    override fun remove(key: K, value: List<V>?): Boolean {
+    override fun remove(key: K, value: List<V>): Boolean {
         val currentValue = get(key)
         if (!Objects.equals(currentValue, value) || currentValue == null && !containsKey(key)) {
             return false
@@ -152,8 +142,8 @@ class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
     }
 
     @get:JvmName("values")
-    override val values: @NonNull MutableCollection<List<V>?>
-        get() = groupingList as MutableCollection<List<V>?>
+    override val values: @NonNull MutableCollection<List<V>>
+        get() = groupingList
 
     @get:JvmName("keySet")
     override val keys: @NonNull MutableSet<K>
@@ -167,12 +157,12 @@ class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
         }
 
     @get:JvmName("entrySet")
-    override val entries: @NonNull MutableSet<MutableMap.MutableEntry<K, List<V>?>>
+    override val entries: @NonNull MutableSet<MutableMap.MutableEntry<K, List<V>>>
         get() {
             var current = cachedEntrySet
             if (current == null) {
                 current =
-                    EntrySet(keyList, groupingList, delegate, this) as MutableSet<MutableMap.MutableEntry<K, List<V>?>>
+                    EntrySet(keyList, groupingList, delegate, this) as MutableSet<MutableMap.MutableEntry<K, List<V>>>
                 cachedEntrySet = current
             }
             return current
@@ -212,18 +202,18 @@ class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
     private class EntrySet<K, V>(
         private val keyList: MutableList<K>,
         private val groupingList: GroupingList<V>,
-        private val delegate: Map<K, List<V>?>,
+        private val delegate: Map<K, List<V>>,
         private val owner: GroupingListMultiMap<K, V>,
-    ) : java.util.AbstractSet<Map.Entry<K, List<V>?>>() {
+    ) : java.util.AbstractSet<Map.Entry<K, List<V>>>() {
         override val size: Int
             get() = keyList.size
 
-        override fun iterator(): MutableIterator<Map.Entry<K, List<V>?>> =
+        override fun iterator(): MutableIterator<Map.Entry<K, List<V>>> =
             EntrySetIterator(keyList.listIterator(), groupingList, owner)
 
-        override fun contains(element: Map.Entry<K, List<V>?>): Boolean = delegate.entries.contains(element)
+        override fun contains(element: Map.Entry<K, List<V>>): Boolean = delegate.entries.contains(element)
 
-        override fun remove(element: Map.Entry<K, List<V>?>): Boolean {
+        override fun remove(element: Map.Entry<K, List<V>>): Boolean {
             if (!contains(element)) return false
             owner.remove(element.key)
             return true
@@ -238,12 +228,12 @@ class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
         private val keyIterator: MutableListIterator<K>,
         private val groupingList: GroupingList<V>,
         private val owner: GroupingListMultiMap<K, V>,
-    ) : MutableIterator<Map.Entry<K, List<V>?>> {
+    ) : MutableIterator<Map.Entry<K, List<V>>> {
         override fun hasNext(): Boolean = keyIterator.hasNext()
 
-        override fun next(): Map.Entry<K, List<V>?> {
+        override fun next(): Map.Entry<K, List<V>> {
             val key = keyIterator.next()
-            return MultiMapEntry(key, owner[key], owner)
+            return MultiMapEntry(key, checkNotNull(owner[key]), owner)
         }
 
         override fun remove() {
@@ -257,25 +247,18 @@ class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
 
     private class MultiMapEntry<K, V>(
         override val key: K,
-        initialValue: MutableList<V>?,
+        initialValue: MutableList<V>,
         private val owner: GroupingListMultiMap<K, V>,
-    ) : MutableMap.MutableEntry<K, List<V>?> {
-        private val snapshotValue: MutableList<V>
-
-        init {
-            if (initialValue == null) {
-                throw IllegalArgumentException("value cannot be null")
-            }
-            snapshotValue = initialValue
-        }
+    ) : MutableMap.MutableEntry<K, List<V>> {
+        private val snapshotValue: MutableList<V> = initialValue
 
         override val value: List<V>
             get() = snapshotValue
 
-        override fun setValue(newValue: List<V>?): List<V> {
+        override fun setValue(newValue: List<V>): List<V> {
             owner.checkKeyValueAgreement(key, newValue)
             val oldValue = ArrayList(snapshotValue)
-            snapshotValue.addAll(newValue!!)
+            snapshotValue.addAll(newValue)
             snapshotValue.removeAll(oldValue)
             return oldValue
         }

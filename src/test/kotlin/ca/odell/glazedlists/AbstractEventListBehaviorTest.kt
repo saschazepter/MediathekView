@@ -126,7 +126,7 @@ internal class AbstractEventListBehaviorTest {
         )
         assertEquals(setOf("close"), type.declaredMethods.filter(Method::isBridge).map(Method::getName).toSet())
         assertEquals(
-            setOf("legacyNullable", "setPublisher", "setReadWriteLock"),
+            setOf("setPublisher", "setReadWriteLock"),
             type.declaredMethods.filter(Method::isSynthetic).map(Method::getName).toSet(),
         )
         assertTrue(type.declaredMethods.none { it.name == "dispose" })
@@ -164,14 +164,16 @@ internal class AbstractEventListBehaviorTest {
     }
 
     @Test
-    fun constructorsPreservePublisherIdentityAndLeaveLockDeferredToSubclasses() {
+    fun constructorsPreservePublisherIdentityAndRequireSubclassesToInitializeTheLock() {
         val defaultList = ReadOnlyEventList<String>()
         val customPublisher = ListEventAssembler.createListEventPublisher()
         val customLock = ReentrantReadWriteLock()
         val configuredList = ReadOnlyEventList<String>(publisher = customPublisher, lock = customLock)
 
         assertNotNull(defaultList.publisher)
-        assertNull(defaultList.readWriteLock)
+        assertThrows(UninitializedPropertyAccessException::class.java) {
+            defaultList.readWriteLock
+        }
         assertSame(defaultList, assemblerSourceOf(defaultList))
         assertSame(defaultList.publisher, assemblerPublisherOf(defaultList))
         assertTrue(listenersOf(defaultList).isEmpty())
@@ -181,11 +183,6 @@ internal class AbstractEventListBehaviorTest {
         assertSame(configuredList, assemblerSourceOf(configuredList))
         assertSame(customPublisher, assemblerPublisherOf(configuredList))
         assertTrue(listenersOf(configuredList).isEmpty())
-
-        val publisherField = AbstractEventList::class.java.getDeclaredField("publisher")
-        publisherField.isAccessible = true
-        publisherField.set(configuredList, null)
-        assertNull(AbstractEventList::class.java.getMethod("getPublisher").invoke(configuredList))
     }
 
     @Test
@@ -234,7 +231,7 @@ internal class AbstractEventListBehaviorTest {
     }
 
     @Test
-    fun listenerRegistrationPreservesIdentityDuplicatesAndCurrentNullDiagnostics() {
+    fun listenerRegistrationPreservesIdentityAndDuplicates() {
         val source = BasicEventList<String>()
         val duplicate = ListEventListener<String> {}
         val other = ListEventListener<String> {}
@@ -244,18 +241,6 @@ internal class AbstractEventListBehaviorTest {
         source.addListEventListener(other)
 
         assertEquals(listOf(duplicate, duplicate, other), listenersOf(source))
-
-        val addFailure =
-            assertThrows(NullPointerException::class.java) {
-                invokeListenerMethod(source, "addListEventListener", null)
-            }
-        assertEquals("ListEventListener is undefined", addFailure.message)
-
-        val removeFailure =
-            assertThrows(NullPointerException::class.java) {
-                invokeListenerMethod(source, "removeListEventListener", null)
-            }
-        assertEquals("ListEventListener is undefined", removeFailure.message)
 
         source.removeListEventListener(duplicate)
         assertEquals(listOf(duplicate, other), listenersOf(source))
@@ -445,50 +430,6 @@ internal class AbstractEventListBehaviorTest {
         val clearFailure = assertThrows(UnsupportedOperationException::class.java) { readOnlyClear.clear() }
         assertEquals("this list does not support remove()", clearFailure.message)
         assertTrue(updatesOf(readOnlyClear).isEventInProgress())
-    }
-
-    @Test
-    @Suppress("RemoveExplicitTypeArguments")
-    fun rawJavaNullBulkCallsPinTheAcceptedKotlinEntryCheckDrift() {
-        fun emptyList() = RecordingEventList<String>().apply { resetHookCounts() }
-
-        listOf(
-            Triple("removeAll", arrayOf(Collection::class.java), arrayOfNulls<Any>(1)),
-            Triple("retainAll", arrayOf(Collection::class.java), arrayOfNulls<Any>(1)),
-            Triple("removeIf", arrayOf(Predicate::class.java), arrayOfNulls<Any>(1)),
-            Triple("replaceAll", arrayOf(UnaryOperator::class.java), arrayOfNulls<Any>(1)),
-        ).forEach { (name, parameterTypes, arguments) ->
-            val source = emptyList()
-            assertThrows(NullPointerException::class.java) {
-                invokeMethod(source, name, parameterTypes, arguments)
-            }
-            assertEquals(0, source.sizeCalls, name)
-            assertFalse(updatesOf(source).isEventInProgress(), name)
-        }
-
-        val indexedAdd = emptyList()
-        assertThrows(NullPointerException::class.java) {
-            invokeMethod(
-                indexedAdd,
-                "addAll",
-                arrayOf(Int::class.javaPrimitiveType!!, Collection::class.java),
-                arrayOf(-1, null),
-            )
-        }
-        assertEquals(0, indexedAdd.sizeCalls)
-
-        val append = emptyList()
-        assertThrows(NullPointerException::class.java) {
-            invokeMethod(append, "addAll", arrayOf(Collection::class.java), arrayOf(null))
-        }
-        assertEquals(0, append.sizeCalls)
-
-        val nonEmptyReplace = RecordingEventList(listOf("A")).apply { resetHookCounts() }
-        assertThrows(NullPointerException::class.java) {
-            invokeMethod(nonEmptyReplace, "replaceAll", arrayOf(UnaryOperator::class.java), arrayOf(null))
-        }
-        assertEquals(0, nonEmptyReplace.sizeCalls)
-        assertFalse(updatesOf(nonEmptyReplace).isEventInProgress())
     }
 
     @Test
@@ -714,7 +655,7 @@ internal class AbstractEventListBehaviorTest {
         initial: Collection<E> = emptyList(),
         publisher: ListEventPublisher? = null,
         lock: ReadWriteLock? = null,
-    ) : AbstractEventList<E>(publisher) {
+    ) : AbstractEventList<E>(publisher ?: ListEventAssembler.createListEventPublisher()) {
         private val data = ArrayList(initial)
 
         var sizeCalls = 0
@@ -777,7 +718,7 @@ internal class AbstractEventListBehaviorTest {
         initial: Collection<E> = emptyList(),
         publisher: ListEventPublisher? = null,
         lock: ReadWriteLock? = null,
-    ) : AbstractEventList<E>(publisher) {
+    ) : AbstractEventList<E>(publisher ?: ListEventAssembler.createListEventPublisher()) {
         private val data = ArrayList(initial)
 
         var sizeCalls = 0

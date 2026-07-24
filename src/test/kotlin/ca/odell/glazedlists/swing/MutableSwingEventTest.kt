@@ -20,26 +20,12 @@ package ca.odell.glazedlists.swing
 import ca.odell.glazedlists.event.ListEvent
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 import javax.swing.event.ListDataEvent
 import javax.swing.event.TableModelEvent
 import javax.swing.table.DefaultTableModel
 
 internal class MutableSwingEventTest {
-    @Test
-    fun nullSourcesKeepTheSwingEventConstructorFailure() {
-        val listFailure = assertThrows(IllegalArgumentException::class.java) {
-            MutableListDataEvent(null)
-        }
-        val tableFailure = assertThrows(IllegalArgumentException::class.java) {
-            MutableTableModelEvent(null)
-        }
-
-        assertEquals("null source", listFailure.message)
-        assertEquals("null source", tableFailure.message)
-    }
-
     @Test
     fun listEventStartsWithTheLegacyDefaultState() {
         val source = Any()

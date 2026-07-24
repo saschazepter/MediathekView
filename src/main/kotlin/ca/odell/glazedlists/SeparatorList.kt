@@ -30,7 +30,7 @@ import java.util.Collections
 @Suppress("INAPPLICABLE_JVM_NAME", "UNCHECKED_CAST")
 open class SeparatorList<E>(
     source: EventList<E>,
-    comparator: Comparator<in E>?,
+    comparator: Comparator<in E>,
     private val minimumSizeForSeparator: Int,
     defaultLimit: Int,
 ) : TransformedList<E, E>(SeparatorInjectorList(SortedList(source, comparator), defaultLimit)) {
@@ -60,7 +60,7 @@ open class SeparatorList<E>(
 
     override fun isWritable(): Boolean = true
 
-    open fun setComparator(comparator: Comparator<E>?) {
+    open fun setComparator(comparator: Comparator<E>) {
         val isEmpty = isEmpty()
         if (!isEmpty) {
             updates.beginEvent()

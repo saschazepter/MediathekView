@@ -33,11 +33,11 @@ class FunctionList<S, E> : TransformedList<S, E>, RandomAccess {
     private lateinit var forward: AdvancedFunction<S, E>
     private var reverse: Function<E, S>? = null
 
-    constructor(source: EventList<S>, forward: Function<S, E>?) : this(source, forward, null)
+    constructor(source: EventList<S>, forward: Function<S, E>) : this(source, forward, null)
 
     constructor(
         source: EventList<S>,
-        forward: Function<S, E>?,
+        forward: Function<S, E>,
         reverse: Function<E, S>?,
     ) : super(source) {
         updateForwardFunction(forward)
@@ -48,8 +48,8 @@ class FunctionList<S, E> : TransformedList<S, E>, RandomAccess {
         source.addListEventListener(this)
     }
 
-    /** The function used to map source values, or `null` only at the Kotlin boundary for legacy null validation. */
-    open var forwardFunction: Function<S, E>?
+    /** The function used to map source values. */
+    open var forwardFunction: Function<S, E>
         get() {
             val current = forward
             return if (current is AdvancedFunctionAdapter<*, *>) {
@@ -91,11 +91,7 @@ class FunctionList<S, E> : TransformedList<S, E>, RandomAccess {
         return currentReverse.apply(value)
     }
 
-    private fun updateForwardFunction(newForward: Function<S, E>?) {
-        if (newForward == null) {
-            throw IllegalArgumentException("forward Function may not be null")
-        }
-
+    private fun updateForwardFunction(newForward: Function<S, E>) {
         if (newForward is AdvancedFunction<*, *>) {
             forward = newForward as AdvancedFunction<S, E>
             if (!needDispose) {

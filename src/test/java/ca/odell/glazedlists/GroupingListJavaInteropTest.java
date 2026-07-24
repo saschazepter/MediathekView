@@ -19,7 +19,6 @@ package ca.odell.glazedlists;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.lang.reflect.Modifier;
@@ -68,19 +67,4 @@ class GroupingListJavaInteropTest {
         }
     }
 
-    @Test
-    @SuppressWarnings("DataFlowIssue")
-    void rejectsNullWholeGroupWritesBeforeMutation() {
-        final BasicEventList<String> source = new BasicEventList<>();
-        source.addAll(List.of("a", "b"));
-        final GroupingList<String> grouping = new GroupingList<>(source);
-
-        assertThrows(NullPointerException.class, () -> grouping.set(0, null));
-        assertEquals(List.of("a", "b"), source);
-        assertEquals(List.of(List.of("a"), List.of("b")), grouping);
-
-        assertThrows(NullPointerException.class, () -> grouping.add(0, null));
-        assertEquals(List.of("a", "b"), source);
-        assertEquals(List.of(List.of("a"), List.of("b")), grouping);
-    }
 }

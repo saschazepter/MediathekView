@@ -58,13 +58,13 @@ class EventInterfacesJavaInteropTest {
             }
         };
 
-        publisher.setRelatedSubject("listener", null);
+        publisher.setRelatedSubject("listener", "subject");
         publisher.clearRelatedSubject("listener");
         publisher.setRelatedListener("subject", "related");
         publisher.clearRelatedListener("subject", "related");
 
         assertEquals(List.of(
-                "setSubject:listener:null",
+                "setSubject:listener:subject",
                 "clearSubject:listener",
                 "setListener:subject:related",
                 "clearListener:subject:related"), calls);

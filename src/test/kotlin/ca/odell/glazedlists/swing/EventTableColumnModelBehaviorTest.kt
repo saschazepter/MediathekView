@@ -32,7 +32,7 @@ import javax.swing.table.TableColumn
 
 internal class EventTableColumnModelBehaviorTest {
     @Test
-    fun constructorDefaultsEnumerationLookupsAndNullValidationRemainExact() = onEdt {
+    fun constructorDefaultsEnumerationAndLookupsRemainExact() = onEdt {
         val first = column("first", 40)
         val second = column("second", 60)
         val source = BasicEventList<TableColumn>().apply { addAll(listOf(first, second)) }
@@ -57,9 +57,6 @@ internal class EventTableColumnModelBehaviorTest {
             assertEquals(-1, model.getColumnIndexAtX(-1))
             assertEquals(firstListenerCount + 1, first.propertyChangeListeners.size)
             assertEquals(secondListenerCount + 1, second.propertyChangeListeners.size)
-            assertEquals("identifier is null", assertThrows(IllegalArgumentException::class.java) {
-                model.getColumnIndex(null)
-            }.message)
             assertEquals("Identifier not found", assertThrows(IllegalArgumentException::class.java) {
                 model.getColumnIndex("missing")
             }.message)
@@ -68,11 +65,6 @@ internal class EventTableColumnModelBehaviorTest {
         }
         assertEquals(firstListenerCount, first.propertyChangeListeners.size)
         assertEquals(secondListenerCount, second.propertyChangeListeners.size)
-
-        @Suppress("UNCHECKED_CAST")
-        val nullSource = BasicEventList<TableColumn?>().apply { add(null) } as EventList<TableColumn>
-        val failure = assertThrows(IllegalStateException::class.java) { EventTableColumnModel(nullSource) }
-        assertEquals("null TableColumn objects are not allowed in EventTableColumnModel", failure.message)
     }
 
     @Test
@@ -252,61 +244,6 @@ internal class EventTableColumnModelBehaviorTest {
         selectionModel.addSelectionInterval(0, 0)
         assertEquals(1, events.selectionChanges)
         assertThrows(NullPointerException::class.java) { model.dispose() }
-    }
-
-    @Test
-    fun nullInsertionCommitsBeforeTheListenerRejectsIt() = onEdt {
-        val source = BasicEventList<TableColumn>()
-        val model = EventTableColumnModel(source)
-
-        val failure = assertThrows(IllegalStateException::class.java) { model.addColumn(null) }
-        assertEquals("null TableColumn objects are not allowed in EventTableColumnModel", failure.message)
-        assertEquals(1, source.size)
-        assertNull(source[0])
-    }
-
-    @Test
-    fun replacingACommittedNullMutatesBeforeFailingWithoutTransferringListeners() = onEdt {
-        val source = BasicEventList<TableColumn>()
-        val model = EventTableColumnModel(source)
-        assertThrows(IllegalStateException::class.java) { model.addColumn(null) }
-        val replacement = column("replacement")
-        val replacementListenerCount = replacement.propertyChangeListeners.size
-        val events = EventRecorder().also(model::addColumnModelListener)
-
-        assertThrows(NullPointerException::class.java) { source[0] = replacement }
-        assertSame(replacement, source[0])
-        assertEquals(replacementListenerCount, replacement.propertyChangeListeners.size)
-        assertTrue(events.columnEvents.isEmpty())
-        model.dispose()
-    }
-
-    @Test
-    fun replacingACommittedNullWithNullRejectsTheNewValueBeforeReadingTheOldOne() = onEdt {
-        val source = BasicEventList<TableColumn>()
-        val model = EventTableColumnModel(source)
-        assertThrows(IllegalStateException::class.java) { model.addColumn(null) }
-        @Suppress("UNCHECKED_CAST")
-        val nullableSource = source as EventList<TableColumn?>
-
-        assertThrows(IllegalStateException::class.java) { nullableSource[0] = null }
-        assertNull(source[0])
-    }
-
-    @Test
-    fun deletingACommittedNullMutatesSelectionBeforeFailingWithoutColumnEvent() = onEdt {
-        val first = column("first")
-        val source = BasicEventList<TableColumn>().apply { add(first) }
-        val model = EventTableColumnModel(source)
-        assertThrows(IllegalStateException::class.java) { model.addColumn(null) }
-        model.selectionModel.addSelectionInterval(1, 1)
-        val events = EventRecorder().also(model::addColumnModelListener)
-
-        assertThrows(NullPointerException::class.java) { source.removeAt(1) }
-        assertEquals(listOf(first), source.toList())
-        assertTrue(model.selectionModel.isSelectionEmpty)
-        assertTrue(events.columnEvents.isEmpty())
-        model.dispose()
     }
 
     private fun column(identifier: Any, width: Int = 75): TableColumn =

@@ -96,31 +96,31 @@ object GlazedLists {
     fun <T> reverseComparator(): Comparator<T> where T : Comparable<T> =
         Singletons.REVERSED_COMPARABLE as Comparator<T>
 
-    fun <T> reverseComparator(forward: Comparator<T>?): Comparator<T> = ReverseComparator(forward!!)
+    fun <T> reverseComparator(forward: Comparator<T>): Comparator<T> = ReverseComparator(forward)
 
-    fun <T> tableFormat(
-        propertyNames: Array<String>?,
-        columnLabels: Array<String>?,
-    ): TableFormat<T> = BeanTableFormat(null, propertyNames!!, columnLabels!!)
+    fun <T : Any> tableFormat(
+        propertyNames: Array<String>,
+        columnLabels: Array<String>,
+    ): TableFormat<T> = BeanTableFormat(null, propertyNames, columnLabels)
 
-    fun <T> tableFormat(
-        baseClass: Class<T>?,
-        propertyNames: Array<String>?,
-        columnLabels: Array<String>?,
-    ): TableFormat<T> = BeanTableFormat(baseClass, propertyNames!!, columnLabels!!)
+    fun <T : Any> tableFormat(
+        baseClass: Class<T>,
+        propertyNames: Array<String>,
+        columnLabels: Array<String>,
+    ): TableFormat<T> = BeanTableFormat(baseClass, propertyNames, columnLabels)
 
-    fun <T> tableFormat(
-        propertyNames: Array<String>?,
-        columnLabels: Array<String>?,
-        editable: BooleanArray?,
-    ): TableFormat<T> = BeanTableFormat(null, propertyNames!!, columnLabels!!, editable!!)
+    fun <T : Any> tableFormat(
+        propertyNames: Array<String>,
+        columnLabels: Array<String>,
+        editable: BooleanArray,
+    ): TableFormat<T> = BeanTableFormat(null, propertyNames, columnLabels, editable)
 
-    fun <T> tableFormat(
-        baseClass: Class<T>?,
-        propertyNames: Array<String>?,
-        columnLabels: Array<String>?,
-        editable: BooleanArray?,
-    ): TableFormat<T> = BeanTableFormat(baseClass, propertyNames!!, columnLabels!!, editable!!)
+    fun <T : Any> tableFormat(
+        baseClass: Class<T>,
+        propertyNames: Array<String>,
+        columnLabels: Array<String>,
+        editable: BooleanArray,
+    ): TableFormat<T> = BeanTableFormat(baseClass, propertyNames, columnLabels, editable)
 
     fun <E> textFilterator(vararg propertyNames: String): TextFilterator<E> =
         BeanTextFilterator<Any?, E>(*propertyNames)
@@ -149,9 +149,9 @@ object GlazedLists {
 
     fun <E> eventListOf(vararg contents: E): EventList<E> = eventList(contents.asList())
 
-    fun <E> eventList(contents: Collection<E>?): EventList<E> {
-        val result = BasicEventList<E>(contents?.size ?: 0)
-        if (contents != null) result.addAll(contents)
+    fun <E> eventList(contents: Collection<E>): EventList<E> {
+        val result = BasicEventList<E>(contents.size)
+        result.addAll(contents)
         return result
     }
 
@@ -164,10 +164,10 @@ object GlazedLists {
     fun <E> eventList(
         publisher: ListEventPublisher?,
         lock: ReadWriteLock?,
-        contents: Collection<E>?,
+        contents: Collection<E>,
     ): EventList<E> {
-        val result = BasicEventList<E>(contents?.size ?: 0, publisher, lock)
-        if (contents != null) result.addAll(contents)
+        val result = BasicEventList<E>(contents.size, publisher, lock)
+        result.addAll(contents)
         return result
     }
 
@@ -216,14 +216,14 @@ object GlazedLists {
     fun <E> toStringFunction(
         beanClass: Class<E>,
         propertyName: String,
-    ): Function<E?, String?> {
+    ): Function<E, String?> {
         val function = StringBeanFunction<E>(beanClass, propertyName)
-        return Function { value -> function(value!!) }
+        return Function { value -> function(value) }
     }
 
-    fun <E, V> beanFunction(beanClass: Class<E>, propertyName: String): Function<E?, V> {
+    fun <E, V> beanFunction(beanClass: Class<E>, propertyName: String): Function<E, V> {
         val function = BeanFunction<E, V>(beanClass, propertyName)
-        return Function { value -> function(value!!) }
+        return Function { value -> function(value) }
     }
 
 }

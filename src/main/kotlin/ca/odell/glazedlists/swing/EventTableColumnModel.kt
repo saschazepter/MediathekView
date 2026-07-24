@@ -38,7 +38,7 @@ import javax.swing.table.TableColumnModel
 
 /** A Swing [TableColumnModel] backed by an [EventList] of [TableColumn] values. */
 open class EventTableColumnModel<T : TableColumn>(
-    source: EventList<T>?,
+    source: EventList<T>,
 ) : TableColumnModel,
     PropertyChangeListener,
     ListSelectionListener,
@@ -64,11 +64,10 @@ open class EventTableColumnModel<T : TableColumn>(
         invalidateWidthCache()
         setColumnSelectionAllowed(false)
 
-        val actualSource = source!!
-        val readLock = actualSource.readWriteLock.readLock()
+        val readLock = source.readWriteLock.readLock()
         readLock.lock()
         try {
-            for (candidate in actualSource) {
+            for (candidate in source) {
                 val column: TableColumn? = candidate
                 if (column == null) {
                     throw IllegalStateException(
@@ -77,16 +76,16 @@ open class EventTableColumnModel<T : TableColumn>(
                 }
             }
 
-            for (column in actualSource) {
+            for (column in source) {
                 column.addPropertyChangeListener(this)
             }
 
-            disposeSwingThreadSource = !actualSource.isSwingThreadProxyList()
+            disposeSwingThreadSource = !source.isSwingThreadProxyList()
             @Suppress("UNCHECKED_CAST")
             val eventSource = if (disposeSwingThreadSource) {
-                actualSource.swingThreadProxyList()
+                source.swingThreadProxyList()
             } else {
-                actualSource as TransformedList<T, T>
+                source as TransformedList<T, T>
             }
             swingThreadSource = eventSource
             eventSource.addListEventListener(this)
@@ -96,18 +95,18 @@ open class EventTableColumnModel<T : TableColumn>(
     }
 
     @Suppress("UNCHECKED_CAST")
-    override fun addColumn(column: TableColumn?) {
+    override fun addColumn(column: TableColumn) {
         val currentSource = swingThreadSource
         val writeLock = currentSource.readWriteLock.writeLock()
         writeLock.lock()
         try {
-            currentSource.add(nullableValue(column))
+            currentSource.add(column as T)
         } finally {
             writeLock.unlock()
         }
     }
 
-    override fun removeColumn(column: TableColumn?) {
+    override fun removeColumn(column: TableColumn) {
         val currentSource = swingThreadSource
         val writeLock = currentSource.readWriteLock.writeLock()
         writeLock.lock()
@@ -168,9 +167,7 @@ open class EventTableColumnModel<T : TableColumn>(
     override fun getColumns(): Enumeration<TableColumn> =
         Collections.enumeration(swingThreadSource as List<TableColumn>)
 
-    override fun getColumnIndex(identifier: Any?): Int {
-        if (identifier == null) throw IllegalArgumentException("identifier is null")
-
+    override fun getColumnIndex(identifier: Any): Int {
         val currentSource = swingThreadSource
         val readLock = currentSource.readWriteLock.readLock()
         readLock.lock()
@@ -263,8 +260,7 @@ open class EventTableColumnModel<T : TableColumn>(
         return count
     }
 
-    override fun setSelectionModel(newModel: ListSelectionModel?) {
-        if (newModel == null) throw IllegalArgumentException("newModel may not be null")
+    override fun setSelectionModel(newModel: ListSelectionModel) {
         if (newModel === selectionModel) return
 
         selectionModel?.removeListSelectionListener(this)

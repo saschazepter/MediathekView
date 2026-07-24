@@ -169,27 +169,6 @@ internal class DiffBehaviorTest {
         )
     }
 
-    @Test
-    fun publicExtensionDefersNullComparatorFailureUntilAComparisonIsRequired() {
-        val emptyToEmpty = BasicEventList<String>()
-        emptyToEmpty.replaceAll(emptyList(), false, null)
-        assertEquals(emptyList<String>(), emptyToEmpty.toList())
-
-        val insertionOnly = BasicEventList<String>()
-        insertionOnly.replaceAll(listOf("A"), false, null)
-        assertEquals(listOf("A"), insertionOnly.toList())
-
-        val deletionOnly = BasicEventList<String>().apply { add("A") }
-        deletionOnly.replaceAll(emptyList(), false, null)
-        assertEquals(emptyList<String>(), deletionOnly.toList())
-
-        val comparisonRequired = BasicEventList<String>().apply { add("A") }
-        assertThrows(NullPointerException::class.java) {
-            comparisonRequired.replaceAll(listOf("A"), false, null)
-        }
-        assertEquals(listOf("A"), comparisonRequired.toList())
-    }
-
     private fun <E> captureEvents(target: EventList<E>, action: () -> Unit): List<EventStep> {
         val events = mutableListOf<EventStep>()
         target.addListEventListener { event ->

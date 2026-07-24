@@ -36,12 +36,8 @@ class PluggableListJavaInteropTest {
     }
 
     @Test
-    void nullAndDisposedSourceDiagnosticsRemainAvailableToJava() {
+    void disposedSourceDiagnosticsRemainAvailableToJava() {
         final PluggableList<String> list = new PluggableList<>(new BasicEventList<>());
-
-        final IllegalArgumentException nullFailure =
-                assertThrows(IllegalArgumentException.class, () -> list.setSource(null));
-        assertEquals("source may not be null", nullFailure.getMessage());
 
         final EventList<String> replacement = list.createSourceList();
         list.dispose();

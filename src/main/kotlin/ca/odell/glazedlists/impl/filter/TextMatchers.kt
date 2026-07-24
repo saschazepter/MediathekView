@@ -38,7 +38,7 @@ object TextMatchers {
             val strings: List<*> = if (searchTermField != null) {
                 searchTerm.fieldFilterStrings.apply {
                     clear()
-                    requireNotNull(searchTermField.textFilterator).getFilterStrings(this, element)
+                    searchTermField.textFilterator.getFilterStrings(this, element)
                 }
             } else {
                 if (!filterStringsPopulated) {
@@ -152,7 +152,7 @@ object TextMatchers {
         fields: Set<SearchEngineTextMatcherEditor.Field<E>>,
     ): Array<SearchTerm<E>> {
         val searchTerms = ArrayList<SearchTerm<E>>()
-        val fieldMap = fields.associateBy { requireNotNull(it.name) }
+        val fieldMap = fields.associateBy { it.name }
 
         var searchTermText = StringBuilder()
         var field: SearchEngineTextMatcherEditor.Field<E>? = null

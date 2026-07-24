@@ -38,14 +38,14 @@ class UndoSupport<E> private constructor(
     private var editAdapter: ((UndoRedoSupport.Edit) -> UndoableEdit)? = editAdapter
 
     init {
-        undoRedoSupport!!.addUndoSupportListener(undoSupportHandler)
+        undoRedoSupport!!.addUndoSupportListener(requireNotNull(undoSupportHandler))
     }
 
     fun uninstall() {
         checkAccessThread()
 
         val support = undoRedoSupport!!
-        support.removeUndoSupportListener(undoSupportHandler)
+        support.removeUndoSupportListener(requireNotNull(undoSupportHandler))
         support.uninstall()
 
         undoSupportHandler = null

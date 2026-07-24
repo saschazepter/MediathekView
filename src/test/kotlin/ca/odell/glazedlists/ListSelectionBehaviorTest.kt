@@ -238,7 +238,7 @@ internal class ListSelectionBehaviorTest {
     }
 
     @Test
-    fun selectionListenerDispatchUsesCopyOnWriteSnapshotsAndIgnoresNulls() {
+    fun selectionListenerDispatchUsesCopyOnWriteSnapshots() {
         val selection = ListSelection(eventListOf("a", "b"))
         val trace = mutableListOf<String>()
         val late = ListSelection.Listener { _, _ -> trace += "late" }
@@ -253,8 +253,6 @@ internal class ListSelectionBehaviorTest {
             }
         }
         second = ListSelection.Listener { _, _ -> trace += "second" }
-        selection.addSelectionListener(null)
-        selection.removeSelectionListener(null)
         selection.addSelectionListener(first)
         selection.addSelectionListener(second)
 

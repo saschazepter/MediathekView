@@ -430,23 +430,6 @@ internal class SeparatorListBehaviorTest {
     }
 
     @Test
-    fun nullComparatorConstructionFailsImmediatelyButChangingAnEmptyListDefersFailure() {
-        val constructorFailure = assertThrows(NullPointerException::class.java) {
-            separated(BasicEventList<String>(), null, 0, Int.MAX_VALUE)
-        }
-        assertTrue(constructorFailure.message!!.contains("getBarcode()"))
-
-        val source = BasicEventList<String>()
-        val list = separated(source, naturalOrder(), 0, Int.MAX_VALUE)
-        list.setComparator(null)
-        assertTrue(list.isEmpty())
-
-        assertDoesNotThrow { source.add("A") }
-        val insertionFailure = assertThrows(NullPointerException::class.java) { source.add("B") }
-        assertNull(insertionFailure.message)
-    }
-
-    @Test
     fun comparatorFailureLeavesNoOuterEventAndCorruptsTheSortedReadMapping() {
         val source = BasicEventList<String>().apply { addAll(listOf("A", "B")) }
         val list = separated(source, naturalOrder(), 0, Int.MAX_VALUE)
@@ -689,7 +672,7 @@ internal class SeparatorListBehaviorTest {
     @Suppress("UNCHECKED_CAST")
     private fun <E> separated(
         source: EventList<E>,
-        comparator: Comparator<in E>?,
+        comparator: Comparator<in E>,
         minimumSize: Int,
         limit: Int,
     ): SeparatorList<Any?> = SeparatorList(source, comparator, minimumSize, limit) as SeparatorList<Any?>
@@ -836,12 +819,12 @@ internal class SeparatorListBehaviorTest {
         override val size: Int get() = data.size
         override fun get(index: Int): E = data[index]
 
-        override fun addListEventListener(listChangeListener: ListEventListener<in E>?) {
+        override fun addListEventListener(listChangeListener: ListEventListener<in E>) {
             listenerCount++
             super.addListEventListener(listChangeListener)
         }
 
-        override fun removeListEventListener(listChangeListener: ListEventListener<in E>?) {
+        override fun removeListEventListener(listChangeListener: ListEventListener<in E>) {
             listenerCount--
             super.removeListEventListener(listChangeListener)
         }

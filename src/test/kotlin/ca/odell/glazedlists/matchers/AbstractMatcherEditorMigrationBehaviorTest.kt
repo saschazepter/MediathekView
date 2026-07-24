@@ -8,7 +8,6 @@ internal class AbstractMatcherEditorMigrationBehaviorTest {
     fun matcherTransitionsKeepStateAndEventTypes() {
         val editor = ExposedMatcherEditor<String>()
         val events = mutableListOf<MatcherEditor.Event<String>>()
-        editor.addMatcherEditorListener(null)
         editor.addMatcherEditorListener { event -> events += event }
         val changed = Matcher<String> { value -> value.startsWith('a') }
         val constrained = Matcher<String> { value -> value.startsWith("ab") }
@@ -63,7 +62,6 @@ internal class AbstractMatcherEditorMigrationBehaviorTest {
         editor.changeTo { false }
 
         assertEquals(listOf("removing"), calls)
-        editor.removeMatcherEditorListener(null)
     }
 
     private class ExposedMatcherEditor<E> : AbstractMatcherEditor<E>() {

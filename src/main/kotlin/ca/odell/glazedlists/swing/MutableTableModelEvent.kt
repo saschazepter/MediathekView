@@ -8,7 +8,7 @@ import javax.swing.event.TableModelEvent
 import javax.swing.table.TableModel
 
 /** A reusable table model event whose change information can be rewritten. */
-class MutableTableModelEvent(source: TableModel?) : TableModelEvent(source) {
+class MutableTableModelEvent(source: TableModel) : TableModelEvent(source) {
     /** Sets the inclusive first and last row range. */
     fun setRange(firstRow: Int, lastRow: Int) {
         this.firstRow = firstRow

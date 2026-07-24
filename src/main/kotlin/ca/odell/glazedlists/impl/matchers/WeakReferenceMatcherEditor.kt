@@ -24,12 +24,12 @@ class WeakReferenceMatcherEditor<E>(
         get() = source.matcher
 
     @Synchronized
-    override fun addMatcherEditorListener(listener: MatcherEditor.Listener<E>?) {
+    override fun addMatcherEditorListener(listener: MatcherEditor.Listener<E>) {
         listenerList += WeakMatcherEditorListener(this, listener)
     }
 
     @Synchronized
-    override fun removeMatcherEditorListener(listener: MatcherEditor.Listener<E>?) {
+    override fun removeMatcherEditorListener(listener: MatcherEditor.Listener<E>) {
         val iterator = listenerList.iterator()
         while (iterator.hasNext()) {
             val currentListener = iterator.next()
@@ -48,7 +48,7 @@ class WeakReferenceMatcherEditor<E>(
 
     private inner class WeakMatcherEditorListener(
         private val editor: MatcherEditor<E>,
-        listener: MatcherEditor.Listener<E>?,
+        listener: MatcherEditor.Listener<E>,
     ) : MatcherEditor.Listener<E> {
         private val weakListener = WeakReference(listener)
 

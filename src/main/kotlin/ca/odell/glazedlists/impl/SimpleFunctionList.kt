@@ -23,10 +23,8 @@ import ca.odell.glazedlists.event.ListEvent
 /** Maps each source-list element through a fixed function. */
 class SimpleFunctionList<S, E>(
     source: EventList<S>,
-    function: ((S) -> E)?,
+    private val function: (S) -> E,
 ) : TransformedList<S, E>(source) {
-    private val function = function ?: throw NullPointerException("mapping function is undefined")
-
     init {
         source.addListEventListener(this)
     }

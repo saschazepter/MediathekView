@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
-import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.util.ConcurrentModificationException
@@ -379,7 +378,7 @@ internal class ListEventAssemblerModernizationTest {
     }
 
     @Test
-    fun constructorRetainsSourcePublisherIdentityAndNullPublisherQuirk() {
+    fun constructorRetainsSourceAndPublisherIdentity() {
         val source = BasicEventList<String>()
         val publisher = ListEventAssembler.createListEventPublisher()
         val secondPublisher = ListEventAssembler.createListEventPublisher()
@@ -392,22 +391,11 @@ internal class ListEventAssemblerModernizationTest {
         assertSame(publisher, fieldValue(assembler, "publisher"))
         assertSame(source, fieldValue<ListEvent<*>>(assembler, "listEvent").sourceList)
 
-        val nullPublisherAssembler = ListEventAssembler(source, null)
-        val nullPublisherField: Any? = fieldValue(nullPublisherAssembler, "publisher")
-        assertNull(nullPublisherField)
-        assertThrows(NullPointerException::class.java) {
-            nullPublisherAssembler.addListEventListener(ListEventListener<String> {})
-        }
     }
 
     @Test
-    fun constructorRejectsNullSourceAndForeignPublisher() {
+    fun constructorRejectsForeignPublisher() {
         val source = BasicEventList<String>()
-
-        val nullSourceFailure = assertThrows(IllegalArgumentException::class.java) {
-            ListEventAssembler<String>(null, source.publisher)
-        }
-        assertEquals("null source", nullSourceFailure.message)
 
         val foreignPublisherFailure = assertThrows(ClassCastException::class.java) {
             ListEventAssembler(source, ForeignListEventPublisher())
@@ -464,22 +452,6 @@ internal class ListEventAssemblerModernizationTest {
             listOf(assemblerClass),
             eventFormatConstructor.parameterTypes.toList(),
         )
-    }
-
-    @Test
-    fun nullListenersAreRejectedWithTheExistingMessage() {
-        val source = BasicEventList<String>()
-        val assembler = ListEventAssembler(source, source.publisher)
-
-        val addFailure = assertThrows(NullPointerException::class.java) {
-            assembler.addListEventListener(null)
-        }
-        val removeFailure = assertThrows(NullPointerException::class.java) {
-            assembler.removeListEventListener(null)
-        }
-
-        assertEquals("ListEventListener is undefined", addFailure.message)
-        assertEquals("ListEventListener is undefined", removeFailure.message)
     }
 
     @Test
@@ -807,61 +779,6 @@ internal class ListEventAssemblerModernizationTest {
         }
         assertEquals("Cannot combine reorder with other change events", repeatedFailure.message)
         assembler.discardEvent()
-    }
-
-    @Test
-    fun reorderNullAfterExistingChangesFailsWithTheMixedEventMessageAndPreservesState() {
-        val source = BasicEventList<Any>()
-        val assembler = ListEventAssembler(source, source.publisher)
-        val reuseValue = Any()
-        val changes = mutableListOf<Change>()
-        assembler.addListEventListener { event -> changes += snapshotChanges(event) }
-
-        assembler.beginEvent()
-        assembler.elementInserted(0, "existing")
-        val failure = assertInvocationCause<IllegalStateException> {
-            invokeReorderAllowingNull(assembler, null)
-        }
-
-        assertEquals("Cannot combine reorder with other change events", failure.message)
-        assertTrue(assembler.isEventInProgress)
-        assertFalse(assembler.isEventEmpty)
-
-        assembler.discardEvent()
-        assertFalse(assembler.isEventInProgress)
-        assertTrue(assembler.isEventEmpty)
-
-        publishInsert(assembler, reuseValue)
-
-        assertEquals(1, changes.size)
-        assertSame(reuseValue, changes.single().newValue)
-    }
-
-    @Test
-    fun reorderNullOnAnEmptyEventFailsAfterBeginAndLeavesTheAssemblerReusable() {
-        val source = BasicEventList<Any>()
-        val assembler = ListEventAssembler(source, source.publisher)
-        val reuseValue = Any()
-        val changes = mutableListOf<Change>()
-        assembler.addListEventListener { event -> changes += snapshotChanges(event) }
-
-        assembler.beginEvent()
-        val failure = assertInvocationCause<NullPointerException> {
-            invokeReorderAllowingNull(assembler, null)
-        }
-
-        assertEquals("Cannot read the array length because \"reorderMap\" is null", failure.message)
-        assertTrue(assembler.isEventInProgress)
-        assertTrue(assembler.isEventEmpty)
-
-        assembler.discardEvent()
-        assertFalse(assembler.isEventInProgress)
-        assertTrue(assembler.isEventEmpty)
-
-        publishInsert(assembler, reuseValue)
-
-        assertEquals(1, changes.size)
-        assertSame(reuseValue, changes.single().newValue)
     }
 
     @Test
@@ -1198,68 +1115,6 @@ internal class ListEventAssemblerModernizationTest {
         assertEquals(1, copy.index)
 
         producer.assembler.discardEvent()
-    }
-
-    @Test
-    fun forwardEventNullStartsAnEventBeforeFailingAndNeedsExactlyOneDiscardBeforeReuse() {
-        val source = BasicEventList<Any>()
-        val assembler = ListEventAssembler(source, source.publisher)
-        val reuseValue = Any()
-        val changes = mutableListOf<Change>()
-        assembler.addListEventListener { event -> changes += snapshotChanges(event) }
-
-        val failure = assertInvocationCause<NullPointerException> {
-            invokeForwardEventAllowingNull(assembler, null)
-        }
-
-        assertEquals("Cannot invoke \"ca.odell.glazedlists.event.ListEvent.isReordering()\" because \"listChanges\" is null", failure.message)
-        assertTrue(assembler.isEventInProgress)
-        assertTrue(assembler.isEventEmpty)
-
-        assembler.discardEvent()
-        assertFalse(assembler.isEventInProgress)
-        assertTrue(assembler.isEventEmpty)
-
-        val extraDiscardFailure = assertThrows(IllegalStateException::class.java) {
-            assembler.discardEvent()
-        }
-        assertEquals("Cannot discard without an event in progress", extraDiscardFailure.message)
-
-        publishInsert(assembler, reuseValue)
-
-        assertEquals(1, changes.size)
-        assertSame(reuseValue, changes.single().newValue)
-    }
-
-    @Test
-    fun forwardEventNullInsideAnOuterEventLeavesTheAssemblerNestedUntilTheSecondDiscard() {
-        val source = BasicEventList<Any>()
-        val assembler = ListEventAssembler(source, source.publisher)
-        val reuseValue = Any()
-        val changes = mutableListOf<Change>()
-        assembler.addListEventListener { event -> changes += snapshotChanges(event) }
-
-        assembler.beginEvent(true)
-        val failure = assertInvocationCause<NullPointerException> {
-            invokeForwardEventAllowingNull(assembler, null)
-        }
-
-        assertEquals("Cannot invoke \"ca.odell.glazedlists.event.ListEvent.isReordering()\" because \"listChanges\" is null", failure.message)
-        assertTrue(assembler.isEventInProgress)
-        assertTrue(assembler.isEventEmpty)
-
-        assembler.discardEvent()
-        assertTrue(assembler.isEventInProgress)
-        assertTrue(assembler.isEventEmpty)
-
-        assembler.discardEvent()
-        assertFalse(assembler.isEventInProgress)
-        assertTrue(assembler.isEventEmpty)
-
-        publishInsert(assembler, reuseValue)
-
-        assertEquals(1, changes.size)
-        assertSame(reuseValue, changes.single().newValue)
     }
 
     @Test
@@ -1730,23 +1585,6 @@ internal class ListEventAssemblerModernizationTest {
         }
     }
 
-    @Suppress("SameParameterValue")
-    private fun invokeForwardEventAllowingNull(assembler: ListEventAssembler<Any>, event: ListEvent<*>?) {
-        ListEventAssembler::class.java.getMethod("forwardEvent", ListEvent::class.java).invoke(assembler, event)
-    }
-
-    @Suppress("SameParameterValue")
-    private fun invokeReorderAllowingNull(assembler: ListEventAssembler<Any>, reorderMap: IntArray?) {
-        ListEventAssembler::class.java.getMethod("reorder", IntArray::class.java).invoke(assembler, reorderMap)
-    }
-
-    private inline fun <reified T : Throwable> assertInvocationCause(crossinline invoke: () -> Unit): T {
-        val failure = assertThrows(InvocationTargetException::class.java) {
-            invoke()
-        }
-        return assertInstanceOf(T::class.java, failure.targetException)
-    }
-
     private fun assertField(
         field: Field,
         expectedDescriptor: String,
@@ -1866,13 +1704,13 @@ internal class ListEventAssemblerModernizationTest {
     )
 
     private class ForeignListEventPublisher : ListEventPublisher {
-        override fun setRelatedListener(subject: Any?, relatedListener: Any?) = Unit
+        override fun setRelatedListener(subject: Any, relatedListener: Any) = Unit
 
-        override fun clearRelatedListener(subject: Any?, relatedListener: Any?) = Unit
+        override fun clearRelatedListener(subject: Any, relatedListener: Any) = Unit
 
-        override fun setRelatedSubject(listener: Any?, relatedSubject: Any?) = Unit
+        override fun setRelatedSubject(listener: Any, relatedSubject: Any) = Unit
 
-        override fun clearRelatedSubject(listener: Any?) = Unit
+        override fun clearRelatedSubject(listener: Any) = Unit
     }
 
     private class EqualButDistinctListener(

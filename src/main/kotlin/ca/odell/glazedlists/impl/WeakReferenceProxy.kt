@@ -24,15 +24,13 @@ import java.lang.ref.WeakReference
 
 /** Forwards list events without retaining the target listener strongly. */
 class WeakReferenceProxy<E>(
-    source: EventList<E>?,
-    proxyTarget: ListEventListener<E>?,
+    source: EventList<E>,
+    proxyTarget: ListEventListener<E>,
 ) : ListEventListener<E> {
     private val proxyTargetReference: WeakReference<ListEventListener<E>>
     private var source: EventList<E>?
 
     init {
-        require(source != null) { "source may not be null" }
-        require(proxyTarget != null) { "proxyTarget may not be null" }
         this.source = source
         proxyTargetReference = WeakReference(proxyTarget)
     }

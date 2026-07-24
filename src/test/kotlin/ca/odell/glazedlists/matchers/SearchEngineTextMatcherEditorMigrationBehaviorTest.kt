@@ -43,15 +43,5 @@ internal class SearchEngineTextMatcherEditorMigrationBehaviorTest {
         assertFalse(editor.matcher.matches(TestEntry("Morning News", "Berlin")))
     }
 
-    @Test
-    fun fieldConstructorKeepsArgumentValidation() {
-        assertThrows(IllegalArgumentException::class.java) {
-            SearchEngineTextMatcherEditor.Field(null, city)
-        }
-        assertThrows(IllegalArgumentException::class.java) {
-            SearchEngineTextMatcherEditor.Field<TestEntry>("city", null)
-        }
-    }
-
     private data class TestEntry(val title: String, val city: String)
 }

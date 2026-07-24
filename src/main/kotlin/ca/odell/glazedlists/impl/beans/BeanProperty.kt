@@ -27,13 +27,11 @@ import java.util.regex.Pattern
 
 /** Models reflective getter and setter chains for a JavaBean property. */
 open class BeanProperty<T>(
-    beanClass: Class<T>?,
-    propertyName: String?,
+    private val targetBeanClass: Class<T>,
+    private val targetPropertyName: String,
     readable: Boolean,
     writable: Boolean,
 ) {
-    private val targetBeanClass = beanClass ?: throw IllegalArgumentException("beanClass may not be null")
-    private val targetPropertyName = propertyName ?: throw IllegalArgumentException("propertyName may not be null")
     private val identityProperty: Boolean
     private var resolvedValueClass: Class<*>? = null
     private var getterChain: List<Method>? = null

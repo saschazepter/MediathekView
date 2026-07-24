@@ -6,12 +6,10 @@ import ca.odell.glazedlists.EventList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
-import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
@@ -35,20 +33,6 @@ internal class ListEventContractTest {
         assertSame(ListEvent.UNKNOWN_VALUE, asString as Any)
         assertSame(asAny, ListEvent.UNKNOWN_VALUE)
         assertSame(ListEvent.UNKNOWN_VALUE, asCharSequence as Any)
-    }
-
-    @Test
-    fun constructorRejectsNullSourceThroughEventObject() {
-        val source = BasicEventList<Any>()
-        val assembler = ListEventAssembler(source, source.publisher)
-        val constructor = Class.forName("ca.odell.glazedlists.event.Tree4DeltasListEvent")
-            .getDeclaredConstructor(ListEventAssembler::class.java, EventList::class.java)
-        val failure = assertThrows(InvocationTargetException::class.java) {
-            constructor.newInstance(assembler, null)
-        }
-
-        assertTrue(failure.cause is IllegalArgumentException)
-        assertEquals("null source", failure.cause?.message)
     }
 
     @Test

@@ -22,13 +22,6 @@ internal class MatcherUtilityMigrationBehaviorTest {
     }
 
     @Test
-    fun propertyNameCollectionMustNotBeNull() {
-        assertThrows(IllegalArgumentException::class.java) {
-            PropertyEventNameMatcher(true, null as Collection<String>?)
-        }
-    }
-
-    @Test
     fun weakProxyRewritesEventSourceAndSupportsIdentityRemoval() {
         val source = MutableMatcherEditor<String>()
         val proxy = WeakReferenceMatcherEditor(source)

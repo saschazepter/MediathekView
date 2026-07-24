@@ -26,21 +26,6 @@ class SequencersJavaInteropTest {
     }
 
     @Test
-    void monthSequencerRejectsNullWithTheOriginalFailureContract() {
-        final SequenceList.Sequencer<Date> sequencer = Sequencers.INSTANCE.monthSequencer();
-
-        final IllegalArgumentException previousFailure = assertThrows(
-                IllegalArgumentException.class,
-                () -> sequencer.previous(null));
-        assertEquals("date may not be null", previousFailure.getMessage());
-
-        final IllegalArgumentException nextFailure = assertThrows(
-                IllegalArgumentException.class,
-                () -> sequencer.next(null));
-        assertEquals("date may not be null", nextFailure.getMessage());
-    }
-
-    @Test
     void utilityFacadeIsExposedAsAKotlinObject() throws ReflectiveOperationException {
         assertTrue(Modifier.isFinal(Sequencers.class.getModifiers()));
 

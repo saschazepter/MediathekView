@@ -225,20 +225,6 @@ internal class GrouperBehaviorTest {
         assertEquals("UD", fixture.barcodePattern())
     }
 
-    @Test
-    fun nullClientFailureIsDeferredUntilCallbackDispatch() {
-        val source = BasicEventList<String>()
-        val sortedList = SortedList(source, naturalOrder())
-        val grouper = Grouper(sortedList, null)
-
-        assertNull(grouper.client)
-        sortedList.addListEventListener(grouper::listChanged)
-
-        assertThrows(NullPointerException::class.java) { source.add("a") }
-        assertEquals(1, grouper.barcode.size())
-        assertSame(Grouper.UNIQUE, grouper.barcode[0])
-    }
-
     private class Fixture<E>(
         source: EventList<E>,
         comparator: Comparator<in E>,

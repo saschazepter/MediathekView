@@ -45,14 +45,6 @@ class CompositeListJavaInteropTest {
         assertSame(composite.getReadWriteLock(), numbers.getReadWriteLock());
     }
 
-    @Test
-    void infrastructureConstructorKeepsAcceptingNullFallbacks() {
-        final CompositeList<String> composite = new CompositeList<>(null, null);
-
-        assertNotNull(composite.getPublisher());
-        assertNotNull(composite.getReadWriteLock());
-    }
-
     private static final class CompositeListSubclass extends CompositeList<String> {
     }
 }

@@ -23,7 +23,7 @@ import ca.odell.glazedlists.gui.WritableTableFormat
 import java.util.Comparator
 
 /** Reflective table format for JavaBean-style objects. */
-open class BeanTableFormat<E>(
+open class BeanTableFormat<E : Any>(
     beanClass: Class<E>?,
     @JvmField protected var propertyNames: Array<String>,
     @JvmField protected var columnLabels: Array<String>,
@@ -81,7 +81,6 @@ open class BeanTableFormat<E>(
 
     @Suppress("UNCHECKED_CAST")
     override fun getColumnValue(baseObject: E, column: Int): Any? {
-        if (baseObject == null) return null
         if (beanProperties == null) loadPropertyDescriptors(baseObject.javaClass as Class<E>)
         return checkNotNull(beanProperties)[column][baseObject]
     }
@@ -90,7 +89,6 @@ open class BeanTableFormat<E>(
 
     @Suppress("UNCHECKED_CAST")
     override fun setColumnValue(baseObject: E, editedValue: Any?, column: Int): E {
-        if (baseObject == null) return baseObject
         if (beanProperties == null) loadPropertyDescriptors(baseObject.javaClass as Class<E>)
         checkNotNull(beanProperties)[column].set(baseObject, editedValue)
         return baseObject

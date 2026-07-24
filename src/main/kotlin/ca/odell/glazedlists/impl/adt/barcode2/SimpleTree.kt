@@ -21,16 +21,9 @@ import ca.odell.glazedlists.GlazedLists
 import java.util.ArrayList
 import java.util.Comparator
 
-class SimpleTree<T>(comparator: Comparator<in T>?) {
+class SimpleTree<T>(val comparator: Comparator<in T>) {
     private var root: SimpleNode<T>? = null
     private val zeroQueue = ArrayList<SimpleNode<T>>()
-
-    val comparator: Comparator<in T>
-
-    init {
-        if (comparator == null) throw NullPointerException("Comparator cannot be null.")
-        this.comparator = comparator
-    }
 
     constructor() : this(comparableComparator())
 

@@ -45,13 +45,9 @@ class BeanTableFormatJavaInteropTest {
     }
 
     @Test
-    void javaNullInputsRetainTheOriginalTableFormatBehavior() {
+    void nullableEditedValuesRemainSupported() {
         final ExposedBeanTableFormat format = new ExposedBeanTableFormat();
         final Bean bean = new Bean();
-
-        assertNull(format.getColumnValue(null, 0));
-        assertTrue(format.isEditable(null, 0));
-        assertNull(format.setColumnValue(null, "ignored", 0));
 
         assertEquals(bean, format.setColumnValue(bean, null, 0));
         assertNull(bean.getValue());

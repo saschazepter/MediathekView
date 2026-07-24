@@ -178,54 +178,53 @@ class AutoCompleteSupport<E> private constructor(
 
     companion object {
         fun <E> install(
-            comboBox: JComboBox<E>?,
-            items: EventList<E>?,
+            comboBox: JComboBox<E>,
+            items: EventList<E>,
             filterator: TextFilterator<in E>? = null,
             format: Format? = null,
         ): AutoCompleteSupport<E> = installImpl(comboBox, items, filterator, format)
 
         fun <E> createTableCellEditor(
-            tableFormat: TableFormat<E>?,
-            tableData: EventList<E>?,
+            tableFormat: TableFormat<E>,
+            tableData: EventList<E>,
             columnIndex: Int,
             uniqueComparator: Comparator<*>? = GlazedLists.comparableComparator<Comparable<Any?>>(),
         ): AutoCompleteCellEditor<E> =
             createTableCellEditorImpl(uniqueComparator, tableFormat, tableData, columnIndex)
 
-        fun <E> createTableCellEditor(source: EventList<E>?): AutoCompleteCellEditor<E> =
+        fun <E> createTableCellEditor(source: EventList<E>): AutoCompleteCellEditor<E> =
             createTableCellEditorImpl(source)
 
         private fun <E> installImpl(
-            comboBox: JComboBox<E>?,
-            items: EventList<E>?,
+            comboBox: JComboBox<E>,
+            items: EventList<E>,
             filterator: TextFilterator<in E>?,
             format: Format?,
         ): AutoCompleteSupport<E> {
             checkAutoCompleteAccessThread()
-            val currentComboBox = comboBox!!
-            val editorComponent = currentComboBox.editor.editorComponent
+            val editorComponent = comboBox.editor.editorComponent
             require(editorComponent is JTextField) {
                 "comboBox must use a JTextField as its editor component"
             }
             require(editorComponent.document is AbstractDocument) {
                 "comboBox must use a JTextField backed by an AbstractDocument as its editor component"
             }
-            require(currentComboBox.model !is AutoCompleteModelMarker) {
+            require(comboBox.model !is AutoCompleteModelMarker) {
                 "comboBox is already configured for autocompletion"
             }
-            return AutoCompleteSupport(currentComboBox, items!!, filterator, format)
+            return AutoCompleteSupport(comboBox, items, filterator, format)
         }
 
         private fun <E> createTableCellEditorImpl(
             uniqueComparator: Comparator<*>?,
-            tableFormat: TableFormat<E>?,
-            tableData: EventList<E>?,
+            tableFormat: TableFormat<E>,
+            tableData: EventList<E>,
             columnIndex: Int,
         ): AutoCompleteCellEditor<E> {
             val columnValueFunction: (E) -> Any? =
                 AutoCompleteTableColumnValueFunction(tableFormat, columnIndex)
             val allColumnValues: FunctionList<E, Any?> =
-                FunctionList(tableData!!, java.util.function.Function(columnValueFunction))
+                FunctionList(tableData, java.util.function.Function(columnValueFunction))
 
             @Suppress("UNCHECKED_CAST")
             val uniqueColumnValues: EventList<Any?> =
@@ -234,7 +233,7 @@ class AutoCompleteSupport<E> private constructor(
             return createTableCellEditorImpl(uniqueColumnValues) as AutoCompleteCellEditor<E>
         }
 
-        private fun <E> createTableCellEditorImpl(source: EventList<E>?): AutoCompleteCellEditor<E> {
+        private fun <E> createTableCellEditorImpl(source: EventList<E>): AutoCompleteCellEditor<E> {
             val comboBox: JComboBox<E> = AutoCompleteTableCellComboBox()
             comboBox.putClientProperty("JComboBox.isTableCellEditor", java.lang.Boolean.TRUE)
             val autoCompleteSupport = install(comboBox, source)
@@ -1500,8 +1499,8 @@ private class AutoCompleteTableCellComboBox<E> :
 }
 
 private class AutoCompleteTableColumnValueFunction<E>(
-    private val tableFormat: TableFormat<E>?,
+    private val tableFormat: TableFormat<E>,
     private val columnIndex: Int,
 ) : (E) -> Any? {
-    override fun invoke(sourceValue: E): Any? = tableFormat!!.getColumnValue(sourceValue, columnIndex)
+    override fun invoke(sourceValue: E): Any? = tableFormat.getColumnValue(sourceValue, columnIndex)
 }

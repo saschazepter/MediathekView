@@ -36,7 +36,7 @@ internal object Diff {
         target: EventList<E>,
         source: List<E>,
         updates: Boolean,
-        comparator: Comparator<E>?,
+        comparator: Comparator<E>,
     ) {
         val editScript = shortestEditScript(ListDiffMatcher(target, source, comparator))
         var targetIndex = 0
@@ -151,7 +151,7 @@ internal object Diff {
     private class ListDiffMatcher<E>(
         private val alpha: List<E>,
         private val beta: List<E>,
-        private val comparator: Comparator<E>?,
+        private val comparator: Comparator<E>,
     ) : DiffMatcher {
         override val alphaLength: Int
             get() = alpha.size
@@ -160,6 +160,6 @@ internal object Diff {
             get() = beta.size
 
         override fun matchPair(alphaIndex: Int, betaIndex: Int): Boolean =
-            comparator!!.compare(alpha[alphaIndex], beta[betaIndex]) == 0
+            comparator.compare(alpha[alphaIndex], beta[betaIndex]) == 0
     }
 }
