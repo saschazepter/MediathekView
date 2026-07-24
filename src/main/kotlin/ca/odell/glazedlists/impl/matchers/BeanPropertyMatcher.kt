@@ -7,7 +7,7 @@ import ca.odell.glazedlists.impl.beans.BeanProperty
 import ca.odell.glazedlists.matchers.Matcher
 
 /** Matches beans whose named property equals [value]. */
-class BeanPropertyMatcher<E>(
+internal class BeanPropertyMatcher<E>(
     beanClass: Class<E>,
     propertyName: String,
     private val value: Any?,

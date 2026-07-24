@@ -25,7 +25,7 @@ import java.util.NoSuchElementException
  *
  * @author [Kevin Maltby](mailto:kevin@swank.ca)
  */
-class BarcodeIterator private constructor(
+internal class BarcodeIterator private constructor(
     private val barcode: Barcode,
 ) : MutableIterator<Any> {
     private var currentNode: BarcodeNode? = barcode.getRootNode()

@@ -23,7 +23,7 @@ import ca.odell.glazedlists.event.ListEventListener
 import java.lang.ref.WeakReference
 
 /** Forwards list events without retaining the target listener strongly. */
-class WeakReferenceProxy<E>(
+internal class WeakReferenceProxy<E>(
     source: EventList<E>,
     proxyTarget: ListEventListener<E>,
 ) : ListEventListener<E> {

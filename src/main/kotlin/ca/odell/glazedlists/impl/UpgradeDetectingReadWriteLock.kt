@@ -25,7 +25,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 /**
  * A reentrant read/write lock that fails fast for unsupported read-to-write upgrades.
  */
-class UpgradeDetectingReadWriteLock : ReentrantReadWriteLock() {
+internal class UpgradeDetectingReadWriteLock : ReentrantReadWriteLock() {
     private val guardedWriteLock = UpgradeDetectingWriteLock(this)
 
     override fun writeLock(): WriteLock = guardedWriteLock

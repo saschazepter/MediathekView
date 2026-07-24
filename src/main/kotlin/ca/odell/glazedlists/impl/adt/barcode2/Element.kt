@@ -18,7 +18,7 @@
 package ca.odell.glazedlists.impl.adt.barcode2
 
 /** The exposed interface of a tree node. */
-interface Element<V> {
+internal interface Element<V> {
     fun get(): V
 
     fun set(value: V)

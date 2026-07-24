@@ -19,7 +19,7 @@ package ca.odell.glazedlists.impl.adt.barcode2
 
 import java.util.NoSuchElementException
 
-class FourColorTreeIterator<T> {
+internal class FourColorTreeIterator<T> {
     internal var count1: Int = 0
     internal var count2: Int = 0
     internal var count4: Int = 0

@@ -34,7 +34,7 @@ private const val RIGHT_GROUP = 1
  * Manages the groups created by dividing a [SortedList] using a [Comparator].
  * The [Client] receives callbacks as groups are inserted, updated, and deleted.
  */
-open class Grouper<E>(
+internal open class Grouper<E>(
     private val sortedList: SortedList<E>,
     private val clientState: Client<E>,
 ) {

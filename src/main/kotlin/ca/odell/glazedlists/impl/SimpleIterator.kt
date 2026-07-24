@@ -21,7 +21,7 @@ import java.util.NoSuchElementException
 
 /** A forward iterator over a mutable list. */
 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-open class SimpleIterator<E>(
+internal open class SimpleIterator<E>(
     private val source: MutableList<E>?,
 ) : java.util.Iterator<E> {
     private var nextIndex = 0

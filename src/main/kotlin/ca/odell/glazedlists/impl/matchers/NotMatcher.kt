@@ -6,7 +6,7 @@ package ca.odell.glazedlists.impl.matchers
 import ca.odell.glazedlists.matchers.Matcher
 
 /** Inverts the result of [parent]. */
-open class NotMatcher<E>(private val parent: Matcher<E>) : Matcher<E> {
+internal open class NotMatcher<E>(private val parent: Matcher<E>) : Matcher<E> {
 
     override fun matches(item: E): Boolean = !parent.matches(item)
 

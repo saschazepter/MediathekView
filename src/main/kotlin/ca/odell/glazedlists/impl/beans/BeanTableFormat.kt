@@ -23,7 +23,7 @@ import ca.odell.glazedlists.gui.WritableTableFormat
 import java.util.Comparator
 
 /** Reflective table format for JavaBean-style objects. */
-open class BeanTableFormat<E : Any>(
+internal open class BeanTableFormat<E : Any>(
     beanClass: Class<E>?,
     @JvmField protected var propertyNames: Array<String>,
     @JvmField protected var columnLabels: Array<String>,

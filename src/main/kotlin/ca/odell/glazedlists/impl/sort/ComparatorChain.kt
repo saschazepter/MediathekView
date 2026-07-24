@@ -11,7 +11,7 @@ import java.util.Objects
  *
  * @author [Jesse Wilson](mailto:jesse@swank.ca)
  */
-class ComparatorChain<T>(
+internal class ComparatorChain<T>(
     comparators: Array<Comparator<T>>,
 ) : Comparator<T> {
     private val comparatorArray = comparators.clone()

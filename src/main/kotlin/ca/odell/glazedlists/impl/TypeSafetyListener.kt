@@ -21,7 +21,7 @@ import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.event.*
 
 /** Rejects inserted or updated elements whose runtime types are not configured. */
-open class TypeSafetyListener<E>(
+internal open class TypeSafetyListener<E>(
     source: EventList<E>,
     types: Set<Class<*>?>,
 ) : ListEventListener<E> {

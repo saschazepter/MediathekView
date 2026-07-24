@@ -38,7 +38,7 @@ import org.jspecify.annotations.NonNull
     "PLATFORM_CLASS_MAPPED_TO_KOTLIN",
     "UNCHECKED_CAST",
 )
-class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
+internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
     ListEventListener<List<V>> {
     private val groupingList: GroupingList<V>
     private val valueList: FunctionList<List<V>, List<V>>

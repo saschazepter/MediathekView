@@ -24,7 +24,7 @@ import javax.swing.UIManager
 import javax.swing.plaf.metal.MetalLookAndFeel
 
 /** Provides table-header sort icons matching the active look and feel. */
-object SortIconFactory {
+internal object SortIconFactory {
     private object Loader {
         private const val RESOURCE_ROOT = "resources"
         private const val DEFAULT_RESOURCE_PATH = "aqua"

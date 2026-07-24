@@ -22,7 +22,7 @@ import ca.odell.glazedlists.TransformedList
 import ca.odell.glazedlists.event.*
 
 /** A writable event-list view over a range of its source list. */
-class SubEventList<E>(
+internal class SubEventList<E>(
     source: EventList<E>,
     private var startIndex: Int,
     private var endIndex: Int,

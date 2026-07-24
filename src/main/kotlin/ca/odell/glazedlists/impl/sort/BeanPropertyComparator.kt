@@ -6,7 +6,7 @@ package ca.odell.glazedlists.impl.sort
 import ca.odell.glazedlists.impl.beans.BeanProperty
 
 /** Compares beans by a named property. */
-class BeanPropertyComparator<T>(
+internal class BeanPropertyComparator<T>(
     className: Class<T>,
     property: String,
     propertyComparator: Comparator<*>,

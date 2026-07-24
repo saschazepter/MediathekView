@@ -21,7 +21,7 @@ import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.TransformedList
 import ca.odell.glazedlists.event.ListEvent
 /** Maps each source-list element through a fixed function. */
-class SimpleFunctionList<S, E>(
+internal class SimpleFunctionList<S, E>(
     source: EventList<S>,
     private val function: (S) -> E,
 ) : TransformedList<S, E>(source) {

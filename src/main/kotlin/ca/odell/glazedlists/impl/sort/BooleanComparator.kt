@@ -4,7 +4,7 @@
 package ca.odell.glazedlists.impl.sort
 
 /** Orders boolean values as `null`, `false`, `true`. */
-class BooleanComparator : Comparator<Boolean?> {
+internal class BooleanComparator : Comparator<Boolean?> {
     override fun compare(alpha: Boolean?, beta: Boolean?): Int = alpha.ordinal - beta.ordinal
 
     override fun equals(other: Any?): Boolean = other is BooleanComparator

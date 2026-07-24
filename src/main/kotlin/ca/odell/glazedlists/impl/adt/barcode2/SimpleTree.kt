@@ -21,7 +21,7 @@ import ca.odell.glazedlists.GlazedLists
 import java.util.ArrayList
 import java.util.Comparator
 
-class SimpleTree<T>(val comparator: Comparator<in T>) {
+internal class SimpleTree<T>(val comparator: Comparator<in T>) {
     private var root: SimpleNode<T>? = null
     private val zeroQueue = ArrayList<SimpleNode<T>>()
 

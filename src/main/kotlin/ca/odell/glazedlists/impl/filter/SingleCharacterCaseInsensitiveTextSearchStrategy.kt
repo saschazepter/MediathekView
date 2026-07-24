@@ -4,7 +4,7 @@
 package ca.odell.glazedlists.impl.filter
 
 /** Case-insensitive strategy optimized for a single-character subtext. */
-open class SingleCharacterCaseInsensitiveTextSearchStrategy : AbstractTextSearchStrategy() {
+internal open class SingleCharacterCaseInsensitiveTextSearchStrategy : AbstractTextSearchStrategy() {
     private var subtextCharLower = '\u0000'
     private var subtextCharUpper = '\u0000'
     private var subtextInitialized = false

@@ -18,7 +18,7 @@
 package ca.odell.glazedlists.impl.beans
 
 /** Extracts one JavaBean property value. */
-class BeanFunction<E, V>(
+internal class BeanFunction<E, V>(
     beanClass: Class<E>,
     propertyName: String,
 ) : (E) -> V {

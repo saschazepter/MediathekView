@@ -90,7 +90,7 @@ private open class ManyToOneTableModelEventAdapter<E>(
 }
 
 /** Factory for the precise one-table-event-per-list-block adapter. */
-open class DefaultTableModelEventAdapterFactory<E> : TableModelEventAdapter.Factory<E> {
+internal open class DefaultTableModelEventAdapterFactory<E> : TableModelEventAdapter.Factory<E> {
     override fun create(tableModel: AbstractTableModel): TableModelEventAdapter<E> =
         DefaultTableModelEventAdapter(tableModel)
 
@@ -105,7 +105,7 @@ open class DefaultTableModelEventAdapterFactory<E> : TableModelEventAdapter.Fact
 }
 
 /** Factory for the adapter that emits at most one table event per list event. */
-open class ManyToOneTableModelEventAdapterFactory<E> : TableModelEventAdapter.Factory<E> {
+internal open class ManyToOneTableModelEventAdapterFactory<E> : TableModelEventAdapter.Factory<E> {
     override fun create(tableModel: AbstractTableModel): TableModelEventAdapter<E> =
         ManyToOneTableModelEventAdapter(tableModel)
 

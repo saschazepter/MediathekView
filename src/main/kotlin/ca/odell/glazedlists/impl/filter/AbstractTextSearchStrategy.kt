@@ -4,7 +4,7 @@
 package ca.odell.glazedlists.impl.filter
 
 /** Shared optional character mapping for text-search strategies. */
-abstract class AbstractTextSearchStrategy : TextSearchStrategy {
+internal abstract class AbstractTextSearchStrategy : TextSearchStrategy {
     private var characterMap: CharArray? = null
 
     override fun setCharacterMap(charMap: CharArray?) {

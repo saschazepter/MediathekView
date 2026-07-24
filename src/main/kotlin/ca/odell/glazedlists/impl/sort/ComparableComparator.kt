@@ -4,7 +4,7 @@
 package ca.odell.glazedlists.impl.sort
 
 /** Orders comparable values naturally, with `null` before non-null values. */
-class ComparableComparator<T> : Comparator<T?> where T : Comparable<T> {
+internal class ComparableComparator<T> : Comparator<T?> where T : Comparable<T> {
     override fun compare(alpha: T?, beta: T?): Int = when {
         alpha != null && beta != null -> alpha.compareTo(beta)
         alpha == null && beta == null -> 0

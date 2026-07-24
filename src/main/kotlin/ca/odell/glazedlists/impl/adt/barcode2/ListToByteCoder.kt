@@ -26,7 +26,7 @@ import java.util.Collections
  *
  * @author [Jesse Wilson](mailto:jesse@swank.ca)
  */
-class ListToByteCoder<C>(allColors: List<C>) {
+internal class ListToByteCoder<C>(allColors: List<C>) {
     val colors: List<C> = Collections.unmodifiableList(ArrayList(allColors))
 
     init {

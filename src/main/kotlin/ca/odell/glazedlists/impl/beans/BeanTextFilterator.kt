@@ -21,7 +21,7 @@ import ca.odell.glazedlists.Filterator
 import ca.odell.glazedlists.TextFilterator
 
 /** Extracts configured JavaBean properties for generic and text filtering. */
-open class BeanTextFilterator<D, E> : TextFilterator<E>, Filterator<D, E> {
+internal open class BeanTextFilterator<D, E> : TextFilterator<E>, Filterator<D, E> {
     private val propertyNames: Array<out String>
     private var beanProperties: Array<BeanProperty<E>>? = null
 

@@ -6,7 +6,7 @@ package ca.odell.glazedlists.impl.matchers
 import ca.odell.glazedlists.matchers.Matcher
 
 /** Matches strings that are neither null nor empty. */
-open class NonNullAndNonEmptyStringMatcher : Matcher<String?> {
+internal open class NonNullAndNonEmptyStringMatcher : Matcher<String?> {
     override fun matches(item: String?): Boolean = !item.isNullOrEmpty()
 
     companion object {

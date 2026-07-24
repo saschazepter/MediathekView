@@ -6,7 +6,7 @@ package ca.odell.glazedlists.impl.matchers
 import ca.odell.glazedlists.matchers.Matcher
 
 /** Matches non-null values assignable to at least one configured class. */
-open class TypeMatcher<E>(vararg classes: Class<*>) : Matcher<E> {
+internal open class TypeMatcher<E>(vararg classes: Class<*>) : Matcher<E> {
     private val classes = classes
 
     override fun matches(item: E): Boolean {

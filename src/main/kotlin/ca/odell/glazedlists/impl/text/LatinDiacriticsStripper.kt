@@ -26,7 +26,7 @@ import java.text.Normalizer
  * The resulting lookup table strips diacritics without normalizing text on the
  * matching hot path. For example, the mapped value of `é` is `e`.
  */
-class LatinDiacriticsStripper {
+internal class LatinDiacriticsStripper {
     companion object {
         private const val MAPPER_SIZE = 592
 

@@ -55,7 +55,7 @@ package ca.odell.glazedlists.impl.adt
  *
  * @author [Kevin Maltby](mailto:kevin@swank.ca)
  */
-class Barcode {
+internal class Barcode {
     private var root: BarcodeNode? = null
     private var whiteSpace = 0
     private var treeSize = 0

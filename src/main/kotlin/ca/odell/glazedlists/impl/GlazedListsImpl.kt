@@ -22,7 +22,7 @@ import ca.odell.glazedlists.GlazedLists
 
 /** Internal utilities used by Glazed Lists implementations. */
 @Suppress("UNCHECKED_CAST")
-object GlazedListsImpl {
+internal object GlazedListsImpl {
     fun <E> replaceAll(
         target: EventList<E>,
         source: Collection<E>,

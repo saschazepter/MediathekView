@@ -19,7 +19,7 @@ package ca.odell.glazedlists.impl.adt
 
 import java.util.NoSuchElementException
 
-class SparseListNode private constructor(
+internal class SparseListNode private constructor(
     host: SparseList,
     parent: SparseListNode?,
     value: Any?,

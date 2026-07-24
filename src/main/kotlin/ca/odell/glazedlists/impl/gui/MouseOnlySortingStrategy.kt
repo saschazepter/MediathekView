@@ -21,7 +21,7 @@ package ca.odell.glazedlists.impl.gui
  * @see ca.odell.glazedlists.gui.AbstractTableComparatorChooser.SINGLE_COLUMN
  * @see ca.odell.glazedlists.gui.AbstractTableComparatorChooser.MULTIPLE_COLUMN_MOUSE
  */
-class MouseOnlySortingStrategy(
+internal class MouseOnlySortingStrategy(
     private val multipleColumnSort: Boolean,
 ) : SortingStrategy {
     override fun supportsMultipleColumnSorting(): Boolean = multipleColumnSort

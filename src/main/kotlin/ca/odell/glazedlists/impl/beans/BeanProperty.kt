@@ -26,7 +26,7 @@ import java.lang.reflect.UndeclaredThrowableException
 import java.util.regex.Pattern
 
 /** Models reflective getter and setter chains for a JavaBean property. */
-open class BeanProperty<T>(
+internal open class BeanProperty<T>(
     private val targetBeanClass: Class<T>,
     private val targetPropertyName: String,
     readable: Boolean,

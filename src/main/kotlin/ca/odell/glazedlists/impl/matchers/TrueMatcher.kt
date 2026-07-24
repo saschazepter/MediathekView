@@ -6,7 +6,7 @@ package ca.odell.glazedlists.impl.matchers
 import ca.odell.glazedlists.matchers.Matcher
 
 /** A singleton [Matcher] that always matches. */
-class TrueMatcher<E> private constructor() : Matcher<E> {
+internal class TrueMatcher<E> private constructor() : Matcher<E> {
     @Suppress("UNUSED_PARAMETER")
     override fun matches(item: E): Boolean = true
 

@@ -10,7 +10,7 @@ import java.lang.reflect.InvocationTargetException
 import java.lang.reflect.Method
 import java.util.*
 
-open class BeanConnector<E> : ObservableElementList.Connector<E> {
+internal open class BeanConnector<E> : ObservableElementList.Connector<E> {
     private val addListenerMethod: Method
     private val removeListenerMethod: Method
     private var list: ObservableElementChangeHandler<out E>? = null

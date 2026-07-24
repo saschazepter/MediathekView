@@ -25,7 +25,7 @@ private const val CHARACTER_CACHE_SIZE = 256
  *
  * @author James Lemieux
  */
-open class BoyerMooreCaseInsensitiveTextSearchStrategy : AbstractTextSearchStrategy() {
+internal open class BoyerMooreCaseInsensitiveTextSearchStrategy : AbstractTextSearchStrategy() {
     private var subtextLength = 0
     private var lastSubtextIndex = 0
     private var subtextChars: CharArray? = null

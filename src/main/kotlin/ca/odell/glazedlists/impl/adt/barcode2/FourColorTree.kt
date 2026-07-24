@@ -20,7 +20,7 @@ package ca.odell.glazedlists.impl.adt.barcode2
 import java.util.ArrayList
 import kotlin.math.abs
 
-class FourColorTree<T>(private val coder: ListToByteCoder<*>) {
+internal class FourColorTree<T>(private val coder: ListToByteCoder<*>) {
     private var root: FourColorNode<T>? = null
     private val zeroQueue = ArrayList<FourColorNode<T>>()
 

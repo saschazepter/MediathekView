@@ -10,7 +10,7 @@ import java.util.Locale
  *
  * @author James Lemieux
  */
-open class StartsWithCaseInsensitiveTextSearchStrategy : AbstractTextSearchStrategy() {
+internal open class StartsWithCaseInsensitiveTextSearchStrategy : AbstractTextSearchStrategy() {
     private var indexOfStrategy: IndexOfStrategy? = null
 
     override fun setSubtext(subtext: String) {

@@ -11,7 +11,7 @@ import ca.odell.glazedlists.matchers.SearchEngineTextMatcherEditor
 import ca.odell.glazedlists.matchers.TextMatcherEditor
 
 /** Common parsing, normalization, matching, and comparison services for text matchers. */
-object TextMatchers {
+internal object TextMatchers {
     private class SearchTermLengthComparator : Comparator<SearchTerm<*>> {
         override fun compare(first: SearchTerm<*>, second: SearchTerm<*>): Int =
             second.text.length - first.text.length

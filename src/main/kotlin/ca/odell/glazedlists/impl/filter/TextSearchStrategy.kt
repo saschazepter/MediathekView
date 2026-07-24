@@ -4,7 +4,7 @@
 package ca.odell.glazedlists.impl.filter
 
 /** Locates a configured subtext within arbitrary text. */
-interface TextSearchStrategy {
+internal interface TextSearchStrategy {
     /** Sets an optional character-normalization map used during comparisons. */
     fun setCharacterMap(charMap: CharArray?)
 

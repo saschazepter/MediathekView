@@ -28,7 +28,7 @@ import java.util.function.Predicate
 import java.util.function.UnaryOperator
 
 /** An up-to-date, read-only view of an event list. */
-class ReadOnlyList<E>(source: EventList<E>) : TransformedList<E, E>(source) {
+internal class ReadOnlyList<E>(source: EventList<E>) : TransformedList<E, E>(source) {
     private val currentSource: EventList<E>
         get() = source!!
 

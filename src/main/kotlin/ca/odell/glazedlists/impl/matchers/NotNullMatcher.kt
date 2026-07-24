@@ -6,7 +6,7 @@ package ca.odell.glazedlists.impl.matchers
 import ca.odell.glazedlists.matchers.Matcher
 
 /** A singleton [Matcher] that matches only non-null values. */
-class NotNullMatcher<E> private constructor() : Matcher<E> {
+internal class NotNullMatcher<E> private constructor() : Matcher<E> {
     override fun matches(item: E): Boolean = item != null
 
     override fun toString(): String = "[NotNullMatcher]"

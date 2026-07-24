@@ -8,7 +8,7 @@ import ca.odell.glazedlists.event.*
  * An EventList that keeps a stable local snapshot and delivers source changes
  * on a thread selected by [schedule].
  */
-abstract class ThreadProxyEventList<E>(source: EventList<E>) :
+internal abstract class ThreadProxyEventList<E>(source: EventList<E>) :
     TransformedList<E, E>(source), RandomAccess {
     private var localCache: List<E>
     private val updateRunner = UpdateRunner()

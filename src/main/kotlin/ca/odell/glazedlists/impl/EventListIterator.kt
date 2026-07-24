@@ -23,7 +23,7 @@ import java.util.NoSuchElementException
 
 /** A list iterator that remains consistent while its source list changes. */
 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
-open class EventListIterator<E> : java.util.ListIterator<E>, ListEventListener<E> {
+internal open class EventListIterator<E> : java.util.ListIterator<E>, ListEventListener<E> {
     private val source: EventList<E>
     private var nextIndex: Int
     private var lastIndex = -1

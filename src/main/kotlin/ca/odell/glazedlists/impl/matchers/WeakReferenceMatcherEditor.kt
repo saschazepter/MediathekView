@@ -11,7 +11,7 @@ import java.lang.ref.WeakReference
  * Rebroadcasts matcher events while retaining registered listeners weakly.
  * The proxy also registers itself weakly with its source editor.
  */
-class WeakReferenceMatcherEditor<E>(
+internal class WeakReferenceMatcherEditor<E>(
     private val source: MatcherEditor<E>,
 ) : MatcherEditor<E>, MatcherEditor.Listener<E> {
     private val listenerList = mutableListOf<WeakMatcherEditorListener>()

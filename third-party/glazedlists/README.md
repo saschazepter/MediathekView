@@ -40,6 +40,14 @@ obsolete timing helpers and trivial test-data factories are not included.
 Converted sources retain their upstream package and Java-facing contract unless
 an intentional difference is documented below.
 
+Top-level declarations in `ca.odell.glazedlists.impl` are Kotlin-internal when
+they are not part of a retained public or protected source contract. Kotlin
+`internal` leaves their JVM classes public for mixed Java/Kotlin linkage.
+`ObservableConnector`, `BlockSequence`, `Tree4Deltas`, `SearchTerm`, `TextMatcher`,
+`SortingState`, and `SortingStrategy` remain public in Kotlin because retained
+Glazed Lists APIs expose them in type bounds, return types, protected members,
+or parameters.
+
 | Upstream Java source | Local source | Intentional differences |
 | --- | --- | --- |
 | `TransactionList.java` | `TransactionList.kt` | Adds `withTransaction`; rollback-disabled construction is internal. |

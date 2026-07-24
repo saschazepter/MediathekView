@@ -63,7 +63,7 @@ import java.util.Collections
  *
  * @author [Kevin Maltby](mailto:kevin@swank.ca)
  */
-class SparseList : AbstractList<Any?>() {
+internal class SparseList : AbstractList<Any?>() {
     private var root: SparseListNode? = null
     private var sizeValue = 0
     private var treeSize = 0

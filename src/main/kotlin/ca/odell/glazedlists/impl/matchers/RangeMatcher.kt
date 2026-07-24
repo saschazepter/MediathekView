@@ -7,7 +7,7 @@ import ca.odell.glazedlists.Filterator
 import ca.odell.glazedlists.matchers.Matcher
 
 /** Matches when at least one extracted comparable lies within the inclusive range. */
-open class RangeMatcher<D, E>(
+internal open class RangeMatcher<D, E>(
     private val start: D?,
     private val end: D?,
     private val filterator: Filterator<D, E>?,

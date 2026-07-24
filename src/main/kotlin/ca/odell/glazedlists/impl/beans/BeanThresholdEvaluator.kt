@@ -20,7 +20,7 @@ package ca.odell.glazedlists.impl.beans
 import ca.odell.glazedlists.ThresholdList
 
 /** Evaluates a numeric JavaBean property for a [ThresholdList]. */
-class BeanThresholdEvaluator<E : Any>(
+internal class BeanThresholdEvaluator<E : Any>(
     private val propertyName: String,
 ) : ThresholdList.Evaluator<E> {
     private var beanProperty: BeanProperty<E>? = null

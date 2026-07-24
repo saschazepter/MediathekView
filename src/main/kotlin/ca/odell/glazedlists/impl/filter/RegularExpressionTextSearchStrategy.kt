@@ -7,7 +7,7 @@ import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 /** Matches the complete input text against a configured regular expression. */
-open class RegularExpressionTextSearchStrategy : AbstractTextSearchStrategy() {
+internal open class RegularExpressionTextSearchStrategy : AbstractTextSearchStrategy() {
     private var matcher: Matcher? = null
 
     override fun setSubtext(subtext: String) {

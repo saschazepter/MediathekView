@@ -21,7 +21,7 @@ import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.gui.TableFormat
 
 /** Sorts table rows by the values extracted from a single column. */
-open class TableColumnComparator<E : Any> : Comparator<E> {
+internal open class TableColumnComparator<E : Any> : Comparator<E> {
     private val tableFormat: TableFormat<in E>
     private val column: Int
     private val comparator: Comparator<Any?>

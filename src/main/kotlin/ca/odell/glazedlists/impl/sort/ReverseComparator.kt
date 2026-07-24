@@ -4,7 +4,7 @@
 package ca.odell.glazedlists.impl.sort
 
 /** Reverses the ordering of [sourceComparator]. */
-class ReverseComparator<T>(val sourceComparator: Comparator<T>) : Comparator<T> {
+internal class ReverseComparator<T>(val sourceComparator: Comparator<T>) : Comparator<T> {
     override fun compare(alpha: T, beta: T): Int = sourceComparator.compare(beta, alpha)
 
     override fun equals(other: Any?): Boolean =

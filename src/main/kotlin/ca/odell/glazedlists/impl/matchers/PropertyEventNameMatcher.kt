@@ -7,7 +7,7 @@ import ca.odell.glazedlists.matchers.Matcher
 import java.beans.PropertyChangeEvent
 
 /** Matches or excludes property-change events by property name. */
-class PropertyEventNameMatcher(
+internal class PropertyEventNameMatcher(
     val isMatchPropertyNames: Boolean,
     vararg properties: String,
 ) : Matcher<PropertyChangeEvent> {

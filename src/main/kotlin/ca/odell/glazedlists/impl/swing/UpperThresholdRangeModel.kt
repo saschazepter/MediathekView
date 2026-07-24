@@ -22,7 +22,7 @@ import javax.swing.BoundedRangeModel
 import javax.swing.DefaultBoundedRangeModel
 
 /** Binds a Swing range model's value and minimum to a threshold list's upper and lower bounds. */
-open class UpperThresholdRangeModel(
+internal open class UpperThresholdRangeModel(
     private val target: ThresholdList<*>?,
 ) : DefaultBoundedRangeModel(), BoundedRangeModel {
     override fun getMinimum(): Int {

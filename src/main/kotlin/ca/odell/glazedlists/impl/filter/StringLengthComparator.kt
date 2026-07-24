@@ -4,6 +4,6 @@
 package ca.odell.glazedlists.impl.filter
 
 /** Orders strings by descending length. */
-class StringLengthComparator : Comparator<String> {
+internal class StringLengthComparator : Comparator<String> {
     override fun compare(a: String, b: String): Int = b.length - a.length
 }
