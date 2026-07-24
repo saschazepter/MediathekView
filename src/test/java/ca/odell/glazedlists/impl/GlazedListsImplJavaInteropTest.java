@@ -4,8 +4,7 @@ import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
@@ -44,14 +43,15 @@ class GlazedListsImplJavaInteropTest {
     }
 
     @Test
-    void utilityClassRemainsFinalAndRejectsReflectiveConstruction() throws NoSuchMethodException {
+    void utilityFacadeIsExposedAsAKotlinObject() throws ReflectiveOperationException {
         assertTrue(Modifier.isFinal(GlazedListsImpl.class.getModifiers()));
 
-        final Constructor<GlazedListsImpl> constructor = GlazedListsImpl.class.getDeclaredConstructor();
-        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
-        constructor.setAccessible(true);
+        final Field instance = GlazedListsImpl.class.getDeclaredField("INSTANCE");
 
-        final InvocationTargetException failure = assertThrows(InvocationTargetException.class, constructor::newInstance);
-        assertInstanceOf(UnsupportedOperationException.class, failure.getCause());
+        assertTrue(Modifier.isPublic(instance.getModifiers()));
+        assertTrue(Modifier.isStatic(instance.getModifiers()));
+        assertTrue(Modifier.isFinal(instance.getModifiers()));
+        assertSame(GlazedListsImpl.INSTANCE, instance.get(null));
+        assertThrows(NoSuchFieldException.class, () -> GlazedListsImpl.class.getDeclaredField("Companion"));
     }
 }

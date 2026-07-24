@@ -52,13 +52,9 @@ import java.util.concurrent.locks.ReadWriteLock
 import java.util.function.Function
 
 /** A factory for creating objects used with Glazed Lists. */
-@Suppress("NON_FINAL_MEMBER_IN_OBJECT", "UNCHECKED_CAST")
-class GlazedLists private constructor() {
-    init {
-        throw UnsupportedOperationException()
-    }
-
-    /** Keeps mutable singleton storage out of the companion and its synthetic accessors. */
+@Suppress("UNCHECKED_CAST")
+object GlazedLists {
+    /** Groups the reusable stateless implementations returned by this facade. */
     private object Singletons {
         val BOOLEAN_COMPARATOR: Comparator<Boolean?> = BooleanComparator()
         val COMPARABLE_COMPARATOR: Comparator<*> = ComparableComparator<Comparable<Any?>>()
@@ -67,276 +63,274 @@ class GlazedLists private constructor() {
         val STRING_TEXT_FILTERATOR: TextFilterator<Any?> = StringTextFilterator()
     }
 
-    companion object {
-        @JvmStatic
-        open fun <E> replaceAll(
-            target: EventList<E>,
-            source: List<@JvmSuppressWildcards E>,
-            updates: Boolean,
-        ) {
-            Diff.replaceAll(target, source, updates)
-        }
-
-        @JvmStatic
-        open fun <E> replaceAll(
-            target: EventList<E>,
-            source: List<@JvmSuppressWildcards E>,
-            updates: Boolean,
-            comparator: Comparator<E>?,
-        ) {
-            Diff.replaceAll(target, source, updates, comparator)
-        }
-
-        @JvmStatic
-        open fun <E> replaceAllSorted(
-            target: EventList<E>,
-            source: Collection<@JvmSuppressWildcards E>,
-            updates: Boolean,
-            comparator: Comparator<E>?,
-        ) {
-            GlazedListsImpl.replaceAll(target, source, updates, comparator)
-        }
-
-        @JvmStatic
-        open fun <T> beanPropertyComparator(
-            clazz: Class<T>,
-            property: String,
-            vararg properties: String,
-        ): Comparator<T> {
-            val firstComparator = beanPropertyComparator(clazz, property, Singletons.COMPARABLE_COMPARATOR)
-            if (properties.isEmpty()) return firstComparator
-            return chainComparators(
-                buildList(properties.size + 1) {
-                    add(firstComparator)
-                    properties.forEach {
-                        add(beanPropertyComparator(clazz, it, Singletons.COMPARABLE_COMPARATOR))
-                    }
-                },
-            )
-        }
-
-        @JvmStatic
-        open fun <T> beanPropertyComparator(
-            className: Class<T>,
-            property: String,
-            propertyComparator: Comparator<*>,
-        ): Comparator<T> = BeanPropertyComparator(className, property, propertyComparator) as Comparator<T>
-
-        @JvmStatic
-        open fun booleanComparator(): Comparator<Boolean?> = Singletons.BOOLEAN_COMPARATOR
-
-        @JvmStatic
-        open fun caseInsensitiveComparator(): Comparator<String> = String.CASE_INSENSITIVE_ORDER
-
-        @JvmStatic
-        open fun <T> chainComparators(
-            comparators: List<@JvmSuppressWildcards Comparator<T>>,
-        ): Comparator<T> = ComparatorChain(comparators)
-
-        @JvmStatic
-        open fun <T> chainComparators(vararg comparators: Comparator<T>): Comparator<T> =
-            ComparatorChain<T>(comparators.toList())
-
-        @JvmStatic
-        open fun <T> comparableComparator(): Comparator<T> where T : Comparable<T> =
-            Singletons.COMPARABLE_COMPARATOR as Comparator<T>
-
-        @JvmStatic
-        open fun <T> reverseComparator(): Comparator<T> where T : Comparable<T> =
-            Singletons.REVERSED_COMPARABLE as Comparator<T>
-
-        @JvmStatic
-        open fun <T> reverseComparator(forward: Comparator<T>?): Comparator<T> = ReverseComparator(forward!!)
-
-        @JvmStatic
-        open fun <T> tableFormat(
-            propertyNames: Array<String>?,
-            columnLabels: Array<String>?,
-        ): TableFormat<T> = BeanTableFormat(null, propertyNames!!, columnLabels!!)
-
-        @JvmStatic
-        open fun <T> tableFormat(
-            baseClass: Class<T>?,
-            propertyNames: Array<String>?,
-            columnLabels: Array<String>?,
-        ): TableFormat<T> = BeanTableFormat(baseClass, propertyNames!!, columnLabels!!)
-
-        @JvmStatic
-        open fun <T> tableFormat(
-            propertyNames: Array<String>?,
-            columnLabels: Array<String>?,
-            editable: BooleanArray?,
-        ): TableFormat<T> = BeanTableFormat(null, propertyNames!!, columnLabels!!, editable!!)
-
-        @JvmStatic
-        open fun <T> tableFormat(
-            baseClass: Class<T>?,
-            propertyNames: Array<String>?,
-            columnLabels: Array<String>?,
-            editable: BooleanArray?,
-        ): TableFormat<T> = BeanTableFormat(baseClass, propertyNames!!, columnLabels!!, editable!!)
-
-        @JvmStatic
-        open fun <E> textFilterator(vararg propertyNames: String): TextFilterator<E> =
-            BeanTextFilterator<Any?, E>(*propertyNames)
-
-        @JvmStatic
-        open fun <E> textFilterator(
-            beanClass: Class<E>,
-            vararg propertyNames: String,
-        ): TextFilterator<E> = BeanTextFilterator<Any?, E>(beanClass, *propertyNames)
-
-        @JvmStatic
-        open fun <D, E> filterator(vararg propertyNames: String): Filterator<D, E> =
-            BeanTextFilterator(*propertyNames)
-
-        @JvmStatic
-        open fun <D, E> filterator(
-            beanClass: Class<E>,
-            vararg propertyNames: String,
-        ): Filterator<D, E> = BeanTextFilterator(beanClass, *propertyNames)
-
-        @JvmStatic
-        open fun <E> toStringTextFilterator(): TextFilterator<E> =
-            Singletons.STRING_TEXT_FILTERATOR as TextFilterator<E>
-
-        @JvmStatic
-        open fun <E> thresholdEvaluator(propertyName: String): ThresholdList.Evaluator<E?> =
-            BeanThresholdEvaluator<Any>(propertyName) as ThresholdList.Evaluator<E?>
-
-        @JvmStatic
-        open fun <E> listCollectionListModel(): CollectionList.Model<List<@JvmSuppressWildcards E>, E> =
-            ListCollectionListModel()
-
-        @JvmStatic
-        open fun <E> eventListOf(vararg contents: E): EventList<E> = eventList(contents.asList())
-
-        @JvmStatic
-        open fun <E> eventList(contents: Collection<E>?): EventList<E> {
-            val result = BasicEventList<E>(contents?.size ?: 0)
-            if (contents != null) result.addAll(contents)
-            return result
-        }
-
-        @JvmStatic
-        open fun <E> eventListOf(
-            publisher: ListEventPublisher?,
-            lock: ReadWriteLock?,
-            vararg contents: E,
-        ): EventList<E> = eventList(publisher, lock, contents.asList())
-
-        @JvmStatic
-        open fun <E> eventList(
-            publisher: ListEventPublisher?,
-            lock: ReadWriteLock?,
-            contents: Collection<E>?,
-        ): EventList<E> {
-            val result = BasicEventList<E>(contents?.size ?: 0, publisher, lock)
-            if (contents != null) result.addAll(contents)
-            return result
-        }
-
-        @JvmStatic
-        open fun <E> readOnlyList(source: EventList<out E>): TransformedList<E, E> =
-            ReadOnlyList(source as EventList<E>)
-
-        @JvmStatic
-        open fun <S, E> transformByFunction(
-            source: EventList<S>,
-            function: Function<S, E>,
-        ): TransformedList<S, E> = SimpleFunctionList(source, function)
-
-        @JvmStatic
-        open fun <E> weakReferenceProxy(
-            source: EventList<E>,
-            target: ListEventListener<E>,
-        ): ListEventListener<E> = WeakReferenceProxy(source, target)
-
-        @JvmStatic
-        open fun <E> beanConnector(beanClass: Class<E>): ObservableElementList.Connector<E> =
-            BeanConnector(beanClass)
-
-        @JvmStatic
-        open fun <E> beanConnector(
-            beanClass: Class<E>,
-            matchPropertyNames: Boolean,
-            vararg propertyNames: String,
-        ): ObservableElementList.Connector<E> =
-            beanConnector(beanClass, Matchers.propertyEventNameMatcher(matchPropertyNames, *propertyNames))
-
-        @JvmStatic
-        open fun <E> beanConnector(
-            beanClass: Class<E>,
-            eventMatcher: Matcher<PropertyChangeEvent>,
-        ): ObservableElementList.Connector<E> = BeanConnector(beanClass, eventMatcher)
-
-        @JvmStatic
-        open fun <E> beanConnector(
-            beanClass: Class<E>,
-            addListener: String,
-            removeListener: String,
-        ): ObservableElementList.Connector<E> = BeanConnector(beanClass, addListener, removeListener)
-
-        @JvmStatic
-        open fun <E> beanConnector(
-            beanClass: Class<E>,
-            addListener: String,
-            removeListener: String,
-            eventMatcher: Matcher<PropertyChangeEvent>,
-        ): ObservableElementList.Connector<E> =
-            BeanConnector(beanClass, addListener, removeListener, eventMatcher)
-
-        @JvmStatic
-        open fun <E> observableConnector(): ObservableElementList.Connector<E>
-            where E : ObservableConnector.PropertyChangeObservable = ObservableConnector()
-
-        @JvmStatic
-        open fun <E> fixedMatcherEditor(matcher: Matcher<E>): MatcherEditor<E> = MatcherEditor.fromMatcher(matcher)
-
-        @JvmStatic
-        open fun <E, V> constantFunction(value: V): Function<E, V> = ConstantFunction(value)
-
-        @JvmStatic
-        open fun <E> toStringFunction(
-            beanClass: Class<E>,
-            propertyName: String,
-        ): Function<E?, String?> = StringBeanFunction<E>(beanClass, propertyName) as Function<E?, String?>
-
-        @JvmStatic
-        open fun <E, V> beanFunction(beanClass: Class<E>, propertyName: String): Function<E?, V> =
-            BeanFunction<E, V>(beanClass, propertyName) as Function<E?, V>
-
-        @JvmStatic
-        open fun <E> syncEventListToList(source: EventList<E>, target: MutableList<E>): SyncListener<E> =
-            SyncListener(source, target)
-
-        @JvmStatic
-        open fun <E> typeSafetyListener(
-            source: EventList<E>,
-            types: Set<@JvmSuppressWildcards Class<*>?>,
-        ): ListEventListener<E> = TypeSafetyListener(source, types)
-
-        @JvmStatic
-        open fun <K, V> syncEventListToMultiMap(
-            source: EventList<V>,
-            keyMaker: Function<V, out K>,
-        ): DisposableMap<K, MutableList<V>> where K : Comparable<K> =
-            syncEventListToMultiMap(source, keyMaker, comparableComparator())
-
-        @JvmStatic
-        open fun <K, V> syncEventListToMultiMap(
-            source: EventList<V>,
-            keyMaker: Function<V, out K>,
-            keyGrouper: Comparator<in K>,
-        ): DisposableMap<K, MutableList<V>> =
-            GroupingListMultiMap(source, keyMaker, keyGrouper) as DisposableMap<K, MutableList<V>>
-
-        @JvmStatic
-        open fun <K, V> syncEventListToMap(
-            source: EventList<V>,
-            keyMaker: Function<V, K>,
-        ): DisposableMap<K, V> = FunctionListMap(source, keyMaker)
+    @JvmStatic
+    fun <E> replaceAll(
+        target: EventList<E>,
+        source: List<@JvmSuppressWildcards E>,
+        updates: Boolean,
+    ) {
+        Diff.replaceAll(target, source, updates)
     }
+
+    @JvmStatic
+    fun <E> replaceAll(
+        target: EventList<E>,
+        source: List<@JvmSuppressWildcards E>,
+        updates: Boolean,
+        comparator: Comparator<E>?,
+    ) {
+        Diff.replaceAll(target, source, updates, comparator)
+    }
+
+    @JvmStatic
+    fun <E> replaceAllSorted(
+        target: EventList<E>,
+        source: Collection<@JvmSuppressWildcards E>,
+        updates: Boolean,
+        comparator: Comparator<E>?,
+    ) {
+        GlazedListsImpl.replaceAll(target, source, updates, comparator)
+    }
+
+    @JvmStatic
+    fun <T> beanPropertyComparator(
+        clazz: Class<T>,
+        property: String,
+        vararg properties: String,
+    ): Comparator<T> {
+        val firstComparator = beanPropertyComparator(clazz, property, Singletons.COMPARABLE_COMPARATOR)
+        if (properties.isEmpty()) return firstComparator
+        return chainComparators(
+            buildList(properties.size + 1) {
+                add(firstComparator)
+                properties.forEach {
+                    add(beanPropertyComparator(clazz, it, Singletons.COMPARABLE_COMPARATOR))
+                }
+            },
+        )
+    }
+
+    @JvmStatic
+    fun <T> beanPropertyComparator(
+        className: Class<T>,
+        property: String,
+        propertyComparator: Comparator<*>,
+    ): Comparator<T> = BeanPropertyComparator(className, property, propertyComparator) as Comparator<T>
+
+    @JvmStatic
+    fun booleanComparator(): Comparator<Boolean?> = Singletons.BOOLEAN_COMPARATOR
+
+    @JvmStatic
+    fun caseInsensitiveComparator(): Comparator<String> = String.CASE_INSENSITIVE_ORDER
+
+    @JvmStatic
+    fun <T> chainComparators(
+        comparators: List<@JvmSuppressWildcards Comparator<T>>,
+    ): Comparator<T> = ComparatorChain(comparators)
+
+    @JvmStatic
+    fun <T> chainComparators(vararg comparators: Comparator<T>): Comparator<T> =
+        ComparatorChain<T>(comparators.toList())
+
+    @JvmStatic
+    fun <T> comparableComparator(): Comparator<T> where T : Comparable<T> =
+        Singletons.COMPARABLE_COMPARATOR as Comparator<T>
+
+    @JvmStatic
+    fun <T> reverseComparator(): Comparator<T> where T : Comparable<T> =
+        Singletons.REVERSED_COMPARABLE as Comparator<T>
+
+    @JvmStatic
+    fun <T> reverseComparator(forward: Comparator<T>?): Comparator<T> = ReverseComparator(forward!!)
+
+    @JvmStatic
+    fun <T> tableFormat(
+        propertyNames: Array<String>?,
+        columnLabels: Array<String>?,
+    ): TableFormat<T> = BeanTableFormat(null, propertyNames!!, columnLabels!!)
+
+    @JvmStatic
+    fun <T> tableFormat(
+        baseClass: Class<T>?,
+        propertyNames: Array<String>?,
+        columnLabels: Array<String>?,
+    ): TableFormat<T> = BeanTableFormat(baseClass, propertyNames!!, columnLabels!!)
+
+    @JvmStatic
+    fun <T> tableFormat(
+        propertyNames: Array<String>?,
+        columnLabels: Array<String>?,
+        editable: BooleanArray?,
+    ): TableFormat<T> = BeanTableFormat(null, propertyNames!!, columnLabels!!, editable!!)
+
+    @JvmStatic
+    fun <T> tableFormat(
+        baseClass: Class<T>?,
+        propertyNames: Array<String>?,
+        columnLabels: Array<String>?,
+        editable: BooleanArray?,
+    ): TableFormat<T> = BeanTableFormat(baseClass, propertyNames!!, columnLabels!!, editable!!)
+
+    @JvmStatic
+    fun <E> textFilterator(vararg propertyNames: String): TextFilterator<E> =
+        BeanTextFilterator<Any?, E>(*propertyNames)
+
+    @JvmStatic
+    fun <E> textFilterator(
+        beanClass: Class<E>,
+        vararg propertyNames: String,
+    ): TextFilterator<E> = BeanTextFilterator<Any?, E>(beanClass, *propertyNames)
+
+    @JvmStatic
+    fun <D, E> filterator(vararg propertyNames: String): Filterator<D, E> =
+        BeanTextFilterator(*propertyNames)
+
+    @JvmStatic
+    fun <D, E> filterator(
+        beanClass: Class<E>,
+        vararg propertyNames: String,
+    ): Filterator<D, E> = BeanTextFilterator(beanClass, *propertyNames)
+
+    @JvmStatic
+    fun <E> toStringTextFilterator(): TextFilterator<E> =
+        Singletons.STRING_TEXT_FILTERATOR as TextFilterator<E>
+
+    @JvmStatic
+    fun <E> thresholdEvaluator(propertyName: String): ThresholdList.Evaluator<E?> =
+        BeanThresholdEvaluator<Any>(propertyName) as ThresholdList.Evaluator<E?>
+
+    @JvmStatic
+    fun <E> listCollectionListModel(): CollectionList.Model<List<@JvmSuppressWildcards E>, E> =
+        ListCollectionListModel()
+
+    @JvmStatic
+    fun <E> eventListOf(vararg contents: E): EventList<E> = eventList(contents.asList())
+
+    @JvmStatic
+    fun <E> eventList(contents: Collection<E>?): EventList<E> {
+        val result = BasicEventList<E>(contents?.size ?: 0)
+        if (contents != null) result.addAll(contents)
+        return result
+    }
+
+    @JvmStatic
+    fun <E> eventListOf(
+        publisher: ListEventPublisher?,
+        lock: ReadWriteLock?,
+        vararg contents: E,
+    ): EventList<E> = eventList(publisher, lock, contents.asList())
+
+    @JvmStatic
+    fun <E> eventList(
+        publisher: ListEventPublisher?,
+        lock: ReadWriteLock?,
+        contents: Collection<E>?,
+    ): EventList<E> {
+        val result = BasicEventList<E>(contents?.size ?: 0, publisher, lock)
+        if (contents != null) result.addAll(contents)
+        return result
+    }
+
+    @JvmStatic
+    fun <E> readOnlyList(source: EventList<out E>): TransformedList<E, E> =
+        ReadOnlyList(source as EventList<E>)
+
+    @JvmStatic
+    fun <S, E> transformByFunction(
+        source: EventList<S>,
+        function: Function<S, E>,
+    ): TransformedList<S, E> = SimpleFunctionList(source, function)
+
+    @JvmStatic
+    fun <E> weakReferenceProxy(
+        source: EventList<E>,
+        target: ListEventListener<E>,
+    ): ListEventListener<E> = WeakReferenceProxy(source, target)
+
+    @JvmStatic
+    fun <E> beanConnector(beanClass: Class<E>): ObservableElementList.Connector<E> =
+        BeanConnector(beanClass)
+
+    @JvmStatic
+    fun <E> beanConnector(
+        beanClass: Class<E>,
+        matchPropertyNames: Boolean,
+        vararg propertyNames: String,
+    ): ObservableElementList.Connector<E> =
+        beanConnector(beanClass, Matchers.propertyEventNameMatcher(matchPropertyNames, *propertyNames))
+
+    @JvmStatic
+    fun <E> beanConnector(
+        beanClass: Class<E>,
+        eventMatcher: Matcher<PropertyChangeEvent>,
+    ): ObservableElementList.Connector<E> = BeanConnector(beanClass, eventMatcher)
+
+    @JvmStatic
+    fun <E> beanConnector(
+        beanClass: Class<E>,
+        addListener: String,
+        removeListener: String,
+    ): ObservableElementList.Connector<E> = BeanConnector(beanClass, addListener, removeListener)
+
+    @JvmStatic
+    fun <E> beanConnector(
+        beanClass: Class<E>,
+        addListener: String,
+        removeListener: String,
+        eventMatcher: Matcher<PropertyChangeEvent>,
+    ): ObservableElementList.Connector<E> =
+        BeanConnector(beanClass, addListener, removeListener, eventMatcher)
+
+    @JvmStatic
+    fun <E> observableConnector(): ObservableElementList.Connector<E>
+        where E : ObservableConnector.PropertyChangeObservable = ObservableConnector()
+
+    @JvmStatic
+    fun <E> fixedMatcherEditor(matcher: Matcher<E>): MatcherEditor<E> = MatcherEditor.fromMatcher(matcher)
+
+    @JvmStatic
+    fun <E, V> constantFunction(value: V): Function<E, V> = ConstantFunction(value)
+
+    @JvmStatic
+    fun <E> toStringFunction(
+        beanClass: Class<E>,
+        propertyName: String,
+    ): Function<E?, String?> = StringBeanFunction<E>(beanClass, propertyName) as Function<E?, String?>
+
+    @JvmStatic
+    fun <E, V> beanFunction(beanClass: Class<E>, propertyName: String): Function<E?, V> =
+        BeanFunction<E, V>(beanClass, propertyName) as Function<E?, V>
+
+    @JvmStatic
+    fun <E> syncEventListToList(source: EventList<E>, target: MutableList<E>): SyncListener<E> =
+        SyncListener(source, target)
+
+    @JvmStatic
+    fun <E> typeSafetyListener(
+        source: EventList<E>,
+        types: Set<@JvmSuppressWildcards Class<*>?>,
+    ): ListEventListener<E> = TypeSafetyListener(source, types)
+
+    @JvmStatic
+    fun <K, V> syncEventListToMultiMap(
+        source: EventList<V>,
+        keyMaker: Function<V, out K>,
+    ): DisposableMap<K, MutableList<V>> where K : Comparable<K> =
+        syncEventListToMultiMap(source, keyMaker, comparableComparator())
+
+    @JvmStatic
+    fun <K, V> syncEventListToMultiMap(
+        source: EventList<V>,
+        keyMaker: Function<V, out K>,
+        keyGrouper: Comparator<in K>,
+    ): DisposableMap<K, MutableList<V>> =
+        GroupingListMultiMap(source, keyMaker, keyGrouper) as DisposableMap<K, MutableList<V>>
+
+    @JvmStatic
+    fun <K, V> syncEventListToMap(
+        source: EventList<V>,
+        keyMaker: Function<V, K>,
+    ): DisposableMap<K, V> = FunctionListMap(source, keyMaker)
 }
 
 /**

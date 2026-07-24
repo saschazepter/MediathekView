@@ -2,8 +2,7 @@ package ca.odell.glazedlists;
 
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Date;
@@ -42,14 +41,15 @@ class SequencersJavaInteropTest {
     }
 
     @Test
-    void utilityClassRemainsFinalAndRejectsReflectiveConstruction() throws NoSuchMethodException {
+    void utilityFacadeIsExposedAsAKotlinObject() throws ReflectiveOperationException {
         assertTrue(Modifier.isFinal(Sequencers.class.getModifiers()));
 
-        final Constructor<Sequencers> constructor = Sequencers.class.getDeclaredConstructor();
-        assertTrue(Modifier.isPrivate(constructor.getModifiers()));
-        constructor.setAccessible(true);
+        final Field instance = Sequencers.class.getDeclaredField("INSTANCE");
 
-        final InvocationTargetException failure = assertThrows(InvocationTargetException.class, constructor::newInstance);
-        assertInstanceOf(UnsupportedOperationException.class, failure.getCause());
+        assertTrue(Modifier.isPublic(instance.getModifiers()));
+        assertTrue(Modifier.isStatic(instance.getModifiers()));
+        assertTrue(Modifier.isFinal(instance.getModifiers()));
+        assertSame(Sequencers.INSTANCE, instance.get(null));
+        assertThrows(NoSuchFieldException.class, () -> Sequencers.class.getDeclaredField("Companion"));
     }
 }

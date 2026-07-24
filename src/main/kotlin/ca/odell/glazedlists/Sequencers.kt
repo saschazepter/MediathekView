@@ -27,15 +27,9 @@ import java.util.*
  *
  * @author James Lemieux
  */
-class Sequencers private constructor() {
-    init {
-        throw UnsupportedOperationException()
-    }
-
-    companion object {
-        @JvmStatic
-        fun monthSequencer(): SequenceList.Sequencer<Date> = MonthSequencer()
-    }
+object Sequencers {
+    @JvmStatic
+    fun monthSequencer(): SequenceList.Sequencer<Date> = MonthSequencer()
 
     /**
      * This Sequencer produces a sequence of [Date] objects normalized

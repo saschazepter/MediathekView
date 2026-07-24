@@ -23,72 +23,66 @@ import java.util.function.Function
 
 /** Internal utilities used by Glazed Lists implementations. */
 @Suppress("UNCHECKED_CAST")
-class GlazedListsImpl private constructor() {
-    init {
-        throw UnsupportedOperationException()
-    }
+object GlazedListsImpl {
+    @JvmStatic
+    fun <E> replaceAll(
+        target: EventList<E>,
+        source: Collection<@JvmSuppressWildcards E>,
+        updates: Boolean,
+        comparator: Comparator<E>?,
+    ) {
+        val actualComparator = comparator
+            ?: GlazedLists.comparableComparator<Comparable<Any?>>() as Comparator<E>
+        val newValueNeeded = Any()
+        val sourceIterator = source.iterator()
+        var targetIndex = -1
+        var targetObject: Any? = newValueNeeded
+        var sourceObject: Any? = newValueNeeded
 
-    companion object {
-        @JvmStatic
-        fun <E> replaceAll(
-            target: EventList<E>,
-            source: Collection<@JvmSuppressWildcards E>,
-            updates: Boolean,
-            comparator: Comparator<E>?,
-        ) {
-            val actualComparator = comparator
-                ?: GlazedLists.comparableComparator<Comparable<Any?>>() as Comparator<E>
-            val newValueNeeded = Any()
-            val sourceIterator = source.iterator()
-            var targetIndex = -1
-            var targetObject: Any? = newValueNeeded
-            var sourceObject: Any? = newValueNeeded
+        while (true) {
+            if (targetObject === newValueNeeded) {
+                if (targetIndex < target.size) targetIndex++
+                if (targetIndex < target.size) targetObject = target[targetIndex]
+            }
+            if (sourceObject === newValueNeeded && sourceIterator.hasNext()) {
+                sourceObject = sourceIterator.next()
+            }
 
-            while (true) {
-                if (targetObject === newValueNeeded) {
-                    if (targetIndex < target.size) targetIndex++
-                    if (targetIndex < target.size) targetObject = target[targetIndex]
+            if (targetObject === newValueNeeded && sourceObject === newValueNeeded) break
+
+            val compareResult = when {
+                targetObject === newValueNeeded -> 1
+                sourceObject === newValueNeeded -> -1
+                else -> actualComparator.compare(targetObject as E, sourceObject as E)
+            }
+
+            when {
+                compareResult < 0 -> {
+                    target.removeAt(targetIndex)
+                    targetIndex--
+                    targetObject = newValueNeeded
                 }
-                if (sourceObject === newValueNeeded && sourceIterator.hasNext()) {
-                    sourceObject = sourceIterator.next()
+
+                compareResult == 0 -> {
+                    if (updates) target[targetIndex] = sourceObject as E
+                    targetObject = newValueNeeded
+                    sourceObject = newValueNeeded
                 }
 
-                if (targetObject === newValueNeeded && sourceObject === newValueNeeded) break
-
-                val compareResult = when {
-                    targetObject === newValueNeeded -> 1
-                    sourceObject === newValueNeeded -> -1
-                    else -> actualComparator.compare(targetObject as E, sourceObject as E)
-                }
-
-                when {
-                    compareResult < 0 -> {
-                        target.removeAt(targetIndex)
-                        targetIndex--
-                        targetObject = newValueNeeded
-                    }
-
-                    compareResult == 0 -> {
-                        if (updates) target[targetIndex] = sourceObject as E
-                        targetObject = newValueNeeded
-                        sourceObject = newValueNeeded
-                    }
-
-                    else -> {
-                        target.add(targetIndex, sourceObject as E)
-                        targetIndex++
-                        sourceObject = newValueNeeded
-                    }
+                else -> {
+                    target.add(targetIndex, sourceObject as E)
+                    targetIndex++
+                    sourceObject = newValueNeeded
                 }
             }
         }
-
-        @JvmStatic
-        fun <T> equalsComparator(): Comparator<T> = EqualsComparator()
-
-        @JvmStatic
-        fun <E> identityFunction(): Function<E, E> = Function.identity()
     }
+
+    @JvmStatic
+    fun <T> equalsComparator(): Comparator<T> = EqualsComparator()
+
+    @JvmStatic
+    fun <E> identityFunction(): Function<E, E> = Function.identity()
 
     private class EqualsComparator<T> : Comparator<T> {
         override fun compare(alpha: T, beta: T): Int = if (alpha == beta) 0 else 1

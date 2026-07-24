@@ -24,11 +24,7 @@ import javax.swing.UIManager
 import javax.swing.plaf.metal.MetalLookAndFeel
 
 /** Provides table-header sort icons matching the active look and feel. */
-class SortIconFactory private constructor() {
-    init {
-        throw UnsupportedOperationException()
-    }
-
+object SortIconFactory {
     private object Loader {
         private const val RESOURCE_ROOT = "resources"
         private const val DEFAULT_RESOURCE_PATH = "aqua"
@@ -80,13 +76,11 @@ class SortIconFactory private constructor() {
         }
     }
 
-    companion object {
-        /** Loads and caches icons matching the active Swing look and feel. */
-        @JvmStatic
-        fun loadIcons(): Array<Icon?> = Loader.loadIcons()
+    /** Loads and caches icons matching the active Swing look and feel. */
+    @JvmStatic
+    fun loadIcons(): Array<Icon?> = Loader.loadIcons()
 
-        /** Loads a fresh icon array from [path]. */
-        @JvmStatic
-        fun loadIcons(path: String): Array<Icon?> = Loader.loadIcons(path)
-    }
+    /** Loads a fresh icon array from [path]. */
+    @JvmStatic
+    fun loadIcons(path: String): Array<Icon?> = Loader.loadIcons(path)
 }
