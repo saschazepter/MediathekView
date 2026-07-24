@@ -79,53 +79,62 @@ internal object Diff {
     private fun shortestEditScript(input: DiffMatcher): List<Point> {
         val maxPoint = Point(input.alphaLength, input.betaLength)
         val maxSteps = input.alphaLength + input.betaLength
-        val furthestReachingPoints = HashMap<Int, Point>()
+        var previousFrontier = emptyArray<Point?>()
+        var currentFrontier = arrayOfNulls<Point>(1)
 
         for (distance in 0..maxSteps) {
-            for (diagonal in -distance..distance step 2) {
-                val belowLeft = furthestReachingPoints[diagonal - 1]
-                val aboveRight = furthestReachingPoints[diagonal + 1]
-                var point =
+            if (currentFrontier.size <= distance) {
+                currentFrontier = currentFrontier.copyOf(maxOf(distance + 1, currentFrontier.size * 2))
+            }
+
+            for (frontierIndex in 0..distance) {
+                val belowLeft = if (frontierIndex > 0) previousFrontier[frontierIndex - 1] else null
+                val aboveRight = if (frontierIndex < distance) previousFrontier[frontierIndex] else null
+                val point =
                     when {
-                        furthestReachingPoints.isEmpty() -> Point(0, 0)
-                        diagonal == -distance ||
-                            (diagonal != distance && requireNotNull(belowLeft).x < requireNotNull(aboveRight).x) ->
+                        distance == 0 -> Point(0, 0)
+                        frontierIndex == 0 ||
+                            (frontierIndex != distance &&
+                                requireNotNull(belowLeft).x < requireNotNull(aboveRight).x) ->
                             requireNotNull(aboveRight).createDeltaPoint(0, 1)
 
                         else -> requireNotNull(belowLeft).createDeltaPoint(1, 0)
                     }
 
-                while (point.isLessThan(maxPoint) && input.matchPair(point.x, point.y)) {
-                    point = point.incrementDiagonally()
-                }
-                furthestReachingPoints[diagonal] = point
+                val furthestPoint = extendDiagonal(point, maxPoint, input)
+                currentFrontier[frontierIndex] = furthestPoint
 
-                if (point.isEqualToOrGreaterThan(maxPoint)) return point.trail()
+                if (furthestPoint.isEqualToOrGreaterThan(maxPoint)) return furthestPoint.trail()
             }
+
+            val reusableFrontier = previousFrontier
+            previousFrontier = currentFrontier
+            currentFrontier = reusableFrontier
         }
         throw IllegalStateException()
+    }
+
+    private fun extendDiagonal(
+        point: Point,
+        maxPoint: Point,
+        input: DiffMatcher,
+    ): Point {
+        var x = point.x
+        var y = point.y
+        while (x < maxPoint.x && y < maxPoint.y && input.matchPair(x, y)) {
+            x++
+            y++
+        }
+        return if (x == point.x) point else Point(x, y, point)
     }
 
     private class Point(
         val x: Int,
         val y: Int,
+        private val predecessor: Point? = null,
     ) {
-        private var predecessor: Point? = null
-
         fun createDeltaPoint(deltaX: Int, deltaY: Int): Point =
-            Point(x + deltaX, y + deltaY).also { it.predecessor = this }
-
-        fun incrementDiagonally(): Point {
-            val result = createDeltaPoint(1, 1)
-            predecessor?.let { previous ->
-                if (result.x - previous.x == result.y - previous.y) {
-                    result.predecessor = previous
-                }
-            }
-            return result
-        }
-
-        fun isLessThan(other: Point): Boolean = x < other.x && y < other.y
+            Point(x + deltaX, y + deltaY, this)
 
         fun isEqualToOrGreaterThan(other: Point): Boolean = x >= other.x && y >= other.y
 
