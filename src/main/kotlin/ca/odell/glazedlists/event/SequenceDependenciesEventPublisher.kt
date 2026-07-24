@@ -243,7 +243,7 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
         reentrantFireEventCount++
         try {
             val previous = subjectsToCleanUp.put(subject, eventFormat)
-            if (previous != null) throw IllegalStateException("Reentrant fireEvent() by \"$subject\"")
+            check(previous == null) { "Reentrant fireEvent() by \"$subject\"" }
 
             val currentListeners = subjectsAndListenersForCurrentEvent!!
             val subjectAndListenersSize = currentListeners.size
@@ -343,7 +343,7 @@ internal class SequenceDependenciesEventPublisher : ListEventPublisher {
         fun isStale(): Boolean = eventFormat.isStale(subject, listener)
 
         fun addPendingEvent(pendingEvent: Event) {
-            if (this.pendingEvent != null) throw IllegalStateException()
+            check(this.pendingEvent == null) { "Pending event already exists" }
             this.pendingEvent = pendingEvent
         }
 

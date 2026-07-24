@@ -98,7 +98,7 @@ internal class SubEventList<E>(
             }
         }
 
-        if (startIndex > endIndex) throw IllegalStateException()
+        check(startIndex <= endIndex)
         updates.commitEvent()
     }
 }

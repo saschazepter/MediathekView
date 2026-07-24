@@ -127,9 +127,7 @@ open class ObservableElementList<E>(
 
     override fun listChanged(listChanges: ListEvent<E>) {
         if (disposed) return
-        if (observedElements == null) {
-            throw IllegalStateException("Cannot modify disposed ObservableElementList")
-        }
+        checkNotNull(observedElements) { "Cannot modify disposed ObservableElementList" }
 
         while (listChanges.next()) {
             val changeIndex = listChanges.index
@@ -225,7 +223,7 @@ open class ObservableElementList<E>(
     }
 
     private fun switchToMultiListenerMode() {
-        if (!singleListenerMode) throw IllegalStateException()
+        check(singleListenerMode)
 
         val registry = ArrayList<EventListener?>(source!!.size)
         var index = 0

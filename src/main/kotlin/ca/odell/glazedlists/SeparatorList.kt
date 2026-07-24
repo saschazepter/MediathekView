@@ -572,17 +572,17 @@ open class SeparatorList<E>(
             }
 
             private fun start(): Int {
-                val currentNode = node ?: throw IllegalStateException()
+                val currentNode = checkNotNull(node) { "SeparatorList.Group iterator node is null" }
                 val separatorIndex = separators.indexOfNode(currentNode, 1)
-                if (separatorIndex == -1) throw IllegalStateException()
+                check(separatorIndex != -1) { "SeparatorList.Group separatorIndex not found" }
                 val groupStartIndex = insertedSeparators.getIndex(separatorIndex, Barcode.BLACK)
                 return groupStartIndex - separatorIndex
             }
 
             private fun end(): Int {
-                val currentNode = node ?: throw IllegalStateException()
+                val currentNode = checkNotNull(node) { "SeparatorList.Group iterator node is null" }
                 val nextSeparatorIndex = separators.indexOfNode(currentNode, 1) + 1
-                if (nextSeparatorIndex == 0) throw IllegalStateException()
+                check(nextSeparatorIndex != 0) { "SeparatorList.Group nextSeparatorIndex is 0" }
                 val nextGroupStartIndex =
                     if (nextSeparatorIndex == insertedSeparators.colourSize(Barcode.BLACK)) {
                         insertedSeparators.size()

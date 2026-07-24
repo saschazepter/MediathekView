@@ -939,7 +939,7 @@ private class AutoCompleteSupportState<E>(
                     filterBypass.replace(0, document!!.length, replacement, attributeSet)
                 }
 
-                val silently = isTableCellEditor || Objects.equals(selectedItemBeforeEdit, matchString)
+                val silently = isTableCellEditor || selectedItemBeforeEdit == matchString
                 selectItem(matchIndex, silently)
                 if (autoCompleteTermIsExactMatch && originalText == input) {
                     comboBoxEditorComponent!!.caretPosition = originalCaretPosition
@@ -958,7 +958,7 @@ private class AutoCompleteSupportState<E>(
 
         private fun selectItem(index: Int, silently: Boolean) {
             val valueToSelect = if (index == -1) null else comboBoxModel.getElementAt(index)
-            if (Objects.equals(comboBoxModel.selectedItem, valueToSelect)) return
+            if (comboBoxModel.selectedItem == valueToSelect) return
 
             doNotChangeDocument = true
             try {
@@ -1432,7 +1432,7 @@ private class AutoCompleteTableCellComboBox<E> :
             if (!equalsText(newText)) super.setText(newText)
         }
 
-        private fun equalsText(newText: String?): Boolean = Objects.equals(text, newText)
+        private fun equalsText(newText: String?): Boolean = text == newText
 
         override fun setBorder(border: Border?) = Unit
 

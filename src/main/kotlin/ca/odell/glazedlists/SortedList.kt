@@ -407,12 +407,12 @@ class SortedList<E>(
     }
 
     open fun sortIndex(element: Any?): Int {
-        if (comparator == null) throw IllegalStateException("No Comparator exists to perform this operation")
+        check(comparator != null) { "No Comparator exists to perform this operation" }
         return indexOfValue(element, first = true, simulated = true)
     }
 
     open fun lastSortIndex(element: Any?): Int {
-        if (comparator == null) throw IllegalStateException("No Comparator exists to perform this operation")
+        check(comparator != null) { "No Comparator exists to perform this operation" }
         return indexOfValue(element, first = false, simulated = true)
     }
 

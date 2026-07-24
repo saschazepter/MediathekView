@@ -84,7 +84,7 @@ internal class Barcode {
     }
 
     fun addWhite(index: Int, length: Int) {
-        if (length < 0) throw IllegalStateException()
+        require(length >= 0) { "length must be non-negative: $length" }
         if (length == 0) return
 
         if (root == null || index >= treeSize) {
@@ -96,7 +96,7 @@ internal class Barcode {
     }
 
     fun addBlack(index: Int, length: Int) {
-        if (length < 0) throw IllegalArgumentException()
+        require(length >= 0) { "length must be non-negative: $length" }
         if (length == 0) return
 
         if (root == null) {
@@ -117,7 +117,7 @@ internal class Barcode {
     operator fun get(index: Int): Any = if (getBlackIndex(index) == -1) WHITE else BLACK
 
     fun set(index: Int, colour: Any?, length: Int) {
-        if (length < 1) throw IllegalArgumentException()
+        require(length >= 1) { "length must be at least 1: $length" }
 
         var remainingLength = length
         val trailingChange = if (index > treeSize - 1) remainingLength else index + remainingLength - treeSize
@@ -147,7 +147,7 @@ internal class Barcode {
     }
 
     fun remove(index: Int, length: Int) {
-        if (length < 1) throw IllegalArgumentException()
+        require(length >= 1) { "length must be at least 1: $length" }
 
         var remainingLength = length
         val trailingChange = if (index > treeSize) remainingLength else index + remainingLength - treeSize

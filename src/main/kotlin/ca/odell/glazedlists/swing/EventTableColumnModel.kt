@@ -112,12 +112,8 @@ open class EventTableColumnModel<T : TableColumn>(
     }
 
     override fun moveColumn(columnIndex: Int, newIndex: Int) {
-        if (columnIndex < 0 || columnIndex >= columnCount) {
-            throw IllegalArgumentException("columnIndex out of range")
-        }
-        if (newIndex < 0 || newIndex >= columnCount) {
-            throw IllegalArgumentException("newIndex out of range")
-        }
+        require(columnIndex in 0 until columnCount) { "columnIndex out of range" }
+        require(newIndex in 0 until columnCount) { "newIndex out of range" }
 
         if (columnIndex == newIndex) {
             fireColumnMoved(TableColumnModelEvent(this, columnIndex, newIndex))

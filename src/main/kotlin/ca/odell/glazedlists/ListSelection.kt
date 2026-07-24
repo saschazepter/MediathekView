@@ -1083,30 +1083,27 @@ open class ListSelection<E>(
     /**
      * A SelectedList that mutates the selection instead of the underlying list.
      */
-    private open inner class SelectionToggleList<E>(
+    private inner class SelectionToggleList<E>(
         source: EventList<E>,
     ) : SelectedList<E>(source) {
-        open override fun set(
+        override fun set(
             index: Int,
             element: E,
         ): E {
             throw UnsupportedOperationException("Toggling lists don't support setting items")
         }
 
-        open override fun add(
+        override fun add(
             index: Int,
             element: E,
         ) {
             val sourceIndex = this.source!!.indexOf(element)
-            if (sourceIndex != -1) {
-                this@ListSelection.select(sourceIndex)
-            } else {
-                throw IllegalArgumentException("Added item $element must be in source list")
-            }
+            require(sourceIndex != -1) { "Added item $element must be in source list" }
+            this@ListSelection.select(sourceIndex)
         }
 
         @JvmName("remove")
-        open override fun removeAt(index: Int): E {
+        override fun removeAt(index: Int): E {
             if (index < 0 || index >= size) {
                 throw IndexOutOfBoundsException("Cannot remove at $index on list of size $size")
             }
@@ -1144,30 +1141,27 @@ open class ListSelection<E>(
     /**
      * A DeselectedList that mutates the selection instead of the underlying list.
      */
-    private open inner class DeselectionToggleList<E>(
+    private inner class DeselectionToggleList<E>(
         source: EventList<E>,
     ) : DeselectedList<E>(source) {
-        open override fun set(
+        override fun set(
             index: Int,
             element: E,
         ): E {
             throw UnsupportedOperationException("Toggling lists don't support setting items")
         }
 
-        open override fun add(
+        override fun add(
             index: Int,
             element: E,
         ) {
             val sourceIndex = this.source!!.indexOf(element)
-            if (sourceIndex != -1) {
-                this@ListSelection.deselect(sourceIndex)
-            } else {
-                throw IllegalArgumentException("Added item $element must be in source list")
-            }
+            require(sourceIndex != -1) { "Added item $element must be in source list" }
+            this@ListSelection.deselect(sourceIndex)
         }
 
         @JvmName("remove")
-        open override fun removeAt(index: Int): E {
+        override fun removeAt(index: Int): E {
             if (index < 0 || index >= size) {
                 throw IndexOutOfBoundsException("Cannot remove at $index on list of size $size")
             }
