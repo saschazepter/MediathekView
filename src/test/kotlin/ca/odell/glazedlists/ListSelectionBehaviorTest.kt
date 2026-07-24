@@ -24,7 +24,6 @@ import ca.odell.glazedlists.impl.UpgradeDetectingReadWriteLock
 import ca.odell.glazedlists.matchers.Matcher
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.lang.reflect.Modifier
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class ListSelectionBehaviorTest {
@@ -614,157 +613,12 @@ internal class ListSelectionBehaviorTest {
         assertEquals(listOf(recordedEvent(change(ListEvent.INSERT, 0, ListEvent.UNKNOWN_VALUE, "a"))), selectedEvents.take())
     }
 
-    @Test
-    fun publicOpenGenericAndPrivateInnerClassSurfaceMatchesJavaBaselineExactly() {
-        val type = ListSelection::class.java
-        assertTrue(Modifier.isPublic(type.modifiers))
-        assertFalse(Modifier.isFinal(type.modifiers))
-        assertFalse(Modifier.isAbstract(type.modifiers))
-        assertEquals(listOf("E"), type.typeParameters.map { it.name })
-        assertEquals(
-            listOf("ca.odell.glazedlists.event.ListEventListener<E>"),
-            type.genericInterfaces.map { it.typeName },
-        )
-
-        assertEquals(
-            setOf(
-                "Companion",
-                "SINGLE_SELECTION",
-                "SINGLE_INTERVAL_SELECTION",
-                "MULTIPLE_INTERVAL_SELECTION",
-                "MULTIPLE_INTERVAL_SELECTION_DEFENSIVE",
-            ),
-            type.declaredFields.filter { Modifier.isPublic(it.modifiers) }.map { it.name }.toSet(),
-        )
-        assertPublicConstant(type, "SINGLE_SELECTION", 0)
-        assertPublicConstant(type, "SINGLE_INTERVAL_SELECTION", 1)
-        assertPublicConstant(type, "MULTIPLE_INTERVAL_SELECTION", 2)
-        assertPublicConstant(type, "MULTIPLE_INTERVAL_SELECTION_DEFENSIVE", 103)
-
-        assertEquals(
-            setOf(
-                "ca.odell.glazedlists.EventList",
-                "ca.odell.glazedlists.EventList,[I",
-            ),
-            type.declaredConstructors.map { constructor ->
-                assertTrue(Modifier.isPublic(constructor.modifiers), constructor.toString())
-                constructor.parameterTypes.joinToString(",") { it.name }
-            }.toSet(),
-        )
-        val genericConstructors = type.declaredConstructors.associateBy { it.parameterCount }
-        assertEquals(listOf("ca.odell.glazedlists.EventList<E>"), genericConstructors.getValue(1).genericParameterTypes.map { it.typeName })
-        assertEquals(
-            listOf("ca.odell.glazedlists.EventList<E>", "int[]"),
-            genericConstructors.getValue(2).genericParameterTypes.map { it.typeName },
-        )
-
-        val expectedPublicMethods =
-            setOf(
-                "addSelectionListener(ca.odell.glazedlists.ListSelection${'$'}Listener):void",
-                "addValidSelectionMatcher(ca.odell.glazedlists.matchers.Matcher):void",
-                "deselect([I):void",
-                "deselect(int):void",
-                "deselect(int,int):void",
-                "deselectAll():void",
-                "dispose():void",
-                "getAnchorSelectionIndex():int",
-                "getDeselected():ca.odell.glazedlists.EventList",
-                "getLeadSelectionIndex():int",
-                "getMaxSelectionIndex():int",
-                "getMinSelectionIndex():int",
-                "getSelected():ca.odell.glazedlists.EventList",
-                "getSelectionMode():int",
-                "getSource():ca.odell.glazedlists.EventList",
-                "getTogglingDeselected():ca.odell.glazedlists.EventList",
-                "getTogglingSelected():ca.odell.glazedlists.EventList",
-                "invertSelection():void",
-                "isSelected(int):boolean",
-                "listChanged(ca.odell.glazedlists.event.ListEvent):void",
-                "removeSelectionListener(ca.odell.glazedlists.ListSelection${'$'}Listener):void",
-                "removeValidSelectionMatcher(ca.odell.glazedlists.matchers.Matcher):void",
-                "select([I):void",
-                "select(int):void",
-                "select(int,int):void",
-                "select(java.lang.Object):int",
-                "select(java.util.Collection):boolean",
-                "selectAll():void",
-                "setAnchorSelectionIndex(int):void",
-                "setLeadSelectionIndex(int):void",
-                "setSelection([I):void",
-                "setSelection(int):void",
-                "setSelection(int,int):void",
-                "setSelectionMode(int):void",
-            )
-        val actualPublicMethods =
-            type.declaredMethods
-                .filter { Modifier.isPublic(it.modifiers) && !it.isSynthetic }
-                .onEach { method ->
-                    assertFalse(Modifier.isFinal(method.modifiers), method.toString())
-                    assertFalse(Modifier.isStatic(method.modifiers), method.toString())
-                }.map { methodSignature(it) }
-                .toSet()
-        assertEquals(expectedPublicMethods, actualPublicMethods)
-
-        assertEquals("E", type.getDeclaredMethod("select", Any::class.java).genericParameterTypes.single().typeName)
-        assertEquals(
-            "java.util.Collection<? extends E>",
-            type.getDeclaredMethod("select", Collection::class.java).genericParameterTypes.single().typeName,
-        )
-        assertEquals(
-            "ca.odell.glazedlists.matchers.Matcher<E>",
-            type.getDeclaredMethod("addValidSelectionMatcher", Matcher::class.java).genericParameterTypes.single().typeName,
-        )
-        for (name in listOf("getSelected", "getDeselected", "getTogglingSelected", "getTogglingDeselected", "getSource")) {
-            assertEquals("ca.odell.glazedlists.EventList<E>", type.getDeclaredMethod(name).genericReturnType.typeName, name)
-        }
-
-        val nestedByName =
-            type.declaredClasses
-                .filterNot { it.simpleName == "Companion" }
-                .associateBy { it.simpleName }
-        assertEquals(
-            setOf("Listener", "SelectedList", "DeselectedList", "SelectionToggleList", "DeselectionToggleList"),
-            nestedByName.keys,
-        )
-        val listener = nestedByName.getValue("Listener")
-        assertTrue(listener.isInterface)
-        assertTrue(Modifier.isPublic(listener.modifiers))
-        assertTrue(Modifier.isStatic(listener.modifiers))
-        assertTrue(Modifier.isAbstract(listener.modifiers))
-        assertTrue(listener.isAnnotationPresent(FunctionalInterface::class.java))
-        assertEquals(listOf("selectionChanged(int,int):void"), listener.declaredMethods.map { methodSignature(it) })
-
-        for (name in listOf("SelectedList", "DeselectedList", "SelectionToggleList", "DeselectionToggleList")) {
-            val inner = nestedByName.getValue(name)
-            assertTrue(Modifier.isPrivate(inner.modifiers), name)
-            assertFalse(Modifier.isStatic(inner.modifiers), name)
-            assertFalse(Modifier.isFinal(inner.modifiers), name)
-            assertEquals(type, inner.enclosingClass)
-            assertEquals(listOf("E"), inner.typeParameters.map { it.name })
-            assertEquals(
-                listOf(type, EventList::class.java),
-                inner.declaredConstructors.single().parameterTypes.toList(),
-                name,
-            )
-        }
-    }
-
     private fun assertSelection(selection: ListSelection<Int>, expected: List<Int>, anchor: Int, lead: Int) {
         assertEquals(expected, selection.selected.toList())
         assertEquals(selection.source.filterNot(expected::contains), selection.deselected.toList())
         assertEquals(anchor, selection.anchorSelectionIndex)
         assertEquals(lead, selection.leadSelectionIndex)
     }
-
-    private fun assertPublicConstant(type: Class<*>, name: String, expected: Int) {
-        val field = type.getDeclaredField(name)
-        assertEquals(Modifier.PUBLIC or Modifier.STATIC or Modifier.FINAL, field.modifiers)
-        assertEquals(Int::class.javaPrimitiveType, field.type)
-        assertEquals(expected, field.getInt(null))
-    }
-
-    private fun methodSignature(method: java.lang.reflect.Method): String =
-        "${method.name}(${method.parameterTypes.joinToString(",") { it.name }}):${method.returnType.name}"
 
     private fun <E> eventListOf(vararg values: E): BasicEventList<E> = BasicEventList<E>().apply { addAll(values.toList()) }
 

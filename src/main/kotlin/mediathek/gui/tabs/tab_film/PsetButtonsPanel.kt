@@ -57,7 +57,7 @@ class PsetButtonsPanel(
                     }
                 }
 
-                pset.foregroundColor.ifPresent(component::setForeground)
+                pset.foregroundColor?.let(component::setForeground)
                 btnPanel.add(component)
             } else {
                 btnPanel.add(JLabel(""))

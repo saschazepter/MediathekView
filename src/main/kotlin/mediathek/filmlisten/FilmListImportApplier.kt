@@ -24,7 +24,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 internal object FilmListImportApplier {
     fun collectFilmUrlKeys(listeFilme: ListeFilme): Set<String> =
@@ -46,7 +45,7 @@ internal object FilmListImportApplier {
 
             listeFilme.updateFromFilmList(diffListe)
             listeFilme.metaData = diffListe.metaData
-            Collections.sort(listeFilme)
+            listeFilme.sort()
             diffListe.clear()
         } else {
             logger.info("Liste Kompl. gelesen am: {}", readDate)

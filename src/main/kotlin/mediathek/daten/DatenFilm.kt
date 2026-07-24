@@ -710,7 +710,7 @@ class DatenFilm private constructor(
     }
 
     companion object {
-        val EU_COUNTRIES: EnumSet<Country> = EnumSet.of(Country.DE, Country.AT, Country.FR)
+        val EU_COUNTRIES: Set<Country> = Collections.unmodifiableSet(EnumSet.of(Country.DE, Country.AT, Country.FR))
 
         const val COMPRESSION_MARKER = '|'
 

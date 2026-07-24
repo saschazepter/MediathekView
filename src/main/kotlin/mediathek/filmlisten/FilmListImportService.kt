@@ -248,7 +248,7 @@ internal class FilmListImportService(
 
     private fun ladeDiffListe(listeFilmeDiff: ListeFilme, days: Int): Boolean =
         urlLaden(StandardLocations.getFilmListUrl(FilmListDownloadType.DIFF_ONLY), listeFilmeDiff, days) &&
-            !listeFilmeDiff.isEmpty()
+            listeFilmeDiff.isNotEmpty()
 
     private fun urlLaden(dateiUrl: String, listeFilme: ListeFilme, days: Int): Boolean {
         var ret = false
