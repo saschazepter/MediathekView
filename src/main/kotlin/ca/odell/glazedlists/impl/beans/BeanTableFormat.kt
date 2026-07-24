@@ -78,17 +78,15 @@ internal open class BeanTableFormat<E : Any>(
 
     override fun getColumnName(column: Int): String = columnLabels[column]
 
-    @Suppress("UNCHECKED_CAST")
     override fun getColumnValue(baseObject: E, column: Int): Any? {
-        if (beanProperties == null) loadPropertyDescriptors(baseObject.javaClass as Class<E>)
+        if (beanProperties == null) loadPropertyDescriptors(baseObject.javaClass)
         return checkNotNull(beanProperties)[column][baseObject]
     }
 
     override fun isEditable(baseObject: E, column: Int): Boolean = editable[column]
 
-    @Suppress("UNCHECKED_CAST")
     override fun setColumnValue(baseObject: E, editedValue: Any?, column: Int): E {
-        if (beanProperties == null) loadPropertyDescriptors(baseObject.javaClass as Class<E>)
+        if (beanProperties == null) loadPropertyDescriptors(baseObject.javaClass)
         checkNotNull(beanProperties)[column].set(baseObject, editedValue)
         return baseObject
     }

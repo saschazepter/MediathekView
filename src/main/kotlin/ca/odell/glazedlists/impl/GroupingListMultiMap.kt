@@ -32,7 +32,6 @@ import java.lang.reflect.Array as ReflectArray
 )
 internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
     ListEventListener<List<V>> {
-    private val groupingList: GroupingList<V>
     private val valueList: FunctionList<List<V>, List<V>>
     private val keyList: MutableList<K>
     private var cachedKeySet: KeySet<K, V>? = null
@@ -46,12 +45,12 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
         keyGrouper: Comparator<in K>,
     ) : super() {
         this.keyFunction = keyFunction
-        groupingList = GroupingList(source, FunctionComparator(keyFunction, keyGrouper))
-        valueList = FunctionList(groupingList, java.util.function.Function(ValueListFunction(this)))
+        values = GroupingList(source, FunctionComparator(keyFunction, keyGrouper))
+        valueList = FunctionList(values, java.util.function.Function(ValueListFunction(this)))
         valueList.addListEventListener(this)
 
-        keyList = BasicEventList(groupingList.size)
-        delegate = HashMap(groupingList.size)
+        keyList = BasicEventList(values.size)
+        delegate = HashMap(values.size)
         for (value in valueList) {
             val key = key(value)
             keyList.add(key)
@@ -62,7 +61,7 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
     override fun dispose() {
         valueList.removeListEventListener(this)
         valueList.dispose()
-        groupingList.dispose()
+        values.dispose()
 
         cachedKeySet = null
         cachedEntrySet = null
@@ -86,7 +85,7 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
         checkKeyValueAgreement(key, value)
 
         val removed = remove(key)
-        groupingList.add(value)
+        values.add(value)
         return removed
     }
 
@@ -97,7 +96,7 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
         for (key in from.keys) {
             remove(key)
         }
-        groupingList.addAll(from.values)
+        values.addAll(from.values)
     }
 
     private fun checkKeyValueAgreement(key: K, values: Collection<V>) {
@@ -114,17 +113,17 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
     }
 
     override fun clear() {
-        groupingList.clear()
+        values.clear()
     }
 
     override fun remove(key: K): MutableList<V>? {
         val index = keyList.indexOf(key)
-        return if (index == -1) null else groupingList.removeAt(index)
+        return if (index == -1) null else values.removeAt(index)
     }
 
     override fun remove(key: K, value: List<V>): Boolean {
         val currentValue = get(key)
-        if (currentValue != value || currentValue == null && !containsKey(key)) {
+        if (currentValue != value) {
             return false
         }
         remove(key)
@@ -133,14 +132,14 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
 
     @get:JvmName("values")
     override val values: @NonNull MutableCollection<List<V>>
-        get() = groupingList
+        field: GroupingList<V>
 
     @get:JvmName("keySet")
     override val keys: @NonNull MutableSet<K>
         get() {
             var current = cachedKeySet
             if (current == null) {
-                current = KeySet(keyList, groupingList, this)
+                current = KeySet(keyList, values, this)
                 cachedKeySet = current
             }
             return current
@@ -152,7 +151,7 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
             var current = cachedEntrySet
             if (current == null) {
                 current =
-                    EntrySet(keyList, groupingList, delegate, this) as MutableSet<MutableMap.MutableEntry<K, List<V>>>
+                    EntrySet(keyList, values, delegate, this) as MutableSet<MutableMap.MutableEntry<K, List<V>>>
                 cachedEntrySet = current
             }
             return current
@@ -240,16 +239,14 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
         initialValue: MutableList<V>,
         private val owner: GroupingListMultiMap<K, V>,
     ) : MutableMap.MutableEntry<K, List<V>> {
-        private val snapshotValue: MutableList<V> = initialValue
-
         override val value: List<V>
-            get() = snapshotValue
+            field: MutableList<V> = initialValue
 
         override fun setValue(newValue: List<V>): List<V> {
             owner.checkKeyValueAgreement(key, newValue)
-            val oldValue = ArrayList(snapshotValue)
-            snapshotValue.addAll(newValue)
-            snapshotValue.removeAll(oldValue)
+            val oldValue = ArrayList(value)
+            value.addAll(newValue)
+            value.removeAll(oldValue)
             return oldValue
         }
 
@@ -258,7 +255,7 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
                     key == other.key &&
                     value == other.value
 
-        override fun hashCode(): Int = (key?.hashCode() ?: 0) xor snapshotValue.hashCode()
+        override fun hashCode(): Int = key.hashCode() xor value.hashCode()
 
         override fun toString(): String = "$key=$value"
     }

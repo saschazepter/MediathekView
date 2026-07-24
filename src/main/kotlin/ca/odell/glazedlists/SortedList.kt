@@ -200,7 +200,7 @@ class SortedList<E>(
                     val sortedNode = asNode(unsortedNode.get()!!)
                     sortedNode.sorted = Element.PENDING
                     updateNodes.add(sortedNode)
-                    previousValues.add(listChanges.oldValue as E)
+                    previousValues.add(listChanges.oldValue)
                 }
 
                 ListEvent.DELETE -> {

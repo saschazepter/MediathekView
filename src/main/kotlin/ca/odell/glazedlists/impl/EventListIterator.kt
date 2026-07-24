@@ -46,10 +46,10 @@ internal open class EventListIterator<E> : java.util.ListIterator<E>, ListEventL
         }
     }
 
-    override fun hasNext(): Boolean = nextIndex < source!!.size
+    override fun hasNext(): Boolean = nextIndex < source.size
 
     override fun next(): E {
-        val list = source!!
+        val list = source
         if (nextIndex == list.size) {
             throw NoSuchElementException("Cannot retrieve element $nextIndex on a list of size ${list.size}")
         }
@@ -64,7 +64,7 @@ internal open class EventListIterator<E> : java.util.ListIterator<E>, ListEventL
 
     @Suppress("KotlinConstantConditions")
     override fun previous(): E {
-        val list = source!!
+        val list = source
         if (nextIndex == 0) {
             throw NoSuchElementException("Cannot retrieve element $nextIndex on a list of size ${list.size}")
         }
@@ -76,17 +76,17 @@ internal open class EventListIterator<E> : java.util.ListIterator<E>, ListEventL
     override fun previousIndex(): Int = nextIndex - 1
 
     override fun add(element: E) {
-        source!!.add(nextIndex, element)
+        source.add(nextIndex, element)
     }
 
     override fun remove() {
         check(lastIndex != -1) { "Cannot remove() without a prior call to next() or previous()" }
-        source!!.removeAt(lastIndex)
+        source.removeAt(lastIndex)
     }
 
     override fun set(element: E) {
         check(lastIndex != -1) { "Cannot set() without a prior call to next() or previous()" }
-        source!![lastIndex] = element
+        source[lastIndex] = element
     }
 
     override fun listChanged(listChanges: ListEvent<E>) {
