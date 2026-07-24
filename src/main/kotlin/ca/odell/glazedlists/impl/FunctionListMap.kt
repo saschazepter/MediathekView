@@ -22,7 +22,6 @@ import ca.odell.glazedlists.DisposableMap
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.event.ListEventListener
-import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.BiConsumer
 
@@ -123,10 +122,8 @@ internal class FunctionListMap<K, V> : DisposableMap<K, V> {
 
     private fun checkKeyValueAgreement(key: K, value: V) {
         val calculatedKey = key(value)
-        if (!Objects.equals(key, calculatedKey)) {
-            throw IllegalArgumentException(
-                "The calculated key for the given value ($calculatedKey) does not match the given key ($key)",
-            )
+        require(key == calculatedKey) {
+            "The calculated key for the given value ($calculatedKey) does not match the given key ($key)"
         }
     }
 
@@ -293,10 +290,8 @@ internal class FunctionListMap<K, V> : DisposableMap<K, V> {
 
         override fun setValue(newValue: V): V {
             val calculatedKey = keyFunction(newValue)
-            if (!Objects.equals(key, calculatedKey)) {
-                throw IllegalArgumentException(
-                    "The calculated key for the given value ($calculatedKey) does not match the given key ($key)",
-                )
+            require(key == calculatedKey) {
+                "The calculated key for the given value ($calculatedKey) does not match the given key ($key)"
             }
             snapshotValue = newValue
             return owner.put(key, newValue) as V
@@ -304,8 +299,8 @@ internal class FunctionListMap<K, V> : DisposableMap<K, V> {
 
         override fun equals(other: Any?): Boolean =
             other is Map.Entry<*, *> &&
-                    Objects.equals(key, other.key) &&
-                    Objects.equals(value, other.value)
+                    key == other.key &&
+                    value == other.value
 
         override fun hashCode(): Int = (key?.hashCode() ?: 0) xor snapshotValue!!.hashCode()
 

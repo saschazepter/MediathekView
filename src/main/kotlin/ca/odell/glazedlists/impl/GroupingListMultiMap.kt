@@ -22,7 +22,6 @@ import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.event.ListEventListener
 import ca.odell.glazedlists.event.sourceList
 import org.jspecify.annotations.NonNull
-import java.util.*
 import java.lang.reflect.Array as ReflectArray
 
 /** A mutable map from calculated keys to live groups in an observable source list. */
@@ -109,10 +108,8 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
 
     private fun checkKeyValueAgreement(key: K, value: V) {
         val calculatedKey = key(value)
-        if (!Objects.equals(key, calculatedKey)) {
-            throw IllegalArgumentException(
-                "The calculated key for the given value ($calculatedKey) does not match the given key ($key)",
-            )
+        require(key == calculatedKey) {
+            "The calculated key for the given value ($calculatedKey) does not match the given key ($key)"
         }
     }
 
@@ -127,7 +124,7 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
 
     override fun remove(key: K, value: List<V>): Boolean {
         val currentValue = get(key)
-        if (!Objects.equals(currentValue, value) || currentValue == null && !containsKey(key)) {
+        if (currentValue != value || currentValue == null && !containsKey(key)) {
             return false
         }
         remove(key)
@@ -258,8 +255,8 @@ internal class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>>,
 
         override fun equals(other: Any?): Boolean =
             other is Map.Entry<*, *> &&
-                    Objects.equals(key, other.key) &&
-                    Objects.equals(value, other.value)
+                    key == other.key &&
+                    value == other.value
 
         override fun hashCode(): Int = (key?.hashCode() ?: 0) xor snapshotValue.hashCode()
 

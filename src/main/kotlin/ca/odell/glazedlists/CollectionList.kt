@@ -312,15 +312,11 @@ open class CollectionList<S, E>(
         private val node: Element<ChildElement<E>>,
     ) : ChildElement<E>, ListEventListener<E> {
         init {
-            if (publisher != children.publisher) {
-                throw IllegalArgumentException(
-                    "If a CollectionList.Model returns EventLists, those EventLists must use the same ListEventPublisher as the CollectionList",
-                )
+            require(publisher == children.publisher) {
+                "If a CollectionList.Model returns EventLists, those EventLists must use the same ListEventPublisher as the CollectionList"
             }
-            if (readWriteLock != children.readWriteLock) {
-                throw IllegalArgumentException(
-                    "If a CollectionList.Model returns EventLists, those EventLists must use the same ReadWriteLock as the CollectionList",
-                )
+            require(readWriteLock == children.readWriteLock) {
+                "If a CollectionList.Model returns EventLists, those EventLists must use the same ReadWriteLock as the CollectionList"
             }
 
             children.publisher.setRelatedSubject(this, this@CollectionList)

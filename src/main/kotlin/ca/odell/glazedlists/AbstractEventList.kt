@@ -24,7 +24,6 @@ import ca.odell.glazedlists.impl.EventListIterator
 import ca.odell.glazedlists.impl.SimpleIterator
 import ca.odell.glazedlists.impl.SubEventList
 import org.jspecify.annotations.NonNull
-import java.util.*
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.function.Predicate
 import java.util.function.UnaryOperator
@@ -69,7 +68,7 @@ abstract class AbstractEventList<E> protected constructor(
 
     override fun contains(element: E): Boolean {
         for (value in this) {
-            if (Objects.equals(element, value)) return true
+            if (element == value) return true
         }
         return false
     }
@@ -212,7 +211,7 @@ abstract class AbstractEventList<E> protected constructor(
         val iterA = iterator()
         val iterB = other.iterator()
         while (iterA.hasNext() && iterB.hasNext()) {
-            if (!Objects.equals(iterA.next(), iterB.next())) return false
+            if (iterA.next() != iterB.next()) return false
         }
 
         return true
@@ -221,7 +220,7 @@ abstract class AbstractEventList<E> protected constructor(
     override fun hashCode(): Int {
         var hashCode = 1
         for (value in this) {
-            hashCode = 31 * hashCode + Objects.hashCode(value)
+            hashCode = 31 * hashCode + (value?.hashCode() ?: 0)
         }
         return hashCode
     }
@@ -244,7 +243,7 @@ abstract class AbstractEventList<E> protected constructor(
     override fun indexOf(element: E): Int {
         var index = 0
         for (value in this) {
-            if (Objects.equals(element, value)) {
+            if (element == value) {
                 return index
             } else {
                 index++
@@ -255,7 +254,7 @@ abstract class AbstractEventList<E> protected constructor(
 
     override fun lastIndexOf(element: E): Int {
         for (index in size - 1 downTo 0) {
-            if (Objects.equals(element, get(index))) return index
+            if (element == get(index)) return index
         }
         return -1
     }

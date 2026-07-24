@@ -42,10 +42,8 @@ class SortedList<E>(
     /** One of [STRICT_SORT_ORDER] or [AVOID_MOVING_ELEMENTS]. */
     open var mode: Int = STRICT_SORT_ORDER
         set(value) {
-            if (value != STRICT_SORT_ORDER && value != AVOID_MOVING_ELEMENTS) {
-                throw IllegalArgumentException(
-                    "Mode must be either SortedList.STRICT_SORT_ORDER or SortedList.AVOID_MOVING_ELEMENTS",
-                )
+            require(value == STRICT_SORT_ORDER || value == AVOID_MOVING_ELEMENTS) {
+                "Mode must be either SortedList.STRICT_SORT_ORDER or SortedList.AVOID_MOVING_ELEMENTS"
             }
             if (value == field) return
 

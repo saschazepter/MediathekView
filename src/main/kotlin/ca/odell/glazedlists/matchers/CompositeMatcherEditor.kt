@@ -31,7 +31,7 @@ class CompositeMatcherEditor<E> constructor(
             currentMode = value
             when (oldMode) {
                 AND -> {
-                    if (value != OR) throw IllegalArgumentException()
+                    require(value == OR) { "Unsupported composite matcher mode: $value" }
                     when {
                         delegateEditors.isEmpty() -> fireMatchNone()
                         delegateEditors.size > 1 -> fireRelaxed(rebuildMatcher())
@@ -39,14 +39,14 @@ class CompositeMatcherEditor<E> constructor(
                 }
 
                 OR -> {
-                    if (value != AND) throw IllegalArgumentException()
+                    require(value == AND) { "Unsupported composite matcher mode: $value" }
                     when {
                         delegateEditors.isEmpty() -> fireMatchAll()
                         delegateEditors.size > 1 -> fireConstrained(rebuildMatcher())
                     }
                 }
 
-                else -> throw IllegalArgumentException()
+                else -> throw IllegalArgumentException("Unsupported composite matcher mode: $oldMode")
             }
         }
 
