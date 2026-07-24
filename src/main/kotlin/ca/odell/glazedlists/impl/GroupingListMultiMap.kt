@@ -30,7 +30,6 @@ import java.util.ArrayList
 import java.util.HashMap
 import java.util.HashSet
 import java.util.Objects
-import java.util.function.Function
 import org.jspecify.annotations.NonNull
 
 /** A mutable map from calculated keys to live groups in an observable source list. */
@@ -45,13 +44,13 @@ open class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
     private val valueList: FunctionList<List<V>, List<V>>
     private val keyList: MutableList<K>
     private var cachedKeySet: KeySet<K, V>? = null
-    private val keyFunction: Function<V, out K>
+    private val keyFunction: (V) -> K
     private val delegate: MutableMap<K, List<V>?>
     private var cachedEntrySet: MutableSet<MutableMap.MutableEntry<K, List<V>?>>? = null
 
     constructor(
         source: EventList<V>?,
-        keyFunction: Function<V, out K>?,
+        keyFunction: ((V) -> K)?,
         keyGrouper: Comparator<in K>?,
     ) : super() {
         if (keyFunction == null) {
@@ -63,7 +62,7 @@ open class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
 
         this.keyFunction = keyFunction
         groupingList = GroupingList(source!!, FunctionComparator(keyFunction, keyGrouper))
-        valueList = FunctionList(groupingList, ValueListFunction(this))
+        valueList = FunctionList(groupingList, java.util.function.Function(ValueListFunction(this)))
         valueList.addListEventListener(this)
 
         keyList = BasicEventList(groupingList.size)
@@ -207,7 +206,7 @@ open class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
         return key(values[0])
     }
 
-    private fun key(value: V): K = keyFunction.apply(value)
+    private fun key(value: V): K = keyFunction(value)
 
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private class EntrySet<K, V>(
@@ -330,17 +329,17 @@ open class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
     }
 
     private class FunctionComparator<K, V>(
-        private val function: Function<V, out K>,
+        private val function: (V) -> K,
         private val delegate: Comparator<in K>,
     ) : Comparator<V> {
         override fun compare(left: V, right: V): Int =
-            delegate.compare(function.apply(left), function.apply(right))
+            delegate.compare(function(left), function(right))
     }
 
     private class ValueListFunction<K, V>(
         private val owner: GroupingListMultiMap<K, V>,
-    ) : Function<List<V>, List<V>> {
-        override fun apply(sourceValue: List<V>): List<V> = ValueList(sourceValue as MutableList<V>, owner)
+    ) : (List<V>) -> List<V> {
+        override fun invoke(sourceValue: List<V>): List<V> = ValueList(sourceValue as MutableList<V>, owner)
     }
 
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")

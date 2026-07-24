@@ -27,7 +27,6 @@ import java.util.Objects
 import java.util.RandomAccess
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.BiConsumer
-import java.util.function.Function
 
 /** A mutable map kept in sync with an [EventList] whose values produce unique keys. */
 @Suppress("INAPPLICABLE_JVM_NAME", "UNCHECKED_CAST")
@@ -36,11 +35,11 @@ open class FunctionListMap<K, V> : DisposableMap<K, V> {
     private var cachedKeySet: KeySet<K, V>? = null
     private val valueList: EventList<V>
     private var cachedEntrySet: MutableSet<MutableMap.MutableEntry<K, V>>? = null
-    private val keyFunction: Function<V, K>
+    private val keyFunction: (V) -> K
     private val delegate: MutableMap<K, V>
     private val eventListener: ListEventListener<V>
 
-    constructor(source: EventList<V>?, keyFunction: Function<V, K>?) {
+    constructor(source: EventList<V>?, keyFunction: ((V) -> K)?) {
         if (keyFunction == null) {
             throw IllegalArgumentException("keyFunction may not be null")
         }
@@ -229,14 +228,14 @@ open class FunctionListMap<K, V> : DisposableMap<K, V> {
         delegate[key] = value
     }
 
-    private fun key(value: V): K = keyFunction.apply(value)
+    private fun key(value: V): K = keyFunction(value)
 
     @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
     private class EntrySet<K, V>(
         private val keyList: MutableList<K>,
         private val valueList: EventList<V>,
         private val delegate: Map<K, V>,
-        private val keyFunction: Function<V, K>,
+        private val keyFunction: (V) -> K,
         private val owner: FunctionListMap<K, V>,
     ) : java.util.AbstractSet<Map.Entry<K, V>>() {
         override val size: Int
@@ -262,7 +261,7 @@ open class FunctionListMap<K, V> : DisposableMap<K, V> {
     private class EntrySetIterator<K, V>(
         private val keyIterator: MutableListIterator<K>,
         private val valueList: EventList<V>,
-        private val keyFunction: Function<V, K>,
+        private val keyFunction: (V) -> K,
         private val owner: FunctionListMap<K, V>,
     ) : MutableIterator<Map.Entry<K, V>> {
         override fun hasNext(): Boolean = keyIterator.hasNext()
@@ -284,7 +283,7 @@ open class FunctionListMap<K, V> : DisposableMap<K, V> {
     private class MapEntry<K, V>(
         override val key: K,
         initialValue: V,
-        private val keyFunction: Function<V, K>,
+        private val keyFunction: (V) -> K,
         private val owner: FunctionListMap<K, V>,
     ) : MutableMap.MutableEntry<K, V> {
         private var snapshotValue: V = initialValue
@@ -299,7 +298,7 @@ open class FunctionListMap<K, V> : DisposableMap<K, V> {
             get() = snapshotValue
 
         override fun setValue(newValue: V): V {
-            val calculatedKey = keyFunction.apply(newValue)
+            val calculatedKey = keyFunction(newValue)
             if (!Objects.equals(key, calculatedKey)) {
                 throw IllegalArgumentException(
                     "The calculated key for the given value ($calculatedKey) does not match the given key ($key)",

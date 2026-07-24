@@ -19,7 +19,6 @@ package ca.odell.glazedlists.impl
 
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.GlazedLists
-import java.util.function.Function
 
 /** Internal utilities used by Glazed Lists implementations. */
 @Suppress("UNCHECKED_CAST")
@@ -82,7 +81,7 @@ object GlazedListsImpl {
     fun <T> equalsComparator(): Comparator<T> = EqualsComparator()
 
     @JvmStatic
-    fun <E> identityFunction(): Function<E, E> = Function.identity()
+    fun <E> identityFunction(): (E) -> E = { it }
 
     private class EqualsComparator<T> : Comparator<T> {
         override fun compare(alpha: T, beta: T): Int = if (alpha == beta) 0 else 1

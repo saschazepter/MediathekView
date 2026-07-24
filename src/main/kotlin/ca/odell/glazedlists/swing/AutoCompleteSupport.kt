@@ -60,7 +60,6 @@ import java.text.Format
 import java.text.ParsePosition
 import java.util.Comparator
 import java.util.Objects
-import java.util.function.Function
 import javax.swing.AbstractAction
 import javax.swing.Action
 import javax.swing.ActionMap
@@ -258,10 +257,10 @@ class AutoCompleteSupport<E> private constructor(
             tableData: EventList<E>?,
             columnIndex: Int,
         ): AutoCompleteCellEditor<E> {
-            val columnValueFunction: Function<E, Any?> =
+            val columnValueFunction: (E) -> Any? =
                 AutoCompleteTableColumnValueFunction(tableFormat, columnIndex)
             val allColumnValues: FunctionList<E, Any?> =
-                FunctionList(tableData!!, columnValueFunction)
+                FunctionList(tableData!!, java.util.function.Function(columnValueFunction))
 
             @Suppress("UNCHECKED_CAST")
             val uniqueColumnValues: EventList<Any?> =
@@ -1538,6 +1537,6 @@ private class AutoCompleteTableCellComboBox<E> :
 private class AutoCompleteTableColumnValueFunction<E>(
     private val tableFormat: TableFormat<E>?,
     private val columnIndex: Int,
-) : Function<E, Any?> {
-    override fun apply(sourceValue: E): Any? = tableFormat!!.getColumnValue(sourceValue, columnIndex)
+) : (E) -> Any? {
+    override fun invoke(sourceValue: E): Any? = tableFormat!!.getColumnValue(sourceValue, columnIndex)
 }

@@ -29,14 +29,14 @@ import javax.swing.undo.UndoableEdit
 class UndoSupport<E> private constructor(
     undoManager: UndoManager,
     source: EventList<E>,
-    editAdapter: Function<UndoRedoSupport.Edit, UndoableEdit>,
+    editAdapter: (UndoRedoSupport.Edit) -> UndoableEdit,
 ) {
     private var undoManager: UndoManager? = undoManager
     private var undoRedoSupport: UndoRedoSupport<E>? = UndoRedoSupport.install(source)
     private var undoSupportHandler: UndoRedoSupport.Listener? = UndoRedoSupport.Listener { edit ->
-        this@UndoSupport.undoManager!!.addEdit(this@UndoSupport.editAdapter!!.apply(edit))
+        this@UndoSupport.undoManager!!.addEdit(this@UndoSupport.editAdapter!!(edit))
     }
-    private var editAdapter: Function<UndoRedoSupport.Edit, UndoableEdit>? = editAdapter
+    private var editAdapter: ((UndoRedoSupport.Edit) -> UndoableEdit)? = editAdapter
 
     init {
         undoRedoSupport!!.addUndoSupportListener(undoSupportHandler)
@@ -56,8 +56,8 @@ class UndoSupport<E> private constructor(
     }
 
 
-    private class DefaultEditAdapter : Function<UndoRedoSupport.Edit, UndoableEdit> {
-        override fun apply(edit: UndoRedoSupport.Edit): UndoableEdit = EditAdapter(edit)
+    private class DefaultEditAdapter : (UndoRedoSupport.Edit) -> UndoableEdit {
+        override fun invoke(edit: UndoRedoSupport.Edit): UndoableEdit = EditAdapter(edit)
 
         private class EditAdapter(
             private val edit: UndoRedoSupport.Edit,
@@ -86,7 +86,7 @@ class UndoSupport<E> private constructor(
             editAdapter: Function<UndoRedoSupport.Edit, UndoableEdit>,
         ): UndoSupport<E> {
             checkAccessThread()
-            return UndoSupport(undoManager, source, editAdapter)
+            return UndoSupport(undoManager, source, editAdapter::apply)
         }
 
         private fun checkAccessThread() {

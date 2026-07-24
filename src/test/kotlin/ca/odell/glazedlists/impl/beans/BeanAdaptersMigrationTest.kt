@@ -29,9 +29,9 @@ internal class BeanAdaptersMigrationTest {
         val stringFunction = StringBeanFunction(SampleBean::class.java, "count")
         val nullableStringFunction = StringBeanFunction(SampleBean::class.java, "label")
 
-        assertEquals(7, rawFunction.apply(bean))
-        assertEquals("7", stringFunction.apply(bean))
-        assertNull(nullableStringFunction.apply(bean))
+        assertEquals(7, rawFunction(bean))
+        assertEquals("7", stringFunction(bean))
+        assertNull(nullableStringFunction(bean))
     }
 
     @Test

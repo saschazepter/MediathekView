@@ -1,6 +1,5 @@
 package ca.odell.glazedlists.matchers
 
-import java.util.function.Function
 import java.util.logging.Logger
 
 /**
@@ -11,7 +10,7 @@ import java.util.logging.Logger
  */
 class SetMatcherEditor<E, O> private constructor(
     private val mode: Mode,
-    private val function: Function<E, O>,
+    private val function: (E) -> O,
 ) : AbstractMatcherEditor<E>() {
 
     init {
@@ -88,12 +87,12 @@ class SetMatcherEditor<E, O> private constructor(
     private class SetMatcher<E, O>(
         matchSet: Set<O>,
         private val mode: Mode,
-        private val function: Function<E, O>,
+        private val function: (E) -> O,
     ) : Matcher<E> {
         val matchSet: Set<O> = matchSet.toHashSet()
 
         override fun matches(item: E): Boolean {
-            val contained = matchSet.contains(function.apply(item))
+            val contained = matchSet.contains(function(item))
             return if (mode == Mode.BLACKLIST) !contained else contained
         }
     }
@@ -103,7 +102,7 @@ class SetMatcherEditor<E, O> private constructor(
 
         /** Creates an editor using [mode] and [function] to extract matched values. */
         @JvmStatic
-        fun <E, O> create(mode: Mode, function: Function<E, O>): SetMatcherEditor<E, O> =
+        fun <E, O> create(mode: Mode, function: (E) -> O): SetMatcherEditor<E, O> =
             SetMatcherEditor(mode, function)
     }
 }

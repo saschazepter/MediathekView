@@ -4,13 +4,12 @@ import ca.odell.glazedlists.BasicEventList
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.*
-import java.util.function.Function
 
 internal class MapEntryMigrationBehaviorTest {
     @Test
     fun functionListMapEntriesKeepStandardMapEntryEquality() {
         val source = BasicEventList<String>().apply { addAll(listOf("a", "bb")) }
-        val map = FunctionListMap(source, Function(String::length))
+        val map = FunctionListMap(source, String::length)
         val entry = map.entries.first { it.key == 1 }
         val equalEntry = AbstractMap.SimpleEntry(1, "a")
         val missingNullEntry = AbstractMap.SimpleEntry<Int, String>(99, null)
@@ -31,7 +30,7 @@ internal class MapEntryMigrationBehaviorTest {
         val source = BasicEventList<String>().apply { addAll(listOf("a1", "a2", "b1")) }
         val map = GroupingListMultiMap(
             source,
-            Function { it.substring(0, 1) },
+            { it.substring(0, 1) },
             Comparator.naturalOrder<String>(),
         )
         val entry = map.entries.first { it.key == "a" }

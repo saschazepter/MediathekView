@@ -4,24 +4,22 @@
 package ca.odell.glazedlists.matchers
 
 import ca.odell.glazedlists.GlazedLists
-import ca.odell.glazedlists.impl.GlazedListsImpl
-import java.util.function.Function
 
 /**
- * Produces matchers that compare values with a threshold. A [Function]
+ * Produces matchers that compare values with a threshold. A function
  * can extract the value to compare when the list element and threshold types differ.
  */
 open class ThresholdMatcherEditor<E, T> @JvmOverloads constructor(
     threshold: T? = null,
     operation: MatchOperation<*, *>? = null,
     comparator: Comparator<T>? = null,
-    function: Function<E, T>? = null,
+    function: ((E) -> T)? = null,
 ) : AbstractMatcherEditor<E>() {
     private var currentMatcher: MatchOperation<E, T>
     private var activeComparator: Comparator<T> = comparator ?: defaultComparator()
     private var activeOperation: MatchOperation<E, T> = typedOperation(operation ?: GREATER_THAN)
     private var activeThreshold: T? = threshold
-    private val extractionFunction: Function<E, T> = function ?: identityFunction()
+    private val extractionFunction: (E) -> T = function ?: identityFunction()
 
     /** The threshold to compare extracted values with, or `null` for no threshold. */
     open var threshold: T?
@@ -77,8 +75,7 @@ open class ThresholdMatcherEditor<E, T> @JvmOverloads constructor(
         GlazedLists.comparableComparator<Comparable<Any?>>() as Comparator<T>
 
     @Suppress("UNCHECKED_CAST")
-    private fun identityFunction(): Function<E, T> =
-        GlazedListsImpl.identityFunction<Any?>() as Function<E, T>
+    private fun identityFunction(): (E) -> T = { value -> value as T }
 
     /** An immutable comparison operation and the matcher created from it. */
     @ConsistentCopyVisibility
@@ -87,7 +84,7 @@ open class ThresholdMatcherEditor<E, T> @JvmOverloads constructor(
         private val threshold: T?,
         private val polarity: Int,
         private val inclusive: Boolean,
-        private val function: Function<E, T>,
+        private val function: (E) -> T,
     ) : Matcher<E> {
         internal constructor(polarity: Int, inclusive: Boolean) : this(
             comparator = null,
@@ -100,7 +97,7 @@ open class ThresholdMatcherEditor<E, T> @JvmOverloads constructor(
         internal fun instance(
             comparator: Comparator<T>,
             threshold: T?,
-            function: Function<E, T>,
+            function: (E) -> T,
         ): MatchOperation<E, T> = MatchOperation(comparator, threshold, polarity, inclusive, function)
 
         internal fun isMoreStrict(other: MatchOperation<E, T>): Boolean {
@@ -115,7 +112,7 @@ open class ThresholdMatcherEditor<E, T> @JvmOverloads constructor(
             return polarity == 0 || !matchesThreshold(other.threshold)
         }
 
-        override fun matches(item: E): Boolean = matchesThreshold(function.apply(item))
+        override fun matches(item: E): Boolean = matchesThreshold(function(item))
 
         fun matchesThreshold(value: T?): Boolean {
             val compareResult = compare(value, threshold)
@@ -130,8 +127,7 @@ open class ThresholdMatcherEditor<E, T> @JvmOverloads constructor(
 
         companion object {
             @Suppress("UNCHECKED_CAST")
-            private fun <E, T> identityFunction(): Function<E, T> =
-                GlazedListsImpl.identityFunction<Any?>() as Function<E, T>
+            private fun <E, T> identityFunction(): (E) -> T = { value -> value as T }
         }
     }
 

@@ -62,7 +62,7 @@ internal class GlazedListsImplBehaviorTest {
         assertEquals(0, firstComparator.compare("same", "same"))
         assertEquals(1, firstComparator.compare("left", "right"))
         assertNotSame(firstComparator, secondComparator)
-        assertSame(value, GlazedListsImpl.identityFunction<Any>().apply(value))
+        assertSame(value, GlazedListsImpl.identityFunction<Any>()(value))
     }
 
     private data class Item(val key: Int, val label: String)

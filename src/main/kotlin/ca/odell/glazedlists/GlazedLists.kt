@@ -239,7 +239,7 @@ object GlazedLists {
     fun <S, E> transformByFunction(
         source: EventList<S>,
         function: Function<S, E>,
-    ): TransformedList<S, E> = SimpleFunctionList(source, function)
+    ): TransformedList<S, E> = SimpleFunctionList(source, function::apply)
 
     @JvmStatic
     fun <E> weakReferenceProxy(
@@ -289,17 +289,23 @@ object GlazedLists {
     fun <E> fixedMatcherEditor(matcher: Matcher<E>): MatcherEditor<E> = MatcherEditor.fromMatcher(matcher)
 
     @JvmStatic
-    fun <E, V> constantFunction(value: V): Function<E, V> = ConstantFunction(value)
+    fun <E, V> constantFunction(value: V): Function<E, V> =
+        Function(ConstantFunction<E, V>(value))
 
     @JvmStatic
     fun <E> toStringFunction(
         beanClass: Class<E>,
         propertyName: String,
-    ): Function<E?, String?> = StringBeanFunction<E>(beanClass, propertyName) as Function<E?, String?>
+    ): Function<E?, String?> {
+        val function = StringBeanFunction<E>(beanClass, propertyName)
+        return Function { value -> function(value!!) }
+    }
 
     @JvmStatic
-    fun <E, V> beanFunction(beanClass: Class<E>, propertyName: String): Function<E?, V> =
-        BeanFunction<E, V>(beanClass, propertyName) as Function<E?, V>
+    fun <E, V> beanFunction(beanClass: Class<E>, propertyName: String): Function<E?, V> {
+        val function = BeanFunction<E, V>(beanClass, propertyName)
+        return Function { value -> function(value!!) }
+    }
 
     @JvmStatic
     fun <E> syncEventListToList(source: EventList<E>, target: MutableList<E>): SyncListener<E> =
@@ -324,13 +330,13 @@ object GlazedLists {
         keyMaker: Function<V, out K>,
         keyGrouper: Comparator<in K>,
     ): DisposableMap<K, MutableList<V>> =
-        GroupingListMultiMap(source, keyMaker, keyGrouper) as DisposableMap<K, MutableList<V>>
+        GroupingListMultiMap(source, keyMaker::apply, keyGrouper) as DisposableMap<K, MutableList<V>>
 
     @JvmStatic
     fun <K, V> syncEventListToMap(
         source: EventList<V>,
         keyMaker: Function<V, K>,
-    ): DisposableMap<K, V> = FunctionListMap(source, keyMaker)
+    ): DisposableMap<K, V> = FunctionListMap(source, keyMaker::apply)
 }
 
 /**

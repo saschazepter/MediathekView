@@ -20,12 +20,10 @@ package ca.odell.glazedlists.impl
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.TransformedList
 import ca.odell.glazedlists.event.ListEvent
-import java.util.function.Function
-
 /** Maps each source-list element through a fixed function. */
 class SimpleFunctionList<S, E>(
     source: EventList<S>,
-    function: Function<S, E>?,
+    function: ((S) -> E)?,
 ) : TransformedList<S, E>(source) {
     private val function = function ?: throw NullPointerException("mapping function is undefined")
 
@@ -33,7 +31,7 @@ class SimpleFunctionList<S, E>(
         source.addListEventListener(this)
     }
 
-    override fun get(index: Int): E = function.apply(source!![index])
+    override fun get(index: Int): E = function(source!![index])
 
     override fun listChanged(listChanges: ListEvent<S>) {
         updates.forwardEvent(listChanges)

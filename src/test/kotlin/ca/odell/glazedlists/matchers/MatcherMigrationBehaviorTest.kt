@@ -5,7 +5,6 @@ import ca.odell.glazedlists.TextFilterator
 import ca.odell.glazedlists.impl.matchers.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.util.function.Function
 
 internal class MatcherMigrationBehaviorTest {
     @Test
@@ -137,7 +136,7 @@ internal class MatcherMigrationBehaviorTest {
             3,
             ThresholdMatcherEditor.GREATER_THAN_OR_EQUAL,
             Comparator.naturalOrder(),
-            Function(String::length),
+            String::length,
         )
 
         assertFalse(editor.matcher.matches("ab"))

@@ -17,14 +17,12 @@
  */
 package ca.odell.glazedlists.impl.beans
 
-import java.util.function.Function
-
 /** Extracts one JavaBean property and converts a non-null value to text. */
 open class StringBeanFunction<E>(
     beanClass: Class<E>,
     propertyName: String,
-) : Function<E, String?> {
+) : (E) -> String? {
     private val property = BeanProperty<E>(beanClass, propertyName, true, false)
 
-    override fun apply(sourceValue: E): String? = property[sourceValue]?.toString()
+    override fun invoke(sourceValue: E): String? = property[sourceValue]?.toString()
 }

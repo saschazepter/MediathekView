@@ -9,7 +9,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.function.Function;
+import kotlin.jvm.functions.Function1;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -26,7 +26,7 @@ class GlazedListsImplJavaInteropTest {
         final Method equalsComparator = GlazedListsImpl.class.getDeclaredMethod("equalsComparator");
         final Method identityFunction = GlazedListsImpl.class.getDeclaredMethod("identityFunction");
         final Comparator<String> equality = GlazedListsImpl.equalsComparator();
-        final Function<String, String> identity = GlazedListsImpl.identityFunction();
+        final Function1<String, String> identity = GlazedListsImpl.identityFunction();
         final BasicEventList<String> target = new BasicEventList<>();
 
         GlazedListsImpl.replaceAll(target, java.util.List.of("value"), false, null);
@@ -38,7 +38,7 @@ class GlazedListsImplJavaInteropTest {
         assertEquals(1, equalsComparator.getTypeParameters().length);
         assertEquals(1, identityFunction.getTypeParameters().length);
         assertEquals(0, equality.compare("same", String.join("", "sa", "me")));
-        assertEquals("value", identity.apply("value"));
+        assertEquals("value", identity.invoke("value"));
         assertEquals(java.util.List.of("value"), target);
     }
 

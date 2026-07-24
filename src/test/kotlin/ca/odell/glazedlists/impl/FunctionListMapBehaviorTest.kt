@@ -26,13 +26,12 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.AbstractMap
 import java.util.LinkedHashMap
-import java.util.function.Function
 
 internal class FunctionListMapBehaviorTest {
     @Test
     fun constructionAndSourceChangesKeepLookupAndSourceOrderViewsSynchronized() {
         val source = BasicEventList<String>().apply { addAll(listOf("alpha", "beta")) }
-        val map = FunctionListMap(source, Function<String, Char> { it.first() })
+        val map = FunctionListMap(source) { it.first() }
 
         assertEquals(2, map.size)
         assertFalse(map.isEmpty())
@@ -54,7 +53,7 @@ internal class FunctionListMapBehaviorTest {
     @Test
     fun factoryCreatesTheSameLiveMapContract() {
         val source = BasicEventList<String>().apply { add("alpha") }
-        val map = GlazedLists.syncEventListToMap(source, Function<String, Char> { it.first() })
+        val map = GlazedLists.syncEventListToMap(source) { it.first() }
 
         source.add("beta")
 
@@ -67,7 +66,7 @@ internal class FunctionListMapBehaviorTest {
         val original = Value("a", "original")
         val duplicate = Value("a", "duplicate")
         val source = BasicEventList<Value>().apply { add(original) }
-        val map = FunctionListMap(source, Function<Value, String>(Value::key))
+        val map = FunctionListMap(source, Value::key)
 
         val failure = assertThrows(IllegalStateException::class.java) { source.add(duplicate) }
 
@@ -93,7 +92,7 @@ internal class FunctionListMapBehaviorTest {
         val b = Value("b", "second")
         val duplicate = Value("a", "replacement")
         val source = BasicEventList<Value>().apply { addAll(listOf(a, b)) }
-        val map = FunctionListMap(source, Function<Value, String>(Value::key))
+        val map = FunctionListMap(source, Value::key)
 
         val failure = assertThrows(IllegalStateException::class.java) { source[1] = duplicate }
 
@@ -113,7 +112,7 @@ internal class FunctionListMapBehaviorTest {
         val source = BasicEventList<Value>().apply {
             addAll(listOf(Value("a", "first"), Value("a", "second")))
         }
-        val keyFunction = Function<Value, String> { value -> value.key.also { calls += value.label } }
+        val keyFunction: (Value) -> String = { value -> value.key.also { calls += value.label } }
 
         val failure = assertThrows(IllegalStateException::class.java) { FunctionListMap(source, keyFunction) }
 
@@ -128,7 +127,7 @@ internal class FunctionListMapBehaviorTest {
         val equalDistractor = IdentityValue("x", "same")
         val original = IdentityValue("a", "same")
         val source = BasicEventList<IdentityValue>().apply { addAll(listOf(equalDistractor, original)) }
-        val map = FunctionListMap(source, Function<IdentityValue, String>(IdentityValue::key))
+        val map = FunctionListMap(source, IdentityValue::key)
         val replacement = IdentityValue("a", "new")
 
         val previous = map.put("a", replacement)
@@ -154,7 +153,7 @@ internal class FunctionListMapBehaviorTest {
         val second = IdentityValue("b", "second")
         val delegate = BasicEventList<IdentityValue>().apply { addAll(listOf(first, second)) }
         val source = NonAbstractEventList(delegate)
-        val map = FunctionListMap(source, Function<IdentityValue, String>(IdentityValue::key))
+        val map = FunctionListMap(source, IdentityValue::key)
         val replacement = IdentityValue("a", "replacement")
 
         assertSame(first, map.put("a", replacement))
@@ -167,7 +166,7 @@ internal class FunctionListMapBehaviorTest {
     fun putAllPrevalidatesAgreementButRetainsSecondPhasePartialFailures() {
         var calls = 0
         val source = BasicEventList<Value>()
-        val keyFunction = Function<Value, String> { value ->
+        val keyFunction: (Value) -> String = { value ->
             calls++
             if (calls == 4) throw IllegalStateException("fourth key calculation")
             value.key
@@ -190,7 +189,7 @@ internal class FunctionListMapBehaviorTest {
             put("wrong", Value("d", "invalid"))
         }
         val stableSource = BasicEventList<Value>()
-        val stableMap = FunctionListMap(stableSource, Function<Value, String>(Value::key))
+        val stableMap = FunctionListMap(stableSource, Value::key)
         assertThrows(IllegalArgumentException::class.java) { stableMap.putAll(invalid) }
         assertTrue(stableSource.isEmpty())
         assertTrue(stableMap.isEmpty())
@@ -201,7 +200,7 @@ internal class FunctionListMapBehaviorTest {
         val a = IdentityValue("a", "same")
         val b = IdentityValue("b", "same")
         val source = BasicEventList<IdentityValue>().apply { addAll(listOf(a, b)) }
-        val map = FunctionListMap(source, Function<IdentityValue, String>(IdentityValue::key))
+        val map = FunctionListMap(source, IdentityValue::key)
 
         assertSame(a, map.remove("a"))
         assertEquals(listOf(b), source)
@@ -215,7 +214,7 @@ internal class FunctionListMapBehaviorTest {
     @Test
     fun valuesIsTheExactLiveSourceAndCachedViewsKeepIdentity() {
         val source = BasicEventList<String>().apply { addAll(listOf("alpha", "beta")) }
-        val map = FunctionListMap(source, Function<String, Char> { it.first() })
+        val map = FunctionListMap(source) { it.first() }
 
         assertSame(source, map.values)
         val keys = map.keys
@@ -233,7 +232,7 @@ internal class FunctionListMapBehaviorTest {
     @Test
     fun keyAndEntryIteratorsWriteThroughAndRetainExactStateErrors() {
         val source = BasicEventList<String>().apply { addAll(listOf("alpha", "beta")) }
-        val map = FunctionListMap(source, Function<String, Char> { it.first() })
+        val map = FunctionListMap(source) { it.first() }
         val keyIterator = map.keys.iterator()
         val entryIterator = map.entries.iterator()
 
@@ -262,7 +261,7 @@ internal class FunctionListMapBehaviorTest {
     @Test
     fun mapEntryIsASnapshotWhoseSetValueWritesThroughAndReturnsPriorValue() {
         val source = BasicEventList<String>().apply { add("alpha") }
-        val map = FunctionListMap(source, Function<String, Char> { it.first() })
+        val map = FunctionListMap(source) { it.first() }
         val entry = map.entries.single()
         val equal = AbstractMap.SimpleEntry('a', "alpha")
 
@@ -291,7 +290,7 @@ internal class FunctionListMapBehaviorTest {
     @Test
     fun entrySetAcceptsReadOnlyKotlinEntriesForContainsAndRemoval() {
         val source = BasicEventList<String>().apply { addAll(listOf("alpha", "beta")) }
-        val map = FunctionListMap(source, Function<String, Char> { it.first() })
+        val map = FunctionListMap(source) { it.first() }
         @Suppress("UNCHECKED_CAST")
         val entries = map.entries as MutableSet<Map.Entry<Char, String>>
         val alpha = ReadOnlyEntry('a', "alpha")
@@ -308,7 +307,7 @@ internal class FunctionListMapBehaviorTest {
     @Test
     fun nullKeysAndValuesAreStoredButNullEntryConstructionRetainsItsDiagnostic() {
         val source = BasicEventList<String?>().apply { addAll(listOf(null, "alpha")) }
-        val map = FunctionListMap(source, Function<String?, Char?> { it?.first() })
+        val map = FunctionListMap(source) { it?.first() }
 
         assertTrue(map.containsKey(null))
         assertNull(map[null])
@@ -327,7 +326,7 @@ internal class FunctionListMapBehaviorTest {
     @Test
     fun inheritedSetBulkAndArrayOperationsWriteThrough() {
         val source = BasicEventList<String>().apply { addAll(listOf("alpha", "beta", "charlie", "delta")) }
-        val map = FunctionListMap(source, Function<String, Char> { it.first() })
+        val map = FunctionListMap(source) { it.first() }
         val keys = map.keys
 
         assertArrayEquals(arrayOf('a', 'b', 'c', 'd'), keys.toTypedArray())
@@ -347,7 +346,7 @@ internal class FunctionListMapBehaviorTest {
     @Test
     fun transactionUsesTwoPassProcessingAndReorderSynchronizesIterationOrder() {
         val transaction = TransactionList(BasicEventList<String>())
-        val map = FunctionListMap(transaction, Function<String, Char> { it.first() })
+        val map = FunctionListMap(transaction) { it.first() }
         transaction.beginEvent()
         transaction.addAll(listOf("beta", "alpha", "charlie"))
         transaction.commitEvent()
@@ -364,7 +363,7 @@ internal class FunctionListMapBehaviorTest {
 
         val unsorted = BasicEventList<String>().apply { addAll(listOf("beta", "alpha", "charlie")) }
         val sorted = SortedList(unsorted, null)
-        val reorderedMap = FunctionListMap(sorted, Function<String, Char> { it.first() })
+        val reorderedMap = FunctionListMap(sorted) { it.first() }
         sorted.comparator = Comparator.naturalOrder()
 
         assertEquals(listOf("alpha", "beta", "charlie"), sorted)
@@ -375,7 +374,7 @@ internal class FunctionListMapBehaviorTest {
     @Test
     fun forEachEqualsHashCodeAndDisposeRetainDelegateSemantics() {
         val source = BasicEventList<String>().apply { addAll(listOf("alpha", "beta")) }
-        val map = FunctionListMap(source, Function<String, Char> { it.first() })
+        val map = FunctionListMap(source) { it.first() }
         val seen = mutableMapOf<Char, String>()
         map.forEach(seen::put)
 

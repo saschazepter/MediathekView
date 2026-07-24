@@ -17,15 +17,13 @@
  */
 package ca.odell.glazedlists.impl.beans
 
-import java.util.function.Function
-
 /** Extracts one JavaBean property value. */
 open class BeanFunction<E, V>(
     beanClass: Class<E>,
     propertyName: String,
-) : Function<E, V> {
+) : (E) -> V {
     private val property = BeanProperty<E>(beanClass, propertyName, true, false)
 
     @Suppress("UNCHECKED_CAST")
-    override fun apply(sourceValue: E): V = property[sourceValue] as V
+    override fun invoke(sourceValue: E): V = property[sourceValue] as V
 }

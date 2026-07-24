@@ -24,7 +24,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.AbstractMap
 import java.util.LinkedHashMap
-import java.util.function.Function
 
 internal class GroupingListMultiMapBehaviorTest {
     @Test
@@ -47,11 +46,11 @@ internal class GroupingListMultiMapBehaviorTest {
         assertEquals(
             "keyGrouper may not be null",
             assertThrows(IllegalArgumentException::class.java) {
-                GroupingListMultiMap(source, Function(String::first), null)
+                GroupingListMultiMap(source, String::first, null)
             }.message,
         )
         assertThrows(NullPointerException::class.java) {
-            GroupingListMultiMap<String, String>(null, Function.identity(), comparator)
+            GroupingListMultiMap<String, String>(null, { it }, comparator)
         }
     }
 
@@ -59,7 +58,7 @@ internal class GroupingListMultiMapBehaviorTest {
     fun constructorKeyFailureLeavesTheJavaPartialListenerGraphAttached() {
         val source = BasicEventList<String>().apply { add("boom") }
         val calls = mutableListOf<String>()
-        val function = Function<String, String> { value ->
+        val function: (String) -> String = { value ->
             calls += value
             if (value == "boom") throw IllegalStateException("initial key failure")
             value.substring(0, 1)
@@ -85,7 +84,7 @@ internal class GroupingListMultiMapBehaviorTest {
         val source = BasicEventList<String>().apply {
             addAll(listOf("plum", "cherry", "pineapple", "banana", "cranberry", "prune"))
         }
-        val keyFunction = Function<String, Char>(String::first)
+        val keyFunction: (String) -> Char = String::first
         val comparatorCalls = mutableListOf<Pair<Char, Char>>()
         val comparator = Comparator<Char> { left, right ->
             comparatorCalls += left to right
@@ -148,7 +147,7 @@ internal class GroupingListMultiMapBehaviorTest {
     fun comparatorDrivenReorderChangesViewOrderButNotMappings() {
         val source = BasicEventList<String>().apply { addAll(listOf("a1", "b1", "c1")) }
         val sorted = SortedList(source, null)
-        val map = GroupingListMultiMap(sorted, Function { it.substring(0, 1) }, Comparator.naturalOrder())
+        val map = GroupingListMultiMap(sorted, { it.substring(0, 1) }, Comparator.naturalOrder())
         val keys = map.keys
         val entries = map.entries
 
@@ -304,7 +303,7 @@ internal class GroupingListMultiMapBehaviorTest {
     fun putAllRetainsRemovalAndAdditionPartialStateWhenKeyFunctionFailsLater() {
         var b2Calls = 0
         val source = BasicEventList<String>().apply { addAll(listOf("a0", "b0")) }
-        val function = Function<String, String> { value ->
+        val function: (String) -> String = { value ->
             if (value == "b2" && ++b2Calls == 2) throw IllegalStateException("late key failure")
             value.substring(0, 1)
         }
@@ -413,7 +412,7 @@ internal class GroupingListMultiMapBehaviorTest {
         val source = BasicEventList<EqualValue>().apply {
             addAll(listOf(EqualValue("a", "same", 1), EqualValue("a", "same", 2)))
         }
-        val map = GroupingListMultiMap(source, Function<EqualValue, String>(EqualValue::key), Comparator.naturalOrder())
+        val map = GroupingListMultiMap(source, EqualValue::key, Comparator.naturalOrder())
         val entry = map.entries.single()
         val replacement = EqualValue("a", "same", 3)
 
@@ -428,7 +427,7 @@ internal class GroupingListMultiMapBehaviorTest {
     @Test
     fun factoryAndMapDefaultsRetainMapSemantics() {
         val source = BasicEventList<String>().apply { addAll(listOf("a1", "a2", "b1")) }
-        val map = GlazedLists.syncEventListToMultiMap(source, Function { it.substring(0, 1) })
+        val map = GlazedLists.syncEventListToMultiMap(source) { it.substring(0, 1) }
         val seen = linkedMapOf<String, List<String>>()
 
         map.forEach(seen::put)
@@ -467,7 +466,7 @@ internal class GroupingListMultiMapBehaviorTest {
     }
 
     private fun newMap(source: BasicEventList<String>): GroupingListMultiMap<String, String> =
-        GroupingListMultiMap(source, Function { it.substring(0, 1) }, Comparator.naturalOrder())
+        GroupingListMultiMap(source, { it.substring(0, 1) }, Comparator.naturalOrder())
 
     private data class ReadOnlyEntry<K, V>(
         override val key: K,

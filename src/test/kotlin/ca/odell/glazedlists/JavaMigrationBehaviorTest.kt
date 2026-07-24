@@ -134,7 +134,7 @@ internal class JavaMigrationBehaviorTest {
     @Test
     fun convertedLeafFunctionsAndComparatorsKeepTheirContracts() {
         val constant = ConstantFunction<String, Int?>(null)
-        assertNull(constant.apply("ignored"))
+        assertNull(constant("ignored"))
 
         val naturalOrder = Comparator.naturalOrder<String>()
         val reverse = ReverseComparator(naturalOrder)

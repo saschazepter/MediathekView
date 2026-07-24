@@ -58,14 +58,13 @@ import java.beans.PropertyChangeEvent
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.function.*
-import java.util.function.Function
 import javax.swing.*
 
 open class MediathekGui private constructor(
     private val daten: Daten,
     notificationBackendFactory: () -> NotificationBackend,
     computerShutdown: ComputerShutdown,
-    downloadProgressIndicatorFactory: Function<JFrame, DownloadProgressIndicator>,
+    downloadProgressIndicatorFactory: (JFrame) -> DownloadProgressIndicator,
     darkModeActionPlacement: MainWindowDarkModeActionPlacement,
     toolbarInstaller: MainWindowToolbarInstaller,
     tabPlacementController: MainWindowTabPlacementController,
@@ -190,7 +189,7 @@ open class MediathekGui private constructor(
     private val menuPolicy = menuPolicy
     private val menuBuilder by lazy(LazyThreadSafetyMode.NONE) { createMenuBuilder() }
     private val scrollBarConfigurator = scrollBarConfigurator
-    private val downloadProgressIndicator: DownloadProgressIndicator = requireNotNull(downloadProgressIndicatorFactory.apply(this))
+    private val downloadProgressIndicator: DownloadProgressIndicator = requireNotNull(downloadProgressIndicatorFactory(this))
     private val startupOrchestrator: MainWindowStartupOrchestrator
     private val platformIntegration: MainWindowPlatformIntegration
     private val programUpdateCoordinator = MainWindowProgramUpdateCoordinator(daten.programSets, programSetExporter(), this)
@@ -265,7 +264,7 @@ open class MediathekGui private constructor(
         daten: Daten,
         notificationBackendFactory: () -> NotificationBackend,
         computerShutdown: ComputerShutdown,
-        downloadProgressIndicatorFactory: Function<JFrame, DownloadProgressIndicator>,
+        downloadProgressIndicatorFactory: (JFrame) -> DownloadProgressIndicator,
         toolbarInstaller: MainWindowToolbarInstaller,
         tabPlacementController: MainWindowTabPlacementController,
         menuPolicy: MainWindowMenuPolicy,
@@ -294,7 +293,7 @@ open class MediathekGui private constructor(
         daten: Daten,
         notificationBackendFactory: () -> NotificationBackend,
         computerShutdown: ComputerShutdown,
-        downloadProgressIndicatorFactory: Function<JFrame, DownloadProgressIndicator>,
+        downloadProgressIndicatorFactory: (JFrame) -> DownloadProgressIndicator,
         darkModeActionPlacement: MainWindowDarkModeActionPlacement,
     ) : this(
         daten,
@@ -1002,8 +1001,8 @@ open class MediathekGui private constructor(
         private const val MIN_WINDOW_HEIGHT = 600
         private const val ACTION_MAP_KEY_COPY_HQ_URL = "COPY_HQ_URL"
         private const val ACTION_MAP_KEY_COPY_NORMAL_URL = "COPY_NORMAL_URL"
-        private val NO_DOWNLOAD_PROGRESS_INDICATOR_FACTORY =
-            Function<JFrame, DownloadProgressIndicator> { NoDownloadProgressIndicator }
+        private val NO_DOWNLOAD_PROGRESS_INDICATOR_FACTORY: (JFrame) -> DownloadProgressIndicator =
+            { NoDownloadProgressIndicator }
         private val DEFAULT_TOOLBAR_INSTALLER = object : MainWindowToolbarInstaller {
             override fun configure(commonToolBar: JToolBar) {
                 commonToolBar.isFloatable = true
