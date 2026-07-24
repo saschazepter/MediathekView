@@ -17,8 +17,6 @@
  */
 package ca.odell.glazedlists.impl.adt.barcode2
 
-import java.util.NoSuchElementException
-
 internal class SimpleTreeIterator<T> {
     internal var count1: Int = 0
 

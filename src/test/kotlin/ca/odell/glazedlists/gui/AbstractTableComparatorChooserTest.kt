@@ -23,15 +23,8 @@ import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.impl.gui.SortingStrategy
 import ca.odell.glazedlists.swing.TableComparatorChooser
 import org.jspecify.annotations.Nullable
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertInstanceOf
-import org.junit.jupiter.api.Assertions.assertNotSame
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.lang.reflect.InvocationTargetException
 import javax.swing.JTable
 import javax.swing.SwingUtilities
 

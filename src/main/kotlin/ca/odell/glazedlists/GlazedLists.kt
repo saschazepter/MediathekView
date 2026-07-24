@@ -23,24 +23,14 @@ import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.impl.ListCollectionListModel
 import ca.odell.glazedlists.impl.ObservableConnector
 import ca.odell.glazedlists.impl.WeakReferenceProxy
-import ca.odell.glazedlists.impl.beans.BeanConnector
-import ca.odell.glazedlists.impl.beans.BeanFunction
-import ca.odell.glazedlists.impl.beans.BeanTableFormat
-import ca.odell.glazedlists.impl.beans.BeanTextFilterator
-import ca.odell.glazedlists.impl.beans.BeanThresholdEvaluator
-import ca.odell.glazedlists.impl.beans.StringBeanFunction
+import ca.odell.glazedlists.impl.beans.*
 import ca.odell.glazedlists.impl.filter.StringTextFilterator
 import ca.odell.glazedlists.impl.functions.ConstantFunction
-import ca.odell.glazedlists.impl.sort.BeanPropertyComparator
-import ca.odell.glazedlists.impl.sort.BooleanComparator
-import ca.odell.glazedlists.impl.sort.ComparableComparator
-import ca.odell.glazedlists.impl.sort.ComparatorChain
-import ca.odell.glazedlists.impl.sort.ReverseComparator
+import ca.odell.glazedlists.impl.sort.*
 import ca.odell.glazedlists.matchers.Matcher
 import ca.odell.glazedlists.matchers.MatcherEditor
 import ca.odell.glazedlists.matchers.Matchers
 import java.beans.PropertyChangeEvent
-import java.util.Comparator
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.function.Function
 

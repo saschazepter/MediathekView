@@ -22,9 +22,7 @@ import ca.odell.glazedlists.impl.gui.MouseOnlySortingStrategy
 import ca.odell.glazedlists.impl.gui.SortingState
 import ca.odell.glazedlists.impl.gui.SortingStrategy
 import org.jspecify.annotations.Nullable
-import java.util.ArrayList
-import java.util.Collections
-import java.util.HashSet
+import java.util.*
 
 /**
  * Allows a table widget to sort a [SortedList] by selecting table columns.

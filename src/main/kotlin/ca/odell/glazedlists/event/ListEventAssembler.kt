@@ -21,7 +21,6 @@ import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.impl.WeakReferenceProxy
 import ca.odell.glazedlists.impl.event.BlockSequence
 import ca.odell.glazedlists.impl.event.Tree4Deltas
-import java.util.ConcurrentModificationException
 
 /**
  * Models a continuous stream of changes on a list. Changes of the same type

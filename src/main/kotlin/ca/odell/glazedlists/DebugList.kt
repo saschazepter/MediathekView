@@ -21,10 +21,7 @@ import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.event.ListEventListener
 import ca.odell.glazedlists.event.ListEventPublisher
 import org.jspecify.annotations.NonNull
-import java.util.ArrayList
-import java.util.Collections
-import java.util.Comparator
-import java.util.HashSet
+import java.util.*
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.locks.Condition
 import java.util.concurrent.locks.Lock

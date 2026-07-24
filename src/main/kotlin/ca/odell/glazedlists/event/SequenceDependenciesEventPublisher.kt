@@ -17,10 +17,7 @@
  */
 package ca.odell.glazedlists.event
 
-import java.util.ArrayDeque
-import java.util.ArrayList
-import java.util.Collections
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * Manage listeners, firing events, and making sure that events arrive in order.

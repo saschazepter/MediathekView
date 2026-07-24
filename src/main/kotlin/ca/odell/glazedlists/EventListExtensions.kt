@@ -1,13 +1,7 @@
 package ca.odell.glazedlists
 
 import ca.odell.glazedlists.event.ListEventListener
-import ca.odell.glazedlists.impl.Diff
-import ca.odell.glazedlists.impl.FunctionListMap
-import ca.odell.glazedlists.impl.GlazedListsImpl
-import ca.odell.glazedlists.impl.GroupingListMultiMap
-import ca.odell.glazedlists.impl.ReadOnlyList
-import ca.odell.glazedlists.impl.SimpleFunctionList
-import ca.odell.glazedlists.impl.TypeSafetyListener
+import ca.odell.glazedlists.impl.*
 
 /** Replaces this list's contents while preserving unchanged elements where possible. */
 fun <E> EventList<E>.replaceAll(

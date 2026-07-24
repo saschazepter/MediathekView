@@ -17,8 +17,6 @@
  */
 package ca.odell.glazedlists.impl
 
-import java.util.NoSuchElementException
-
 /** A forward iterator over a mutable list. */
 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")
 internal open class SimpleIterator<E>(

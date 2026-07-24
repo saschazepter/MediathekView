@@ -22,10 +22,7 @@ import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.ObservableElementList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.gui.AbstractTableComparatorChooser
-import ca.odell.glazedlists.swing.AdvancedTableModel
-import ca.odell.glazedlists.swing.DefaultEventSelectionModel
 import ca.odell.glazedlists.swing.*
-import ca.odell.glazedlists.swing.TableComparatorChooser
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.audiothek.ui.table.CenteredTextCellRenderer

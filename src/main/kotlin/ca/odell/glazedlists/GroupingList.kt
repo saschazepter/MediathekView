@@ -21,8 +21,7 @@ import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.impl.Grouper
 import ca.odell.glazedlists.impl.adt.barcode2.Element
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTree
-import java.util.AbstractList
-import java.util.ArrayList
+import java.util.*
 
 @Suppress("INAPPLICABLE_JVM_NAME", "REDUNDANT_PROJECTION")
 class GroupingList<E> private constructor(

@@ -17,12 +17,9 @@
  */
 package ca.odell.glazedlists;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -31,9 +28,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import static org.junit.jupiter.api.Assertions.*;
 
 class SortedListJavaInteropTest {
 

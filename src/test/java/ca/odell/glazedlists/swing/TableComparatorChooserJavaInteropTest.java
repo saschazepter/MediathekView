@@ -24,8 +24,7 @@ import ca.odell.glazedlists.gui.TableFormat;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 

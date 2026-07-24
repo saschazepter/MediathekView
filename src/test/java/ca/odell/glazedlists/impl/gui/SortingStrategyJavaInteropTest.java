@@ -1,7 +1,7 @@
 package ca.odell.glazedlists.impl.gui;
 
-import org.junit.jupiter.api.Test;
 import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Method;
 import java.util.concurrent.atomic.AtomicInteger;

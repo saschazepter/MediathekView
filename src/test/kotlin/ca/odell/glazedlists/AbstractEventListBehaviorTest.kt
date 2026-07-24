@@ -5,15 +5,13 @@ import ca.odell.glazedlists.event.ListEventAssembler
 import ca.odell.glazedlists.event.ListEventListener
 import ca.odell.glazedlists.event.ListEventPublisher
 import ca.odell.glazedlists.impl.WeakReferenceProxy
+import org.jspecify.annotations.NonNull
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.jspecify.annotations.NonNull
 import java.lang.reflect.Constructor
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import java.util.ArrayList
-import java.util.NoSuchElementException
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.function.Predicate

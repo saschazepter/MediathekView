@@ -18,7 +18,6 @@
 package ca.odell.glazedlists
 
 import java.util.function.ToIntFunction
-import kotlin.jvm.JvmDefaultWithoutCompatibility
 
 /** A writable, sorted range view selected by integer-valued thresholds. */
 @Suppress(

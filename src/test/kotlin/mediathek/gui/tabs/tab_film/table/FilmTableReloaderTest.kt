@@ -15,8 +15,8 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.JPanel
-import javax.swing.SwingUtilities
 import javax.swing.JTable
+import javax.swing.SwingUtilities
 
 internal class FilmTableReloaderTest {
     @Test

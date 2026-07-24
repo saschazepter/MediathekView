@@ -21,13 +21,9 @@ import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.TransactionList
 import ca.odell.glazedlists.gui.AdvancedTableFormat
 import ca.odell.glazedlists.gui.WritableTableFormat
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.lang.reflect.Modifier
-import java.util.Comparator
 import javax.swing.SwingUtilities
 import javax.swing.event.TableModelEvent
 

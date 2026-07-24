@@ -17,16 +17,13 @@
  */
 package ca.odell.glazedlists
 
-import ca.odell.glazedlists.event.*
+import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.impl.adt.barcode2.Element
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTree
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTreeIterator
-import java.util.ArrayDeque
-import java.util.ArrayList
-import java.util.Comparator
-import java.util.IdentityHashMap
 import org.jspecify.annotations.NonNull
 import org.jspecify.annotations.Nullable
+import java.util.*
 
 /** An [EventList] that shows its source [EventList] in sorted order. */
 @Suppress(

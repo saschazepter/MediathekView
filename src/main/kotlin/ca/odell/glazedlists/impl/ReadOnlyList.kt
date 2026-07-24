@@ -21,11 +21,9 @@ import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.TransformedList
 import ca.odell.glazedlists.event.ListEvent
 import org.jspecify.annotations.NonNull
-import java.lang.reflect.Array as ReflectArray
-import java.util.Comparator
-import java.util.HashSet
 import java.util.function.Predicate
 import java.util.function.UnaryOperator
+import java.lang.reflect.Array as ReflectArray
 
 /** An up-to-date, read-only view of an event list. */
 internal class ReadOnlyList<E>(source: EventList<E>) : TransformedList<E, E>(source) {

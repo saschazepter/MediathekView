@@ -17,7 +17,6 @@
  */
 package ca.odell.glazedlists.impl
 
-import java.util.HashMap
 import javax.swing.Icon
 import javax.swing.ImageIcon
 import javax.swing.UIManager

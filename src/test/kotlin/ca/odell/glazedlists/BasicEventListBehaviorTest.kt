@@ -5,7 +5,7 @@ import ca.odell.glazedlists.event.ListEventListener
 import ca.odell.glazedlists.impl.UpgradeDetectingReadWriteLock
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.util.Spliterator
+import java.util.*
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 

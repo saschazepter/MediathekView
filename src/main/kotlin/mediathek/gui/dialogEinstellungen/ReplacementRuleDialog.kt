@@ -23,19 +23,8 @@ import mediathek.gui.dialog.ButtonPanel
 import mediathek.tool.EscapeKeyHandler
 import mediathek.tool.ReplaceEntry
 import mediathek.tool.TextCopyPasteHandler
-import java.awt.BorderLayout
-import java.awt.Component
-import java.awt.Dialog
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
-import java.awt.Insets
-import javax.swing.JButton
-import javax.swing.JDialog
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JTextField
-import javax.swing.SwingUtilities
-import javax.swing.WindowConstants
+import java.awt.*
+import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 

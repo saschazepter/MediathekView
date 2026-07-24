@@ -26,7 +26,6 @@ import ca.odell.glazedlists.impl.sort.TableColumnComparator
 import org.jspecify.annotations.Nullable
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
-import java.util.ArrayList
 
 /** Tracks which table columns are sorted and how they contribute to the active comparator. */
 class SortingState<E : Any> {

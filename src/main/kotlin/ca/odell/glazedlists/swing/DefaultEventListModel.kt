@@ -18,7 +18,8 @@
 package ca.odell.glazedlists.swing
 
 import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.event.*
+import ca.odell.glazedlists.event.ListEvent
+import ca.odell.glazedlists.event.ListEventListener
 import java.awt.EventQueue
 import java.util.concurrent.CopyOnWriteArrayList
 import javax.swing.ListModel

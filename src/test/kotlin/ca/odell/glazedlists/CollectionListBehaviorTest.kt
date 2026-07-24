@@ -20,11 +20,7 @@ package ca.odell.glazedlists
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.event.ListEventListener
 import ca.odell.glazedlists.event.SequenceDependenciesEventPublisher
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.concurrent.locks.ReentrantReadWriteLock
 import java.util.function.Function

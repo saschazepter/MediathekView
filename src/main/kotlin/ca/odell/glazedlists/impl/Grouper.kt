@@ -20,7 +20,7 @@ package ca.odell.glazedlists.impl
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.impl.adt.Barcode
-import java.util.ArrayDeque
+import java.util.*
 
 private val UNIQUE_WITH_DUPLICATE = Any()
 private val TODO = Barcode.BLACK

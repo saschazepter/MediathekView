@@ -21,9 +21,7 @@ import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.impl.UpgradeDetectingReadWriteLock
 import ca.odell.glazedlists.matchers.AbstractMatcherEditor
 import ca.odell.glazedlists.matchers.Matcher
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class FilterListBehaviorTest {

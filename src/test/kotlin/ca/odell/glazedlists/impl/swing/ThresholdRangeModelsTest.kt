@@ -19,9 +19,7 @@ package ca.odell.glazedlists.impl.swing
 
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.ThresholdList
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class ThresholdRangeModelsTest {

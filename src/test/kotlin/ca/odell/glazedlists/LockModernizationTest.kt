@@ -4,10 +4,10 @@ import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.matchers.Matcher
 import ca.odell.glazedlists.matchers.MatcherEditor
 import ca.odell.glazedlists.swing.DefaultEventTableModel
-import ca.odell.glazedlists.swing.*
+import ca.odell.glazedlists.swing.swingThreadProxyList
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.util.EventListener
+import java.util.*
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit

@@ -22,9 +22,7 @@ package ca.odell.glazedlists
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.impl.adt.Barcode
 import org.jspecify.annotations.Nullable
-import java.lang.Object
-import java.util.ArrayList
-import java.util.EventListener
+import java.util.*
 
 /**
  * A list that fires update events whenever elements are modified in place.

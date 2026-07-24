@@ -8,11 +8,7 @@ import java.lang.reflect.Modifier;
 import java.util.RandomAccess;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class BasicEventListJavaInteropTest {
     @Test

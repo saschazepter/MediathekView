@@ -19,12 +19,10 @@ package ca.odell.glazedlists.impl
 
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.replaceAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 internal class DiffBehaviorTest {

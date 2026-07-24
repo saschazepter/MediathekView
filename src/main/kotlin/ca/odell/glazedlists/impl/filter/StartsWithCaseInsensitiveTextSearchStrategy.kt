@@ -3,7 +3,7 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.filter
 
-import java.util.Locale
+import java.util.*
 
 /**
  * Matches a configured subtext against the start of an input string without regard to case.

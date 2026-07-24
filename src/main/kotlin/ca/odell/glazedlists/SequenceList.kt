@@ -18,9 +18,6 @@
 package ca.odell.glazedlists
 
 import ca.odell.glazedlists.event.ListEvent
-import java.util.ArrayList
-import java.util.Comparator
-import java.util.RandomAccess
 
 /** A read-only sequence that minimally covers the ordered values in a source list. */
 @Suppress(

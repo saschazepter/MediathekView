@@ -17,11 +17,10 @@
  */
 package ca.odell.glazedlists
 
-import ca.odell.glazedlists.event.*
+import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.impl.Grouper
 import ca.odell.glazedlists.impl.adt.BarcodeIterator
-import java.util.ArrayList
-import java.util.Collections
+import java.util.*
 
 @Suppress("INAPPLICABLE_JVM_NAME", "REDUNDANT_PROJECTION")
 class UniqueList<E> private constructor(

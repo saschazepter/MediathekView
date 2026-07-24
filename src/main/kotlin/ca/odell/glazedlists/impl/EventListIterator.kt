@@ -18,8 +18,8 @@
 package ca.odell.glazedlists.impl
 
 import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.event.*
-import java.util.NoSuchElementException
+import ca.odell.glazedlists.event.ListEvent
+import ca.odell.glazedlists.event.ListEventListener
 
 /** A list iterator that remains consistent while its source list changes. */
 @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN")

@@ -19,8 +19,6 @@ package ca.odell.glazedlists
 
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.event.ListEventAssembler
-import java.util.ArrayList
-import java.util.RandomAccess
 import java.util.function.Function
 import java.util.function.Predicate
 

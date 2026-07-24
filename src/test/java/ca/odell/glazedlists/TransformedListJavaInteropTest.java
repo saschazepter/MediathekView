@@ -1,8 +1,8 @@
 package ca.odell.glazedlists;
 
 import ca.odell.glazedlists.event.ListEvent;
-import org.junit.jupiter.api.Test;
 import org.jspecify.annotations.NonNull;
+import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

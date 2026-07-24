@@ -3,8 +3,7 @@ package ca.odell.glazedlists.swing;
 import ca.odell.glazedlists.TextFilterator;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

@@ -29,8 +29,6 @@ import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
-import java.util.ArrayList
-import java.util.Comparator
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 /** Characterizes the Glazed Lists factories and EventList extensions after their Kotlin migration. */

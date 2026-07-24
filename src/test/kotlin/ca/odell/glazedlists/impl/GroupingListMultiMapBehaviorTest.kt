@@ -18,13 +18,11 @@
 package ca.odell.glazedlists.impl
 
 import ca.odell.glazedlists.BasicEventList
-import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.synchronizeToMultiMap
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import java.util.AbstractMap
-import java.util.LinkedHashMap
+import java.util.*
 
 internal class GroupingListMultiMapBehaviorTest {
     @Test

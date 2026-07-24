@@ -6,7 +6,7 @@ import ca.odell.glazedlists.impl.filter.StringLengthComparator
 import ca.odell.glazedlists.impl.filter.StringTextFilterator
 import ca.odell.glazedlists.impl.functions.ConstantFunction
 import ca.odell.glazedlists.impl.sort.*
-import ca.odell.glazedlists.swing.*
+import ca.odell.glazedlists.swing.isSwingThreadProxyList
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 

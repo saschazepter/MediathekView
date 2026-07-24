@@ -21,7 +21,7 @@ import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.impl.adt.barcode2.FourColorTree
 import ca.odell.glazedlists.impl.adt.barcode2.FourColorTreeIterator
 import ca.odell.glazedlists.impl.adt.barcode2.ListToByteCoder
-import java.util.IdentityHashMap
+import java.util.*
 
 /**
  * Manages and describes the differences between two revisions of the same list.

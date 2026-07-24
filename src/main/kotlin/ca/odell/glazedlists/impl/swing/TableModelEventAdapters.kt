@@ -17,7 +17,7 @@
  */
 package ca.odell.glazedlists.impl.swing
 
-import ca.odell.glazedlists.event.*
+import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.swing.MutableTableModelEvent
 import ca.odell.glazedlists.swing.TableModelEventAdapter
 import java.awt.EventQueue

@@ -1,8 +1,8 @@
 package ca.odell.glazedlists.impl.gui;
 
 import ca.odell.glazedlists.gui.TableFormat;
-import org.junit.jupiter.api.Test;
 import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;

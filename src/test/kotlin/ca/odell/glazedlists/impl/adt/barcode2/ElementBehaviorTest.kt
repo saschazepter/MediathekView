@@ -1,11 +1,8 @@
 package ca.odell.glazedlists.impl.adt.barcode2
 
-import java.lang.reflect.Modifier
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.lang.reflect.Modifier
 
 internal class ElementBehaviorTest {
     @Test

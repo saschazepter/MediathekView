@@ -23,11 +23,7 @@ import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.TransactionList
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.impl.adt.Barcode
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNotSame
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class GrouperBehaviorTest {

@@ -3,15 +3,11 @@ package ca.odell.glazedlists;
 import ca.odell.glazedlists.event.ListEvent;
 import org.junit.jupiter.api.Test;
 
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class RangeListJavaInteropTest {
     @Test

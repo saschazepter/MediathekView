@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.lang.reflect.Modifier
-import java.util.EventListener
+import java.util.*
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 internal class ObservableElementListBehaviorTest {

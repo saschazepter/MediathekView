@@ -17,7 +17,7 @@
  */
 package ca.odell.glazedlists.impl.adt.barcode2
 
-import java.util.Collections
+import java.util.*
 
 /**
  * Makes conversions and color operations efficient by using bytes rather than

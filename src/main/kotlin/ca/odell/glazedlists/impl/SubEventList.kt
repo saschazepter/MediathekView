@@ -19,7 +19,7 @@ package ca.odell.glazedlists.impl
 
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.TransformedList
-import ca.odell.glazedlists.event.*
+import ca.odell.glazedlists.event.ListEvent
 
 /** A writable event-list view over a range of its source list. */
 internal class SubEventList<E>(

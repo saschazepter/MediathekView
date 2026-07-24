@@ -23,8 +23,7 @@ import ca.odell.glazedlists.impl.adt.Barcode
 import ca.odell.glazedlists.impl.adt.barcode2.Element
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTree
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTreeIterator
-import java.util.BitSet
-import java.util.Collections
+import java.util.*
 
 /** A list that adds separator objects before each group of elements. */
 @Suppress("INAPPLICABLE_JVM_NAME", "UNCHECKED_CAST")

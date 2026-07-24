@@ -20,9 +20,7 @@ package ca.odell.glazedlists
 import ca.odell.glazedlists.event.ListEventAssembler
 import ca.odell.glazedlists.event.ListEventPublisher
 import ca.odell.glazedlists.impl.UpgradeDetectingReadWriteLock
-import java.util.ArrayList
-import java.util.RandomAccess
-import java.util.Spliterator
+import java.util.*
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.function.Consumer
 import java.util.function.Predicate

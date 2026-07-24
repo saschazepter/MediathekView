@@ -24,7 +24,6 @@ import ca.odell.glazedlists.impl.adt.barcode2.Element
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTree
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTreeIterator
 import java.util.function.Function
-import kotlin.jvm.JvmDefaultWithoutCompatibility
 
 /**
  * A flattened list of the children extracted from each element in a parent [EventList].

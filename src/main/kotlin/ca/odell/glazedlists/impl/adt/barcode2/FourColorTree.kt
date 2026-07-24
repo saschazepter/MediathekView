@@ -17,7 +17,6 @@
  */
 package ca.odell.glazedlists.impl.adt.barcode2
 
-import java.util.ArrayList
 import kotlin.math.abs
 
 internal class FourColorTree<T>(private val coder: ListToByteCoder<*>) {

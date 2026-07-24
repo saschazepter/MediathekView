@@ -23,9 +23,7 @@ import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.gui.AbstractTableComparatorChooser
 import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.impl.sort.TableColumnComparator
-import org.junit.jupiter.api.Assertions.assertDoesNotThrow
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import javax.swing.JTable
 import javax.swing.SwingUtilities

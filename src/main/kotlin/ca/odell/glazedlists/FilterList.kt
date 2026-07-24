@@ -17,7 +17,7 @@
  */
 package ca.odell.glazedlists
 
-import ca.odell.glazedlists.event.*
+import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.impl.adt.Barcode
 import ca.odell.glazedlists.impl.adt.BarcodeIterator
 import ca.odell.glazedlists.matchers.Matcher

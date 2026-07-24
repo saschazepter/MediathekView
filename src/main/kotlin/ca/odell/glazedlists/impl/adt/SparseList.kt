@@ -17,8 +17,7 @@
  */
 package ca.odell.glazedlists.impl.adt
 
-import java.util.AbstractList
-import java.util.Collections
+import java.util.*
 
 /**
  * A SparseList is an ADT to complement the CompressableList and IndexedTree

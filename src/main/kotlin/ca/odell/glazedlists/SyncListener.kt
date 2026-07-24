@@ -17,7 +17,9 @@
  */
 package ca.odell.glazedlists
 
-import ca.odell.glazedlists.event.*
+import ca.odell.glazedlists.event.ListEvent
+import ca.odell.glazedlists.event.ListEventListener
+import ca.odell.glazedlists.event.sourceList
 
 /**
  * Synchronizes the specified [EventList] to the specified [MutableList].

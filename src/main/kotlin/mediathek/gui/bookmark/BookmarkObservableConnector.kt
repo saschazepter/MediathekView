@@ -21,7 +21,7 @@ package mediathek.gui.bookmark
 import ca.odell.glazedlists.ObservableElementChangeHandler
 import ca.odell.glazedlists.ObservableElementList
 import java.beans.PropertyChangeListener
-import java.util.EventListener
+import java.util.*
 
 internal class BookmarkObservableConnector : ObservableElementList.Connector<BookmarkData> {
     private var changeHandler: ObservableElementChangeHandler<out BookmarkData>? = null

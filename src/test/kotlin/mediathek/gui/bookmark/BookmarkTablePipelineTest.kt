@@ -5,7 +5,8 @@ import ca.odell.glazedlists.ObservableElementList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel
-import ca.odell.glazedlists.swing.*
+import ca.odell.glazedlists.swing.eventTableModel
+import ca.odell.glazedlists.swing.swingThreadProxyList
 import mediathek.tool.withWriteLock
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

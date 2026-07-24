@@ -1,7 +1,7 @@
 package mediathek.gui.dialogEinstellungen.pset
 
 import ca.odell.glazedlists.swing.AdvancedTableModel
-import ca.odell.glazedlists.swing.*
+import ca.odell.glazedlists.swing.eventTableModelWithThreadProxyList
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.audiothek.ui.table.TriStateTableRowSorter

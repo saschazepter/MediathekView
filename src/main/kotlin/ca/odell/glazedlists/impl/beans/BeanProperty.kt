@@ -18,11 +18,7 @@
 package ca.odell.glazedlists.impl.beans
 
 import org.apache.commons.lang3.reflect.TypeUtils
-import java.lang.reflect.InvocationTargetException
-import java.lang.reflect.Method
-import java.lang.reflect.Modifier
-import java.lang.reflect.Type
-import java.lang.reflect.UndeclaredThrowableException
+import java.lang.reflect.*
 import java.util.regex.Pattern
 
 /** Models reflective getter and setter chains for a JavaBean property. */

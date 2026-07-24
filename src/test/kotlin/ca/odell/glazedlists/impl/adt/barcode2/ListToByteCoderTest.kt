@@ -1,6 +1,7 @@
 package ca.odell.glazedlists.impl.adt.barcode2
 
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertThrows
 import org.junit.jupiter.api.Test
 
 internal class ListToByteCoderTest {

@@ -18,8 +18,6 @@
 package ca.odell.glazedlists.impl.adt.barcode2
 
 import ca.odell.glazedlists.GlazedLists
-import java.util.ArrayList
-import java.util.Comparator
 
 internal class SimpleTree<T>(val comparator: Comparator<in T>) {
     private var root: SimpleNode<T>? = null

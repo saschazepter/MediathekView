@@ -3,9 +3,9 @@ package ca.odell.glazedlists.swing;
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
 import ca.odell.glazedlists.event.ListEvent;
-import org.junit.jupiter.api.Test;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.Test;
 
 import javax.swing.event.ListDataEvent;
 

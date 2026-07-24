@@ -8,8 +8,8 @@ import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.gui.AbstractTableComparatorChooser
 import ca.odell.glazedlists.swing.AdvancedTableModel
-import ca.odell.glazedlists.swing.*
 import ca.odell.glazedlists.swing.TableComparatorChooser
+import ca.odell.glazedlists.swing.eventTableModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.config.application.ApplicationConfiguration

@@ -21,12 +21,9 @@ import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.matchers.Matcher;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.ListSelectionModel;
+import javax.swing.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 class DefaultEventSelectionModelJavaInteropTest {
 

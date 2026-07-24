@@ -57,7 +57,10 @@ import java.awt.event.KeyEvent
 import java.beans.PropertyChangeEvent
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.function.*
+import java.util.function.BiConsumer
+import java.util.function.Consumer
+import java.util.function.IntConsumer
+import java.util.function.Supplier
 import javax.swing.*
 
 open class MediathekGui private constructor(

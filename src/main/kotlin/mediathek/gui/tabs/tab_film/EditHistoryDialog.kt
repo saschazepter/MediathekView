@@ -6,7 +6,7 @@ package mediathek.gui.tabs.tab_film
 
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.swing.DefaultEventListModel
-import ca.odell.glazedlists.swing.*
+import ca.odell.glazedlists.swing.eventListModelWithThreadProxyList
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.tool.withWriteLock
 import org.apache.logging.log4j.LogManager

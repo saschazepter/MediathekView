@@ -18,7 +18,9 @@
 package ca.odell.glazedlists.impl
 
 import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.event.*
+import ca.odell.glazedlists.event.ListEvent
+import ca.odell.glazedlists.event.ListEventListener
+import ca.odell.glazedlists.event.sourceList
 
 /** Rejects inserted or updated elements whose runtime types are not configured. */
 internal open class TypeSafetyListener<E>(

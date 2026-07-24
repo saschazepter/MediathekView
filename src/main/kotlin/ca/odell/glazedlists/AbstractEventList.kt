@@ -24,12 +24,11 @@ import ca.odell.glazedlists.impl.EventListIterator
 import ca.odell.glazedlists.impl.SimpleIterator
 import ca.odell.glazedlists.impl.SubEventList
 import org.jspecify.annotations.NonNull
-import java.lang.StringBuilder
-import java.lang.reflect.Array as ReflectArray
-import java.util.Objects
+import java.util.*
 import java.util.concurrent.locks.ReadWriteLock
 import java.util.function.Predicate
 import java.util.function.UnaryOperator
+import java.lang.reflect.Array as ReflectArray
 
 @Suppress("INAPPLICABLE_JVM_NAME", "UNCHECKED_CAST")
 abstract class AbstractEventList<E> protected constructor(

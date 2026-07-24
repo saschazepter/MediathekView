@@ -18,7 +18,6 @@
 package ca.odell.glazedlists.gui
 
 import org.jspecify.annotations.Nullable
-import java.util.Comparator
 
 interface AdvancedTableFormat<E> : TableFormat<E> {
     /** Returns the most specific superclass for the values in [column]. */

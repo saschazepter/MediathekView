@@ -23,8 +23,7 @@ import ca.odell.glazedlists.event.ListEventListener
 import ca.odell.glazedlists.impl.adt.Barcode
 import ca.odell.glazedlists.impl.adt.BarcodeIterator
 import ca.odell.glazedlists.matchers.Matcher
-import java.util.ArrayList
-import java.util.TreeSet
+import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
 /**

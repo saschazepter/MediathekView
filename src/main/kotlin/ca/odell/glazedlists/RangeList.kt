@@ -17,7 +17,7 @@
  */
 package ca.odell.glazedlists
 
-import ca.odell.glazedlists.event.*
+import ca.odell.glazedlists.event.ListEvent
 
 /** A writable, continuously updated range view of a source [EventList]. */
 @Suppress("INAPPLICABLE_JVM_NAME")

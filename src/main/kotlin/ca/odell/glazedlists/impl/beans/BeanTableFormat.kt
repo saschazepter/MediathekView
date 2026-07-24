@@ -20,7 +20,6 @@ package ca.odell.glazedlists.impl.beans
 import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.gui.AdvancedTableFormat
 import ca.odell.glazedlists.gui.WritableTableFormat
-import java.util.Comparator
 
 /** Reflective table format for JavaBean-style objects. */
 internal open class BeanTableFormat<E : Any>(

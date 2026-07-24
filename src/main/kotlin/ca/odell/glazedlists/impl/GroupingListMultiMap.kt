@@ -17,20 +17,13 @@
  */
 package ca.odell.glazedlists.impl
 
-import ca.odell.glazedlists.BasicEventList
-import ca.odell.glazedlists.DisposableMap
-import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.FunctionList
-import ca.odell.glazedlists.GroupingList
+import ca.odell.glazedlists.*
 import ca.odell.glazedlists.event.ListEvent
 import ca.odell.glazedlists.event.ListEventListener
 import ca.odell.glazedlists.event.sourceList
-import java.lang.reflect.Array as ReflectArray
-import java.util.ArrayList
-import java.util.HashMap
-import java.util.HashSet
-import java.util.Objects
 import org.jspecify.annotations.NonNull
+import java.util.*
+import java.lang.reflect.Array as ReflectArray
 
 /** A mutable map from calculated keys to live groups in an observable source list. */
 @Suppress(

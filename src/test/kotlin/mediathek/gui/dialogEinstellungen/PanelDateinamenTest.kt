@@ -8,8 +8,8 @@ import java.awt.Component
 import java.awt.Container
 import javax.swing.JButton
 import javax.swing.JCheckBox
-import javax.swing.SwingUtilities
 import javax.swing.JTextField
+import javax.swing.SwingUtilities
 
 internal class PanelDateinamenTest {
     @Test

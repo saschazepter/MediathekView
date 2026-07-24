@@ -19,13 +19,9 @@ package ca.odell.glazedlists.impl.gui
 
 import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.gui.TableFormat
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
 import org.jspecify.annotations.Nullable
+import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 
 internal class SortingStateTest {
     @Test

@@ -3,9 +3,7 @@ package mediathek.gui.dialogEinstellungen
 import mediathek.config.Konstanten
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.swing.SwingDispatch
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.awt.Component
 import java.awt.Container

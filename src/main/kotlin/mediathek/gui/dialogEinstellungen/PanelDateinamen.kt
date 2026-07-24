@@ -19,11 +19,7 @@
 package mediathek.gui.dialogEinstellungen
 
 import mediathek.config.application.ApplicationConfiguration
-import mediathek.tool.NoSelectionErrorDialog
-import mediathek.tool.ReplaceEntry
-import mediathek.tool.ReplacementRules
-import mediathek.tool.SVGIconUtilities
-import mediathek.tool.TextCopyPasteHandler
+import mediathek.tool.*
 import mediathek.tool.models.NonEditableTableModel
 import java.awt.Component
 import javax.swing.JTextField

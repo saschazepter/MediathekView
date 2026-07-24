@@ -3,7 +3,7 @@
 /*                                                     O'Dell Engineering Ltd.*/
 package ca.odell.glazedlists.impl.sort
 
-import java.util.Objects
+import java.util.*
 
 /**
  * A comparator chain compares objects using a list of [Comparator]s. The

@@ -7,7 +7,7 @@ package mediathek.gui.duplicates.statistics
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.swing.AdvancedTableModel
-import ca.odell.glazedlists.swing.*
+import ca.odell.glazedlists.swing.eventTableModelWithThreadProxyList
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.duplicates.FilmStatistics

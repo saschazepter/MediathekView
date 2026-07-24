@@ -1,18 +1,10 @@
 package ca.odell.glazedlists.impl.adt.barcode2
 
-import java.lang.reflect.Field
-import java.util.Comparator
-import java.util.NoSuchElementException
-import java.util.Random
-import kotlin.math.abs
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertNotNull
-import org.junit.jupiter.api.Assertions.assertNull
-import org.junit.jupiter.api.Assertions.assertSame
-import org.junit.jupiter.api.Assertions.assertThrows
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
+import java.lang.reflect.Field
+import java.util.*
+import kotlin.math.abs
 
 internal class TreeMigrationBehaviorTest {
     @Test

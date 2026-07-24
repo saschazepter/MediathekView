@@ -18,7 +18,7 @@
 package ca.odell.glazedlists.event
 
 import ca.odell.glazedlists.EventList
-import java.util.EventObject
+import java.util.*
 
 abstract class ListEvent<E> protected constructor(sourceList: EventList<E>) : EventObject(sourceList) {
     @JvmField

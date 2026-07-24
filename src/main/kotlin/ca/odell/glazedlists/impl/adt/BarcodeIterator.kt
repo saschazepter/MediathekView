@@ -17,8 +17,6 @@
  */
 package ca.odell.glazedlists.impl.adt
 
-import java.util.NoSuchElementException
-
 /**
  * A BarcodeIterator is a specialized [MutableIterator] implementation for
  * moving over a [Barcode] efficiently.

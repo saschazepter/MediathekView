@@ -17,7 +17,7 @@
  */
 package ca.odell.glazedlists.event
 
-import java.util.EventListener
+import java.util.*
 import java.util.function.Consumer
 
 /** Listens and responds to changes in a dynamic list of objects. */

@@ -2,6 +2,7 @@ package ca.odell.glazedlists.impl;
 
 import ca.odell.glazedlists.BasicEventList;
 import ca.odell.glazedlists.EventList;
+import kotlin.jvm.functions.Function1;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Field;
@@ -9,7 +10,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.Comparator;
-import kotlin.jvm.functions.Function1;
 
 import static org.junit.jupiter.api.Assertions.*;
 

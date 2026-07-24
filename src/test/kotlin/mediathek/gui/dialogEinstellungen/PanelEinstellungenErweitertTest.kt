@@ -4,9 +4,7 @@ import mediathek.config.application.ApplicationConfiguration
 import mediathek.gui.messages.ProgramLocationChangedEvent
 import mediathek.swing.SwingDispatch
 import mediathek.tool.MessageBus
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.awt.Component
 import java.awt.Container
