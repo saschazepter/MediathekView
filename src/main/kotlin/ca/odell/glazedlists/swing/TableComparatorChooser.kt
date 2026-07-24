@@ -226,14 +226,12 @@ class TableComparatorChooser<E : Any> private constructor(
     companion object {
         private val icons: Array<Icon?> = SortIconFactory.loadIcons()
 
-        @JvmStatic
         fun <E : Any> install(
             table: JTable,
             sortedList: SortedList<E>,
             strategy: SortingStrategy,
         ): TableComparatorChooser<E> = install(table, sortedList, strategy, getTableFormat(table.model))
 
-        @JvmStatic
         fun <E : Any> install(
             table: JTable,
             sortedList: SortedList<E>,

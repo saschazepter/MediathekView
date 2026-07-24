@@ -13,12 +13,12 @@ import static org.junit.jupiter.api.Assertions.*;
 class SequencersJavaInteropTest {
 
     @Test
-    void monthSequencerRemainsAStaticFactoryReturningFreshInstances() throws NoSuchMethodException {
+    void monthSequencerReturnsFreshInstancesWithoutAStaticBridge() throws NoSuchMethodException {
         final Method factory = Sequencers.class.getDeclaredMethod("monthSequencer");
-        final SequenceList.Sequencer<Date> first = Sequencers.monthSequencer();
-        final SequenceList.Sequencer<Date> second = Sequencers.monthSequencer();
+        final SequenceList.Sequencer<Date> first = Sequencers.INSTANCE.monthSequencer();
+        final SequenceList.Sequencer<Date> second = Sequencers.INSTANCE.monthSequencer();
 
-        assertTrue(Modifier.isStatic(factory.getModifiers()));
+        assertFalse(Modifier.isStatic(factory.getModifiers()));
         assertEquals(SequenceList.Sequencer.class, factory.getReturnType());
         assertNotSame(first, second);
         assertTrue(Modifier.isPrivate(first.getClass().getModifiers()));
@@ -27,7 +27,7 @@ class SequencersJavaInteropTest {
 
     @Test
     void monthSequencerRejectsNullWithTheOriginalFailureContract() {
-        final SequenceList.Sequencer<Date> sequencer = Sequencers.monthSequencer();
+        final SequenceList.Sequencer<Date> sequencer = Sequencers.INSTANCE.monthSequencer();
 
         final IllegalArgumentException previousFailure = assertThrows(
                 IllegalArgumentException.class,

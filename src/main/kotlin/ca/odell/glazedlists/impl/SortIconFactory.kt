@@ -77,10 +77,8 @@ object SortIconFactory {
     }
 
     /** Loads and caches icons matching the active Swing look and feel. */
-    @JvmStatic
     fun loadIcons(): Array<Icon?> = Loader.loadIcons()
 
     /** Loads a fresh icon array from [path]. */
-    @JvmStatic
     fun loadIcons(path: String): Array<Icon?> = Loader.loadIcons(path)
 }

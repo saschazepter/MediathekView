@@ -220,7 +220,6 @@ class UndoRedoSupport<E> private constructor(source: EventList<E>) {
         requireNotNull(txSource) { "Undo support has been uninstalled" }
 
     companion object {
-        @JvmStatic
         fun <E> install(source: EventList<E>): UndoRedoSupport<E> = UndoRedoSupport(source)
     }
 }

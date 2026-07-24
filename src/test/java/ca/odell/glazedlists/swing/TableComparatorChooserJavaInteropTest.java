@@ -54,7 +54,7 @@ class TableComparatorChooserJavaInteropTest {
             };
 
             final JTable explicitFormatTable = new JTable(0, 1);
-            final TableComparatorChooser<Row> explicitFormatChooser = TableComparatorChooser.install(
+            final TableComparatorChooser<Row> explicitFormatChooser = TableComparatorChooser.Companion.install(
                     explicitFormatTable,
                     sorted,
                     AbstractTableComparatorChooser.SINGLE_COLUMN,
@@ -63,7 +63,7 @@ class TableComparatorChooserJavaInteropTest {
             explicitFormatChooser.dispose();
 
             final JTable inferredFormatTable = new JTable(new DefaultEventTableModel<>(sorted, format));
-            final TableComparatorChooser<Row> inferredFormatChooser = TableComparatorChooser.install(
+            final TableComparatorChooser<Row> inferredFormatChooser = TableComparatorChooser.Companion.install(
                     inferredFormatTable,
                     sorted,
                     AbstractTableComparatorChooser.SINGLE_COLUMN);

@@ -39,15 +39,15 @@ internal class MatcherContractMigrationBehaviorTest {
     }
 
     @Test
-    fun factoryRemainsStaticAndKeepsMatcherIdentity() {
+    fun companionFactoryKeepsMatcherIdentityWithoutAStaticBridge() {
         val matcher = Matcher<String> { value -> value.isNotEmpty() }
 
         val editor = MatcherEditor.fromMatcher(matcher)
 
         assertSame(matcher, editor.matcher)
-        assertTrue(
+        assertFalse(
             Modifier.isStatic(
-                MatcherEditor::class.java.getMethod("fromMatcher", Matcher::class.java).modifiers,
+                MatcherEditor.Companion::class.java.getMethod("fromMatcher", Matcher::class.java).modifiers,
             ),
         )
     }

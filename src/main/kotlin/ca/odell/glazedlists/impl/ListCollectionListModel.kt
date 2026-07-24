@@ -20,6 +20,6 @@ package ca.odell.glazedlists.impl
 import ca.odell.glazedlists.CollectionList
 
 /** Uses each parent list directly as its own collection of children. */
-open class ListCollectionListModel<E> : CollectionList.Model<List<@JvmSuppressWildcards E>, E> {
-    override fun getChildren(parent: List<@JvmSuppressWildcards E>?): List<E> = parent ?: emptyList()
+class ListCollectionListModel<E> : CollectionList.Model<List<E>, E> {
+    override fun getChildren(parent: List<E>?): List<E> = parent ?: emptyList()
 }

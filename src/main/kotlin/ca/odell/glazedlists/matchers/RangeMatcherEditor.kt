@@ -11,7 +11,7 @@ import ca.odell.glazedlists.impl.matchers.RangeMatcher
  * inclusive range. A [Filterator] can extract those values from each element;
  * without one, the elements themselves must be comparable values.
  */
-open class RangeMatcherEditor<D, E> @JvmOverloads constructor(
+class RangeMatcherEditor<D, E> constructor(
     filterator: Filterator<D, E>? = null,
 ) : AbstractMatcherEditor<E>() where D : Comparable<D> {
     private val rangeFilterator = filterator
@@ -19,14 +19,14 @@ open class RangeMatcherEditor<D, E> @JvmOverloads constructor(
     private var currentRangeEnd: D? = null
 
     /** The filterator used to extract comparable values from matched elements. */
-    open val filterator: Filterator<D, E>?
+    val filterator: Filterator<D, E>?
         get() = rangeFilterator
 
     /**
      * Changes the inclusive range. Null bounds are unbounded, and reversed
      * non-null bounds are normalized into their natural order.
      */
-    open fun setRange(newStart: D?, newEnd: D?) {
+    fun setRange(newStart: D?, newEnd: D?) {
         var normalizedStart = newStart
         var normalizedEnd = newEnd
         if (normalizedStart != null && normalizedEnd != null && normalizedStart > normalizedEnd) {

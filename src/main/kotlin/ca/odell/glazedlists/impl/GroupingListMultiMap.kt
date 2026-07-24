@@ -38,8 +38,8 @@ import org.jspecify.annotations.NonNull
     "PLATFORM_CLASS_MAPPED_TO_KOTLIN",
     "UNCHECKED_CAST",
 )
-open class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
-    ListEventListener<List<@JvmSuppressWildcards V>> {
+class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
+    ListEventListener<List<V>> {
     private val groupingList: GroupingList<V>
     private val valueList: FunctionList<List<V>, List<V>>
     private val keyList: MutableList<K>
@@ -97,7 +97,7 @@ open class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
 
     override fun get(key: K): MutableList<V>? = delegate[key] as MutableList<V>?
 
-    override fun put(key: K, value: List<@JvmSuppressWildcards V>?): MutableList<V>? {
+    override fun put(key: K, value: List<V>?): MutableList<V>? {
         checkKeyValueAgreement(key, value)
 
         val removed = remove(key)
@@ -105,7 +105,7 @@ open class GroupingListMultiMap<K, V> : DisposableMap<K, List<V>?>,
         return removed
     }
 
-    override fun putAll(from: Map<out K, List<@JvmSuppressWildcards V>?>) {
+    override fun putAll(from: Map<out K, List<V>?>) {
         for ((key, value) in from) {
             checkKeyValueAgreement(key, value)
         }

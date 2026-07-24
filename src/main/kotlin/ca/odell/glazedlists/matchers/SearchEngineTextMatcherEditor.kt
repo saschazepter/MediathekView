@@ -11,13 +11,13 @@ import ca.odell.glazedlists.impl.filter.TextMatchers
  * Matches elements against search-engine-style input containing phrases, required or excluded
  * terms, and optionally named fields.
  */
-open class SearchEngineTextMatcherEditor<E> @JvmOverloads constructor(
+open class SearchEngineTextMatcherEditor<E> constructor(
     textFilterator: TextFilterator<in E>? = null,
 ) : TextMatcherEditor<E>(textFilterator) {
     private val configuredFields = HashSet<Field<E>>()
 
     /** A defensive copy of the fields recognized while parsing search input. */
-    open var fields: Set<@JvmSuppressWildcards Field<E>>
+    open var fields: Set<Field<E>>
         get() = HashSet(configuredFields)
         set(value) {
             configuredFields.clear()

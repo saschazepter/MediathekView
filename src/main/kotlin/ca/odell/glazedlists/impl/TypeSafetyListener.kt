@@ -23,7 +23,7 @@ import ca.odell.glazedlists.event.*
 /** Rejects inserted or updated elements whose runtime types are not configured. */
 open class TypeSafetyListener<E>(
     source: EventList<E>,
-    types: Set<@JvmSuppressWildcards Class<*>?>,
+    types: Set<Class<*>?>,
 ) : ListEventListener<E> {
     private val types: Array<Class<*>?> = types.toTypedArray()
 

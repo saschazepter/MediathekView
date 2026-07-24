@@ -9,7 +9,7 @@ import ca.odell.glazedlists.GlazedLists
  * Produces matchers that compare values with a threshold. A function
  * can extract the value to compare when the list element and threshold types differ.
  */
-open class ThresholdMatcherEditor<E, T> @JvmOverloads constructor(
+class ThresholdMatcherEditor<E, T> constructor(
     threshold: T? = null,
     operation: MatchOperation<*, *>? = null,
     comparator: Comparator<T>? = null,
@@ -22,7 +22,7 @@ open class ThresholdMatcherEditor<E, T> @JvmOverloads constructor(
     private val extractionFunction: (E) -> T = function ?: identityFunction()
 
     /** The threshold to compare extracted values with, or `null` for no threshold. */
-    open var threshold: T?
+    var threshold: T?
         get() = activeThreshold
         set(value) {
             activeThreshold = value
@@ -30,7 +30,7 @@ open class ThresholdMatcherEditor<E, T> @JvmOverloads constructor(
         }
 
     /** The comparison operation used to decide whether an element matches. */
-    open var matchOperation: MatchOperation<*, *>?
+    var matchOperation: MatchOperation<*, *>?
         get() = activeOperation
         set(value) {
             require(value != null) { "Operation cannot be null" }
@@ -39,7 +39,7 @@ open class ThresholdMatcherEditor<E, T> @JvmOverloads constructor(
         }
 
     /** The comparator used for extracted values; assigning `null` restores natural ordering. */
-    open var comparator: Comparator<T>?
+    var comparator: Comparator<T>?
         get() = activeComparator
         set(value) {
             activeComparator = value ?: defaultComparator()

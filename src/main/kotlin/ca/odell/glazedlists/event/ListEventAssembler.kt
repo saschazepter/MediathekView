@@ -436,7 +436,6 @@ class ListEventAssembler<E>(
          * Create a new ListEventPublisher for an EventList not attached
          * to any other EventLists.
          */
-        @JvmStatic
         fun createListEventPublisher(): ListEventPublisher = SequenceDependenciesEventPublisher()
     }
 }

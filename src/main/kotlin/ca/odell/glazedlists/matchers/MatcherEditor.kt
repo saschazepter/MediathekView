@@ -54,7 +54,6 @@ interface MatcherEditor<E> {
     }
 
     companion object {
-        @JvmStatic
         fun <E> fromMatcher(matcher: Matcher<E>): MatcherEditor<E> = FixedMatcherEditor(matcher)
     }
 }

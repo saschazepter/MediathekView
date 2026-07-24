@@ -26,7 +26,7 @@ class ReadOnlyListJavaInteropTest {
         try (final BasicEventList<String> source = new BasicEventList<>()) {
             source.add("a");
 
-            assertInstanceOf(ReadOnlyList.class, GlazedLists.readOnlyList(source));
+            assertInstanceOf(ReadOnlyList.class, GlazedLists.INSTANCE.readOnlyList(source));
             assertTrue(Modifier.isFinal(ReadOnlyList.class.getModifiers()));
             assertInstanceOf(ReadOnlyList.class, new ReadOnlyList<>(source));
         }

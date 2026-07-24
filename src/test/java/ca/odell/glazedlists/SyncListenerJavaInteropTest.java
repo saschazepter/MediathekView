@@ -33,7 +33,7 @@ class SyncListenerJavaInteropTest {
         try (BasicEventList<String> source = new BasicEventList<>()) {
             List<String> target = new ArrayList<>();
 
-            SyncListener<String> listener = GlazedLists.syncEventListToList(source, target);
+            SyncListener<String> listener = GlazedLists.INSTANCE.syncEventListToList(source, target);
             source.add("value");
 
             assertEquals(List.of("value"), target);

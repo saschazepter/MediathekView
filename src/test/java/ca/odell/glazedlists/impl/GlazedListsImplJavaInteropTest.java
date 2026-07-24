@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class GlazedListsImplJavaInteropTest {
 
     @Test
-    void utilityMethodsRemainJavaStaticAndGeneric() throws NoSuchMethodException {
+    void utilityMethodsRemainGenericWithoutStaticBridges() throws NoSuchMethodException {
         final Method replaceAll = GlazedListsImpl.class.getDeclaredMethod(
                 "replaceAll",
                 EventList.class,
@@ -25,15 +25,15 @@ class GlazedListsImplJavaInteropTest {
                 Comparator.class);
         final Method equalsComparator = GlazedListsImpl.class.getDeclaredMethod("equalsComparator");
         final Method identityFunction = GlazedListsImpl.class.getDeclaredMethod("identityFunction");
-        final Comparator<String> equality = GlazedListsImpl.equalsComparator();
-        final Function1<String, String> identity = GlazedListsImpl.identityFunction();
+        final Comparator<String> equality = GlazedListsImpl.INSTANCE.equalsComparator();
+        final Function1<String, String> identity = GlazedListsImpl.INSTANCE.identityFunction();
         final BasicEventList<String> target = new BasicEventList<>();
 
-        GlazedListsImpl.replaceAll(target, java.util.List.of("value"), false, null);
+        GlazedListsImpl.INSTANCE.replaceAll(target, java.util.List.of("value"), false, null);
 
-        assertTrue(Modifier.isStatic(replaceAll.getModifiers()));
-        assertTrue(Modifier.isStatic(equalsComparator.getModifiers()));
-        assertTrue(Modifier.isStatic(identityFunction.getModifiers()));
+        assertFalse(Modifier.isStatic(replaceAll.getModifiers()));
+        assertFalse(Modifier.isStatic(equalsComparator.getModifiers()));
+        assertFalse(Modifier.isStatic(identityFunction.getModifiers()));
         assertEquals(1, replaceAll.getTypeParameters().length);
         assertEquals(1, equalsComparator.getTypeParameters().length);
         assertEquals(1, identityFunction.getTypeParameters().length);

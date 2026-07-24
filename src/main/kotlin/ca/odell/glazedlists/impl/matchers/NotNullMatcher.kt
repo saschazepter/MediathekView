@@ -14,7 +14,6 @@ class NotNullMatcher<E> private constructor() : Matcher<E> {
     companion object {
         private val INSTANCE: Matcher<Any?> = NotNullMatcher()
 
-        @JvmStatic
         @Suppress("UNCHECKED_CAST")
         fun <E> getInstance(): Matcher<E> = INSTANCE as Matcher<E>
     }

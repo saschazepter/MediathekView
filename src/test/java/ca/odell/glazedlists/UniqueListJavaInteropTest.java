@@ -35,7 +35,7 @@ class UniqueListJavaInteropTest {
         final BasicEventList<String> source = new BasicEventList<>();
         source.addAll(Arrays.asList("bbb", "a", "bbb", "cc"));
 
-        final UniqueList<String> natural = UniqueList.create(source);
+        final UniqueList<String> natural = UniqueList.Companion.create(source);
         assertEquals(List.of("a", "bbb", "cc"), natural);
 
         final Comparator<Object> byLength = Comparator.comparingInt(value -> value.toString().length());
@@ -50,9 +50,9 @@ class UniqueListJavaInteropTest {
         custom.setComparator(null);
         assertEquals(List.of("a", "bbb", "cc"), custom);
 
-        final Method create = UniqueList.class.getDeclaredMethod("create", EventList.class);
+        final Method create = UniqueList.Companion.getClass().getDeclaredMethod("create", EventList.class);
         assertTrue(Modifier.isPublic(create.getModifiers()));
-        assertTrue(Modifier.isStatic(create.getModifiers()));
+        assertFalse(Modifier.isStatic(create.getModifiers()));
         assertEquals(int.class, UniqueList.class.getMethod("getCount", int.class).getReturnType());
         assertEquals(int.class, UniqueList.class.getMethod("getCount", Object.class).getReturnType());
     }

@@ -709,7 +709,7 @@ internal class ListSelectionBehaviorTest {
 
         assertEquals("E", type.getDeclaredMethod("select", Any::class.java).genericParameterTypes.single().typeName)
         assertEquals(
-            "java.util.Collection<E>",
+            "java.util.Collection<? extends E>",
             type.getDeclaredMethod("select", Collection::class.java).genericParameterTypes.single().typeName,
         )
         assertEquals(

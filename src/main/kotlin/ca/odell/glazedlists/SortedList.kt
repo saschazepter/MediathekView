@@ -442,14 +442,11 @@ class SortedList<E>(
         /** Updated elements remain at their current index. */
         const val AVOID_MOVING_ELEMENTS: Int = 1
 
-        @JvmStatic
         fun <E> create(source: EventList<E>): SortedList<E> where E : Comparable<in E> = SortedList(source)
 
-        @JvmStatic
         private fun <E> naturalOrderComparator(): Comparator<E> =
             GlazedLists.comparableComparator<Comparable<Any>>() as Comparator<E>
 
-        @JvmStatic
         private fun asNode(element: Element<*>): Element<Element<*>?> =
             element as Element<Element<*>?>
     }

@@ -28,7 +28,6 @@ import java.util.*
  * @author James Lemieux
  */
 object Sequencers {
-    @JvmStatic
     fun monthSequencer(): SequenceList.Sequencer<Date> = MonthSequencer()
 
     /**

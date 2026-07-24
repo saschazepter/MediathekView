@@ -546,7 +546,7 @@ open class ListSelection<E>(
     /**
      * Select all of the specified values.
      */
-    open fun select(values: Collection<@JvmSuppressWildcards E>): Boolean {
+    open fun select(values: Collection<E>): Boolean {
         val indicesToSelect = TreeSet<Int>()
         for (value in values) {
             val index = internalSource.indexOf(value)

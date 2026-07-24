@@ -13,7 +13,6 @@ class FalseMatcher<E> private constructor() : Matcher<E> {
     companion object {
         private val INSTANCE: Matcher<Any?> = FalseMatcher()
 
-        @JvmStatic
         @Suppress("UNCHECKED_CAST")
         fun <E> getInstance(): Matcher<E> = INSTANCE as Matcher<E>
     }

@@ -67,13 +67,12 @@ internal class ListEventAssemblerModernizationTest {
                 "getListBlocksLinear()Lca/odell/glazedlists/impl/event/BlockSequence;",
                 "getReorderMap()[I",
                 "cleanup()V",
-                "createListEventPublisher()Lca/odell/glazedlists/event/ListEventPublisher;",
                 "access${DOLLAR}cleanup(Lca/odell/glazedlists/event/ListEventAssembler;)V",
                 "access${DOLLAR}setEventIsBeingPublished${DOLLAR}p(Lca/odell/glazedlists/event/ListEventAssembler;Z)V",
             ),
             declaredMethods.keys,
         )
-        assertEquals(26, declaredMethods.size)
+        assertEquals(25, declaredMethods.size)
 
         val constructor = assemblerClass.getDeclaredConstructor(EventList::class.java, ListEventPublisher::class.java)
         assertTrue(Modifier.isPublic(constructor.modifiers))
@@ -162,11 +161,10 @@ internal class ListEventAssemblerModernizationTest {
         )
 
         assertMethod(
-            declaredMethods.getValue("createListEventPublisher()Lca/odell/glazedlists/event/ListEventPublisher;"),
+            ListEventAssembler.Companion::class.java.getDeclaredMethod("createListEventPublisher"),
             expectedDescriptor = "()Lca/odell/glazedlists/event/ListEventPublisher;",
             expectedGenericReturnType = "ca.odell.glazedlists.event.ListEventPublisher",
             public = true,
-            static = true,
             final = true,
         )
         assertMethod(

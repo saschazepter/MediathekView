@@ -290,8 +290,8 @@ open class CollectionList<S, E>(
     /** Maps a parent value to its child list and remains a Java [Function] SAM. */
     @FunctionalInterface
     @JvmDefaultWithoutCompatibility
-    fun interface Model<P, C> : Function<P, List<@JvmSuppressWildcards C>> {
-        fun getChildren(parent: P?): List<@JvmSuppressWildcards C>
+    fun interface Model<P, C> : Function<P, List<C>> {
+        fun getChildren(parent: P?): List<C>
 
         override fun apply(parent: P): List<C> = getChildren(parent)
     }

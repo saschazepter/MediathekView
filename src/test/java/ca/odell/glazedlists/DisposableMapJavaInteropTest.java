@@ -27,11 +27,11 @@ class DisposableMapJavaInteropTest {
         BasicEventList<String> source = new BasicEventList<>();
         source.addAll(List.of("alpha", "beta", "apricot"));
 
-        DisposableMap<Integer, String> map = GlazedLists.syncEventListToMap(source, String::length);
+        DisposableMap<Integer, String> map = GlazedLists.INSTANCE.syncEventListToMap(source, String::length);
         assertEquals(Map.of(5, "alpha", 4, "beta", 7, "apricot"), map);
 
         DisposableMap<Character, List<String>> multiMap =
-                GlazedLists.syncEventListToMultiMap(source, value -> value.charAt(0));
+                GlazedLists.INSTANCE.syncEventListToMultiMap(source, value -> value.charAt(0));
         assertEquals(List.of("alpha", "apricot"), multiMap.get('a'));
         assertEquals(List.of("beta"), multiMap.get('b'));
 

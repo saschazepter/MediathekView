@@ -12,7 +12,6 @@ open class NonNullAndNonEmptyStringMatcher : Matcher<String?> {
     companion object {
         private val INSTANCE: Matcher<String?> = NonNullAndNonEmptyStringMatcher()
 
-        @JvmStatic
         fun getInstance(): Matcher<String?> = INSTANCE
     }
 }

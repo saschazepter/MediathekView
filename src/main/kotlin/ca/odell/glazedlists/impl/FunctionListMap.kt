@@ -30,7 +30,7 @@ import java.util.function.BiConsumer
 
 /** A mutable map kept in sync with an [EventList] whose values produce unique keys. */
 @Suppress("INAPPLICABLE_JVM_NAME", "UNCHECKED_CAST")
-open class FunctionListMap<K, V> : DisposableMap<K, V> {
+class FunctionListMap<K, V> : DisposableMap<K, V> {
     private val keyList: MutableList<K>
     private var cachedKeySet: KeySet<K, V>? = null
     private val valueList: EventList<V>

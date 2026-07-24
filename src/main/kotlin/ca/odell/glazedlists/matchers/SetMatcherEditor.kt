@@ -101,7 +101,6 @@ class SetMatcherEditor<E, O> private constructor(
         private val logger = Logger.getLogger(SetMatcherEditor::class.java.toString())
 
         /** Creates an editor using [mode] and [function] to extract matched values. */
-        @JvmStatic
         fun <E, O> create(mode: Mode, function: (E) -> O): SetMatcherEditor<E, O> =
             SetMatcherEditor(mode, function)
     }

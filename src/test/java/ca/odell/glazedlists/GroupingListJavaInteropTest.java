@@ -35,7 +35,7 @@ class GroupingListJavaInteropTest {
         final BasicEventList<String> source = new BasicEventList<>();
         source.addAll(Arrays.asList("bbb", "a", "bbb", "cc"));
 
-        final GroupingList<String> natural = GroupingList.create(source);
+        final GroupingList<String> natural = GroupingList.Companion.create(source);
         assertEquals(List.of(List.of("a"), List.of("bbb", "bbb"), List.of("cc")), natural);
 
         final Comparator<Object> byLength = Comparator.comparingInt(value -> value.toString().length());
@@ -50,7 +50,8 @@ class GroupingListJavaInteropTest {
         assertEquals(List.of("a", "d"), removed);
 
         custom.setComparator(null);
-        assertTrue(Modifier.isStatic(GroupingList.class.getDeclaredMethod("create", EventList.class).getModifiers()));
+        assertFalse(Modifier.isStatic(
+                GroupingList.Companion.getClass().getDeclaredMethod("create", EventList.class).getModifiers()));
         assertEquals(List.class, GroupingList.class.getMethod("get", int.class).getReturnType());
         assertEquals(List.class, GroupingList.class.getMethod("remove", int.class).getReturnType());
         assertEquals(List.class, GroupingList.class.getDeclaredMethod("set", int.class, List.class).getReturnType());

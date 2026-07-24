@@ -21,7 +21,6 @@ object TextMatchers {
         SearchTermLengthComparator()
 
     /** Evaluates every prepared search strategy against text extracted from [element]. */
-    @JvmStatic
     fun <E> matches(
         filterStrings: MutableList<String>,
         filterator: TextFilterator<in E>?,
@@ -73,7 +72,6 @@ object TextMatchers {
         return true
     }
 
-    @JvmStatic
     private fun <E> normalizeSearchTerms(
         searchTerms: List<SearchTerm<E>>,
         negated: Boolean,
@@ -109,7 +107,6 @@ object TextMatchers {
     }
 
     /** Normalizes text, removes redundant terms, and orders terms for efficient matching. */
-    @JvmStatic
     fun <E> normalizeSearchTerms(
         filters: Array<SearchTerm<E>>,
         strategy: TextSearchStrategy.Factory,
@@ -147,14 +144,12 @@ object TextMatchers {
     }
 
     /** Parses [text] without any named fields. */
-    @JvmStatic
     fun <E> parse(text: String): Array<SearchTerm<E>> = parse(text, emptySet())
 
     /** Parses [text], recognizing the supplied named [fields]. */
-    @JvmStatic
     fun <E> parse(
         text: String,
-        fields: Set<@JvmSuppressWildcards SearchEngineTextMatcherEditor.Field<E>>,
+        fields: Set<SearchEngineTextMatcherEditor.Field<E>>,
     ): Array<SearchTerm<E>> {
         val searchTerms = ArrayList<SearchTerm<E>>()
         val fieldMap = fields.associateBy { requireNotNull(it.name) }
@@ -227,7 +222,6 @@ object TextMatchers {
     }
 
     /** Returns whether [newMatcher] is guaranteed to match no more elements than [oldMatcher]. */
-    @JvmStatic
     fun isMatcherConstrained(oldMatcher: TextMatcher<*>?, newMatcher: TextMatcher<*>?): Boolean {
         val existingMatcher = oldMatcher!!
         if (existingMatcher == newMatcher) return false
@@ -257,7 +251,6 @@ object TextMatchers {
     }
 
     /** Returns whether [newMatcher] is guaranteed to match no fewer elements than [oldMatcher]. */
-    @JvmStatic
     fun isMatcherRelaxed(oldMatcher: TextMatcher<*>?, newMatcher: TextMatcher<*>?): Boolean =
         isMatcherConstrained(newMatcher, oldMatcher)
 }

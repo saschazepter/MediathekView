@@ -63,36 +63,32 @@ object GlazedLists {
         val STRING_TEXT_FILTERATOR: TextFilterator<Any?> = StringTextFilterator()
     }
 
-    @JvmStatic
     fun <E> replaceAll(
         target: EventList<E>,
-        source: List<@JvmSuppressWildcards E>,
+        source: List<E>,
         updates: Boolean,
     ) {
         Diff.replaceAll(target, source, updates)
     }
 
-    @JvmStatic
     fun <E> replaceAll(
         target: EventList<E>,
-        source: List<@JvmSuppressWildcards E>,
+        source: List<E>,
         updates: Boolean,
         comparator: Comparator<E>?,
     ) {
         Diff.replaceAll(target, source, updates, comparator)
     }
 
-    @JvmStatic
     fun <E> replaceAllSorted(
         target: EventList<E>,
-        source: Collection<@JvmSuppressWildcards E>,
+        source: Collection<E>,
         updates: Boolean,
         comparator: Comparator<E>?,
     ) {
         GlazedListsImpl.replaceAll(target, source, updates, comparator)
     }
 
-    @JvmStatic
     fun <T> beanPropertyComparator(
         clazz: Class<T>,
         property: String,
@@ -110,60 +106,48 @@ object GlazedLists {
         )
     }
 
-    @JvmStatic
     fun <T> beanPropertyComparator(
         className: Class<T>,
         property: String,
         propertyComparator: Comparator<*>,
     ): Comparator<T> = BeanPropertyComparator(className, property, propertyComparator) as Comparator<T>
 
-    @JvmStatic
     fun booleanComparator(): Comparator<Boolean?> = Singletons.BOOLEAN_COMPARATOR
 
-    @JvmStatic
     fun caseInsensitiveComparator(): Comparator<String> = String.CASE_INSENSITIVE_ORDER
 
-    @JvmStatic
     fun <T> chainComparators(
-        comparators: List<@JvmSuppressWildcards Comparator<T>>,
+        comparators: List<Comparator<T>>,
     ): Comparator<T> = ComparatorChain(comparators)
 
-    @JvmStatic
     fun <T> chainComparators(vararg comparators: Comparator<T>): Comparator<T> =
         ComparatorChain<T>(comparators.toList())
 
-    @JvmStatic
     fun <T> comparableComparator(): Comparator<T> where T : Comparable<T> =
         Singletons.COMPARABLE_COMPARATOR as Comparator<T>
 
-    @JvmStatic
     fun <T> reverseComparator(): Comparator<T> where T : Comparable<T> =
         Singletons.REVERSED_COMPARABLE as Comparator<T>
 
-    @JvmStatic
     fun <T> reverseComparator(forward: Comparator<T>?): Comparator<T> = ReverseComparator(forward!!)
 
-    @JvmStatic
     fun <T> tableFormat(
         propertyNames: Array<String>?,
         columnLabels: Array<String>?,
     ): TableFormat<T> = BeanTableFormat(null, propertyNames!!, columnLabels!!)
 
-    @JvmStatic
     fun <T> tableFormat(
         baseClass: Class<T>?,
         propertyNames: Array<String>?,
         columnLabels: Array<String>?,
     ): TableFormat<T> = BeanTableFormat(baseClass, propertyNames!!, columnLabels!!)
 
-    @JvmStatic
     fun <T> tableFormat(
         propertyNames: Array<String>?,
         columnLabels: Array<String>?,
         editable: BooleanArray?,
     ): TableFormat<T> = BeanTableFormat(null, propertyNames!!, columnLabels!!, editable!!)
 
-    @JvmStatic
     fun <T> tableFormat(
         baseClass: Class<T>?,
         propertyNames: Array<String>?,
@@ -171,56 +155,45 @@ object GlazedLists {
         editable: BooleanArray?,
     ): TableFormat<T> = BeanTableFormat(baseClass, propertyNames!!, columnLabels!!, editable!!)
 
-    @JvmStatic
     fun <E> textFilterator(vararg propertyNames: String): TextFilterator<E> =
         BeanTextFilterator<Any?, E>(*propertyNames)
 
-    @JvmStatic
     fun <E> textFilterator(
         beanClass: Class<E>,
         vararg propertyNames: String,
     ): TextFilterator<E> = BeanTextFilterator<Any?, E>(beanClass, *propertyNames)
 
-    @JvmStatic
     fun <D, E> filterator(vararg propertyNames: String): Filterator<D, E> =
         BeanTextFilterator(*propertyNames)
 
-    @JvmStatic
     fun <D, E> filterator(
         beanClass: Class<E>,
         vararg propertyNames: String,
     ): Filterator<D, E> = BeanTextFilterator(beanClass, *propertyNames)
 
-    @JvmStatic
     fun <E> toStringTextFilterator(): TextFilterator<E> =
         Singletons.STRING_TEXT_FILTERATOR as TextFilterator<E>
 
-    @JvmStatic
     fun <E> thresholdEvaluator(propertyName: String): ThresholdList.Evaluator<E?> =
         BeanThresholdEvaluator<Any>(propertyName) as ThresholdList.Evaluator<E?>
 
-    @JvmStatic
-    fun <E> listCollectionListModel(): CollectionList.Model<List<@JvmSuppressWildcards E>, E> =
+    fun <E> listCollectionListModel(): CollectionList.Model<List<E>, E> =
         ListCollectionListModel()
 
-    @JvmStatic
     fun <E> eventListOf(vararg contents: E): EventList<E> = eventList(contents.asList())
 
-    @JvmStatic
     fun <E> eventList(contents: Collection<E>?): EventList<E> {
         val result = BasicEventList<E>(contents?.size ?: 0)
         if (contents != null) result.addAll(contents)
         return result
     }
 
-    @JvmStatic
     fun <E> eventListOf(
         publisher: ListEventPublisher?,
         lock: ReadWriteLock?,
         vararg contents: E,
     ): EventList<E> = eventList(publisher, lock, contents.asList())
 
-    @JvmStatic
     fun <E> eventList(
         publisher: ListEventPublisher?,
         lock: ReadWriteLock?,
@@ -231,27 +204,22 @@ object GlazedLists {
         return result
     }
 
-    @JvmStatic
     fun <E> readOnlyList(source: EventList<out E>): TransformedList<E, E> =
         ReadOnlyList(source as EventList<E>)
 
-    @JvmStatic
     fun <S, E> transformByFunction(
         source: EventList<S>,
         function: Function<S, E>,
     ): TransformedList<S, E> = SimpleFunctionList(source, function::apply)
 
-    @JvmStatic
     fun <E> weakReferenceProxy(
         source: EventList<E>,
         target: ListEventListener<E>,
     ): ListEventListener<E> = WeakReferenceProxy(source, target)
 
-    @JvmStatic
     fun <E> beanConnector(beanClass: Class<E>): ObservableElementList.Connector<E> =
         BeanConnector(beanClass)
 
-    @JvmStatic
     fun <E> beanConnector(
         beanClass: Class<E>,
         matchPropertyNames: Boolean,
@@ -259,20 +227,17 @@ object GlazedLists {
     ): ObservableElementList.Connector<E> =
         beanConnector(beanClass, Matchers.propertyEventNameMatcher(matchPropertyNames, *propertyNames))
 
-    @JvmStatic
     fun <E> beanConnector(
         beanClass: Class<E>,
         eventMatcher: Matcher<PropertyChangeEvent>,
     ): ObservableElementList.Connector<E> = BeanConnector(beanClass, eventMatcher)
 
-    @JvmStatic
     fun <E> beanConnector(
         beanClass: Class<E>,
         addListener: String,
         removeListener: String,
     ): ObservableElementList.Connector<E> = BeanConnector(beanClass, addListener, removeListener)
 
-    @JvmStatic
     fun <E> beanConnector(
         beanClass: Class<E>,
         addListener: String,
@@ -281,18 +246,14 @@ object GlazedLists {
     ): ObservableElementList.Connector<E> =
         BeanConnector(beanClass, addListener, removeListener, eventMatcher)
 
-    @JvmStatic
     fun <E> observableConnector(): ObservableElementList.Connector<E>
         where E : ObservableConnector.PropertyChangeObservable = ObservableConnector()
 
-    @JvmStatic
     fun <E> fixedMatcherEditor(matcher: Matcher<E>): MatcherEditor<E> = MatcherEditor.fromMatcher(matcher)
 
-    @JvmStatic
     fun <E, V> constantFunction(value: V): Function<E, V> =
         Function(ConstantFunction<E, V>(value))
 
-    @JvmStatic
     fun <E> toStringFunction(
         beanClass: Class<E>,
         propertyName: String,
@@ -301,30 +262,25 @@ object GlazedLists {
         return Function { value -> function(value!!) }
     }
 
-    @JvmStatic
     fun <E, V> beanFunction(beanClass: Class<E>, propertyName: String): Function<E?, V> {
         val function = BeanFunction<E, V>(beanClass, propertyName)
         return Function { value -> function(value!!) }
     }
 
-    @JvmStatic
     fun <E> syncEventListToList(source: EventList<E>, target: MutableList<E>): SyncListener<E> =
         SyncListener(source, target)
 
-    @JvmStatic
     fun <E> typeSafetyListener(
         source: EventList<E>,
-        types: Set<@JvmSuppressWildcards Class<*>?>,
+        types: Set<Class<*>?>,
     ): ListEventListener<E> = TypeSafetyListener(source, types)
 
-    @JvmStatic
     fun <K, V> syncEventListToMultiMap(
         source: EventList<V>,
         keyMaker: Function<V, out K>,
     ): DisposableMap<K, MutableList<V>> where K : Comparable<K> =
         syncEventListToMultiMap(source, keyMaker, comparableComparator())
 
-    @JvmStatic
     fun <K, V> syncEventListToMultiMap(
         source: EventList<V>,
         keyMaker: Function<V, out K>,
@@ -332,7 +288,6 @@ object GlazedLists {
     ): DisposableMap<K, MutableList<V>> =
         GroupingListMultiMap(source, keyMaker::apply, keyGrouper) as DisposableMap<K, MutableList<V>>
 
-    @JvmStatic
     fun <K, V> syncEventListToMap(
         source: EventList<V>,
         keyMaker: Function<V, K>,

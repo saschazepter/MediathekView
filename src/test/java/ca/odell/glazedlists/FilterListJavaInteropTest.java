@@ -48,7 +48,7 @@ class FilterListJavaInteropTest {
         matched.setMatcher(longText);
         assertEquals(List.of("bbb", "cc"), matched);
 
-        final MatcherEditor<String> editor = MatcherEditor.fromMatcher(value -> value.startsWith("b"));
+        final MatcherEditor<String> editor = MatcherEditor.Companion.fromMatcher(value -> value.startsWith("b"));
         final FilterList<String> edited = new FilterList<>(source, editor);
         assertEquals(List.of("bbb"), edited);
         edited.setMatcherEditor(null);

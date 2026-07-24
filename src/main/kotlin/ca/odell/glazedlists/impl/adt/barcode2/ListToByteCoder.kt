@@ -26,7 +26,7 @@ import java.util.Collections
  *
  * @author [Jesse Wilson](mailto:jesse@swank.ca)
  */
-class ListToByteCoder<C>(allColors: List<@JvmSuppressWildcards C>) {
+class ListToByteCoder<C>(allColors: List<C>) {
     val colors: List<C> = Collections.unmodifiableList(ArrayList(allColors))
 
     init {
@@ -37,7 +37,7 @@ class ListToByteCoder<C>(allColors: List<@JvmSuppressWildcards C>) {
     fun allColorsToByte(): Byte = colorsToByte(colors)
 
     /** Encodes the specified list of colors into a byte. */
-    fun colorsToByte(colors: List<@JvmSuppressWildcards C>): Byte {
+    fun colorsToByte(colors: List<C>): Byte {
         var result = 0
         for (color in colors) {
             result = result or (1 shl indexOfColor(color))
@@ -58,7 +58,6 @@ class ListToByteCoder<C>(allColors: List<@JvmSuppressWildcards C>) {
         private const val MAX_COLORS = 7
 
         /** Converts a single encoded color bit into its zero-based index. */
-        @JvmStatic
         @JvmName("colorAsIndex")
         internal fun colorAsIndex(color: Byte): Int =
             when (color.toInt()) {

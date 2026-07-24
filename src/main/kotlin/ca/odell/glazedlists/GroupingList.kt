@@ -29,7 +29,7 @@ class GroupingList<E> private constructor(
     source: SortedList<E>,
     @Suppress("UNUSED_PARAMETER") comparator: Comparator<in E>?,
     @Suppress("UNUSED_PARAMETER") dummyParameter: Void?,
-) : TransformedList<E, List<@JvmSuppressWildcards E>>(source) {
+) : TransformedList<E, List<E>>(source) {
     private val groupLists = SimpleTree<GroupList>()
     private val grouper = Grouper(source, GrouperClient())
 
@@ -166,7 +166,7 @@ class GroupingList<E> private constructor(
     }
 
     /** Java null arguments fail before the existing group is mutated. */
-    override fun set(index: Int, element: List<@JvmSuppressWildcards E>): MutableList<E> {
+    override fun set(index: Int, element: List<E>): MutableList<E> {
         if (index !in indices) {
             throw IndexOutOfBoundsException("Cannot set at $index on list of size $size")
         }
@@ -178,7 +178,7 @@ class GroupingList<E> private constructor(
     }
 
     /** Java null arguments fail before the source is mutated. */
-    override fun add(index: Int, element: List<@JvmSuppressWildcards E>) {
+    override fun add(index: Int, element: List<E>) {
         source!!.addAll(element)
     }
 
@@ -237,7 +237,6 @@ class GroupingList<E> private constructor(
     }
 
     companion object {
-        @JvmStatic
         fun <E> create(source: EventList<E>): GroupingList<E> where E : Comparable<in E> = GroupingList(source)
 
         @Suppress("UNCHECKED_CAST")

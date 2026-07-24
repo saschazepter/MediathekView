@@ -10,7 +10,7 @@ import ca.odell.glazedlists.matchers.CompositeMatcherEditor.Companion.AND
 import ca.odell.glazedlists.matchers.CompositeMatcherEditor.Companion.OR
 
 /** Combines zero or more delegate matcher editors using AND or OR semantics. */
-open class CompositeMatcherEditor<E> @JvmOverloads constructor(
+class CompositeMatcherEditor<E> constructor(
     matcherEditors: EventList<MatcherEditor<E>> = BasicEventList(),
 ) : AbstractMatcherEditor<E>() {
     private val delegateEditors = matcherEditors
@@ -19,11 +19,11 @@ open class CompositeMatcherEditor<E> @JvmOverloads constructor(
 
     /** The live list of matcher editors combined by this editor. */
     @Suppress("unused")
-    open val matcherEditors: EventList<MatcherEditor<E>>
+    val matcherEditors: EventList<MatcherEditor<E>>
         get() = delegateEditors
 
     /** Whether delegate matchers are combined using [AND] or [OR]. */
-    open var mode: Int
+    var mode: Int
         get() = currentMode
         set(value) {
             if (currentMode == value) return

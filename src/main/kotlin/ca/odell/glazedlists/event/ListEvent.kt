@@ -111,7 +111,6 @@ abstract class ListEvent<E> protected constructor(sourceList: EventList<E>?) : E
         @JvmField
         val UNKNOWN_VALUE: Any = "UNKNOWN VALUE"
 
-        @JvmStatic
         @Suppress("UNCHECKED_CAST")
         fun <E> unknownValue(): E = UNKNOWN_VALUE as E
     }

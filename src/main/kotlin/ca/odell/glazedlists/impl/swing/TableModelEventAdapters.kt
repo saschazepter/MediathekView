@@ -98,7 +98,6 @@ open class DefaultTableModelEventAdapterFactory<E> : TableModelEventAdapter.Fact
         private val INSTANCE: TableModelEventAdapter.Factory<Any> =
             DefaultTableModelEventAdapterFactory()
 
-        @JvmStatic
         @Suppress("UNCHECKED_CAST")
         fun <E> getInstance(): TableModelEventAdapter.Factory<E> =
             INSTANCE as TableModelEventAdapter.Factory<E>
@@ -114,7 +113,6 @@ open class ManyToOneTableModelEventAdapterFactory<E> : TableModelEventAdapter.Fa
         private val INSTANCE: TableModelEventAdapter.Factory<Any> =
             ManyToOneTableModelEventAdapterFactory()
 
-        @JvmStatic
         @Suppress("UNCHECKED_CAST")
         fun <E> getInstance(): TableModelEventAdapter.Factory<E> =
             INSTANCE as TableModelEventAdapter.Factory<E>

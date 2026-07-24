@@ -19,7 +19,6 @@ package ca.odell.glazedlists.swing
 
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.UndoRedoSupport
-import java.util.function.Function
 import javax.swing.SwingUtilities
 import javax.swing.undo.AbstractUndoableEdit
 import javax.swing.undo.UndoManager
@@ -73,20 +72,12 @@ class UndoSupport<E> private constructor(
     }
 
     companion object {
-        @JvmStatic
         fun <E> install(
             undoManager: UndoManager,
             source: EventList<E>,
-        ): UndoSupport<E> = install(undoManager, source, DefaultEditAdapter())
-
-        @JvmStatic
-        fun <E> install(
-            undoManager: UndoManager,
-            source: EventList<E>,
-            editAdapter: Function<UndoRedoSupport.Edit, UndoableEdit>,
         ): UndoSupport<E> {
             checkAccessThread()
-            return UndoSupport(undoManager, source, editAdapter::apply)
+            return UndoSupport(undoManager, source, DefaultEditAdapter())
         }
 
         private fun checkAccessThread() {

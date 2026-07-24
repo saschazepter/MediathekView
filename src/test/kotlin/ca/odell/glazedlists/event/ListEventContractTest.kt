@@ -101,10 +101,9 @@ internal class ListEventContractTest {
         assertFieldModifiers(listEventClass.getField("INSERT"))
         assertFieldModifiers(listEventClass.getField("UNKNOWN_VALUE"))
 
-        val unknownValue = listEventClass.getDeclaredMethod("unknownValue")
+        val unknownValue = ListEvent.Companion::class.java.getDeclaredMethod("unknownValue")
         assertTrue(Modifier.isPublic(unknownValue.modifiers))
-        assertTrue(Modifier.isStatic(unknownValue.modifiers))
-        // Kotlin's @JvmStatic bridge is final; the README documents this unavoidable drift.
+        assertFalse(Modifier.isStatic(unknownValue.modifiers))
         assertTrue(Modifier.isFinal(unknownValue.modifiers))
         assertEquals("()Ljava/lang/Object;", descriptorOf(unknownValue))
         assertEquals("E", unknownValue.genericReturnType.typeName)

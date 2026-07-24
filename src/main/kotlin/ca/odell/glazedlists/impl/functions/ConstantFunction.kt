@@ -4,7 +4,7 @@
 package ca.odell.glazedlists.impl.functions
 
 /** A function that always returns the same value regardless of the input. */
-open class ConstantFunction<E, V>(private val value: V) : (E) -> V {
+class ConstantFunction<E, V>(private val value: V) : (E) -> V {
     @Suppress("UNUSED_PARAMETER")
     override fun invoke(sourceValue: E): V = value
 }

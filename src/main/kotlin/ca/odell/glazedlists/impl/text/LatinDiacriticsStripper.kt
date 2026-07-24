@@ -35,7 +35,6 @@ class LatinDiacriticsStripper {
         }
 
         /** Returns an independent snapshot of the Latin-character mapping table. */
-        @JvmStatic
         fun getMapper(): CharArray = MAPPER.copyOf()
 
         /** Returns the shared read-only-by-convention table for matcher setup. */

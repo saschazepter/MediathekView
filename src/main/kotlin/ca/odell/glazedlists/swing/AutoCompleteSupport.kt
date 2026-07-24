@@ -106,116 +106,93 @@ class AutoCompleteSupport<E> private constructor(
 ) {
     private val state = AutoCompleteSupportState(comboBox, items, filterator, format)
 
-    open val comboBox: JComboBox<E>?
+    val comboBox: JComboBox<E>?
         get() = state.comboBox
 
-    open val textFilterator: TextFilterator<in E>
+    val textFilterator: TextFilterator<in E>
         get() = state.textFilterator
 
-    open val itemList: EventList<E>
+    val itemList: EventList<E>
         get() = state.itemList
 
-    open var correctsCase: Boolean
+    var correctsCase: Boolean
         get() = state.correctsCase
         set(value) {
             state.correctsCase = value
         }
 
-    open var isStrict: Boolean
+    var isStrict: Boolean
         get() = state.isStrict
         set(value) {
             state.isStrict = value
         }
 
-    open var beepOnStrictViolation: Boolean
+    var beepOnStrictViolation: Boolean
         get() = state.beepOnStrictViolation
         set(value) {
             state.beepOnStrictViolation = value
         }
 
-    open var selectsTextOnFocusGain: Boolean
+    var selectsTextOnFocusGain: Boolean
         get() = state.selectsTextOnFocusGain
         set(value) {
             state.selectsTextOnFocusGain = value
         }
 
-    open var hidesPopupOnFocusLost: Boolean
+    var hidesPopupOnFocusLost: Boolean
         get() = state.hidesPopupOnFocusLost
         set(value) {
             state.hidesPopupOnFocusLost = value
         }
 
-    open var filterMode: Int
+    var filterMode: Int
         get() = state.filterMode
         set(value) {
             state.filterMode = value
         }
 
-    open var textMatchingStrategy: Any?
+    var textMatchingStrategy: Any?
         get() = state.textMatchingStrategy
         set(value) {
             state.textMatchingStrategy = value
         }
 
-    open var firstItem: E
+    var firstItem: E
         get() = state.firstItem
         set(value) {
             state.firstItem = value
         }
 
-    open fun removeFirstItem(): E? = state.removeFirstItem()
+    fun removeFirstItem(): E? = state.removeFirstItem()
 
-    open val isInstalled: Boolean
+    val isInstalled: Boolean
         get() = state.isInstalled
 
-    open fun uninstall() = state.uninstall()
+    fun uninstall() = state.uninstall()
 
-    open class AutoCompleteCellEditor<E>(
+    class AutoCompleteCellEditor<E>(
         private val autoCompleteSupport: AutoCompleteSupport<E>,
     ) : DefaultCellEditor(autoCompleteSupport.comboBox!!) {
-        open fun getAutoCompleteSupport(): AutoCompleteSupport<E> = autoCompleteSupport
+        fun getAutoCompleteSupport(): AutoCompleteSupport<E> = autoCompleteSupport
     }
 
     companion object {
-        @JvmStatic
-        open fun <E> install(
+        fun <E> install(
             comboBox: JComboBox<E>?,
             items: EventList<E>?,
-        ): AutoCompleteSupport<E> = installImpl(comboBox, items, null, null)
-
-        @JvmStatic
-        open fun <E> install(
-            comboBox: JComboBox<E>?,
-            items: EventList<E>?,
-            filterator: TextFilterator<in E>?,
-        ): AutoCompleteSupport<E> = installImpl(comboBox, items, filterator, null)
-
-        @JvmStatic
-        open fun <E> install(
-            comboBox: JComboBox<E>?,
-            items: EventList<E>?,
-            filterator: TextFilterator<in E>?,
-            format: Format?,
+            filterator: TextFilterator<in E>? = null,
+            format: Format? = null,
         ): AutoCompleteSupport<E> = installImpl(comboBox, items, filterator, format)
 
-        @JvmStatic
-        open fun <E> createTableCellEditor(
+        fun <E> createTableCellEditor(
             tableFormat: TableFormat<E>?,
             tableData: EventList<E>?,
             columnIndex: Int,
-        ): AutoCompleteCellEditor<E> = createTableCellEditorImpl(tableFormat, tableData, columnIndex)
-
-        @JvmStatic
-        open fun <E> createTableCellEditor(
-            uniqueComparator: Comparator<*>?,
-            tableFormat: TableFormat<E>?,
-            tableData: EventList<E>?,
-            columnIndex: Int,
+            uniqueComparator: Comparator<*>? = GlazedLists.comparableComparator<Comparable<Any?>>(),
         ): AutoCompleteCellEditor<E> =
             createTableCellEditorImpl(uniqueComparator, tableFormat, tableData, columnIndex)
 
-        @JvmStatic
-        open fun <E> createTableCellEditor(source: EventList<E>?): AutoCompleteCellEditor<E> =
+        fun <E> createTableCellEditor(source: EventList<E>?): AutoCompleteCellEditor<E> =
             createTableCellEditorImpl(source)
 
         private fun <E> installImpl(
@@ -238,18 +215,6 @@ class AutoCompleteSupport<E> private constructor(
             }
             return AutoCompleteSupport(currentComboBox, items!!, filterator, format)
         }
-
-        private fun <E> createTableCellEditorImpl(
-            tableFormat: TableFormat<E>?,
-            tableData: EventList<E>?,
-            columnIndex: Int,
-        ): AutoCompleteCellEditor<E> =
-            createTableCellEditorImpl(
-                GlazedLists.comparableComparator<Comparable<Any?>>(),
-                tableFormat,
-                tableData,
-                columnIndex,
-            )
 
         private fun <E> createTableCellEditorImpl(
             uniqueComparator: Comparator<*>?,
@@ -572,23 +537,23 @@ private class AutoCompleteSupportState<E>(
         return comboBoxElement?.toString() ?: ""
     }
 
-    open val comboBox: JComboBox<E>?
+    val comboBox: JComboBox<E>?
         get() = comboBoxState
 
-    open val textFilterator: TextFilterator<in E>
+    val textFilterator: TextFilterator<in E>
         get() = filterMatcherEditor.filterator!!
 
-    open val itemList: EventList<E>
+    val itemList: EventList<E>
         get() = filteredItems
 
-    open var correctsCase: Boolean
+    var correctsCase: Boolean
         get() = correctsCaseState
         set(value) {
             checkAccessThread()
             correctsCaseState = value
         }
 
-    open var isStrict: Boolean
+    var isStrict: Boolean
         get() = strictState
         set(value) {
             checkAccessThread()
@@ -623,28 +588,28 @@ private class AutoCompleteSupportState<E>(
             }
         }
 
-    open var beepOnStrictViolation: Boolean
+    var beepOnStrictViolation: Boolean
         get() = beepOnStrictViolationState
         set(value) {
             checkAccessThread()
             beepOnStrictViolationState = value
         }
 
-    open var selectsTextOnFocusGain: Boolean
+    var selectsTextOnFocusGain: Boolean
         get() = selectsTextOnFocusGainState
         set(value) {
             checkAccessThread()
             selectsTextOnFocusGainState = value
         }
 
-    open var hidesPopupOnFocusLost: Boolean
+    var hidesPopupOnFocusLost: Boolean
         get() = hidesPopupOnFocusLostState
         set(value) {
             checkAccessThread()
             hidesPopupOnFocusLostState = value
         }
 
-    open var filterMode: Int
+    var filterMode: Int
         get() = filterMatcherEditor.mode
         set(value) {
             checkAccessThread()
@@ -658,7 +623,7 @@ private class AutoCompleteSupportState<E>(
             }
         }
 
-    open var textMatchingStrategy: Any?
+    var textMatchingStrategy: Any?
         get() = filterMatcherEditor.strategy
         set(value) {
             checkAccessThread()
@@ -670,7 +635,7 @@ private class AutoCompleteSupportState<E>(
             }
         }
 
-    open var firstItem: E
+    var firstItem: E
         get() {
             firstItemList.readWriteLock.readLock().lock()
             try {
@@ -692,7 +657,7 @@ private class AutoCompleteSupportState<E>(
             }
         }
 
-    open fun removeFirstItem(): E? {
+    fun removeFirstItem(): E? {
         checkAccessThread()
         doNotChangeDocument = true
         firstItemList.readWriteLock.writeLock().lock()
@@ -704,13 +669,13 @@ private class AutoCompleteSupportState<E>(
         }
     }
 
-    open val isInstalled: Boolean
+    val isInstalled: Boolean
         get() {
             checkAccessThread()
             return comboBoxState != null
         }
 
-    open fun uninstall() {
+    fun uninstall() {
         checkAccessThread()
         val currentComboBox =
             comboBoxState ?: throw IllegalStateException("This AutoCompleteSupport has already been uninstalled")
@@ -1502,7 +1467,7 @@ private class AutoCompleteTableCellComboBox<E> :
         }
     }
 
-    private open class TableCellTextField : JTextField("", 9) {
+    private class TableCellTextField : JTextField("", 9) {
         override fun setText(newText: String?) {
             if (!equalsText(newText)) super.setText(newText)
         }

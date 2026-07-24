@@ -12,7 +12,7 @@ import java.util.Objects
  * @author [Jesse Wilson](mailto:jesse@swank.ca)
  */
 class ComparatorChain<T>(
-    comparators: Array<@JvmSuppressWildcards Comparator<T>>,
+    comparators: Array<Comparator<T>>,
 ) : Comparator<T> {
     private val comparatorArray = comparators.clone()
 
@@ -20,7 +20,7 @@ class ComparatorChain<T>(
      * Creates a comparator chain that evaluates the specified comparators in
      * sequence. The comparator list is copied defensively.
      */
-    constructor(comparators: List<@JvmSuppressWildcards Comparator<T>>) : this(comparators.toTypedArray())
+    constructor(comparators: List<Comparator<T>>) : this(comparators.toTypedArray())
 
     /** Compares the two objects with each comparator in sequence. */
     override fun compare(alpha: T, beta: T): Int {
@@ -32,11 +32,11 @@ class ComparatorChain<T>(
     }
 
     /** Retrieves a defensive copy of the comparators composing this chain. */
-    val comparators: Array<@JvmSuppressWildcards Comparator<T>>
+    val comparators: Array<Comparator<T>>
         get() = comparatorArray.clone()
 
     /** Retains the former Java record component accessor. */
-    fun comparators(): Array<@JvmSuppressWildcards Comparator<T>> = comparatorArray.clone()
+    fun comparators(): Array<Comparator<T>> = comparatorArray.clone()
 
     override fun equals(other: Any?): Boolean =
         this === other || other is ComparatorChain<*> && comparatorArray.contentEquals(other.comparatorArray)

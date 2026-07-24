@@ -183,7 +183,6 @@ class UniqueList<E> private constructor(
 
 
     companion object {
-        @JvmStatic
         fun <E> create(source: EventList<E>): UniqueList<E> where E : Comparable<in E> = UniqueList(source)
 
         @Suppress("UNCHECKED_CAST")

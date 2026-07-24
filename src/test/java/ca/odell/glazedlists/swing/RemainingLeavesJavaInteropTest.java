@@ -7,14 +7,10 @@ import ca.odell.glazedlists.impl.WeakReferenceProxy;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.SwingUtilities;
-import javax.swing.undo.AbstractUndoableEdit;
-import javax.swing.undo.UndoManager;
 import java.util.List;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -44,22 +40,6 @@ class RemainingLeavesJavaInteropTest {
                     () -> new WeakReferenceProxy<>(source, null));
             assertTrue(targetFailure.getMessage().contains("proxyTarget may not be null"));
         }
-    }
-
-    @Test
-    void customUndoAdapterOverloadRemainsJavaCallable() throws Exception {
-        SwingUtilities.invokeAndWait(() -> {
-            final BasicEventList<String> source = new BasicEventList<>();
-            final UndoManager manager = new UndoManager();
-            final UndoSupport<String> support = UndoSupport.install(manager, source, edit -> {
-                assertNotNull(edit);
-                return new AbstractUndoableEdit() {
-                };
-            });
-            source.add("value");
-            assertTrue(manager.canUndo());
-            support.uninstall();
-        });
     }
 
     private static final class SimpleIteratorSubclass<E> extends SimpleIterator<E> {

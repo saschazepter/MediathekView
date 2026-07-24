@@ -42,7 +42,7 @@ class SortedListJavaInteropTest {
         final BasicEventList<String> source = new BasicEventList<>();
         source.addAll(Arrays.asList("bbb", "a", "cc"));
 
-        final SortedList<String> natural = SortedList.create(source);
+        final SortedList<String> natural = SortedList.Companion.create(source);
         assertEquals(List.of("a", "bbb", "cc"), natural);
 
         final Comparator<Object> byTextLength = Comparator.comparingInt(value -> value.toString().length());
@@ -58,9 +58,9 @@ class SortedListJavaInteropTest {
         assertEquals(1, SortedList.AVOID_MOVING_ELEMENTS);
         assertTrue(Modifier.isFinal(SortedList.class.getModifiers()));
 
-        final Method create = SortedList.class.getDeclaredMethod("create", EventList.class);
+        final Method create = SortedList.Companion.getClass().getDeclaredMethod("create", EventList.class);
         assertTrue(Modifier.isPublic(create.getModifiers()));
-        assertTrue(Modifier.isStatic(create.getModifiers()));
+        assertFalse(Modifier.isStatic(create.getModifiers()));
     }
 
     @Test

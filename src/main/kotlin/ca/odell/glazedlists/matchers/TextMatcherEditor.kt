@@ -11,7 +11,7 @@ import ca.odell.glazedlists.impl.text.LatinDiacriticsStripper
  * Creates matchers that search text extracted from elements without coupling the filtering logic
  * to a UI component.
  */
-open class TextMatcherEditor<E> @JvmOverloads constructor(
+open class TextMatcherEditor<E> constructor(
     filterator: TextFilterator<in E>? = null,
 ) : AbstractMatcherEditor<E>() {
     /** The extractor used to obtain searchable strings from matched elements. */

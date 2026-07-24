@@ -14,7 +14,7 @@ import kotlin.coroutines.CoroutineContext
  * The supplied [executor] controls where the processing coroutine runs. If it
  * is an [ExecutorService], ownership remains with the caller.
  */
-open class ThreadedMatcherEditor<E> @JvmOverloads constructor(
+class ThreadedMatcherEditor<E> constructor(
     private val source: MatcherEditor<E>,
     val executor: Executor = DEFAULT_EXECUTOR,
 ) : AbstractMatcherEditorListenerSupport<E>(), AutoCloseable {
@@ -63,7 +63,7 @@ open class ThreadedMatcherEditor<E> @JvmOverloads constructor(
     override val matcher: Matcher<E>
         get() = source.matcher
 
-    protected open fun coalesceMatcherEvents(
+    protected fun coalesceMatcherEvents(
         matcherEvents: List<MatcherEditor.Event<E>>,
     ): MatcherEditor.Event<E> {
         val lastMatcherEvent = matcherEvents.last()

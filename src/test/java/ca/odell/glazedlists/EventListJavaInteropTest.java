@@ -57,7 +57,7 @@ class EventListJavaInteropTest {
     private static final class JavaEventList<E> extends AbstractList<E> implements EventList<E> {
         private final List<E> values = new ArrayList<>();
         private final ReadWriteLock lock = new ReentrantReadWriteLock();
-        private final ListEventPublisher publisher = ListEventAssembler.createListEventPublisher();
+        private final ListEventPublisher publisher = ListEventAssembler.Companion.createListEventPublisher();
         private boolean disposed;
 
         @Override

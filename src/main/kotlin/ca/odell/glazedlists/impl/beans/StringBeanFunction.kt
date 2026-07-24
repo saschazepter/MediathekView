@@ -18,7 +18,7 @@
 package ca.odell.glazedlists.impl.beans
 
 /** Extracts one JavaBean property and converts a non-null value to text. */
-open class StringBeanFunction<E>(
+class StringBeanFunction<E>(
     beanClass: Class<E>,
     propertyName: String,
 ) : (E) -> String? {

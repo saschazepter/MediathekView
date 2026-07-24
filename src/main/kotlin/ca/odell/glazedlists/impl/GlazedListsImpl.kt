@@ -23,10 +23,9 @@ import ca.odell.glazedlists.GlazedLists
 /** Internal utilities used by Glazed Lists implementations. */
 @Suppress("UNCHECKED_CAST")
 object GlazedListsImpl {
-    @JvmStatic
     fun <E> replaceAll(
         target: EventList<E>,
-        source: Collection<@JvmSuppressWildcards E>,
+        source: Collection<E>,
         updates: Boolean,
         comparator: Comparator<E>?,
     ) {
@@ -77,10 +76,8 @@ object GlazedListsImpl {
         }
     }
 
-    @JvmStatic
     fun <T> equalsComparator(): Comparator<T> = EqualsComparator()
 
-    @JvmStatic
     fun <E> identityFunction(): (E) -> E = { it }
 
     private class EqualsComparator<T> : Comparator<T> {

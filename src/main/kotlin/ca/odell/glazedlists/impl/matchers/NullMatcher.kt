@@ -14,7 +14,6 @@ class NullMatcher<E> private constructor() : Matcher<E> {
     companion object {
         private val INSTANCE: Matcher<Any?> = NullMatcher()
 
-        @JvmStatic
         @Suppress("UNCHECKED_CAST")
         fun <E> getInstance(): Matcher<E> = INSTANCE as Matcher<E>
     }
