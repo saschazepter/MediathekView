@@ -17,7 +17,7 @@
  */
 package ca.odell.glazedlists
 
-import ca.odell.glazedlists.event.ListEvent
+import ca.odell.glazedlists.event.*
 import ca.odell.glazedlists.impl.Grouper
 import ca.odell.glazedlists.impl.adt.BarcodeIterator
 import java.util.ArrayList

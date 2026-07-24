@@ -2,9 +2,7 @@ package ca.odell.glazedlists.impl.gui
 
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.TransformedList
-import ca.odell.glazedlists.event.ListEvent
-import ca.odell.glazedlists.event.ListEventAssembler
-import ca.odell.glazedlists.event.ListEventListener
+import ca.odell.glazedlists.event.*
 
 /**
  * An EventList that keeps a stable local snapshot and delivers source changes

@@ -61,7 +61,7 @@ class GroupingList<E> private constructor(
     private fun detachGroupList(index: Int) {
         val indexedTreeNode = groupLists[index]
         groupLists.remove(indexedTreeNode)
-        indexedTreeNode.get()!!.setTreeNode(null)
+        indexedTreeNode.get().setTreeNode(null)
     }
 
     private fun groupIndexOf(treeNode: Element<GroupList>): Int = groupLists.indexOfNode(treeNode, 1)
@@ -78,7 +78,7 @@ class GroupingList<E> private constructor(
     open fun indexOfGroup(groupElement: E): Int {
         val sortedSource = source as SortedList<E>
         val sourceIndex = sortedSource.sortIndex(groupElement)
-        if (sourceIndex == sortedSource.size || grouper.comparator.compare(
+        if (sourceIndex == sortedSource.size || grouper.comparator!!.compare(
                 sortedSource[sourceIndex],
                 groupElement
             ) != 0
@@ -152,7 +152,7 @@ class GroupingList<E> private constructor(
         updates.commitEvent()
     }
 
-    override fun get(index: Int): MutableList<E> = groupLists[index].get()!!
+    override fun get(index: Int): MutableList<E> = groupLists[index].get()
 
     @JvmName("remove")
     override fun removeAt(index: Int): MutableList<E> {

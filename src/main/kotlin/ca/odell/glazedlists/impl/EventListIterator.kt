@@ -18,8 +18,7 @@
 package ca.odell.glazedlists.impl
 
 import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.event.ListEvent
-import ca.odell.glazedlists.event.ListEventListener
+import ca.odell.glazedlists.event.*
 import java.util.NoSuchElementException
 
 /** A list iterator that remains consistent while its source list changes. */

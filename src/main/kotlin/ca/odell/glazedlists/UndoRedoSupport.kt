@@ -1,7 +1,6 @@
 package ca.odell.glazedlists
 
-import ca.odell.glazedlists.event.ListEvent
-import ca.odell.glazedlists.event.ListEventListener
+import ca.odell.glazedlists.event.*
 import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.function.Consumer

@@ -5,8 +5,7 @@ package ca.odell.glazedlists.matchers
 
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.event.ListEvent
-import ca.odell.glazedlists.event.ListEventListener
+import ca.odell.glazedlists.event.*
 import ca.odell.glazedlists.matchers.CompositeMatcherEditor.Companion.AND
 import ca.odell.glazedlists.matchers.CompositeMatcherEditor.Companion.OR
 

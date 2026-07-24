@@ -21,7 +21,7 @@ import ca.odell.glazedlists.event.ListEventPublisher
 import java.util.concurrent.locks.ReadWriteLock
 
 /** An [EventList] composed of multiple member [EventList]s. */
-@Suppress("UNCHECKED_CAST")
+@Suppress("INAPPLICABLE_JVM_NAME", "UNCHECKED_CAST")
 open class CompositeList<E> : CollectionList<EventList<E>, E> {
     constructor() : super(
         BasicEventList(),
@@ -45,6 +45,10 @@ open class CompositeList<E> : CollectionList<EventList<E>, E> {
     }
 
     open fun <T> createMemberList(): EventList<T> = BasicEventList(publisher, readWriteLock)
+
+    /** Retains the Java-visible bridge emitted when this Kotlin class extended Java CollectionList. */
+    @JvmName("removeAt")
+    open fun removeAtCompatibility(index: Int): E = super.removeAt(index)
 
     open fun removeMemberList(list: EventList<E>?) {
         val iterator = source!!.iterator()

@@ -91,7 +91,7 @@ internal class FunctionalInterfaceBridgeTest {
 
     @Test
     fun mappingInterfacesDelegateThroughJdkFunctions() {
-        val model = CollectionList.Model<String, Int> { parent -> parent.indices.toList() }
+        val model = CollectionList.Model<String, Int> { parent -> parent!!.indices.toList() }
         val evaluator = ThresholdList.Evaluator(String::length)
 
         assertEquals(listOf(0, 1, 2), model.getChildren("abc"))

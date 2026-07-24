@@ -17,7 +17,7 @@
  */
 package ca.odell.glazedlists
 
-import ca.odell.glazedlists.event.ListEvent
+import ca.odell.glazedlists.event.*
 import ca.odell.glazedlists.impl.adt.barcode2.Element
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTree
 import ca.odell.glazedlists.impl.adt.barcode2.SimpleTreeIterator
@@ -141,7 +141,7 @@ class SortedList<E>(
                     val sortedNode = asNode(unsortedNode.get()!!)
                     sortedNode.sorted = Element.PENDING
                     updateNodes.add(sortedNode)
-                    previousValues.add(listChanges.oldValue)
+                    previousValues.add(listChanges.oldValue as E)
                 }
 
                 ListEvent.DELETE -> {

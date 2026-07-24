@@ -1,14 +1,16 @@
 package ca.odell.glazedlists.impl.adt.barcode2
 
+import java.lang.reflect.Modifier
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertNull
 import org.junit.jupiter.api.Assertions.assertSame
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class ElementBehaviorTest {
     @Test
     fun javaTreeNodesExposeKotlinPropertiesAndLinks() {
-        val tree = SimpleTree<String>()
+        val tree = SimpleTree<String?>()
         val first = tree.add(0, "first", 1)
         val second = tree.add(1, "second", 1)
 
@@ -25,5 +27,31 @@ internal class ElementBehaviorTest {
         assertSame(first, second.previous())
         assertNull(first.previous())
         assertNull(second.next())
+    }
+
+    @Test
+    fun simpleNodeInternalJvmSurfaceStaysSynthetic() {
+        val nodeClass = SimpleNode::class.java
+
+        assertTrue(nodeClass.declaredConstructors.any { Modifier.isPrivate(it.modifiers) })
+        assertSyntheticMember(nodeClass, "getT0")
+        assertSyntheticMember(nodeClass, "setT0")
+        assertSyntheticMember(nodeClass, "getParent")
+        assertSyntheticMember(nodeClass, "setParent")
+        assertSyntheticMember(nodeClass, "getCount1")
+        assertSyntheticMember(nodeClass, "setCount1")
+        assertSyntheticMember(nodeClass, "getHeight")
+        assertSyntheticMember(nodeClass, "setHeight")
+        assertSyntheticMember(nodeClass, "getLeft")
+        assertSyntheticMember(nodeClass, "setLeft")
+        assertSyntheticMember(nodeClass, "getRight")
+        assertSyntheticMember(nodeClass, "setRight")
+        assertSyntheticMember(nodeClass, "size")
+        assertSyntheticMember(nodeClass, "refreshCounts")
+        assertSyntheticMember(nodeClass, "asTree")
+    }
+
+    private fun assertSyntheticMember(type: Class<*>, namePrefix: String) {
+        assertTrue(type.declaredMethods.any { it.name.startsWith(namePrefix) && it.isSynthetic }, namePrefix)
     }
 }

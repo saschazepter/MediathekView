@@ -53,7 +53,7 @@ class ThresholdList<E> private constructor(
 
     /** Creates a threshold list based on an integer JavaBean property. */
     constructor(source: EventList<E>, propertyName: String) :
-            this(source, GlazedLists.thresholdEvaluator<E>(propertyName))
+            this(source, GlazedLists.thresholdEvaluator<E>(propertyName) as Evaluator<E>)
 
     /** Creates a threshold list based on [evaluator]. */
     constructor(source: EventList<E>, evaluator: Evaluator<E>) :
