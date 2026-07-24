@@ -69,24 +69,12 @@ class ListEventAssembler<E>(
 
     private val publisher = publisherArg as SequenceDependenciesEventPublisher
 
-    private val listEvent: ListEvent<E>
+    private val listEvent: ListEvent<E> = createTree4DeltasListEvent(this, sourceList)
 
     private val eventFormat = ListEventFormat()
 
     /** true if we're waiting on the publisher to distribute our event */
     private var eventIsBeingPublished = false
-
-    init {
-        @Suppress("UNCHECKED_CAST")
-        val listEventConstructor =
-            Class
-                .forName("ca.odell.glazedlists.event.Tree4DeltasListEvent")
-                .asSubclass(ListEvent::class.java)
-                .getDeclaredConstructor(ListEventAssembler::class.java, EventList::class.java)
-        listEventConstructor.isAccessible = true
-        @Suppress("UNCHECKED_CAST")
-        listEvent = listEventConstructor.newInstance(this, sourceList) as ListEvent<E>
-    }
 
     /**
      * Indicate whether or not an event is in progress. Intended for testing purposes.

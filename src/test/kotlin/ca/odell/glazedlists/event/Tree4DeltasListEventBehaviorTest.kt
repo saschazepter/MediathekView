@@ -1,7 +1,6 @@
 package ca.odell.glazedlists.event
 
 import ca.odell.glazedlists.BasicEventList
-import ca.odell.glazedlists.EventList
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertSame
@@ -342,17 +341,7 @@ internal class Tree4DeltasListEventBehaviorTest {
         val assembler = ListEventAssembler(source, source.publisher)
         assembler.beginEvent()
         addChanges(assembler)
-        return PendingEvent(source, assembler, newTree4DeltasListEvent(assembler, source))
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun newTree4DeltasListEvent(
-        assembler: ListEventAssembler<Any>,
-        source: EventList<Any>,
-    ): ListEvent<Any> {
-        val eventClass = Class.forName("ca.odell.glazedlists.event.Tree4DeltasListEvent")
-        val constructor = eventClass.getDeclaredConstructor(ListEventAssembler::class.java, EventList::class.java)
-        return constructor.newInstance(assembler, source) as ListEvent<Any>
+        return PendingEvent(source, assembler, createTree4DeltasListEvent(assembler, source))
     }
 
     private data class PendingEvent(

@@ -12,6 +12,17 @@ import java.util.ConcurrentModificationException
 
 internal class ListEventAssemblerModernizationTest {
     @Test
+    fun listEventConstructionDoesNotUseReflection() {
+        val classResource = "/${ListEventAssembler::class.java.name.replace('.', '/')}.class"
+        val bytecode =
+            requireNotNull(ListEventAssembler::class.java.getResourceAsStream(classResource))
+                .use { String(it.readBytes(), Charsets.ISO_8859_1) }
+
+        assertFalse(bytecode.contains("java/lang/Class"))
+        assertFalse(bytecode.contains("java/lang/reflect/Constructor"))
+    }
+
+    @Test
     fun classAbiRetainsJavaBaselineShapeAndSignatures() {
         val assemblerClass = ListEventAssembler::class.java
         val declaredFields = assemblerClass.declaredFields.associateBy { it.name }

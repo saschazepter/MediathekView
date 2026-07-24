@@ -137,3 +137,9 @@ private open class Tree4DeltasListEvent<E>(
             "ListEvent: ${deltasAssembler.listDeltas}"
         }
 }
+
+@JvmSynthetic
+internal fun <E> createTree4DeltasListEvent(
+    deltasAssembler: ListEventAssembler<E>,
+    sourceList: EventList<E>,
+): ListEvent<E> = Tree4DeltasListEvent(deltasAssembler, sourceList)
