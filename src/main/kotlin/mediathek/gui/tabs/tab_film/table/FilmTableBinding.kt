@@ -38,14 +38,12 @@ interface FilmTableModelBinding {
     fun dispose()
 }
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class FilmTableBinding(
     override val table: JTable,
 ) : FilmTableModelBinding {
     private val tableFormat = FilmTableFormat()
     private val tableModel = SnapshotFilmTableModel(tableFormat)
     private val selectionModel = DefaultListSelectionModel()
-    private val sortController: FilmTableSortController
     private val modelDispatcher = Dispatchers.Default.limitedParallelism(1)
     private val modelScope = CoroutineScope(SupervisorJob() + modelDispatcher)
     private val updateGeneration = AtomicLong()
@@ -56,7 +54,7 @@ class FilmTableBinding(
     private var disposed = false
 
     internal val sorting: FilmTableSorting
-        get() = sortController
+        field: FilmTableSortController
 
     init {
         table.autoCreateRowSorter = false
@@ -64,7 +62,7 @@ class FilmTableBinding(
         table.model = tableModel
         selectionModel.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
         table.selectionModel = selectionModel
-        sortController = FilmTableSortController(table, tableFormat, ::scheduleResort)
+        sorting = FilmTableSortController(table, tableFormat, ::scheduleResort)
     }
 
     override val rowCount: Int
@@ -157,7 +155,7 @@ class FilmTableBinding(
         updateGeneration.incrementAndGet()
         modelScope.cancel()
         runOnEdtAndWait {
-            sortController.dispose()
+            sorting.dispose()
             table.clearSelection()
             table.selectionModel = DefaultListSelectionModel()
             table.rowSorter = null
@@ -221,7 +219,7 @@ class FilmTableBinding(
     }
 
     private fun prepareDisplayedFilms(): List<DatenFilm> {
-        val comparator = sortController.comparator()
+        val comparator = sorting.comparator()
         if (excludedFilms.isEmpty() && comparator == null) {
             return sourceFilms
         }
