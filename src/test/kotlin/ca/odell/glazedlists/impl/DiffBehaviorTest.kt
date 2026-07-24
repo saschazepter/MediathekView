@@ -21,6 +21,7 @@ import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.event.ListEvent
+import ca.odell.glazedlists.replaceAll
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertSame
 import org.junit.jupiter.api.Assertions.assertThrows
@@ -151,11 +152,11 @@ internal class DiffBehaviorTest {
     }
 
     @Test
-    fun equalsComparatorSupportsNullsAndThePublicFacadeRetainsTheSamePath() {
+    fun equalsComparatorSupportsNullsAndThePublicExtensionRetainsTheSamePath() {
         val target = BasicEventList<String?>().apply { addAll(listOf(null, "A")) }
 
         val events = captureEvents(target) {
-            GlazedLists.replaceAll(target, listOf(null, "B"), false)
+            target.replaceAll(listOf(null, "B"), false)
         }
 
         assertEquals(listOf(null, "B"), target.toList())
@@ -169,22 +170,22 @@ internal class DiffBehaviorTest {
     }
 
     @Test
-    fun publicFacadeDefersNullComparatorFailureUntilAComparisonIsRequired() {
+    fun publicExtensionDefersNullComparatorFailureUntilAComparisonIsRequired() {
         val emptyToEmpty = BasicEventList<String>()
-        GlazedLists.replaceAll(emptyToEmpty, emptyList(), false, null)
+        emptyToEmpty.replaceAll(emptyList(), false, null)
         assertEquals(emptyList<String>(), emptyToEmpty.toList())
 
         val insertionOnly = BasicEventList<String>()
-        GlazedLists.replaceAll(insertionOnly, listOf("A"), false, null)
+        insertionOnly.replaceAll(listOf("A"), false, null)
         assertEquals(listOf("A"), insertionOnly.toList())
 
         val deletionOnly = BasicEventList<String>().apply { add("A") }
-        GlazedLists.replaceAll(deletionOnly, emptyList(), false, null)
+        deletionOnly.replaceAll(emptyList(), false, null)
         assertEquals(emptyList<String>(), deletionOnly.toList())
 
         val comparisonRequired = BasicEventList<String>().apply { add("A") }
         assertThrows(NullPointerException::class.java) {
-            GlazedLists.replaceAll(comparisonRequired, listOf("A"), false, null)
+            comparisonRequired.replaceAll(listOf("A"), false, null)
         }
         assertEquals(listOf("A"), comparisonRequired.toList())
     }

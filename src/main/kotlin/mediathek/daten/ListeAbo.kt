@@ -31,7 +31,7 @@ private class AboListStorage {
     val source = TransactionList(BasicEventList<DatenAbo>())
     val naturalComparator: Comparator<DatenAbo> = naturalOrder()
     val sorted = SortedList(source, naturalComparator)
-    val readOnly: EventList<DatenAbo> = GlazedLists.readOnlyList(sorted)
+    val readOnly: EventList<DatenAbo> = sorted.asReadOnly()
 }
 
 class ListeAbo private constructor(

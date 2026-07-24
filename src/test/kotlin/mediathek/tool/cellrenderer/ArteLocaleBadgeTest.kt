@@ -20,7 +20,7 @@ package mediathek.tool.cellrenderer
 
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.gui.TableFormat
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.daten.DatenFilm
 import mediathek.gui.messages.SenderIconStyleChangedEvent
@@ -127,7 +127,7 @@ class ArteLocaleBadgeTest {
     private fun renderSenderCell(sender: String): BufferedImage {
         val film = DatenFilm().apply { this.sender = sender }
         val films = BasicEventList<DatenFilm>().apply { add(film) }
-        val model = GlazedListsSwing.eventTableModel(films, SENDER_TABLE_FORMAT)
+        val model = films.eventTableModel(SENDER_TABLE_FORMAT)
         try {
             val table = JTable(model).apply {
                 rowHeight = CELL_HEIGHT

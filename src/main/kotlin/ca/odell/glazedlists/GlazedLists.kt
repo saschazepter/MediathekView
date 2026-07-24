@@ -20,15 +20,8 @@ package ca.odell.glazedlists
 import ca.odell.glazedlists.event.ListEventListener
 import ca.odell.glazedlists.event.ListEventPublisher
 import ca.odell.glazedlists.gui.TableFormat
-import ca.odell.glazedlists.impl.Diff
-import ca.odell.glazedlists.impl.FunctionListMap
-import ca.odell.glazedlists.impl.GlazedListsImpl
-import ca.odell.glazedlists.impl.GroupingListMultiMap
 import ca.odell.glazedlists.impl.ListCollectionListModel
 import ca.odell.glazedlists.impl.ObservableConnector
-import ca.odell.glazedlists.impl.ReadOnlyList
-import ca.odell.glazedlists.impl.SimpleFunctionList
-import ca.odell.glazedlists.impl.TypeSafetyListener
 import ca.odell.glazedlists.impl.WeakReferenceProxy
 import ca.odell.glazedlists.impl.beans.BeanConnector
 import ca.odell.glazedlists.impl.beans.BeanFunction
@@ -61,32 +54,6 @@ object GlazedLists {
         val REVERSED_COMPARABLE: Comparator<*> =
             ReverseComparator(COMPARABLE_COMPARATOR as Comparator<Any?>)
         val STRING_TEXT_FILTERATOR: TextFilterator<Any?> = StringTextFilterator()
-    }
-
-    fun <E> replaceAll(
-        target: EventList<E>,
-        source: List<E>,
-        updates: Boolean,
-    ) {
-        Diff.replaceAll(target, source, updates)
-    }
-
-    fun <E> replaceAll(
-        target: EventList<E>,
-        source: List<E>,
-        updates: Boolean,
-        comparator: Comparator<E>?,
-    ) {
-        Diff.replaceAll(target, source, updates, comparator)
-    }
-
-    fun <E> replaceAllSorted(
-        target: EventList<E>,
-        source: Collection<E>,
-        updates: Boolean,
-        comparator: Comparator<E>?,
-    ) {
-        GlazedListsImpl.replaceAll(target, source, updates, comparator)
     }
 
     fun <T> beanPropertyComparator(
@@ -204,14 +171,6 @@ object GlazedLists {
         return result
     }
 
-    fun <E> readOnlyList(source: EventList<out E>): TransformedList<E, E> =
-        ReadOnlyList(source as EventList<E>)
-
-    fun <S, E> transformByFunction(
-        source: EventList<S>,
-        function: Function<S, E>,
-    ): TransformedList<S, E> = SimpleFunctionList(source, function::apply)
-
     fun <E> weakReferenceProxy(
         source: EventList<E>,
         target: ListEventListener<E>,
@@ -267,31 +226,6 @@ object GlazedLists {
         return Function { value -> function(value!!) }
     }
 
-    fun <E> syncEventListToList(source: EventList<E>, target: MutableList<E>): SyncListener<E> =
-        SyncListener(source, target)
-
-    fun <E> typeSafetyListener(
-        source: EventList<E>,
-        types: Set<Class<*>?>,
-    ): ListEventListener<E> = TypeSafetyListener(source, types)
-
-    fun <K, V> syncEventListToMultiMap(
-        source: EventList<V>,
-        keyMaker: Function<V, out K>,
-    ): DisposableMap<K, MutableList<V>> where K : Comparable<K> =
-        syncEventListToMultiMap(source, keyMaker, comparableComparator())
-
-    fun <K, V> syncEventListToMultiMap(
-        source: EventList<V>,
-        keyMaker: Function<V, out K>,
-        keyGrouper: Comparator<in K>,
-    ): DisposableMap<K, MutableList<V>> =
-        GroupingListMultiMap(source, keyMaker::apply, keyGrouper) as DisposableMap<K, MutableList<V>>
-
-    fun <K, V> syncEventListToMap(
-        source: EventList<V>,
-        keyMaker: Function<V, K>,
-    ): DisposableMap<K, V> = FunctionListMap(source, keyMaker::apply)
 }
 
 /**

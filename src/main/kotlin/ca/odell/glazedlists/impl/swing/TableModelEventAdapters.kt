@@ -58,7 +58,7 @@ private open class DefaultTableModelEventAdapter<E>(
     protected fun checkAccessThread() {
         check(EventQueue.isDispatchThread()) {
             "Events to ${tableModel.javaClass.simpleName} must arrive on the EDT - " +
-                "consider adding GlazedListsSwing.swingThreadProxyList(source) somewhere in your list pipeline"
+                "consider adding source.swingThreadProxyList() somewhere in your list pipeline"
         }
     }
 }

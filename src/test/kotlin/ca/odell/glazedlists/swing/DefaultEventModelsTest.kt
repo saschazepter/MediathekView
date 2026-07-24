@@ -86,7 +86,7 @@ internal class DefaultEventModelsTest {
 
         assertEquals(
             "Events to DefaultEventListModel must arrive on the EDT - " +
-                "consider adding GlazedListsSwing.swingThreadProxyList(source) somewhere in your list pipeline",
+                "consider adding source.swingThreadProxyList() somewhere in your list pipeline",
             failure.message,
         )
         model.dispose()

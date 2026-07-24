@@ -4,7 +4,7 @@ import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.matchers.Matcher
 import ca.odell.glazedlists.matchers.MatcherEditor
 import ca.odell.glazedlists.swing.DefaultEventTableModel
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.EventListener
@@ -90,7 +90,7 @@ internal class LockModernizationTest {
     @Test
     fun swingThreadProxyConstructionAcquiresSourceReadLock() {
         val source = lockCheckingList("value")
-        val proxy = GlazedListsSwing.swingThreadProxyList(source)
+        val proxy = source.swingThreadProxyList()
         proxy.dispose()
     }
 

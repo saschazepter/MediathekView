@@ -6,7 +6,7 @@ import ca.odell.glazedlists.ObservableElementList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.impl.beans.BeanTableFormat
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import mediathek.tool.withWriteLock
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -30,8 +30,8 @@ class BookmarkTablePipelineTest {
             arrayOf("seen"),
             arrayOf("Gesehen"),
         )
-        val swingBookmarks = GlazedListsSwing.swingThreadProxyList(sorted)
-        val model = GlazedListsSwing.eventTableModel(swingBookmarks, format)
+        val swingBookmarks = sorted.swingThreadProxyList()
+        val model = swingBookmarks.eventTableModel(format)
 
         assertEquals(6, source.size)
         assertEquals(6, observed.size)
@@ -57,8 +57,8 @@ class BookmarkTablePipelineTest {
             arrayOf("seen"),
             arrayOf("Gesehen"),
         )
-        val swingBookmarks = GlazedListsSwing.swingThreadProxyList(sorted)
-        val model = GlazedListsSwing.eventTableModel(swingBookmarks, format)
+        val swingBookmarks = sorted.swingThreadProxyList()
+        val model = swingBookmarks.eventTableModel(format)
         val selectionModel = DefaultEventSelectionModel(swingBookmarks)
         val selectionChanged = CountDownLatch(1)
         val selectionChangedOnEdt = AtomicBoolean()

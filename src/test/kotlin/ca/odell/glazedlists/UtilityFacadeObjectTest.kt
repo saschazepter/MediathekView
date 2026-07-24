@@ -4,7 +4,7 @@ import ca.odell.glazedlists.impl.GlazedListsImpl
 import ca.odell.glazedlists.impl.SortIconFactory
 import ca.odell.glazedlists.impl.filter.TextMatchers
 import ca.odell.glazedlists.matchers.Matchers
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue

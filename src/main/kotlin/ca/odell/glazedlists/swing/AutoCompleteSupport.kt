@@ -754,7 +754,7 @@ private class AutoCompleteSupportState<E>(
 
     private inner class AutoCompleteComboBoxModel(
         source: EventList<E>,
-    ) : DefaultEventComboBoxModel<E>(GlazedListsSwing.swingThreadProxyList(source), true),
+    ) : DefaultEventComboBoxModel<E>(source.swingThreadProxyList(), true),
         AutoCompleteModelMarker {
         override fun setSelectedItem(selected: Any?) {
             doNotFilter = true

@@ -25,7 +25,7 @@ import ca.odell.glazedlists.gui.AbstractTableComparatorChooser
 import ca.odell.glazedlists.matchers.SetMatcherEditor
 import ca.odell.glazedlists.swing.AdvancedTableModel
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import ca.odell.glazedlists.swing.TableComparatorChooser
 import mediathek.daten.ListeAbo
 import mediathek.daten.abo.DatenAbo
@@ -48,9 +48,9 @@ class AboTableBinding(
     ) { abo -> abo.sender }
     private val filteredAbos = FilterList(sourceList, senderMatcherEditor)
     private val sortedAbos = SortedList(filteredAbos)
-    private val swingAbos: EventList<DatenAbo> = GlazedListsSwing.swingThreadProxyList(sortedAbos)
+    private val swingAbos: EventList<DatenAbo> = sortedAbos.swingThreadProxyList()
     private val tableModel: AdvancedTableModel<DatenAbo> =
-        GlazedListsSwing.eventTableModel(swingAbos, tableFormat)
+        swingAbos.eventTableModel(tableFormat)
     private val selectionModel = DefaultEventSelectionModel(swingAbos)
     private val comparatorChooser: TableComparatorChooser<DatenAbo>
     private val sortPersister: GlazedSortKeysPersister<DatenAbo>

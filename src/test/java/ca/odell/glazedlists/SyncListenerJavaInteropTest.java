@@ -28,19 +28,6 @@ class SyncListenerJavaInteropTest {
         }
     }
 
-    @Test
-    void javaFactoryReturnsTheConcreteListener() {
-        try (BasicEventList<String> source = new BasicEventList<>()) {
-            List<String> target = new ArrayList<>();
-
-            SyncListener<String> listener = GlazedLists.INSTANCE.syncEventListToList(source, target);
-            source.add("value");
-
-            assertEquals(List.of("value"), target);
-            listener.dispose();
-        }
-    }
-
     private static final class RecordingSyncListener<E> extends SyncListener<E> {
         private int changeCount;
         private boolean disposed;

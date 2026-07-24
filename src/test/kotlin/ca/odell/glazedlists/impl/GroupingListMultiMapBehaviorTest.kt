@@ -20,6 +20,7 @@ package ca.odell.glazedlists.impl
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.SortedList
+import ca.odell.glazedlists.synchronizeToMultiMap
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.AbstractMap
@@ -425,9 +426,9 @@ internal class GroupingListMultiMapBehaviorTest {
     }
 
     @Test
-    fun factoryAndMapDefaultsRetainMapSemantics() {
+    fun extensionAndMapDefaultsRetainMapSemantics() {
         val source = BasicEventList<String>().apply { addAll(listOf("a1", "a2", "b1")) }
-        val map = GlazedLists.syncEventListToMultiMap(source) { it.substring(0, 1) }
+        val map = source.synchronizeToMultiMap { it.substring(0, 1) }
         val seen = linkedMapOf<String, List<String>>()
 
         map.forEach(seen::put)

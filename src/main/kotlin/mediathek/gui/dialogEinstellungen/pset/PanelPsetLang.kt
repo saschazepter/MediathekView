@@ -1,7 +1,7 @@
 package mediathek.gui.dialogEinstellungen.pset
 
 import ca.odell.glazedlists.swing.AdvancedTableModel
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.audiothek.ui.table.TriStateTableRowSorter
@@ -711,7 +711,7 @@ class PanelPsetLang(
     private fun bindProgramTableModel(listeProg: ListeProg) {
         if (currentProgramList === listeProg) return
         val oldModel = tabelleProgramme.model as? AdvancedTableModel<*>
-        val newModel = GlazedListsSwing.eventTableModelWithThreadProxyList(listeProg, PROGRAM_TABLE_FORMAT)
+        val newModel = listeProg.eventTableModelWithThreadProxyList(PROGRAM_TABLE_FORMAT)
         tabelleProgramme.rowSorter = null
         tabelleProgramme.model = newModel
         currentProgramList = listeProg

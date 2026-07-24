@@ -27,7 +27,7 @@ import ca.odell.glazedlists.gui.TableFormat
 import ca.odell.glazedlists.impl.beans.BeanTableFormat
 import ca.odell.glazedlists.swing.AdvancedTableModel
 import ca.odell.glazedlists.swing.DefaultEventSelectionModel
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import ca.odell.glazedlists.swing.TableComparatorChooser
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
@@ -290,8 +290,8 @@ class BookmarkDialog(
         observedBookmarks = pipeline.observedBookmarks
         sortedBookmarks = pipeline.sortedBookmarks
 
-        swingBookmarks = GlazedListsSwing.swingThreadProxyList(sortedBookmarks)
-        tableModel = GlazedListsSwing.eventTableModel(swingBookmarks, getTableFormat())
+        swingBookmarks = sortedBookmarks.swingThreadProxyList()
+        tableModel = swingBookmarks.eventTableModel(getTableFormat())
         selectionModel = DefaultEventSelectionModel(swingBookmarks)
         selectionModel.addListSelectionListener { event ->
             if (!event.valueIsAdjusting) {

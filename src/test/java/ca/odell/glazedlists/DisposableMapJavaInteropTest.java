@@ -3,7 +3,6 @@ package ca.odell.glazedlists;
 import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,24 +19,6 @@ class DisposableMapJavaInteropTest {
 
         disposableMap.dispose();
         assertTrue(disposableMap.disposed);
-    }
-
-    @Test
-    void glazedListsFactoriesRetainDisposableMapReturnTypes() {
-        BasicEventList<String> source = new BasicEventList<>();
-        source.addAll(List.of("alpha", "beta", "apricot"));
-
-        DisposableMap<Integer, String> map = GlazedLists.INSTANCE.syncEventListToMap(source, String::length);
-        assertEquals(Map.of(5, "alpha", 4, "beta", 7, "apricot"), map);
-
-        DisposableMap<Character, List<String>> multiMap =
-                GlazedLists.INSTANCE.syncEventListToMultiMap(source, value -> value.charAt(0));
-        assertEquals(List.of("alpha", "apricot"), multiMap.get('a'));
-        assertEquals(List.of("beta"), multiMap.get('b'));
-
-        map.dispose();
-        multiMap.dispose();
-        source.dispose();
     }
 
     private static void verifyMapOperations(Map<String, Integer> map) {

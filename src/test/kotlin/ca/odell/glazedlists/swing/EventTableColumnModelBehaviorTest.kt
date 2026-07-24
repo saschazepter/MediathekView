@@ -216,7 +216,7 @@ internal class EventTableColumnModelBehaviorTest {
         assertThrows(NullPointerException::class.java) { ownedModel.columnCount }
 
         val externalSource = BasicEventList<TableColumn>().apply { add(column("external")) }
-        val externalProxy = GlazedListsSwing.swingThreadProxyList(externalSource)
+        val externalProxy = externalSource.swingThreadProxyList()
         val externalModel = InspectableColumnModel(externalProxy)
         assertSame(externalProxy, externalModel.exposedSource())
         externalModel.dispose()

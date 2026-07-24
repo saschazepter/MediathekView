@@ -7,7 +7,7 @@ package mediathek.gui.duplicates.statistics
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.swing.AdvancedTableModel
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.filmlisten.FilmCatalog
 import mediathek.gui.duplicates.FilmStatistics
@@ -80,13 +80,13 @@ class DuplicateStatisticsDialog(
     }
 
     private fun setupCommonTable() {
-        commonModel = GlazedListsSwing.eventTableModelWithThreadProxyList(commonStats, tableFormat)
+        commonModel = commonStats.eventTableModelWithThreadProxyList(tableFormat)
         commonModel.addTableModelListener { updateTotalCommonStats() }
         tblCommon.model = commonModel
     }
 
     private fun setupDuplicatesTable() {
-        duplicateModel = GlazedListsSwing.eventTableModelWithThreadProxyList(duplicateStats, tableFormat)
+        duplicateModel = duplicateStats.eventTableModelWithThreadProxyList(tableFormat)
         duplicateModel.addTableModelListener { updateTotalDuplicatesStats() }
         tblDuplicates.model = duplicateModel
     }

@@ -20,7 +20,7 @@ package mediathek.gui.tabs.tab_film.filter
 
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import com.jidesoft.swing.CheckBoxList
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
@@ -87,7 +87,7 @@ class SwingFilterDialog internal constructor(
     private val themaDispatcher = Dispatchers.Default.limitedParallelism(1)
     private val sourceThemaList: EventList<String> = BasicEventList()
     private val themaList = EventListWithEmptyFirstEntry(sourceThemaList)
-    private val themaComboBoxModel = GlazedListsSwing.eventComboBoxModel(themaList)
+    private val themaComboBoxModel = themaList.eventComboBoxModel()
     private val senderListModel = DefaultListModel<String>().apply {
         addAll(filterController.senderList())
     }

@@ -81,10 +81,10 @@ open class EventTableColumnModel<T : TableColumn>(
                 column.addPropertyChangeListener(this)
             }
 
-            disposeSwingThreadSource = !GlazedListsSwing.isSwingThreadProxyList(actualSource)
+            disposeSwingThreadSource = !actualSource.isSwingThreadProxyList()
             @Suppress("UNCHECKED_CAST")
             val eventSource = if (disposeSwingThreadSource) {
-                GlazedListsSwing.swingThreadProxyList(actualSource)
+                actualSource.swingThreadProxyList()
             } else {
                 actualSource as TransformedList<T, T>
             }

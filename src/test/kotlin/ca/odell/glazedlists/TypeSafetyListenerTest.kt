@@ -9,7 +9,7 @@ internal class TypeSafetyListenerTest {
     @Test
     fun acceptsConfiguredTypesAndNullWhenExplicitlyAllowed() {
         val source = BasicEventList<Any?>()
-        GlazedLists.typeSafetyListener(source, linkedSetOf<Class<*>?>(String::class.java, null))
+        source.enforceTypes(linkedSetOf<Class<*>?>(String::class.java, null))
 
         assertDoesNotThrow {
             source += "allowed"
@@ -21,7 +21,7 @@ internal class TypeSafetyListenerTest {
     @Test
     fun rejectsNullWhenItIsNotConfigured() {
         val source = BasicEventList<Any?>()
-        GlazedLists.typeSafetyListener(source, setOf<Class<*>>(String::class.java))
+        source.enforceTypes(setOf<Class<*>>(String::class.java))
 
         assertThrows(IllegalArgumentException::class.java) { source += null }
     }
@@ -30,7 +30,7 @@ internal class TypeSafetyListenerTest {
     fun validatesUpdatesAndIncludesTheOffendingIndexAndValue() {
         val source = BasicEventList<Any>()
         source += "allowed"
-        GlazedLists.typeSafetyListener(source, setOf<Class<*>>(String::class.java))
+        source.enforceTypes(setOf<Class<*>>(String::class.java))
 
         val exception = assertThrows(IllegalArgumentException::class.java) { source[0] = 42 }
 

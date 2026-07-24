@@ -49,7 +49,7 @@ open class DefaultEventListModel<E>(
     override fun listChanged(listChanges: ListEvent<E>) {
         check(EventQueue.isDispatchThread()) {
             "Events to ${javaClass.simpleName} must arrive on the EDT - " +
-                "consider adding GlazedListsSwing.swingThreadProxyList(source) somewhere in your list pipeline"
+                "consider adding source.swingThreadProxyList() somewhere in your list pipeline"
         }
 
         listChanges.nextBlock()

@@ -4,7 +4,7 @@ import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.gui.AbstractTableComparatorChooser
 import ca.odell.glazedlists.swing.AdvancedTableModel
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import ca.odell.glazedlists.swing.TableComparatorChooser
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -20,8 +20,7 @@ class OnlineSearchResultTable(
 ) : JTable() {
     private val sortedResults = SortedList(source, null)
     private val eventTableModel: AdvancedTableModel<OnlineSearchResult> =
-        GlazedListsSwing.eventTableModel(
-            sortedResults,
+        sortedResults.eventTableModel(
             OnlineSearchResultTableFormat(),
         )
     private val comparatorChooser: TableComparatorChooser<OnlineSearchResult>

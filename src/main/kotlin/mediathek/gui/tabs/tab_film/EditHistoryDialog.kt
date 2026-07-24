@@ -6,7 +6,7 @@ package mediathek.gui.tabs.tab_film
 
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.swing.DefaultEventListModel
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import mediathek.config.application.ApplicationConfiguration
 import mediathek.tool.withWriteLock
 import org.apache.logging.log4j.LogManager
@@ -27,7 +27,7 @@ class EditHistoryDialog(
     private val keyAdapter = DeleteKeyAdapter()
     private var keyAdapterInstalled = false
     private val eventListModel: DefaultEventListModel<String> =
-        GlazedListsSwing.eventListModelWithThreadProxyList(eventList)
+        eventList.eventListModelWithThreadProxyList()
     private var disposed = false
 
     init {

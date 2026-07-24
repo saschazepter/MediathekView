@@ -1,7 +1,6 @@
 package ca.odell.glazedlists.impl;
 
 import ca.odell.glazedlists.BasicEventList;
-import ca.odell.glazedlists.GlazedLists;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -22,11 +21,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ReadOnlyListJavaInteropTest {
     @Test
-    void factoryAndConstructorRemainJavaVisible() {
+    void constructorRemainsJavaVisible() {
         try (final BasicEventList<String> source = new BasicEventList<>()) {
             source.add("a");
 
-            assertInstanceOf(ReadOnlyList.class, GlazedLists.INSTANCE.readOnlyList(source));
             assertTrue(Modifier.isFinal(ReadOnlyList.class.getModifiers()));
             assertInstanceOf(ReadOnlyList.class, new ReadOnlyList<>(source));
         }

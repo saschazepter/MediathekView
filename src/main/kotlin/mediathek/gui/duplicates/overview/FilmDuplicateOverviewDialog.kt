@@ -7,7 +7,7 @@ package mediathek.gui.duplicates.overview
 import ca.odell.glazedlists.BasicEventList
 import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.swing.AdvancedTableModel
-import ca.odell.glazedlists.swing.GlazedListsSwing
+import ca.odell.glazedlists.swing.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.swing.Swing
 import mediathek.daten.DatenFilm
@@ -55,8 +55,7 @@ class FilmDuplicateOverviewDialog(
     }
 
     private fun setupTable() {
-        tableModel = GlazedListsSwing.eventTableModel(
-            filmList,
+        tableModel = filmList.eventTableModel(
             DuplicateFilmDetailsTableFormat(),
         )
         table.model = tableModel

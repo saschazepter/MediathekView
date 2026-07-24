@@ -32,16 +32,15 @@ import java.beans.PropertyChangeSupport
 import java.util.ArrayList
 import java.util.Comparator
 import java.util.concurrent.locks.ReentrantReadWriteLock
-import java.util.function.Function
 
-/** Characterizes the public GlazedLists factory facade before its Java-to-Kotlin conversion. */
+/** Characterizes the Glazed Lists factories and EventList extensions after their Kotlin migration. */
 internal class GlazedListsBehaviorTest {
     @Test
     fun replaceAllOverloadsPreserveMinimalEventsUpdatesAndDeferredNullComparatorFailure() {
         val target = BasicEventList<String?>().apply { addAll(listOf(null, "A", "C")) }
 
         val ordinaryEvents = captureEvents(target) {
-            GlazedLists.replaceAll(target, listOf(null, "B", "C"), false)
+            target.replaceAll(listOf(null, "B", "C"), false)
         }
 
         assertEquals(listOf(null, "B", "C"), target.toList())
@@ -58,7 +57,7 @@ internal class GlazedListsBehaviorTest {
         val comparator = compareBy<Keyed> { it.key }
         val preserving = BasicEventList<Keyed>().apply { add(original) }
         assertTrue(captureEvents(preserving) {
-            GlazedLists.replaceAll(preserving, listOf(replacement), false, comparator)
+            preserving.replaceAll(listOf(replacement), false, comparator)
         }.isEmpty())
         assertSame(original, preserving.single())
 
@@ -66,17 +65,17 @@ internal class GlazedListsBehaviorTest {
         assertEquals(
             listOf(EventStep(ListEvent.UPDATE, 0, original, replacement)),
             captureEvents(updating) {
-                GlazedLists.replaceAll(updating, listOf(replacement), true, comparator)
+                updating.replaceAll(listOf(replacement), true, comparator)
             },
         )
         assertSame(replacement, updating.single())
 
         val insertionOnly = BasicEventList<String>()
-        assertDoesNotThrow { GlazedLists.replaceAll(insertionOnly, listOf("A"), false, null) }
+        assertDoesNotThrow { insertionOnly.replaceAll(listOf("A"), false, null) }
         assertEquals(listOf("A"), insertionOnly)
         val comparisonRequired = BasicEventList<String>().apply { add("A") }
         assertThrows(NullPointerException::class.java) {
-            GlazedLists.replaceAll(comparisonRequired, listOf("A"), false, null)
+            comparisonRequired.replaceAll(listOf("A"), false, null)
         }
     }
 
@@ -85,7 +84,7 @@ internal class GlazedListsBehaviorTest {
         val target = BasicEventList<Int>().apply { addAll(listOf(1, 3, 5)) }
 
         val events = captureEvents(target) {
-            GlazedLists.replaceAllSorted(target, listOf(1, 2, 5, 7), false, null)
+            target.replaceAllSorted(listOf(1, 2, 5, 7), false, null)
         }
 
         assertEquals(listOf(1, 2, 5, 7), target)
@@ -102,14 +101,14 @@ internal class GlazedListsBehaviorTest {
         val replacement = Keyed(1, "replacement")
         val comparator = compareBy<Keyed> { it.key }
         val preserving = BasicEventList<Keyed>().apply { add(original) }
-        GlazedLists.replaceAllSorted(preserving, listOf(replacement), false, comparator)
+        preserving.replaceAllSorted(listOf(replacement), false, comparator)
         assertSame(original, preserving.single())
 
         val updating = BasicEventList<Keyed>().apply { add(original) }
         assertEquals(
             listOf(EventStep(ListEvent.UPDATE, 0, original, replacement)),
             captureEvents(updating) {
-                GlazedLists.replaceAllSorted(updating, listOf(replacement), true, comparator)
+                updating.replaceAllSorted(listOf(replacement), true, comparator)
             },
         )
         assertSame(replacement, updating.single())
@@ -299,8 +298,8 @@ internal class GlazedListsBehaviorTest {
     @Test
     fun readOnlyAndFunctionTransformsRemainLiveForwardEventsAndDetachOnDispose() {
         val source = BasicEventList<String>().apply { addAll(listOf("a", "bbbb")) }
-        val readOnly = GlazedLists.readOnlyList(source)
-        val mapped = GlazedLists.transformByFunction(source, Function<String, Int>(String::length))
+        val readOnly = source.asReadOnly()
+        val mapped = source.transform(String::length)
         var readOnlyEvents = 0
         var mappedEvents = 0
         readOnly.addListEventListener { readOnlyEvents++ }
@@ -430,10 +429,10 @@ internal class GlazedListsBehaviorTest {
     }
 
     @Test
-    fun syncEventListToListInitializesTracksDriftAndStopsAfterDispose() {
+    fun synchronizeToInitializesTracksDriftAndStopsAfterDispose() {
         val source = BasicEventList<String>().apply { addAll(listOf("a", "b")) }
         val target = arrayListOf("stale")
-        val listener = GlazedLists.syncEventListToList(source, target)
+        val listener = source.synchronizeTo(target)
         assertEquals(source, target)
 
         source.add(1, "x")
@@ -455,8 +454,7 @@ internal class GlazedListsBehaviorTest {
     @Test
     fun typeSafetyListenerReturnsInstalledListenerAndCanBeRemoved() {
         val source = BasicEventList<Any?>()
-        val listener = GlazedLists.typeSafetyListener(
-            source,
+        val listener = source.enforceTypes(
             linkedSetOf<Class<*>?>(String::class.java, null),
         )
         source.add("allowed")
@@ -469,9 +467,9 @@ internal class GlazedListsBehaviorTest {
     }
 
     @Test
-    fun bothMultiMapFactoriesStayLiveWriteThroughAndDetachOnDispose() {
+    fun bothMultiMapExtensionsStayLiveWriteThroughAndDetachOnDispose() {
         val naturalSource = BasicEventList<String>().apply { addAll(listOf("a1", "a2", "b1")) }
-        val natural = GlazedLists.syncEventListToMultiMap(naturalSource, Function { it.substring(0, 1) })
+        val natural = naturalSource.synchronizeToMultiMap { it.substring(0, 1) }
         assertEquals(listOf("a1", "a2"), natural["a"])
         natural["a"]!!.add("a3")
         assertEquals(listOf("a1", "a2", "a3", "b1"), naturalSource)
@@ -479,11 +477,9 @@ internal class GlazedListsBehaviorTest {
         assertEquals(listOf("a1", "a2", "a3"), naturalSource)
 
         val groupedSource = BasicEventList<String>().apply { addAll(listOf("Alpha", "atom", "beta")) }
-        val grouped = GlazedLists.syncEventListToMultiMap(
-            groupedSource,
-            Function<String, String> { it.substring(0, 1) },
+        val grouped = groupedSource.synchronizeToMultiMap(
             String.CASE_INSENSITIVE_ORDER,
-        )
+        ) { it.substring(0, 1) }
         assertEquals(listOf("Alpha", "atom"), grouped["A"])
         val readOnlyReplacement =
             object : AbstractList<String>() {
@@ -512,7 +508,7 @@ internal class GlazedListsBehaviorTest {
     @Test
     fun synchronizedMapStaysLiveWritesThroughViewsAndDetachesOnDispose() {
         val source = BasicEventList<String>().apply { addAll(listOf("alpha", "beta")) }
-        val map = GlazedLists.syncEventListToMap(source, Function<String, Char> { it.first() })
+        val map = source.synchronizeToMap { it.first() }
         assertSame(source, map.values)
         source.add("charlie")
         assertEquals("charlie", map['c'])

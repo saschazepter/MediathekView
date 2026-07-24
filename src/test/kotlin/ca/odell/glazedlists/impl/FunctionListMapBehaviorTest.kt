@@ -22,6 +22,7 @@ import ca.odell.glazedlists.EventList
 import ca.odell.glazedlists.GlazedLists
 import ca.odell.glazedlists.SortedList
 import ca.odell.glazedlists.TransactionList
+import ca.odell.glazedlists.synchronizeToMap
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import java.util.AbstractMap
@@ -51,9 +52,9 @@ internal class FunctionListMapBehaviorTest {
     }
 
     @Test
-    fun factoryCreatesTheSameLiveMapContract() {
+    fun extensionCreatesTheSameLiveMapContract() {
         val source = BasicEventList<String>().apply { add("alpha") }
-        val map = GlazedLists.syncEventListToMap(source) { it.first() }
+        val map = source.synchronizeToMap { it.first() }
 
         source.add("beta")
 
